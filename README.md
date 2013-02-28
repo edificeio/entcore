@@ -6,10 +6,14 @@ Notes d'utilisation
 * __Gralde__ 1.4
 * __Vert.x__ 2-SNAPSHOT (construire à partir des sources. Attention le script de construction ne copie pas `vertx-platform-2.0.0-SNAPSHOT.jar` dans la version releasée. Il faut le faire manuellement. J'ai peut-être raté qqc)
 * __Neo4j__ 1.9
+* __Gradle Support__ 1.1.9: plugin Netbean
 
 # Développer
 
-One-core est une application Vert.x qui contient plusieurs verticle spécialisés. Elle est packagée sous forme de module Vert.x. 
+One-core est une application Vert.x qui contient plusieurs verticle spécialisés. Elle est packagée sous forme de module Vert.x.
+
+Remote Debug : 
+	 export VERTX_OPTS='-Xdebug Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000'
 
 __Squelette d'application__
 
@@ -31,4 +35,15 @@ Conventions : indentation par TAB, nommage en anglais, message de commit en angl
 Configuration : `mod.json`
 Construction : `gradle copyMod`
 Lancement de vert.x : `vertx runmod edu.one-core-0.1.0-SNAPSHOT`
+
+# Convention de codage
+
+* Indentation : TAB
+* Java : code style standard
+
+# Guide de contribution
+
+* Message de commit
+ * Langue : Anglais
+ * préfix : [<ticket>], [Fix <ticket>], [Tmp], [Doc]
 
