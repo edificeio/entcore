@@ -1,6 +1,5 @@
 package edu.one.core.module;
 
-
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.logging.FileHandler;
@@ -19,43 +18,38 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
+	@Override
+	public void start() {
+		super.start();
+		vertx.eventBus().registerHandler("one.address", this);
+		Logger tracer = java.util.logging.Logger.getLogger("one.tracer");
+		Formatter formatter = new SimpleFormatter();
+		FileHandler handler = null;
+			try {
+				handler = new FileHandler("./data/dev/trace", true);
+			} catch (IOException | SecurityException ex) {
+				//Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		handler.setFormatter(formatter);
+		tracer.addHandler(handler);
+	}
 
-@Override
-public void start() {
-super.start();
-vertx.eventBus().registerHandler("one.address", this);
-Logger tracer = java.util.logging.Logger.getLogger("one.tracer");
-Formatter formatter = new SimpleFormatter();
-FileHandler handler = null;
-		try {
-			handler = new FileHandler("./data/dev/trace", true);
-		} catch (IOException | SecurityException ex) {
-			//Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-		}
-handler.setFormatter(formatter);
-tracer.addHandler(handler);
+	@Override
+	public void stop() throws Exception {
+		super.stop();
+	}
 
+	@Override
+	public void handle(Message<JsonObject> m) {
+		Logger.getLogger("one.tracer").log(Level.OFF,JsonFormatter(m.body).toString());
+	}
 
-vertx.eventBus().publish("one.address", new JsonObject().putString("app", "Directory").putString("action", "blablablu"));
-}
-
-@Override
-public void stop() throws Exception {
-super.stop();
-}
-
-@Override
-public void handle(Message<JsonObject> m) {
-	Logger.getLogger("one.tracer").log(Level.OFF,JsonFormatter(m.body).toString());
-}
-
-public JsonObject JsonFormatter(JsonObject message){
-	JsonObject log = new JsonObject()
-			.putString("app", message.getField("app").toString())
-			.putString("date", Calendar.getInstance().getTime().toString())
-			.putString("message", message.getField("action").toString());
-	return log;
-}
+	public JsonObject JsonFormatter(JsonObject message){
+		JsonObject log = new JsonObject()
+				.putString("app", message.getField("app").toString())
+				.putString("date", Calendar.getInstance().getTime().toString())
+				.putString("message", message.getField("action").toString());
+		return log;
+	}
 
 }
-
