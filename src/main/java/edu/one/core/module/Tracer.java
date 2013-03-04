@@ -41,10 +41,10 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		Logger.getLogger("one.tracer").log(Level.OFF,JsonFormatter(m.body).toString());
+		Logger.getLogger("one.tracer").log(Level.OFF,jsonFormatter(m.body).toString());
 	}
 
-	public JsonObject JsonFormatter(JsonObject message){
+	public JsonObject jsonFormatter(JsonObject message){
 		JsonObject log = new JsonObject()
 				.putString("app", message.getField("app").toString())
 				.putString("date", Calendar.getInstance().getTime().toString())
