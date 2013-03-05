@@ -7,6 +7,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.util.logging.XMLFormatter;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -21,12 +22,14 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 	@Override
 	public void start() {
 		super.start();
-		vertx.eventBus().registerHandler("one.address", this);
-		Logger tracer = java.util.logging.Logger.getLogger("one.tracer");
-		Formatter formatter = new SimpleFormatter();
+		JsonObject config = container.getConfig();
+		
+		vertx.eventBus().registerHandler(config.getString("log-address"), this);
+		Logger tracer = java.util.logging.Logger.getLogger(config.getString("logger"));
+		Formatter formatter = new JsonFormatter();
 		FileHandler handler = null;
 			try {
-				handler = new FileHandler("./data/dev/trace", true);
+				handler = new FileHandler(config.getString("log-path"), true);
 			} catch (IOException | SecurityException ex) {
 				//Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -41,15 +44,6 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		Logger.getLogger("one.tracer").log(Level.OFF,jsonFormatter(m.body).toString());
+		Logger.getLogger(config.getString("logger")).log(Level.OFF,m.body.getString("message"));
 	}
-
-	public JsonObject jsonFormatter(JsonObject message){
-		JsonObject log = new JsonObject()
-				.putString("app", message.getField("app").toString())
-				.putString("date", Calendar.getInstance().getTime().toString())
-				.putString("message", message.getField("action").toString());
-		return log;
-	}
-
 }

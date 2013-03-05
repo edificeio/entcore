@@ -4,15 +4,10 @@
  */
 package edu.one.core;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -32,11 +27,14 @@ public class History extends Verticle implements Handler<Message<String>> {
 		log = container.getLogger();
 		log.info(container.getConfig().getString("test"));
 		
-		
 		RouteMatcher rm = new RouteMatcher();
 		rm.get("/", new Handler<HttpServerRequest> () {
 			public void handle(HttpServerRequest req) {
-				req.response.sendFile("./data/dev/trace");
+				try {
+					req.response.sendFile(new File(".").getCanonicalPath() + "/data/dev/trace");
+				} catch (IOException ex) {
+					java.util.logging.Logger.getLogger(History.class.getName()).log(Level.SEVERE, null, ex);
+				}
 			}
 		});
 		vertx.createHttpServer().requestHandler(rm).listen(container.getConfig().getInteger("port"));

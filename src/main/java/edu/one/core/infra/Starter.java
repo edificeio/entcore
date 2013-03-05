@@ -40,7 +40,7 @@ public class Starter extends Controller {
 		container.deployVerticle(Directory.class.getName(), config.getObject("Directory.conf"));
 		container.deployVerticle(AppRegistry.class.getName(), config.getObject("Application.conf"));
 		container.deployVerticle(History.class.getName(), config.getObject("History.conf"));
-		container.deployVerticle(edu.one.core.module.Tracer.class.getName());
+		container.deployVerticle(edu.one.core.module.Tracer.class.getName(), config.getObject("Tracer.conf"));
 	}
 
 	private JsonObject getConfig(String fileName) throws Exception {
