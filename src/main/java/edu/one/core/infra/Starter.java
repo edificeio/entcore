@@ -3,6 +3,7 @@ import edu.one.core.Admin;
 import edu.one.core.AppRegistry;
 import edu.one.core.Directory;
 import edu.one.core.History;
+import edu.one.core.Sync;
 import edu.one.core.module.Neo4jPersistor;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
@@ -41,6 +42,7 @@ public class Starter extends Controller {
 		container.deployVerticle(AppRegistry.class.getName(), config.getObject("Application.conf"));
 		container.deployVerticle(History.class.getName(), config.getObject("History.conf"));
 		container.deployVerticle(edu.one.core.module.Tracer.class.getName(), config.getObject("Tracer.conf"));
+		container.deployVerticle(Sync.class.getName(), config.getObject("Sync.conf"));
 	}
 
 	private JsonObject getConfig(String fileName) throws Exception {

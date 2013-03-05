@@ -19,7 +19,8 @@
 
 	"Sync.conf": {
 		"port": 8005,
-		"preserve-cwd" : "true"
+		"preserve-cwd" : "true",
+		"input-files-folder" : "D:/developpementONE/aaf_files/"
 	},
 
 	"History.conf": {
