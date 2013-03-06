@@ -28,7 +28,7 @@
 	"Tracer.conf": {
 		"test": "Tracer _Verticle_ started",
 		"logger": "one.tracer",
-		"log-path": "./data/dev/trace",
+		"log-path": "./data/dev/",
 		"log-address": "log.address"
 	}
 }

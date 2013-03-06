@@ -1,13 +1,12 @@
 package edu.one.core.module;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.logging.FileHandler;
+import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.XMLFormatter;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -26,15 +25,17 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 		
 		vertx.eventBus().registerHandler(config.getString("log-address"), this);
 		Logger tracer = java.util.logging.Logger.getLogger(config.getString("logger"));
-		Formatter formatter = new JsonFormatter();
-		FileHandler handler = null;
-			try {
-				handler = new FileHandler(config.getString("log-path"), true);
-			} catch (IOException | SecurityException ex) {
-				//Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		handler.setFormatter(formatter);
-		tracer.addHandler(handler);
+		
+		//TODO : get app list form appregistry and create handlers for all
+		FileHandler directory = setFileHandler("directory");
+		tracer.addHandler(directory);
+		
+		FileHandler history = setFileHandler("history");
+		tracer.addHandler(history);
+
+		FileHandler sync = setFileHandler("sync");	
+		tracer.addHandler(sync);
+		
 	}
 
 	@Override
@@ -44,6 +45,20 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		Logger.getLogger(config.getString("logger")).log(Level.OFF,m.body.getString("message"));
+		Logger.getLogger(config.getString("logger")).log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("appli")));
+	}
+	
+	
+	public FileHandler setFileHandler(String name){
+		FileHandler fh = null;
+		try {
+			fh = new FileHandler(config.getString("log-path") + name + ".trace", true);
+		} catch (Exception ex) {
+			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		Formatter formatter = new JsonFormatter();
+		fh.setFormatter(formatter);
+		fh.setFilter(new ApplicationLogFilter(name));
+		return fh;
 	}
 }
