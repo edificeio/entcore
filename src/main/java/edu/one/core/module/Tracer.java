@@ -1,11 +1,8 @@
 package edu.one.core.module;
 
-import java.io.IOException;
 import java.util.logging.FileHandler;
-import java.util.logging.Filter;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;

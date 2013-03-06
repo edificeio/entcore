@@ -31,7 +31,7 @@ public class History extends Verticle implements Handler<Message<String>> {
 		rm.get("/", new Handler<HttpServerRequest> () {
 			public void handle(HttpServerRequest req) {
 				try {
-					req.response.sendFile(new File(".").getCanonicalPath() + "/data/dev/trace");
+					req.response.sendFile(new File(".").getCanonicalPath() + "/data/dev/" + req.params().get("app").toLowerCase() + ".trace");
 				} catch (IOException ex) {
 					java.util.logging.Logger.getLogger(History.class.getName()).log(Level.SEVERE, null, ex);
 				}
