@@ -40,22 +40,22 @@ public class SaxContentHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		super.startElement(uri, localName, qName, attributes);
-		
+
 		switch (qName) {
 			case Constantes.ADD_TAG : 
-				this.oc = new Operation(qName);
+				oc = new Operation(qName);
 				break;
 			case Constantes.UPDATE_TAG : 
-				this.oc = new Operation(qName);
+				oc = new Operation(qName);
 				break;
 			case Constantes.DELETE_TAG : 
-				this.oc = new Operation(qName);
+				oc = new Operation(qName);
 				break;
 			case Constantes.OPERATIONAL_ATTRIBUTES_TAG :
-				this.oc.etatAvancement = this.oc.etatAvancement.suivant();
+				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
 			case Constantes.IDENTIFIER_TAG :
-				this.oc.etatAvancement = this.oc.etatAvancement.suivant();
+				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
 			case Constantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
@@ -63,7 +63,7 @@ public class SaxContentHandler extends DefaultHandler {
 				}
 				break;
 			case Constantes.ATTRIBUTES_TAG :
-				this.oc.etatAvancement = this.oc.etatAvancement.suivant();
+				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
 			default :
 				break;
@@ -75,14 +75,14 @@ public class SaxContentHandler extends DefaultHandler {
 		super.characters(ch, start, length);
 		
 		String valeur = new String(ch, start, length);
-		switch (this.oc.etatAvancement) {
+		switch (oc.etatAvancement) {
 			case TYPE_ENTITE :
-				this.oc.typeEntite = Operation.TypeEntite.valueOf(valeur.toUpperCase());
+				oc.typeEntite = Operation.TypeEntite.valueOf(valeur.toUpperCase());
 			case ID :
-				this.oc.id = valeur;
+				oc.id = valeur;
 			case ATTRIBUTS :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
-					this.oc.ajouterValeur(valeur);
+					oc.ajouterValeur(valeur);
 				}
 			default :
 				break;

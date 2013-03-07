@@ -10,7 +10,8 @@ package edu.one.core.sync.aaf;
  */
 public class Constantes {
     // Filtres pour récupérer les fichiers d'un certain type dans un répertoire
-	public static final String[] AAF_FILTERS = {".*_EtabEducNat_.*",".*_PersRelEleve_.*",".*_Eleve_.*",".*_PersEducNat_.*"};
+	public static final String[] AAF_FILTERS = 
+			{".*_EtabEducNat_.*",".*_PersRelEleve_.*",".*_Eleve_.*",".*_PersEducNat_.*"};
    
     // Types d'opération
     public static final String ADD_TAG = "addRequest";

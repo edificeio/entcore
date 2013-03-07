@@ -44,9 +44,9 @@ public class Operation {
 	};
 	public EtatAvancement etatAvancement;
 	public Operation(String typeOperation) {
-		this.etatAvancement = EtatAvancement.TYPE_OPERATION;
+		etatAvancement = EtatAvancement.TYPE_OPERATION;
 		this.typeOperation = TypeOperation.valueOf(typeOperation.toUpperCase());
-		this.attributs = new HashMap<>();
+		attributs = new HashMap<>();
 	}
 	
 	//TODO : gestion erreur => if (attributs.containsKey(id)) ...
