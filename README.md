@@ -13,7 +13,7 @@ Notes d'utilisation
 One-core est une application Vert.x qui contient plusieurs verticle spécialisés. Elle est packagée sous forme de module Vert.x.
 
 Remote Debug : 
-	 export VERTX_OPTS='-Xdebug Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000'
+	 export VERTX\_OPTS='-Xdebug Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000'
 
 __Squelette d'application__
 
