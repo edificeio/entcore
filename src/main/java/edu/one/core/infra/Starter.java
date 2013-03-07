@@ -1,6 +1,5 @@
 package edu.one.core.infra;
 
-
 import edu.one.core.Admin;
 import edu.one.core.AppRegistry;
 import edu.one.core.Directory;
@@ -14,23 +13,32 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
-public class Starter extends Verticle{
+public class Starter extends Verticle {
 
 	private Logger log;
 	JsonObject config;
+	Neo neo;
 
 	@Override
 	public void start() throws Exception {
 		log = container.getLogger();
 		log.info("Applications bootstrap");
 		config = getConfig();
+		neo = new Neo(vertx.eventBus(),log);
 		deployApps();
 
 		RouteMatcher rm = new RouteMatcher();
 
 		rm.get("/start/dev", new Handler<HttpServerRequest> () {
 			public void handle(HttpServerRequest req) {
-				req.response.sendFile("./resources/view/dev.html");
+				req.response.sendFile("./view/starter/dev.html");
+			}
+		});
+
+		rm.get("/start/test", new Handler<HttpServerRequest> () {
+			public void handle(final HttpServerRequest request) {
+				log.info("TEST QUERY " + request.params().get("query"));
+				neo.send(request.params().get("query"), request.response);
 			}
 		});
 

@@ -1,38 +1,43 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.one.core.infra;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 
-/**
- *
- * @author rafik
- */
-public class Neo implements Handler<Message<JsonObject>> {
+public class Neo  {
 
 	private JsonObject result = new JsonObject();
 	private EventBus eb;
 	private String address;
+	private Logger log;
 
-	public Neo (EventBus eb, String address) {
+	public Neo (EventBus eb, Logger log) {
 		this.eb = eb;
-		this.address = address;
+		this. log = log;
+		this.address = "wse.neo4j.persistor";
 	}
 
-	public JsonObject send(JsonObject jo) {
-		eb.send(address, jo, this);
-		
-		return result ;
+	public void send(String query) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		eb.send(address, jo);
 	}
 
-	@Override
-	public void handle(Message<JsonObject> m) {
-		result = result.mergeIn(m.body);
+	public void send(String query, final HttpServerResponse response) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		eb.send(address, jo , new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> m) {
+				log.info("Neo " + m.body);
+				response.end(m.body.encode());
+			}
+		});
 	}
+
 
 }

@@ -29,8 +29,8 @@ public class Directory extends Verticle implements Handler<Message<String>> {
 						JsonObject query = new JsonObject()
 								.putString("action", "execute")
 								.putString("query", b.toString());
-						JsonObject result = new Neo(vertx.eventBus(),"wse.neo4j.persistor").send(query);
-						log.info("REPLY " + result);
+//					JsonObject result = new Neo(vertx.eventBus(),"wse.neo4j.persistor").send(query);
+//						log.info("REPLY " + result);
 					}
 				});
 			}

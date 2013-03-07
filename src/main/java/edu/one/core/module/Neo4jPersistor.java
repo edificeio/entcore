@@ -1,7 +1,6 @@
 package edu.one.core.module;
 
 import java.util.Map;
-import org.neo4j.cypher.SyntaxException;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -49,8 +48,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		String action = m.body.getString("action");
-		switch(action) {
+		switch(m.body.getString("action")) {
 			case "execute" :
 				execute(m);
 				break;
@@ -64,18 +62,18 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		try {
 			logger.info("QUERY " + m.body.getString("query"));
 			result = engine.execute(m.body.getString("query"));
-		} catch (SyntaxException e) {
-			sendError(m, "SyntaxException");
+		} catch (Exception e) {
+			sendError(m, e.getMessage());
 		}
-		m.reply(new JsonObject().putObject("result", toJson(result)));
+		JsonObject json = toJson(result);
+		logger.info("NEO PERSISTOR " + json);
+		m.reply(new JsonObject().putObject("result", json));
 	}
 
 	private JsonObject toJson (ExecutionResult result) {
 		JsonObject json = new JsonObject();
-		logger.info("jsonO " + result);
 		// TODO avoid "if null programming"
 		if (result == null) {
-			logger.info("result == null");
 			return json;
 		}
 		for (Map<String, Object> row : result) {
