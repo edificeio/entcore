@@ -3,17 +3,6 @@
 	<head>
 		<title>One : Start Dev</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script>
-			function getLogs()
-			{
-				opt = document.getElementById("option");
-				var xhr = new XMLHttpRequest();
-				xhr.open("GET", "http://localhost:8006/?app=" + opt.options[opt.selectedIndex].text.toLowerCase());
-				xhr.send(null);
-				var response = xhr.responseText;
-				document.getElementById("logs").innerHTML = opt.options[opt.selectedIndex].text + response.toString();
-			}
-		</script>
 	</head>
 	<body>
 		<h1>One : Dev Mode</h1>
@@ -34,16 +23,5 @@
 			<li><a href="AppRegistry">Applications (store)</a></li>
 			<li><a href="History">Historique</a></li>
 		</ul>
-		<h2>Logs</h2>
-		<form name ="fname" method="GET" action="http://localhost:8006/">
-		<!--form name ="fname" method="GET" action="." onsubmit="getLogs()"-->
-			<select name="app" id ="option">
-				<option>Sync</option>
-				<option>History</option>
-				<option>Directory</option>
-			</select>
-			<input type="submit" value="see logs"/>
-		</form>
-		<p id="logs"></p>
 	</body>
 </html>

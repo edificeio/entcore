@@ -14,23 +14,32 @@ import org.vertx.java.core.json.JsonObject;
  * @author rafik
  */
 public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
-
+	
+	private JsonObject config;
+	private Logger tracer;
+	private org.vertx.java.core.logging.Logger vertxLogger;
+	
 	@Override
 	public void start() {
 		super.start();
-		JsonObject config = container.getConfig();
-		
-		vertx.eventBus().registerHandler(config.getString("log-address"), this);
-		Logger tracer = java.util.logging.Logger.getLogger(config.getString("logger"));
-		
+		vertxLogger = container.getLogger();
+		config = container.getConfig();
+
+		vertxLogger.info(config.getString("test"));
+		tracer = java.util.logging.Logger.getLogger(config.getString("logger-name"));
+		vertx.eventBus().registerHandler(config.getString("vertx-bus-address"), this);
+
 		//TODO : get app list form appregistry and create handlers for all
-		FileHandler directory = setFileHandler("directory");
+		FileHandler allLogs = createFileHandler("all");
+		tracer.addHandler(allLogs);
+		
+		FileHandler directory = createFileHandler("directory");
 		tracer.addHandler(directory);
 		
-		FileHandler history = setFileHandler("history");
+		FileHandler history = createFileHandler("history");
 		tracer.addHandler(history);
 
-		FileHandler sync = setFileHandler("sync");	
+		FileHandler sync = createFileHandler("sync");	
 		tracer.addHandler(sync);
 		
 	}
@@ -42,20 +51,22 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		Logger.getLogger(config.getString("logger")).log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("appli")));
+		tracer.log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("appli")));
 	}
 	
 	
-	public FileHandler setFileHandler(String name){
+	public FileHandler createFileHandler(String name){
 		FileHandler fh = null;
 		try {
 			fh = new FileHandler(config.getString("log-path") + name + ".trace", true);
 		} catch (Exception ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+			vertxLogger.info(ex);
 		}
 		Formatter formatter = new JsonFormatter();
 		fh.setFormatter(formatter);
-		fh.setFilter(new ApplicationLogFilter(name));
+		if (!name.equals("all")){
+			fh.setFilter(new ApplicationLogFilter(name));
+		}
 		return fh;
 	}
 }

@@ -23,12 +23,13 @@
 
 	"History.conf": {
 		"port": 8006
+		"log-path": "/data/dev/"
 	},
 	
 	"Tracer.conf": {
 		"test": "Tracer _Verticle_ started",
-		"logger": "one.tracer",
+		"logger-name": "one.tracer",
 		"log-path": "./data/dev/",
-		"log-address": "log.address"
+		"vertx-bus-address": "log.address"
 	}
 }
