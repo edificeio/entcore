@@ -62,16 +62,24 @@ public class Operation {
 		attributs.put(attributCourant.getKey(), attributCourant.getValue());
 	}
 	
-	public String afficher() {
-		String retour = "";
+	public String requeteCreation(String init) {
+		String requete = init;
 		for (Map.Entry<String, List<String>> entry : attributs.entrySet()) {
 			String nomAttribut = entry.getKey();
 			List<String> valeursAttribut = entry.getValue();
 			
 			if (valeursAttribut.size() > 0) {
-				retour += nomAttribut + " = " + valeursAttribut.get(0) + "\n";
+				if (requete.equals(init)) {
+					requete += "({";
+					requete += nomAttribut + " : '" 
+							+ valeursAttribut.get(0).replaceAll("'", "\\\\'") + "'";
+				} else {
+					requete += ", " + nomAttribut + " : '" 
+							+ valeursAttribut.get(0).replaceAll("'", "\\\\'") + "'";
+				}
 			}
 		}
-		return retour;
+		requete += "})";
+		return requete;
 	}
 }

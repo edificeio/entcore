@@ -4,8 +4,10 @@
  */
 package edu.one.core.sync.aaf;
 
+import edu.one.core.infra.Neo;
 import java.util.ArrayList;
 import java.util.List;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -18,10 +20,13 @@ import org.xml.sax.helpers.DefaultHandler;
 public class SaxContentHandler extends DefaultHandler {
 	private Logger log;
 	public Operation oc;
-	public List<Operation> operations;
-	public int nbOp = 0;
-	public SaxContentHandler(Logger log) {
+	public static List<Operation> operations;
+	int nbOp = 0;
+	Neo neo;
+
+	public SaxContentHandler(Logger log, EventBus eb) {
 		this.log = log;
+		this.neo = new Neo(eb, log);
 	}
 
 	@Override
@@ -42,13 +47,13 @@ public class SaxContentHandler extends DefaultHandler {
 		super.startElement(uri, localName, qName, attributes);
 
 		switch (qName) {
-			case Constantes.ADD_TAG : 
+			case Constantes.ADD_TAG :
 				oc = new Operation(qName);
 				break;
-			case Constantes.UPDATE_TAG : 
+			case Constantes.UPDATE_TAG :
 				oc = new Operation(qName);
 				break;
-			case Constantes.DELETE_TAG : 
+			case Constantes.DELETE_TAG :
 				oc = new Operation(qName);
 				break;
 			case Constantes.OPERATIONAL_ATTRIBUTES_TAG :
@@ -73,7 +78,7 @@ public class SaxContentHandler extends DefaultHandler {
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		super.characters(ch, start, length);
-		
+
 		String valeur = new String(ch, start, length);
 		switch (oc.etatAvancement) {
 			case TYPE_ENTITE :
@@ -92,15 +97,16 @@ public class SaxContentHandler extends DefaultHandler {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		super.endElement(uri, localName, qName);
-		
+
 		switch (qName) {
-			case Constantes.ADD_TAG : 
+			case Constantes.ADD_TAG :
+				operations.add(oc);
+				neo.send(oc.requeteCreation("CREATE "));
+				break;
+			case Constantes.UPDATE_TAG :
 				operations.add(oc);
 				break;
-			case Constantes.UPDATE_TAG : 
-				operations.add(oc);
-				break;
-			case Constantes.DELETE_TAG : 
+			case Constantes.DELETE_TAG :
 				operations.add(oc);
 				break;
 			case Constantes.ATTR_TAG :
