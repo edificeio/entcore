@@ -1,4 +1,5 @@
 {
 	"admin.title": "Directory",
-	"admin.detail": "This an i18n test"
+	"admin.detail": "This an i18n test",
+	"directory.admin.title": "Directory"
 }

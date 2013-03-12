@@ -1,0 +1,59 @@
+{
+	"ecole": {
+		"id": 1,
+		"nom": " René Cassin"
+	},
+	"classe": [
+		{
+			"id": 2,
+			"nom": "CE1",
+			"effectif": 25
+		},
+		{
+			"id": 3,
+			"nom": "CP",
+			"effectif": 35
+		},
+		{
+			"id": 4,
+			"nom": "CM1",
+			"effectif": 27
+		}],
+	"personne": [
+		{
+		"id": 5,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "11/12/2007"
+		},
+		{
+		"id": 6,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "11/02/2009"
+		},
+		{
+		"id": 7,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "01/12/2007"
+		},
+		{
+		"id": 8,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "21/11/2007"
+		},
+		{
+		"id": 9,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "22/10/2007"
+		},
+		{
+		"id": 10,
+		"nom": "Dupont",
+		"prenom": "Tom",
+		"date-de-naissance": "14/04/2007"
+		}]
+}
