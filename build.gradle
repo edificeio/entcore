@@ -63,6 +63,7 @@ repositories {
 }
 
 dependencies {
+	compile "com.github.spullara.mustache.java:compiler:$mustacheVersion"
 	compile "org.neo4j:neo4j:$neo4jVersion"
 	provided "io.vertx:vertx-core:$vertxVersion"
 	provided "io.vertx:vertx-platform:$vertxVersion"
@@ -80,6 +81,7 @@ buildscript {
 	}
 
 	dependencies {
+		classpath "com.github.spullara.mustache.java:compiler:$mustacheVersion"
 		classpath "org.neo4j:neo4j:$neo4jVersion"
 		classpath "io.vertx:vertx-core:$vertxVersion"
 		classpath "io.vertx:vertx-platform:$vertxVersion"
