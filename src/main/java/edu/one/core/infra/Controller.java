@@ -7,9 +7,9 @@ package edu.one.core.infra;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import edu.one.core.infra.mustache.DevMustacheFactory;
 import edu.one.core.infra.mustache.I18nTemplateFunction;
 import edu.one.core.infra.mustache.StaticResourceTemplateFunction;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -40,7 +40,7 @@ public abstract class Controller extends Verticle {
 		log = container.getLogger();
 		config = container.getConfig();
 		rm = new RouteMatcher();
-		mf = new DefaultMustacheFactory("./view");
+		mf = "dev".equals(config.getString("mode")) ? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 		i18n = new I18n(container, vertx);
 
 		log.info("Verticle:" + this.getClass().getSimpleName() + " starts on port:" + config.getInteger("port"));
@@ -73,7 +73,7 @@ public abstract class Controller extends Verticle {
 			Object[] scopes = { params.toMap(), functionsScope(request)};
 			mustache.execute(writer, scopes).flush();
 			request.response.end(writer.toString());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
 		}
