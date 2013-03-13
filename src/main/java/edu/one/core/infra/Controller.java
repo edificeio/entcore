@@ -20,7 +20,6 @@ import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -61,6 +60,11 @@ public abstract class Controller extends Verticle {
 		scope.put("i18n", new I18nTemplateFunction(i18n, request));
 		return scope;
 	}
+
+	public void renderView(HttpServerRequest request) {
+		renderView(request, new JsonObject());
+	}
+
 	/*
 	 * Render a Mustache template : see http://mustache.github.com/mustache.5.html
 	 * TODO : modularize
@@ -68,6 +72,7 @@ public abstract class Controller extends Verticle {
 	 */
 	public void renderView(HttpServerRequest request, JsonObject params) {
 		try {
+			if (params == null) { params = new JsonObject(); }
 			Mustache mustache = mf.compile(request.path + ".html");
 			Writer writer = new StringWriter();
 			Object[] scopes = { params.toMap(), functionsScope(request)};
@@ -76,12 +81,18 @@ public abstract class Controller extends Verticle {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
+			renderError(request);
 		}
 	}
 
-	public void renderJson(HttpServerResponse response, JsonObject jo) {
-		response.putHeader("content-type", "text/json");
-		response.end(jo.encode());
+	public void renderError(HttpServerRequest request) {
+		request.response.statusCode = 500;
+		request.response.end();
+	}
+
+	public void renderJson(HttpServerRequest request, JsonObject jo) {
+		request.response.putHeader("content-type", "text/json");
+		request.response.end(jo.encode());
 	}
 
 	public void redirect(HttpServerRequest request, String location) {
