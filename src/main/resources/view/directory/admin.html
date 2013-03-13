@@ -10,16 +10,15 @@
 		<div id="main"></div>
 		<div id="classes"></div>
 		<div id="people"></div>
-
 		<script type="text/javascript">
 			function renderJsonObject(jsonObject){
-				formString = "<form id='edit' action='/directory/api/edit' method='POST'>";
+				formString = "<form id='edit' action='/directory/api/edit' method='post'>";
 				for (element in jsonObject){
 					if (element.toString() != "id"){
 						formString += "<label>" + element + "</label><input name='" + element + "' type='text' value='" + jsonObject[element] + "'/> ";
 					}
 				}
-				formString += "<input type='submit' value='Modifier'></form>";
+				formString += "<input type='submit' value='Modifier'/></form>";
 				return formString;
 			}
 			$(document).ready($.ajax({
@@ -55,6 +54,11 @@
 			
 			$("body").delegate("#person", "click", function(event){
 				event.preventDefault();
+				// Example of dummy toggle display
+				if (!!$('#details').children('form').length) {
+					$('#details').html('');
+					return;
+				}
 				$.ajax({
 					url: this.href
 				}).done(function ( data ) {
@@ -63,15 +67,16 @@
 					$("#details").html(renderJsonObject(data));
 				})
 			});
-			
-			
-			$("#edit").submit(function(event){
+
+			$("body").delegate("#edit", "submit", function(event){
 				event.preventDefault();
-				$.post("/directory/api/edit", $("#edit").serialize(), 
+				$.post(this.action, $("#edit").serialize(),
 					function(data){
 						if (data.message === "success"){
-							alert('success');
-							console.log("success");
+							var form = $("#edit");
+							console.log(form);
+							console.log(form.parent("div").prev());
+							form.parent("div").prev().children().html(form[0]["prenom"].value + " " + form[0]["nom"].value);
 						}}
 				)}
 			);

@@ -1,7 +1,6 @@
 package edu.one.core;
 
 import edu.one.core.infra.Controller;
-import java.util.AbstractMap;
 import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -25,7 +24,7 @@ public class Directory extends Controller{
 		rm.get("/directory/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderJson(request.response, dataMock.getObject("ecole"));
+				renderJson(request, dataMock.getObject("ecole"));
 				
 			}
 		});
@@ -57,7 +56,7 @@ public class Directory extends Controller{
 				for (Object object : people) {
 					JsonObject jo = (JsonObject)object;
 					if (jo.getInteger("id").equals(new Integer(request.params().get("id")))){
-						renderJson(request.response, jo);
+						renderJson(request, jo);
 					}
 				}
 			}
@@ -70,7 +69,7 @@ public class Directory extends Controller{
 					@Override
 					public void handle(Map<String, String> params) {
 						JsonObject jo = new JsonObject().putString("message", "success");
-						renderJson(request.response, new JsonObject());
+						renderJson(request, jo);
 					}
 				});
 				

@@ -9,6 +9,7 @@
 
 	"Directory.conf": {
 		"port": 8003,
+		"mode": "dev",
 		"dev-data-file": "./data/dev/setup.geoff" 
 	},
 
