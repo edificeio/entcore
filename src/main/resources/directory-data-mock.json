@@ -3,7 +3,7 @@
 		"id": 1,
 		"nom": " René Cassin"
 	},
-	"classe": [
+	"classes": [
 		{
 			"id": 2,
 			"nom": "CE1",
@@ -19,41 +19,41 @@
 			"nom": "CM1",
 			"effectif": 27
 		}],
-	"personne": [
+	"personnes": [
 		{
-		"id": 5,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "11/12/2007"
+			"id": 5,
+			"nom": "Dupont",
+			"prenom": "Tom",
+			"date-de-naissance": "11/12/2007"
 		},
 		{
-		"id": 6,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "11/02/2009"
+			"id": 6,
+			"nom": "Doe",
+			"prenom": "John",
+			"date-de-naissance": "11/02/2009"
 		},
 		{
-		"id": 7,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "01/12/2007"
+			"id": 7,
+			"nom": "Moulin",
+			"prenom": "Theo",
+			"date-de-naissance": "01/12/2007"
 		},
 		{
-		"id": 8,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "21/11/2007"
+			"id": 8,
+			"nom": "Laporte",
+			"prenom": "Jean",
+			"date-de-naissance": "21/11/2007"
 		},
 		{
-		"id": 9,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "22/10/2007"
+			"id": 9,
+			"nom": "Legrand",
+			"prenom": "Simon",
+			"date-de-naissance": "22/10/2007"
 		},
 		{
-		"id": 10,
-		"nom": "Dupont",
-		"prenom": "Tom",
-		"date-de-naissance": "14/04/2007"
+			"id": 10,
+			"nom": "Durand",
+			"prenom": "Marion",
+			"date-de-naissance": "14/04/2007"
 		}]
 }

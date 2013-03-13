@@ -4,12 +4,77 @@
 		<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
-		<script type="text/javascript">
-			
-		</script>
 	</head>
 	<body>
 		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
 		<div id="main"></div>
+		<div id="classes"></div>
+		<div id="people"></div>
+
+		<script type="text/javascript">
+			function renderJsonObject(jsonObject){
+				formString = "<form id='edit' action='/directory/api/edit' method='POST'>";
+				for (element in jsonObject){
+					if (element.toString() != "id"){
+						formString += "<label>" + element + "</label><input name='" + element + "' type='text' value='" + jsonObject[element] + "'/> ";
+					}
+				}
+				formString += "<input type='submit' value='Modifier'></form>";
+				return formString;
+			}
+			$(document).ready($.ajax({
+					url: "/directory/api/ecole"
+				}).done(function ( data ) {
+					$("#main").html("<h2><a href=''>" + data.nom + "</a></h2>\n\
+					<p id='see-classes'>Voir les classes</p>");
+			}));
+			//$("#main").click(function(){
+			$("body").delegate("#see-classes", "click", function(){
+				$.ajax({
+					url: "/directory/api/classes"
+				}).done(function ( data ) {
+					console.log(data);
+					var htmlString="";
+					for (i=0; i<data.length;i++){
+						htmlString +="<h3><a>" + data[i].nom + "</a></h3>";
+					}
+					$("#classes").html(htmlString + "<a id='see-people'>Voir les personnes</a>");
+				})
+			});
+			$("body").delegate("#see-people", "click", function(){
+				$.ajax({
+					url: "/directory/api/personnes"
+				}).done(function ( data ) {
+					var htmlString="";
+					for (i=0; i<data.length;i++){
+						htmlString +="<h4><a id='person' href='/directory/api/details?id="+ data[i].id +"'>" + data[i].prenom + " " + data[i].nom + "</a></h3><div id='details'></div>";
+					}
+					$("#people").html(htmlString);
+				})
+			});
+			
+			$("body").delegate("#person", "click", function(event){
+				event.preventDefault();
+				$.ajax({
+					url: this.href
+				}).done(function ( data ) {
+					console.log(data);
+					
+					$("#details").html(renderJsonObject(data));
+				})
+			});
+			
+			
+			$("#edit").submit(function(event){
+				event.preventDefault();
+				$.post("/directory/api/edit", $("#edit").serialize(), 
+					function(data){
+						if (data.message === "success"){
+							alert('success');
+							console.log("success");
+						}}
+				)}
+			);
+		</script>
 	</body>
 </html>
