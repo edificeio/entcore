@@ -7,79 +7,125 @@
 	</head>
 	<body>
 		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
+		<div id="annuaire">
 		<div id="main"></div>
 		<div id="classes"></div>
 		<div id="people"></div>
+		</div>
 		<script type="text/javascript">
-			function renderJsonObject(jsonObject){
-				formString = "<form id='edit' action='/directory/api/edit' method='post'>";
-				for (element in jsonObject){
-					if (element.toString() != "id"){
-						formString += "<label>" + element + "</label><input name='" + element + "' type='text' value='" + jsonObject[element] + "'/> ";
+
+		var admin = function(){
+
+			var getAndRender = function (pathUrl, templateName){
+				$.get(pathUrl)
+					.done(function(data) {
+						template.render(templateName, data);
+					})
+			};
+			var postAndRender = function (form, templateName){
+				$.post(form.getAttribute('action'), $('#edit').serialize())
+					.done(function(data){
+						console.log(data);
+						template.render(templateName, data);
+					})
+					//.error(errorCallback(data));
+			};
+
+			var template = {
+				render : function (nom, data) {
+					template[nom](data);
+				},
+				ecole : function (data) {
+					$("#main").html("<h2>" + data.nom + "</h2>\n\
+					<a call='classes' href='/directory/api/classes'>Voir les classes</a>");
+				},
+				classes: function(data) {
+					if (!!$('#classes').children().length) {
+						$('#classes').html('');
+						$('#people').html('');
+						return;
 					}
-				}
-				formString += "<input type='submit' value='Modifier'/></form>";
-				return formString;
-			}
-			$(document).ready($.ajax({
-					url: "/directory/api/ecole"
-				}).done(function ( data ) {
-					$("#main").html("<h2><a href=''>" + data.nom + "</a></h2>\n\
-					<p id='see-classes'>Voir les classes</p>");
-			}));
-			//$("#main").click(function(){
-			$("body").delegate("#see-classes", "click", function(){
-				$.ajax({
-					url: "/directory/api/classes"
-				}).done(function ( data ) {
-					console.log(data);
-					var htmlString="";
+					var htmlString = '';
 					for (i=0; i<data.length;i++){
 						htmlString +="<h3><a>" + data[i].nom + "</a></h3>";
 					}
-					$("#classes").html(htmlString + "<a id='see-people'>Voir les personnes</a>");
-				})
-			});
-			$("body").delegate("#see-people", "click", function(){
-				$.ajax({
-					url: "/directory/api/personnes"
-				}).done(function ( data ) {
-					var htmlString="";
+					$("#classes").html(htmlString + "<a call='personnes' href='/directory/api/personnes'>Voir les personnes</a>");
+				},
+				personnes : function(data) {
+					if (!!$('#people').children().length) {
+						$('#people').html('');
+						return;
+					}
+					var htmlString='';
 					for (i=0; i<data.length;i++){
-						htmlString +="<h4><a id='person' href='/directory/api/details?id="+ data[i].id +"'>" + data[i].prenom + " " + data[i].nom + "</a></h3><div id='details'></div>";
+						htmlString +="<h4><a call='personne' href='/directory/api/details?id="
+							+ data[i].id +"'>" + data[i].prenom + " " + data[i].nom + "</a></h3>"
+							+ "<div id='details"+ data[i].id +"'></div>";
 					}
 					$("#people").html(htmlString);
-				})
-			});
-			
-			$("body").delegate("#person", "click", function(event){
-				event.preventDefault();
-				// Example of dummy toggle display
-				if (!!$('#details').children('form').length) {
-					$('#details').html('');
-					return;
-				}
-				$.ajax({
-					url: this.href
-				}).done(function ( data ) {
-					console.log(data);
-					
-					$("#details").html(renderJsonObject(data));
-				})
-			});
+				},
+				personne : function(data) {
+					if (!!$('#details' + data.id).children('form').length) {
+						$('#details' + data.id).html('');
+						return;
+					}
+					htmlString = "<form id='edit' action='/directory/api/edit' method='post'>";
+					for (element in data){
+						if (element != "id"){
+						htmlString += "<label>" + element + "</label>"
+								+ "<input name='" + element + "' type='text' value='" + data[element] + "'/> ";
+						}
+					}
+					htmlString += "<a type='submit' call='edit' action='/directory/api/edit'>Modifier</a></form>";
+					$('#details' + data.id).html(htmlString);
+				},
+				edit : function(data) {
+					var form = $("#edit");
+					console.log(form);
+					console.log(form.parent("div").prev());
+					form.parent("div").prev().children().html(form[0]["prenom"].value + " " + form[0]["nom"].value);
 
-			$("body").delegate("#edit", "submit", function(event){
-				event.preventDefault();
-				$.post(this.action, $("#edit").serialize(),
-					function(data){
-						if (data.message === "success"){
-							var form = $("#edit");
-							console.log(form);
-							console.log(form.parent("div").prev());
-							form.parent("div").prev().children().html(form[0]["prenom"].value + " " + form[0]["nom"].value);
-						}}
-				)}
-			);
+				}
+			};
+
+			return {
+				init : function() {
+					admin.ecole('/directory/api/ecole');
+					$('body').delegate('#annuaire', 'click',function(event) {
+						event.preventDefault();
+						console.log(event.target);
+						if (event.target.getAttribute('call')){
+							var call = event.target.getAttribute('call');
+							admin[call](
+								{url : event.target, id: event.id}
+							);
+						}
+						
+					});
+				},
+				ecole : function(url) {
+					getAndRender(url, 'ecole');
+				},
+				classes : function(o) {
+					getAndRender(o.url, "classes");
+				},
+				personnes : function(o) {
+					getAndRender(o.url, "personnes");
+				},
+				personne : function(o) {
+					getAndRender(o.url, "personne");
+				},
+				edit : function(o) {
+					postAndRender(o.url, 'edit');
+				}
+			}
+		}();
+		
+		
+		$(document).ready(function(){
+			admin.init(); 
+		});
+		
 		</script>
 	</body>
 </html>
