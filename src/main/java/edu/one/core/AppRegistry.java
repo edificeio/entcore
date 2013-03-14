@@ -1,15 +1,11 @@
 package edu.one.core;
 
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.platform.Verticle;
+import edu.one.core.infra.Controller;
 
-public class AppRegistry extends Verticle {
-
-	private Logger log;
+public class AppRegistry extends Controller {
 
 	@Override
 	public void start() throws Exception {
-		log = container.getLogger();
-		log.info(container.getConfig().getString("test"));
+		super.start();
 	}
 }

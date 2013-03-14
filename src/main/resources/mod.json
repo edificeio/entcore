@@ -4,29 +4,24 @@
 	"mode": "dev",
 
 	"Admin.conf": {
-		"test": "Admin _Verticle_ started",
 		"port": 8002
 	},
 
 	"Directory.conf": {
-		"test": "Directory _Verticle_ started",
 		"port": 8003,
 		"dev-data-file": "./data/dev/setup.geoff" 
 	},
 
 	"Application.conf": {
-		"test": "AppRegistry _Verticle_ started",
 		"port": 8004
 	},
 
 	"Sync.conf": {
-		"test": "Sync _Verticle_ started",
 		"port": 8005,
 		"preserve-cwd" : "true"
 	},
 
 	"History.conf": {
-		"test": "Hystory _Verticle_ started",
 		"port": 8006
 	}
 }

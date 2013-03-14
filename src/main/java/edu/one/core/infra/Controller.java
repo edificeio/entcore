@@ -37,12 +37,12 @@ public abstract class Controller extends Verticle {
 	public void start() throws Exception {
 		super.start();
 		log = container.getLogger();
-		config = container.getConfig();
+		config = config == null ? container.getConfig() : config;
 		rm = new RouteMatcher();
 		mf = "dev".equals(config.getString("mode")) ? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 		i18n = new I18n(container, vertx);
 
-		log.info("Verticle:" + this.getClass().getSimpleName() + " starts on port:" + config.getInteger("port"));
+		log.info("Verticle: " + this.getClass().getSimpleName() + " starts on port: " + config.getInteger("port"));
 
 		// Serve public static resource like img, css, js. By convention in /public directory
 		// Dummy impl

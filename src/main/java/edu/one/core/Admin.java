@@ -1,17 +1,8 @@
 package edu.one.core;
 
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.platform.Verticle;
+import edu.one.core.infra.Controller;
 
-public class Admin extends Verticle {
+public class Admin extends Controller {{
 
-	private Logger log;
 
-	
-	@Override
-	public void start() throws Exception {
-		log = container.getLogger();
-		log.info(container.getConfig().getString("test"));
-	}
-
-}
+}}
