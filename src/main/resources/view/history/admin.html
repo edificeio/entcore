@@ -32,7 +32,11 @@
 					for (obj in data){
 						htmlString += "<p>";
 						for (element in data[obj]){
-							htmlString += element + " : " + data[obj][element] + " ";
+							if (element === "appli"){
+								htmlString += '<span style="color:red">' + data[obj][element] + " </span>";
+							} else {
+								htmlString += data[obj][element] + " ";
+							}
 						}
 						htmlString += '</p>';
 					}
