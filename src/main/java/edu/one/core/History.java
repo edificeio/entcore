@@ -17,15 +17,14 @@ import java.util.logging.Logger;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
  *
  * @author rafik
  */
-public class History extends Controller {//Verticle implements Handler<Message<String>> {
-	private org.vertx.java.core.logging.Logger log;
-	private JsonObject config;
+public class History extends Controller {
 
 	@Override
 	public void start() throws Exception {
@@ -41,17 +40,18 @@ public class History extends Controller {//Verticle implements Handler<Message<S
 		rm.get("/history/admin/logs", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				System.out.println("PARAMS : " + request.params().toString());
 				String str = "";
 				try {
 					str = vertx.fileSystem().readFileSync(Paths.get(new File(".").getCanonicalPath() + "/data/dev/"+request.params().get("app")+".trace").toString()).toString();
 				} catch (Exception ex) {
 					log.info(ex);
 				}
-				System.out.println("STR = " + str);
-				request.response.setChunked(true);
-				request.response.write(str);
-				request.response.end();
+				JsonArray arr = new JsonArray();
+				for (String string : str.split("}")) {
+					arr.add(new JsonObject(string + "}"));
+				}
+				request.response.putHeader("content-type", "text/json");
+				request.response.end(arr.encode());
 			}
 		});
 		

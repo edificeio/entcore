@@ -22,7 +22,7 @@
 	},
 
 	"History.conf": {
-		"port": 8006
+		"port": 8006,
 		"log-path": "/data/dev/"
 	},
 	

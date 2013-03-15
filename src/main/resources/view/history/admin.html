@@ -11,10 +11,10 @@
 			<div id="main">
 				<form name ="logform" method="GET" action="/history/admin/logs">
 					<select name="app">
-						<option selected="selected" name="all">all</option>
-						<option selected="selected" name="sync">sync</option>
-						<option selected="selected" name="history">history</option>
-						<option selected="selected" name="directory">directory</option>
+						<option selected="selected" name="all">Tous</option>
+						<option selected="selected" name="sync">Synchronisation</option>
+						<option selected="selected" name="history">Historique</option>
+						<option selected="selected" name="directory">Annuaire</option>
 					</select>
 					<input type="submit" value="Voir les logs"/>
 				</form>
@@ -28,8 +28,15 @@
 
 			var template = {
 				render : function (data) {
-					console.log('DATA : ' + data);
-					$('#log').html(data);
+					var htmlString = "";
+					for (obj in data){
+						htmlString += "<p>";
+						for (element in data[obj]){
+							htmlString += element + " : " + data[obj][element] + " ";
+						}
+						htmlString += '</p>';
+					}
+					$('#log').html(htmlString);
 				}
 			};
 
@@ -38,7 +45,7 @@
 					$('body').delegate('#historique', 'click',function(event) {
 						event.preventDefault();
 						console.log(event.target);
-						if (event.target.getAttribute('type')){
+						if (event.target.getAttribute('type')=='submit'){
 							var call = $('select option:selected').contents()[0].parentElement.attributes[0].value;
 							console.log(call);
 							$.get('/history/admin/logs?app=' + call)
