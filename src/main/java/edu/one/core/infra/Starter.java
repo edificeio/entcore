@@ -28,7 +28,6 @@ public class Starter extends Controller {
 
 		rm.get("/starter/test", new Handler<HttpServerRequest> () {
 			public void handle(final HttpServerRequest request) {
-				log.info("TEST QUERY " + request.params().get("query"));
 				neo.send(request.params().get("query"), request.response);
 			}
 		});

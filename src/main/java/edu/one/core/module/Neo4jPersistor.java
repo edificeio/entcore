@@ -4,6 +4,7 @@ import java.util.Map;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.vertx.java.busmods.BusModBase;
@@ -60,14 +61,13 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 	private void execute (Message<JsonObject> m) {
 		ExecutionResult result = null;
 		try {
-			logger.info("QUERY " + m.body.getString("query"));
 			result = engine.execute(m.body.getString("query"));
 		} catch (Exception e) {
 			sendError(m, e.getMessage());
+			e.printStackTrace();
 		}
 		JsonObject json = toJson(result);
-		logger.info("NEO PERSISTOR " + json);
-		m.reply(new JsonObject().putObject("result", json));
+		sendOK(m, json);
 	}
 
 	private JsonObject toJson (ExecutionResult result) {
@@ -76,11 +76,14 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		if (result == null) {
 			return json;
 		}
+		int i = 0;
 		for (Map<String, Object> row : result) {
+				JsonObject jsonRow = new JsonObject();
+				json.putObject(String.valueOf(i++), jsonRow);
 			for (Map.Entry<String, Object> column : row.entrySet()) {
-				json.putString(column.getKey(), column.getValue().toString());
+				jsonRow.putString(column.getKey(), column.getValue().toString());
 			}
 		}
-		return json;
+		return new JsonObject().putObject("result", json) ;
 	}
 }

@@ -33,7 +33,6 @@ public class Neo  {
 		jo.putString("query", query);
 		eb.send(address, jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
-				log.info("Neo " + m.body);
 				response.end(m.body.encode());
 			}
 		});
