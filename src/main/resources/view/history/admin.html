@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}history.admin.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<h1>{{#i18n}}history.admin.header{{/i18n}}</h1>
+		<div id="historique">
+			<div id="main">
+				<form name ="logform" method="GET" action="/history/admin/logs">
+					<select name="app">
+						<option selected="selected" name="all">all</option>
+						<option selected="selected" name="sync">sync</option>
+						<option selected="selected" name="history">history</option>
+						<option selected="selected" name="directory">directory</option>
+					</select>
+					<input type="submit" value="Voir les logs"/>
+				</form>
+			</div>
+			<div id="log"></div>
+		</div>
+		
+		<script type="text/javascript">
+		
+		var admin = function(){
+
+			var template = {
+				render : function (data) {
+					console.log('DATA : ' + data);
+					$('#log').html(data);
+				}
+			};
+
+			return {
+				init : function() {
+					$('body').delegate('#historique', 'click',function(event) {
+						event.preventDefault();
+						console.log(event.target);
+						if (event.target.getAttribute('type')){
+							var call = $('select option:selected').contents()[0].parentElement.attributes[0].value;
+							console.log(call);
+							$.get('/history/admin/logs?app=' + call)
+								.done(function(data) {
+									template.render(data);
+								})
+						}
+					});
+				}
+			}
+		}();
+		
+		$(document).ready(function(){
+			admin.init(); 
+		});
+		
+		</script>
+		
+	</body>
+</html>
