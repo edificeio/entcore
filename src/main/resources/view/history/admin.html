@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 	<head>
 		<title>{{#i18n}}history.admin.title{{/i18n}}</title>
@@ -9,36 +8,43 @@
 		<h1>{{#i18n}}history.admin.header{{/i18n}}</h1>
 		<div id="historique">
 			<div id="main">
-				<form name ="logform" method="GET" action="/history/admin/logs">
-					<select name="app">
-						<option selected="selected" name="all">Tous</option>
-						<option selected="selected" name="sync">Synchronisation</option>
-						<option selected="selected" name="history">Historique</option>
-						<option selected="selected" name="directory">Annuaire</option>
-					</select>
-					<input type="submit" value="Voir les logs"/>
-				</form>
+				<a call="logs" href="/history/admin/logs?app=all">Tous</a>
+				 | <a  call="logs" href="/history/admin/logs?app=sync">Synchronisation</a>
+				 | <a call="logs" href="/history/admin/logs?app=history">Historique</a>
+				 | <a call="logs" href="/history/admin/logs?app=directory">Annuaire</a>
 			</div>
 			<div id="log"></div>
 		</div>
-		
+
 		<script type="text/javascript">
-		
+
 		var admin = function(){
+			var getAndRender = function (pathUrl, templateName){
+				$.get(pathUrl)
+					.done(function(data) {
+						template.render(templateName, data);
+					})
+					.error(function() { // TODO: Manage error message
+						template.render("error");
+					});
+			};
 
 			var template = {
-				render : function (data) {
+				render : function (nom, data) {
+					template[nom](data);
+				},
+				error: function() {
+					$('#log').html("ERREUR !");
+				},
+				logs : function (data) {
 					var htmlString = "";
-					for (obj in data){
-						htmlString += "<p>";
-						for (element in data[obj]){
-							if (element === "appli"){
-								htmlString += '<span style="color:red">' + data[obj][element] + " </span>";
-							} else {
-								htmlString += data[obj][element] + " ";
-							}
-						}
-						htmlString += '</p>';
+					var logs = data.records;
+					for (i = 0; i < logs.length; i++){
+						htmlString +=
+							'<p><em style="color:red">' + logs[i].appli + '</em>'
+							+ '<span> - ' + logs[i].date + '</span>'
+							+ '<span> - ' + logs[i].message + '</span>';
+							+ '</p>'
 					}
 					$('#log').html(htmlString);
 				}
@@ -48,25 +54,22 @@
 				init : function() {
 					$('body').delegate('#historique', 'click',function(event) {
 						event.preventDefault();
-						console.log(event.target);
-						if (event.target.getAttribute('type')=='submit'){
-							var call = $('select option:selected').contents()[0].parentElement.attributes[0].value;
-							console.log(call);
-							$.get('/history/admin/logs?app=' + call)
-								.done(function(data) {
-									template.render(data);
-								})
-						}
+						if (!event.target.getAttribute('call')) return;
+						var call = event.target.getAttribute('call');
+						admin[call]({url : event.target.getAttribute('href'), id: event.id});
 					});
+				},
+				logs : function(o) {
+					getAndRender(o.url, "logs");
 				}
 			}
 		}();
-		
+
 		$(document).ready(function(){
 			admin.init(); 
 		});
-		
+
 		</script>
-		
+
 	</body>
 </html>

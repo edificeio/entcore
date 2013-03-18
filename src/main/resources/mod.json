@@ -22,8 +22,9 @@
 	},
 
 	"History.conf": {
+		"mode": "dev",
 		"port": 8006,
-		"log-path": "/data/dev/"
+		"log-path": "/home/rafik/code/one/one-core/data/dev/"
 	},
 	
 	"Tracer.conf": {
