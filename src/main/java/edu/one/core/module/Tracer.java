@@ -51,7 +51,7 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		tracer.log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("appli")));
+		tracer.log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("app")));
 	}
 	
 	

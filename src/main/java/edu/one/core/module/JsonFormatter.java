@@ -19,7 +19,7 @@ public class JsonFormatter extends Formatter {
 	public String format(LogRecord record) {
 		JsonObject formatted = new JsonObject()
 				.putString("date", Calendar.getInstance().getTime().toString())
-				.putString("appli", record.getParameters()[0].toString())
+				.putString("app", record.getParameters()[0].toString())
 				.putString("message", record.getMessage());
 		return formatted.toString() + ",\n";
 	}
