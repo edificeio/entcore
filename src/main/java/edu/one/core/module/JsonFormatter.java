@@ -21,7 +21,7 @@ public class JsonFormatter extends Formatter {
 				.putString("date", Calendar.getInstance().getTime().toString())
 				.putString("appli", record.getParameters()[0].toString())
 				.putString("message", record.getMessage());
-		return formatted.toString();
+		return formatted.toString() + ",\n";
 	}
 	
 }
