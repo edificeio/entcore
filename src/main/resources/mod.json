@@ -19,14 +19,15 @@
 
 	"Sync.conf": {
 		"port": 8005,
+		"mode": "dev",
 		"preserve-cwd" : "true",
-		"input-files-folder" : "D:/developpementONE/aaf_files/"
+		"input-files-folder" : "/home/rafik/code/one/one-core/data/dev/aaf/"
 	},
 
 	"History.conf": {
 		"mode": "dev",
 		"port": 8006,
-		"log-path": "/home/dwak/code/one/one-core/data/dev/"
+		"log-path": "/home/rdje/code/one/one-core/data/dev/"
 	},
 	
 	"Tracer.conf": {

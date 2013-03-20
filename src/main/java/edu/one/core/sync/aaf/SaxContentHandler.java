@@ -20,8 +20,8 @@ import org.xml.sax.helpers.DefaultHandler;
 public class SaxContentHandler extends DefaultHandler {
 	private Logger log;
 	public Operation oc;
-	public static List<Operation> operations;
-	int nbOp = 0;
+	public List<Operation> operations;
+	public  int nbOp = 0;
 	Neo neo;
 
 	public SaxContentHandler(Logger log, EventBus eb) {
