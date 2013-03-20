@@ -51,6 +51,14 @@ public abstract class Controller extends Verticle {
 				request.response.sendFile("." + request.path);
 			}
 		});
+
+		rm.get("/monitoring", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest event) {
+				renderJson(event, new JsonObject().putString("test", "ok"));
+			}
+		});
+
 		vertx.createHttpServer().requestHandler(rm).listen(config.getInteger("port"));
 	}
 
