@@ -2,7 +2,7 @@
 	"admin.title": "Annuaire",
 	"admin.detail": "ceci est un test d'i18n",
 	"history.admin.title": "One : Admin historique",
-	"history.admin.header": "Historique"
+	"history.admin.header": "Historique",
 	"directory.admin.title": "One : Admin annuaire",
 	"directory.admin.header": "Annuaire"
 }
