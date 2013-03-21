@@ -1,0 +1,11 @@
+{
+	"main" : "com.wse.neo4j.Neo4jPersistor",
+	"worker": true,
+	"preserve-cwd" : true,
+	"address" : "wse.neo4j.persistor",
+	"datastore-path" : "./data/dev/neo4j",
+	"neo4j" : {
+		"node_keys_indexable":"id,name",
+		"node_auto_indexing":true
+	}
+}

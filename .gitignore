@@ -8,6 +8,7 @@
 .yardopts
 bin
 build
+*/build
 target
 out
 *.iml
@@ -18,4 +19,6 @@ test-results
 test-tmp
 *.class
 mods
+*/mods
 data
+

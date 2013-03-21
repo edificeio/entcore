@@ -1,0 +1,5 @@
+{
+	"main": "edu.one.core.infra.Starter",
+	"port": 8001,
+	"mode": "dev" 
+}

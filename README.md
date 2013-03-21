@@ -10,7 +10,11 @@ Notes d'utilisation
 
 # Développer
 
-One-core est une application Vert.x qui contient plusieurs verticle spécialisés. Elle est packagée sous forme de module Vert.x.
+One-Core est une application Vert.x modulaire. Chaque application ou composant technique est packagé dans un module indépendant. On distingue 3 type de modules :
+
+* les modules `Controller`
+* les modules `BusMod`
+* les modules `Infra`
 
 Remote Debug : 
 	 export VERTX\_OPTS='-Xdebug Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000'
@@ -18,23 +22,61 @@ Remote Debug :
 __Squelette d'application__
 
 <pre>
+.
 |-- build.gradle
+|-- data
+|   `-- dev
+|-- directory
+|   |-- build.gradle
+|   `-- src
 |-- gradle
-|-- gradle.properties
+|   `-- maven.gradle
+|-- history
+|   |-- build.gradle
+|   `-- src
+|-- infra
+|   |-- build.gradle
+|   `-- src
+|-- mods
+|-- neo4j-persistor
+|   |-- build.gradle
+|   |-- README.md
+|   `-- src
 |-- README.md
-`-- src
-    |-- main
-    |   |-- java
-    |   |   `-- edu.one.core.*
-    |   `-- resources
-    |       `-- mod.json
-    `-- test
+|-- settings.gradle
+|-- sync
+|   |-- build.gradle
+|   |-- gradle
+|   |-- README.md
+|   `-- src
+`-- tracer
+    |-- build.gradle
+    |-- README.md
+    `-- src
 </pre>
 
-Conventions : indentation par TAB, nommage en anglais, message de commit en anglais
-Configuration : `mod.json`
-Construction : `gradle copyMod`
-Lancement de vert.x : `vertx runmod edu.one-core-0.1.0-SNAPSHOT`
+## A propos des modules
+
+__Dépendances__ :
+
+	infra
+	infra -> sync
+	infra -> directory
+	infra -> history
+	tracer
+	neo4j-persistor
+
+__Configuration__ :
+
+{mon_module}/src/main/resources/mod.json
+
+__Commandes__ (depuis le projet racine) :
+
+	 `gradle copyMod` : Construit et déploie dans `mods` tous les modules
+	 `gradle clean` : Supprime tous les éléments créés par `copyMod`
+	 `gradle :{mon_module}:copyMod` : `copyMod` juste pour `{mon_module}` 
+	 `gradle :{mon_module}:clean` : `clean` juste pour `{mon_module}`
+	 `vertx runmod edu.one.core~infra~0.1.0-SNAPSHOT` : lancer l'application
 
 # Convention de codage
 

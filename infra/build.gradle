@@ -1,0 +1,42 @@
+apply from: "gradle/vertx.gradle"
+
+dependencies {
+	compile "com.github.spullara.mustache.java:compiler:$mustacheVersion"
+}
+
+test {
+	include 'edu/one/core/*/test/*'
+}
+
+def configurePom(def pom) {
+	pom.project {
+		description 'One Core Infra'
+		inceptionYear '2013'
+		packaging 'zip'
+		url 'http://code.web-education.net/projects/one-core'
+
+		developers {
+			developer {
+				id 'rafik.djedjig'
+				name 'Rafik Djedjig'
+				email 'rafik.djedjig@web-educcation.net'
+			}
+		}
+
+		scm {
+			url 'git@code.web-education.net:one/one-core.git'
+		}
+
+		licenses {
+			license {
+				name 'GNU Affero General Public License, Version 2.0'
+				url 'https://www.gnu.org/licenses/agpl.txt'
+				distribution 'repo'
+			}
+		}
+
+		properties {
+			setProperty('project.build.sourceEncoding', 'UTF8')
+		}
+	}
+}
