@@ -30,6 +30,7 @@ public abstract class Controller extends Verticle {
 	public Logger log;
 	public JsonObject config;
 	public RouteMatcher rm;
+	public TracerHelper trace;
 	private MustacheFactory mf;
 	private I18n i18n;
 
@@ -41,6 +42,7 @@ public abstract class Controller extends Verticle {
 			config = container.getConfig();
 		}
 		rm = new RouteMatcher();
+		trace = new TracerHelper(vertx.eventBus(), "log.address", this.getClass().getSimpleName());
 		mf = "dev".equals(config.getString("mode")) ? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 		i18n = new I18n(container, vertx);
 
