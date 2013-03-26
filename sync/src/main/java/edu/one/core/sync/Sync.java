@@ -23,14 +23,14 @@ public class Sync extends Controller {
 		xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(aafSaxHandler);
 
-		rm.get("/sync/admin", new Handler<HttpServerRequest>() {
+		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request);
 			}
 		});
 
-		rm.get("/sync/admin/aaf/test", new Handler<HttpServerRequest>() {
+		rm.get("/admin/aaf/test", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				try {
