@@ -14,14 +14,14 @@ public class Directory extends Controller {
 		super.start();
 		final JsonObject dataMock = new JsonObject(vertx.fileSystem().readFileSync("directory-data-mock.json").toString());
 		
-		rm.get("/directory/admin", new Handler<HttpServerRequest>() {
+		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request, new JsonObject());
 			}
 		});
 		
-		rm.get("/directory/api/ecole", new Handler<HttpServerRequest>() {
+		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderJson(request, dataMock.getObject("ecole"));
@@ -29,7 +29,7 @@ public class Directory extends Controller {
 			}
 		});
 		
-		rm.get("/directory/api/classes", new Handler<HttpServerRequest>() {
+		rm.get("/api/classes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				request.response.putHeader("content-type", "text/json");
@@ -39,7 +39,7 @@ public class Directory extends Controller {
 			}
 		});
 		
-		rm.get("/directory/api/personnes", new Handler<HttpServerRequest>() {
+		rm.get("/api/personnes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				request.response.putHeader("content-type", "text/json");
@@ -49,7 +49,7 @@ public class Directory extends Controller {
 			}
 		});
 		
-		rm.get("/directory/api/details", new Handler<HttpServerRequest>() {
+		rm.get("/api/details", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				JsonArray people = dataMock.getArray("personnes");
@@ -62,7 +62,7 @@ public class Directory extends Controller {
 			}
 		});
 		
-		rm.post("/directory/api/edit", new Handler<HttpServerRequest>() {
+		rm.post("/api/edit", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
 				bodyToParams(request, new Handler<Map<String, String>>() {
