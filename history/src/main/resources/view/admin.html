@@ -1,0 +1,20 @@
+<html>
+	<head>
+		<title>{{#i18n}}history.admin.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<h1>{{#i18n}}history.admin.header{{/i18n}}</h1>
+		<div id="historique">
+			<div id="main">
+				<a call="logs" href="/admin/logs?app=all">Tous</a>
+				 | <a  call="logs" href="/admin/logs?app=sync">Synchronisation</a>
+				 | <a call="logs" href="/admin/logs?app=history">Historique</a>
+				 | <a call="logs" href="/admin/logs?app=directory">Annuaire</a>
+			</div>
+			<div id="log"></div>
+		</div>
+	</body>
+</html>

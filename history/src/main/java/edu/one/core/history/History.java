@@ -13,14 +13,14 @@ public class History extends Controller {
 	public void start() throws Exception {
 		super.start();
 
-		rm.get("/history/admin", new Handler<HttpServerRequest>() {
+		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request, new JsonObject());
 			}
 		});
 
-		rm.get("/history/admin/logs", new Handler<HttpServerRequest>() {
+		rm.get("/admin/logs", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
 				try {
