@@ -1,8 +1,8 @@
 package edu.one.core.sync;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.sync.aaf.Constantes;
-import edu.one.core.sync.aaf.SaxContentHandler;
+import edu.one.core.sync.aaf.AafConstantes;
+import edu.one.core.sync.aaf.AafSaxContentHandler;
 import java.io.FileReader;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -14,12 +14,12 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class Sync extends Controller {
 
 	XMLReader xr;
-	SaxContentHandler aafSaxHandler;
+	AafSaxContentHandler aafSaxHandler;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
-		aafSaxHandler = new SaxContentHandler(log, vertx.eventBus());
+		aafSaxHandler = new AafSaxContentHandler(log, vertx.eventBus());
 		xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(aafSaxHandler);
 
@@ -35,58 +35,31 @@ public class Sync extends Controller {
 			public void handle(HttpServerRequest request) {
 				try {
 					long startTest = System.currentTimeMillis();
-					test();
+					int nbOps = test();
 					long endTest = System.currentTimeMillis();
 
 					JsonObject jo = new JsonObject().putObject("result",
 						new JsonObject()
-							.putNumber("temps", (endTest - startTest) / 1000)
-							.putNumber("operations", aafSaxHandler.nbOp)
+							.putString("temps", (endTest - startTest) + " ms")
+							.putNumber("operations", nbOps)
 					);
 					renderJson(request, jo);
 				} catch (Exception ex) {
+					ex.printStackTrace();
 					renderError(request);
 				}
 			}
 		});
 	}
 
-
-	public void test() throws Exception {
-
-		for (String filter : Constantes.AAF_FILTERS) {
+	public int test() throws Exception {
+		for (String filter : AafConstantes.AAF_FILTERS) {
 		String [] files = vertx.fileSystem().readDirSync(
-				container.getConfig().getString("input-files-folder"), filter);
+				config.getString("input-files-folder"), filter);
 			for (String filePath : files) {
 				xr.parse(new InputSource(new FileReader(filePath)));
 			}
 		}
-
-		// envoi en masse de requêtes par paquets de LIMITE_OP opérations
-		// TODO : problème après envoi de la 232ème requête
-		// désactiver l'envoi unitaire de requêtes : ligne 104 de la classe SaxContentHandler
-//		Neo neo = new Neo(vertx.eventBus(), log);
-//		int nbRequetes = 0;
-//		int nbOp = 0;
-//		final int LIMITE_OP = 100;
-//		Buffer requeteBatch = new Buffer("");
-//		for (Operation operation : SaxContentHandler.operations) {
-//			if (nbOp == 0) {
-//				requeteBatch.appendString(operation.requeteCreation("CREATE \n"));
-//			} else {
-//				requeteBatch.appendString(operation.requeteCreation(",\n"));
-//			}
-//			nbOp++;
-//			if (nbOp == LIMITE_OP) {
-//				nbRequetes++;
-//				log.info("Envoi requete " + nbRequetes);
-//				neo.send(requeteBatch.toString());
-//				nbOp = 0;
-//				requeteBatch = new Buffer("");
-//			}
-//		}
-//		if (!requeteBatch.toString().isEmpty()) {
-//			neo.send(requeteBatch.toString());
-//		}
+		return aafSaxHandler.reset();
 	}
 }

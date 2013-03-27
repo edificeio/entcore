@@ -1,8 +1,6 @@
 package edu.one.core.sync.aaf;
 
 import edu.one.core.infra.Neo;
-import java.util.ArrayList;
-import java.util.List;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.logging.Logger;
 import org.xml.sax.Attributes;
@@ -13,29 +11,47 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author bperez
  */
-public class SaxContentHandler extends DefaultHandler {
+public class AafSaxContentHandler extends DefaultHandler {
 	private Logger log;
 	public Operation oc;
-	public List<Operation> operations;
-	public  int nbOp = 0;
-	Neo neo;
+	public StringBuffer operationsBuf;
+	private Neo neo;
+	public int total = 0;
+	long startDoc;
+	long endDoc;
 
-	public SaxContentHandler(Logger log, EventBus eb) {
+	public AafSaxContentHandler(Logger log, EventBus eb) {
 		this.log = log;
 		this.neo = new Neo(eb, log);
+		operationsBuf = new StringBuffer();
+
+	}
+
+	public int reset() {
+		operationsBuf = new StringBuffer();
+		int ret = total;
+		total = 0;
+		return ret;
+	}
+
+	public void sendRequest() {
+		neo.sendMultiple(operationsBuf.toString(), AafConstantes.REQUEST_SEPARATOR,
+							AafConstantes.ATTR_SEPARATOR, AafConstantes.VALUE_SEPARATOR);
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
 		super.startDocument();
-		operations = new ArrayList<>();
+		startDoc = System.currentTimeMillis();
+		operationsBuf = new StringBuffer();
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
 		super.endDocument();
-		nbOp += operations.size();
-		log.info("Nombre d'opérations total = " + nbOp);
+		sendRequest();
+		endDoc = System.currentTimeMillis();
+		log.debug("Traitement du document = " + (endDoc - startDoc) + " ms");
 	}
 
 	@Override
@@ -43,27 +59,27 @@ public class SaxContentHandler extends DefaultHandler {
 		super.startElement(uri, localName, qName, attributes);
 
 		switch (qName) {
-			case Constantes.ADD_TAG :
+			case AafConstantes.ADD_TAG :
 				oc = new Operation(qName);
 				break;
-			case Constantes.UPDATE_TAG :
+			case AafConstantes.UPDATE_TAG :
 				oc = new Operation(qName);
 				break;
-			case Constantes.DELETE_TAG :
+			case AafConstantes.DELETE_TAG :
 				oc = new Operation(qName);
 				break;
-			case Constantes.OPERATIONAL_ATTRIBUTES_TAG :
+			case AafConstantes.OPERATIONAL_ATTRIBUTES_TAG :
 				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
-			case Constantes.IDENTIFIER_TAG :
+			case AafConstantes.IDENTIFIER_TAG :
 				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
-			case Constantes.ATTR_TAG :
+			case AafConstantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
-					oc.creerAttributCourant((String)attributes.getValue(Constantes.ATTRIBUTE_NAME_INDEX));
+					oc.creerAttributCourant((String)attributes.getValue(AafConstantes.ATTRIBUTE_NAME_INDEX));
 				}
 				break;
-			case Constantes.ATTRIBUTES_TAG :
+			case AafConstantes.ATTRIBUTES_TAG :
 				oc.etatAvancement = oc.etatAvancement.suivant();
 				break;
 			default :
@@ -83,7 +99,7 @@ public class SaxContentHandler extends DefaultHandler {
 				oc.id = valeur;
 			case ATTRIBUTS :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
-					oc.ajouterValeur(valeur);
+					oc.ajouterValeur(valeur.replaceAll("\\*", "-"));
 				}
 			default :
 				break;
@@ -95,17 +111,19 @@ public class SaxContentHandler extends DefaultHandler {
 		super.endElement(uri, localName, qName);
 
 		switch (qName) {
-			case Constantes.ADD_TAG :
-				operations.add(oc);
-				neo.send(oc.requeteCreation("CREATE "));
+			case AafConstantes.ADD_TAG :
+				total++;
+				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
 				break;
-			case Constantes.UPDATE_TAG :
-				operations.add(oc);
+			case AafConstantes.UPDATE_TAG :
+				total++;
+				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
 				break;
-			case Constantes.DELETE_TAG :
-				operations.add(oc);
+			case AafConstantes.DELETE_TAG :
+				total++;
+				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
 				break;
-			case Constantes.ATTR_TAG :
+			case AafConstantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
 					oc.ajouterAttributCourant();
 				}

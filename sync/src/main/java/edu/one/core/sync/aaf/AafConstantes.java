@@ -4,11 +4,11 @@ package edu.one.core.sync.aaf;
  *
  * @author bperez
  */
-public class Constantes {
+public class AafConstantes {
     // Filtres pour récupérer les fichiers d'un certain type dans un répertoire
-	public static final String[] AAF_FILTERS = 
+	public static final String[] AAF_FILTERS =
 			{".*_EtabEducNat_.*",".*_PersRelEleve_.*",".*_Eleve_.*",".*_PersEducNat_.*"};
-   
+
     // Types d'opération
     public static final String ADD_TAG = "addRequest";
     public static final String UPDATE_TAG = "modifyRequest";
@@ -23,4 +23,10 @@ public class Constantes {
 	public static final String FIC_ALIM_TAG = "ficAlimMENESR";
 	public static final String OPERATIONAL_ATTRIBUTES_TAG = "operationalAttributes";
     public static final int ATTRIBUTE_NAME_INDEX = 0;
+
+    // Séparateurs
+    public static final String ATTR_SEPARATOR = "||";
+    public static final String VALUE_SEPARATOR = "==";
+    public static final String MULTIVALUE_SEPARATOR = "==";
+    public static final String REQUEST_SEPARATOR = "**";
 }

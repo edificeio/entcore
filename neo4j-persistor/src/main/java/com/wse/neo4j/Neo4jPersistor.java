@@ -1,6 +1,10 @@
 package com.wse.neo4j;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -30,12 +34,12 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		engine = new ExecutionEngine(gdb);
 		eb.registerHandler(config.getString("address"),this);
 		logger.info("BusModBase: Neo4jPertistor  starts on address: " + config.getString("address"));
-	}
+			}
 
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		if (gdb != null) 
+		if (gdb != null)
 			gdb.shutdown();
 	}
 
@@ -44,6 +48,9 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		switch(m.body.getString("action")) {
 			case "execute" :
 				execute(m);
+				break;
+			case "executeMultiple" :
+				executeMultiple(m);
 				break;
 			default :
 				sendError(m, "Invalid or missing action");
@@ -54,6 +61,38 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		ExecutionResult result = null;
 		try {
 			result = engine.execute(m.body.getString("query"));
+		} catch (Exception e) {
+			sendError(m, e.getMessage());
+			e.printStackTrace();
+		}
+		JsonObject json = toJson(result);
+		sendOK(m, json);
+	}
+
+	private void executeMultiple (Message<JsonObject> m) {
+		ExecutionResult result = null;
+		try {
+			List<Map<String, Object>> queryMap = new ArrayList<>();
+			StringTokenizer reqTkn =
+					new StringTokenizer(m.body.getString("queries"),m.body.getString("requestSeparator"));
+			while (reqTkn.hasMoreElements()) {
+				Map<String, Object> attrMap = new HashMap<>();
+				StringTokenizer attrTkn =
+						new StringTokenizer(reqTkn.nextToken(),m.body.getString("attrSeparator"));
+				while (attrTkn.hasMoreElements()) {
+					String token = attrTkn.nextToken();
+					String[] attrArray = token.split(m.body.getString("valueSeparator"));
+					if (attrArray.length > 1) {
+						// TODO : gestion multivalue
+						attrMap.put(attrArray[0],attrArray[1]);
+					}
+				}
+				queryMap.add(attrMap);
+			}
+
+			Map<String, Object> params = new HashMap<>();
+			params.put("props", queryMap);
+			result = engine.execute("create (n {props}) return n", params);
 		} catch (Exception e) {
 			sendError(m, e.getMessage());
 			e.printStackTrace();

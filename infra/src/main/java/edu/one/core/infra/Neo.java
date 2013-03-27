@@ -8,7 +8,6 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
 public class Neo  {
-
 	private JsonObject result = new JsonObject();
 	private EventBus eb;
 	private String address;
@@ -27,6 +26,16 @@ public class Neo  {
 		eb.send(address, jo);
 	}
 
+	public void sendMultiple(String query, String rs, String as, String vs) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "executeMultiple");
+		jo.putString("queries", query);
+		jo.putString("requestSeparator", rs);
+		jo.putString("attrSeparator", as);
+		jo.putString("valueSeparator", vs);
+		eb.send(address, jo);
+	}
+
 	public void send(String query, final HttpServerResponse response) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
@@ -37,6 +46,4 @@ public class Neo  {
 			}
 		});
 	}
-
-
 }
