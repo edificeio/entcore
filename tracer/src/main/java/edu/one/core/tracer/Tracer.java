@@ -10,8 +10,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
-	
-	private JsonObject config;
+
 	private Logger tracer;
 	private org.vertx.java.core.logging.Logger vertxLogger;
 	
@@ -19,7 +18,6 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 	public void start() {
 		super.start();
 		vertxLogger = container.getLogger();
-		config = container.getConfig();
 
 		tracer = java.util.logging.Logger.getLogger(config.getString("logger-name"));
 		vertx.eventBus().registerHandler(config.getString("address"), this);

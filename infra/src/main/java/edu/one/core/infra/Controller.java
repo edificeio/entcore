@@ -37,7 +37,9 @@ public abstract class Controller extends Verticle {
 	public void start() throws Exception {
 		super.start();
 		log = container.getLogger();
-		config = getConfig("mod.json");
+		if (config == null) {
+			config = container.getConfig();
+		}
 		rm = new RouteMatcher();
 		mf = "dev".equals(config.getString("mode")) ? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 		i18n = new I18n(container, vertx);
@@ -129,17 +131,6 @@ public abstract class Controller extends Verticle {
 					handler.handle(postParams);
 				}
 			});
-		}
-	}
-
-	protected JsonObject getConfig(String fileName) throws Exception {
-		Buffer b = vertx.fileSystem().readFileSync(fileName);
-		if (b == null) { 
-			log.error("Configuration file "+ fileName +"not found");
-			throw new Exception("Configuration file "+ fileName +" not found");
-		}
-		else {
-			return new JsonObject(b.toString());
 		}
 	}
 
