@@ -36,6 +36,9 @@ public class I18n {
 
 	public String translate(String key, Locale locale) {
 		JsonObject bundle = messages.get(locale) != null ? messages.get(locale) : messages.get(defaultLocale);
+		if (bundle == null) {
+			return key;
+		}
 		return bundle.getString(key) != null ? bundle.getString(key) : key;
 	}
 }
