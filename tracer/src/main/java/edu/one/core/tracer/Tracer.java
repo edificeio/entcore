@@ -13,7 +13,7 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private Logger tracer;
 	private org.vertx.java.core.logging.Logger vertxLogger;
-	
+
 	@Override
 	public void start() {
 		super.start();
@@ -22,35 +22,36 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 		tracer = java.util.logging.Logger.getLogger(config.getString("logger-name"));
 		vertx.eventBus().registerHandler(config.getString("address"), this);
 
-		//TODO : get app list form appregistry and create handlers for all
-		//TODO (rdje) Apps have to know Tracer. But Tracer must be App agnostic. 
-		//            File Handler must be create juste before the first trace of the App
 		FileHandler allLogs = createFileHandler("all");
 		tracer.addHandler(allLogs);
-		
-		FileHandler directory = createFileHandler("directory");
-		tracer.addHandler(directory);
-		
-		FileHandler history = createFileHandler("history");
-		tracer.addHandler(history);
-
-		FileHandler sync = createFileHandler("sync");	
-		tracer.addHandler(sync);
 
 		vertxLogger.info("BusModBase Trace starts on address: " + config.getString("address"));
 	}
 
 	@Override
-	public void stop() throws Exception {
-		super.stop();
+	public void handle(Message<JsonObject> m) {
+		String appName = m.body.getString("app");
+		if (handlerExists(appName)){
+			tracer.log(Level.OFF,m.body.getString("message"),(Object)(appName));
+		} else {
+			tracer.addHandler(createFileHandler(appName));
+			tracer.log(Level.OFF,m.body.getString("message"),(Object)(appName));
+		}
 	}
 
-	@Override
-	public void handle(Message<JsonObject> m) {
-		tracer.log(Level.OFF,m.body.getString("message"),(Object)(m.body.getString("app")));
+	private boolean handlerExists(String appName){
+		boolean exists = false;
+		for (java.util.logging.Handler h : tracer.getHandlers()) {
+			if (h.getFilter() != null){
+				ApplicationLogFilter f = (ApplicationLogFilter) h.getFilter();
+				if (f.toString().equals(appName)){
+					exists = true;
+				}
+			}
+		}
+		return exists;
 	}
-	
-	
+
 	public FileHandler createFileHandler(String name){
 		FileHandler fh = null;
 		try {

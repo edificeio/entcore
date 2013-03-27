@@ -9,7 +9,7 @@ import java.util.logging.LogRecord;
  */
 public class ApplicationLogFilter implements Filter {
 
-	String name = "";
+	private String name = "";
 
 	public ApplicationLogFilter(String appli) {
 		name = appli;
@@ -18,6 +18,11 @@ public class ApplicationLogFilter implements Filter {
 	@Override
 	public boolean isLoggable(LogRecord record) {
 		return record.getParameters()[0].equals(name);
+	}
+
+	@Override
+	public String toString(){
+		return this.name;
 	}
 
 }
