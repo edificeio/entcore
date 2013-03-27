@@ -78,6 +78,15 @@ __Commandes__ (depuis le projet racine) :
 	 `gradle :{mon_module}:clean` : `clean` juste pour `{mon_module}`
 	 `vertx runmod edu.one.core~infra~0.1.0-SNAPSHOT` : lancer l'application
 
+# Configuration
+
+Le fichier de configuration des application est `mod.json`. Pour définir un configuration personnalisée procéder de la manière suivante :
+
+* à la racine du projet créer un fichier `developer.id` avec votre identifiant de développeur. Cette identifiant ne doit contenir que des lettre [a-z]. 
+* copier le fichiers de configuration `mod.json` dans le fichier `mod.json.{developer.id}`
+
+One-Core utilisera prioritairement votre fichier de configuration développeur.
+
 # Convention de codage
 
 * Indentation : TAB

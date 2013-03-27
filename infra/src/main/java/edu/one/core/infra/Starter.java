@@ -8,9 +8,11 @@ import org.vertx.java.core.json.JsonObject;
 public class Starter extends Controller {
 
 	Neo neo;
+	String developerId = "";
 
 	@Override
 	public void start() throws Exception {
+		developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
 		config = getConfig("mod.json");
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
@@ -38,7 +40,13 @@ public class Starter extends Controller {
 	}
 
 	protected JsonObject getConfig(String fileName) throws Exception {
-		Buffer b = vertx.fileSystem().readFileSync(fileName);
+		Buffer b;
+		if (! developerId.isEmpty() && vertx.fileSystem().existsSync(fileName + "." + developerId)) {
+			b = vertx.fileSystem().readFileSync(fileName + "." + developerId);
+		} else {
+			b = vertx.fileSystem().readFileSync(fileName);
+		}
+
 		if (b == null) {
 			log.error("Configuration file "+ fileName +"not found");
 			throw new Exception("Configuration file "+ fileName +" not found");
