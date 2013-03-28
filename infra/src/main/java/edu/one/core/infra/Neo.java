@@ -3,6 +3,7 @@ package edu.one.core.infra;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -43,6 +44,18 @@ public class Neo  {
 		eb.send(address, jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
 				response.end(m.body.encode());
+			}
+		});
+	}
+
+	// TODO : refactor Neo API
+	public void send(final HttpServerRequest request) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", request.params().get("action"));
+		jo.putString("query", request.params().get("query"));
+		eb.send(address, jo , new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> m) {
+				request.response.end(m.body.encode());
 			}
 		});
 	}

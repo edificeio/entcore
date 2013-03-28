@@ -2,6 +2,7 @@ apply from: "gradle/vertx.gradle"
 
 dependencies {
 	compile "org.neo4j:neo4j:$neo4jVersion"
+	compile "org.neo4j:neo4j-geoff-core:$neo4jGeoofVersion"
 }
 
 test {

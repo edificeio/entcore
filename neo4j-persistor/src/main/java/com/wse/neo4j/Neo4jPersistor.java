@@ -1,13 +1,21 @@
 package com.wse.neo4j;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.geoff.Geoff;
+import org.neo4j.geoff.Subgraph;
+import org.neo4j.geoff.except.SubgraphError;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.vertx.java.busmods.BusModBase;
@@ -52,6 +60,9 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 			case "executeMultiple" :
 				executeMultiple(m);
 				break;
+			case "batch-insert" :
+				batchInsert(m);
+				break;
 			default :
 				sendError(m, "Invalid or missing action");
 		}
@@ -67,6 +78,18 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		}
 		JsonObject json = toJson(result);
 		sendOK(m, json);
+	}
+
+	private void batchInsert (Message<JsonObject> m) {
+		Reader query = new StringReader(m.body.getString("query"));
+		Map<String,PropertyContainer> result;
+		try {
+			result = Geoff.insertIntoNeo4j(new Subgraph(query), gdb, null);
+			JsonObject joResult = new JsonObject().putNumber("insert", result.size());
+			sendOK(m, joResult);
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+		}
 	}
 
 	private void executeMultiple (Message<JsonObject> m) {

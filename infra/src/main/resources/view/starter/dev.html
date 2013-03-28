@@ -7,14 +7,18 @@
 	<body>
 		<h1>One : Dev Mode</h1>
 		<h2>Test</h2>
+		<h3>Neo4j Execute</h3>
 		<form method="GET" action="test">
+			<input type="hidden" name="action" value="execute" />
 			<textarea name="query" >START n=node(0) RETURN n" </textarea>
-			<input type="submit" value="test" />
+			<input type="submit" value="execute" />
 		</form>
-		<h2>Data</h2>
-		<p>
-			<a href="sync/data/dev"> charger les données de test </a>
-		</p>
+		<h3>Neo4j BatchInsert</h3>
+		<form method="GET" action="test">
+			<input type="hidden" name="action" value="batch-insert" />
+			<textarea name="query" cols="50" rows="20"></textarea>
+			<input type="submit" value="batch insert" />
+		</form>
 		<h2>Applications</h2>
 		<ul>
 			<li><a href="admin">Admin</a></li>
