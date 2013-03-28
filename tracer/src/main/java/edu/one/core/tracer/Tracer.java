@@ -32,10 +32,10 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 	public void handle(Message<JsonObject> m) {
 		String appName = m.body.getString("app");
 		if (handlerExists(appName)){
-			tracer.log(Level.OFF,m.body.getString("message"),(Object)(appName));
+			tracer.log(Level.parse(m.body.getString("level")),m.body.getString("message"),(Object)(appName));
 		} else {
 			tracer.addHandler(createFileHandler(appName));
-			tracer.log(Level.OFF,m.body.getString("message"),(Object)(appName));
+			tracer.log(Level.parse(m.body.getString("level")),m.body.getString("message"),(Object)(appName));
 		}
 	}
 

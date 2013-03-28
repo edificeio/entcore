@@ -17,6 +17,7 @@ public class TracerHelper {
 	
 	public void info(String logMessage){
 		JsonObject tracerMessage = new JsonObject()
+				.putString("level", "INFO")
 				.putString("app", appName)
 				.putString("message", logMessage);
 		eb.publish(address, tracerMessage);
@@ -24,6 +25,7 @@ public class TracerHelper {
 
 	public void error(String logMessage){
 		JsonObject tracerMessage = new JsonObject()
+				.putString("level", "SEVERE")
 				.putString("app", appName)
 				.putString("message", logMessage);
 		eb.publish(address, tracerMessage);

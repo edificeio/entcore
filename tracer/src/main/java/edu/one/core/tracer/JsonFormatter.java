@@ -14,6 +14,7 @@ public class JsonFormatter extends Formatter {
 	@Override
 	public String format(LogRecord record) {
 		JsonObject formatted = new JsonObject()
+				.putString("level", record.getLevel().toString())
 				.putString("date", Calendar.getInstance().getTime().toString())
 				.putString("app", record.getParameters()[0].toString())
 				.putString("message", record.getMessage());

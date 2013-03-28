@@ -21,7 +21,8 @@
 				var logs = data.records;
 				for (i = 0; i < logs.length; i++){
 					htmlString +=
-						'<p><em style="color:red">' + logs[i].app + '</em>'
+						'<p><span> ' + logs[i].level + ' - </span>'
+						+ '<em style="color:red">' + logs[i].app + '</em>'
 						+ '<span> - ' + logs[i].date + '</span>'
 						+ '<span> - ' + logs[i].message + '</span>';
 						+ '</p>'
