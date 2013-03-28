@@ -1,4 +1,4 @@
-package edu.one.core.tracer;
+package com.wse.tracer;
 
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;

@@ -1,4 +1,4 @@
-package edu.one.core.tracer;
+package com.wse.tracer;
 
 import java.util.Calendar;
 import java.util.logging.Formatter;

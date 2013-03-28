@@ -1,5 +1,5 @@
 {
-	"main" : "edu.one.core.tracer.Tracer",
+	"main" : "com.wse.tracer.Tracer",
 	"preserve-cwd" : true,
 	"logger-name": "one.tracer",
 	"log-path": "./data/dev/",
