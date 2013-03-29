@@ -1,5 +1,16 @@
 
 subprojects {
+
+	repositories {
+		maven {
+			credentials {
+				username 'admin'
+				password 'We_1234'
+			}
+			url "http://maven.web-education.net:8081/nexus/content/groups/public"
+		}
+	}
+
 	afterEvaluate { project -> 
 		project.tasks['copyMod'].doLast {
 			copy {
@@ -12,4 +23,3 @@ subprojects {
 		}
 	}
 }
-
