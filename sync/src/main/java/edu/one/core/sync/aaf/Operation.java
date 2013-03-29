@@ -1,5 +1,11 @@
 package edu.one.core.sync.aaf;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author bperez
@@ -10,12 +16,12 @@ public class Operation {
 	};
 	public TypeOperation typeOperation;
 	public enum TypeEntite {
-		ETABEDUCNAT,ELEVE,PERSRELELEVE,PERSEDUCNAT;
+		ETABEDUCNAT,ELEVE,PERSRELELEVE,PERSEDUCNAT,CLASSE,GROUPE;
 	};
 	public TypeEntite typeEntite;
 	public String id;
-	public StringBuffer attributsBuf;
-	public StringBuffer attributCourantBuf;
+	public Map<String,List<String>> attributs;
+	public Map.Entry<String,List<String>> attributCourant;
 	public enum EtatAvancement {
 		TYPE_OPERATION,TYPE_ENTITE,ID,ATTRIBUTS;
 
@@ -36,57 +42,18 @@ public class Operation {
 	public Operation(String typeOperation) {
 		etatAvancement = EtatAvancement.TYPE_OPERATION;
 		this.typeOperation = TypeOperation.valueOf(typeOperation.toUpperCase());
-		attributsBuf = new StringBuffer();
+		attributs = new HashMap<>();
 	}
 
 	public void creerAttributCourant(String attributNom) {
-		attributCourantBuf = new StringBuffer();
-		attributCourantBuf.append(attributNom).append(AafConstantes.VALUE_SEPARATOR);
+		attributCourant = new AbstractMap.SimpleEntry(attributNom, new ArrayList<String>());
 	}
 
 	public void ajouterValeur(String valeur) {
-		attributCourantBuf.append(valeur).append(AafConstantes.MULTIVALUE_SEPARATOR);
+		attributCourant.getValue().add(valeur);
 	}
 
 	public void ajouterAttributCourant() {
-		attributsBuf.append(attributCourantBuf.toString()).append(AafConstantes.ATTR_SEPARATOR);
+		attributs.put(attributCourant.getKey(), attributCourant.getValue());
 	}
-
-//	public String requeteCreation(String init) {
-//		String requete = init;
-//		for (Map.Entry<String, List<String>> entry : attributs.entrySet()) {
-//			String nomAttribut = entry.getKey();
-//			List<String> valeursAttribut = entry.getValue();
-//
-//			if (valeursAttribut.size() > 0) {
-//				if (requete.equals(init)) {
-//					requete += "({";
-//					requete += nomAttribut + " : '"
-//							+ valeursAttribut.get(0).replaceAll("'", "\\\\'") + "'";
-//				} else {
-//					requete += ", " + nomAttribut + " : '"
-//							+ valeursAttribut.get(0).replaceAll("'", "\\\\'") + "'";
-//				}
-//			}
-//		}
-//		requete += "})";
-//		return requete;
-//	}
-
-//	@Override
-//	public String toString() {
-//		String str = "";
-//		for (Map.Entry<String, List<String>> entry : attributs.entrySet()) {
-//			List<String> valeursAttribut = entry.getValue();
-//			if (valeursAttribut.size() > 0) {
-////				if (str.equals("")) {
-////					str = entry.getKey() + AafConstantes.VALUE_SEPARATOR + entry.getValue().get(0);
-////				} else {
-//					str = str + AafConstantes.ATTR_SEPARATOR + entry.getKey()
-//							+ AafConstantes.VALUE_SEPARATOR + entry.getValue().get(0);
-////				}
-//			}
-//		}
-//		return str;
-//	}
 }

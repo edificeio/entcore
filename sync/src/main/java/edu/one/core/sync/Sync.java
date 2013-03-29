@@ -2,6 +2,7 @@ package edu.one.core.sync;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.sync.aaf.AafConstantes;
+import edu.one.core.sync.aaf.AafGeoffHelper;
 import edu.one.core.sync.aaf.AafSaxContentHandler;
 import java.io.FileReader;
 import org.vertx.java.core.Handler;
@@ -15,11 +16,13 @@ public class Sync extends Controller {
 
 	XMLReader xr;
 	AafSaxContentHandler aafSaxHandler;
+	AafGeoffHelper aafGeoffHelper;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
-		aafSaxHandler = new AafSaxContentHandler(log, vertx.eventBus());
+		aafSaxHandler = new AafSaxContentHandler(log);
+		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus());
 		xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(aafSaxHandler);
 
@@ -53,6 +56,7 @@ public class Sync extends Controller {
 	}
 
 	public int test() throws Exception {
+		// Parsing of xml aaf files
 		for (String filter : AafConstantes.AAF_FILTERS) {
 		String [] files = vertx.fileSystem().readDirSync(
 				config.getString("input-files-folder"), filter);
@@ -60,6 +64,11 @@ public class Sync extends Controller {
 				xr.parse(new InputSource(new FileReader(filePath)));
 			}
 		}
-		return aafSaxHandler.reset();
+		// Build and send geoff request
+		aafGeoffHelper.sendRequest(aafSaxHandler.operations);
+		
+		// reset objects
+		aafSaxHandler.reset();
+		return aafGeoffHelper.reset();
 	}
 }

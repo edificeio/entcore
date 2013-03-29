@@ -1,7 +1,7 @@
 package edu.one.core.sync.aaf;
 
-import edu.one.core.infra.Neo;
-import org.vertx.java.core.eventbus.EventBus;
+import java.util.ArrayList;
+import java.util.List;
 import org.vertx.java.core.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -14,42 +14,28 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AafSaxContentHandler extends DefaultHandler {
 	private Logger log;
 	public Operation oc;
-	public StringBuffer operationsBuf;
-	private Neo neo;
-	public int total = 0;
-	long startDoc;
-	long endDoc;
+	public List<Operation> operations;
+	private long startDoc;
+	private long endDoc;
 
-	public AafSaxContentHandler(Logger log, EventBus eb) {
+	public AafSaxContentHandler(Logger log) {
 		this.log = log;
-		this.neo = new Neo(eb, log);
-		operationsBuf = new StringBuffer();
-
+		operations = new ArrayList<>();
 	}
 
-	public int reset() {
-		operationsBuf = new StringBuffer();
-		int ret = total;
-		total = 0;
-		return ret;
+	public void reset() {
+		operations = new ArrayList<>();
 	}
-
-	public void sendRequest() {
-		neo.sendMultiple(operationsBuf.toString(), AafConstantes.REQUEST_SEPARATOR,
-							AafConstantes.ATTR_SEPARATOR, AafConstantes.VALUE_SEPARATOR);
-	}
-
+	
 	@Override
 	public void startDocument() throws SAXException {
 		super.startDocument();
 		startDoc = System.currentTimeMillis();
-		operationsBuf = new StringBuffer();
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
 		super.endDocument();
-		sendRequest();
 		endDoc = System.currentTimeMillis();
 		log.debug("Traitement du document = " + (endDoc - startDoc) + " ms");
 	}
@@ -99,7 +85,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 				oc.id = valeur;
 			case ATTRIBUTS :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
-					oc.ajouterValeur(valeur.replaceAll("\\*", "-"));
+					oc.ajouterValeur(valeur);
 				}
 			default :
 				break;
@@ -112,16 +98,13 @@ public class AafSaxContentHandler extends DefaultHandler {
 
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
-				total++;
-				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
+				operations.add(oc);
 				break;
 			case AafConstantes.UPDATE_TAG :
-				total++;
-				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
+				operations.add(oc);
 				break;
 			case AafConstantes.DELETE_TAG :
-				total++;
-				operationsBuf.append(oc.attributsBuf.toString()).append(AafConstantes.REQUEST_SEPARATOR);
+				operations.add(oc);
 				break;
 			case AafConstantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
