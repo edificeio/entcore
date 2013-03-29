@@ -118,13 +118,13 @@ public class AafGeoffHelper {
 						, attrs.get(AafConstantes.NOM_ECOLE_ATTR).get(0));
 				break;
 			case CLASSE :
-				wph.addGroup(id
+				wph.addGroup(normalizeRef(id)
 						, typeEntite.toString()
 						, attrs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
 						, attrs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
 				break;
 			case GROUPE :
-				wph.addGroup(id
+				wph.addGroup(normalizeRef(id)
 						, typeEntite.toString()
 						, attrs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
 						, attrs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
@@ -134,19 +134,19 @@ public class AafGeoffHelper {
 						, typeEntite.toString()
 						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
 						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
-				wph.addPersonClass(id, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+				wph.addPersonClass(id, normalizeRef(attrs.get(AafConstantes.CLASSES_ATTR).get(0)));
 				break;
 			case ELEVE :
 				wph.addPerson(id
 						, typeEntite.toString()
 						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
 						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
-				wph.addPersonClass(id, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+				wph.addPersonClass(id, normalizeRef(attrs.get(AafConstantes.CLASSES_ATTR).get(0)));
 				// liens parent / classe
 				for (String parent : attrs.get(AafConstantes.PARENTS_ATTR)) {
 					String[] parentAttr = parent.split(AafConstantes.AAF_SEPARATOR);
 					wph.addPersonClass(parentAttr[AafConstantes.PARENT_ID_INDEX]
-							, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+							, normalizeRef(attrs.get(AafConstantes.CLASSES_ATTR).get(0)));
 				}
 				break;
 			case PERSRELELEVE :
