@@ -1,98 +1,98 @@
 {
 	"ecoles": [
 		{
-			"id": 1,
+			"id": "1",
 			"nom": "René Cassin",
-			"type": "ecole"
+			"type": "ETABEDUCNAT"
 		},
 		{
-			"id": 18,
+			"id": "18",
 			"nom": "Jean Rostand",
-			"type": "ecole"
+			"type": "ETABEDUCNAT"
 		}],
 	"classes": [
 		{
-			"id": 2,
+			"id": "ecole1classe2",
 			"nom": "CE1",
-			"ecole": 1,
-			"type": "classe"
+			"ecole": "1",
+			"type": "CLASSE"
 		},
 		{
-			"id": 3,
+			"id": "ecole1classe3",
 			"nom": "CP",
-			"ecole": 1,
-			"type": "classe"
+			"ecole": "1",
+			"type": "CLASSE"
 		}],
 	"pages": [
 		{
-			"id": 12,
+			"id": "12",
 			"titre": "PageA",
 			"contenu": "appliA",
-			"scope": 1,
+			"scope": "1",
 			"type": "page"
 		},
 		{
-			"id": 13,
+			"id": "13",
 			"titre": "PageB",
 			"contenu": "appliB",
-			"scope": 2,
+			"scope": "2",
 			"type": "page"
 		},
 		{
-			"id": 14,
+			"id": "14",
 			"titre": "PageC",
 			"contenu": "publiqueC",
-			"scope": 0,
+			"scope": "0",
 			"type": "page"
 		}],
 	"personnes": [
 		{
-			"id": 5,
+			"id": "5",
 			"nom": "Dupont",
 			"prenom": "Tom",
-			"classe": 2,
-			"type": "personne"
+			"classe": "ecole1classe2",
+			"type": "ELEVE"
 		},
 		{
-			"id": 6,
+			"id": "6",
 			"nom": "Doe",
 			"prenom": "John",
-			"classe": 3,
-			"type": "personne"
+			"classe": "ecole1classe3",
+			"type": "ELEVE"
 		},
 		{
-			"id": 7,
+			"id": "7",
 			"nom": "Moulin",
 			"prenom": "Theo",
-			"classe": 3,
-			"type": "personne"
+			"classe": "ecole1classe3",
+			"type": "ELEVE"
 		},
 		{
-			"id": 8,
+			"id": "8",
 			"nom": "Laporte",
 			"prenom": "Jean",
-			"classe": 2,
-			"type": "personne"
+			"classe": "ecole1classe2",
+			"type": "ELEVE"
 		},
 		{
-			"id": 9,
+			"id": "9",
 			"nom": "Legrand",
 			"prenom": "Simon",
-			"classe": 2,
-			"type": "personne"
+			"classe": "ecole1classe2",
+			"type": "ELEVE"
 		},
 		{
-			"id": 10,
+			"id": "10",
 			"nom": "Durand",
 			"prenom": "Marion",
-			"classe": 3,
-			"type": "personne"
+			"classe": "ecole1classe3",
+			"type": "ELEVE"
 		},
 		{
-			"id": 11,
+			"id": "11",
 			"nom": "Dunan",
 			"prenom": "Marie",
-			"classe": 1,
-			"type": "personne"
+			"classe": "1",
+			"type": "ELEVE"
 		}]
 }
