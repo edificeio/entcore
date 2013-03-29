@@ -1,59 +1,98 @@
 {
-	"ecole": {
-		"id": 1,
-		"nom": " René Cassin"
-	},
+	"ecoles": [
+		{
+			"id": 1,
+			"nom": "René Cassin",
+			"type": "ecole"
+		},
+		{
+			"id": 18,
+			"nom": "Jean Rostand",
+			"type": "ecole"
+		}],
 	"classes": [
 		{
 			"id": 2,
 			"nom": "CE1",
-			"effectif": 25
+			"ecole": 1,
+			"type": "classe"
 		},
 		{
 			"id": 3,
 			"nom": "CP",
-			"effectif": 35
+			"ecole": 1,
+			"type": "classe"
+		}],
+	"pages": [
+		{
+			"id": 12,
+			"titre": "PageA",
+			"contenu": "appliA",
+			"scope": 1,
+			"type": "page"
 		},
 		{
-			"id": 4,
-			"nom": "CM1",
-			"effectif": 27
+			"id": 13,
+			"titre": "PageB",
+			"contenu": "appliB",
+			"scope": 2,
+			"type": "page"
+		},
+		{
+			"id": 14,
+			"titre": "PageC",
+			"contenu": "publiqueC",
+			"scope": 0,
+			"type": "page"
 		}],
 	"personnes": [
 		{
 			"id": 5,
 			"nom": "Dupont",
 			"prenom": "Tom",
-			"date-de-naissance": "11/12/2007"
+			"classe": 2,
+			"type": "personne"
 		},
 		{
 			"id": 6,
 			"nom": "Doe",
 			"prenom": "John",
-			"date-de-naissance": "11/02/2009"
+			"classe": 3,
+			"type": "personne"
 		},
 		{
 			"id": 7,
 			"nom": "Moulin",
 			"prenom": "Theo",
-			"date-de-naissance": "01/12/2007"
+			"classe": 3,
+			"type": "personne"
 		},
 		{
 			"id": 8,
 			"nom": "Laporte",
 			"prenom": "Jean",
-			"date-de-naissance": "21/11/2007"
+			"classe": 2,
+			"type": "personne"
 		},
 		{
 			"id": 9,
 			"nom": "Legrand",
 			"prenom": "Simon",
-			"date-de-naissance": "22/10/2007"
+			"classe": 2,
+			"type": "personne"
 		},
 		{
 			"id": 10,
 			"nom": "Durand",
 			"prenom": "Marion",
-			"date-de-naissance": "14/04/2007"
+			"classe": 3,
+			"type": "personne"
+		},
+		{
+			"id": 11,
+			"nom": "Dunan",
+			"prenom": "Marie",
+			"classe": 1,
+			"type": "personne"
 		}]
 }

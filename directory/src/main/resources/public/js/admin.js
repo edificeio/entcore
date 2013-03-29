@@ -19,8 +19,11 @@ var admin = function(){
 			template[nom](data);
 		},
 		ecole : function (data) {
-			$("#main").html("<h2>" + data.nom + "</h2>\n\
-			<a call='classes' href='/api/classes'>Voir les classes</a>");
+			var htmlString = '';
+			for (i=0; i<data.length;i++){
+				htmlString +="<h2>" + data[i].nom + "</h2>";
+			}
+			$("#main").html(htmlString + "<a call='classes' href='/api/classes'>Voir les classes</a>");
 		},
 		classes: function(data) {
 			if (!!$('#classes').children().length) {
@@ -68,6 +71,9 @@ var admin = function(){
 			console.log(form.parent("div").prev());
 			form.parent("div").prev().children().html(form[0]["prenom"].value + " " + form[0]["nom"].value);
 
+		},
+		testload : function(data){
+			$('#test').html(data);
 		}
 	};
 
@@ -100,6 +106,9 @@ var admin = function(){
 		},
 		edit : function(o) {
 			postAndRender(o.url, 'edit');
+		},
+		testload : function(o){
+			getAndRender(o.url, 'testload');
 		}
 	}
 }();
