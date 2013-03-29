@@ -4,6 +4,7 @@ import edu.one.core.infra.Controller;
 import edu.one.core.sync.aaf.AafConstantes;
 import edu.one.core.sync.aaf.AafGeoffHelper;
 import edu.one.core.sync.aaf.AafSaxContentHandler;
+import edu.one.core.sync.aaf.WordpressHelper;
 import java.io.FileReader;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -17,12 +18,14 @@ public class Sync extends Controller {
 	XMLReader xr;
 	AafSaxContentHandler aafSaxHandler;
 	AafGeoffHelper aafGeoffHelper;
+	WordpressHelper wordpressHelper;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
 		aafSaxHandler = new AafSaxContentHandler(log);
-		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus());
+		wordpressHelper = new WordpressHelper(log, vertx.eventBus());
+		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus(), wordpressHelper);
 		xr = XMLReaderFactory.createXMLReader();
 		xr.setContentHandler(aafSaxHandler);
 
@@ -66,9 +69,12 @@ public class Sync extends Controller {
 		}
 		// Build and send geoff request
 		aafGeoffHelper.sendRequest(aafSaxHandler.operations);
+		// Send WP requests
+		wordpressHelper.send();
 		
 		// reset objects
 		aafSaxHandler.reset();
+		wordpressHelper.reset();
 		return aafGeoffHelper.reset();
 	}
 }

@@ -38,6 +38,11 @@ public class AafConstantes {
 	public static final int GROUPE_ECOLE_INDEX = 0;
 	public static final int GROUPE_TYPE_INDEX = 1;
 	public static final int GROUPE_NOM_INDEX = 2;
+	
+	// Attributs pour Wordpress
+	public static final String NOM_ECOLE_ATTR = "ENTStructureNomCourant";
+	public static final String NOM_PERSONNE_ATTR = "ENTPersonNom";
+	public static final String PRENOM_PERSONNE_ATTR = "ENTPersonPrenom";
 
     // Séparateurs
 //    public static final String ATTR_SEPARATOR = "||";

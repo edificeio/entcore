@@ -23,11 +23,13 @@ public class AafGeoffHelper {
 	private Logger log;
 	private EventBus eb;
 	private List<String> regroupementsCrees;
+	private WordpressHelper wph;
 	public int total = 0;
 	
-	public AafGeoffHelper(Logger log, EventBus eb) {
+	public AafGeoffHelper(Logger log, EventBus eb, WordpressHelper wph) {
 		this.log = log;
 		this.eb = eb;
+		this.wph = wph;
 		regroupementsCrees = new ArrayList<>();
 	}
 
@@ -43,7 +45,7 @@ public class AafGeoffHelper {
 		// parcours de toutes les opérations à effectuer pour l'import
 		for (Operation operation : operations) {
 			// création du noeud associé à l'opération avec ses attributs
-			addRequest(request, operation.id, operation.typeEntite.toString(), operation.attributs);
+			addRequest(request, operation.id, operation.typeEntite, operation.attributs);
 			
 			// création des relations et des groupements éventuels
 			if (operation.typeEntite == Operation.TypeEntite.ELEVE
@@ -76,12 +78,12 @@ public class AafGeoffHelper {
 				log.info(m.body.encode());
 			}
 		});
-		eb.send("wse.neo4j.persistor", jo);
+//		eb.send("wse.neo4j.persistor", jo);
 	}
 
 	private void addRequest(
-			StringBuffer req, String id, String typeEntite, Map<String,List<String>> attrs) {
-		req.append("(").append(typeEntite).append("_").append(normalizeRef(id)).append(")");
+			StringBuffer req, String id, Operation.TypeEntite typeEntite, Map<String,List<String>> attrs) {
+		req.append("(").append(typeEntite.toString()).append("_").append(normalizeRef(id)).append(")");
 		req.append(" {").append("\"id\": \"").append(id).append("\"");
 		req.append(", ").append("\"type\": \"").append(typeEntite).append("\"");
 		// parcours de tous les attributs de l'objet
@@ -105,6 +107,57 @@ public class AafGeoffHelper {
 		}
 		req.append("}\n");
 		total++;
+		
+		// Gestion WP
+		// TODO : isoler de geoff
+		// TODO : contrôles existence, not null, etc.
+		switch (typeEntite) {
+			case ETABEDUCNAT :
+				wph.addSchool(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.NOM_ECOLE_ATTR).get(0));
+				break;
+			case CLASSE :
+				wph.addGroup(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
+						, attrs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
+				break;
+			case GROUPE :
+				wph.addGroup(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
+						, attrs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
+				break;
+			case PERSEDUCNAT :
+				wph.addPerson(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
+						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+				wph.addPersonClass(id, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+				break;
+			case ELEVE :
+				wph.addPerson(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
+						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+				wph.addPersonClass(id, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+				// liens parent / classe
+				for (String parent : attrs.get(AafConstantes.PARENTS_ATTR)) {
+					String[] parentAttr = parent.split(AafConstantes.AAF_SEPARATOR);
+					wph.addPersonClass(parentAttr[AafConstantes.PARENT_ID_INDEX]
+							, attrs.get(AafConstantes.CLASSES_ATTR).get(0));
+				}
+				break;
+			case PERSRELELEVE :
+				wph.addPerson(id
+						, typeEntite.toString()
+						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
+						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+				break;
+			default : 
+				break;
+		}
 	}
 
 	private void addRelation(StringBuffer req, String noeud1, String noeud2, String relation) {
@@ -123,7 +176,7 @@ public class AafGeoffHelper {
 			if (!regroupementsCrees.contains(grp)) {
 				Map<String,List<String>> attrs = getAttrsRegroupement(grp);
 				if (!attrs.isEmpty()) {
-					addRequest(req, grp, typeEntite.toString(), attrs);
+					addRequest(req, grp, typeEntite, attrs);
 					// création de la relation groupement / école
 					String noeudEcole = Operation.TypeEntite.ETABEDUCNAT.toString()
 							+ "_" + attrs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0);
