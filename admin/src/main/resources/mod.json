@@ -1,0 +1,13 @@
+{
+	"main":"edu.one.core.admin.Admin",
+	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
+	"port": 8008,
+	"auto-redeploy": true,
+	"mode": "dev",
+	"one-apps": [
+		{"name" : "directory","url":"http://localhost:8003"},
+		{"name" : "history", "url":"http://localhost:8006"},
+		{"name" : "sync", "url":"http://localhost:8005"},
+		{"name" : "infra", "url":"http://localhost:8001"}
+	]
+}

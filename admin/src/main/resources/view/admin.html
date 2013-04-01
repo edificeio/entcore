@@ -1,0 +1,25 @@
+<html>
+	<head>
+		<title>{{#i18n}}admin.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
+		<style>
+			h1		{ font-size: 2em; background: black; color: white; }
+			a		{ font-size: 1.5em; font-weight: bold;}
+			iframe	{ border : 5px solid #ddd; }
+		</style>
+	</head>
+	<body>
+		<h1>{{#i18n}}admin.header{{/i18n}}</h1>
+		<!-- By convention it display admin view -->
+		<div id="menu">
+		{{#one-apps}}
+			<a call="displayApp" id="{{name}}}" href="{{url}}/admin">{{name}}</a> /
+		{{/one-apps}}
+		</div>
+		<div id="main">
+			<iframe id="appIframe" src="http://localhost:8001/starter/dev" height="500px" width="98%"></ifram>
+		</div>
+	</body>
+</html>

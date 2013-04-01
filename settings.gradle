@@ -1,1 +1,1 @@
-include 'infra', 'sync', 'directory', 'history', 'tracer', 'neo4j-persistor'
+include 'infra', 'admin', 'sync', 'directory', 'history', 'tracer', 'neo4j-persistor'
