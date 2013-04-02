@@ -2,5 +2,6 @@
 	"main": "edu.one.core.infra.Starter",
 	"port": 8001,
 	"mode": "dev",
-	"one-modules":"com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT,edu.one.core~admin~0.1.0-SNAPSHOT,edu.one.core~directory~0.1.0-SNAPSHOT,edu.one.core~history~0.1.0-SNAPSHOT,edu.one.core~sync~0.1.0-SNAPSHOT,com.wse.tracer~tracer~0.1.0-SNAPSHOT"
+	"auto-redeploy": true,
+	"one-modules":"com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT,edu.one.core~auth~0.1.0-SNAPSHOT,edu.one.core~admin~0.1.0-SNAPSHOT,edu.one.core~directory~0.1.0-SNAPSHOT,edu.one.core~history~0.1.0-SNAPSHOT,edu.one.core~sync~0.1.0-SNAPSHOT,com.wse.tracer~tracer~0.1.0-SNAPSHOT"
 }
