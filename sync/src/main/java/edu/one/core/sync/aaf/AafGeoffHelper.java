@@ -234,6 +234,11 @@ public class AafGeoffHelper {
 	}
 	
 	private String normalizeRef(String name) {
-		return name.replaceAll(AafConstantes.AAF_SEPARATOR, "_").replaceAll(" ", "");
+		return name
+				.replaceAll(AafConstantes.AAF_SEPARATOR, "_")
+				.replaceAll(" ", "")
+				.replaceAll("-", "_")
+				.replaceAll("\\(", "_")
+				.replaceAll("\\)", "");
 	}
 }
