@@ -74,13 +74,15 @@ public class WordpressHelper {
 		}
 	}
 	
-	public void send() {
+	public void send() throws InterruptedException {
 		for (Map.Entry<String, Map<String, String>> entry : schools.entrySet()) {
 			sendWP(entry.getValue());
 		}
+		Thread.sleep(1000);
 		for (Map.Entry<String, Map<String, String>> entry : groups.entrySet()) {
 			sendWP(entry.getValue());
 		}
+		Thread.sleep(1000);
 		for (Map.Entry<String, Map<String, String>> entry : persons.entrySet()) {
 			sendWP(entry.getValue());
 		}
