@@ -1,6 +1,7 @@
 package edu.one.core.directory;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.Neo;
 import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -11,10 +12,12 @@ import org.vertx.java.core.json.JsonObject;
 public class Directory extends Controller {
 	
 	JsonObject dataMock;
+	Neo neo;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
+		neo = new Neo(vertx.eventBus(),log);
 		dataMock = new JsonObject(vertx.fileSystem().readFileSync("directory-data-mock.json").toString());
 		container.deployModule("edu.one~wordpress~1.0.0-SNAPSHOT");
 		
@@ -28,57 +31,41 @@ public class Directory extends Controller {
 		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				request.response.putHeader("content-type", "text/json");
-				request.response.end(dataMock.getArray("ecoles").encode());
-				//renderJson(request, dataMock.getObject("ecole"));
-				
+				neo.send("START n=node(*) WHERE has(n.type) "
+						+ "AND n.type='ETABEDUCNAT' "
+						+ "RETURN distinct n.ENTStructureNomCourant, n.id", request.response);
 			}
 		});
 		
 		rm.get("/api/classes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				request.response.putHeader("content-type", "text/json");
-				request.response.end(dataMock.getArray("classes").encode());
-				//renderJson(request.response, dataMock.getObject("classes"));
-				
+				String schoolId = request.params().get("id");
+				neo.send("START n=node(*) MATCH n<--m WHERE has(n.id) "
+						+ "AND n.id='" + schoolId + "' "
+						+ "AND has(m.type) AND m.type='CLASSE' "
+						+ "RETURN distinct m.ENTGroupeNom, m.id, n.id", request.response);
 			}
 		});
 		
 		rm.get("/api/personnes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				request.response.putHeader("content-type", "text/json");
-				request.response.end(dataMock.getArray("personnes").encode());
-				//renderJson(request.response, dataMock.getObject("personnes"));
-				
+				String classId = request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$");
+				neo.send("START n=node(*) MATCH n<--m WHERE has(n.id) "
+						+ "AND n.id='" + classId + "' "
+						+ "AND has(m.type) and m.type='ELEVE' "
+						+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom, n.id", request.response);
 			}
 		});
-		
+
 		rm.get("/api/details", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				JsonArray people = dataMock.getArray("personnes");
-				for (Object object : people) {
-					JsonObject jo = (JsonObject)object;
-					if (jo.getInteger("id").equals(new Integer(request.params().get("id")))){
-						renderJson(request, jo);
-					}
-				}
-			}
-		});
-		
-		rm.post("/api/edit", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				bodyToParams(request, new Handler<Map<String, String>>() {
-					@Override
-					public void handle(Map<String, String> params) {
-						JsonObject jo = new JsonObject().putString("message", "success");
-						renderJson(request, jo);
-					}
-				});
-				
+				String personId = request.params().get("id");
+				neo.send("START n=node(*) WHERE has(n.id) "
+						+ "AND n.id='" + personId + "' "
+						+ "RETURN distinct n.ENTPersonNom, n.ENTPersonPrenom, n.ENTPersonAdresse", request.response);
 			}
 		});
 
@@ -100,7 +87,7 @@ public class Directory extends Controller {
 				request.response.end("Écoles chargées");
 			}
 		});
-		
+
 		rm.get("/api/load/classes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -119,7 +106,7 @@ public class Directory extends Controller {
 				request.response.end("Classes chargées");
 			}
 		});
-		
+
 		rm.get("/api/load/users", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -138,7 +125,7 @@ public class Directory extends Controller {
 				request.response.end("Utilisateurs chargés");
 			}
 		});
-		
+
 		rm.get("/api/load/pages", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {

@@ -20,57 +20,60 @@ var admin = function(){
 		},
 		ecole : function (data) {
 			var htmlString = '';
-			for (i=0; i<data.length;i++){
-				htmlString +="<h2>" + data[i].nom + "</h2>";
+			var jdata = jQuery.parseJSON(data);
+			for (obj in jdata.result){
+				htmlString +="<h2>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h2>"
+					+ "<a call='classes' href='/api/classes?id=" + jdata.result[obj]["n.id"]
+					+ "'>Voir les classes</a>"
+					+ "<div id='classes-"+ jdata.result[obj]["n.id"] +"'></div>";
 			}
-			$("#main").html(htmlString + "<a call='classes' href='/api/classes'>Voir les classes</a>");
+			$("#schools").html(htmlString);
 		},
 		classes: function(data) {
-			if (!!$('#classes').children().length) {
-				$('#classes').html('');
-				$('#people').html('');
-				return;
-			}
 			var htmlString = '';
-			for (i=0; i<data.length;i++){
-				htmlString +="<h3><a>" + data[i].nom + "</a></h3>";
+			var jdata = jQuery.parseJSON(data);
+			if (jdata.result != ""){
+				if (!!$("#classes-" + jdata.result[0]["n.id"]).children().length) {
+					$("#classes-" + jdata.result[0]["n.id"]).html('');
+					return;
+				}
+				for (obj in jdata.result){
+					htmlString +="<h4><a>" + jdata.result[obj]['m.ENTGroupeNom'] + "</a></h4>"
+						+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') 
+						+ "'>Voir les élèves</a>"
+						+ " - <a href=''>Ajouter un enseignant</a><br />"
+						+ "<div id='people-" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "'></div>";
+				}
+				$("#classes-" + jdata.result[0]["n.id"]).html(htmlString);
 			}
-			$("#classes").html(htmlString + "<a call='personnes' href='/api/personnes'>Voir les personnes</a>");
 		},
 		personnes : function(data) {
-			if (!!$('#people').children().length) {
-				$('#people').html('');
-				return;
+			var htmlString='<br /><span>';
+			var jdata = jQuery.parseJSON(data);
+			if (jdata.result != ""){
+				if (!!$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).children().length) {
+					$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html('');
+					return;
+				}
+				for (obj in jdata.result){
+					htmlString +="<a call='personne' href='/api/details?id="
+						+ jdata.result[obj]['m.id'] +"'>" + jdata.result[obj]['m.ENTPersonNom']
+						+ " " +jdata.result[obj]['m.ENTPersonPrenom'] + "</a> - ";
+				}
+				htmlString += "</span><div id='details'></div>";
+				$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
 			}
-			var htmlString='';
-			for (i=0; i<data.length;i++){
-				htmlString +="<h4><a call='personne' href='/api/details?id="
-					+ data[i].id +"'>" + data[i].prenom + " " + data[i].nom + "</a></h3>"
-					+ "<div id='details"+ data[i].id +"'></div>";
-			}
-			$("#people").html(htmlString);
 		},
 		personne : function(data) {
-			if (!!$('#details' + data.id).children('form').length) {
-				$('#details' + data.id).html('');
+			if (!!$('#details').children('form').length) {
+				$('#details').html('');
 				return;
 			}
-			htmlString = "<form id='edit' action='/api/edit' method='post'>";
-			for (element in data){
-				if (element != "id"){
-				htmlString += "<label>" + element + "</label>"
-						+ "<input name='" + element + "' type='text' value='" + data[element] + "'/> ";
-				}
-			}
-			htmlString += "<input type='submit' call='edit' action='/api/edit' value='Modifier' /></form>";
-			$('#details' + data.id).html(htmlString);
-		},
-		edit : function(data) {
-			var form = $("#edit");
-			console.log(form);
-			console.log(form.parent("div").prev());
-			form.parent("div").prev().children().html(form[0]["prenom"].value + " " + form[0]["nom"].value);
-
+			var jdata = jQuery.parseJSON(data);
+			var htmlString = "Nom : " + jdata.result[0]['n.ENTPersonNom']
+				+ " - Prénom : " + jdata.result[0]['n.ENTPersonPrenom']
+				+ " - Adresse : " + jdata.result[0]['n.ENTPersonAdresse'];
+			$('#details').html(htmlString);
 		},
 		testload : function(data){
 			$('#test').html(data);
