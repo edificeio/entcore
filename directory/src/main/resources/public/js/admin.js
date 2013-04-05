@@ -74,9 +74,6 @@ var admin = function(){
 				+ " - Prénom : " + jdata.result[0]['n.ENTPersonPrenom']
 				+ " - Adresse : " + jdata.result[0]['n.ENTPersonAdresse'];
 			$('#details').html(htmlString);
-		},
-		testload : function(data){
-			$('#test').html(data);
 		}
 	};
 
@@ -106,12 +103,6 @@ var admin = function(){
 		},
 		personne : function(o) {
 			getAndRender(o.url, "personne");
-		},
-		edit : function(o) {
-			postAndRender(o.url, 'edit');
-		},
-		testload : function(o){
-			getAndRender(o.url, 'testload');
 		}
 	}
 }();
