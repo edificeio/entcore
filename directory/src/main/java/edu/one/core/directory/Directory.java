@@ -52,7 +52,7 @@ public class Directory extends Controller {
 				String classId = request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$");
 				neo.send("START n=node(*) MATCH n<--m WHERE has(n.id) "
 						+ "AND n.id='" + classId + "' "
-						+ "AND has(m.type) and m.type='ELEVE' "
+						+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSRELELEVE' OR m.type='PERSEDUCNAT') "
 						+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom, n.id", request.response);
 			}
 		});
@@ -81,12 +81,12 @@ public class Directory extends Controller {
 	private String createExportRequest(Map<String,String> params){
 		if (params.isEmpty()){
 			return "START m=node(*) WHERE has(m.type) "
-					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT') "
+					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
 					+ "RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom";
 		} else {
 			return "START n=node(*) MATCH n<--m "
 					+ "WHERE has(n.id) AND n.id='" + params.get("id") + "' "
-					+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT') "
+					+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
 					+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom";
 		}
 	}

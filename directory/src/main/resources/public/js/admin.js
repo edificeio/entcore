@@ -42,7 +42,7 @@ var admin = function(){
 				for (obj in jdata.result){
 					htmlString +="<h4><a>" + jdata.result[obj]['m.ENTGroupeNom'] + "</a></h4>"
 						+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-')
-						+ "'>Voir les élèves</a>"
+						+ "'>Voir les personnes</a>"
 						+ " - <a href=''>Ajouter un enseignant</a> - <a href='/api/export?id=" + jdata.result[obj]["m.id"]
 						+ "' call='exportAuth'>Exporter les données d'authentification</a><br />"
 						+ "<div id='people-" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "'></div>";
