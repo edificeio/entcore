@@ -2,6 +2,7 @@ package edu.one.core.directory;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
+import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -66,6 +67,28 @@ public class Directory extends Controller {
 			}
 		});
 
+		rm.get("/api/export", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				String neoRequest = createExportRequest(request.params());
+				neo.send(neoRequest, request.response);
+			}
+		});
+
+	}
+
+
+	private String createExportRequest(Map<String,String> params){
+		if (params.isEmpty()){
+			return "START m=node(*) WHERE has(m.type) "
+					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT') "
+					+ "RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom";
+		} else {
+			return "START n=node(*) MATCH n<--m "
+					+ "WHERE has(n.id) AND n.id='" + params.get("id") + "' "
+					+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT') "
+					+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom";
+		}
 	}
 
 }

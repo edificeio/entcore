@@ -24,7 +24,9 @@ var admin = function(){
 			for (obj in jdata.result){
 				htmlString +="<h2>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h2>"
 					+ "<a call='classes' href='/api/classes?id=" + jdata.result[obj]["n.id"]
-					+ "'>Voir les classes</a>"
+					+ "'>Voir les classes</a> - "
+					+ "<a href='/api/export?id=" + jdata.result[obj]["n.id"]
+					+ "' call='exportAuth'>Exporter les données d'authentification</a>"
 					+ "<div id='classes-"+ jdata.result[obj]["n.id"] +"'></div>";
 			}
 			$("#schools").html(htmlString);
@@ -39,9 +41,10 @@ var admin = function(){
 				}
 				for (obj in jdata.result){
 					htmlString +="<h4><a>" + jdata.result[obj]['m.ENTGroupeNom'] + "</a></h4>"
-						+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') 
+						+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-')
 						+ "'>Voir les élèves</a>"
-						+ " - <a href=''>Ajouter un enseignant</a><br />"
+						+ " - <a href=''>Ajouter un enseignant</a> - <a href='/api/export?id=" + jdata.result[obj]["m.id"]
+						+ "' call='exportAuth'>Exporter les données d'authentification</a><br />"
 						+ "<div id='people-" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "'></div>";
 				}
 				$("#classes-" + jdata.result[0]["n.id"]).html(htmlString);
@@ -74,6 +77,17 @@ var admin = function(){
 				+ " - Prénom : " + jdata.result[0]['n.ENTPersonPrenom']
 				+ " - Adresse : " + jdata.result[0]['n.ENTPersonAdresse'];
 			$('#details').html(htmlString);
+		},
+		exportAuth : function(data) {
+			var jdata = jQuery.parseJSON(data);
+			var textString = "DONNÉES D'AUTHENTIFICATION\n\n";
+			for (obj in jdata.result){
+				textString += "----------------------------\n"
+					+ "Nom : " + jdata.result[obj]['m.ENTPersonNom'] + "\n"
+					+ "Prénom : " + jdata.result[obj]['m.ENTPersonPrenom'] + "\n"
+					+ "----------------------------\n";
+			}
+			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		}
 	};
 
@@ -103,6 +117,9 @@ var admin = function(){
 		},
 		personne : function(o) {
 			getAndRender(o.url, "personne");
+		},
+		exportAuth : function(o) {
+			getAndRender(o.url, "exportAuth");
 		}
 	}
 }();
