@@ -33,8 +33,8 @@ public class Starter extends Controller {
 	}
 
 	private void deployApps() throws Exception {
-		for (String module : config.getString("one-modules").split(",")){
-			module = module.trim();
+		for (Object o : config.getArray("one-modules")){
+			String module = ((String)o).trim();
 			container.deployModule(module, getConfig("../"+ module +"/mod.json"));
 		}
 	}
