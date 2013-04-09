@@ -24,9 +24,9 @@ var admin = function(){
 			for (obj in jdata.result){
 				htmlString +="<h2>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h2>"
 					+ "<a call='classes' href='/api/classes?id=" + jdata.result[obj]["n.id"]
-					+ "'>Voir les classes</a> - "
+					+ "'>{{#i18n}}directory.admin.classes{{/i18n}}</a> - "
 					+ "<a href='/api/export?id=" + jdata.result[obj]["n.id"]
-					+ "' call='exportAuth'>Exporter les données d'authentification</a>"
+					+ "' call='exportAuth'>{{#i18n}}directory.admin.export{{/i18n}}</a>"
 					+ "<div id='classes-"+ jdata.result[obj]["n.id"] +"'></div>";
 			}
 			$("#schools").html(htmlString);
@@ -42,9 +42,10 @@ var admin = function(){
 				for (obj in jdata.result){
 					htmlString +="<h4><a>" + jdata.result[obj]['m.ENTGroupeNom'] + "</a></h4>"
 						+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-')
-						+ "'>Voir les personnes</a>"
-						+ " - <a href=''>Ajouter un enseignant</a> - <a href='/api/export?id=" + jdata.result[obj]["m.id"]
-						+ "' call='exportAuth'>Exporter les données d'authentification</a><br />"
+						+ "'>{{#i18n}}directory.admin.people{{/i18n}}</a>"
+						+ " - <a href='/api/enseignants?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "' call='enseignants'>Ajouter un enseignant</a>" 
+						+ " - <a href='/api/export?id=" + jdata.result[obj]["m.id"]
+						+ "' call='exportAuth'>{{#i18n}}directory.admin.export{{/i18n}}</a><br />"
 						+ "<div id='people-" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "'></div>";
 				}
 				$("#classes-" + jdata.result[0]["n.id"]).html(htmlString);
@@ -117,6 +118,9 @@ var admin = function(){
 		},
 		personne : function(o) {
 			getAndRender(o.url, "personne");
+		},
+		enseignants : function(o) {
+			getAndRender(o.url, "personnes");
 		},
 		exportAuth : function(o) {
 			getAndRender(o.url, "exportAuth");
