@@ -1,0 +1,48 @@
+package edu.one.core.datadictionary.validation;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+/*
+ * Regexp Validator Factory
+ */
+public class RegExpValidator {
+
+	public static Map<String, String> types = new HashMap<>();
+	static {
+		types.put("email", "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$");
+		types.put("zipCode", "^[0-9]{5}$");
+		types.put("phone", "^0[1-9][0-9]{8}$");
+		types.put("mobilePhone", "^0[67][0-9]{8}$");
+		types.put("firstName", "^\\D{0,38}$");
+		types.put("lastName", "^\\D{0,38}$");
+		types.put("hour", "^([01][0-9]|2[0-3])$"); // 00-23¶
+		types.put("minute", "^[0-5][0-9]$"); // 00-59
+	}
+
+	public static Validator instance(String regexpKey, String regexpValue) throws Exception {
+		types.put(regexpKey, regexpValue);
+		return instance(regexpKey);
+	}
+
+	public static Validator instance(final String regexpKey) throws Exception {
+		return new Validator() {
+			private Pattern p;
+			{
+				if (types.get(regexpKey) == null) {
+					throw new Exception("datadictionnary.error.regexUndefined");
+				}
+				p = Pattern.compile(types.get(regexpKey));
+			}
+			@Override
+			public boolean test(String s) {
+				Matcher m = p.matcher(s);
+				return m.matches();
+			}
+		};
+	}
+
+}

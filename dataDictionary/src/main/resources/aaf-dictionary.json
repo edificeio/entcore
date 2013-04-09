@@ -1,0 +1,324 @@
+{
+	"personnes" : [
+		{
+			"attr":"Identifiant ENT",
+			"label":"ENTPersonIdentifiant",
+			"note":"Identifiant interne à l'ENT, unique au niveau national. ",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Login",
+			"label":"ENTPersonLogin",
+			"note":"Identifiant de connexion à l'ENT",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Mot de passe",
+			"label":"ENTPersonMotDePasse",
+			"note":"Mot de passe de connexion à l'ENT",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Profils",
+			"label":"ENTPersonProfils",
+			"note":"Profils auxquels appartient la personne",
+			"required":"Obl",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Clés de jointure",
+			"label":"ENTPersonJointure",
+			"note":"Identifiant(s) utilisé(s) pour faire la jointure avec les SI externes",
+			"required":"Obl",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Date de naissance",
+			"label":"ENTPersonDateNaissance",
+			"note":"Date de naissance, champ technique utilisé pour dédoublonner les comptes.Facultatif pour les parents issus de l'AAF mais obligatoire en cas de création manuelle.",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Nom d'affichage",
+			"label":"ENTPersonNomAffichage",
+			"note":"Nom d'affichage associé au compte utilisateur",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Nom patronymique",
+			"label":"ENTPersonNomPatro",
+			"note":"Nom de famille de naissance",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Nom d'usage",
+			"label":"ENTPersonNom",
+			"note":"Nom d'usage pour les personnes physiques, nom de l'organisme pour les personnes morales. Pour les enseignants issus de BE1D, nom patronymique = nom d'usage",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Prénom usuel",
+			"label":"ENTPersonPrenom",
+			"note":"Prénom pour les personnes physique, organisme dans le cas des personnes morales",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Autres prénoms",
+			"label":"ENTPersonAutresPrenoms",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Civilité",
+			"label":"ENTPersonCivilite",
+			"note":"Monsieur ou madame",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Sexe",
+			"label":"ENTPersonSexe",
+			"note":"Homme ou femme, à déduire de la civilité",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Adresse",
+			"label":"ENTPersonAdresse",
+			"note":"Adresse personnelle",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Code postal",
+			"label":"ENTPersonCodePostal",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo",
+			"validator":"zipCode"
+		},
+		{
+			"attr":"Ville",
+			"label":"ENTPersonVille",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Pays",
+			"label":"ENTPersonPays",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Téléphone personnel (fixe)",
+			"label":"ENTPersonTelPerso",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo",
+			"validator":"phone"
+		},
+		{
+			"attr":"Téléphone mobile",
+			"label":"ENTPersonTelMobile",
+			"note":"Téléphone mobile (saisie libre)",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Téléphone mobile parent",
+			"label":"ENTPersRelEleveTelMobile",
+			"note":"Téléphone mobile issu du SI, non modifiable dans l'ENT. La CNIL autorise la transmission de cette information uniquement pour les personnes en relation avec l'élève.",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Adresse mail",
+			"label":"ENTPersonMail",
+			"note":"Adresse mail issue du SI, non modifiable dans l'ENT",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Autre adresse mail",
+			"label":"ENTPersonAutreMail",
+			"note":"Adresse mail saisie manuellement : si celle-ci est renseignée par l'utilisateur, elle fait référence par rapport à l'adresse mail transmise par l'AAF.",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Structure de rattachement",
+			"label":"ENTPersonStructRattach",
+			"note":"Structure(s) de rattachement de l'utilisateur : peut être  une école, un service académique ou une collectivité. Pour le cas des sercices académiques et des collectivités, ce rattachement est de nature administrative.",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Service",
+			"label":"ENTPersRelElevService",
+			"note":"Coordonnées professionnelles (pour les personnes en relation avec l'élève)",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Bureau",
+			"label":"ENTPersRelElevBureau",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Téléphone professionnel",
+			"label":"ENTPersRelElevTelPro",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Fax",
+			"label":"ENTPersRelElevFax",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Pers. exerçant l'autorité parentale",
+			"label":"ENTEleveAutoriteParentale",
+			"note":"Pointeur vers une personne physique ou une personne morale ayant l'autorité parentale sur l'élève. Les personnes à contacter d'urgence ou autorisées à venir chercher l'élève ne font pas partie de l'annuaire ENT.",
+			"required":"Obl",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Restaurant scolaire",
+			"label":"ENTEleveRestaurantScolaire",
+			"note":"Activités périscolaires de l'élève (booléens)",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Transport scolaire",
+			"label":"ENTEleveTransport",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Garderie matin",
+			"label":"ENTEleveGarderieMatin",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Garderie soir",
+			"label":"ENTEleveGarderieSoir",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Etudes surveillées",
+			"label":"ENTEleveEtudesSurveillees",
+			"note":"",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Elèves",
+			"label":"ENTPersRelEleveEleve",
+			"note":"Elève(s) avec qui la personne est en relation (déduit(s) du champ ENTEleveAutoriteParentale)",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Représentant des parents d'élèves",
+			"label":"ENTPersRelEleveRepresentant",
+			"note":"Indique la ou les écoles pour lesquelles la personne est représentante des parents d'élèves",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Charge d'enseignement",
+			"label":"ENTPersonChargeEnseignement",
+			"note":"\"O\" pour les enseignants, \"N\" pour les non enseignants. Déduit automatiquement du profil sauf pour les personnes extérieures",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Fonctions",
+			"label":"ENTPersonFonctions",
+			"note":"Fonction(s) dans les écoles, les services académiques ou les collectivités",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Fonction de direction",
+			"label":"ENTEnsFonctionDir",
+			"note":"Directeur d'école ou de RPI ou adjoint.",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Spécialités",
+			"label":"ENTEnsSpecialites",
+			"note":"Spécialisation du professeur des écoles ou de l'instituteur : habilitation pour l'enseignenement d'une langue vivante, coordonnateur ZEP, animateur TICE, maître formateur, ressource en science, conseiller pédagogique, …",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Niveau",
+			"label":"ENTEleveNiveau",
+			"note":"TPS, PS, MS, GS, CP, CE1, CE2, CM1 ou CM2",
+			"required":"Fac",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Cycle",
+			"label":"ENTEleveCycle",
+			"note":"cycle 1, cycle 2 ou cycle 3",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Type de classe de l'élève",
+			"label":"ENTEleveTypeClasse",
+			"note":"Classe ordinaire, CLAD, CLIS",
+			"required":"Obl",
+			"multiple":"Mo"
+		},
+		{
+			"attr":"Ecole et classes associées",
+			"label":"ENTPersonClasses",
+			"note":"Ecole et classe(s) associée(s)"
+		},
+		{
+			"attr":"Facultatif même pour les élèves (pas de classe dans les écoles virtuelles)",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Ecole et groupes associés",
+			"label":"ENTPersonGroupes",
+			"note":"Ecole et groupe(s) associé(s)",
+			"required":"Fac",
+			"multiple":"Mu"
+		},
+		{
+			"attr":"Classes dont la personne est responsable",
+			"label":"ENTEnsClassesResponsable",
+			"note":"Ecole et classe(s) associée(s)",
+			"required":"Fac",
+			"multiple":"Mu"
+		}
+	]
+}
