@@ -3,5 +3,6 @@
 	"directory.admin.header": "Annuaire",
 	"directory.admin.export": "Exporter les données d'authentification",
 	"directory.admin.classes":"Voir les classes",
-	"directory.admin.people":"Voir les personnes"
+	"directory.admin.people":"Voir les personnes",
+	"directory.admin.user":"Créer un utilisateur"
 }

@@ -61,14 +61,16 @@
 			"label":"ENTPersonNom",
 			"note":"Nom d'usage pour les personnes physiques, nom de l'organisme pour les personnes morales. Pour les enseignants issus de BE1D, nom patronymique = nom d'usage",
 			"required":"Obl",
-			"multiple":"Mo"
+			"multiple":"Mo",
+			"validator":"lastName"
 		},
 		{
 			"attr":"Prénom usuel",
 			"label":"ENTPersonPrenom",
 			"note":"Prénom pour les personnes physique, organisme dans le cas des personnes morales",
 			"required":"Obl",
-			"multiple":"Mo"
+			"multiple":"Mo",
+			"validator":"firstName"
 		},
 		{
 			"attr":"Autres prénoms",

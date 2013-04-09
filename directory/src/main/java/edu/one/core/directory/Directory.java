@@ -1,31 +1,35 @@
 package edu.one.core.directory;
 
+import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
 import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
+import edu.one.core.datadictionary.dictionary.Dictionary;
 
 public class Directory extends Controller {
 	
 	JsonObject dataMock;
 	Neo neo;
+	Dictionary d;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
+		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		dataMock = new JsonObject(vertx.fileSystem().readFileSync("directory-data-mock.json").toString());
 		container.deployModule("edu.one~wordpress~1.0.0-SNAPSHOT");
-		
+
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request, new JsonObject());
 			}
 		});
-		
+
 		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -34,7 +38,7 @@ public class Directory extends Controller {
 						+ "RETURN distinct n.ENTStructureNomCourant, n.id", request.response);
 			}
 		});
-		
+
 		rm.get("/api/classes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -45,7 +49,7 @@ public class Directory extends Controller {
 						+ "RETURN distinct m.ENTGroupeNom, m.id, n.id", request.response);
 			}
 		});
-		
+
 		rm.get("/api/personnes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -64,6 +68,38 @@ public class Directory extends Controller {
 				neo.send("START n=node(*) WHERE has(n.id) "
 						+ "AND n.id='" + personId + "' "
 						+ "RETURN distinct n.ENTPersonNom, n.ENTPersonPrenom, n.ENTPersonAdresse", request.response);
+			}
+		});
+
+		rm.get("/api/enseignants", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				String classId = request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$");
+				System.out.println("PARAM :" + classId);
+				neo.send("START n=node(*), m=node(*) WHERE has(m.type) "
+						+ "AND m.type='PERSEDUCNAT' AND has(n.id) "
+						+ "AND n.id='" + classId + "' "
+						+ "RETURN distinct m.id, m.ENTPersonNom, m.ENTPersonPrenom, n.id", request.response);
+			}
+		});
+
+		rm.get("/api/create-user", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				JsonObject obj = new JsonObject();
+				Map<String,Boolean> params = d.validateFields(request.params());
+				for (Map.Entry<String, Boolean> entry : params.entrySet()) {
+					obj.putBoolean(entry.getKey(), entry.getValue());
+				}
+				if (!params.containsValue("false")){
+					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
+							+ "AND n.ENTGroupeNom='CM2 de Mme Rousseau'"
+							+ "CREATE (m {ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
+							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
+							+ "ENTPersonDateNaissance:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
+							+ "m-[:APPARTIENT]->n ", request.response);
+				}
+//				renderJson(request, obj);
 			}
 		});
 

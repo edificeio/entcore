@@ -8,6 +8,13 @@
 	</head>
 	<body>
 		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
+		<form method="GET" action="/api/create-user">
+				{{#i18n}}directory.admin.user{{/i18n}}<br>
+				<label>Nom</label><input type="text" name="ENTPersonNom"/><br>
+				<label>Prenom</label><input type="text" name="ENTPersonPrenom"/><br>
+				<label>Date de naissance</label><input type="text" name="ENTPersonDateNaissance"/><br>
+				<input type="submit" value="OK"/>
+			</form>
 		<div id="annuaire">
 			<a href="/api/export" call="exportAuth">{{#i18n}}directory.admin.export{{/i18n}}</a>
 			<div id="schools"></div>
