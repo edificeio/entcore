@@ -1,7 +1,7 @@
 package edu.one.core.admin;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.request.filter.FilterChainHandler;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class Admin extends Controller {
@@ -10,16 +10,16 @@ public class Admin extends Controller {
 	public void start() throws Exception {
 		super.start();
 
-		rm.get("/admin", new FilterChainHandler() {
+		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
-			public void filterAndHandle(HttpServerRequest request) {
+			public void handle(HttpServerRequest request) {
 				renderView(request, config);
 			}
 		});
 
-		rm.get("/logout", new FilterChainHandler() {
+		rm.get("/logout", new Handler<HttpServerRequest>() {
 			@Override
-			public void filterAndHandle(HttpServerRequest request) {
+			public void handle(HttpServerRequest request) {
 				request.response.putHeader("Set-Cookie", "oneID=");
 				redirect(request, "localhost:8009", "/login");
 			}
