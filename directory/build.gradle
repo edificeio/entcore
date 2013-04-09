@@ -1,9 +1,11 @@
 apply from: "gradle/vertx.gradle"
 
 project.evaluationDependsOn(':infra')
+project.evaluationDependsOn(':dataDictionary')
 
 dependencies {
 	provided project(':infra')
+	provided project(':dataDictionary')
 }
 
 test {
