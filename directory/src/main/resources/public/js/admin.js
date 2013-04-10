@@ -81,12 +81,12 @@ var admin = function(){
 		},
 		exportAuth : function(data) {
 			var jdata = jQuery.parseJSON(data);
-			var textString = "DONNÉES D'AUTHENTIFICATION\n\n";
+			var textString = "Nom,Prénom,Login,Mot de passe\n";
 			for (obj in jdata.result){
-				textString += "----------------------------\n"
-					+ "Nom : " + jdata.result[obj]['m.ENTPersonNom'] + "\n"
-					+ "Prénom : " + jdata.result[obj]['m.ENTPersonPrenom'] + "\n"
-					+ "----------------------------\n";
+				textString += jdata.result[obj]['m.ENTPersonNom'] + ","
+					+ jdata.result[obj]['m.ENTPersonPrenom'] + ","
+					+ jdata.result[obj]['m.ENTPersonNom'] + ","
+					+ jdata.result[obj]['m.ENTPersonPrenom'] + "\n";
 			}
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		},
