@@ -89,6 +89,7 @@ public class Directory extends Controller {
 				JsonObject obj = new JsonObject();
 				Map<String,Boolean> params = d.validateFields(request.params());
 				if (!params.values().contains(false)){
+					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
 							+ "AND n.ENTGroupeNom='CM2 de Mme Rousseau'"
 							+ "CREATE (m {ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
@@ -111,6 +112,7 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String neoRequest = createExportRequest(request.params());
+				trace.info("Exporting auth data for " + request.params().get("id"));
 				neo.send(neoRequest, request.response);
 			}
 		});
@@ -119,7 +121,7 @@ public class Directory extends Controller {
 
 
 	private String createExportRequest(Map<String,String> params){
-		if (params.isEmpty()){
+		if (params.get("id").equals("all")){
 			return "START m=node(*) WHERE has(m.type) "
 					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
 					+ "RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom";
