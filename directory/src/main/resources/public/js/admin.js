@@ -22,7 +22,7 @@ var admin = function(){
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
 			for (obj in jdata.result){
-				htmlString +="<h2>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h2>"
+				htmlString +="<h3>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h3>"
 					+ "<a call='classes' href='/api/classes?id=" + jdata.result[obj]["n.id"]
 					+ "'>{{#i18n}}directory.admin.classes{{/i18n}}</a> - "
 					+ "<a href='/api/export?id=" + jdata.result[obj]["n.id"]
@@ -89,6 +89,20 @@ var admin = function(){
 					+ "----------------------------\n";
 			}
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
+		},
+		createUser : function(data) {
+			if (data.result == "error"){
+				console.log(data);
+				for (obj in data){
+					if (obj != "result"){
+						document.getElementById(obj).setAttribute("style", "color: red");
+					}
+				}
+				$('#confirm').html("<span style='color:red'>ERROR !</span>");
+			} else {
+				$('#confirm').html("OK");
+				document.getElementsByTagName("label").setAttribute("style", "color: black");
+			}
 		}
 	};
 
@@ -124,6 +138,9 @@ var admin = function(){
 		},
 		exportAuth : function(o) {
 			getAndRender(o.url, "exportAuth");
+		},
+		createUser : function(o) {
+			getAndRender(o.url.attributes.action.value + "?" + $('#create-user').serialize(), "createUser");
 		}
 	}
 }();

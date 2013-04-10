@@ -88,18 +88,22 @@ public class Directory extends Controller {
 			public void handle(HttpServerRequest request) {
 				JsonObject obj = new JsonObject();
 				Map<String,Boolean> params = d.validateFields(request.params());
-				for (Map.Entry<String, Boolean> entry : params.entrySet()) {
-					obj.putBoolean(entry.getKey(), entry.getValue());
-				}
-				if (!params.containsValue("false")){
+				if (!params.values().contains(false)){
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
 							+ "AND n.ENTGroupeNom='CM2 de Mme Rousseau'"
 							+ "CREATE (m {ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
 							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
 							+ "ENTPersonDateNaissance:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
 							+ "m-[:APPARTIENT]->n ", request.response);
+				} else {
+					obj.putString("result", "error");
+					for (Map.Entry<String, Boolean> entry : params.entrySet()) {
+						if (!entry.getValue()){
+							obj.putString(entry.getKey(), "incorrect");
+						}
+					}
+					renderJson(request, obj);
 				}
-//				renderJson(request, obj);
 			}
 		});
 
