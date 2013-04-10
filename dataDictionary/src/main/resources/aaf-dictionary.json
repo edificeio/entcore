@@ -40,7 +40,8 @@
 			"label":"ENTPersonDateNaissance",
 			"note":"Date de naissance, champ technique utilisé pour dédoublonner les comptes.Facultatif pour les parents issus de l'AAF mais obligatoire en cas de création manuelle.",
 			"required":"Fac",
-			"multiple":"Mo"
+			"multiple":"Mo",
+			"validator":"birthDate"
 		},
 		{
 			"attr":"Nom d'affichage",

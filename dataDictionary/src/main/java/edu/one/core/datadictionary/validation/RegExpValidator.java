@@ -21,6 +21,7 @@ public class RegExpValidator {
 		types.put("lastName", "^\\D{0,38}$");
 		types.put("hour", "^([01][0-9]|2[0-3])$"); // 00-23¶
 		types.put("minute", "^[0-5][0-9]$"); // 00-59
+		types.put("birthDate","(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/((19|20)\\d\\d)");
 	}
 
 	public static Validator instance(String regexpKey, String regexpValue) throws Exception {
