@@ -4,6 +4,7 @@ import edu.one.core.datadictionary.dictionary.aaf.AAFField;
 import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.datadictionary.validation.Validator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
@@ -53,18 +54,23 @@ public class DefaultDictionary implements Dictionary {
 
 
 	@Override
-	public boolean validateField(String name, String value) {
+	public boolean validateField(String name, List<String> values) {
 		Field f = users.get(name);
 		if (f == null) {
 			return false;
 		}
-		return validators.get(f.validator).test(value);
+		for (String value : values) {
+			if (!validators.get(f.validator).test(value)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
-	public Map<String, Boolean> validateFields(Map<String, String> fileds) {
+	public Map<String, Boolean> validateFields(Map<String, List<String>> fields) {
 		Map<String, Boolean> result = new HashMap<>();
-		for (Map.Entry<String, String> entry : fileds.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : fields.entrySet()) {
 			result.put(entry.getKey(), validateField(entry.getKey(), entry.getValue()));
 		}
 		return result;
