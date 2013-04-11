@@ -4,8 +4,8 @@
  */
 package edu.one.core.sync.aaf;
 
+import edu.one.core.sync.SyncUtils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class AafGeoffHelper {
 	private List<String> regroupementsCrees;
 	private WordpressHelper wph;
 	public int total = 0;
-	
+
 	public AafGeoffHelper(Logger log, EventBus eb, WordpressHelper wph) {
 		this.log = log;
 		this.eb = eb;
@@ -46,7 +46,7 @@ public class AafGeoffHelper {
 		for (Operation operation : operations) {
 			// création du noeud associé à l'opération avec ses attributs
 			addRequest(request, operation.id, operation.typeEntite, operation.attributs);
-			
+
 			// création des relations et des groupements éventuels
 			if (operation.typeEntite == Operation.TypeEntite.ELEVE
 					|| operation.typeEntite == Operation.TypeEntite.PERSEDUCNAT) {
@@ -107,7 +107,7 @@ public class AafGeoffHelper {
 		}
 		req.append("}\n");
 		total++;
-		
+
 		// Gestion WP
 		// TODO : isoler de geoff
 		// TODO : contrôles existence, not null, etc.
@@ -115,7 +115,7 @@ public class AafGeoffHelper {
 			case ETABEDUCNAT :
 				wph.addSchool(id
 						, typeEntite.toString()
-						, attrs.get(AafConstantes.NOM_ECOLE_ATTR).get(0));
+						, attrs.get(AafConstantes.STRUCTURE_NOM_ATTR).get(0));
 				break;
 			case CLASSE :
 				wph.addGroup(normalizeRef(id)
@@ -132,15 +132,19 @@ public class AafGeoffHelper {
 			case PERSEDUCNAT :
 				wph.addPerson(id
 						, typeEntite.toString()
-						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
-						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+						, attrs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
 				wph.addPersonClass(id, normalizeRef(attrs.get(AafConstantes.CLASSES_ATTR).get(0)));
 				break;
 			case ELEVE :
 				wph.addPerson(id
 						, typeEntite.toString()
-						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
-						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+						, attrs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
 				wph.addPersonClass(id, normalizeRef(attrs.get(AafConstantes.CLASSES_ATTR).get(0)));
 				// liens parent / classe
 				for (String parent : attrs.get(AafConstantes.PARENTS_ATTR)) {
@@ -152,10 +156,12 @@ public class AafGeoffHelper {
 			case PERSRELELEVE :
 				wph.addPerson(id
 						, typeEntite.toString()
-						, attrs.get(AafConstantes.NOM_PERSONNE_ATTR).get(0)
-						, attrs.get(AafConstantes.PRENOM_PERSONNE_ATTR).get(0));
+						, attrs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, attrs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
 				break;
-			default : 
+			default :
 				break;
 		}
 	}
@@ -166,7 +172,7 @@ public class AafGeoffHelper {
 		req.append("(").append(noeud2).append(")\n");
 		total++;
 	}
-	
+
 	private void relGroupements(
 			StringBuffer req, Operation op, Operation.TypeEntite typeEntite, String nomAttr) {
 		// parcourir les groupements de l'opération
@@ -188,7 +194,7 @@ public class AafGeoffHelper {
 			addRelation(req,noeudPersonne,noeudGroupement,AafConstantes.REL_APPARTIENT);
 		}
 	}
-	
+
 	private void relEcoles(StringBuffer req, Operation op) {
 		// parcourir les écoles de l'opération
 		for (String ecole : op.attributs.get(AafConstantes.ECOLE_ATTR)) {
@@ -198,41 +204,36 @@ public class AafGeoffHelper {
 			addRelation(req,noeudPersonne,noeudEcole,AafConstantes.REL_APPARTIENT);
 		}
 	}
-	
+
 	private void relParents(StringBuffer req, Operation op) {
 		// parcourir les parents de l'opération
 		for (String parent : op.attributs.get(AafConstantes.PARENTS_ATTR)) {
 			String[] parentAttr = parent.split(AafConstantes.AAF_SEPARATOR);
 			// création du lien parent / enfant
 			String noeudEnfant = op.typeEntite.toString() + "_" + op.id;
-			String noeudParent = Operation.TypeEntite.PERSRELELEVE.toString() 
+			String noeudParent = Operation.TypeEntite.PERSRELELEVE.toString()
 					+ "_" + parentAttr[AafConstantes.PARENT_ID_INDEX];
 			addRelation(req,noeudEnfant,noeudParent,AafConstantes.REL_PARENT);
 		}
 	}
-	
+
 	private Map<String,List<String>> getAttrsRegroupement(String regroupement) {
 		Map<String,List<String>> attrs = new HashMap<>();
 		String[] values = regroupement.split(AafConstantes.AAF_SEPARATOR);
 		// 3 valeurs normalement : idEcole + typeGroupe + nomGroupe
 		if (values.length == 3) {
-			attrs.put(
-					AafConstantes.GROUPE_ECOLE_ATTR, strToList(values[AafConstantes.GROUPE_ECOLE_INDEX]));
-			attrs.put(
-					AafConstantes.GROUPE_TYPE_ATTR, strToList(values[AafConstantes.GROUPE_TYPE_INDEX]));
-			attrs.put(
-					AafConstantes.GROUPE_NOM_ATTR, strToList(values[AafConstantes.GROUPE_NOM_INDEX]));
+			attrs.put(AafConstantes.GROUPE_ECOLE_ATTR
+					, SyncUtils.strToList(values[AafConstantes.GROUPE_ECOLE_INDEX]));
+			attrs.put(AafConstantes.GROUPE_TYPE_ATTR
+					, SyncUtils.strToList(values[AafConstantes.GROUPE_TYPE_INDEX]));
+			attrs.put(AafConstantes.GROUPE_NOM_ATTR
+					, SyncUtils.strToList(values[AafConstantes.GROUPE_NOM_INDEX]));
 		} else {
 			log.error("Groupement non conforme : " + regroupement + " => " + values.length);
 		}
 		return attrs;
 	}
-	
-	private List<String> strToList(String chaine) {
-		String[] array = {chaine};
-		return Arrays.asList(array);
-	}
-	
+
 	private String normalizeRef(String name) {
 		return name
 				.replaceAll(AafConstantes.AAF_SEPARATOR, "_")
