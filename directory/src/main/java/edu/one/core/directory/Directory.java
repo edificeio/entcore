@@ -92,16 +92,15 @@ public class Directory extends Controller {
 					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
 							+ "AND n.ENTGroupeNom='CM2 de Mme Rousseau'"
-							+ "CREATE (m {ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
+							+ "CREATE (m {id:'m0000001', type:'ELEVE',"
+							+ "ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
 							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
 							+ "ENTPersonDateNaissance:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
 							+ "m-[:APPARTIENT]->n ", request.response);
 				} else {
 					obj.putString("result", "error");
 					for (Map.Entry<String, Boolean> entry : params.entrySet()) {
-						if (!entry.getValue()){
-							obj.putString(entry.getKey(), "incorrect");
-						}
+						obj.putBoolean(entry.getKey(), entry.getValue());
 					}
 					renderJson(request, obj);
 				}

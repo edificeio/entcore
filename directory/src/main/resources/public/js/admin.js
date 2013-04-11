@@ -91,17 +91,23 @@ var admin = function(){
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		},
 		createUser : function(data) {
-			if (data.result == "error"){
+			if (data.result === "error"){
 				console.log(data);
 				for (obj in data){
-					if (obj != "result"){
-						document.getElementById(obj).setAttribute("style", "color: red");
+					if (obj !== "result"){
+						if (data[obj]){
+							document.getElementById(obj).setAttribute("style", "color:black");
+						} else {
+							document.getElementById(obj).setAttribute("style", "color:red");
+						}
 					}
 				}
 				$('#confirm').html("<span style='color:red'>ERROR !</span>");
 			} else {
 				$('#confirm').html("OK");
-				document.getElementsByTagName("label").setAttribute("style", "color: black");
+				for (obj in document.getElementById('create-user').children){
+					document.getElementById('create-user').children[obj].setAttribute("style", "color: black");
+				}
 			}
 		}
 	};
