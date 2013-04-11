@@ -11,9 +11,20 @@
 		<div id="annuaire">
 			<form method="GET" action="/api/create-user" id="create-user">
 				{{#i18n}}directory.admin.create-user{{/i18n}}<br>
-				<label id="ENTPersonNom">Nom* </label><input type="text" name="ENTPersonNom"/>
-				<label id="ENTPersonPrenom"> Prenom* </label><input type="text" name="ENTPersonPrenom"/>
-				<label id="ENTPersonDateNaissance"> Date de naissance* </label><input type="text" name="ENTPersonDateNaissance"/>
+				<label id="ENTPersonNom">{{#i18n}}directory.admin.lastname{{/i18n}}* </label><input type="text" name="ENTPersonNom"/>
+				<label id="ENTPersonPrenom">{{#i18n}}directory.admin.firstname{{/i18n}}* </label><input type="text" name="ENTPersonPrenom"/>
+				<label id="ENTPersonDateNaissance">{{#i18n}}directory.admin.birthdate{{/i18n}}* </label><input type="text" name="ENTPersonDateNaissance"/>
+				<label>{{#i18n}}directory.admin.profile{{/i18n}}* </label>
+				<select id="ENTPersonProfils">
+					<option value="ELEVE">Élève</option>
+					<option value="PERSEDUCNAT">Personnel</option>
+					<option value="PERSRELELEVE">Parent</option>
+				</select>
+				<label id="ENTPersonStructRattach">{{#i18n}}directory.admin.group{{/i18n}}* </label>
+				<select id="groupe">
+					<option value="CM2 de Mme Rousseau">CM2 de Mme Rousseau</option>
+					<option value="CE1-CE2 (Mme Leclerc)">CE1-CE2 (Mme Leclerc)</option>
+				</select>
 				<input type="submit" call="createUser" action="/api/create-user" value="OK"/>
 			</form>
 			<div id="confirm"></div>

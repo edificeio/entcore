@@ -91,8 +91,8 @@ public class Directory extends Controller {
 				if (!params.values().contains(false)){
 					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
-							+ "AND n.ENTGroupeNom='CM2 de Mme Rousseau'"
-							+ "CREATE (m {id:'m0000001', type:'ELEVE',"
+							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "'"
+							+ "CREATE (m {id:'m0000001', type:'" + request.params().get("ENTPersonProfils") + "',"
 							+ "ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
 							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
 							+ "ENTPersonDateNaissance:'"+request.params().get("ENTPersonDateNaissance") +"'}), "

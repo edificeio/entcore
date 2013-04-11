@@ -5,5 +5,10 @@
 	"directory.admin.classes":"Voir les classes",
 	"directory.admin.people":"Voir les personnes",
 	"directory.admin.create-user":"Ajouter un utilisateur",
-	"directory.admin.schools":"Écoles"
+	"directory.admin.schools":"Écoles",
+	"directory.admin.lastname":"Nom",
+	"directory.admin.firstname":"Prénom",
+	"directory.admin.birthdate":"Date de naissance",
+	"directory.admin.profile":"Profil",
+	"directory.admin.group":"Groupe"
 }

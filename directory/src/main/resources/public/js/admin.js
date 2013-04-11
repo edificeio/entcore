@@ -146,7 +146,11 @@ var admin = function(){
 			getAndRender(o.url, "exportAuth");
 		},
 		createUser : function(o) {
-			getAndRender(o.url.attributes.action.value + "?" + $('#create-user').serialize(), "createUser");
+			var url = o.url.attributes.action.value + '?'
+				+ $('#create-user').serialize()
+				+ '&ENTPersonProfils=' + $('#profile').val()
+				+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
+			getAndRender(url, "createUser");
 		}
 	}
 }();
