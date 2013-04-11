@@ -1,5 +1,6 @@
 package edu.one.core.sync.aaf;
 
+import edu.one.core.datadictionary.dictionary.Dictionary;
 import java.util.ArrayList;
 import java.util.List;
 import org.vertx.java.core.logging.Logger;
@@ -15,18 +16,23 @@ public class AafSaxContentHandler extends DefaultHandler {
 	private Logger log;
 	public Operation oc;
 	public List<Operation> operations;
+	public List<Operation> operationsInvalides;
 	private long startDoc;
 	private long endDoc;
+	private Dictionary d;
 
-	public AafSaxContentHandler(Logger log) {
+	public AafSaxContentHandler(Logger log, Dictionary d) {
 		this.log = log;
+		this.d = d;
 		operations = new ArrayList<>();
+		operationsInvalides = new ArrayList<>();
 	}
 
 	public void reset() {
 		operations = new ArrayList<>();
+		operationsInvalides = new ArrayList<>();
 	}
-	
+
 	@Override
 	public void startDocument() throws SAXException {
 		super.startDocument();
@@ -77,7 +83,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		super.characters(ch, start, length);
 
-		String valeur = new String(ch, start, length);
+		String valeur = new String(ch, start, length).trim();
 		switch (oc.etatAvancement) {
 			case TYPE_ENTITE :
 				oc.typeEntite = Operation.TypeEntite.valueOf(valeur.toUpperCase());
@@ -98,13 +104,26 @@ public class AafSaxContentHandler extends DefaultHandler {
 
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
-				operations.add(oc);
+				oc.ajouterAttributsCalcules();
+				if (d.validateFields(oc.attributs).containsValue(false)) {
+					operationsInvalides.add(oc);
+				} else {
+					operations.add(oc);
+				}
 				break;
 			case AafConstantes.UPDATE_TAG :
-				operations.add(oc);
+				if (d.validateFields(oc.attributs).containsValue(false)) {
+					operationsInvalides.add(oc);
+				} else {
+					operations.add(oc);
+				}
 				break;
 			case AafConstantes.DELETE_TAG :
-				operations.add(oc);
+				if (d.validateFields(oc.attributs).containsValue(false)) {
+					operationsInvalides.add(oc);
+				} else {
+					operations.add(oc);
+				}
 				break;
 			case AafConstantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {

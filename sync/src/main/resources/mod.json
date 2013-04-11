@@ -1,7 +1,7 @@
 {
 	"main":"edu.one.core.sync.Sync",
-	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
-"port": 8005,
+	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT,edu.one.core~dataDictionary~0.1.0-SNAPSHOT",
+	"port": 8005,
 	"mode": "dev",
-	"input-files-folder" : "/home/rafik/code/one/one-core/data/dev/aaf/"
+	"input-files-folder" : "/opt/one/aaf_files/"
 }

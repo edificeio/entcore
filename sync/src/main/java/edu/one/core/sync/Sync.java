@@ -1,5 +1,6 @@
 package edu.one.core.sync;
 
+import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.infra.Controller;
 import edu.one.core.sync.aaf.AafConstantes;
 import edu.one.core.sync.aaf.AafGeoffHelper;
@@ -14,16 +15,16 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 public class Sync extends Controller {
-
-	XMLReader xr;
-	AafSaxContentHandler aafSaxHandler;
-	AafGeoffHelper aafGeoffHelper;
-	WordpressHelper wordpressHelper;
+	private XMLReader xr;
+	private AafSaxContentHandler aafSaxHandler;
+	private AafGeoffHelper aafGeoffHelper;
+	private WordpressHelper wordpressHelper;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
-		aafSaxHandler = new AafSaxContentHandler(log);
+		aafSaxHandler = new AafSaxContentHandler(log, new DefaultDictionary(
+				vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json"));
 		wordpressHelper = new WordpressHelper(log, vertx.eventBus());
 		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus(), wordpressHelper);
 		xr = XMLReaderFactory.createXMLReader();
@@ -41,13 +42,14 @@ public class Sync extends Controller {
 			public void handle(HttpServerRequest request) {
 				try {
 					long startTest = System.currentTimeMillis();
-					int nbOps = test();
+					int[] crTest = test();
 					long endTest = System.currentTimeMillis();
 
 					JsonObject jo = new JsonObject().putObject("result",
 						new JsonObject()
 							.putString("temps", (endTest - startTest) + " ms")
-							.putNumber("operations", nbOps)
+							.putNumber("operations", crTest[0])
+							.putNumber("rejets", crTest[1])
 					);
 					renderJson(request, jo);
 				} catch (Exception ex) {
@@ -58,7 +60,7 @@ public class Sync extends Controller {
 		});
 	}
 
-	public int test() throws Exception {
+	public int[] test() throws Exception {
 		// Parsing of xml aaf files
 		for (String filter : AafConstantes.AAF_FILTERS) {
 		String [] files = vertx.fileSystem().readDirSync(
@@ -71,10 +73,11 @@ public class Sync extends Controller {
 		aafGeoffHelper.sendRequest(aafSaxHandler.operations);
 		// Send WP requests
 		wordpressHelper.send();
-		
+
 		// reset objects
+		int[] cr = {aafGeoffHelper.reset(),aafSaxHandler.operationsInvalides.size()};
 		aafSaxHandler.reset();
 		wordpressHelper.reset();
-		return aafGeoffHelper.reset();
+		return cr;
 	}
 }
