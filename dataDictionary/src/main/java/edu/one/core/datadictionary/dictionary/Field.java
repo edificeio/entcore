@@ -1,7 +1,5 @@
 package edu.one.core.datadictionary.dictionary;
 
-import edu.one.core.datadictionary.validation.Validator;
-
 public class Field {
 
 	protected String name;

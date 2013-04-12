@@ -52,7 +52,6 @@ public class DefaultDictionary implements Dictionary {
 		}
 	}
 
-
 	@Override
 	public boolean validateField(String name, List<String> values) {
 		Field f = users.get(name);
@@ -68,9 +67,27 @@ public class DefaultDictionary implements Dictionary {
 	}
 
 	@Override
-	public Map<String, Boolean> validateFields(Map<String, List<String>> fields) {
+	public boolean validateField(String name, String value) {
+		Field f = users.get(name);
+		if (f == null) {
+			return false;
+		}
+		return validators.get(f.validator).test(value);
+	}
+
+	@Override
+	public Map<String, Boolean> validateFieldsList(Map<String, List<String>> fields) {
 		Map<String, Boolean> result = new HashMap<>();
 		for (Map.Entry<String, List<String>> entry : fields.entrySet()) {
+			result.put(entry.getKey(), validateField(entry.getKey(), entry.getValue()));
+		}
+		return result;
+	}
+
+	@Override
+	public Map<String, Boolean> validateFields(Map<String, String> fields) {
+		Map<String, Boolean> result = new HashMap<>();
+		for (Map.Entry<String, String> entry : fields.entrySet()) {
 			result.put(entry.getKey(), validateField(entry.getKey(), entry.getValue()));
 		}
 		return result;

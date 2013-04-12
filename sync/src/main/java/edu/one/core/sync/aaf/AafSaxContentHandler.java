@@ -105,21 +105,21 @@ public class AafSaxContentHandler extends DefaultHandler {
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
 				oc.ajouterAttributsCalcules();
-				if (d.validateFields(oc.attributs).containsValue(false)) {
+				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
 					operationsInvalides.add(oc);
 				} else {
 					operations.add(oc);
 				}
 				break;
 			case AafConstantes.UPDATE_TAG :
-				if (d.validateFields(oc.attributs).containsValue(false)) {
+				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
 					operationsInvalides.add(oc);
 				} else {
 					operations.add(oc);
 				}
 				break;
 			case AafConstantes.DELETE_TAG :
-				if (d.validateFields(oc.attributs).containsValue(false)) {
+				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
 					operationsInvalides.add(oc);
 				} else {
 					operations.add(oc);

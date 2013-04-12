@@ -7,7 +7,11 @@ public interface Dictionary {
 
 	boolean validateField(String name, List<String> values);
 
-	Map<String, Boolean> validateFields(Map<String,List<String>> fields);
+	boolean validateField(String name, String value);
+
+	Map<String, Boolean> validateFieldsList(Map<String,List<String>> fields);
+
+	Map<String, Boolean> validateFields(Map<String,String> fields);
 
 	void link(String oneField, String specificField);
 
