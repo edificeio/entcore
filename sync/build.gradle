@@ -1,9 +1,11 @@
 apply from: "gradle/vertx.gradle"
 
 project.evaluationDependsOn(':infra')
+project.evaluationDependsOn(':dataDictionary')
 
 dependencies {
 	provided project(':infra')
+	provided project(':dataDictionary')
 }
 
 test {
@@ -21,7 +23,7 @@ def configurePom(def pom) {
 			developer {
 				id 'benjamin.perez'
 				name 'Benjamin Perez'
-				email 'benjamin.perez@web-educcation.net'
+				email 'benjamin.perez@web-education.net'
 			}
 		}
 
