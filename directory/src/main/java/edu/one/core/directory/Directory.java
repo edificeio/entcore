@@ -8,6 +8,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import edu.one.core.datadictionary.dictionary.Dictionary;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Directory extends Controller {
 	
@@ -106,6 +108,24 @@ public class Directory extends Controller {
 					}
 					renderJson(request, obj);
 				}
+			}
+		});
+
+		rm.get("/api/create-group", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				List users = new ArrayList<String>();
+				for (Map.Entry<String, String> entry : request.params().entrySet()) {
+					if (!entry.getKey().equals("ENTGroupeNom")){
+						users.add(entry.getValue());
+					}
+				}
+				trace.info("Creating new Group : " + request.params().get("ENTGroupeNom"));
+				neo.send("START n=node(*) WHERE has(n.id) AND n.id='4400000002'"
+						+ "CREATE (m {id:'g0000001', type:'GROUPE',"
+						+ "ENTGroupeNom:'"+request.params().get("ENTGroupeNom")
+						+"', ENTPeople:'" + users.toString() + "'}), "
+						+ "m-[:APPARTIENT]->n ", request.response);
 			}
 		});
 

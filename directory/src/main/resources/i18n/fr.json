@@ -10,5 +10,6 @@
 	"directory.admin.firstname":"Prénom",
 	"directory.admin.birthdate":"Date de naissance",
 	"directory.admin.profile":"Profil",
-	"directory.admin.group":"Groupe"
+	"directory.admin.group":"Groupe",
+	"directory.admin.create-group":"Créer un groupe"
 }

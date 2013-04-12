@@ -90,6 +90,17 @@ var admin = function(){
 			}
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		},
+		groups : function(data) {
+			var htmlString = '';
+			var jdata = jQuery.parseJSON(data);
+			for (obj in jdata.result){
+				htmlString +='<input type="checkbox" name="'
+					+ jdata.result[obj]['m.id'] + '" value="'
+					+ jdata.result[obj]['m.id'] + '" />' + jdata.result[obj]['m.ENTPersonNom']
+					+ ' ' + jdata.result[obj]['m.ENTPersonPrenom'] + ' - ';
+			}
+			$('#users').html(htmlString);
+		},
 		createUser : function(data) {
 			if (data.result === "error"){
 				console.log(data);
@@ -118,6 +129,7 @@ var admin = function(){
 	return {
 		init : function() {
 			admin.ecole('/api/ecole');
+			admin.personnesEcole('/api/personnes?id=4400000002')
 			$('body').delegate('#annuaire', 'click',function(event) {
 				event.preventDefault();
 				console.log(event.target);
@@ -135,6 +147,9 @@ var admin = function(){
 		},
 		classes : function(o) {
 			getAndRender(o.url, "classes");
+		},
+		personnesEcole : function(url) {
+			getAndRender(url, "groups");
 		},
 		personnes : function(o) {
 			getAndRender(o.url, "personnes");
@@ -154,8 +169,8 @@ var admin = function(){
 				+ '&ENTPersonProfils=' + $('#profile').val()
 				+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
 			getAndRender(url, "createUser");
+			}
 		}
-	}
 }();
 
 
