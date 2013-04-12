@@ -105,25 +105,22 @@ public class AafSaxContentHandler extends DefaultHandler {
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
 				oc.ajouterAttributsCalcules();
-				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
-					operationsInvalides.add(oc);
-				} else {
+				if (oc.typeEntite == Operation.TypeEntite.ETABEDUCNAT) {
+					// TODO : ajouter la validation pour les écoles
 					operations.add(oc);
+				} else {
+					if (d.validateFieldsList(oc.attributs).containsValue(false)) {
+						operationsInvalides.add(oc);
+					} else {
+						operations.add(oc);
+					}
 				}
 				break;
 			case AafConstantes.UPDATE_TAG :
-				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
-					operationsInvalides.add(oc);
-				} else {
-					operations.add(oc);
-				}
+				// TODO : action de mise à jour
 				break;
 			case AafConstantes.DELETE_TAG :
-				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
-					operationsInvalides.add(oc);
-				} else {
-					operations.add(oc);
-				}
+				// TODO : action de suppression
 				break;
 			case AafConstantes.ATTR_TAG :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
