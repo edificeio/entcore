@@ -93,20 +93,23 @@ var admin = function(){
 		createUser : function(data) {
 			if (data.result === "error"){
 				console.log(data);
+				for (obj in document.getElementById('create-user').children){
+					if (document.getElementById('create-user').children[obj].localName === 'label'){
+						document.getElementById('create-user').children[obj].removeAttribute("style");
+					}
+				}
 				for (obj in data){
 					if (obj !== "result"){
-						if (data[obj]){
-							document.getElementById(obj).setAttribute("style", "color:black");
-						} else {
-							document.getElementById(obj).setAttribute("style", "color:red");
-						}
+						document.getElementById(obj).setAttribute("style", "color:red");
 					}
 				}
 				$('#confirm').html("<span style='color:red'>ERROR !</span>");
 			} else {
 				$('#confirm').html("OK");
 				for (obj in document.getElementById('create-user').children){
-					document.getElementById('create-user').children[obj].setAttribute("style", "color: black");
+					if (document.getElementById('create-user').children[obj].localName === 'label'){
+						document.getElementById('create-user').children[obj].removeAttribute("style");
+					}
 				}
 			}
 		}

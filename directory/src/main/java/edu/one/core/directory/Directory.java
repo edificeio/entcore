@@ -91,7 +91,7 @@ public class Directory extends Controller {
 				if (!params.values().contains(false)){
 					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
-							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "'"
+							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
 							+ "CREATE (m {id:'m0000001', type:'" + request.params().get("ENTPersonProfils") + "',"
 							+ "ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
 							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
@@ -100,7 +100,9 @@ public class Directory extends Controller {
 				} else {
 					obj.putString("result", "error");
 					for (Map.Entry<String, Boolean> entry : params.entrySet()) {
-						obj.putBoolean(entry.getKey(), entry.getValue());
+						if (!entry.getValue()){
+							obj.putBoolean(entry.getKey(), entry.getValue());
+						}
 					}
 					renderJson(request, obj);
 				}
