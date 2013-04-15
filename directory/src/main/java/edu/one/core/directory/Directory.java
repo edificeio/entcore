@@ -86,6 +86,19 @@ public class Directory extends Controller {
 			}
 		});
 
+		rm.get("/api/membres", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				String[] people = request.params().get("data").split("-");
+				String neoRequest = "START n=node(*) where has(n.id) and (";
+				for (String id : people) {
+					neoRequest += "n.id='" + id + "' or ";
+				}
+				neoRequest += "n.id='') return distinct n.id, n.ENTPersonNom, n.ENTPersonPrenom";
+				neo.send(neoRequest, request.response);
+			}
+		});
+
 		rm.get("/api/details", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {

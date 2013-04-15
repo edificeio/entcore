@@ -35,7 +35,10 @@ var admin = function(){
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
 			for (obj in jdata.result){
-				htmlString += "<h3>" + jdata.result[obj]["n.ENTGroupeNom"] + "</h3>";
+				htmlString += "<h3>" + jdata.result[obj]["n.ENTGroupeNom"] + "</h3>"
+					+ "<a call='membres' href='/api/membres?data="
+					+ jdata.result[obj]["n.ENTPeople"].replace(/\[/g, '').replace(/\]/g, '').replace(/, /g,'-')
+					+ "'>{{#i18n}}directory.admin.people{{/i18n}}</a>";
 			}
 			$('#groups').html(htmlString);
 		},
@@ -75,6 +78,15 @@ var admin = function(){
 				htmlString += "</span><div id='details'></div>";
 				$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
 			}
+		},
+		membres : function(data){
+			var htmlString='<span>';
+			var jdata = jQuery.parseJSON(data);
+			for (obj in jdata.result){
+				htmlString += jdata.result[obj]['n.ENTPersonNom']
+						+ " " +jdata.result[obj]['n.ENTPersonPrenom'] + " - ";
+			}
+			$('#members').html(htmlString + "</span>");
 		},
 		personne : function(data) {
 			if (!!$('#details').children('form').length) {
@@ -133,7 +145,8 @@ var admin = function(){
 			}
 		},
 		createGroup : function(data) {
-			if (data.status === 'ok'){
+			var jdata = jQuery.parseJSON(data);
+			if (jdata.status === 'ok'){
 				$('#confirm').html("OK");
 			} else {
 				$('#confirm').html("ERREUR !");
