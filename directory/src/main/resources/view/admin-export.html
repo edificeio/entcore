@@ -12,16 +12,9 @@
 		<a href="/admin-create">{{#i18n}}directory.admin.creation{{/i18n}}</a> - 
 		<a href="/admin-export">{{#i18n}}directory.admin.exports{{/i18n}}</a>
 		<div id="annuaire">
-			<table>
-				<tr>
-					<td><h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2></td>
-					<td><h2>Groupes</h2></td>
-				</tr>
-				<tr>
-					<td><div id="schools"></div></td>
-					<td><div id="groups"></div></td>
-				</tr>
-			</table>
+			<h2>{{#i18n}}directory.admin.exports{{/i18n}}</h2>
+			<a href="/api/export?id=all" call="exportAuth">{{#i18n}}directory.admin.export{{/i18n}}</a>
+			<div id="schools"></div>
 		</div>
 	</body>
 </html>

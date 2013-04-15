@@ -31,6 +31,20 @@ public class Directory extends Controller {
 				renderView(request, new JsonObject());
 			}
 		});
+		
+		rm.get("/admin-export", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				renderView(request, new JsonObject());
+			}
+		});
+		
+		rm.get("/admin-create", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				renderView(request, new JsonObject());
+			}
+		});
 
 		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
@@ -38,6 +52,15 @@ public class Directory extends Controller {
 				neo.send("START n=node(*) WHERE has(n.type) "
 						+ "AND n.type='ETABEDUCNAT' "
 						+ "RETURN distinct n.ENTStructureNomCourant, n.id", request.response);
+			}
+		});
+		
+		rm.get("/api/groupes", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				neo.send("START n=node(*) WHERE has(n.type) "
+						+ "AND n.type='GROUPE' "
+						+ "RETURN distinct n.ENTGroupeNom, n.id, n.ENTPeople", request.response);
 			}
 		});
 

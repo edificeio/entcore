@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
+		<a href="/admin">{{#i18n}}directory.admin.display{{/i18n}}</a> - 
+		<a href="/admin-create">{{#i18n}}directory.admin.creation{{/i18n}}</a> - 
+		<a href="/admin-export">{{#i18n}}directory.admin.exports{{/i18n}}</a>		<br>
+		<div id="annuaire">
+		<table>
+			<tr>
+				<td><h3>{{#i18n}}directory.admin.create-user{{/i18n}}</h3></td>
+				<td><h3>{{#i18n}}directory.admin.create-group{{/i18n}}</h3></td>
+			</tr>
+			<tr>
+				<td>
+					<form method="GET" action="/api/create-user" id="create-user">
+						<table>
+							<tr>
+								<td><label id="ENTPersonNom">{{#i18n}}directory.admin.lastname{{/i18n}}* </label></td>
+								<td><input type="text" name="ENTPersonNom"/></td>
+							</tr>
+							<tr>
+								<td><label id="ENTPersonPrenom">{{#i18n}}directory.admin.firstname{{/i18n}}* </label></td>
+								<td><input type="text" name="ENTPersonPrenom"/></td>
+							</tr>
+							<tr>
+								<td><label id="ENTPersonDateNaissance">{{#i18n}}directory.admin.birthdate{{/i18n}}* </label></td>
+								<td><input type="text" name="ENTPersonDateNaissance"/></td>
+							</tr>
+							<tr>
+								<td><label id="ENTPersonProfils">{{#i18n}}directory.admin.profile{{/i18n}}* </label></td>
+								<td><select id="profile">
+										<option value="ELEVE">Élève</option>
+										<option value="PERSEDUCNAT">Personnel</option>
+										<option value="PERSRELELEVE">Parent</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td><label id="ENTPersonStructRattach">{{#i18n}}directory.admin.group{{/i18n}}* </label></td>
+								<td>
+									<select id="groupe">
+										<option value="CM2 de Mme Rousseau">CM2 de Mme Rousseau</option>
+										<option value="CE1-CE2 (Mme Leclerc)">CE1-CE2 (Mme Leclerc)</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<div id="annuaire">
+								<td colspan="2"><input type="submit" call="createUser" action="/api/create-user" value="OK"/></td>
+								</div>
+							</tr>
+						</table>
+					</form>
+				</td>
+				<td>
+					<form method="GET" action="/api/create-group" id="create-group">
+						<table>
+							<tr>
+								<td><label id="ENTGroupeNom">{{#i18n}}directory.admin.group{{/i18n}}:</label></td>
+								<td><input type="text" name="ENTGroupeNom"/></td>
+							</tr>
+							<tr>
+								<td colspan="2"><div id="users"></div></td>
+							</tr>
+							<tr>
+								<td colspan="2"><input type="submit" call="createGroup" action="/api/create-group" value="OK"/></td>
+							</tr>
+						</table>
+					</form>
+				</td>
+			</tr>
+		</table>
+		<div id="confirm"></div>
+	</div>
+	</body>
+</html>

@@ -31,6 +31,14 @@ var admin = function(){
 			}
 			$("#schools").html(htmlString);
 		},
+		groupes : function(data){
+			var htmlString = '';
+			var jdata = jQuery.parseJSON(data);
+			for (obj in jdata.result){
+				htmlString += "<h3>" + jdata.result[obj]["n.ENTGroupeNom"] + "</h3>";
+			}
+			$('#groups').html(htmlString);
+		},
 		classes: function(data) {
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
@@ -90,7 +98,7 @@ var admin = function(){
 			}
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		},
-		groups : function(data) {
+		personnesEcole : function(data) {
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
 			for (obj in jdata.result){
@@ -123,17 +131,26 @@ var admin = function(){
 					}
 				}
 			}
+		},
+		createGroup : function(data) {
+			if (data.status === 'ok'){
+				$('#confirm').html("OK");
+			} else {
+				$('#confirm').html("ERREUR !");
+			}
+			
 		}
 	};
 
 	return {
 		init : function() {
 			admin.ecole('/api/ecole');
+			admin.groupes('/api/groupes');
 			admin.personnesEcole('/api/personnes?id=4400000002')
 			$('body').delegate('#annuaire', 'click',function(event) {
-				event.preventDefault();
 				console.log(event.target);
 				if (event.target.getAttribute('call')){
+					event.preventDefault();
 					var call = event.target.getAttribute('call');
 					admin[call](
 						{url : event.target, id: event.id}
@@ -148,11 +165,17 @@ var admin = function(){
 		classes : function(o) {
 			getAndRender(o.url, "classes");
 		},
+		groupes : function(url) {
+			getAndRender(url, "groupes");
+		},
 		personnesEcole : function(url) {
-			getAndRender(url, "groups");
+			getAndRender(url, "personnesEcole");
 		},
 		personnes : function(o) {
 			getAndRender(o.url, "personnes");
+		},
+		membres : function(o) {
+			getAndRender(o.url, "membres");
 		},
 		personne : function(o) {
 			getAndRender(o.url, "personne");
@@ -169,8 +192,13 @@ var admin = function(){
 				+ '&ENTPersonProfils=' + $('#profile').val()
 				+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
 			getAndRender(url, "createUser");
-			}
+		},
+		createGroup : function(o) {
+			var url = o.url.attributes.action.value + '?'
+				+ $('#create-group').serialize();
+			getAndRender(url, "createGroup");
 		}
+	}
 }();
 
 

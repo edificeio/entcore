@@ -1,6 +1,9 @@
 {
 	"directory.admin.title": "One : Admin annuaire",
 	"directory.admin.header": "Annuaire",
+	"directory.admin.display" : "Visualiser",
+	"directory.admin.creation" : "Créer",
+	"directory.admin.exports" : "Exporter",
 	"directory.admin.export": "Exporter les données d'authentification",
 	"directory.admin.classes":"Voir les classes",
 	"directory.admin.people":"Voir les personnes",
