@@ -179,14 +179,14 @@ public class Directory extends Controller {
 
 	private String createExportRequest(Map<String,String> params){
 		if (params.get("id").equals("all")){
-			return "START m=node(*) WHERE has(m.type) "
+			return "START m=node(*) WHERE has(m.type) AND has(m.ENTPersonLogin)"
 					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
-					+ "RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom";
+					+ "RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom, m.ENTPersonLogin, m.ENTPersonMotDePasse";
 		} else {
 			return "START n=node(*) MATCH n<--m "
-					+ "WHERE has(n.id) AND n.id='" + params.get("id") + "' "
+					+ "WHERE has(n.id)  AND has(m.ENTPersonLogin) AND n.id='" + params.get("id") + "' "
 					+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
-					+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom";
+					+ "RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom, m.ENTPersonLogin, m.ENTPersonMotDePasse";
 		}
 	}
 

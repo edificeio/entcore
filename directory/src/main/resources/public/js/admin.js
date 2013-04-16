@@ -105,8 +105,8 @@ var admin = function(){
 			for (obj in jdata.result){
 				textString += jdata.result[obj]['m.ENTPersonNom'] + ","
 					+ jdata.result[obj]['m.ENTPersonPrenom'] + ","
-					+ jdata.result[obj]['m.ENTPersonNom'] + ","
-					+ jdata.result[obj]['m.ENTPersonPrenom'] + "\n";
+					+ jdata.result[obj]['m.ENTPersonLogin'] + ","
+					+ jdata.result[obj]['m.ENTPersonMotDePasse'] + "\n";
 			}
 			document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
 		},
