@@ -124,9 +124,9 @@ var admin = function(){
 		createUser : function(data) {
 			if (data.result === "error"){
 				console.log(data);
-				for (obj in document.getElementById('create-user').children){
-					if (document.getElementById('create-user').children[obj].localName === 'label'){
-						document.getElementById('create-user').children[obj].removeAttribute("style");
+				for (obj in document.getElementsByTagName('label')){
+					if (document.getElementsByTagName('label')[obj].localName === 'label'){
+						document.getElementsByTagName('label')[obj].removeAttribute("style");
 					}
 				}
 				for (obj in data){
@@ -137,9 +137,9 @@ var admin = function(){
 				$('#confirm').html("<span style='color:red'>ERROR !</span>");
 			} else {
 				$('#confirm').html("OK");
-				for (obj in document.getElementById('create-user').children){
-					if (document.getElementById('create-user').children[obj].localName === 'label'){
-						document.getElementById('create-user').children[obj].removeAttribute("style");
+				for (obj in document.getElementsByTagName('label')){
+					if (document.getElementsByTagName('label')[obj].localName === 'label'){
+						document.getElementsByTagName('label')[obj].removeAttribute("style");
 					}
 				}
 			}
