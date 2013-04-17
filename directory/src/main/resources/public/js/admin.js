@@ -79,6 +79,24 @@ var admin = function(){
 				$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
 			}
 		},
+		enseignants : function(data) {
+			var htmlString='<br /><span>';
+			var jdata = jQuery.parseJSON(data);
+			if (jdata.result[0] !== undefined){
+				if (!!$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).children().length) {
+					$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html('');
+					return;
+				}
+				for (obj in jdata.result){
+					htmlString +="<a call='personne' href='/api/link?"
+						+ "class=" + jdata.result[obj]['n.id']
+						+ "&id=" + jdata.result[obj]['m.id'] +"'>" + jdata.result[obj]['m.ENTPersonNom']
+						+ " " +jdata.result[obj]['m.ENTPersonPrenom'] + "</a> - ";
+				}
+				htmlString += "</span><div id='details'></div>";
+				$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
+			}
+		},
 		membres : function(data){
 			var htmlString='<span>';
 			var jdata = jQuery.parseJSON(data);
@@ -187,7 +205,7 @@ var admin = function(){
 			getAndRender(o.url, "personne");
 		},
 		enseignants : function(o) {
-			getAndRender(o.url, "personnes");
+			getAndRender(o.url, "enseignants");
 		},
 		exportAuth : function(o) {
 			getAndRender(o.url, "exportAuth");

@@ -99,11 +99,21 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String classId = request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$");
-				System.out.println("PARAM :" + classId);
 				neo.send("START n=node(*), m=node(*) WHERE has(m.type) "
 						+ "AND m.type='PERSEDUCNAT' AND has(n.id) "
 						+ "AND n.id='" + classId + "' "
 						+ "RETURN distinct m.id, m.ENTPersonNom, m.ENTPersonPrenom, n.id", request.response());
+			}
+		});
+
+		rm.get("/api/link", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				String classId = request.params().get("class").replaceAll("-", " ").replaceAll("_", "\\$");
+				String userId = request.params().get("id");
+				neo.send("START n=node(*), m=node(*) WHERE has(m.id) AND has(n.id)"
+						+ "AND m.id='" + userId + "' AND n.id='" + classId + "' "
+						+ "CREATE m-[:APPARTIENT]->n", request.response);
 			}
 		});
 
