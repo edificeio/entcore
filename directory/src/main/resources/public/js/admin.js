@@ -124,24 +124,17 @@ var admin = function(){
 		createUser : function(data) {
 			if (data.result === "error"){
 				console.log(data);
-				for (obj in document.getElementsByTagName('label')){
-					if (document.getElementsByTagName('label')[obj].localName === 'label'){
-						document.getElementsByTagName('label')[obj].removeAttribute("style");
-					}
-				}
+				$('label').removeAttr('style');
 				for (obj in data){
 					if (obj !== "result"){
-						document.getElementById(obj).setAttribute("style", "color:red");
+						$('#' + obj).attr("style", "color:red");
 					}
 				}
 				$('#confirm').html("<span style='color:red'>ERROR !</span>");
 			} else {
 				$('#confirm').html("OK");
-				for (obj in document.getElementsByTagName('label')){
-					if (document.getElementsByTagName('label')[obj].localName === 'label'){
-						document.getElementsByTagName('label')[obj].removeAttribute("style");
-					}
-				}
+				$('label').removeAttr('style');
+
 			}
 		},
 		createGroup : function(data) {
@@ -210,6 +203,25 @@ var admin = function(){
 			var url = o.url.attributes.action.value + '?'
 				+ $('#create-group').serialize();
 			getAndRender(url, "createGroup");
+		},
+		view: function(o) {
+			switch(o.url.attributes.id.value){
+				case 'disp':
+					$('#creation').attr('hidden', '');
+					$('#display').removeAttr('hidden');
+					$('#export').attr('hidden', '');
+					break;
+				case 'exports':
+					$('#creation').attr('hidden', '');
+					$('#display').removeAttr('hidden');
+					$('#export').removeAttr('hidden');
+					break;
+				case 'create':
+					$('#creation').removeAttr('hidden');
+					$('#display').attr('hidden', '');
+					$('#export').attr('hidden', '');
+					break;
+			}
 		}
 	}
 }();

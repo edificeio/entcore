@@ -31,20 +31,6 @@ public class Directory extends Controller {
 				renderView(request, new JsonObject());
 			}
 		});
-		
-		rm.get("/admin-export", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
-			}
-		});
-		
-		rm.get("/admin-create", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
-			}
-		});
 
 		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
@@ -54,7 +40,7 @@ public class Directory extends Controller {
 						+ "RETURN distinct n.ENTStructureNomCourant, n.id", request.response());
 			}
 		});
-		
+
 		rm.get("/api/groupes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
