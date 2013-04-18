@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
+
 
 public class Directory extends Controller {
 	
@@ -113,7 +115,7 @@ public class Directory extends Controller {
 				String userId = request.params().get("id");
 				neo.send("START n=node(*), m=node(*) WHERE has(m.id) AND has(n.id)"
 						+ "AND m.id='" + userId + "' AND n.id='" + classId + "' "
-						+ "CREATE m-[:APPARTIENT]->n", request.response);
+						+ "CREATE m-[:APPARTIENT]->n", request.response());
 			}
 		});
 
@@ -124,6 +126,19 @@ public class Directory extends Controller {
 				Map<String,Boolean> params = d.validateFields(request.params());
 				if (!params.values().contains(false)){
 					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
+					obj.putString("id", "m00000021")
+							.putString("nom", request.params().get("ENTPersonNom"))
+							.putString("prenom", request.params().get("ENTPersonPrenom"))
+							.putString("login", request.params().get("ENTPersonNom") + "." + request.params().get("ENTPersonPrenom"))
+							.putString("classe", "4400000002_ORDINAIRE_CM2deMmeRousseau")
+							.putString("type", request.params().get("ENTPersonProfils"))
+							.putString("password", "dummypass");
+					System.out.println("OBJ : " + obj);
+					vertx.eventBus().send(config.getString("bus-address"), obj, new Handler<Message>() {
+						public void handle(Message event) {
+							System.out.println("MESSAGE : " + event.body());
+						}
+					});
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
 							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
 							+ "CREATE (m {id:'m0000001', type:'" + request.params().get("ENTPersonProfils") + "',"
