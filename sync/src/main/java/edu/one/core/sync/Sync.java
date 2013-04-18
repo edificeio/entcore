@@ -7,10 +7,13 @@ import edu.one.core.sync.aaf.AafGeoffHelper;
 import edu.one.core.sync.aaf.AafSaxContentHandler;
 import edu.one.core.sync.aaf.WordpressHelper;
 import java.io.FileReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
@@ -21,13 +24,17 @@ public class Sync extends Controller {
 	private WordpressHelper wordpressHelper;
 
 	@Override
-	public void start() throws Exception {
+	public void start() {
 		super.start();
 		aafSaxHandler = new AafSaxContentHandler(log, new DefaultDictionary(
 				vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json"));
 		wordpressHelper = new WordpressHelper(log, vertx.eventBus());
 		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus(), wordpressHelper);
-		xr = XMLReaderFactory.createXMLReader();
+		try {
+			xr = XMLReaderFactory.createXMLReader();
+		} catch (SAXException ex) {
+			log.error(ex.getMessage());
+		}
 		xr.setContentHandler(aafSaxHandler);
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {

@@ -10,7 +10,7 @@ import org.vertx.java.core.json.JsonObject;
 public class History extends Controller {
 
 	@Override
-	public void start() throws Exception {
+	public void start() {
 		super.start();
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {

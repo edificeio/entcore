@@ -8,7 +8,7 @@ import org.vertx.java.core.json.JsonObject;
 public class DataDictionary extends Controller {
 
 	@Override
-	public void start() throws Exception {
+	public void start()  {
 		super.start();
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
@@ -21,8 +21,8 @@ public class DataDictionary extends Controller {
 		rm.get("/dictionary/:id", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				request.response.putHeader("content-type", "text/json");
-				request.response.sendFile(request.params().get("id") + "-dictionary.json");
+				request.response().putHeader("content-type", "text/json");
+				request.response().sendFile(request.params().get("id") + "-dictionary.json");
 			}
 		});
 	}

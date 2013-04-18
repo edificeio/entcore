@@ -21,7 +21,7 @@ public class I18n {
 
 	public I18n(Container container, Vertx vertx) {
 		try {
-			log = container.getLogger();
+			log = container.logger();
 			for(String path : vertx.fileSystem().readDirSync(messagesDir)) {
 				String fileName =  path.split("/")[path.split("/").length -1];
 				Locale l = Locale.forLanguageTag(fileName.split("\\.")[0]);

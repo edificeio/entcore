@@ -1,7 +1,6 @@
 package edu.one.core.auth;
 
 import edu.one.core.infra.Controller;
-import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -9,7 +8,7 @@ import org.vertx.java.core.json.JsonObject;
 public class Auth extends Controller {
 
 	@Override
-	public void start() throws Exception {
+	public void start() {
 		super.start();
 
 		rm.get("/login", new Handler<HttpServerRequest>() {
@@ -20,8 +19,9 @@ public class Auth extends Controller {
 					redirect(request, "http://localhost:8008", "/admin?oneID=1234");
 				} else if (request.params().get("email") != null){
 					renderView(request, new JsonObject().putString("error", "true"));
-				} else
+				} else {
 					renderView(request, config);
+				}
 			}
 		});
 

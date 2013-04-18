@@ -75,7 +75,7 @@ public class AafGeoffHelper {
 		jo.putString("query", request.toString());
 		eb.send("wse.neo4j.persistor", jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
-				log.info(m.body.encode());
+				log.info(m.body().encode());
 			}
 		});
 //		eb.send("wse.neo4j.persistor", jo);

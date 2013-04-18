@@ -17,7 +17,7 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 	@Override
 	public void start() {
 		super.start();
-		vertxLogger = container.getLogger();
+		vertxLogger = container.logger();
 
 		tracer = java.util.logging.Logger.getLogger(config.getString("logger-name"));
 		vertx.eventBus().registerHandler(config.getString("address"), this);
@@ -30,12 +30,12 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		String appName = m.body.getString("app");
+		String appName = m.body().getString("app");
 		if (handlerExists(appName)){
-			tracer.log(Level.parse(m.body.getString("level")),m.body.getString("message"),(Object)(appName));
+			tracer.log(Level.parse(m.body().getString("level")),m.body().getString("message"),(Object)(appName));
 		} else {
 			tracer.addHandler(createFileHandler(appName));
-			tracer.log(Level.parse(m.body.getString("level")),m.body.getString("message"),(Object)(appName));
+			tracer.log(Level.parse(m.body().getString("level")),m.body().getString("message"),(Object)(appName));
 		}
 	}
 

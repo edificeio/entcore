@@ -7,13 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.geoff.Geoff;
 import org.neo4j.geoff.Subgraph;
-import org.neo4j.geoff.except.SubgraphError;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -45,7 +42,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 			}
 
 	@Override
-	public void stop() throws Exception {
+	public void stop() {
 		super.stop();
 		if (gdb != null)
 			gdb.shutdown();
@@ -53,7 +50,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 
 	@Override
 	public void handle(Message<JsonObject> m) {
-		switch(m.body.getString("action")) {
+		switch(m.body().getString("action")) {
 			case "execute" :
 				execute(m);
 				break;
@@ -71,7 +68,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 	private void execute (Message<JsonObject> m) {
 		ExecutionResult result = null;
 		try {
-			result = engine.execute(m.body.getString("query"));
+			result = engine.execute(m.body().getString("query"));
 		} catch (Exception e) {
 			sendError(m, e.getMessage());
 			e.printStackTrace();
@@ -81,7 +78,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 	}
 
 	private void batchInsert (Message<JsonObject> m) {
-		Reader query = new StringReader(m.body.getString("query"));
+		Reader query = new StringReader(m.body().getString("query"));
 		Map<String,PropertyContainer> result;
 		try {
 			result = Geoff.insertIntoNeo4j(new Subgraph(query), gdb, null);
@@ -97,14 +94,14 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		try {
 			List<Map<String, Object>> queryMap = new ArrayList<>();
 			StringTokenizer reqTkn =
-					new StringTokenizer(m.body.getString("queries"),m.body.getString("requestSeparator"));
+					new StringTokenizer(m.body().getString("queries"),m.body().getString("requestSeparator"));
 			while (reqTkn.hasMoreElements()) {
 				Map<String, Object> attrMap = new HashMap<>();
 				StringTokenizer attrTkn =
-						new StringTokenizer(reqTkn.nextToken(),m.body.getString("attrSeparator"));
+						new StringTokenizer(reqTkn.nextToken(),m.body().getString("attrSeparator"));
 				while (attrTkn.hasMoreElements()) {
 					String token = attrTkn.nextToken();
-					String[] attrArray = token.split(m.body.getString("valueSeparator"));
+					String[] attrArray = token.split(m.body().getString("valueSeparator"));
 					if (attrArray.length > 1) {
 						// TODO : gestion multivalue
 						attrMap.put(attrArray[0],attrArray[1]);

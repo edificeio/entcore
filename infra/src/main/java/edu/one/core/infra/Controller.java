@@ -35,11 +35,11 @@ public abstract class Controller extends Verticle {
 	private I18n i18n;
 
 	@Override
-	public void start() throws Exception {
+	public void start() {
 		super.start();
-		log = container.getLogger();
+		log = container.logger();
 		if (config == null) {
-			config = container.getConfig();
+			config = container.config();
 		}
 		rm = new RouteMatcher();
 		trace = new TracerHelper(vertx.eventBus(), "log.address", this.getClass().getSimpleName());
@@ -52,7 +52,7 @@ public abstract class Controller extends Verticle {
 		// Dummy impl
 		rm.getWithRegEx("\\/public\\/.+", new Handler<HttpServerRequest>() {
 			public void handle(HttpServerRequest request) {
-				request.response.sendFile("." + request.path);
+				request.response().sendFile("." + request.path());
 			}
 		});
 
@@ -85,11 +85,11 @@ public abstract class Controller extends Verticle {
 	public void renderView(HttpServerRequest request, JsonObject params) {
 		try {
 			if (params == null) { params = new JsonObject(); }
-			Mustache mustache = mf.compile(request.path + ".html");
+			Mustache mustache = mf.compile(request.path() + ".html");
 			Writer writer = new StringWriter();
 			Object[] scopes = { params.toMap(), functionsScope(request)};
 			mustache.execute(writer, scopes).flush();
-			request.response.end(writer.toString());
+			request.response().end(writer.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
@@ -98,13 +98,13 @@ public abstract class Controller extends Verticle {
 	}
 
 	public void renderError(HttpServerRequest request) {
-		request.response.statusCode = 500;
-		request.response.end();
+		request.response().setStatusCode(500);
+		request.response().end();
 	}
 
 	public void renderJson(HttpServerRequest request, JsonObject jo) {
-		request.response.putHeader("content-type", "text/json");
-		request.response.end(jo.encode());
+		request.response().putHeader("content-type", "text/json");
+		request.response().end(jo.encode());
 	}
 
 	public void redirect(HttpServerRequest request, String location) {
@@ -112,13 +112,13 @@ public abstract class Controller extends Verticle {
 	}
 
 	public void redirect(HttpServerRequest request, String host, String location) {
-		request.response.statusCode = 301;
-		request.response.putHeader("Location", host + location);
-		request.response.end();
+		request.response().setStatusCode(301);
+		request.response().putHeader("Location", host + location);
+		request.response().end();
 	}
 
 	public void bodyToParams(final HttpServerRequest request, final Handler<Map<String,String>> handler) {
-		if (Arrays.asList("POST","PUT").contains(request.method)) {
+		if (Arrays.asList("POST","PUT").contains(request.method())) {
 			request.bodyHandler(new Handler<Buffer>() {
 				public void handle(Buffer b) {
 					Map<String, String> postParams = new HashMap<>();

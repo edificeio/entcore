@@ -22,7 +22,7 @@ public class DefaultDictionary implements Dictionary {
 	protected Map<String, Validator> validators;
 
 	public DefaultDictionary(Vertx vertx, Container container, String dictionnaryFileName) {
-		logger = container.getLogger();
+		logger = container.logger();
 		try {
 			validators = new HashMap<>();
 			for (String regexpKey : RegExpValidator.types.keySet()) {

@@ -43,13 +43,13 @@ public abstract class FilterChainHandler implements Handler<HttpServerRequest> {
 	public void handle(HttpServerRequest request) {
 		for (Filter filter : chain) {
 			if (!filter.test(request)) {
-				request.response.statusCode = 301;
-				request.response.putHeader("Location", "http://localhost:8009/login");
-				request.response.end();
+				request.response().setStatusCode(301);
+				request.response().putHeader("Location", "http://localhost:8009/login");
+				request.response().end();
 				return;
 			}
 		}
-		request.response.putHeader("Set-Cookie", "oneID=1234");
+		request.response().putHeader("Set-Cookie", "oneID=1234");
 		filterAndHandle(request);
 	}
 

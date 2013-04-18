@@ -11,24 +11,27 @@ public class Starter extends Controller {
 	String developerId = "";
 
 	@Override
-	public void start() throws Exception {
-		developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
-		config = getConfig("mod.json");
-		super.start();
-		neo = new Neo(vertx.eventBus(),log);
-		deployApps();
+	public void start() {
+		try {
+			developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
+			config = getConfig("mod.json");
+			super.start();
+			neo = new Neo(vertx.eventBus(),log);
+			deployApps();
+		} catch (Exception ex) {
+			log.equals(ex.getMessage());
+		}
+			rm.get("/starter/dev", new Handler<HttpServerRequest> () {
+				public void handle(HttpServerRequest request) {
+					renderView(request);
+				}
+			});
 
-		rm.get("/starter/dev", new Handler<HttpServerRequest> () {
-			public void handle(HttpServerRequest request) {
-				renderView(request);
-			}
-		});
-
-		rm.get("/starter/test", new Handler<HttpServerRequest> () {
-			public void handle(final HttpServerRequest request) {
-				neo.send(request);
-			}
-		});
+			rm.get("/starter/test", new Handler<HttpServerRequest> () {
+				public void handle(final HttpServerRequest request) {
+					neo.send(request);
+				}
+			});
 
 	}
 
