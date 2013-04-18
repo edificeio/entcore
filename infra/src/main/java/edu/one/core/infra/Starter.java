@@ -38,7 +38,9 @@ public class Starter extends Controller {
 	private void deployApps() throws Exception {
 		for (Object o : config.getArray("one-modules")){
 			String module = ((String)o).trim();
-			container.deployModule(module, getConfig("../"+ module +"/mod.json"));
+			if (vertx.fileSystem().existsSync("../" + module)) {
+				container.deployModule(module, getConfig("../"+ module +"/mod.json"));
+			}
 		}
 	}
 

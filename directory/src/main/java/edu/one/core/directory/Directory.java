@@ -25,7 +25,6 @@ public class Directory extends Controller {
 		neo = new Neo(vertx.eventBus(),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		dataMock = new JsonObject(vertx.fileSystem().readFileSync("directory-data-mock.json").toString());
-		container.deployModule("edu.one~wordpress~1.0.0-SNAPSHOT");
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
@@ -134,7 +133,7 @@ public class Directory extends Controller {
 							.putString("type", request.params().get("ENTPersonProfils"))
 							.putString("password", "dummypass");
 					System.out.println("OBJ : " + obj);
-					vertx.eventBus().send(config.getString("bus-address"), obj, new Handler<Message>() {
+					vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 						public void handle(Message event) {
 							System.out.println("MESSAGE : " + event.body());
 						}

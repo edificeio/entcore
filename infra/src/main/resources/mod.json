@@ -12,6 +12,6 @@
 		"edu.one.core~history~0.1.0-SNAPSHOT",
 		"edu.one.core~sync~0.1.0-SNAPSHOT",
 		"edu.one.core~myAccount~0.1.0-SNAPSHOT",
-		"com.wse.tracer~tracer~0.1.0-SNAPSHOT"
+		"edu.one~wordpress~1.0.0-SNAPSHOT"
 	]
 }

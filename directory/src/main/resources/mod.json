@@ -4,5 +4,5 @@
 	"auto-redeploy": true,
 	"port": 8003,
 	"mode": "dev",
-	"bus-address":"wpconnector.address"
+	"wp-connector.address":"wpconnector.address"
 }
