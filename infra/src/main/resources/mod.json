@@ -11,6 +11,7 @@
 		"edu.one.core~directory~0.1.0-SNAPSHOT",
 		"edu.one.core~history~0.1.0-SNAPSHOT",
 		"edu.one.core~sync~0.1.0-SNAPSHOT",
+		"edu.one.core~myAccount~0.1.0-SNAPSHOT",
 		"com.wse.tracer~tracer~0.1.0-SNAPSHOT"
 	]
 }

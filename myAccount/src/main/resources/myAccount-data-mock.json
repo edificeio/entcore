@@ -1,0 +1,48 @@
+{
+	"picture": "http://localhost:8101/public/img/no-avatar.jpg",
+	"userData": {
+		"firstName": "Martin",
+		"lastName": "Dufour",
+		"attributes": [
+			{
+				"label": "Login",
+				"value": "martin.dufour"
+			},
+			{
+				"label": "Adresse mail",
+				"value": "martin.dufour@gmail.com"
+			},
+			{
+				"label": "Date de naissance",
+				"value": "02/03/2009"
+			},
+			{
+				"label": "Ecole",
+				"value": "Jean Moulin"
+			}
+		]
+	},
+	"motto": {
+		"label": "Ma devise",
+		"value": "Tant va la cruche allo, mais allo quoi!"
+	},
+	"interests": [
+		{
+			"label": "Musique",
+			"values": [ "The Beattles", "Dorothée" ]
+		},
+		{
+			"label": "Endroits",
+			"values": [ "La tour Eiffel", "Montpellier" ]
+		},
+		{
+			"label": "Animaux",
+			"values": [ "Chien", "Chat", "Lion" ]
+		},
+		{
+			"label": "Sports",
+			"values": [ "Football", "Rugby", "Tennis" ]
+		}
+	],
+	"health": "Allergique au gluten"
+}

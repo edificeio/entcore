@@ -1,0 +1,54 @@
+apply from: "gradle/vertx.gradle"
+
+project.evaluationDependsOn(':infra')
+
+dependencies {
+	provided project(':infra')
+}
+
+test {
+	include 'edu/one/core/myAccount/test/*'
+}
+
+def configurePom(def pom) {
+	pom.project {
+		description 'One Core Directory'
+		inceptionYear '2013'
+		packaging 'zip'
+		url 'http://code.web-education.net/projects/one-core'
+
+		developers {
+			developer {
+				id 'rafik.djedjig'
+				name 'Rafik Djedjig'
+				email 'rafik.djedjig@web-educcation.net'
+			}
+			developer {
+				id 'diane.wakim'
+				name 'Diane Wakim'
+				email 'diane.wakim@web-educcation.net'
+			}
+			developer {
+				id 'benjamin.perez'
+				name 'Benjamin Perez'
+				email 'benjamin.perez@web-educcation.net'
+			}
+		}
+
+		scm {
+			url 'git@code.web-education.net:one/one-core.git'
+		}
+
+		licenses {
+			license {
+				name 'GNU Affero General Public License, Version 2.0'
+				url 'https://www.gnu.org/licenses/agpl.txt'
+				distribution 'repo'
+			}
+		}
+
+		properties {
+			setProperty('project.build.sourceEncoding', 'UTF8')
+		}
+	}
+}

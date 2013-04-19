@@ -1,0 +1,38 @@
+#picture {
+  position: relative;
+  width: 30%;
+  text-align: center;
+  border: 0px;
+}
+
+#data {
+  position: absolute;
+  background-color: #EEEEEE;
+  width: 68%;
+  right: 1%;
+  top: 3em;
+  border: 0px;
+}
+
+#motto {
+  position: absolute;
+  background-color: #EEEEEE;
+  width: 68%;
+  right: 1%;
+  top: 16em;
+  border: 0px;
+}
+
+#interests {
+  position: relative;
+  background-color: #EEEEEE;
+  width: 100%;
+  border: 0px;
+}
+
+#health {
+  position: relative;
+  background-color: #EEEEEE;
+  width: 100%;
+  border: 0px;
+}
