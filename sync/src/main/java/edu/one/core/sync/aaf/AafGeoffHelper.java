@@ -69,16 +69,16 @@ public class AafGeoffHelper {
 			}
 		}
 //		log.info(request);
-		// TODO : envoyer requete via plugin geoff
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "batch-insert");
 		jo.putString("query", request.toString());
+		final long startSend = System.currentTimeMillis();
 		eb.send("wse.neo4j.persistor", jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
 				log.info(m.body().encode());
+				log.info("Send execution time : " + (System.currentTimeMillis()-startSend) + " ms");
 			}
 		});
-//		eb.send("wse.neo4j.persistor", jo);
 	}
 
 	private void addRequest(
