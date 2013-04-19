@@ -174,6 +174,19 @@ public class Directory extends Controller {
 						+ "m-[:APPARTIENT]->n ", request.response());
 			}
 		});
+		
+		rm.get("/api/create-school", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				trace.info("Creating new School : " + request.params().get("ENTSchoolName"));
+				System.out.println("PARAMETERS : " + request.params());
+				neo.send("START n=node(*) "
+						+ "CREATE (m {id:'" + request.params().get("ENTSchoolId")
+						+ "', type:'ETABEDUCNAT',"
+						+ "ENTSchoolName:'"+request.params().get("ENTSchoolName")
+						+ "'})", request.response());
+			}
+		});
 
 		rm.get("/api/export", new Handler<HttpServerRequest>() {
 			@Override

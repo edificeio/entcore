@@ -222,6 +222,11 @@ var admin = function(){
 				+ $('#create-group').serialize();
 			getAndRender(url, "createGroup");
 		},
+		createSchool : function(o) {
+			var url = o.url.attributes.action.value + '?'
+				+ $('#create-school').serialize();
+			getAndRender(url, "createGroup");
+		},
 		view: function(o) {
 			switch(o.url.attributes.id.value){
 				case 'disp':
