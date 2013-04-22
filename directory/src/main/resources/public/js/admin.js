@@ -224,7 +224,9 @@ var admin = function(){
 		},
 		createGroup : function(o) {
 			var url = o.url.attributes.action.value + '?'
-				+ $('#create-group').serialize();
+				+ $('#create-group').serialize()
+				+ '&type=' + $('#type').val()
+				+ '&ENTGroupStructRattach=' + $('#parent').val();
 			getAndRender(url, "createGroup");
 		},
 		createSchool : function(o) {

@@ -167,12 +167,23 @@ public class Directory extends Controller {
 						users.add(entry.getValue());
 					}
 				}
-				trace.info("Creating new Group : " + request.params().get("ENTGroupeNom"));
+				JsonObject obj = new JsonObject().putString("id", request.params().get("ENTGroupId"))
+						.putString("nom", request.params().get("ENTGroupName"))
+						.putString("parent", "4400000002_ORDINAIRE_CM2deMmeRousseau")
+						.putString("type", request.params().get("type"));
+				System.out.println("OBJ : " + obj);
+				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+					public void handle(Message event) {
+						System.out.println("MESSAGE : " + event.body());
+					}
+				});
 				neo.send("START n=node(*) WHERE has(n.id) AND n.id='4400000002'"
-						+ "CREATE (m {id:'g0000001', type:'GROUPE',"
-						+ "ENTGroupeNom:'"+request.params().get("ENTGroupeNom")
+						+ "CREATE (m {id:'"+request.params().get("ENTGroupId")+"',"
+						+ "type:'"+request.params().get("type")+"',"
+						+ "ENTGroupeNom:'"+request.params().get("ENTGroupName")
 						+"', ENTPeople:'" + users.toString() + "'}), "
 						+ "m-[:APPARTIENT]->n ", request.response());
+				trace.info("Creating new Group : " + request.params().get("ENTGroupName"));
 			}
 		});
 		

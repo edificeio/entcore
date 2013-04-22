@@ -59,8 +59,13 @@
 						<input type="text" name="ENTGroupId"/><br>
 						<label id="ENTGroupName">{{#i18n}}directory.admin.name{{/i18n}}:</label>
 						<input type="text" name="ENTGroupName"/><br>
+						<label id="ENTGroupeType">{{#i18n}}directory.admin.type{{/i18n}}* </label>
+						<select id="type">
+							<option value="CLASSE">{{#i18n}}directory.admin.class{{/i18n}}</option>
+							<option value="GROUPE">{{#i18n}}directory.admin.group{{/i18n}}</option>
+						</select><br>
 						<label id="ENTGroupeSchool">{{#i18n}}directory.admin.parent{{/i18n}}* </label>
-						<select id="school">
+						<select id="parent">
 							<option value="CM2 de Mme Rousseau">Jean Moulin</option>
 							<option value="CE1-CE2 (Mme Leclerc)">Georges Brassens</option>
 						</select><br>

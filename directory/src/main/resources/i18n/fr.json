@@ -19,6 +19,8 @@
 	"directory.admin.school":"École",
 	"directory.admin.groups":"Groupes",
 	"directory.admin.group":"Groupe",
+	"directory.admin.class":"Classe",
+	"directory.admin.type":"Type",
 	"directory.admin.parent":"Parent",
 	"directory.admin.address":"Adresse",
 	"directory.admin.lastname":"Nom",
