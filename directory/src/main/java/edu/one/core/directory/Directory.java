@@ -125,7 +125,7 @@ public class Directory extends Controller {
 				Map<String,Boolean> params = d.validateFields(request.params());
 				if (!params.values().contains(false)){
 					trace.info("Creating new User : " + request.params().get("ENTPersonNom") + " " + request.params().get("ENTPersonPrenom"));
-					obj.putString("id", "m00000021")
+					obj.putString("id", request.params().get("ENTPersonIdentifiant"))
 							.putString("nom", request.params().get("ENTPersonNom"))
 							.putString("prenom", request.params().get("ENTPersonPrenom"))
 							.putString("login", request.params().get("ENTPersonNom") + "." + request.params().get("ENTPersonPrenom"))
@@ -140,7 +140,8 @@ public class Directory extends Controller {
 					});
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
 							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
-							+ "CREATE (m {id:'m0000001', type:'" + request.params().get("ENTPersonProfils") + "',"
+							+ "CREATE (m {id:'" + request.params().get("ENTPersonIdentifiant") + "', " 
+							+ "type:'" + request.params().get("ENTPersonProfils") + "',"
 							+ "ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
 							+ "ENTPersonPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
 							+ "ENTPersonDateNaissance:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
@@ -178,13 +179,22 @@ public class Directory extends Controller {
 		rm.get("/api/create-school", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
-				trace.info("Creating new School : " + request.params().get("ENTSchoolName"));
 				System.out.println("PARAMETERS : " + request.params());
+				JsonObject obj = new JsonObject().putString("id", request.params().get("ENTSchoolId"))
+						.putString("nom", request.params().get("ENTSchoolName"))
+						.putString("type", "ETABEDUCNAT");
+				System.out.println("OBJ : " + obj);
+				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+					public void handle(Message event) {
+						System.out.println("MESSAGE : " + event.body());
+					}
+				});
 				neo.send("START n=node(*) "
 						+ "CREATE (m {id:'" + request.params().get("ENTSchoolId")
 						+ "', type:'ETABEDUCNAT',"
-						+ "ENTSchoolName:'"+request.params().get("ENTSchoolName")
+						+ "ENTStructureNomCourant:'" + request.params().get("ENTSchoolName")
 						+ "'})", request.response());
+				trace.info("Creating new School : " + request.params().get("ENTSchoolName"));
 			}
 		});
 
