@@ -1,6 +1,8 @@
 package edu.one.core.datadictionary.validation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,12 +40,30 @@ public class RegExpValidator {
 				}
 				p = Pattern.compile(types.get(regexpKey));
 			}
+
 			@Override
 			public boolean test(String s) {
 				Matcher m = p.matcher(s);
 				return m.matches();
 			}
+
+			@Override
+			public List<Boolean> test(List<String> l) {
+				List<Boolean> result = new ArrayList<>();
+				for (String s : l) {
+					result.add(test(s));
+				}
+				return result;
+			}
 		};
+	}
+
+	public static Map<String, Validator> all() throws Exception {
+		Map<String,Validator> validators = new HashMap<>();
+		for (String regexpKey : types.keySet()) {
+			validators.put(regexpKey, RegExpValidator.instance(regexpKey));
+		}
+		return validators;
 	}
 
 }

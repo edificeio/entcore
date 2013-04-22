@@ -1,6 +1,7 @@
 package edu.one.core.datadictionary.dictionary;
 
 import edu.one.core.datadictionary.dictionary.aaf.AAFField;
+import edu.one.core.datadictionary.validation.NoValidator;
 import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.datadictionary.validation.Validator;
 import java.util.HashMap;
@@ -15,63 +16,52 @@ public class DefaultDictionary implements Dictionary {
 
 	protected Logger logger;
 
-	protected Map<String, Field> users;
-	protected Map<String, Field> groups;
-	protected Map<String, Field> structures;
+	protected Category<String, Field> users;
+	protected Category<String, Field> groups;
+	protected Category<String, Field> structures;
 
 	protected Map<String, Validator> validators;
+	private Field defaultField = new Field();
 
-	public DefaultDictionary(Vertx vertx, Container container, String dictionnaryFileName) {
+	public DefaultDictionary(Vertx vertx, Container container, String file) {
 		logger = container.logger();
 		try {
-			validators = new HashMap<>();
-			for (String regexpKey : RegExpValidator.types.keySet()) {
-				validators.put(regexpKey, RegExpValidator.instance(regexpKey));
-			}
-			// Null validator return always true
-			validators.put(null, new Validator() {
-				public boolean test(String s) {
-					return true;
-				}
-			});
+			validators = RegExpValidator.all();
+			validators.put(null, new NoValidator(true)); // If no validator return true
 
-			users = new HashMap<>();
-			groups = new HashMap<>();
-			structures = new HashMap<>();
-
-			JsonObject jo = new JsonObject(vertx.fileSystem().readFileSync(dictionnaryFileName).toString());
-
-			// TODO : revoir les responsabilités de construction
-			for (Object o : jo.getArray("personnes")) {
-				AAFField aAFField = new AAFField((JsonObject)o);
-				users.put(aAFField.name, aAFField);
-			}
+			JsonObject d = new JsonObject(vertx.fileSystem().readFileSync(file).toString());
+			users = loadCategory(d, "personnes");
+			groups = loadCategory(d, "groupes");
+			structures = loadCategory(d, "structures");
 
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
 	}
 
-	@Override
-	public boolean validateField(String name, List<String> values) {
-		Field f = users.get(name);
-		if (f == null) {
-			return false;
-		}
-		for (String value : values) {
-			if (!validators.get(f.validator).test(value)) {
-				return false;
+	private Category<String, Field> loadCategory(JsonObject dictionary, String name) throws Exception {
+		Category<String, Field> c = new Category<>(defaultField);
+			if (dictionary.getObject(name) == null) {
+				return null; // throws exeption instead to block loadind ...
 			}
-		}
-		return true;
+			c.setTypes(dictionary.getObject(name).getArray("types").toArray());
+			for (Object o : dictionary.getObject(name).getArray("attributs")) {
+				AAFField f = new AAFField(c, (JsonObject)o);
+				c.put(f.getId(), f);
+			}
+		return c;
 	}
 
 	@Override
-	public boolean validateField(String name, String value) {
-		Field f = users.get(name);
-		if (f == null) {
-			return false;
-		}
+	public boolean validateField(String id, List<String> values) {
+		Field f = users.get(id);
+		return !validators.get(f.validator).test(values).contains(false);
+	}
+
+	@Override
+	public boolean validateField(String id, String value) {
+		Field f = users.get(id);
 		return validators.get(f.validator).test(value);
 	}
 
@@ -94,8 +84,8 @@ public class DefaultDictionary implements Dictionary {
 	}
 
 	@Override
-	public Field getField(String name) {
-		return users.get(name);
+	public Field getField(String id) {
+		return users.get(id);
 	}
 
 	@Override

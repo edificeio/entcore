@@ -1,22 +1,30 @@
 package edu.one.core.datadictionary.dictionary;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Field {
 
-	protected String name;
+	protected String id;
 	protected String label;
 	protected String note;
 	protected boolean isRequired;
 	protected boolean isMultiple;
+	protected boolean isEditable;
+	protected String validator;
+	protected List<String> restrictions;
 
-	// tmp public
-	public String validator;
+	protected Category<String,Field> parent;
 
-	public String getName() {
-		return name;
+	public Field() {
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getLabel() {
@@ -57,6 +65,24 @@ public class Field {
 
 	public String getValidator() {
 		return validator;
+	}
+	public boolean isIsEditable() {
+		return isEditable;
+	}
+
+	public void setIsEditable(boolean isEditable) {
+		this.isEditable = isEditable;
+	}
+
+	public List<String> getRestrictions() {
+		return restrictions;
+	}
+
+	public void setRestrictions(Object[] restrictions) {
+		this.restrictions = new ArrayList<>();
+		for (Object o : restrictions) {
+			this.restrictions.add((String)o);
+		}
 	}
 
 }
