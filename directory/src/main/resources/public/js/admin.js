@@ -21,6 +21,10 @@ var admin = function(){
 		ecole : function (data) {
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
+			if (!!$('#schools').children().length) {
+				$('#schools').html('');
+				return;
+			}
 			for (obj in jdata.result){
 				htmlString +="<h3>" + jdata.result[obj]["n.ENTStructureNomCourant"] + "</h3>"
 					+ "<a call='classes' href='/api/classes?id=" + jdata.result[obj]["n.id"]
@@ -34,6 +38,10 @@ var admin = function(){
 		groupes : function(data){
 			var htmlString = '';
 			var jdata = jQuery.parseJSON(data);
+			if (!!$('#groups').children().length) {
+				$('#groups').html('');
+				return;
+			}
 			for (obj in jdata.result){
 				htmlString += "<h3>" + jdata.result[obj]["n.ENTGroupeNom"] + "</h3>"
 					+ "<a call='membres' href='/api/membres?data="
@@ -168,9 +176,6 @@ var admin = function(){
 
 	return {
 		init : function() {
-			admin.ecole('/api/ecole');
-			admin.groupes('/api/groupes');
-			admin.personnesEcole('/api/personnes?id=4400000002')
 			$('body').delegate('#annuaire', 'click',function(event) {
 				console.log(event.target);
 				if (event.target.getAttribute('call')){
@@ -183,17 +188,17 @@ var admin = function(){
 
 			});
 		},
-		ecole : function(url) {
-			getAndRender(url, 'ecole');
+		ecole : function(o) {
+			getAndRender(o.url, 'ecole');
 		},
 		classes : function(o) {
 			getAndRender(o.url, "classes");
 		},
-		groupes : function(url) {
-			getAndRender(url, "groupes");
+		groupes : function(o) {
+			getAndRender(o.url, "groupes");
 		},
-		personnesEcole : function(url) {
-			getAndRender(url, "personnesEcole");
+		personnesEcole : function(o) {
+			getAndRender(o.url, "personnesEcole");
 		},
 		personnes : function(o) {
 			getAndRender(o.url, "personnes");

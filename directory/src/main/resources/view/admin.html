@@ -14,9 +14,11 @@
 		<a href="/admin" call="view" id="exports">{{#i18n}}directory.admin.exports{{/i18n}}</a>
 			<div id="display">
 				<a href="/api/export?id=all" call="exportAuth" hidden id="export">{{#i18n}}directory.admin.export{{/i18n}}</a>
-				<h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2></td>
+				<h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2>
+				<a href="/api/ecole" call="ecole">{{#i18n}}directory.admin.ecoles{{/i18n}}</a>
 				<div id="schools"></div>
 				<h2>Groupes</h2>
+				<a href="/api/groupes" call="groupes">{{#i18n}}directory.admin.groupes{{/i18n}}</a>
 				<div id="groups"></div><br><div id="members"></div>
 			</div>
 			<div id="creation" hidden>
@@ -62,6 +64,7 @@
 							<option value="CM2 de Mme Rousseau">Jean Moulin</option>
 							<option value="CE1-CE2 (Mme Leclerc)">Georges Brassens</option>
 						</select><br>
+						<a href="/api/personnes?id=4400000002" call="personnesEcole">{{#i18n}}directory.admin.personnes{{/i18n}}</a>
 						<div id="users"></div>
 						<input type="submit" call="createGroup" action="/api/create-group" value="OK"/>
 					</form>
