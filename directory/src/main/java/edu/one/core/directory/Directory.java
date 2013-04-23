@@ -24,7 +24,6 @@ public class Directory extends Controller {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
-		dataMock = new JsonObject(vertx.fileSystem().readFileSync("directory-data-mock.json").toString());
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
@@ -132,10 +131,9 @@ public class Directory extends Controller {
 							.putString("classe", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 							.putString("type", request.params().get("ENTPersonProfils"))
 							.putString("password", "dummypass");
-					System.out.println("OBJ : " + obj);
 					vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 						public void handle(Message event) {
-							System.out.println("MESSAGE : " + event.body());
+							container.logger().info("MESSAGE : " + event.body());
 						}
 					});
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
@@ -171,10 +169,9 @@ public class Directory extends Controller {
 						.putString("nom", request.params().get("ENTGroupName"))
 						.putString("parent", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 						.putString("type", request.params().get("type"));
-				System.out.println("OBJ : " + obj);
 				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 					public void handle(Message event) {
-						System.out.println("MESSAGE : " + event.body());
+						container.logger().info("MESSAGE : " + event.body());
 					}
 				});
 				neo.send("START n=node(*) WHERE has(n.id) AND n.id='4400000002'"
@@ -190,14 +187,12 @@ public class Directory extends Controller {
 		rm.get("/api/create-school", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
-				System.out.println("PARAMETERS : " + request.params());
 				JsonObject obj = new JsonObject().putString("id", request.params().get("ENTSchoolId"))
 						.putString("nom", request.params().get("ENTSchoolName"))
 						.putString("type", "ETABEDUCNAT");
-				System.out.println("OBJ : " + obj);
 				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 					public void handle(Message event) {
-						System.out.println("MESSAGE : " + event.body());
+						container.logger().info("MESSAGE : " + event.body());
 					}
 				});
 				neo.send("START n=node(*) "
