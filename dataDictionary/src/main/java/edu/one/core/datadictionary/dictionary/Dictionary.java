@@ -5,6 +5,7 @@ import java.util.Map;
 
 public interface Dictionary {
 
+
 	boolean validateField(String name, List<String> values);
 
 	boolean validateField(String name, String value);
@@ -12,6 +13,8 @@ public interface Dictionary {
 	Map<String, Boolean> validateFieldsList(Map<String,List<String>> fields);
 
 	Map<String, Boolean> validateFields(Map<String,String> fields);
+
+	Map<String, List<String>> generateField(Map<String, List<String>> values);
 
 	void link(String oneField, String specificField);
 

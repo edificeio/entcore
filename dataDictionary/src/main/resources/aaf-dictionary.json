@@ -15,14 +15,16 @@
 				"id":"ENTPersonLogin",
 				"note":"Identifiant de connexion à l'ENT",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"auto": {"generator":"login", "args":["ENTPersonPrenom", "ENTPersonNom"]}
 			},
 			{
 				"label":"Mot de passe",
 				"id":"ENTPersonMotDePasse",
 				"note":"Mot de passe de connexion à l'ENT",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"auto": {"generator":"password", "args":[]}
 			},
 			{
 				"label":"Profils",
@@ -51,7 +53,8 @@
 				"id":"ENTPersonNomAffichage",
 				"note":"Nom d'affichage associé au compte utilisateur",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"auto": {"generator":"displayName", "args":["ENTPersonPrenom", "ENTPersonNom"]}
 			},
 			{
 				"label":"Nom patronymique",
@@ -96,7 +99,8 @@
 				"id":"ENTPersonSexe",
 				"note":"Homme ou femme, à déduire de la civilité",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"auto": {"generator":"sex", "args":["ENTPersonCivilite"]}
 			},
 			{
 				"label":"Adresse",

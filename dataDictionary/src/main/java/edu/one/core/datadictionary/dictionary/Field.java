@@ -1,5 +1,6 @@
 package edu.one.core.datadictionary.dictionary;
 
+import edu.one.core.datadictionary.generation.Generator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class Field {
 	protected boolean isEditable;
 	protected String validator;
 	protected List<String> restrictions;
+	protected Generator generator;
 
 	protected Category<String,Field> parent;
 
@@ -76,6 +78,14 @@ public class Field {
 
 	public List<String> getRestrictions() {
 		return restrictions;
+	}
+
+	public Generator getGenerator() {
+		return generator;
+	}
+
+	public void setGenerator(Generator generator) {
+		this.generator = generator;
 	}
 
 	public void setRestrictions(Object[] restrictions) {

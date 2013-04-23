@@ -4,6 +4,8 @@ import edu.one.core.datadictionary.dictionary.aaf.AAFField;
 import edu.one.core.datadictionary.validation.NoValidator;
 import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.datadictionary.validation.Validator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,8 @@ public class DefaultDictionary implements Dictionary {
 	protected Category<String, Field> structures;
 
 	protected Map<String, Validator> validators;
+	protected List<Field> generatedFields;
+
 	private Field defaultField = new Field();
 
 	public DefaultDictionary(Vertx vertx, Container container, String file) {
@@ -28,12 +32,11 @@ public class DefaultDictionary implements Dictionary {
 		try {
 			validators = RegExpValidator.all();
 			validators.put(null, new NoValidator(true)); // If no validator return true
-
+			generatedFields = new ArrayList<>();
 			JsonObject d = new JsonObject(vertx.fileSystem().readFileSync(file).toString());
 			users = loadCategory(d, "personnes");
 			groups = loadCategory(d, "groupes");
 			structures = loadCategory(d, "structures");
-
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			logger.error(ex.getMessage());
@@ -49,6 +52,9 @@ public class DefaultDictionary implements Dictionary {
 			for (Object o : dictionary.getObject(name).getArray("attributs")) {
 				AAFField f = new AAFField(c, (JsonObject)o);
 				c.put(f.getId(), f);
+				if (f.getGenerator() != null) {
+					generatedFields.add(f);
+				}
 			}
 		return c;
 	}
@@ -83,6 +89,19 @@ public class DefaultDictionary implements Dictionary {
 		return result;
 	}
 
+	@Override
+	public Map<String, List<String>> generateField(Map<String, List<String>> attrs) {
+		for (Field f : generatedFields) {
+			List<String> values = new ArrayList<>();
+			for (String inputField : f.getGenerator().getInputFields()) {
+				values.add(attrs.get(inputField).get(0));
+			}
+			attrs.put(f.getId(), Arrays.asList(f.getGenerator().generate(values.toArray(new String[]{}))));
+		}
+		return attrs;
+	}
+
+	
 	@Override
 	public Field getField(String id) {
 		return users.get(id);

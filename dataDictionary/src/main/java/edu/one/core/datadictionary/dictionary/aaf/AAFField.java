@@ -2,18 +2,13 @@ package edu.one.core.datadictionary.dictionary.aaf;
 
 import edu.one.core.datadictionary.dictionary.Category;
 import edu.one.core.datadictionary.dictionary.Field;
+import java.util.ArrayList;
+import java.util.List;
 import org.vertx.java.core.json.JsonObject;
 
-/*
- * Catégorie d'objet:
- * ENTEleve, ENTPersRelEleve, ENTEnseignant, ENTNonEnsEcole, ENTNonEnsServAc, ENTNonEnsCollLoc,
- * ENTPersExt, ENTEcole , ENTServAc , ENTCollLoc, ENTClasse, ENTGroupeSpecifique, ENTGroupementEcoles
- *
- * étudier l'option de migrer les constante sync*AAF* dans ce package
- */
 public class AAFField extends Field {
 
-	public AAFField(Category<String, Field> c, JsonObject jo) throws Exception{
+	public AAFField(Category<String, Field> c, JsonObject jo) throws Exception {
 		parent = c;
 		id = jo.getString("id");
 		label = jo.getString("label");
@@ -31,6 +26,15 @@ public class AAFField extends Field {
 			}
 			setRestrictions(jo.getArray("restrictions").toArray());
 		}
+
+		if (jo.getObject("auto") != null) {
+			List<String> l = new ArrayList<>();
+			for (Object fieldId : jo.getObject("auto").getArray("args").toArray()) {
+				l.add((String)fieldId);
+			}
+			generator = AAFGenerators.instance(jo.getObject("auto").getString("generator"), l.toArray(new String[]{}));
+		}
+
 	}
 
 }
