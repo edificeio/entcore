@@ -222,6 +222,12 @@ var admin = function(){
 				+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
 			getAndRender(url, "createUser");
 		},
+		createAdmin : function(o) {
+			var url = o.url.attributes.action.value + '?'
+				+ $('#create-admin').serialize()
+				+ '&scope=' + $('#profile').val();
+			getAndRender(url, "createGroup");
+		},
 		createGroup : function(o) {
 			var url = o.url.attributes.action.value + '?'
 				+ $('#create-group').serialize()

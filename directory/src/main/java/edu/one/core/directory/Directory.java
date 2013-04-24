@@ -15,7 +15,7 @@ import org.vertx.java.core.json.JsonObject;
 
 public class Directory extends Controller {
 	
-	JsonObject dataMock;
+	JsonObject admin;
 	Neo neo;
 	Dictionary d;
 
@@ -24,6 +24,14 @@ public class Directory extends Controller {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
+		admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
+
+		neo.send("START n=node(*) "
+			+ "CREATE (m {id:'" + admin.getString("id") + "', "
+			+ "type:'" + admin.getString("type") + "',"
+			+ "ENTPersonNom:'"+ admin.getString("firstname") +"', "
+			+ "ENTPersonPrenom:'"+ admin.getString("lastname") +"', "
+			+ "ENTPersonMotDePasse:'"+ admin.getString("password") +"'})");
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override

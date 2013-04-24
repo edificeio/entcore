@@ -73,6 +73,20 @@
 						<div id="users"></div>
 						<input type="submit" call="createGroup" action="/api/create-group" value="OK"/>
 					</form>
+					<h3>{{#i18n}}directory.admin.create-admin{{/i18n}}</h3>
+					<form method="GET" action="/api/create-admin" id="create-admin">
+						<label id="ENTAdminId">{{#i18n}}directory.admin.id{{/i18n}}* </label>
+						<input type="text" name="ENTAdminId"/><br>
+						<label id="ENTAdminName">{{#i18n}}directory.admin.name{{/i18n}}* </label>
+						<input type="text" name="ENTAdminName"/><br>
+						<label id="access">{{#i18n}}directory.admin.access{{/i18n}}* </label>
+						<select id="scope">
+							<option value="all">Tous</option>
+							<option value="CM2 de Mme Rousseau">Jean Moulin</option>
+							<option value="CE1-CE2 (Mme Leclerc)">Georges Brassens</option>
+						</select><br>
+						<input type="submit" call="createAdmin" action="/api/create-admin" value="OK"/>
+					</form>
 				<div id="confirm"></div>
 			</div>
 		</div>

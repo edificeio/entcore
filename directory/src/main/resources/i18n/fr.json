@@ -13,6 +13,7 @@
 	"directory.admin.create-user":"Créer un utilisateur",
 	"directory.admin.create-school":"Créer une école",
 	"directory.admin.create-group":"Créer un groupe",
+	"directory.admin.create-admin":"Créer un administrateur",
 	"directory.admin.id":"Id",
 	"directory.admin.name":"Nom",
 	"directory.admin.schools":"Écoles",
