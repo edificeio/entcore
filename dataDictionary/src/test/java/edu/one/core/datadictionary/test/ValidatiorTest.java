@@ -12,10 +12,10 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.testtools.TestVerticle;
 import static org.vertx.testtools.VertxAssert.*;
 
-public class DictionaryValidationTest extends TestVerticle {
+public class ValidatiorTest extends TestVerticle {
 
 	Dictionary d;
-	Logger logger = LoggerFactory.getLogger(DictionaryValidationTest.class);
+	Logger logger = LoggerFactory.getLogger(ValidatiorTest.class);
 
 	@Test
 	public void constructDictionary() throws Exception {
