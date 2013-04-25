@@ -16,7 +16,7 @@ public class Field {
 	protected List<String> restrictions;
 	protected Generator generator;
 
-	protected Category<String,Field> parent;
+	protected Category parent;
 
 	public Field() {
 	}

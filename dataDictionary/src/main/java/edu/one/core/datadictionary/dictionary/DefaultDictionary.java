@@ -18,14 +18,10 @@ public class DefaultDictionary implements Dictionary {
 
 	protected Logger logger;
 
-	protected Category<String, Field> users;
-	protected Category<String, Field> groups;
-	protected Category<String, Field> structures;
-
-	protected Map<String, Validator> validators;
+	protected Map<String,Category> categories; // is it useful ?
+	protected Map<String, Field> fields;
 	protected List<Field> generatedFields;
-
-	private Field defaultField = new Field();
+	protected Map<String, Validator> validators;
 
 	public DefaultDictionary(Vertx vertx, Container container, String file) {
 		logger = container.logger();
@@ -34,40 +30,35 @@ public class DefaultDictionary implements Dictionary {
 			validators.put(null, new NoValidator(true)); // If no validator return true
 			generatedFields = new ArrayList<>();
 			JsonObject d = new JsonObject(vertx.fileSystem().readFileSync(file).toString());
-			users = loadCategory(d, "personnes");
-			groups = loadCategory(d, "groupes");
-			structures = loadCategory(d, "structures");
+			fields = new HashMap<>();
+			categories = new HashMap<>();
+
+			for (String name : d.getFieldNames()) {
+				categories.put(name, new Category(name,d.getObject(name).getArray("types").toArray()));
+				for (Object o : d.getObject(name).getArray("attributs")) {
+					AAFField f = new AAFField(categories.get(name), (JsonObject)o);
+					fields.put(f.getId(), f);
+					if (f.getGenerator() != null) {
+						generatedFields.add(f);
+					}
+				}
+
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
 	}
 
-	private Category<String, Field> loadCategory(JsonObject dictionary, String name) throws Exception {
-		Category<String, Field> c = new Category<>(defaultField);
-			if (dictionary.getObject(name) == null) {
-				return null; // throws exeption instead to block loadind ...
-			}
-			c.setTypes(dictionary.getObject(name).getArray("types").toArray());
-			for (Object o : dictionary.getObject(name).getArray("attributs")) {
-				AAFField f = new AAFField(c, (JsonObject)o);
-				c.put(f.getId(), f);
-				if (f.getGenerator() != null) {
-					generatedFields.add(f);
-				}
-			}
-		return c;
-	}
-
 	@Override
 	public boolean validateField(String id, List<String> values) {
-		Field f = users.get(id);
+		Field f = getField(id);
 		return !validators.get(f.validator).test(values).contains(false);
 	}
 
 	@Override
 	public boolean validateField(String id, String value) {
-		Field f = users.get(id);
+		Field f = getField(id);
 		return validators.get(f.validator).test(value);
 	}
 
@@ -104,7 +95,8 @@ public class DefaultDictionary implements Dictionary {
 	
 	@Override
 	public Field getField(String id) {
-		return users.get(id);
+		Field f = fields.get(id);
+		return f == null ? new Field() : f;
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import org.vertx.java.core.json.JsonObject;
 
 public class AAFField extends Field {
 
-	public AAFField(Category<String, Field> c, JsonObject jo) throws Exception {
+	public AAFField(Category  c, JsonObject jo) throws Exception {
 		parent = c;
 		id = jo.getString("id");
 		label = jo.getString("label");
