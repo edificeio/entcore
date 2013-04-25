@@ -164,6 +164,34 @@ public class Directory extends Controller {
 			}
 		});
 
+		rm.get("/api/create-admin", new Handler<HttpServerRequest>(){
+			@Override
+			public void handle(HttpServerRequest request) {
+				JsonObject obj = new JsonObject();
+				trace.info("Creating new Admin : " + request.params().get("ENTAdminLogin"));
+				obj.putString("id", request.params().get("ENTAdminId"))
+						.putString("nom", request.params().get("ENTAdminNom"))
+						.putString("prenom", request.params().get("ENTAdminPrenom"))
+						.putString("login", request.params().get("ENTAdminLogin"))
+						.putString("classe", "")
+						.putString("type", "SUPERADMIN")
+						.putString("password", request.params().get("ENTAdminPassword"));
+				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+					public void handle(Message event) {
+						container.logger().info("MESSAGE : " + event.body());
+					}
+				});
+				neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
+						+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
+						+ "CREATE (m {id:'" + request.params().get("ENTPersonIdentifiant") + "', " 
+						+ "type:'SUPERADMIN',"
+						+ "ENTAdminNom:'"+request.params().get("ENTPersonNom") +"', "
+						+ "ENTAdminPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
+						+ "ENTAdminMotDePasse:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
+						+ "m-[:APPARTIENT]->n ", request.response());
+			}
+		});
+
 		rm.get("/api/create-group", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {

@@ -26,6 +26,9 @@
 	"directory.admin.address":"Adresse",
 	"directory.admin.lastname":"Nom",
 	"directory.admin.firstname":"Prénom",
+	"directory.admin.login":"Login",
+	"directory.admin.password":"Mot de passe",
+	"directory.admin.access":"Droits",
 	"directory.admin.birthdate":"Date de naissance",
 	"directory.admin.profile":"Profil"
 }
