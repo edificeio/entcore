@@ -1,5 +1,6 @@
 package edu.one.core.infra;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -23,8 +24,7 @@ public class I18n {
 		try {
 			log = container.logger();
 			for(String path : vertx.fileSystem().readDirSync(messagesDir)) {
-				String fileName =  path.split("/")[path.split("/").length -1];
-				Locale l = Locale.forLanguageTag(fileName.split("\\.")[0]);
+				Locale l = Locale.forLanguageTag(new File(path).getName().split("\\.")[0]);
 				JsonObject jo = new JsonObject(vertx.fileSystem().readFileSync(path).toString());
 				messages.put(l,jo);
 			}
