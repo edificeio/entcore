@@ -29,6 +29,7 @@
 	"directory.admin.login":"Login",
 	"directory.admin.password":"Mot de passe",
 	"directory.admin.access":"Droits",
+	"directory.admin.or":"OU",
 	"directory.admin.birthdate":"Date de naissance",
 	"directory.admin.profile":"Profil"
 }

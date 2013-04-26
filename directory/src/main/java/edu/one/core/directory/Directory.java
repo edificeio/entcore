@@ -167,28 +167,35 @@ public class Directory extends Controller {
 		rm.get("/api/create-admin", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
-				JsonObject obj = new JsonObject();
-				trace.info("Creating new Admin : " + request.params().get("ENTAdminLogin"));
-				obj.putString("id", request.params().get("ENTAdminId"))
-						.putString("nom", request.params().get("ENTAdminNom"))
-						.putString("prenom", request.params().get("ENTAdminPrenom"))
-						.putString("login", request.params().get("ENTAdminLogin"))
-						.putString("classe", "")
-						.putString("type", "SUPERADMIN")
-						.putString("password", request.params().get("ENTAdminPassword"));
-				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
-					public void handle(Message event) {
-						container.logger().info("MESSAGE : " + event.body());
+				String start = "";
+				String conditions= "";
+				String creation = "";
+				for (Map.Entry<String, String> entry : request.params().entrySet()) {
+					if (!entry.getKey().startsWith("ENT")){
+						start += entry.getKey()+"=node(*), ";
+						conditions += "has("+entry.getKey()+".ENTStructureNomCourant) AND "
+								+entry.getKey()+".ENTStructureNomCourant='"+entry.getValue() + "' AND ";
+						creation += "m-[:ADMINISTRE]->" + entry.getKey() + ", ";
 					}
-				});
-				neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
-						+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
-						+ "CREATE (m {id:'" + request.params().get("ENTPersonIdentifiant") + "', " 
-						+ "type:'SUPERADMIN',"
-						+ "ENTAdminNom:'"+request.params().get("ENTPersonNom") +"', "
-						+ "ENTAdminPrenom:'"+request.params().get("ENTPersonPrenom") +"', "
-						+ "ENTAdminMotDePasse:'"+request.params().get("ENTPersonDateNaissance") +"'}), "
-						+ "m-[:APPARTIENT]->n ", request.response());
+				}
+				if (request.params().get("ENTPerson").equals("none")){
+					JsonObject obj = new JsonObject();
+					//TODO : Send new user to WP (with multi groups attribute)
+					neo.send("START " + start.substring(0,start.length()-2) + " WHERE "+ conditions.substring(0, conditions.length()-4)
+						+ "CREATE (m {id:'" + request.params().get("ENTAdminId") + "', "
+						+ "type:'CORRESPONDANT',"
+						+ "ENTPersonNom:'"+request.params().get("ENTAdminNom") +"', "
+						+ "ENTPersonPrenom:'"+request.params().get("ENTAdminPrenom") +"', "
+						+ "ENTPersonDateNaissance:'"+request.params().get("ENTAdminBirthdate") +"'}), "
+						+ creation.substring(0, creation.length()-2), request.response());
+				} else {
+					JsonObject obj = new JsonObject();
+					//TODO : Send link user to groups to WP Connector
+					neo.send("START m=node(*), "+ start.substring(0,start.length()-2) + " WHERE " +conditions
+						+ "has(m.ENTPersonIdentifiant) AND m.ENTPersonIdentifiant='"
+						+ request.params().get("ENTPerson") + "' CREATE "
+						+ creation.substring(0, creation.length()-2), request.response());
+				}
 			}
 		});
 

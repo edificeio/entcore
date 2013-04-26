@@ -163,6 +163,15 @@ var admin = function(){
 
 			}
 		},
+		createAdmin : function(data) {
+			console.log(data);
+			var jdata = jQuery.parseJSON(data);
+			if (jdata.status === 'ok'){
+				$('#confirm').html("OK");
+			} else {
+				$('#confirm').html("ERREUR !");
+			}
+		},
 		createGroup : function(data) {
 			var jdata = jQuery.parseJSON(data);
 			if (jdata.status === 'ok'){
@@ -225,8 +234,8 @@ var admin = function(){
 		createAdmin : function(o) {
 			var url = o.url.attributes.action.value + '?'
 				+ $('#create-admin').serialize()
-				+ '&scope=' + $('#profile').val();
-			getAndRender(url, "createGroup");
+				+ '&ENTPerson=' + $('#choice').val();
+			getAndRender(url, "createAdmin");
 		},
 		createGroup : function(o) {
 			var url = o.url.attributes.action.value + '?'
