@@ -50,7 +50,14 @@ public class AafConstantes {
 	public static final String PERSONNE_LOGIN_ATTR = "ENTPersonLogin";
 	public static final String PERSONNE_PASSWORD_ATTR = "ENTPersonMotDePasse";
 	public static final String PERSONNE_JOINTURE_ATTR = "ENTPersonJointure";
+	public static final String PERSONNE_PROFIL_ATTR = "ENTPersonProfils";
 	public static final String STRUCTURE_JOINTURE_ATTR = "ENTStructureJointure";
+	
+	// profils
+	public static final String PROFIL_ELEVE = "ELEVE";
+	public static final String PROFIL_PARENT = "PERS_REL_ELEVE";
+	public static final String PROFIL_ENSEIGNANT = "ENSEIGNANT";
+	public static final String PROFIL_NON_ENSEIGNANT = "NON_ENSEIGNANT";
 
     // Séparateurs
     public static final String MULTIVALUE_SEPARATOR = "||";

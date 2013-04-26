@@ -111,6 +111,27 @@ public class AafSaxContentHandler extends DefaultHandler {
 
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
+				// gestion du profil
+				oc.creerAttributCourant(AafConstantes.PERSONNE_PROFIL_ATTR);
+				switch (oc.typeEntite) {
+					case ELEVE :
+						oc.ajouterValeur(AafConstantes.PROFIL_ELEVE);
+						break;
+					case PERSRELELEVE :
+						oc.ajouterValeur(AafConstantes.PROFIL_PARENT);
+						break;
+					case PERSEDUCNAT :
+						if (oc.attributs.containsKey(AafConstantes.CLASSES_ATTR)) {
+							oc.ajouterValeur(AafConstantes.PROFIL_ENSEIGNANT);
+						} else {
+							oc.ajouterValeur(AafConstantes.PROFIL_NON_ENSEIGNANT);
+						}
+						break;
+					default:
+						break;
+				}
+				oc.ajouterAttributCourant();
+				
 				oc.attributs = d.generateField(oc.attributs);
 				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
 					operationsInvalides.add(oc);
