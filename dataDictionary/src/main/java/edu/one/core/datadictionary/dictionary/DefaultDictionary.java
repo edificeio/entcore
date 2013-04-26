@@ -85,7 +85,7 @@ public class DefaultDictionary implements Dictionary {
 		for (Field f : generatedFields) {
 			List<String> values = new ArrayList<>();
 			for (String inputField : f.getGenerator().getInputFields()) {
-				if (attrs.containsKey(inputField)) {
+				if (attrs.containsKey(inputField) && !attrs.get(inputField).isEmpty()) {
 					values.add(attrs.get(inputField).get(0));
 				}
 			}
