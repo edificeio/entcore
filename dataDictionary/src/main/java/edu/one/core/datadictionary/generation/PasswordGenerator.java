@@ -3,7 +3,7 @@ package edu.one.core.datadictionary.generation;
 public class PasswordGenerator extends FieldGenerator {
 
 	private final String[] alphabet =
-		{"a","b","c","d","e","f","g","h","j","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
+		{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 
 	@Override
 	public String generate(String... in) {
