@@ -12,12 +12,16 @@ public class LoginGenerator extends FieldGenerator {
 
 	@Override
 	public String generate(String... in) {
-		String firstName = in[0];
-		String lastName = in[1];
-		String login = removeAccents(firstName).replaceAll(" ", "-").toLowerCase()
-				+ "." + removeAccents(lastName).replaceAll(" ", "-").toLowerCase();
-		//TODO: vérifier l'unicité du login
-		return login.replaceAll("'", "");
+		if (in.length > 0) {
+			String firstName = in[0];
+			String lastName = in[1];
+			String login = removeAccents(firstName).replaceAll(" ", "-").toLowerCase()
+					+ "." + removeAccents(lastName).replaceAll(" ", "-").toLowerCase();
+			//TODO: vérifier l'unicité du login
+			return login.replaceAll("'", "");
+		} else {
+			return "";
+		}
 	}
 
 }

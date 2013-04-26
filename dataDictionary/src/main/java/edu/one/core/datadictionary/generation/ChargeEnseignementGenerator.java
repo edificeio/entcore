@@ -4,10 +4,14 @@ public class ChargeEnseignementGenerator extends FieldGenerator {
 
 	@Override
 	public String generate(String... in) {
-		if ("ENSEIGNANT".equals(in[0])) {
-			return "O";
+		if (in.length > 0) {
+			if ("ENSEIGNANT".equals(in[0])) {
+				return "O";
+			} else {
+				return "N";
+			}
 		} else {
-			return "N";
+			return "";
 		}
 	}
 }

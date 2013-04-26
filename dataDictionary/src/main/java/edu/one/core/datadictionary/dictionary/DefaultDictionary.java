@@ -89,7 +89,10 @@ public class DefaultDictionary implements Dictionary {
 					values.add(attrs.get(inputField).get(0));
 				}
 			}
-			attrs.put(f.getId(), Arrays.asList(f.getGenerator().generate(values.toArray(new String[]{}))));
+			String value = f.getGenerator().generate(values.toArray(new String[]{}));
+			if (!"".equals(value)) {
+				attrs.put(f.getId(), Arrays.asList(value));
+			}
 		}
 		return attrs;
 	}
