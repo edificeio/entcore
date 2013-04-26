@@ -21,7 +21,7 @@ public class AAFField extends Field {
 		if (jo.getArray("restrictions") != null) {
 			for (Object o : jo.getArray("restrictions")) {
 				if (!parent.getTypes().contains((String)o)) {
-					throw new Exception("Restrictions of field :" + id + "are not valid");
+					throw new Exception("Restrictions of field :" + id + " are not valid");
 				}
 			}
 			setRestrictions(jo.getArray("restrictions").toArray());
