@@ -9,6 +9,8 @@ public class AafConstantes {
 	public static final String[] AAF_FILTERS =
 			{".*_EtabEducNat.*",".*_PersRelEleve.*",".*_Eleve.*",".*_PersEducNat.*"};
 
+    public static final String TYPE_IMPORT = "AAF";
+	
     // Types d'opération
     public static final String ADD_TAG = "addRequest";
     public static final String UPDATE_TAG = "modifyRequest";
@@ -44,17 +46,11 @@ public class AafConstantes {
 	public static final String PERSONNE_NOM_ATTR = "ENTPersonNom";
 	public static final String PERSONNE_PRENOM_ATTR = "ENTPersonPrenom";
 
-	// Attributs calculés
-	public static final String PERSONNE_ID_ATTR = "ENTPersonIdentifiant";
+	// Autres attributs
 	public static final String PERSONNE_LOGIN_ATTR = "ENTPersonLogin";
 	public static final String PERSONNE_PASSWORD_ATTR = "ENTPersonMotDePasse";
-	public static final String PERSONNE_PROFIL_ATTR = "ENTPersonProfils";
-	public static final String PERSONNE_NOM_AFFICHAGE_ATTR = "ENTPersonNomAffichage";
-	public static final String PERSONNE_SEXE_ATTR = "ENTPersonSexe";
-	public static final String STRUCTURE_ID_ATTR = "ENTStructureIdentifiant";
-	public static final String GROUPE_ID_ATTR = "ENTGroupeIdentifiant";
-
-	public static final String PERSONNE_CIVILITE_ATTR = "ENTPersonCivilite";
+	public static final String PERSONNE_JOINTURE_ATTR = "ENTPersonJointure";
+	public static final String STRUCTURE_JOINTURE_ATTR = "ENTStructureJointure";
 
     // Séparateurs
     public static final String MULTIVALUE_SEPARATOR = "||";

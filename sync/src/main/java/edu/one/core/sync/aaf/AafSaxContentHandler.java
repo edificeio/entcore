@@ -89,6 +89,13 @@ public class AafSaxContentHandler extends DefaultHandler {
 				oc.typeEntite = Operation.TypeEntite.valueOf(valeur.toUpperCase());
 			case ID :
 				oc.id = valeur;
+				if (oc.typeEntite.equals(Operation.TypeEntite.ETABEDUCNAT)) {
+					oc.creerAttributCourant(AafConstantes.STRUCTURE_JOINTURE_ATTR);
+				} else {
+					oc.creerAttributCourant(AafConstantes.PERSONNE_JOINTURE_ATTR);
+				}
+				oc.ajouterValeur(AafConstantes.TYPE_IMPORT + "_" + oc.id);
+				oc.ajouterAttributCourant();
 			case ATTRIBUTS :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {
 					oc.ajouterValeur(valeur);
