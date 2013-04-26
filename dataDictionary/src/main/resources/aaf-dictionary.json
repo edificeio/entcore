@@ -316,7 +316,8 @@
 				"obligatoire":true,
 				"multiple":false,
 				"modifiable":false,
-				"restrictions" : ["ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"]
+				"restrictions" : ["ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"],
+				"auto": {"generator":"chargeEnseignement", "args":["ENTPersonProfils"]}
 			},
 			{
 				"label":"Fonctions",
