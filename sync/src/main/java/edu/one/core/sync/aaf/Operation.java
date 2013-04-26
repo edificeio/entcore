@@ -1,6 +1,5 @@
 package edu.one.core.sync.aaf;
 
-import edu.one.core.sync.SyncUtils;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,41 +55,5 @@ public class Operation {
 
 	public void ajouterAttributCourant() {
 		attributs.put(attributCourant.getKey(), attributCourant.getValue());
-	}
-
-	public void ajouterAttributsCalcules() {
-		if (typeEntite == TypeEntite.ETABEDUCNAT) {
-			// TODO : construire l'id pour s'assurer de son unicité
-			attributs.put(AafConstantes.STRUCTURE_ID_ATTR, SyncUtils.strToList(id));
-		} else if (typeEntite == TypeEntite.CLASSE || typeEntite == TypeEntite.GROUPE) {
-			// TODO : construire l'id pour s'assurer de son unicité
-			attributs.put(AafConstantes.GROUPE_ID_ATTR, SyncUtils.strToList(id));
-		} else {
-			// TODO : construire l'id selon les règles définies dans le SDET
-			attributs.put(AafConstantes.PERSONNE_ID_ATTR, SyncUtils.strToList(id));
-			
-			String prenom = "";
-			String nom = "";
-			String civilite = "";
-			if (attributs.containsKey(AafConstantes.PERSONNE_PRENOM_ATTR)) {
-				prenom = attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0);
-			}
-			if (attributs.containsKey(AafConstantes.PERSONNE_NOM_ATTR)) {
-				nom = attributs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0);
-			}
-			if (attributs.containsKey(AafConstantes.PERSONNE_CIVILITE_ATTR)) {
-				civilite = attributs.get(AafConstantes.PERSONNE_CIVILITE_ATTR).get(0);
-			}
-					
-			// TODO : check unicité login
-			attributs.put(AafConstantes.PERSONNE_LOGIN_ATTR
-					, SyncUtils.strToList(SyncUtils.generateLogin(prenom, nom)));
-			attributs.put(AafConstantes.PERSONNE_NOM_AFFICHAGE_ATTR
-					, SyncUtils.strToList(SyncUtils.generateDisplayName(prenom, nom)));
-			attributs.put(AafConstantes.PERSONNE_SEXE_ATTR
-					, SyncUtils.strToList(SyncUtils.generateSex(civilite)));
-			attributs.put(AafConstantes.PERSONNE_PASSWORD_ATTR
-					, SyncUtils.strToList(SyncUtils.generatePassword()));
-		}
 	}
 }
