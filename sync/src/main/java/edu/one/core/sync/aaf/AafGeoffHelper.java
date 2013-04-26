@@ -4,8 +4,8 @@
  */
 package edu.one.core.sync.aaf;
 
-import edu.one.core.sync.SyncUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -223,11 +223,11 @@ public class AafGeoffHelper {
 		// 3 valeurs normalement : idEcole + typeGroupe + nomGroupe
 		if (values.length == 3) {
 			attrs.put(AafConstantes.GROUPE_ECOLE_ATTR
-					, SyncUtils.strToList(values[AafConstantes.GROUPE_ECOLE_INDEX]));
+					, Arrays.asList(values[AafConstantes.GROUPE_ECOLE_INDEX]));
 			attrs.put(AafConstantes.GROUPE_TYPE_ATTR
-					, SyncUtils.strToList(values[AafConstantes.GROUPE_TYPE_INDEX]));
+					, Arrays.asList(values[AafConstantes.GROUPE_TYPE_INDEX]));
 			attrs.put(AafConstantes.GROUPE_NOM_ATTR
-					, SyncUtils.strToList(values[AafConstantes.GROUPE_NOM_INDEX]));
+					, Arrays.asList(values[AafConstantes.GROUPE_NOM_INDEX]));
 		} else {
 			log.error("Groupement non conforme : " + regroupement + " => " + values.length);
 		}
