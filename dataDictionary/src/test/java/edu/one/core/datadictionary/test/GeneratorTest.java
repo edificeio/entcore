@@ -4,6 +4,7 @@ import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.datadictionary.dictionary.Dictionary;
 import edu.one.core.datadictionary.generation.DisplayNameGenerator;
 import edu.one.core.datadictionary.generation.Generator;
+import edu.one.core.datadictionary.generation.IdGenerator;
 import edu.one.core.datadictionary.generation.LoginGenerator;
 import edu.one.core.datadictionary.generation.PasswordGenerator;
 import edu.one.core.datadictionary.generation.SexGenerator;
@@ -25,6 +26,7 @@ public class GeneratorTest extends TestVerticle {
 	@Test
 	public void simpleGeneration() throws Exception {
 		assertEquals(6, new PasswordGenerator().generate().length());
+		assertEquals(23, new IdGenerator().generate().length());
 		assertEquals("H", new SexGenerator().generate("M"));
 		assertEquals("bob.eponge", new LoginGenerator().generate("Bob", "Éponge"));
 		assertEquals("Bob Éponge", new DisplayNameGenerator().generate("Bob", "Éponge"));
