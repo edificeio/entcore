@@ -5,10 +5,11 @@
 			{
 				"label":"Identifiant ENT",
 				"id":"ENTPersonIdentifiant",
-				"note":"Identifiant interne à l'ENT, unique au niveau national. ",
+				"note":"Identifiant interne à l'ENT, unique au niveau national.",
 				"obligatoire":true,
 				"multiple":false,
-				"modifiable":false
+				"modifiable":false,
+				"auto": {"generator":"id", "args":[]}
 			},
 			{
 				"label":"Login",
@@ -16,6 +17,7 @@
 				"note":"Identifiant de connexion à l'ENT",
 				"obligatoire":true,
 				"multiple":false,
+				"modifiable":true,
 				"auto": {"generator":"login", "args":["ENTPersonPrenom", "ENTPersonNom"]}
 			},
 			{
@@ -24,6 +26,7 @@
 				"note":"Mot de passe de connexion à l'ENT",
 				"obligatoire":true,
 				"multiple":false,
+				"modifiable":true,
 				"auto": {"generator":"password", "args":[]}
 			},
 			{
@@ -31,21 +34,24 @@
 				"id":"ENTPersonProfils",
 				"note":"Profils auxquels appartient la personne",
 				"obligatoire":true,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false
 			},
 			{
 				"label":"Clés de jointure",
 				"id":"ENTPersonJointure",
 				"note":"Identifiant(s) utilisé(s) pour faire la jointure avec les SI externes",
 				"obligatoire":true,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false
 			},
 			{
 				"label":"Date de naissance",
 				"id":"ENTPersonDateNaissance",
-				"note":"Date de naissance, champ technique utilisé pour dédoublonner les comptes.Facultatif pour les parents issus de l'AAF mais obligatoire en cas de création manuelle.",
+				"note":"Date de naissance, champ technique utilisé pour dédoublonner les comptes. Facultatif pour les parents issus de l'AAF mais obligatoire en cas de création manuelle.",
 				"obligatoire":false,
 				"multiple":false,
+				"modifiable":false,
 				"validator":"birthDate"
 			},
 			{
@@ -54,6 +60,7 @@
 				"note":"Nom d'affichage associé au compte utilisateur",
 				"obligatoire":true,
 				"multiple":false,
+				"modifiable":true,
 				"auto": {"generator":"displayName", "args":["ENTPersonPrenom", "ENTPersonNom"]}
 			},
 			{
@@ -61,7 +68,8 @@
 				"id":"ENTPersonNomPatro",
 				"note":"Nom de famille de naissance",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false
 			},
 			{
 				"label":"Nom d'usage",
@@ -69,6 +77,7 @@
 				"note":"Nom d'usage pour les personnes physiques, nom de l'organisme pour les personnes morales. Pour les enseignants issus de BE1D, nom patronymique = nom d'usage",
 				"obligatoire":true,
 				"multiple":false,
+				"modifiable":false,
 				"validator":"lastName"
 			},
 			{
@@ -77,6 +86,7 @@
 				"note":"Prénom pour les personnes physique, organisme dans le cas des personnes morales",
 				"obligatoire":true,
 				"multiple":false,
+				"modifiable":false,
 				"validator":"firstName"
 			},
 			{
@@ -85,6 +95,7 @@
 				"note":"",
 				"obligatoire":false,
 				"multiple":true,
+				"modifiable":false,
 				"restrictions" : ["ELEVE","PERS_REL_ELEVE","ENSEIGNANT","NON_ENSEIGNANT"]
 			},
 			{
@@ -92,7 +103,8 @@
 				"id":"ENTPersonCivilite",
 				"note":"Monsieur ou madame",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false
 			},
 			{
 				"label":"Sexe",
@@ -100,6 +112,7 @@
 				"note":"Homme ou femme, à déduire de la civilité",
 				"obligatoire":false,
 				"multiple":false,
+				"modifiable":false,
 				"auto": {"generator":"sex", "args":["ENTPersonCivilite"]}
 			},
 			{
@@ -107,7 +120,8 @@
 				"id":"ENTPersonAdresse",
 				"note":"Adresse personnelle",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false
 			},
 			{
 				"label":"Code postal",
@@ -115,6 +129,7 @@
 				"note":"",
 				"obligatoire":false,
 				"multiple":false,
+				"modifiable":false,
 				"validator":"zipCode"
 			},
 			{
@@ -122,14 +137,16 @@
 				"id":"ENTPersonVille",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false
 			},
 			{
 				"label":"Pays",
 				"id":"ENTPersonPays",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false
 			},
 			{
 				"label":"Téléphone personnel (fixe)",
@@ -137,6 +154,7 @@
 				"note":"",
 				"obligatoire":false,
 				"multiple":false,
+				"modifiable":false,
 				"validator":"phone",
 				"restrictions" : ["PERS_REL_ELEVE","ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"]
 			},
@@ -145,6 +163,7 @@
 				"id":"ENTPersonTelMobile",
 				"note":"Téléphone mobile (saisie libre)",
 				"obligatoire":false,
+				"modifiable":true,
 				"multiple":false
 			},
 			{
@@ -153,6 +172,7 @@
 				"note":"Téléphone mobile issu du SI, non modifiable dans l'ENT. La CNIL autorise la transmission de cette information uniquement pour les personnes en relation avec l'élève.",
 				"obligatoire":false,
 				"multiple":false,
+				"modifiable":false,
 				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
@@ -160,178 +180,496 @@
 				"id":"ENTPersonMail",
 				"note":"Adresse mail issue du SI, non modifiable dans l'ENT",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["PERS_REL_ELEVE","ENSEIGNANT"]
 			},
 			{
 				"label":"Autre adresse mail",
 				"id":"ENTPersonAutreMail",
 				"note":"Adresse mail saisie manuellement : si celle-ci est renseignée par l'utilisateur, elle fait référence par rapport à l'adresse mail transmise par l'AAF.",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":true
 			},
 			{
 				"label":"Structure de rattachement",
 				"id":"ENTPersonStructRattach",
 				"note":"Structure(s) de rattachement de l'utilisateur : peut être  une école, un service académique ou une collectivité. Pour le cas des sercices académiques et des collectivités, ce rattachement est de nature administrative.",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false,
+				"restrictions" : ["ELEVE","ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"]
 			},
 			{
 				"label":"Service",
 				"id":"ENTPersRelElevService",
 				"note":"Coordonnées professionnelles (pour les personnes en relation avec l'élève)",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":true,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Bureau",
 				"id":"ENTPersRelElevBureau",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":true,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Téléphone professionnel",
 				"id":"ENTPersRelElevTelPro",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Fax",
 				"id":"ENTPersRelElevFax",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":true,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Pers. exerçant l'autorité parentale",
 				"id":"ENTEleveAutoriteParentale",
 				"note":"Pointeur vers une personne physique ou une personne morale ayant l'autorité parentale sur l'élève. Les personnes à contacter d'urgence ou autorisées à venir chercher l'élève ne font pas partie de l'annuaire ENT.",
 				"obligatoire":true,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Restaurant scolaire",
 				"id":"ENTEleveRestaurantScolaire",
 				"note":"Activités périscolaires de l'élève (booléens)",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Transport scolaire",
 				"id":"ENTEleveTransport",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Garderie matin",
 				"id":"ENTEleveGarderieMatin",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Garderie soir",
 				"id":"ENTEleveGarderieSoir",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Etudes surveillées",
 				"id":"ENTEleveEtudesSurveillees",
 				"note":"",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Elèves",
 				"id":"ENTPersRelEleveEleve",
 				"note":"Elève(s) avec qui la personne est en relation (déduit(s) du champ ENTEleveAutoriteParentale)",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Représentant des parents d'élèves",
 				"id":"ENTPersRelEleveRepresentant",
 				"note":"Indique la ou les écoles pour lesquelles la personne est représentante des parents d'élèves",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":true,
+				"restrictions" : ["PERS_REL_ELEVE"]
 			},
 			{
 				"label":"Charge d'enseignement",
 				"id":"ENTPersonChargeEnseignement",
 				"note":"\"O\" pour les enseignants, \"N\" pour les non enseignants. Déduit automatiquement du profil sauf pour les personnes extérieures",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"]
 			},
 			{
 				"label":"Fonctions",
 				"id":"ENTPersonFonctions",
 				"note":"Fonction(s) dans les écoles, les services académiques ou les collectivités",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false,
+				"restrictions" : ["ENSEIGNANT","NON_ENSEIGNANT","EXTERIEUR"]
 			},
 			{
 				"label":"Fonction de direction",
 				"id":"ENTEnsFonctionDir",
 				"note":"Directeur d'école ou de RPI ou adjoint.",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false,
+				"restrictions" : ["ENSEIGNANT"]
 			},
 			{
 				"label":"Spécialités",
 				"id":"ENTEnsSpecialites",
 				"note":"Spécialisation du professeur des écoles ou de l'instituteur : habilitation pour l'enseignenement d'une langue vivante, coordonnateur ZEP, animateur TICE, maître formateur, ressource en science, conseiller pédagogique, …",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":false,
+				"restrictions" : ["ENSEIGNANT"]
 			},
 			{
 				"label":"Niveau",
 				"id":"ENTEleveNiveau",
 				"note":"TPS, PS, MS, GS, CP, CE1, CE2, CM1 ou CM2",
 				"obligatoire":false,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Cycle",
 				"id":"ENTEleveCycle",
 				"note":"cycle 1, cycle 2 ou cycle 3",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Type de classe de l'élève",
 				"id":"ENTEleveTypeClasse",
 				"note":"Classe ordinaire, CLAD, CLIS",
 				"obligatoire":true,
-				"multiple":false
+				"multiple":false,
+				"modifiable":false,
+				"restrictions" : ["ELEVE"]
 			},
 			{
 				"label":"Ecole et classes associées",
 				"id":"ENTPersonClasses",
-				"note":"Ecole et classe(s) associée(s)"
-			},
-			{
-				"label":"Facultatif même pour les élèves (pas de classe dans les écoles virtuelles)",
+				"note":"Ecole et classe(s) associée(s). Facultatif même pour les élèves (pas de classe dans les écoles virtuelles).",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":true,
+				"restrictions" : ["ELEVE","ENSEIGNANT","EXTERIEUR"]
 			},
 			{
 				"label":"Ecole et groupes associés",
 				"id":"ENTPersonGroupes",
 				"note":"Ecole et groupe(s) associé(s)",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":true
 			},
 			{
 				"label":"Classes dont la personne est responsable",
 				"id":"ENTEnsClassesResponsable",
 				"note":"Ecole et classe(s) associée(s)",
 				"obligatoire":false,
-				"multiple":true
+				"multiple":true,
+				"modifiable":true,
+				"restrictions" : ["ENSEIGNANT"]
+			}
+		]
+	},
+	"structures" : {
+		"types" : ["ECOLE","SERVICE_ACADEMIQUE","COLLECTIVITE_LOCALE"],
+		"attributs" : [
+			{
+				"label":"Identifiant ENT",
+				"id":"ENTStructureIdentifiant",
+				"note":"Identifiant interne à l'ENT.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"auto": {"generator":"id", "args":[]}
+			},
+			{
+				"label":"Clés de jointure",
+				"id":"ENTStructureJointure",
+				"note":"Identifiant(s) utilisé(s) pour faire la jointure avec des SI externes.",
+				"obligatoire":true,
+				"multiple":true,
+				"modifiable":false
+			},
+			{
+				"label":"N°UAI",
+				"id":"ENTStructureUAI",
+				"note":"Anciennement code RNE.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE","SERVICE_ACADEMIQUE"]
+			},
+			{
+				"label":"N° SIREN / SIRET",
+				"id":"ENTStructureSIREN",
+				"note":"N° SIREN ou n° SIRET.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Nom courant / raison sociale",
+				"id":"ENTStructureNomCourant",
+				"note":"Nom courant ou raison sociale.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Type de structure",
+				"id":"ENTStructureTypeStruct",
+				"note":"Déduction automatique par rapport à la nature du code UAI (école et services académiques) ou de la table d'origine (collectivité).",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Ministère de tutelle",
+				"id":"ENTEcoleMinistereTutelle",
+				"note":"Ministère de rattachement (MEN, Santé pour les établissements spécialisés, Culture…).",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Secteur",
+				"id":"ENTEcoleSecteur",
+				"note":"Type de contrat avec l'Etat (public ou privé).",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Circonscription",
+				"id":"ENTEcoleCirconscription",
+				"note":"Circonscription de rattachement.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Secteur scolaire",
+				"id":"ENTEcoleSecteurScolaire",
+				"note":"Secteur de collège de rattachement.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Commune",
+				"id":"ENTEcoleCommune",
+				"note":"Commune de rattachement.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"RPI",
+				"id":"ENTEcoleRPI",
+				"note":"RPI d'appartenance de l'école.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["ECOLE"]
+			},
+			{
+				"label":"Académie",
+				"id":"ENTServAcAcademie",
+				"note":"Libellé de l'Académie de rattachement.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["SERVICE_ACADEMIQUE"]
+			},
+			{
+				"label":"Collectivité",
+				"id":"ENTCollLocLieuGeographique",
+				"note":"ENTCollLocLieuGeographique.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["COLLECTIVITE_LOCALE"]
+			},
+			{
+				"label":"Adresse",
+				"id":"ENTStructureAdresse",
+				"note":"Adresse.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Boîte postale",
+				"id":"ENTStructureBoitePostale",
+				"note":"Boîte postale.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Code postal",
+				"id":"ENTStructureCodePostal",
+				"note":"Code postal.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Ville",
+				"id":"ENTStructureVille",
+				"note":"Ville.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Téléphone",
+				"id":"ENTStructureTelephone",
+				"note":"Téléphone.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Fax",
+				"id":"ENTStructureFax",
+				"note":"Fax.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Adresse mail",
+				"id":"ENTStructureEmail",
+				"note":"Adresse mail.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Site web",
+				"id":"ENTStructureSiteWeb",
+				"note":"Site web.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":true
+			},
+			{
+				"label":"Contacts ENT",
+				"id":"ENTStructureContactsENT",
+				"note":"Par défaut, directeur d'école mais délégation possible.",
+				"obligatoire":false,
+				"multiple":true,
+				"modifiable":true
+			}
+		]
+	},
+	"groupes" : {
+		"types" : ["CLASSE","GROUPE","GROUPEMENT_ECOLES"],
+		"attributs" : [
+			{
+				"label":"Identifiant ENT",
+				"id":"ENTGroupeIdentifiant",
+				"note":"Identifiant interne à l'ENT, unique au niveau national.",
+				"obligatoire":true,
+				"multiple":false,
+				"modifiable":false,
+				"auto": {"generator":"id", "args":[]}
+			},
+			{
+				"label":"Clés de jointure",
+				"id":"ENTGroupeJointure",
+				"note":"Identifiant(s) utilisé(s) pour faire la jointure avec des SI externes.",
+				"obligatoire":true,
+				"multiple":true,
+				"modifiable":false
+			},
+			{
+				"label":"Nom du groupe",
+				"id":"ENTGroupeNom",
+				"note":"Nom du groupe.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Description du groupe",
+				"id":"ENTGroupeDescritpion",
+				"note":"Description du groupe.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Ecole propriétaire du groupe",
+				"id":"ENTGroupeEcoleProprietaire",
+				"note":"Ecole associée à la classe ou au groupe spécifique.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false,
+				"restrictions": ["CLASSE","GROUPE"]
+			},
+			{
+				"label":"Type de groupe",
+				"id":"ENTGroupeType",
+				"note":"Classes : ordinaire, CLIS, CLAD; Groupes : CHAM, groupe d'enseignement, …; Groupement d'école : RPI, secteur de collège, circonscription.",
+				"obligatoire":false,
+				"multiple":false,
+				"modifiable":false
+			},
+			{
+				"label":"Niveaux de la classe",
+				"id":"ENTClasseNiveaux",
+				"note":"Une classe peut être multi-niveaux. Non renseigné pour les CLAD.",
+				"obligatoire":false,
+				"multiple":true,
+				"modifiable":false,
+				"restrictions": ["CLASSE"]
+			},
+			{
+				"label":"Cycles de la classe",
+				"id":"ENTClasseCycle",
+				"note":"Une classe peut être multi-cycles..",
+				"obligatoire":false,
+				"multiple":true,
+				"modifiable":false,
+				"restrictions": ["CLASSE"]
 			}
 		]
 	}
