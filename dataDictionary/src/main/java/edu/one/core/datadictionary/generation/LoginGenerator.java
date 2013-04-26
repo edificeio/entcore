@@ -16,6 +16,7 @@ public class LoginGenerator extends FieldGenerator {
 		String lastName = in[1];
 		String login = removeAccents(firstName).replaceAll(" ", "-").toLowerCase()
 				+ "." + removeAccents(lastName).replaceAll(" ", "-").toLowerCase();
+		//TODO: vérifier l'unicité du login
 		return login.replaceAll("'", "");
 	}
 
