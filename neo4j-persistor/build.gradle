@@ -3,6 +3,7 @@ apply from: "gradle/vertx.gradle"
 dependencies {
 	compile "org.neo4j:neo4j:$neo4jVersion"
 	compile "org.neo4j:neo4j-geoff-core:$neo4jGeoofVersion"
+	compile 'org.codehaus.jackson:jackson-jaxrs:1.8.3' // Hack : maanage with transitive dependency
 }
 
 test {
