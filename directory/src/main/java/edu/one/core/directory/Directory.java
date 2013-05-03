@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -19,6 +20,8 @@ public class Directory extends Controller {
 	Neo neo;
 	Dictionary d;
 
+	public Directory() {
+	}
 	@Override
 	public void start() {
 		super.start();
@@ -170,7 +173,7 @@ public class Directory extends Controller {
 				String start = "";
 				String conditions= "";
 				String creation = "";
-				for (Map.Entry<String, String> entry : request.params().entrySet()) {
+				for (Map.Entry<String, String> entry : request.params()) {
 					if (!entry.getKey().startsWith("ENT")){
 						start += entry.getKey()+"=node(*), ";
 						conditions += "has("+entry.getKey()+".ENTStructureNomCourant) AND "
@@ -203,7 +206,7 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				List users = new ArrayList<String>();
-				for (Map.Entry<String, String> entry : request.params().entrySet()) {
+				for (Map.Entry<String, String> entry : request.params()) {
 					if (!entry.getKey().equals("ENTGroupeNom")){
 						users.add(entry.getValue());
 					}
@@ -259,7 +262,7 @@ public class Directory extends Controller {
 	}
 
 
-	private String createExportRequest(Map<String,String> params){
+	private String createExportRequest(MultiMap params){
 		if (params.get("id").equals("all")){
 			return "START m=node(*) WHERE has(m.type) AND has(m.ENTPersonLogin)"
 					+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "

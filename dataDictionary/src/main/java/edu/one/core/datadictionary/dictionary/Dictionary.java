@@ -14,6 +14,8 @@ public interface Dictionary {
 
 	Map<String, Boolean> validateFields(Map<String,String> fields);
 
+	Map<String, Boolean> validateFields(Iterable<Map.Entry<String, String>> fields);
+
 	Map<String, List<String>> generateField(Map<String, List<String>> values);
 
 	void link(String oneField, String specificField);

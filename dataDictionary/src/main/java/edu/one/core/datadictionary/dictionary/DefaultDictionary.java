@@ -81,6 +81,15 @@ public class DefaultDictionary implements Dictionary {
 	}
 
 	@Override
+	public Map<String, Boolean> validateFields(Iterable<Map.Entry<String,String>> fields) {
+		Map<String, Boolean> result = new HashMap<>();
+		for (Map.Entry<String, String> entry : fields) {
+			result.put(entry.getKey(), validateField(entry.getKey(), entry.getValue()));
+		}
+		return result;
+	}
+
+	@Override
 	public Map<String, List<String>> generateField(Map<String, List<String>> attrs) {
 		for (Field f : generatedFields) {
 			List<String> values = new ArrayList<>();
