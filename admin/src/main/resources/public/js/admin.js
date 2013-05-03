@@ -23,6 +23,7 @@
 					event.preventDefault();
 					if (!event.target.getAttribute('call')) return;
 					var call = event.target.getAttribute('call');
+					event.target.parentNode.className += " active";
 					admin[call]({url : event.target.getAttribute('href'), id: event.id});
 				});
 			},
