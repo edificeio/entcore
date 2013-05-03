@@ -4,5 +4,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 
 public interface Filter {
 
-	boolean test(HttpServerRequest request);
+	boolean verify (HttpServerRequest request);
+	void deny (HttpServerRequest request);
+
 }

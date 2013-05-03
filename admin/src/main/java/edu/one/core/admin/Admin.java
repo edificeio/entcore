@@ -1,6 +1,7 @@
 package edu.one.core.admin;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.request.filter.SecurityHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
