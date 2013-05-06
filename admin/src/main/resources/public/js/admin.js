@@ -23,12 +23,19 @@
 					event.preventDefault();
 					if (!event.target.getAttribute('call')) return;
 					var call = event.target.getAttribute('call');
+                                        $('#menu li').siblings().removeClass("active");
 					event.target.parentNode.className += " active";
 					admin[call]({url : event.target.getAttribute('href'), id: event.id});
 				});
 			},
 			displayApp : function(o) {
 				$('#appIframe').attr('src', o.url);
+                                $('#appIframe').load(o.url, function() {
+                                    var iframe = document.getElementById("appIframe");
+                                    $('#appIframe').ready(function(){
+                                            iframe.contentWindow.postMessage("<style>h1 {color: red;}</style>", o.url);
+                                    });
+                                });
 			}
 		}
 	}();

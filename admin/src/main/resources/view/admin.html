@@ -1,25 +1,28 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>{{#i18n}}admin.title{{/i18n}}</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                <meta charset="utf-8" />
 		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
 		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
-		<style>
-			h1		{ font-size: 2em; background: black; color: white; }
-			a		{ font-size: 1.5em; font-weight: bold;}
-			iframe	{ border : 5px solid #ddd; }
-		</style>
+                <link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+                <link rel="stylesheet" href="{{#static}}css/admin.css{{/static}}" media="all" />
+                <link href='http://fonts.googleapis.com/css?family=Open+Sans:200,300,400' rel='stylesheet' type='text/css'>
 	</head>
 	<body>
-		<h1>{{#i18n}}admin.header{{/i18n}}</h1>
+                <header>
+                        <h1>{{#i18n}}admin.header{{/i18n}}</h1>
+                </header>
 		<!-- By convention it display admin view -->
-		<div id="menu">
-		{{#one-apps}}
-			<a call="displayApp" id="{{name}}}" href="{{url}}/admin">{{name}}</a> /
-		{{/one-apps}}
-		</div>
-		<div id="main">
-			<iframe id="appIframe" src="{{url_infra}}/starter/dev" height="500px" width="98%"></iframe>
-		</div>
+		<nav id="menu">
+                        <ul>
+                                {{#one-apps}}
+                                <li><a call="displayApp" id="{{name}}" href="{{url}}/admin">{{name}}</a></li>
+                                {{/one-apps}}
+                        </ul>
+		</nav>
+		<section id="main">
+			<iframe id="appIframe" src="http://localhost:8001/starter/dev"></iframe>
+		</section>
 	</body>
 </html>

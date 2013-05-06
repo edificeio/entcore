@@ -34,6 +34,14 @@ var admin = function(){
 			$('#datas').html(dataAsHtml);
 		}
 	};
+        
+        var receiver = function(event) {
+                if (event.origin == "http://localhost:8008") {
+                        console.log("Message recu (web messaging) : " + event.data);
+                        $("head").append(event.data);
+//                        $(event.data).appendTo("body");
+                }
+        };
 
 	return {
 		init : function() {
@@ -43,10 +51,11 @@ var admin = function(){
 				var call = event.target.getAttribute('call');
 				admin[call]({url : event.target.getAttribute('href'), id: event.id});
 			});
+                        window.addEventListener('message', receiver, false);
 		},
 		dictionary : function(o) {
-			getAndRender(o.url, "dictionary")
+			getAndRender(o.url, "dictionary");
 		}
-	}
+	};
 }();
 $(document).ready(function(){ admin.init();});
