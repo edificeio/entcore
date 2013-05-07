@@ -1,5 +1,6 @@
 package edu.one.core.infra;
 
+import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -35,6 +36,18 @@ public class Neo  {
 		jo.putString("attrSeparator", as);
 		jo.putString("valueSeparator", vs);
 		eb.send(address, jo);
+	}
+
+	public void send(String query, Map<String,Object> params, final HttpServerResponse response) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		jo.putObject("params", new JsonObject(params));
+		eb.send(address, jo , new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> m) {
+				response.end(m.body().encode());
+			}
+		});
 	}
 
 	public void send(String query, final HttpServerResponse response) {

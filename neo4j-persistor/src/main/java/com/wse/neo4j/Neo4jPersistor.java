@@ -68,7 +68,11 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 	private void execute (Message<JsonObject> m) {
 		ExecutionResult result = null;
 		try {
-			result = engine.execute(m.body().getString("query"));
+			if (m.body().toMap().containsKey("params")){
+				result = engine.execute(m.body().getString("query"), m.body().getObject("params").toMap());
+			} else {
+				result = engine.execute(m.body().getString("query"));
+			}
 		} catch (Exception e) {
 			sendError(m, e.getMessage());
 			e.printStackTrace();
