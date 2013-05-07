@@ -12,23 +12,26 @@ import static org.vertx.testtools.VertxAssert.*;
 
 public class DirectoryTest extends TestVerticle {
 
+	JsonObject config = new JsonObject(vertx.fileSystem().readFileSync("mods/edu.one.core~directory~0.1.0-SNAPSHOT/mod.json").toString());
+
 	@Test
 	public void UserCreationTest() throws Exception{
 		final HttpClient client = vertx.createHttpClient().setPort(8003);
 		System.out.println(System.getProperty("user.dir"));
-		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", new Handler<AsyncResult<String>>() {
+		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", config, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()){
 					client.get("/api/create-user?ENTPersonNom=Tom&ENTPersonPrenom=Jones"
-							+ "&ENTPersonDateNaissance=11%2F12%2F1989", new Handler<HttpClientResponse>() {
+							+ "&ENTPersonDateNaissance=bla", new Handler<HttpClientResponse>() {
 						@Override
 						public void handle(HttpClientResponse resp) {
 							resp.bodyHandler(new Handler<Buffer>(){
 								@Override
 								public void handle(Buffer data) {
 									JsonObject result = new JsonObject(data.toString());
-									assertFalse(result.getString("result").equals("error"));
+									assertTrue(result.getString("result").equals("error"));
+									assertFalse(result.getBoolean("ENTPersonDateNaissance"));
 									testComplete();
 								}
 							});
@@ -48,8 +51,9 @@ public class DirectoryTest extends TestVerticle {
 	@Test
 	public void SchoolCreationTest() throws Exception{
 		final HttpClient client = vertx.createHttpClient().setPort(8003);
+		System.out.println(config.toString());
 		System.out.println(System.getProperty("user.dir"));
-		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", new Handler<AsyncResult<String>>() {
+		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", config, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()){
@@ -62,7 +66,6 @@ public class DirectoryTest extends TestVerticle {
 								public void handle(Buffer data) {
 									JsonObject result = new JsonObject(data.toString());
 									assertTrue(result.getString("result").equals("error"));
-									assertFalse(result.getBoolean("ENTPersonDateNaissance"));
 									testComplete();
 								}
 							});
@@ -82,7 +85,7 @@ public class DirectoryTest extends TestVerticle {
 	@Test
 	public void EmptyExportTest() throws Exception{
 		final HttpClient client = vertx.createHttpClient().setPort(8003);
-		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", new Handler<AsyncResult<String>>() {
+		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", config, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()){
@@ -113,7 +116,7 @@ public class DirectoryTest extends TestVerticle {
 	@Test
 	public void ExportErrorTest() throws Exception{
 		final HttpClient client = vertx.createHttpClient().setPort(8003);
-		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", new Handler<AsyncResult<String>>() {
+		container.deployModule("edu.one.core~directory~0.1.0-SNAPSHOT", config, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()){
