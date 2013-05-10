@@ -2,27 +2,25 @@
 <html>
 	<head>
 		<title>{{#i18n}}admin.title{{/i18n}}</title>
-                <meta charset="utf-8" />
+				<meta charset="utf-8" />
 		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
 		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
-                <link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
-                <link rel="stylesheet" href="{{#static}}css/admin.css{{/static}}" media="all" />
-                <link href='http://fonts.googleapis.com/css?family=Open+Sans:200,300,400' rel='stylesheet' type='text/css'>
+				<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+				<link rel="stylesheet" href="{{#static}}css/font.css{{/static}}" media="all" />
+				<link rel="stylesheet" href="{{#static}}css/admin.css{{/static}}" media="all" />
 	</head>
 	<body>
-                <header>
-                        <h1>{{#i18n}}admin.header{{/i18n}}</h1>
-                </header>
+		<header>
+			<h1>{{#i18n}}admin.header{{/i18n}}</h1>
+		</header>
 		<!-- By convention it display admin view -->
 		<nav id="menu">
-                        <ul>
-                                {{#one-apps}}
-                                <li><a call="displayApp" id="{{name}}" href="{{url}}/admin">{{name}}</a></li>
-                                {{/one-apps}}
-                        </ul>
+			<ul>
+				{{#one-apps}}
+					<li><a call="displayApp" id="{{name}}" href="{{url}}/admin">{{name}}</a></li>
+				{{/one-apps}}
+			</ul>
 		</nav>
-		<section id="main">
-			<iframe id="appIframe" src=""></iframe>
-		</section>
+		<section id="main"></section>
 	</body>
 </html>

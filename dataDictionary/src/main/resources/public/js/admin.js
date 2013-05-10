@@ -37,8 +37,7 @@ var admin = function(){
         
         var receiver = function(event) {
                 if (event.origin == "http://localhost:8008") {
-                        console.log("Message recu (web messaging) : " + event.data);
-                        $("head").append(event.data);
+                        $("head").append("<link rel='stylesheet' href='" + event.data + "' media='all' />");
 //                        $(event.data).appendTo("body");
                 }
         };
@@ -51,7 +50,7 @@ var admin = function(){
 				var call = event.target.getAttribute('call');
 				admin[call]({url : event.target.getAttribute('href'), id: event.id});
 			});
-                        window.addEventListener('message', receiver, false);
+			window.addEventListener('message', receiver, false);
 		},
 		dictionary : function(o) {
 			getAndRender(o.url, "dictionary");

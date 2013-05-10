@@ -183,8 +183,17 @@ var admin = function(){
 		}
 	};
 
+	var receiver = function(event) {
+		console.log("dir = " + event.origin);
+		if (event.origin == "http://localhost:8008") {
+			$("head").append("<link rel='stylesheet' href='" + event.data + "' media='all' />");
+		}
+	};
+
+
 	return {
 		init : function() {
+			window.addEventListener('message', receiver, false);
 			$('body').delegate('#annuaire', 'click',function(event) {
 				console.log(event.target);
 				if (event.target.getAttribute('call')){
