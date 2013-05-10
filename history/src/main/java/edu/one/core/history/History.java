@@ -16,7 +16,13 @@ public class History extends Controller {
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
+				JsonObject traceFiles = new JsonObject().putArray("traceFiles", new JsonArray());
+				for (String file : vertx.fileSystem().readDirSync(config.getString("log-path"))) {
+					if (!file.endsWith(".trace")) { continue; }
+					file = file.replace(config.getString("log-path"), "").replace(".trace", "");
+					traceFiles.getArray("traceFiles").addObject(new JsonObject().putString("name", file));
+				}
+				renderView(request, traceFiles);
 			}
 		});
 

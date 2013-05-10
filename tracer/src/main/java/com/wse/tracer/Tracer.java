@@ -1,5 +1,6 @@
 package com.wse.tracer;
 
+import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -25,7 +26,7 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 		FileHandler allLogs = createFileHandler("all");
 		tracer.addHandler(allLogs);
 
-		vertxLogger.info("BusModBase Trace starts on address: " + config.getString("address"));
+		vertxLogger.info("BusModBase: Tracer starts on address: " + config.getString("address"));
 	}
 
 	@Override
@@ -56,7 +57,7 @@ public class Tracer extends BusModBase implements Handler<Message<JsonObject>> {
 		FileHandler fh = null;
 		try {
 			fh = new FileHandler(config.getString("log-path") + name + ".trace", true);
-		} catch (Exception ex) {
+		} catch (IOException | SecurityException ex) {
 			vertxLogger.info(ex);
 		}
 		Formatter formatter = new JsonFormatter();

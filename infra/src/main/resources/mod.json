@@ -4,6 +4,7 @@
 	"mode": "dev",
 	"auto-redeploy": true,
 	"one-modules": [
+		"com.wse.tracer~tracer~0.1.0-SNAPSHOT",
 		"com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT",
 		"edu.one.core~auth~0.1.0-SNAPSHOT",
 		"edu.one.core~admin~0.1.0-SNAPSHOT",
