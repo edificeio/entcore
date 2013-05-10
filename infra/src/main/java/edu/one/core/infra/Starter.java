@@ -14,7 +14,7 @@ public class Starter extends Controller {
 	public void start() {
 		try {
 			developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
-			config = getConfig("mod.json");
+			config = getConfig("", "mod.json");
 			super.start();
 			neo = new Neo(vertx.eventBus(),log);
 			deployApps();
@@ -39,17 +39,17 @@ public class Starter extends Controller {
 		for (Object o : config.getArray("one-modules")){
 			String module = ((String)o).trim();
 			if (vertx.fileSystem().existsSync("../" + module)) {
-				container.deployModule(module, getConfig("../"+ module +"/mod.json"));
+				container.deployModule(module, getConfig("../"+ module + "/", "mod.json"));
 			}
 		}
 	}
 
-	protected JsonObject getConfig(String fileName) throws Exception {
+	protected JsonObject getConfig(String path, String fileName) throws Exception {
 		Buffer b;
-		if (! developerId.isEmpty() && vertx.fileSystem().existsSync(fileName + "." + developerId)) {
-			b = vertx.fileSystem().readFileSync(fileName + "." + developerId);
+		if (! developerId.isEmpty() && vertx.fileSystem().existsSync(path + developerId + "." + fileName)) {
+			b = vertx.fileSystem().readFileSync(path + developerId + "." + fileName);
 		} else {
-			b = vertx.fileSystem().readFileSync(fileName);
+			b = vertx.fileSystem().readFileSync(path + fileName);
 		}
 
 		if (b == null) {
