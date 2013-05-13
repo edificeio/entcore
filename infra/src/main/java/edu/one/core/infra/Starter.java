@@ -19,7 +19,7 @@ public class Starter extends Controller {
 			neo = new Neo(vertx.eventBus(),log);
 			deployApps();
 		} catch (Exception ex) {
-			log.equals(ex.getMessage());
+			log.error(ex.getMessage());
 		}
 			rm.get("/starter/dev", new Handler<HttpServerRequest> () {
 				public void handle(HttpServerRequest request) {
