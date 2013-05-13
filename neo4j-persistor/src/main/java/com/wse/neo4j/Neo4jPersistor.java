@@ -12,9 +12,12 @@ import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.geoff.Geoff;
 import org.neo4j.geoff.Subgraph;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -32,8 +35,8 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		super.start();
 		gdb = new GraphDatabaseFactory()
 				.newEmbeddedDatabaseBuilder(config.getString("datastore-path"))
-				.setConfig(GraphDatabaseSettings.node_keys_indexable, config.getString("node_keys_indexable"))
-				.setConfig(GraphDatabaseSettings.node_auto_indexing, config.getString("node_auto_indexing"))
+				.setConfig(GraphDatabaseSettings.node_keys_indexable, config.getObject("neo4j").getString("node_keys_indexable"))
+				.setConfig(GraphDatabaseSettings.node_auto_indexing, config.getObject("neo4j").getString("node_auto_indexing"))
 				.newGraphDatabase();
 
 		engine = new ExecutionEngine(gdb);
