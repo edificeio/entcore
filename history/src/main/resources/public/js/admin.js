@@ -17,17 +17,23 @@
 				$('#log').html("ERREUR !");
 			},
 			logs : function (data) {
-				var htmlString = "";
+				var htmlString = "<table><thead><tr><th>Type</th><th>Application</th><th>Date</th><th>Message</th></tr></thead><tbody>";
 				var logs = data.records;
 				for (i = 0; i < logs.length; i++){
 					htmlString +=
-						'<p><span> ' + logs[i].level + ' - </span>'
-						+ '<em style="color:red">' + logs[i].app + '</em>'
-						+ '<span> - ' + logs[i].date + '</span>'
-						+ '<span> - ' + logs[i].message + '</span>';
-						+ '</p>'
+						'<tr><td>' + logs[i].level + '</td>'
+						+ '<td>' + logs[i].app + '</td>'
+						+ '<td>' + logs[i].date + '</td>'
+						+ '<td>' + logs[i].message + '</td></tr>';
 				}
+				htmlString += "</tbody></table>";
 				$('#log').html(htmlString);
+			}
+		};
+
+		var receiver = function(event) {
+			if (event.origin == "http://localhost:8008") {
+				$("head").append("<link rel='stylesheet' href='" + event.data + "' media='all' />");
 			}
 		};
 
@@ -39,6 +45,12 @@
 					var call = event.target.getAttribute('call');
 					admin[call]({url : event.target.getAttribute('href'), id: event.id});
 				});
+				admin[$('#select').attr('call')]({url: $('#select').val()});
+				$('#select').on('change', function() {
+					var call = this.getAttribute('call');
+					admin[call]({url : this.value});
+				});
+				window.addEventListener('message', receiver, false);
 			},
 			logs : function(o) {
 				getAndRender(o.url, "logs");
