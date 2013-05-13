@@ -93,6 +93,11 @@ li {
 	background-color: #f9f9f9;
 }
 
+#log li .title {
+	font-weight: bold;
+    font-family: 'OpenSansBold', sans-serif;
+}
+
 #log li .history-level {
 	display: inline-block;
 	width: 10%;

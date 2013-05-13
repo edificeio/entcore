@@ -17,16 +17,18 @@
 				$('#log').html("ERREUR !");
 			},
 			logs : function (data) {
-				var htmlString = "";
 				var logs = data.records;
+				var htmlString = '<li><span class="history-level title">Type</span>'
+					+ '<span class="history-message title">Message</span>'
+					+ '<span class="history-date title">Date</span>'
+					+ '</li>';
 				for (i = 0; i < logs.length; i++){
 					htmlString +=
 						'<li>'
 						+ '<span class="history-level"> ' + logs[i].level + '</span>'
 						+ '<span class="history-message">'+ '<span class="history-app label history-badge-warning">' + logs[i].app + '</span>' + logs[i].message + '</span>'
-						+ '<span class="history-date">' + logs[i].date + '</span>'
+						+ '<span class="history-date">' + transformDate(logs[i].date) + '</span>'
 						+ '</li>';
-						console.log(transformDate(logs[i].date));
 				}
 				$('#log').html(htmlString);
 			}
@@ -34,10 +36,10 @@
 
 		var transformDate = function(str) {
 			var tab = str.split(" ");
-			var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-			
-			var dt = tab[2] + '-' + tab[1] + '-' + tab[5];
-			return (dt);
+			var mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "décembre"];
+			var jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+			var dt = new Date(tab[5] + '-' + tab[2] + '-' + tab[1] + ' ' + tab[3]);
+			return (jours[dt.getDay()] + ' ' + dt.getDay() + ' ' + mois[dt.getMonth()] + ' ' + dt.getFullYear() + ' - ' + tab[3] + ' ' + tab[4]);
 		};
 
 		var receiver = function(event) {
