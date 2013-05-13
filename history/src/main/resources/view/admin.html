@@ -9,13 +9,11 @@
 		<h1>{{#i18n}}history.admin.header{{/i18n}}</h1>
 		<div id="historique">
 			<div id="main">
-				<select call="logs" id="select">
-					{{#traceFiles}}
-					<option value="/admin/logs?app={{name}}">{{#i18n}}{{name}}{{/i18n}}</option>
-					{{/traceFiles}}
-				</select>
+			{{#traceFiles}}
+				<a call="logs" href="/admin/logs?app={{name}}">{{#i18n}}{{name}}{{/i18n}}</a> | 
+			{{/traceFiles}}
 			</div>
-			<div id="log"></div>
+			<ul id="log"></ul>
 		</div>
 	</body>
 </html>

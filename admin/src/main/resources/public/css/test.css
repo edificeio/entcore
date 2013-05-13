@@ -38,17 +38,33 @@
 body {
 	font-family: 'OpenSansRegular', sans-serif;
 	color: #3b3b41;
-	margin: 10px;
+	background-color: white;
+	margin: 20px;
 	font-size: 14px;
 	line-height: 20px;
 }
 
 h1 {
-	color: red;
     font-family: 'OpenSansLight', sans-serif;
-    font-size: 1.7em;
+    font-weight: normal;
+    font-size: 32px;
+    line-height: 32px;
     margin: 0;
     padding: 5px 0 20px 0;
+}
+
+li {
+	line-height: 20px;
+}
+
+.label {
+	color: white;
+	white-space: nowrap;
+	vertical-align: baseline;
+	text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.15);
+	font-family: 'OpenSansRegular', sans-serif;
+	font-size: 12px;
+	padding: 3px 6px;
 }
 
 /* ------------- History -------------- */
@@ -60,9 +76,59 @@ h1 {
 }
 
 #log {
-	margin 10px 0;
+	list-style: none;
+	margin: 20px 0;
+	font-size: 12px;
+	padding: 0;
 }
 
+#log li {
+	margin: 0;
+	border-radius: 4px;
+	padding: 5px 10px;
+	cursor: pointer;
+}
+
+#log li:nth-child(2n+1){
+	background-color: #f9f9f9;
+}
+
+#log li .history-level {
+	display: inline-block;
+	width: 10%;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#log li .history-message {
+	display: inline-block;
+	width: 70%;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#log li .history-date {
+	display: inline-block;
+	width: 20%;
+	white-space: nowrap;
+	text-align: right;
+}
+
+#log li .history-badge-warning {
+	border-radius: 5px;
+	margin: 5px;
+	border-color: #F4A506;
+	background-color: #FABB3D;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsl(40, 95%, 76%)), color-stop(100%, hsl(40, 95%, 61%)));
+	background-image: -webkit-linear-gradient(top, hsl(40, 95%, 76%), hsl(40, 95%, 61%));
+	background-image: -moz-linear-gradient(top, hsl(40, 95%, 76%), hsl(40, 95%, 61%));
+	background-image: -ms-linear-gradient(top, hsl(40, 95%, 76%), hsl(40, 95%, 61%));
+	background-image: -o-linear-gradient(top, hsl(40, 95%, 76%), hsl(40, 95%, 61%));
+	background-image: linear-gradient(top, hsl(40, 95%, 76%), hsl(40, 95%, 61%));
+}
+
+
+/*
 #log table {
 	border: 1px solid #ddd;
 	border-radius: 5px;
@@ -91,7 +157,13 @@ h1 {
 	text-align: left;
 	border: 1px solid #ddd;
 }
+*/
 
-#log table tbody tr:nth-child(2n+1){
-	background-color: #f9f9f9;
-}
+
+
+
+
+
+
+
+
