@@ -56,6 +56,13 @@ public abstract class Controller extends Verticle {
 			}
 		});
 
+		rm.get("/i18n", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				renderJson(request, i18n.load(request.headers().get("Accept-Language")));
+			}
+		});
+
 		rm.get("/monitoring", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest event) {
@@ -68,6 +75,7 @@ public abstract class Controller extends Verticle {
 
 	private Map<String,Object> functionsScope(HttpServerRequest request) {
 		Map<String,Object> scope = new HashMap<>();
+		scope.put("infra", new StaticResourceTemplateFunction(request, "8001")); // FIXME get port from infra module
 		scope.put("static", new StaticResourceTemplateFunction(request));
 		scope.put("i18n", new I18nTemplateFunction(i18n, request));
 		return scope;

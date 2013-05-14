@@ -34,11 +34,31 @@ public class I18n {
 		}
 	}
 
+	public String translate(String key, String acceptLanguage) {
+		return translate(key, getLocale(acceptLanguage));
+	}
 	public String translate(String key, Locale locale) {
 		JsonObject bundle = messages.get(locale) != null ? messages.get(locale) : messages.get(defaultLocale);
 		if (bundle == null) {
 			return key;
 		}
 		return bundle.getString(key) != null ? bundle.getString(key) : key;
+	}
+
+	public JsonObject load(String acceptLanguage) {
+		Locale l = getLocale(acceptLanguage);
+		JsonObject bundle = messages.get(l) != null ? messages.get(l) : messages.get(defaultLocale);
+		if (bundle == null) {
+			bundle = messages.get(defaultLocale);
+		}
+		return bundle;
+	}
+
+	/* Dummy implementation. Just use the first langage option ...
+	 * Header example : "Accept-Language:fr,en-us;q=0.8,fr-fr;q=0.5,en;q=0.3"
+	 */
+	private Locale getLocale(String acceptLanguage) {
+		String[] langs = acceptLanguage.split(",");
+		return Locale.forLanguageTag(langs[0].split("-")[0]);
 	}
 }

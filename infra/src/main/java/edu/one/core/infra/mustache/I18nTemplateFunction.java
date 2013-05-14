@@ -26,15 +26,7 @@ public class I18nTemplateFunction implements TemplateFunction{
 
 	@Override
 	public String apply(@Nullable String key) {
-		return i18n.translate(key, getLocale());
-	}
-
-	/* Dummy implementation. Just use the first langage option ...
-	 * Header example : "Accept-Language:fr,en-us;q=0.8,fr-fr;q=0.5,en;q=0.3"
-	 */
-	private Locale getLocale() {
-		String[] langs = request.headers().get("Accept-Language").split(",");
-		return Locale.forLanguageTag(langs[0].split("-")[0]);
+		return i18n.translate(key, request.headers().get("Accept-Language"));
 	}
 
 }
