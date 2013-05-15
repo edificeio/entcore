@@ -13,15 +13,19 @@ var oneApp = {
 	action : {
 	},
 	template : {
-		getAndRender : function (pathUrl, templateName){
+		getAndRender : function (pathUrl, templateName, elem, dataExtractor){
 			var that = this;
+			if (_.isUndefined(dataExtractor)) {
+				dataExtractor = function (d) { return {list : _.values(d.result)}; };
+			}
 			$.get(pathUrl)
-				.done(function(data) {
-					that.render(templateName, data);
-				})
-				.error(function(data) {
-					oneApp.notify.error(data);
-				});
+			.done(function(data) {
+				var jo = jQuery.parseJSON(data)
+				$(elem).html(that.render(templateName, dataExtractor(jo)));
+			})
+			.error(function(data) {
+				oneApp.notify.error(data);
+			});
 		},
 		render : function (name, data) {
 			_.extend(data, {i18n : oneApp.i18n.i18n});
