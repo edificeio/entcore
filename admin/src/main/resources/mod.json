@@ -4,6 +4,7 @@
 	"port": 8008,
 	"auto-redeploy": true,
 	"mode": "dev",
+	"url_infra":"http://localhost:8001",
 	"one-apps": [
 		{"name" : "dataDictionary","url":"http://localhost:8010"},
 		{"name" : "directory","url":"http://localhost:8003"},
