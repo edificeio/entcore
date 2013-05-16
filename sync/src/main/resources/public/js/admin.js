@@ -1,46 +1,26 @@
 var admin = function(){
-		var getAndRender = function (pathUrl, templateName){
-			$.get(pathUrl)
-				.done(function(data) {
-					template.render(templateName, data);
+	var app = Object.create(oneApp);
+	app.scope = "#main";
+	app.define ({
+		template : { 
+			test : "<dl>\
+					<dt>{{#i18n}}sync.admin.time{{/i18n}} :</dt><dd>{{temps}}</dd>\
+					<dt>{{#i18n}}sync.admin.operation{{/i18n}} :</dt><dd>{{operations}}</dd>\
+					<dt>{{#i18n}}sync.admin.rejects{{/i18n}} :</dt><dd>{{rejets}}</dd>\
+					</dl>"
+		},
+		action : {
+			test : function (o) {
+				$.get(o.url).done(function(response){
+					$('#test').html(app.template.render("test",response.result));
+					app.notify.done(app.i18n.bundle["sync.admin.endMsg"]);
 				})
-				.error(function() { // TODO: Manage error message
-					template.render("error");
-				});
-		};
-
-		var template = {
-			render : function (nom, data) {
-				template[nom](data);
-			},
-			error: function() {
-				$('#test').html("ERREUR !");
-			},
-			test : function (data) {
-				var htmlString =
-						'<dl>'
-						+ '<dt>Temps :</dt><dd>' + data.result.temps + '</dd>'
-						+ '<dt>Opération :</dt><dd>' + data.result.operations + '</dd>';
-						+ '</dl>'
-				$('#test').html(htmlString);
-			}
-		};
-
-		return {
-			init : function() {
-				$('body').delegate('#main', 'click',function(event) {
-					event.preventDefault();
-					if (!event.target.getAttribute('call')) return;
-					var call = event.target.getAttribute('call');
-					admin[call]({url : event.target.getAttribute('href'), id: event.id});
-				});
-			},
-			test : function(o) {
-				getAndRender(o.url, "test");
 			}
 		}
-	}();
-
-	$(document).ready(function(){
-		admin.init();
 	});
+	return app;
+}();
+
+$(document).ready(function(){
+	admin.init();
+});
