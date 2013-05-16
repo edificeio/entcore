@@ -1,4 +1,5 @@
 {
-	"sync.admin.header": "Synchronisation",
-	"sync.action.aafTest": "Tester les données AAF"
+	"sync.admin.title": "Alimentation",
+	"sync.admin.header": "Alimentation",
+	"sync.action.aafTest": "Lancer l'alimentation"
 }

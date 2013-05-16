@@ -1,2 +1,5 @@
 {
+	"sync.admin.title": "User synchronization",
+	"sync.admin.header": "User synchronization",
+	"sync.action.aafTest": "Launch synchronization"
 }
