@@ -1,79 +1,37 @@
 var index = function(){
-	var getAndRender = function (pathUrl, templateName){
-		$.get(pathUrl)
-			.done(function(data) {
-				template.render(templateName, data);
-			})
-			.error(function() { // TODO: Manage error message
-				template.render("error");
-			});
-	};
-
-	var template = {
-		render : function (nom, data) {
-			template[nom](data);
+	var app = Object.create(oneApp);
+	app.scope = "#myAccount";
+	app.define ({
+		template : {
+			picture : '<img src="{{picture}}">',
+			userData : "<p><span>{{firstName}} {{lastName}}</span></p>\
+						{{#attributes}}\
+							<p><span>{{label}} : </span><span>{{value}}</span></p>\
+						{{/attributes}}",
+			motto : "<p><span>{{label}} : </span><span>{{value}}</span></p>",
+			interests : "{{#interests}}\
+							<p><span>{{label}} : </span>\
+							<span>{{#values}}{{value}}, {{/values}}</span>\
+							</p>\
+						{{/interests}}",
+			health : "<p><span>{{health}}</span></p>"
 		},
-		error : function () {
-			$('#log').html('<p style="color:red">ERROR</p>')
-		},
-		myAccount : function (data) {
-			var htmlString = "";
-			htmlString += '<img src="' + data.picture + '">';
-			$('#picture').html(htmlString);
-			
-			htmlString = "";
-			htmlString += 
-				'<p><span>' + data.userData.firstName + ' ' + data.userData.lastName 
-				+ '</span></p>';
-			var attributes = data.userData.attributes;
-			for (i = 0; i < attributes.length; i++) {
-				htmlString += 
-					'<p><span>' + attributes[i].label + ' : </span>'
-					+ '<span>' + attributes[i].value + '</span></p>';
+		action : {
+			load : function(o) {
+				$.get(o.url).done(function(response){
+					$('#picture').html(app.template.render("picture",response));
+					$('#data').html(app.template.render("userData",response.userData));
+					$('#motto').html(app.template.render("motto",response.motto));
+					var regExp = new RegExp("(, <)","g");
+					$('#interests').html(app.template.render("interests",response).replace(regExp,"<"));
+					$('#health').html(app.template.render("health",response));
+				})
 			}
-			$('#data').html(htmlString);
-			
-			htmlString = "";
-			htmlString += 
-				'<p><span>' + data.motto.label + ' : </span>'
-				+ '<span>' + data.motto.value + '</span></p>';
-			$('#motto').html(htmlString);
-			
-			htmlString = "";
-			var interests = data.interests;
-			for (i = 0; i < interests.length; i++) {
-				htmlString += '<p><span>' + interests[i].label + ' : </span>';
-				var values = interests[i].values;
-				htmlString += '<span>';
-				for (j = 0; j < values.length; j++) {
-					if (j == 0) {
-						htmlString += values[j];
-					} else {
-						htmlString += ', ' + values[j];
-					}
-				}
-				htmlString += '</span>';
-			}
-			htmlString += '</p>';
-			$('#interests').html(htmlString);
-			
-			htmlString = "";
-			htmlString += 
-				'<p><span>' + data.health + '</span></p>';
-			$('#health').html(htmlString);
 		}
-	};
-
-	return {
-		init : function() {
-			index.myAccount('/load');
-		},
-		myAccount : function(url) {
-			getAndRender(url, "myAccount");
-		}
-	}
+	});
+	return app;
 }();
 
 $(document).ready(function(){
-	index.init(); 
+	index.init();
 });

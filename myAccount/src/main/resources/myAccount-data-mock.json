@@ -1,5 +1,5 @@
 {
-	"picture": "http://localhost:8101/public/img/no-avatar.jpg",
+	"picture": "../public/img/no-avatar.jpg",
 	"userData": {
 		"firstName": "Martin",
 		"lastName": "Dufour",
@@ -29,19 +29,53 @@
 	"interests": [
 		{
 			"label": "Musique",
-			"values": [ "The Beattles", "Dorothée" ]
+			"values": [ 
+				{
+					"value":"The Beattles"
+				},
+				{
+					"value":"Dorothée"
+				}
+			]
 		},
 		{
 			"label": "Endroits",
-			"values": [ "La tour Eiffel", "Montpellier" ]
+			"values": [ 
+				{
+					"value":"La tour Eiffel"
+				},
+				{
+					"value":"Montpellier"
+				}
+			]
 		},
 		{
 			"label": "Animaux",
-			"values": [ "Chien", "Chat", "Lion" ]
+			"values": [ 
+				{
+					"value":"Chien"
+				},
+				{
+					"value":"Chat"
+				},
+				{
+					"value":"Lion"
+				}
+			]
 		},
 		{
 			"label": "Sports",
-			"values": [ "Football", "Rugby", "Tennis" ]
+			"values": [ 
+				{
+					"value":"Football"
+				},
+				{
+					"value":"Rugby"
+				},
+				{
+					"value":"Tennis"
+				}
+			]
 		}
 	],
 	"health": "Allergique au gluten"

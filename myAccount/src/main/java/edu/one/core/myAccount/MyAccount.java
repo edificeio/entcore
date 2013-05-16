@@ -10,7 +10,8 @@ public class MyAccount extends Controller {
 	@Override
 	public void start() {
 		super.start();
-		final JsonObject dataMock = new JsonObject(vertx.fileSystem().readFileSync("myAccount-data-mock.json").toString());
+		final JsonObject dataMock = 
+				new JsonObject(vertx.fileSystem().readFileSync("myAccount-data-mock.json").toString());
 
 		rm.get("/index", new Handler<HttpServerRequest>() {
 			@Override

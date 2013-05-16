@@ -2,24 +2,32 @@
 	<head>
 		<title>{{#i18n}}myAccount.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<link rel="stylesheet" type="text/css" href="{{#static}}css/index.css{{/static}}" />
-		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+		<link href="{{#infra}}css/original.css{{/infra}}" rel='stylesheet' type='text/css'>
+		<link href="{{#static}}css/index.css{{/static}}" rel="stylesheet" type="text/css">
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/index.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body>
 		<h1>{{#i18n}}myAccount.header{{/i18n}}</h1>
-		<div id="picture">
-			<img src="{{#static}}img/no-avatar.jpg{{/static}}">
-		</div>		
-		<div id="data"></div>
-		<div id="motto"></div>
-		
-		<h1>{{#i18n}}myAccount.interests{{/i18n}}</h1>
-		<div id="interests"></div>
-		
-		<h1>{{#i18n}}myAccount.health{{/i18n}}</h1>
-		<div id="health"></div>
-		
-		<div id="log"></div>
+		<div id="myAccount">
+			<div id="picture">
+				<img src="{{#static}}img/no-avatar.jpg{{/static}}">
+			</div>		
+			<div id="data"></div>
+			<div id="motto"></div>
+
+			<h1>{{#i18n}}myAccount.interests{{/i18n}}</h1>
+			<div id="interests"></div>
+
+			<h1>{{#i18n}}myAccount.health{{/i18n}}</h1>
+			<div id="health"></div>
+
+			<div id="log"></div>
+			<a call="load" href="/load">Charger les données</a>
+		</div>
 	</body>
 </html>
