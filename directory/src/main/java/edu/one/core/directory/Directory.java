@@ -50,7 +50,7 @@ public class Directory extends Controller {
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("type","ETABEDUCNAT");
-				neo.send("START n=node:node_auto_index(type={type}) RETURN distinct n.ENTStructureNomCourant, n.id", params, request.response());
+				neo.send("START n=node:node_auto_index(type={type}) RETURN distinct n.ENTStructureNomCourant as name, n.id as id", params, request.response());
 			}
 		});
 
@@ -59,7 +59,7 @@ public class Directory extends Controller {
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("type","GROUPE");
-				neo.send("START n=node:node_auto_index(type={type}) RETURN distinct n.ENTGroupeNom, n.id, n.ENTPeople", params, request.response());
+				neo.send("START n=node:node_auto_index(type={type}) RETURN distinct n.ENTGroupeNom as name, n.id as id, n.ENTPeople as people", params, request.response());
 			}
 		});
 
@@ -69,7 +69,7 @@ public class Directory extends Controller {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",request.params().get("id"));
 				params.put("type","CLASSE");
-				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.ENTGroupeNom, m.id, n.id", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.ENTGroupeNom as name, m.id as classId, n.id as schoolId", params, request.response());
 			}
 		});
 
@@ -79,7 +79,7 @@ public class Directory extends Controller {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$"));
 				params.put("type",Arrays.asList("PERSRELELEVE", "PERSEDUCNAT", "ELEVE"));
-				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom, n.id", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id as userId,m.ENTPersonNom as firstName,m.ENTPersonPrenom as lastName, n.id as classId", params, request.response());
 			}
 		});
 
@@ -89,7 +89,7 @@ public class Directory extends Controller {
 				String[] people = request.params().get("data").split("-");
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",Arrays.asList(people));
-				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.id, n.ENTPersonNom, n.ENTPersonPrenom", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.id as id, n.ENTPersonNom as lastName, n.ENTPersonPrenom as firstName", params, request.response());
 			}
 		});
 
@@ -98,7 +98,7 @@ public class Directory extends Controller {
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",request.params().get("id"));
-				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.ENTPersonNom, n.ENTPersonPrenom, n.ENTPersonAdresse", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.ENTPersonNom as lastName, n.ENTPersonPrenom as firstName, n.ENTPersonAdresse as address", params, request.response());
 			}
 		});
 
@@ -252,10 +252,10 @@ public class Directory extends Controller {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("type",Arrays.asList("PERSRELELEVE", "PERSEDUCNAT", "ELEVE"));
 				if (request.params().get("id").equals("all")){
-					neoRequest = "START m=node:node_auto_index(type={type}) RETURN distinct m.id,m.ENTPersonNom, m.ENTPersonPrenom, m.ENTPersonLogin, m.ENTPersonMotDePasse";
+					neoRequest = "START m=node:node_auto_index(type={type}) RETURN distinct m.id,m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
 				} else {
 					params.put("id",request.params().get("id"));
-					neoRequest = "START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id,m.ENTPersonNom,m.ENTPersonPrenom, m.ENTPersonLogin, m.ENTPersonMotDePasse";
+					neoRequest = "START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id,m.ENTPersonNom as lastName,m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
 				}
 				trace.info("Exporting auth data for " + request.params().get("id"));
 				neo.send(neoRequest, params, request.response());

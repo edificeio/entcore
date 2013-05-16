@@ -1,9 +1,7 @@
 var admin = function(){
 
-	neoValuesExtractor = function (d) {
-		var values = _.values(d.result);
-		return {list : _.each(_.keys(values),value.replace("\.", ''))};
-	};
+	// TMP
+	dataExtractor = function (d) { return {list : _.values(d.result)}; };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -11,12 +9,12 @@ var admin = function(){
 		template : {
 			ecole : "\
 				{{#list}}\
-				<h3>{{nENTStructureNomCourant}}</h3>\
-				<a call='classes' href='/api/classes?id={{nid}}>\
-				{{#i18n}}directory.admin.classes{{/i18n}}</a> - \
-				<a href='/api/export?id={{nid}}' call='exportAuth'>\
+				<h3>{{name}}</h3>\
+				<a call='classes' href='/api/classes?id={{id}}'>\
+				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
+				<a href='/api/export?id={{id}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
-				<div id='classes-{{nid}}'></div>\
+				<div id='classes-{{id}}'></div>\
 				{{/list}}"
 			,
 			groupes : "\
@@ -24,26 +22,16 @@ var admin = function(){
 				<a call='membres' href='/api/membres?data=\
 				{{nENTPeople}}'>{{#i18n}}directory.admin.see-people{{/i18n}}</a>"
 			,
-			classes: function(data) {
-				var htmlString = '';
-				var jdata = jQuery.parseJSON(data);
-				if (jdata.result != ""){
-					if (!!$("#classes-" + jdata.result[0]["n.id"]).children().length) {
-						$("#classes-" + jdata.result[0]["n.id"]).html('');
-						return;
-					}
-					for (obj in jdata.result){
-						htmlString +="<h4><a>" + jdata.result[obj]['m.ENTGroupeNom'] + "</a></h4>"
-							+ "<a call='personnes' href='/api/personnes?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-')
-							+ "'>{{#i18n}}directory.admin.see-people{{/i18n}}</a>"
-							+ " - <a href='/api/enseignants?id=" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "' call='enseignants'>Ajouter un enseignant</a>" 
-							+ " - <a href='/api/export?id=" + jdata.result[obj]["m.id"]
-							+ "' call='exportAuth'>{{#i18n}}directory.admin.exports{{/i18n}}</a><br />"
-							+ "<div id='people-" + jdata.result[obj]["m.id"].replace(/\$/g, '_').replace(/ /g,'-') + "'></div>";
-					}
-					$("#classes-" + jdata.result[0]["n.id"]).html(htmlString);
-				}
-			},
+			classes: "\
+				{{#list}}<h4><a>{{name}}</a></h4>\
+				<a call='personnes' href='/api/personnes?id={{classId}}'>\
+				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
+				 - <a href='/api/enseignants?id={{classId}}' call='enseignants'>\
+				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
+				 - <a href='/api/export?id={{classId}}' call='exportAuth'>\
+				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
+				<div id='people-{{classId}}'></div>{{/list}}"
+			,
 			personnes : function(data) {
 				var htmlString='<br /><span>';
 				var jdata = jQuery.parseJSON(data);
@@ -79,48 +67,22 @@ var admin = function(){
 					$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
 				}
 			},
-			membres : function(data){
-				var htmlString='<span>';
-				var jdata = jQuery.parseJSON(data);
-				for (obj in jdata.result){
-					htmlString += jdata.result[obj]['n.ENTPersonNom']
-							+ " " +jdata.result[obj]['n.ENTPersonPrenom'] + " - ";
-				}
-				$('#members').html(htmlString + "</span>");
-			},
-			personne : function(data) {
-				if (!!$('#details').children('form').length) {
-					$('#details').html('');
-					return;
-				}
-				var jdata = jQuery.parseJSON(data);
-				var htmlString = "Nom : " + jdata.result[0]['n.ENTPersonNom']
-					+ " - Prénom : " + jdata.result[0]['n.ENTPersonPrenom']
-					+ " - Adresse : " + jdata.result[0]['n.ENTPersonAdresse'];
-				$('#details').html(htmlString);
-			},
-			exportAuth : function(data) {
-				var jdata = jQuery.parseJSON(data);
-				var textString = "Nom,Prénom,Login,Mot de passe\n";
-				for (obj in jdata.result){
-					textString += jdata.result[obj]['m.ENTPersonNom'] + ","
-						+ jdata.result[obj]['m.ENTPersonPrenom'] + ","
-						+ jdata.result[obj]['m.ENTPersonLogin'] + ","
-						+ jdata.result[obj]['m.ENTPersonMotDePasse'] + "\n";
-				}
-				document.location = 'data:Application/octet-stream,' + encodeURIComponent(textString);
-			},
-			personnesEcole : function(data) {
-				var htmlString = '';
-				var jdata = jQuery.parseJSON(data);
-				for (obj in jdata.result){
-					htmlString +='<input type="checkbox" name="'
-						+ jdata.result[obj]['m.id'] + '" value="'
-						+ jdata.result[obj]['m.id'] + '" />' + jdata.result[obj]['m.ENTPersonNom']
-						+ ' ' + jdata.result[obj]['m.ENTPersonPrenom'] + ' - ';
-				}
-				$('#users').html(htmlString);
-			},
+			membres : "\
+				<span>{{#list}}{{lastName}} {{firstName}} - {{/list}}</span>"
+			,
+			personne : '\
+				{{#i18n}}directory.admin.lastname{{/i18n}}{{lastName}} - \
+				{{#i18n}}directory.admin.firstname{{/i18n}}{{firstName}} - \
+				{{#i18n}}directory.admin.address{{/i18n}}{{address}}'
+			,
+			exportAuth : '\
+				Nom,Prénom,Login,Mot de passe\n{{#list}}\
+				{{lastName}},{{firstName}},{{login}},{{password}}\n{{/list}}'
+			,
+			personnesEcole :'\
+				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
+				{{lastName}} {{firstName}} - {{/list}}'
+			,
 			createUser : function(data) {
 				if (data.result === "error"){
 					console.log(data);
@@ -145,15 +107,6 @@ var admin = function(){
 				} else {
 					$('#confirm').html("ERREUR !");
 				}
-			},
-			createGroup : function(data) {
-				var jdata = jQuery.parseJSON(data);
-				if (jdata.status === 'ok'){
-					$('#confirm').html("OK");
-				} else {
-					$('#confirm').html("ERREUR !");
-				}
-
 			}
 		},
 		action : {
@@ -162,63 +115,96 @@ var admin = function(){
 					$('#schools').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'ecole','#schools', neoValuesExtractor);
+				app.template.getAndRender(o.url, 'ecole','#schools');
 			},
 			classes : function(o) {
-				app.template.getAndRender(o.url, 'classes');
+				$.get(o.url)
+				.done(function(data){
+					var jo = jQuery.parseJSON(data);
+					if (!!$("#classes-" + jo.result[0]["schoolId"]).children().length) {
+						$("#classes-" + jo.result[0]["schoolId"]).html('');
+						return;
+					}
+					$("#classes-" + jo.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(jo)));
+				})
+				.error(function(data){
+					app.notify.error(data);
+				})
 			},
 			groupes : function(o) {
 				if (!!$('#groups').children().length) {
 					$('#groups').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'groupes', '#groups', neoValueExtractor);
+				app.template.getAndRender(o.url, 'groupes', '#groups');
 			},
 			personnesEcole : function(o) {
-				getAndRender(o.url, "personnesEcole");
+				app.template.getAndRender(o.url, 'personnesEcole', '#users');
 			},
 			personnes : function(o) {
 				getAndRender(o.url, "personnes");
 			},
 			membres : function(o) {
-				getAndRender(o.url, "membres");
+				if (!!$('#members').children('form').length) {
+					$('#members').html('');
+					return;
+				}
+				app.template.getAndRender(o.url, 'membres', '#members');
 			},
 			personne : function(o) {
-				getAndRender(o.url, "personne");
+				if (!!$('#details').children('form').length) {
+					$('#details').html('');
+					return;
+				}
+				app.template.getAndRender(o.url, 'personne', '#details');
 			},
 			enseignants : function(o) {
 				getAndRender(o.url, "enseignants");
 			},
 			exportAuth : function(o) {
-				getAndRender(o.url, "exportAuth");
+				document.location = 'data:Application/octet-stream,'
+					+ encodeURIComponent(app.template.getAndRender(o.url, 'exportAuth'));
 			},
 			createUser : function(o) {
-				var url = o.url.attributes.action.value + '?'
+				var url = o.target.form.action + '?'
 					+ $('#create-user').serialize()
 					+ '&ENTPersonProfils=' + $('#profile').val()
 					+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
 				getAndRender(url, "createUser");
 			},
 			createAdmin : function(o) {
-				var url = o.url.attributes.action.value + '?'
+				var url = o.target.form.action + '?'
 					+ $('#create-admin').serialize()
 					+ '&ENTPerson=' + $('#choice').val();
 				getAndRender(url, "createAdmin");
 			},
 			createGroup : function(o) {
-				var url = o.url.attributes.action.value + '?'
+				var url = o.target.form.action + '?'
 					+ $('#create-group').serialize()
 					+ '&type=' + $('#type').val()
 					+ '&ENTGroupStructRattach=' + $('#parent').val();
-				getAndRender(url, "createGroup");
+				$.get(url)
+				.done(function(data){
+					app.notify.done(data.status);
+				})
+				.error(function(data){
+					app.notify.error(data.status);
+				})
 			},
 			createSchool : function(o) {
-				var url = o.url.attributes.action.value + '?'
+				var url = o.target.form.action + '?'
 					+ $('#create-school').serialize();
-				getAndRender(url, "createGroup");
+				$.get(url)
+				.done(function(data){
+					app.notify.done(data.status);
+				})
+				.error(function(data){
+					app.notify.error(data.status);
+				})
 			},
 			view: function(o) {
-				switch(o.url.attributes.id.value){
+				app.notify.done("switch");
+				switch(o.target.id){
 					case 'disp':
 						$('#creation').attr('hidden', '');
 						$('#display').removeAttr('hidden');
