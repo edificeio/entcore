@@ -1,36 +1,15 @@
-	var admin = function(){
-		var getAndRender = function (pathUrl, templateName){
-			$.get(pathUrl)
-				.done(function(data) {
-					template.render(templateName, data);
-				})
-				.error(function() { // TODO: Manage error message
-					template.render("error");
-				});
-		};
-
-		var template = {
-			render : function (nom, data) {
-				template[nom](data);
-			},
-			error: function() {
-			}
-		};
-
-		return {
-			init : function() {
-				$('body').delegate('#menu', 'click',function(event) {
-					event.preventDefault();
-					if (!event.target.getAttribute('call')) return;
-					var call = event.target.getAttribute('call');
-					admin[call]({url: event.target.getAttribute('href'), id: event.target.id});
-				});
-				this.displayApp({url: $("#directory").attr("href"), id: "directory"});
-			},
+var admin = function() {
+	var app = Object.create(oneApp);
+	app.scope = "#menu";
+	app.start = function(){
+		this.init();
+		this.action.displayApp({url: $("#directory").attr("href"), id: "directory"});
+	};
+	app.define ({
+		action : {
 			displayApp : function(o) {
-				var iframe = document.getElementById(o.id + "-frame");
 				var style = 'http://localhost:8008/public/css/test.css';
-				if (!iframe) {
+				if ($('#iframe' + '-frame')) {
 					$('<iframe />', {
 						id: o.id + '-frame',
 						src: o.url,
@@ -44,9 +23,11 @@
 				$('#' + o.id + '-frame').siblings().css('display', 'none');
 				$('#' + o.id + '-frame').css('display', 'inline');
 			}
-		};
-	}();
-
-	$(document).ready(function(){
-		admin.init(); 
+		}
 	});
+	return app;
+}();
+
+$(document).ready(function(){
+	admin.start();
+});
