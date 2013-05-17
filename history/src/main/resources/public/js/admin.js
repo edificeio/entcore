@@ -7,42 +7,32 @@ var admin = function() {
 	};
 	app.define ({
 		template : {
-			list : '<li><span class="history-level title">Type</span><span class="history-message title">Message</span><span class="history-date title">Date</span></li>{{#list}}<li><span class="history-level">{{level}}</span><span class="history-message"><span class="history-app label history-badge-warning">{{app}}</span>{{message}}</span><span class="history-date">{{date}}</span></li>{{/list}}',
-			getAndRenderHistory : function (pathUrl, templateName, elem, dataExtractor){
-				var that = this;
-				if (_.isUndefined(dataExtractor)) {
-					dataExtractor = function (d) { return {list : _.values(d.records)}; };
-				}
-				$.get(pathUrl)
-				.done(function(data) {
-					$(elem).html(that.render(templateName, dataExtractor(data)));
-				})
-				.error(function(data) {
-					oneApp.notify.error(data);
-				});
-			}
+			logs : '<li>\
+				<span class="history-level title">Type</span>\
+				<span class="history-message title">Message</span>\
+				<span class="history-date title">Date</span></li>\
+				{{#records}}<li>\
+					<span class="history-level">{{level}}</span>\
+					<span class="history-message">\
+						<span class="history-app label history-badge-warning">{{app}}</span>\
+						{{message}}</span>\
+					<span class="history-date">{{#formatDate}}{{date}}{{/formatDate}}</span>\
+				</li>{{/records}}'
 		},
 		action : {
 			logs : function(o) {
-				app.template.getAndRenderHistory(o.url, "list", "#log", function(data) {
-					var transformDate = function(str) {
-						var tab = str.split(" ");
-						var mois = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "décembre"];
-						var jours = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-						var dt = new Date(tab[5] + '-' + tab[2] + '-' + tab[1] + ' ' + tab[3]);
-						return (jours[dt.getDay()] + ' ' + dt.getDay() + ' ' + mois[dt.getMonth()] + ' ' + dt.getFullYear() + ' - ' + tab[3] + ' ' + tab[4]);
+				var formatDate = function() {
+						return function(str) {
+							var tab = Mustache.render(str, this).split(" ");
+							var dt = new Date(tab[5] + '-' + tab[2] + '-' + tab[1] + ' ' + tab[3]).toLocaleDateString();
+							return dt;
+						};
 					};
-					var list = {list: []};
-					for (var i = 0, nb = data.records.length; i < nb; i++) {
-						list.list.push({
-							level : data.records[i].level,
-							app : data.records[i].app,
-							message : data.records[i].message,
-							date : transformDate(data.records[i].date)
-						});
-					}
-					return list;
-				});
+
+				$.get(o.url)
+				.done(function(data) {
+					$('#log').html(app.template.render("logs", _.extend({"records" : data.records}, {"formatDate" : formatDate})));
+				})
 
 			},
 			styleApp : function(e) {
