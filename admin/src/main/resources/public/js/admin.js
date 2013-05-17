@@ -3,7 +3,7 @@ var admin = function() {
 	app.scope = "#menu";
 	app.start = function(){
 		this.init();
-		this.action.displayApp({url: $("#directory").attr("href"), id: "directory"});
+		this.action.displayApp({url: $("#directory").attr("href"), target: $("#directory")[0]});
 	};
 	app.define ({
 		action : {
@@ -11,17 +11,17 @@ var admin = function() {
 				var style = 'http://localhost:8008/public/css/test.css';
 				if ($('#iframe' + '-frame')) {
 					$('<iframe />', {
-						id: o.id + '-frame',
+						id: o.target.id + '-frame',
 						src: o.url,
 						frameBorder: '0'
 					}).load(function() {
 						this.contentWindow.postMessage(style, o.url);
 					}).appendTo('#main');
 				}
-				$('#' + o.id).parent().addClass('active');
-				$('#' + o.id).parent().siblings().removeClass('active');
-				$('#' + o.id + '-frame').siblings().css('display', 'none');
-				$('#' + o.id + '-frame').css('display', 'inline');
+				$('#' + o.target.id).parent().addClass('active');
+				$('#' + o.target.id).parent().siblings().removeClass('active');
+				$('#' + o.target.id + '-frame').siblings().css('display', 'none');
+				$('#' + o.target.id + '-frame').css('display', 'inline');
 			}
 		}
 	});

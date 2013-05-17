@@ -100,7 +100,7 @@ li {
 
 #log li .history-level {
 	display: inline-block;
-	width: 10%;
+	width: 9%;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
