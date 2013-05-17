@@ -1,72 +1,44 @@
 var admin = function(){
 
-	// TMP
 	dataExtractor = function (d) { return {list : _.values(d.result)}; };
+	normaliser = function (d) { return d.replace(/ /g,'_').replace(/\$/g, '#').replace(/\(/g,'/').replace(/\)/g,'\\'); };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
 	app.define({
 		template : {
 			ecole : "\
-				{{#list}}\
-				<h3>{{name}}</h3>\
+				{{#list}}<h3>{{name}}</h3>\
 				<a call='classes' href='/api/classes?id={{id}}'>\
 				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
 				<a href='/api/export?id={{id}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
-				<div id='classes-{{id}}'></div>\
-				{{/list}}"
+				<div id='classes-{{id}}'></div>{{/list}}"
 			,
 			groupes : "\
 				<h3>{{nENTGroupeNom}}</h3>\
-				<a call='membres' href='/api/membres?data=\
-				{{nENTPeople}}'>{{#i18n}}directory.admin.see-people{{/i18n}}</a>"
+				<a call='membres' href='/api/membres?data={{nENTPeople}}'>\
+				{{#i18n}}directory.admin.see-people{{/i18n}}</a>"
 			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
 				<a call='personnes' href='/api/personnes?id={{classId}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
 				 - <a href='/api/enseignants?id={{classId}}' call='enseignants'>\
-				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
+				{{#i18n}}directory.admin.add-teacher{{/i18n}}</a>\
 				 - <a href='/api/export?id={{classId}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
 				<div id='people-{{classId}}'></div>{{/list}}"
 			,
-			personnes : function(data) {
-				var htmlString='<br /><span>';
-				var jdata = jQuery.parseJSON(data);
-				if (jdata.result != ""){
-					if (!!$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).children().length) {
-						$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html('');
-						return;
-					}
-					for (obj in jdata.result){
-						htmlString +="<a call='personne' href='/api/details?id="
-							+ jdata.result[obj]['m.id'] +"'>" + jdata.result[obj]['m.ENTPersonNom']
-							+ " " +jdata.result[obj]['m.ENTPersonPrenom'] + "</a> - ";
-					}
-					htmlString += "</span><div id='details'></div>";
-					$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
-				}
-			},
-			enseignants : function(data) {
-				var htmlString='<br /><span>';
-				var jdata = jQuery.parseJSON(data);
-				if (jdata.result[0] !== undefined){
-					if (!!$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).children().length) {
-						$('#people-' + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html('');
-						return;
-					}
-					for (obj in jdata.result){
-						htmlString +="<a call='personne' href='/api/link?"
-							+ "class=" + jdata.result[obj]['n.id']
-							+ "&id=" + jdata.result[obj]['m.id'] +"'>" + jdata.result[obj]['m.ENTPersonNom']
-							+ " " +jdata.result[obj]['m.ENTPersonPrenom'] + "</a> - ";
-					}
-					htmlString += "</span><div id='details'></div>";
-					$("#people-" + jdata.result[0]["n.id"].replace(/\$/g, '_').replace(/ /g,'-')).html(htmlString);
-				}
-			},
+			personnes: "\
+				<br /><span>{{#list}}<a call='personne' href='/api/details?id={{userId}}'>\
+				{{lastName}} {{firstName}}</a> - <div id='details'></div>{{/list}}</span>"
+			,
+			enseignants : "\
+				<br /><span>{{#list}}\
+				<a call='personne' href='/api/link?class={{classId}}&id={{userId}}'>\
+				{{lastName}} {{firstName}}</a> - {{/list}}</span>"
+			,
 			membres : "\
 				<span>{{#list}}{{lastName}} {{firstName}} - {{/list}}</span>"
 			,
@@ -82,32 +54,6 @@ var admin = function(){
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
 				{{lastName}} {{firstName}} - {{/list}}'
-			,
-			createUser : function(data) {
-				if (data.result === "error"){
-					console.log(data);
-					$('label').removeAttr('style');
-					for (obj in data){
-						if (obj !== "result"){
-							$('#' + obj).attr("style", "color:red");
-						}
-					}
-					$('#confirm').html("<span style='color:red'>ERROR !</span>");
-				} else {
-					$('#confirm').html("OK");
-					$('label').removeAttr('style');
-
-				}
-			},
-			createAdmin : function(data) {
-				console.log(data);
-				var jdata = jQuery.parseJSON(data);
-				if (jdata.status === 'ok'){
-					$('#confirm').html("OK");
-				} else {
-					$('#confirm').html("ERREUR !");
-				}
-			}
 		},
 		action : {
 			ecole : function(o) {
@@ -127,9 +73,7 @@ var admin = function(){
 					}
 					$("#classes-" + jo.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(jo)));
 				})
-				.error(function(data){
-					app.notify.error(data);
-				})
+				.error(function(data){app.notify.error(data);})
 			},
 			groupes : function(o) {
 				if (!!$('#groups').children().length) {
@@ -142,7 +86,16 @@ var admin = function(){
 				app.template.getAndRender(o.url, 'personnesEcole', '#users');
 			},
 			personnes : function(o) {
-				getAndRender(o.url, "personnes");
+				$.get(o.url)
+				.done(function(data){
+					var jo = jQuery.parseJSON(data);
+					if (!!$('#people-' + jo.result[0]["classId"]).children().length) {
+						$('#people-' + jo.result[0]["classId"]).html('');
+						return;
+					}
+					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(jo)));
+				})
+				.error(function(data){app.notify.error(data)})
 			},
 			membres : function(o) {
 				if (!!$('#members').children('form').length) {
@@ -159,51 +112,63 @@ var admin = function(){
 				app.template.getAndRender(o.url, 'personne', '#details');
 			},
 			enseignants : function(o) {
-				getAndRender(o.url, "enseignants");
+				$.get(o.url)
+				.done(function(data){
+					var jo = jQuery.parseJSON(data);
+					if (!!$('#people-' + jo.result[0]["classId"]).children().length) {
+						$('#people-' + jo.result[0]["classId"]).html('');
+						return;
+					}
+					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(jo)));
+				})
+				.error(function(data){app.notify.error(data)})
 			},
 			exportAuth : function(o) {
 				document.location = 'data:Application/octet-stream,'
 					+ encodeURIComponent(app.template.getAndRender(o.url, 'exportAuth'));
 			},
 			createUser : function(o) {
-				var url = o.target.form.action + '?'
-					+ $('#create-user').serialize()
+				var url = o.target.form.action + '?' + $('#create-user').serialize()
 					+ '&ENTPersonProfils=' + $('#profile').val()
 					+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
-				getAndRender(url, "createUser");
+				$.get(url)
+				.done(function(data){
+					if (data.result === "error"){
+						$('label').removeAttr('style');
+						for (obj in data){
+							if (obj !== "result"){
+								$('#' + obj).attr("style", "color:red");
+							}
+						}
+						app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
+					} else {
+						app.notify.done("{{#i18n}}directory.admin.form-error{{/i18n}}");
+						$('label').removeAttr('style');
+					}
+				})
+				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
 			},
 			createAdmin : function(o) {
-				var url = o.target.form.action + '?'
-					+ $('#create-admin').serialize()
+				var url = o.target.form.action + '?' + $('#create-admin').serialize()
 					+ '&ENTPerson=' + $('#choice').val();
-				getAndRender(url, "createAdmin");
+				$.get(url)
+				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
+				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
 			},
 			createGroup : function(o) {
-				var url = o.target.form.action + '?'
-					+ $('#create-group').serialize()
-					+ '&type=' + $('#type').val()
-					+ '&ENTGroupStructRattach=' + $('#parent').val();
+				var url = o.target.form.action + '?' + $('#create-group').serialize()
+					+ '&type=' + $('#type').val() + '&ENTGroupStructRattach=' + $('#parent').val();
 				$.get(url)
-				.done(function(data){
-					app.notify.done(data.status);
-				})
-				.error(function(data){
-					app.notify.error(data.status);
-				})
+				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
+				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
 			},
 			createSchool : function(o) {
-				var url = o.target.form.action + '?'
-					+ $('#create-school').serialize();
+				var url = o.target.form.action + '?' + $('#create-school').serialize();
 				$.get(url)
-				.done(function(data){
-					app.notify.done(data.status);
-				})
-				.error(function(data){
-					app.notify.error(data.status);
-				})
+				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
+				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
 			},
 			view: function(o) {
-				app.notify.done("switch");
 				switch(o.target.id){
 					case 'disp':
 						$('#creation').attr('hidden', '');

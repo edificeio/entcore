@@ -108,7 +108,7 @@ public class Directory extends Controller {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$"));
 				params.put("type","PERSEDUCNAT");
-				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) RETURN distinct m.id, m.ENTPersonNom, m.ENTPersonPrenom, n.id", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) RETURN distinct m.id as userId, m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, n.id as classId", params, request.response());
 			}
 		});
 
