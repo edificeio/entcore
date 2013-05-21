@@ -20,7 +20,6 @@ var oneApp = {
 			}
 			$.get(pathUrl)
 			.done(function(data) {
-				var jo = jQuery.parseJSON(data)
 				$(elem).html(that.render(templateName, dataExtractor(jo)));
 			})
 			.error(function(data) {
@@ -28,8 +27,16 @@ var oneApp = {
 			});
 		},
 		render : function (name, data) {
-			_.extend(data, {i18n : oneApp.i18n.i18n});
-			return Mustache.render(this[name], data);
+			_.extend(data, {
+				'i18n' : oneApp.i18n.i18n,
+				'formatDate' : function() {
+					return function(str) {
+						var dt = new Date(Mustache.render(str.replace('CEST', 'EST'), this)).toLocaleDateString();
+						return dt;
+					};
+				}
+			});
+			return Mustache.render(this[name] === undefined ? name : this[name], data);
 		}
 	},
 	notify : {
@@ -50,7 +57,7 @@ var oneApp = {
 		},
 		bundle : {},
 		i18n : function() {
-			return function(key) { return oneApp.i18n.bundle[key] ; };
+			return function(key) { return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; };
 		}
 	},
 	define : function (o) {
