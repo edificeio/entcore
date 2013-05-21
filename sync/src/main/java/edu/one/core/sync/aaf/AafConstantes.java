@@ -16,7 +16,7 @@ public class AafConstantes {
     public static final String UPDATE_TAG = "modifyRequest";
     public static final String DELETE_TAG = "deleteRequest";
 
-    // Balises
+    // Balises génériques
     public static final String ATTRIBUTES_TAG = "attributes";
     public static final String ATTR_TAG = "attr";
     public static final String VALUE_TAG = "value";
@@ -66,37 +66,4 @@ public class AafConstantes {
 	// Types de relation
 	public static final String REL_APPARTIENT = "APPARTIENT";
 	public static final String REL_PARENT = "EN RELATION AVEC";
-
-	// alphabet utilisé pour les mots de passe.
-	public static String[] alphabet = new String[28];
-	static {
-		alphabet[0] = "a";
-		alphabet[1] = "b";
-		alphabet[2] = "c";
-		alphabet[3] = "d";
-		alphabet[4] = "e";
-		alphabet[5] = "f";
-		alphabet[6] = "g";
-		alphabet[7] = "h";
-		alphabet[8] = "j";
-		alphabet[9] = "k";
-		alphabet[10] = "m";
-		alphabet[11] = "n";
-		alphabet[12] = "p";
-		alphabet[13] = "r";
-		alphabet[14] = "s";
-		alphabet[15] = "t";
-		alphabet[16] = "v";
-		alphabet[17] = "w";
-		alphabet[18] = "x";
-		alphabet[19] = "y";
-		alphabet[20] = "z";
-		alphabet[21] = "3";
-		alphabet[22] = "4";
-		alphabet[23] = "5";
-		alphabet[24] = "6";
-		alphabet[25] = "7";
-		alphabet[26] = "8";
-		alphabet[27] = "9";
-	}
 }

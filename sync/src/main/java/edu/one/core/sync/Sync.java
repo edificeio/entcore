@@ -7,8 +7,6 @@ import edu.one.core.sync.aaf.AafGeoffHelper;
 import edu.one.core.sync.aaf.AafSaxContentHandler;
 import edu.one.core.sync.aaf.WordpressHelper;
 import java.io.FileReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -26,14 +24,14 @@ public class Sync extends Controller {
 	@Override
 	public void start() {
 		super.start();
-		aafSaxHandler = new AafSaxContentHandler(log, new DefaultDictionary(
+		aafSaxHandler = new AafSaxContentHandler(trace, new DefaultDictionary(
 				vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json"));
-		wordpressHelper = new WordpressHelper(log, vertx.eventBus());
-		aafGeoffHelper = new AafGeoffHelper(log, vertx.eventBus(), wordpressHelper);
+		wordpressHelper = new WordpressHelper(trace, vertx.eventBus());
+		aafGeoffHelper = new AafGeoffHelper(trace, vertx.eventBus(), wordpressHelper);
 		try {
 			xr = XMLReaderFactory.createXMLReader();
 		} catch (SAXException ex) {
-			log.error(ex.getMessage());
+			trace.error(ex.getMessage());
 		}
 		xr.setContentHandler(aafSaxHandler);
 
@@ -49,7 +47,7 @@ public class Sync extends Controller {
 			public void handle(HttpServerRequest request) {
 				try {
 					long startTest = System.currentTimeMillis();
-					int[] crTest = test();
+					int[] crTest = syncAaf();
 					long endTest = System.currentTimeMillis();
 
 					JsonObject jo = new JsonObject().putObject("result",
@@ -60,14 +58,14 @@ public class Sync extends Controller {
 					);
 					renderJson(request, jo);
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					trace.error(ex.toString());
 					renderError(request);
 				}
 			}
 		});
 	}
 
-	public int[] test() throws Exception {
+	public int[] syncAaf() throws Exception {
 		// Parsing of xml aaf files
 		for (String filter : AafConstantes.AAF_FILTERS) {
 		String [] files = vertx.fileSystem().readDirSync(

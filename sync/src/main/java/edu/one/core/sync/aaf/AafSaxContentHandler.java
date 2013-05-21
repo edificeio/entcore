@@ -1,9 +1,9 @@
 package edu.one.core.sync.aaf;
 
 import edu.one.core.datadictionary.dictionary.Dictionary;
+import edu.one.core.infra.TracerHelper;
 import java.util.ArrayList;
 import java.util.List;
-import org.vertx.java.core.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -13,7 +13,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author bperez
  */
 public class AafSaxContentHandler extends DefaultHandler {
-	private Logger log;
+	private TracerHelper trace;
 	public Operation oc;
 	public List<Operation> operations;
 	public List<Operation> operationsInvalides;
@@ -21,8 +21,8 @@ public class AafSaxContentHandler extends DefaultHandler {
 	private long endDoc;
 	private Dictionary d;
 
-	public AafSaxContentHandler(Logger log, Dictionary d) {
-		this.log = log;
+	public AafSaxContentHandler(TracerHelper trace, Dictionary d) {
+		this.trace = trace;
 		this.d = d;
 		operations = new ArrayList<>();
 		operationsInvalides = new ArrayList<>();
@@ -43,7 +43,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 	public void endDocument() throws SAXException {
 		super.endDocument();
 		endDoc = System.currentTimeMillis();
-		log.debug("Traitement du document = " + (endDoc - startDoc) + " ms");
+		trace.info("Traitement du document = " + (endDoc - startDoc) + " ms");
 	}
 
 	@Override

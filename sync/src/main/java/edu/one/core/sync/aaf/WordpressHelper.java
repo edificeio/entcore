@@ -4,18 +4,18 @@
  */
 package edu.one.core.sync.aaf;
 
+import edu.one.core.infra.TracerHelper;
 import java.util.HashMap;
 import java.util.Map;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 /**
  *
  * @author bperez
  */
 public class WordpressHelper {
-	private Logger log;
+	private TracerHelper trace;
 	private EventBus eb;
 	private Map<String,Map<String,String>> schools;
 	private Map<String,Map<String,String>> persons;
@@ -29,8 +29,8 @@ public class WordpressHelper {
 	private String SCHOOL_ATTR = "ecole";
 	private String CLASS_ATTR = "classe";
 
-	public WordpressHelper(Logger log, EventBus eb) {
-		this.log = log;
+	public WordpressHelper(TracerHelper trace, EventBus eb) {
+		this.trace = trace;
 		this.eb = eb;
 		schools = new HashMap<>();
 		persons = new HashMap<>();

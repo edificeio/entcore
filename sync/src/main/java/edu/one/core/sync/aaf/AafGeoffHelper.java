@@ -4,6 +4,7 @@
  */
 package edu.one.core.sync.aaf;
 
+import edu.one.core.infra.TracerHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,21 +14,20 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 /**
  *
  * @author bperez
  */
 public class AafGeoffHelper {
-	private Logger log;
+	private TracerHelper trace;
 	private EventBus eb;
 	private List<String> regroupementsCrees;
 	private WordpressHelper wph;
 	public int total = 0;
 
-	public AafGeoffHelper(Logger log, EventBus eb, WordpressHelper wph) {
-		this.log = log;
+	public AafGeoffHelper(TracerHelper trace, EventBus eb, WordpressHelper wph) {
+		this.trace = trace;
 		this.eb = eb;
 		this.wph = wph;
 		regroupementsCrees = new ArrayList<>();
@@ -68,15 +68,14 @@ public class AafGeoffHelper {
 				}
 			}
 		}
-//		log.info(request);
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "batch-insert");
 		jo.putString("query", request.toString());
 		final long startSend = System.currentTimeMillis();
 		eb.send("wse.neo4j.persistor", jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
-				log.info(m.body().encode());
-				log.info("Send execution time : " + (System.currentTimeMillis()-startSend) + " ms");
+				trace.info(m.body().encode());
+				trace.info("Send execution time : " + (System.currentTimeMillis()-startSend) + " ms");
 			}
 		});
 	}
@@ -229,7 +228,7 @@ public class AafGeoffHelper {
 			attrs.put(AafConstantes.GROUPE_NOM_ATTR
 					, Arrays.asList(values[AafConstantes.GROUPE_NOM_INDEX]));
 		} else {
-			log.error("Groupement non conforme : " + regroupement + " => " + values.length);
+			trace.error("Groupement non conforme : " + regroupement + " => " + values.length);
 		}
 		return attrs;
 	}
