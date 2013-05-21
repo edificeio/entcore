@@ -94,7 +94,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 				} else {
 					oc.creerAttributCourant(AafConstantes.PERSONNE_JOINTURE_ATTR);
 				}
-				oc.ajouterValeur(AafConstantes.TYPE_IMPORT + "_" + oc.id);
+				oc.ajouterValeur(AafConstantes.TYPE_IMPORT + "-" + oc.id);
 				oc.ajouterAttributCourant();
 			case ATTRIBUTS :
 				if (Operation.EtatAvancement.ATTRIBUTS.equals(oc.etatAvancement)) {

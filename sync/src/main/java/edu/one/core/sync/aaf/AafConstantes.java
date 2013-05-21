@@ -9,7 +9,7 @@ public class AafConstantes {
 	public static final String[] AAF_FILTERS =
 			{".*_EtabEducNat.*",".*_PersRelEleve.*",".*_Eleve.*",".*_PersEducNat.*"};
 
-    public static final String TYPE_IMPORT = "AAF";
+    public static final String TYPE_IMPORT = "AC1D";
 	
     // Types d'opération
     public static final String ADD_TAG = "addRequest";
