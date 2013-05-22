@@ -9,6 +9,8 @@ var oneApp = {
 			var call = event.target.getAttribute('call');
 			that.action[call]({url : event.target.getAttribute('href'), target: event.target});
 		});
+		// TODO : refactor web message dispatch policiy
+		window.addEventListener('message', that.message.css, false);
 	},
 	action : {
 	},
@@ -58,6 +60,14 @@ var oneApp = {
 		bundle : {},
 		i18n : function() {
 			return function(key) { return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; };
+		}
+	},
+	message : {
+		// TODO : dispatch policiy and paraméter
+		css : function(e) {
+			if (event.origin == "http://localhost:8008") {
+				$("head").append("<link rel='stylesheet' href='" + e.data + "' media='all' />");
+			}
 		}
 	},
 	define : function (o) {
