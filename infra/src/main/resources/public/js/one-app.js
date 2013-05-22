@@ -33,7 +33,7 @@ var oneApp = {
 				'i18n' : oneApp.i18n.i18n,
 				'formatDate' : function() {
 					return function(str) {
-						var dt = new Date(Mustache.render(str.replace('CEST', 'EST'), this)).toLocaleDateString();
+						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toLocaleDateString();
 						return dt;
 					};
 				}
