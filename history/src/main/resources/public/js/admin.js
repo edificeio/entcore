@@ -18,7 +18,7 @@ var admin = function() {
 		action : {
 			logs : function(o) {
 				$.get(o.url).done(function(data) {
-					$('#log').html(app.template.render("logs", _.extend({"records" : data.records})));
+					$('#log').html(app.template.render("logs", {"records" : data.records}));
 				});
 			}
 		}
