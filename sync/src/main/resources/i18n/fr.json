@@ -1,2 +1,4 @@
 {
+	"sync.admin.header": "Synchronisation",
+	"sync.action.aafTest": "Tester les données AAF"
 }
