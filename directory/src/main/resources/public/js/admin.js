@@ -1,7 +1,7 @@
 var admin = function(){
 
-	dataExtractor = function (d) { return {list : _.values(d.result)}; };
-	normaliser = function (d) { return d.replace(/ /g,'_').replace(/\$/g, '#').replace(/\(/g,'/').replace(/\)/g,'\\'); };
+	var dataExtractor = function (d) { return {list : _.values(jQuery.parseJSON(d).result)}; };
+//	normaliser = function (d) { return d.replace(/ /g,'_').replace(/\$/g, '#').replace(/\(/g,'/').replace(/\)/g,'\\'); };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -61,7 +61,7 @@ var admin = function(){
 					$('#schools').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'ecole','#schools');
+				app.template.getAndRender(o.url, 'ecole','#schools', dataExtractor);
 			},
 			classes : function(o) {
 				$.get(o.url)
@@ -80,10 +80,10 @@ var admin = function(){
 					$('#groups').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'groupes', '#groups');
+				app.template.getAndRender(o.url, 'groupes', '#groups', dataExtractor);
 			},
 			personnesEcole : function(o) {
-				app.template.getAndRender(o.url, 'personnesEcole', '#users');
+				app.template.getAndRender(o.url, 'personnesEcole', '#users', dataExtractor);
 			},
 			personnes : function(o) {
 				$.get(o.url)
@@ -102,14 +102,14 @@ var admin = function(){
 					$('#members').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'membres', '#members');
+				app.template.getAndRender(o.url, 'membres', '#members', dataExtractor);
 			},
 			personne : function(o) {
 				if (!!$('#details').children('form').length) {
 					$('#details').html('');
 					return;
 				}
-				app.template.getAndRender(o.url, 'personne', '#details');
+				app.template.getAndRender(o.url, 'personne', '#details', dataExtractor);
 			},
 			enseignants : function(o) {
 				$.get(o.url)
@@ -177,7 +177,7 @@ var admin = function(){
 						break;
 					case 'exports':
 						$('#creation').attr('hidden', '');
-						$('#display').removeAttr('hidden');
+						$('#display').attr('hidden');
 						$('#export').removeAttr('hidden');
 						break;
 					case 'create':
