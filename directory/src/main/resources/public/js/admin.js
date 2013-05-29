@@ -1,7 +1,6 @@
 var admin = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(jQuery.parseJSON(d).result)}; };
-//	normaliser = function (d) { return d.replace(/ /g,'_').replace(/\$/g, '#').replace(/\(/g,'/').replace(/\)/g,'\\'); };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -16,9 +15,9 @@ var admin = function(){
 				<div id='classes-{{id}}'></div>{{/list}}"
 			,
 			groupes : "\
-				<h3>{{nENTGroupeNom}}</h3>\
-				<a call='membres' href='/api/membres?data={{nENTPeople}}'>\
-				{{#i18n}}directory.admin.see-people{{/i18n}}</a>"
+				{{#list}}<h3>{{name}}</h3>\
+				<a call='membres' href='/api/membres?data={{people}}'>\
+				{{#i18n}}directory.admin.see-people{{/i18n}}</a>{{/list}}"
 			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
@@ -47,9 +46,9 @@ var admin = function(){
 				{{#i18n}}directory.admin.firstname{{/i18n}}{{firstName}} - \
 				{{#i18n}}directory.admin.address{{/i18n}}{{address}}'
 			,
-			exportAuth : '\
-				Nom,Prénom,Login,Mot de passe\n{{#list}}\
-				{{lastName}},{{firstName}},{{login}},{{password}}\n{{/list}}'
+			exportAuth : 'Nom,Prénom,Login,Mot de passe\n'
+				+ '{{#list}}{{lastName}},{{firstName}},{{login}},{{password}}\n'
+				+ '{{/list}}'
 			,
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
@@ -71,7 +70,7 @@ var admin = function(){
 						$("#classes-" + jo.result[0]["schoolId"]).html('');
 						return;
 					}
-					$("#classes-" + jo.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(jo)));
+					$("#classes-" + jo.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data);})
 			},
@@ -93,7 +92,7 @@ var admin = function(){
 						$('#people-' + jo.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(jo)));
+					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
@@ -119,13 +118,18 @@ var admin = function(){
 						$('#people-' + jo.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(jo)));
+					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
 			exportAuth : function(o) {
-				document.location = 'data:Application/octet-stream,'
-					+ encodeURIComponent(app.template.getAndRender(o.url, 'exportAuth'));
+				$.get(o.url)
+				.done(function(data){
+					document.location = 'data:Application/octet-stream,'
+					+ encodeURIComponent(app.template.render('exportAuth', dataExtractor(data)));
+					app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
+				})
+				.error(function(data){app.notify.error(data)})
 			},
 			createUser : function(o) {
 				var url = o.target.form.action + '?' + $('#create-user').serialize()
@@ -140,9 +144,9 @@ var admin = function(){
 								$('#' + obj).attr("style", "color:red");
 							}
 						}
-						app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
+						app.notify.error("{{#i18n}}directory.admin.form-error{{/i18n}}");
 					} else {
-						app.notify.done("{{#i18n}}directory.admin.form-error{{/i18n}}");
+						app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
 						$('label').removeAttr('style');
 					}
 				})

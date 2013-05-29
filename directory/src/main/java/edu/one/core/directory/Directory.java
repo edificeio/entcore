@@ -86,7 +86,7 @@ public class Directory extends Controller {
 		rm.get("/api/membres", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				String[] people = request.params().get("data").split("-");
+				String[] people = request.params().get("data").replaceAll("\\[","").replaceAll("\\]","").split(", ");
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",Arrays.asList(people));
 				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.id as id, n.ENTPersonNom as lastName, n.ENTPersonPrenom as firstName", params, request.response());
@@ -202,7 +202,7 @@ public class Directory extends Controller {
 			public void handle(HttpServerRequest request) {
 				List users = new ArrayList<String>();
 				for (Map.Entry<String, String> entry : request.params()) {
-					if (!entry.getKey().equals("ENTGroupeNom")){
+					if (!entry.getKey().startsWith("ENT") && !entry.getKey().equals("type")){
 						users.add(entry.getValue());
 					}
 				}
