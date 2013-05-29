@@ -22,7 +22,7 @@ var oneApp = {
 			}
 			$.get(pathUrl)
 			.done(function(data) {
-				$(elem).html(that.render(templateName, dataExtractor(jo)));
+				$(elem).html(that.render(templateName, dataExtractor(data)));
 			})
 			.error(function(data) {
 				oneApp.notify.error(data);
