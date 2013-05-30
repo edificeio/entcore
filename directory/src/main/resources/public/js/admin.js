@@ -134,7 +134,7 @@ var admin = function(){
 			createUser : function(o) {
 				var url = o.target.form.action + '?' + $('#create-user').serialize()
 					+ '&ENTPersonProfils=' + $('#profile').val()
-					+ '&ENTPersonStructRattach=' + $('#groupe').val().replace(/ /g,'-');
+					+ '&ENTPersonStructRattach=' + $('#groupe').val();
 				$.get(url)
 				.done(function(data){
 					if (data.result === "error"){

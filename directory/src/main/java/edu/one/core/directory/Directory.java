@@ -5,12 +5,10 @@ import edu.one.core.datadictionary.dictionary.Dictionary;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -77,9 +75,11 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("id",request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$"));
-				params.put("type",Arrays.asList("PERSRELELEVE", "PERSEDUCNAT", "ELEVE"));
-				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id as userId,m.ENTPersonNom as firstName,m.ENTPersonPrenom as lastName, n.id as classId", params, request.response());
+				neo.send("START n=node(*) , m=node(*) MATCH n<--m WHERE has(m.type) AND has(n.id) AND n.id='"
+						+ request.params().get("id") +"'"
+						+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+						+ "RETURN distinct m.id as userId,m.ENTPersonNom as firstName,"
+						+ "m.ENTPersonPrenom as lastName, n.id as classId", request.response());
 			}
 		});
 
@@ -87,9 +87,13 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String[] people = request.params().get("data").replaceAll("\\[","").replaceAll("\\]","").split(", ");
-				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("id",Arrays.asList(people));
-				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.id as id, n.ENTPersonNom as lastName, n.ENTPersonPrenom as firstName", params, request.response());
+				String requestIds = "n.id='" + people[0] + "'";
+				for (int i = 1; i < people.length; i++) {
+					requestIds += " OR n.id='" + people[i] + "'";
+				}
+				neo.send("START n=node(*) WHERE has(n.id) AND (" + requestIds + ") "
+						+ "RETURN distinct n.id as id, n.ENTPersonNom as lastName, "
+						+ "n.ENTPersonPrenom as firstName", request.response());
 			}
 		});
 
@@ -106,7 +110,7 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("id",request.params().get("id").replaceAll("-", " ").replaceAll("_", "\\$"));
+				params.put("id",request.params().get("id"));
 				params.put("type","PERSEDUCNAT");
 				neo.send("START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) RETURN distinct m.id as userId, m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, n.id as classId", params, request.response());
 			}
@@ -116,7 +120,7 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String,Object> params = new HashMap<String,Object>();
-				params.put("classId",request.params().get("class").replaceAll("-", " ").replaceAll("_", "\\$"));
+				params.put("classId",request.params().get("class"));
 				params.put("userId",request.params().get("id"));
 				neo.send("START n=node:node_auto_index(id={classId}), m=node:node_auto_index(id={userId}) "
 						+ "CREATE m-[:APPARTIENT]->n", request.response());
@@ -143,7 +147,7 @@ public class Directory extends Controller {
 						}
 					});
 					neo.send("START n=node(*) WHERE has(n.ENTGroupeNom) "
-							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach").replaceAll("-", " ") + "' "
+							+ "AND n.ENTGroupeNom='" + request.params().get("ENTPersonStructRattach") + "' "
 							+ "CREATE (m {id:'" + request.params().get("ENTPersonIdentifiant") + "', " 
 							+ "type:'" + request.params().get("ENTPersonProfils") + "',"
 							+ "ENTPersonNom:'"+request.params().get("ENTPersonNom") +"', "
@@ -249,16 +253,20 @@ public class Directory extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String neoRequest = "";
-				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("type",Arrays.asList("PERSRELELEVE", "PERSEDUCNAT", "ELEVE"));
 				if (request.params().get("id").equals("all")){
-					neoRequest = "START m=node:node_auto_index(type={type}) RETURN distinct m.id,m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
+					neoRequest = "START m=node(*) WHERE has(m.type) "
+							+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+							+ "RETURN distinct m.id,m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, "
+							+ "m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
 				} else {
-					params.put("id",request.params().get("id"));
-					neoRequest = "START n=node:node_auto_index(id={id}), m=node:node_auto_index(type={type}) MATCH n<--m RETURN distinct m.id,m.ENTPersonNom as lastName,m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
+					neoRequest = "START n=node(*), m=node(*) MATCH n<--m WHERE has(n.id) AND n.id='" + request.params().get("id") + "' "
+							+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+							+ "RETURN distinct m.id,m.ENTPersonNom as lastName,"
+							+ "m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, "
+							+ "m.ENTPersonMotDePasse as password";
 				}
 				trace.info("Exporting auth data for " + request.params().get("id"));
-				neo.send(neoRequest, params, request.response());
+				neo.send(neoRequest, request.response());
 			}
 		});
 
