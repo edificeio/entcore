@@ -6,10 +6,6 @@ package edu.one.core.sync.aaf;
 
 import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.infra.TracerHelper;
-import edu.one.core.sync.aaf.AafConstantes;
-import edu.one.core.sync.aaf.AafGeoffHelper;
-import edu.one.core.sync.aaf.AafSaxContentHandler;
-import edu.one.core.sync.aaf.WordpressHelper;
 import java.io.FileReader;
 import java.util.List;
 import org.vertx.java.core.Vertx;
@@ -46,7 +42,7 @@ public class SyncManager {
 	}
 
 	public int[] syncAaf(String inputFolder) throws Exception {
-		// Parsing all xml aaf files in the specified input folder
+		// parsing all xml aaf files in the specified input folder
 		for (String filter : AafConstantes.AAF_FILTERS) {
 		String [] files = vertx.fileSystem().readDirSync(
 				inputFolder, filter);
@@ -55,51 +51,58 @@ public class SyncManager {
 			}
 		}
 
-		// Parse all operations for the current import
+		// parse all operations for the current import
 		for (Operation operation : aafSaxHandler.operations) {
-			// création du noeud associé à l'opération avec ses attributs
+			// create node in neo4j for current operation
 			aafGeoffHelper.addOperation(operation);
-			// création des objets dans Wordpress
+			// create objects in Wordpress for current operation
 			wordpressHelper.addEntity(operation);
-
-			// création des relations et des groupements éventuels
+			// create relationships with other objects
 			addRelationships(operation);
 		}
 
 		// send geoff request
 		aafGeoffHelper.sendRequest();
-		// Send WP requests
+		// send WP requests
 		wordpressHelper.send();
 
 		// reset objects
-		int[] cr = {aafGeoffHelper.reset(),aafSaxHandler.operationsInvalides.size()};
+		int[] cr = {aafGeoffHelper.reset(),aafSaxHandler.invalidOperations.size()};
 		aafSaxHandler.reset();
 		wordpressHelper.reset();
 		return cr;
 	}
 
 	public void addRelationships(Operation op) {
+		// search and create relationships (groups, classes, schools, ...)
+		// depending on entity type and potential links
+		// TODO : refactorer?
 		if (op.typeEntite == Operation.TypeEntite.ELEVE
 				|| op.typeEntite == Operation.TypeEntite.PERSEDUCNAT) {
-			// TODO : refactorer?
 			if (op.attributs.containsKey(AafConstantes.CLASSES_ATTR)) {
+				// create classes and links in neo4j and Wordpress
 				addGroups(op,Operation.TypeEntite.CLASSE,AafConstantes.CLASSES_ATTR);
 			}
 			if (op.attributs.containsKey(AafConstantes.GROUPES_ATTR)) {
+				// create groups and links in neo4j and Wordpress
 				addGroups(op,Operation.TypeEntite.GROUPE,AafConstantes.GROUPES_ATTR);
 			}
 			if (op.attributs.containsKey(AafConstantes.ECOLE_ATTR)) {
+				// create school link in neo4j
 				aafGeoffHelper.relEcoles(op);
 			}
 			if (op.typeEntite == Operation.TypeEntite.ELEVE &&
 					op.attributs.containsKey(AafConstantes.PARENTS_ATTR)) {
+				// create parents links in neo4j
 				aafGeoffHelper.relParents(op);
 			}
 		}
 	}
 
 	public void addGroups(Operation userOp, Operation.TypeEntite grpType, String grpAttr) {
+		// create groups and links with user in neo4j, and get list of created groups
 		List<Operation> groupsOperations = aafGeoffHelper.relGroupements(userOp, grpType, grpAttr);
+		// parse created groups to create the in Wordpress
 		for (Operation opGr : groupsOperations) {
 			wordpressHelper.addEntity(opGr);
 		}

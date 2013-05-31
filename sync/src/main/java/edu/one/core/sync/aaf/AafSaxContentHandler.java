@@ -16,7 +16,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 	private TracerHelper trace;
 	public Operation oc;
 	public List<Operation> operations;
-	public List<Operation> operationsInvalides;
+	public List<Operation> invalidOperations;
 	private long startDoc;
 	private long endDoc;
 	private Dictionary d;
@@ -25,12 +25,12 @@ public class AafSaxContentHandler extends DefaultHandler {
 		this.trace = trace;
 		this.d = d;
 		operations = new ArrayList<>();
-		operationsInvalides = new ArrayList<>();
+		invalidOperations = new ArrayList<>();
 	}
 
 	public void reset() {
 		operations = new ArrayList<>();
-		operationsInvalides = new ArrayList<>();
+		invalidOperations = new ArrayList<>();
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 
 		switch (qName) {
 			case AafConstantes.ADD_TAG :
-				// gestion du profil
+				// profile attribute
 				oc.creerAttributCourant(AafConstantes.PERSONNE_PROFIL_ATTR);
 				switch (oc.typeEntite) {
 					case ELEVE :
@@ -136,7 +136,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 				oc.attributs = d.generateField(oc.attributs);
 				// Contrôle de validité de l'opération
 				if (d.validateFieldsList(oc.attributs).containsValue(false)) {
-					operationsInvalides.add(oc);
+					invalidOperations.add(oc);
 				} else {
 					operations.add(oc);
 				}
