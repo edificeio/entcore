@@ -131,7 +131,7 @@ public class AafSaxContentHandler extends DefaultHandler {
 						break;
 				}
 				oc.ajouterAttributCourant();
-				
+
 				// Attributs générés par le dictionnaire de données
 				oc.attributs = d.generateField(oc.attributs);
 				// Contrôle de validité de l'opération

@@ -10,7 +10,7 @@ public class AafConstantes {
 			{".*_EtabEducNat.*",".*_PersRelEleve.*",".*_Eleve.*",".*_PersEducNat.*"};
 
     public static final String TYPE_IMPORT = "AC1D";
-	
+
     // Types d'opération
     public static final String ADD_TAG = "addRequest";
     public static final String UPDATE_TAG = "modifyRequest";
@@ -52,7 +52,7 @@ public class AafConstantes {
 	public static final String PERSONNE_JOINTURE_ATTR = "ENTPersonJointure";
 	public static final String PERSONNE_PROFIL_ATTR = "ENTPersonProfils";
 	public static final String STRUCTURE_JOINTURE_ATTR = "ENTStructureJointure";
-	
+
 	// profils
 	public static final String PROFIL_ELEVE = "ELEVE";
 	public static final String PROFIL_PARENT = "PERS_REL_ELEVE";

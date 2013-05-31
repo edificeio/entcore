@@ -43,6 +43,65 @@ public class WordpressHelper {
 		groups = new HashMap<>();
 	}
 
+	public void addEntity(Operation op) {
+		// TODO : contrôles existence, not null, etc.
+		switch (op.typeEntite) {
+			case ETABEDUCNAT :
+				addSchool(op.id
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.STRUCTURE_NOM_ATTR).get(0));
+				break;
+			case CLASSE :
+				addGroup(AafUtils.normalizeRef(op.id)
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
+				break;
+			case GROUPE :
+				addGroup(AafUtils.normalizeRef(op.id)
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.GROUPE_NOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.GROUPE_ECOLE_ATTR).get(0));
+				break;
+			case PERSEDUCNAT :
+				addPerson(op.id
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
+				addPersonClass(
+						op.id, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
+				break;
+			case ELEVE :
+				addPerson(op.id
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
+				addPersonClass(
+						op.id, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
+				// liens parent / classe
+				for (String parent : op.attributs.get(AafConstantes.PARENTS_ATTR)) {
+					String[] parentAttr = parent.split(AafConstantes.AAF_SEPARATOR);
+					addPersonClass(parentAttr[AafConstantes.PARENT_ID_INDEX]
+							, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
+				}
+				break;
+			case PERSRELELEVE :
+				addPerson(op.id
+						, op.typeEntite.toString()
+						, op.attributs.get(AafConstantes.PERSONNE_NOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
+						, op.attributs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
+				break;
+			default :
+				break;
+		}
+	}
+
 	public void addSchool(String id, String type, String name) {
 		Map<String,String> attrs = new HashMap<>();
 		attrs.put(ID_ATTR, id);
