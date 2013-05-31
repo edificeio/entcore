@@ -6,6 +6,7 @@ package edu.one.core.sync.aaf;
 
 import edu.one.core.infra.TracerHelper;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -70,8 +71,8 @@ public class WordpressHelper {
 						, op.attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
 						, op.attributs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
 						, op.attributs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
-				addPersonClass(
-						op.id, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
+				addPersonClass(op.id, op.attributs.get(AafConstantes.CLASSES_ATTR));
+				// TODO : gestion liens groupes
 				break;
 			case ELEVE :
 				addPerson(op.id
@@ -80,13 +81,13 @@ public class WordpressHelper {
 						, op.attributs.get(AafConstantes.PERSONNE_PRENOM_ATTR).get(0)
 						, op.attributs.get(AafConstantes.PERSONNE_LOGIN_ATTR).get(0)
 						, op.attributs.get(AafConstantes.PERSONNE_PASSWORD_ATTR).get(0));
-				addPersonClass(
-						op.id, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
-				// liens parent / classe
+				addPersonClass(op.id, op.attributs.get(AafConstantes.CLASSES_ATTR));
+				// TODO : gestion liens groupes
 				for (String parent : op.attributs.get(AafConstantes.PARENTS_ATTR)) {
 					String[] parentAttr = parent.split(AafConstantes.AAF_SEPARATOR);
-					addPersonClass(parentAttr[AafConstantes.PARENT_ID_INDEX]
-							, AafUtils.normalizeRef(op.attributs.get(AafConstantes.CLASSES_ATTR).get(0)));
+					addPersonClass(
+							parentAttr[AafConstantes.PARENT_ID_INDEX]
+							, op.attributs.get(AafConstantes.CLASSES_ATTR));
 				}
 				break;
 			case PERSRELELEVE :
@@ -131,10 +132,16 @@ public class WordpressHelper {
 		persons.put(id, attrs);
 	}
 
-	private void addPersonClass(String idPerson, String personClass) {
-		// TODO : gestion multiclasses
+	private void addPersonClass(String idPerson, List<String> personClasses) {
 		if (persons.containsKey(idPerson) && !persons.get(idPerson).containsKey(CLASS_ATTR)) {
-				persons.get(idPerson).put(CLASS_ATTR, personClass);
+			// TODO : gestion multi-classes
+			persons.get(idPerson).put(CLASS_ATTR, AafUtils.normalizeRef(personClasses.get(0)));
+			// pour le multiclasses : utiliser la boucle ci-dessous, mais il faut séparer
+			// la gestion des liens utilisateurs / classe (ou groupe) de la création de
+			// l'utilisateur. Pour cela il faudrait les id WP ou faire la recherche côté WP
+//			for (String personClass : personClasses)	{
+//				persons.get(idPerson).put(CLASS_ATTR, AafUtils.normalizeRef(personClass));
+//			}
 		}
 	}
 

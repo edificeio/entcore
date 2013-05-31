@@ -61,7 +61,7 @@ public class AafGeoffHelper {
 		currentRequest.append(", ").append("\"type\": \"").append(op.typeEntite).append("\"");
 		// parcours de tous les attributs de l'objet
 		for (Map.Entry<String, List<String>> entry : op.attributs.entrySet()) {
-			// on ne traite que les attributs avec une valeur
+			// on ne traite que les attributs avec au moins une valeur
 			if (entry.getValue().size() > 0) {
 				currentRequest.append(", \"").append(entry.getKey()).append("\": \"");
 				// parcours des valeurs associées à l'attribut
