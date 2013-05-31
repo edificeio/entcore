@@ -102,7 +102,7 @@ public class WordpressHelper {
 		}
 	}
 
-	public void addSchool(String id, String type, String name) {
+	private void addSchool(String id, String type, String name) {
 		Map<String,String> attrs = new HashMap<>();
 		attrs.put(ID_ATTR, id);
 		attrs.put(TYPE_ATTR, type);
@@ -110,7 +110,7 @@ public class WordpressHelper {
 		schools.put(id, attrs);
 	}
 
-	public void addGroup(String id, String type, String name, String school) {
+	private void addGroup(String id, String type, String name, String school) {
 		Map<String,String> attrs = new HashMap<>();
 		attrs.put(ID_ATTR, id);
 		attrs.put(TYPE_ATTR, type);
@@ -119,7 +119,7 @@ public class WordpressHelper {
 		groups.put(id, attrs);
 	}
 
-	public void addPerson(
+	private void addPerson(
 			String id, String type, String name, String surname, String login, String password) {
 		Map<String,String> attrs = new HashMap<>();
 		attrs.put(ID_ATTR, id);
@@ -131,7 +131,7 @@ public class WordpressHelper {
 		persons.put(id, attrs);
 	}
 
-	public void addPersonClass(String idPerson, String personClass) {
+	private void addPersonClass(String idPerson, String personClass) {
 		// TODO : gestion multiclasses
 		if (persons.containsKey(idPerson) && !persons.get(idPerson).containsKey(CLASS_ATTR)) {
 				persons.get(idPerson).put(CLASS_ATTR, personClass);
