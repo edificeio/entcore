@@ -45,6 +45,7 @@ public class Neo  {
 		jo.putObject("params", new JsonObject(params));
 		eb.send(address, jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
+				response.putHeader("content-type", "text/json");
 				response.end(m.body().encode());
 			}
 		});
@@ -56,6 +57,7 @@ public class Neo  {
 		jo.putString("query", query);
 		eb.send(address, jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
+				response.putHeader("content-type", "text/json");
 				response.end(m.body().encode());
 			}
 		});
@@ -68,6 +70,7 @@ public class Neo  {
 		jo.putString("query", request.params().get("query"));
 		eb.send(address, jo , new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
+				request.response().putHeader("content-type", "text/json");
 				request.response().end(m.body().encode());
 			}
 		});
