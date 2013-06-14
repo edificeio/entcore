@@ -1,0 +1,29 @@
+#person{
+	border:1px solid #C2C2C2;
+	height: 70px;
+	width: 250px;
+	float: left;
+	border-radius: 10px;
+	padding: 10px;
+	margin: 5px;
+}
+#person span a{
+	height:100%;
+	width:31%;
+	float:left;
+	font-size: 1.2em;
+	color:black;
+}
+#person img.avatar{
+	height:90%;
+	float:left;
+	margin-right:3px;
+}
+#person img.mood{
+	width:20%;
+	float:right;
+}
+a{
+	text-decoration: none;
+	color: black;
+}

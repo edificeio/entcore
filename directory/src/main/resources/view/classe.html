@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/classe.js{{/static}}" type="text/javascript"></script>
+		<link type="text/css" rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" media="screen" />
+		<link type="text/css" rel="stylesheet" href="{{#static}}css/classe.css{{/static}}" media="screen" /></head>
+	<body>
+		<h2>{{#i18n}}directory.admin.header{{/i18n}}</h2>
+		<div id="annuaire">
+			<a href="/api/personnes?id=4400000002$ORDINAIRE$CM2%20de%20Mme%20Rousseau" call="personnes">{{#i18n}}directory.admin.see-people{{/i18n}}</a>
+			<div id="people"></div>
+		</div>
+	</body>
+</html>
