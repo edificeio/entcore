@@ -43,14 +43,6 @@ public class Directory extends Controller {
 			}
 		});
 
-		rm.get("/classe", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
-			}
-		});
-
-
 		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {

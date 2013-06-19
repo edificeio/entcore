@@ -1,13 +1,13 @@
 var admin = function(){
 
-	var dataExtractor = function (d) { return {list : _.values(jQuery.parseJSON(d).result)}; };
+	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
 	app.define({
 		template : {
 			personnes: '\
-				<br /><span>{{#list}}<div id="person"><img src="/public/img/user.png" alt="user" class="avatar"/>\
+				<br /><span>{{#list}}<div id="person"><img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<span><a href="">{{lastName}} {{firstName}}</a></span><img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				</div>{{/list}}</span>'
 			},
@@ -26,5 +26,5 @@ var admin = function(){
 
 
 $(document).ready(function(){
-	admin.init(); 
+	admin.init();
 });
