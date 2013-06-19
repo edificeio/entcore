@@ -40,6 +40,23 @@ public class MyAccount extends Controller {
 				renderView(request, users);
 			}
 		});
+		
+		rm.get("/person", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				HttpClient client = vertx.createHttpClient().setPort(8003);
+				HttpClientRequest req = client.get("/api/details?id=" + request.params().get("id"), new Handler<HttpClientResponse>() {
+					public void handle(HttpClientResponse resp) {
+						resp.bodyHandler(new Handler<Buffer>() {
+							public void handle(Buffer data) {
+								renderJson(request, new JsonObject(data.toString()));
+							}
+						});
+					}
+				});
+				req.end();
+			}
+		});
 
 		rm.get("/load-class", new Handler<HttpServerRequest>() {
 			@Override
