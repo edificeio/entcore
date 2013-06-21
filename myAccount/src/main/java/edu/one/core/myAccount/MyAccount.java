@@ -1,35 +1,52 @@
 package edu.one.core.myAccount;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.Neo;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public class MyAccount extends Controller {
 
+	Neo neo;
 	JsonObject users;
 
 	@Override
 	public void start() {
 		super.start();
-		final JsonObject dataMock = 
-				new JsonObject(vertx.fileSystem().readFileSync("myAccount-data-mock.json").toString());
+		neo = new Neo(vertx.eventBus(),log);
+		final JsonObject userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
+		final JsonArray hobbies = userBookData.getArray("hobbies");
 
 		rm.get("/index", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request, dataMock);
+				//TODO : check if current user has userbook node
+				if (request.params().contains("id")){//simulate user id in url
+					neo.send("START n=node(*) WHERE has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+					+ "CREATE (m {userId:'" + request.params().get("id") + "', "
+					+ "picture:'" + userBookData.getString("picture") + "',"
+					+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
+					for (Object hobby : hobbies) {
+						JsonObject jo = (JsonObject)hobby;
+						neo.send("START n=node(*) WHERE has(n.userId) AND n.userId='" + request.params().get("id") + "' "
+						+ "CREATE (m {category:'" + jo.getString("code") + "'}), "
+						+ "n-[:PUBLIC]->m ");
+					}
+				}
+				renderView(request, new JsonObject());
 			}
 		});
 
 		rm.get("/load", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderJson(request, dataMock);
+				renderJson(request, userBookData);
 			}
 		});
 
@@ -62,6 +79,16 @@ public class MyAccount extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderJson(request, users);
+			}
+		});
+
+		rm.get("/api/userbook", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				neo.send("START n=node(*),m=node(*) MATCH n-[:USERBOOK]->m "
+						+ "WHERE has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='"
+						+ request.params().get("id") +"' RETURN m.health as health,"
+						+ " m.mood as mood, m.motto as motto", request.response());
 			}
 		});
 	}
