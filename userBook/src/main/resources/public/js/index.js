@@ -1,6 +1,6 @@
 var index = function(){
 	var app = Object.create(oneApp);
-	app.scope = "#myAccount";
+	app.scope = "#userBook";
 	app.define ({
 		template : {
 			picture : '<img src="{{picture}}">',

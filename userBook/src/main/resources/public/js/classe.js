@@ -22,10 +22,10 @@ var admin = function(){
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
-				{{#i18n}}userbook.class.write-message{{/i18n}}<div class="clear"></div>\
-				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userbook.class.edit-notebook{{/i18n}}\
+				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
+				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<div class="clear"></div><img src="/public/img/files.png" alt="files"/>\
-				{{#i18n}}userbook.class.see-portfolio{{/i18n}}\
+				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
 				</span>{{/list}}'
 		},
 		action : {

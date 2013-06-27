@@ -1,4 +1,4 @@
-package edu.one.core.myAccount;
+package edu.one.core.userBook;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
@@ -11,7 +11,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class MyAccount extends Controller {
+public class UserBook extends Controller {
 
 	Neo neo;
 	JsonObject users;

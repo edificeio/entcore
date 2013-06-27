@@ -7,7 +7,7 @@ dependencies {
 }
 
 test {
-	include 'edu/one/core/myAccount/test/*'
+	include 'edu/one/core/userBook/test/*'
 }
 
 def configurePom(def pom) {

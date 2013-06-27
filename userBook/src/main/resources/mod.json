@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.myAccount.MyAccount",
+	"main":"edu.one.core.userBook.UserBook",
 	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
 	"port": 8101,
 	"mode": "dev"
