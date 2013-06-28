@@ -9,7 +9,7 @@ var admin = function(){
 			personnes: '\
 				{{#list}}<div id="person-small">\
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<span><a href="/person?id={{userId}}" call="personne">{{lastName}} {{firstName}}</a></span>\
+				<span><a href="/api?name={{displayName}}" call="searchPerson">{{lastName}} {{firstName}}</a></span>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<span class="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
 				<img src="/public/img/carnet.png" alt="carnet"/>\
@@ -17,7 +17,7 @@ var admin = function(){
 				</span></div>{{/list}}',
 			personne: '\
 				{{#list}}<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<span class="name">{{lastName}} {{firstName}}</span>\
+				<span class="name">{{displayName}}</span>\
 				<span class="address">{{address}}</span>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<div class="clear"></div>\
@@ -26,23 +26,26 @@ var admin = function(){
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<div class="clear"></div><img src="/public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
-				</span>{{/list}}'
+				</span><div>{{#i18n}}userBook.class.mood{{/i18n}} : {{mood}} \
+				{{#i18n}}userBook.class.health{{/i18n}} : {{health}}</div>{{/list}}'
 		},
 		action : {
-			personnes : function(o) {
-				$.get(o.url)
+			searchPerson : function(o){
+				var url = o.target.form.action + '?' + $('#search-form').serialize();
+				$.get(url)
+				.done(function(data){
+					console.log(data.result);
+					$("#people").addClass('single').removeClass('all');
+					$("#person").html(app.template.render('personne', dataExtractor(data)));
+				})
+				.error(function(data){app.notify.error(data.status);})
+			},
+			searchClass : function(o) {
+				$.get(o)
 				.done(function(data){
 					$("#people").addClass('all').removeClass('single');
 					$('#person').html('');
 					$("#people").html(app.template.render('personnes', dataExtractor(data)));
-				})
-				.error(function(data){app.notify.error(data)})
-			},
-			personne : function(o){
-				$.get(o.url)
-				.done(function(data){
-					$("#people").addClass('single').removeClass('all');
-					$("#person").html(app.template.render('personne', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			}

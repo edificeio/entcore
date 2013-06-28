@@ -3,10 +3,6 @@ package edu.one.core.userBook;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientRequest;
-import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -43,67 +39,32 @@ public class UserBook extends Controller {
 			}
 		});
 
-		rm.get("/load", new Handler<HttpServerRequest>() {
+		rm.get("/annuaire", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderJson(request, userBookData);
-			}
-		});
-
-		rm.get("/classe", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				getDirectoryData("/api/personnes?id=4400000002$ORDINAIRE$CM2%20de%20Mme%20Rousseau");
-				renderView(request, users);
+				renderView(request);
 			}
 		});
 		
-		rm.get("/person", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				HttpClient client = vertx.createHttpClient().setPort(8003);
-				HttpClientRequest req = client.get("/api/details?id=" + request.params().get("id"), new Handler<HttpClientResponse>() {
-					public void handle(HttpClientResponse resp) {
-						resp.bodyHandler(new Handler<Buffer>() {
-							public void handle(Buffer data) {
-								renderJson(request, new JsonObject(data.toString()));
-							}
-						});
-					}
-				});
-				req.end();
-			}
-		});
-
-		rm.get("/load-class", new Handler<HttpServerRequest>() {
+		rm.get("/api", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderJson(request, users);
+				if (request.params().contains("name")){
+					neo.send("START n=node(*),m=node(*) MATCH n-[USERBOOK]->m "
+						+ "WHERE has(n.ENTPersonNomAffichage) "
+						+ "AND n.ENTPersonNomAffichage='" + request.params().get("name") + "' "
+						+ "AND has(m.motto) RETURN distinct n.ENTPersonIdentifiant as id, "
+						+ "n.ENTPersonNomAffichage as displayName, "
+						+ "n.ENTPersonAdresse as address, m.motto as motto, "
+						+ "m.mood as mood, m.health as health;",request.response());
+				} else if (request.params().contains("class")){
+					neo.send("START n=node(*),m=node(*) MATCH n<--m WHERE has(m.type) "
+						+ "AND has(n.id) AND n.id='" + request.params().get("class") + "' "
+						+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+						+ "RETURN m.id as userId,m.ENTPersonNom as firstName, m.ENTPersonPrenom as lastName, "
+						+ "m.ENTPersonNomAffichage as displayName, n.id as classId", request.response());
+				}
 			}
 		});
-
-		rm.get("/api/userbook", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				neo.send("START n=node(*),m=node(*) MATCH n-[:USERBOOK]->m "
-						+ "WHERE has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='"
-						+ request.params().get("id") +"' RETURN m.health as health,"
-						+ " m.mood as mood, m.motto as motto", request.response());
-			}
-		});
-	}
-
-	private void getDirectoryData(String apiUrl){
-		HttpClient client = vertx.createHttpClient().setPort(8003);
-		HttpClientRequest req = client.get(apiUrl, new Handler<HttpClientResponse>() {
-			public void handle(HttpClientResponse resp) {
-				resp.bodyHandler(new Handler<Buffer>() {
-					public void handle(Buffer data) {
-						users = new JsonObject(data.toString());
-					}
-				});
-			}
-		});
-		req.end();
 	}
 }

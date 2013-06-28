@@ -14,7 +14,12 @@
 	<body>
 		<h2>{{#i18n}}userBook.class.title{{/i18n}}</h2>
 		<div id="annuaire">
-			<a href="/load-class" call="personnes">Charger la classe</a>
+			<div id="search">
+				<form method="GET" action="/api" id="search-form">
+					<input type="text" name="name"/>
+					<input type="submit" call="searchPerson" action="/api" value="OK"/>
+				</form>
+			</div>
 			<div id="people" class="all"></div>
 			<div id="person"></div>
 		</div>
