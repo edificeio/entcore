@@ -57,4 +57,5 @@ var admin = function(){
 
 $(document).ready(function(){
 	admin.init();
+	admin.action.searchClass("/api?class=4400000002$ORDINAIRE$CM2%20de%20Mme%20Rousseau");
 });
