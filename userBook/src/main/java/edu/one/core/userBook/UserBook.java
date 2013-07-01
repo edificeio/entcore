@@ -46,7 +46,7 @@ public class UserBook extends Controller {
 			}
 		});
 		
-		rm.get("/api", new Handler<HttpServerRequest>() {
+		rm.get("/api/search", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("name")){
@@ -54,15 +54,25 @@ public class UserBook extends Controller {
 						+ "WHERE has(n.ENTPersonNomAffichage) "
 						+ "AND n.ENTPersonNomAffichage='" + request.params().get("name") + "' "
 						+ "AND has(m.motto) RETURN distinct n.ENTPersonIdentifiant as id, "
-						+ "n.ENTPersonNomAffichage as displayName, "
+						+ "n.ENTPersonNomAffichage as displayName, m.mood as mood;",request.response());
+				} else if (request.params().contains("class")){
+					neo.send("START n=node(*),m=node(*) MATCH n<-[APPARTIENT]-m WHERE has(m.type) "
+						+ "AND has(n.id) AND n.id='" + request.params().get("class") + "' "
+						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
+						, request.response());
+				}
+			}
+		});
+		rm.get("/api/person", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				if (request.params().contains("id")){
+					neo.send("START n=node(*),m=node(*) MATCH n-[USERBOOK]->m "
+						+ "WHERE has(n.ENTPersonIdentifiant) "
+						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+						+ "AND has(m.motto) RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto as motto, "
 						+ "m.mood as mood, m.health as health;",request.response());
-				} else if (request.params().contains("class")){
-					neo.send("START n=node(*),m=node(*) MATCH n<--m WHERE has(m.type) "
-						+ "AND has(n.id) AND n.id='" + request.params().get("class") + "' "
-						+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
-						+ "RETURN m.id as userId,m.ENTPersonNom as firstName, m.ENTPersonPrenom as lastName, "
-						+ "m.ENTPersonNomAffichage as displayName, n.id as classId", request.response());
 				}
 			}
 		});
