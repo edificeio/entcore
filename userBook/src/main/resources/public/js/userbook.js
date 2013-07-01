@@ -1,4 +1,4 @@
-var admin = function(){
+var userbook = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 
@@ -65,6 +65,6 @@ var admin = function(){
 
 
 $(document).ready(function(){
-	admin.init();
-	admin.action.searchClass("/api/search?class=CM2%20de%20Mme%20Rousseau");
+	userbook.init();
+	userbook.action.searchClass("/api/search?class=CM2%20de%20Mme%20Rousseau");
 });

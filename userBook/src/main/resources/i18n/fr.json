@@ -6,5 +6,8 @@
 	"userBook.title": "Mon compte",
 	"userBook.header": "Mon compte",
 	"userBook.interests": "Centres d'intérêt",
-	"userBook.health": "Santé et alimentation"
+	"userBook.profile.health": "Santé et alimentation",
+	"userBook.profile.mood": "Humeur",
+	"userBook.profile.motto" : "Devise",
+	"userBook.account.myAccount":"Mon Compte"
 }

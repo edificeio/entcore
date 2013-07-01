@@ -8,11 +8,12 @@
 		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#static}}js/classe.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/userbook.js{{/static}}" type="text/javascript"></script>
 		<link type="text/css" rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" media="screen" />
 		<link type="text/css" rel="stylesheet" href="{{#static}}css/classe.css{{/static}}" media="screen" /></head>
 	<body>
 		<h2>{{#i18n}}userBook.class.title{{/i18n}}</h2>
+		<p><a href="/mon-compte">{{#i18n}}userBook.account.myAccount{{/i18n}}</a></p>
 		<div id="annuaire">
 			<div id="search">
 				<form method="GET" action="/api/search" id="search-form">

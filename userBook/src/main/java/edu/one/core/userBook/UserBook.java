@@ -19,7 +19,7 @@ public class UserBook extends Controller {
 		final JsonObject userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
 		final JsonArray hobbies = userBookData.getArray("hobbies");
 
-		rm.get("/index", new Handler<HttpServerRequest>() {
+		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				//TODO : check if current user has userbook node
