@@ -42,10 +42,14 @@ public class UserBook extends Controller {
 		rm.get("/annuaire", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request);
+				JsonObject jo = new JsonObject();
+				if (request.params().contains("query")){
+					jo = new JsonObject(request.params().get("query"));
+				}
+				renderView(request, jo);
 			}
 		});
-		
+
 		rm.get("/api/search", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -57,7 +61,7 @@ public class UserBook extends Controller {
 						+ "n.ENTPersonNomAffichage as displayName, m.mood as mood;",request.response());
 				} else if (request.params().contains("class")){
 					neo.send("START n=node(*),m=node(*) MATCH n<-[APPARTIENT]-m WHERE has(m.type) "
-						+ "AND has(n.id) AND n.id='" + request.params().get("class") + "' "
+						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "' "
 						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
 						, request.response());
 				}

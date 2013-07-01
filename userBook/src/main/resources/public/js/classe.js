@@ -49,8 +49,8 @@ var admin = function(){
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},
-			searchClass : function(o) {
-				$.get(o)
+			searchClass : function(url) {
+				$.get(url)
 				.done(function(data){
 					$("#people").addClass('all').removeClass('single');
 					$('#person').html('');
@@ -66,5 +66,5 @@ var admin = function(){
 
 $(document).ready(function(){
 	admin.init();
-	admin.action.searchClass("/api/search?class=4400000002$ORDINAIRE$CM2%20de%20Mme%20Rousseau");
+	admin.action.searchClass("/api/search?class=CM2%20de%20Mme%20Rousseau");
 });
