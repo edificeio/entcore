@@ -66,5 +66,5 @@ var userbook = function(){
 
 $(document).ready(function(){
 	userbook.init();
-	userbook.action.searchClass("/api/search?class=CM2%20de%20Mme%20Rousseau");
+	userbook.action.searchClass("/api/class?name=CM2%20de%20Mme%20Rousseau");
 });

@@ -53,18 +53,17 @@ public class UserBook extends Controller {
 		rm.get("/api/search", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
+				String neoRequest = "START n=node(*) ";
 				if (request.params().contains("name")){
-					neo.send("START n=node(*),m=node(*) MATCH n-[USERBOOK]->m "
-						+ "WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage='" + request.params().get("name") + "' "
-						+ "AND has(m.motto) RETURN distinct n.ENTPersonIdentifiant as id, "
-						+ "n.ENTPersonNomAffichage as displayName, m.mood as mood;",request.response());
+					neoRequest += ", m=node(*) MATCH n-[USERBOOK]->m WHERE has(n.ENTPersonNomAffichage) "
+						+ "AND n.ENTPersonNomAffichage='" + request.params().get("name") + "' AND has(m.motto)";
 				} else if (request.params().contains("class")){
-					neo.send("START n=node(*),m=node(*) MATCH n<-[APPARTIENT]-m WHERE has(m.type) "
-						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "' "
-						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
-						, request.response());
+					neoRequest += "m=node(*) MATCH m<-[APPARTIENT]-n WHERE has(n.type) "
+						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "'";
 				}
+				neoRequest += " RETURN distinct n.ENTPersonIdentifiant as id, "
+					+ "n.ENTPersonNomAffichage as displayName, m.mood as mood";
+				neo.send(neoRequest, request.response());
 			}
 		});
 		rm.get("/api/person", new Handler<HttpServerRequest>() {
@@ -77,6 +76,17 @@ public class UserBook extends Controller {
 						+ "AND has(m.motto) RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto as motto, "
 						+ "m.mood as mood, m.health as health;",request.response());
+				}
+			}
+		});
+		rm.get("/api/class", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				if (request.params().contains("name")){
+					neo.send("START n=node(*),m=node(*) MATCH n<-[APPARTIENT]-m WHERE has(m.type) "
+						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("name") + "' "
+						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
+						, request.response());
 				}
 			}
 		});
