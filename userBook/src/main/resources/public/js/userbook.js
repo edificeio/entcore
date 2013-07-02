@@ -1,6 +1,11 @@
 var userbook = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
+	var personDataExtractor = function(d) {
+		return {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
+			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
+			"motto":d.result[0]["motto"],list:_.values(d.result) };
+	};
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -16,10 +21,10 @@ var userbook = function(){
 				<img src="/public/img/files.png" alt="files"/>\
 				</span></div>{{/list}}',
 			personne: '\
-				{{#list}}<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<span class="name">{{displayName}}</span>\
-				<span class="address">{{address}}</span>\
-				<span class="motto">{{motto}}</span>\
+				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+				<p class="name">{{displayName}}</p>\
+				<p class="address">{{address}}</p>\
+				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} : {{motto}}</p>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
@@ -27,8 +32,9 @@ var userbook = function(){
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<div class="clear"></div><img src="/public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
-				</span><div>{{#i18n}}userBook.class.mood{{/i18n}} : {{mood}} \
-				{{#i18n}}userBook.class.health{{/i18n}} : {{health}}</div>{{/list}}'
+				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
+				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
+				{{#list}}<h3>{{category}}</h3>{{/list}}'
 		},
 		action : {
 			search : function(o){
@@ -45,7 +51,7 @@ var userbook = function(){
 				$.get(o.url)
 				.done(function(data){
 					$("#people").addClass('single').removeClass('all');
-					$("#person").html(app.template.render('personne', dataExtractor(data)));
+					$("#person").html(app.template.render('personne', personDataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},

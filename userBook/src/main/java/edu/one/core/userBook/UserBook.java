@@ -70,12 +70,12 @@ public class UserBook extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("id")){
-					neo.send("START n=node(*),m=node(*) MATCH n-[USERBOOK]->m "
-						+ "WHERE has(n.ENTPersonIdentifiant) "
+					neo.send("START n=node(*),m=node(*), p=node(*) MATCH n-[USERBOOK]->m, m-->p "
+						+ "WHERE has(n.ENTPersonIdentifiant) AND has(p.category) "
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "AND has(m.motto) RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto as motto, "
-						+ "m.mood as mood, m.health as health;",request.response());
+						+ "m.mood as mood, m.health as health, p.category as category;",request.response());
 				}
 			}
 		});
