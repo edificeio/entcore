@@ -72,5 +72,6 @@ var userbook = function(){
 
 $(document).ready(function(){
 	userbook.init();
-	userbook.action.searchClass("/api/class?name=CM2%20de%20Mme%20Rousseau");
+	var className = location.search.split('class=')[1];
+	userbook.action.searchClass("/api/class?name=" + className);
 });

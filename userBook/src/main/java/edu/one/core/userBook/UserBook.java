@@ -42,11 +42,7 @@ public class UserBook extends Controller {
 		rm.get("/annuaire", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				JsonObject jo = new JsonObject();
-				if (request.params().contains("query")){
-					jo = new JsonObject(request.params().get("query"));
-				}
-				renderView(request, jo);
+				renderView(request);
 			}
 		});
 
@@ -56,7 +52,7 @@ public class UserBook extends Controller {
 				String neoRequest = "START n=node(*) ";
 				if (request.params().contains("name")){
 					neoRequest += ", m=node(*) MATCH n-[USERBOOK]->m WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage='" + request.params().get("name") + "' AND has(m.motto)";
+						+ "AND n.ENTPersonNomAffichage=~'" + request.params().get("name").substring(0,3) + ".*' AND has(m.motto)";
 				} else if (request.params().contains("class")){
 					neoRequest += "m=node(*) MATCH m<-[APPARTIENT]-n WHERE has(n.type) "
 						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "'";
