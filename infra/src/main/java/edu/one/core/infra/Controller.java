@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.MultiMap;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -125,23 +127,18 @@ public abstract class Controller extends Verticle {
 		request.response().end();
 	}
 
-	public void bodyToParams(final HttpServerRequest request, final Handler<Map<String,String>> handler) {
-		if (Arrays.asList("POST","PUT").contains(request.method())) {
-			request.bodyHandler(new Handler<Buffer>() {
-				public void handle(Buffer b) {
-					Map<String, String> postParams = new HashMap<>();
-					try {
-						for(String keyVal : b.toString().split("&")) {
-							String[] entry = keyVal.split("=");
-							postParams.put(entry[0],URLDecoder.decode(entry[1], "UTF-8"));
-						}
-					} catch (UnsupportedEncodingException ex) {
-						log.error(ex.getMessage());
-					}
-					handler.handle(postParams);
-				}
-			});
-		}
+	/**
+	 * @deprecated Use request.formAttributes() instead
+	 * @param request http request
+	 * @param handler receive attributes
+	 */
+	public void bodyToParams(final HttpServerRequest request, final Handler<MultiMap> handler) {
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				handler.handle(request.formAttributes());
+			}
+		});
 	}
 
 }
