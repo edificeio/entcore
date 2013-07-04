@@ -139,7 +139,8 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 				JsonObject jsonRow = new JsonObject();
 				json.putObject(String.valueOf(i++), jsonRow);
 			for (Map.Entry<String, Object> column : row.entrySet()) {
-				jsonRow.putString(column.getKey(), column.getValue().toString());
+				String value = (column.getValue() == null) ? "" : column.getValue().toString();
+				jsonRow.putString(column.getKey(), value);
 			}
 		}
 		return new JsonObject().putObject("result", json) ;
