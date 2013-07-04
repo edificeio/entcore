@@ -1,7 +1,7 @@
 apply from: "gradle/vertx.gradle"
 
 dependencies {
-	compile "com.github.spullara.mustache.java:compiler:$mustacheVersion"
+	compile project(':web-utils')
 }
 
 test {

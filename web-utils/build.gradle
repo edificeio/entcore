@@ -1,22 +1,15 @@
 apply from: "gradle/vertx.gradle"
 
-project.evaluationDependsOn(':infra')
-project.evaluationDependsOn(':web-utils')
-project.evaluationDependsOn(':dataDictionary')
-
 dependencies {
-	provided project(':infra')
-	compile project(':web-utils')
-	provided project(':dataDictionary')
+	compile "com.github.spullara.mustache.java:compiler:$mustacheVersion"
 }
 
 test {
-	include 'edu/one/core/directory/test/*'
 }
 
 def configurePom(def pom) {
 	pom.project {
-		description 'One Core Directory'
+		description 'One Core Infra'
 		inceptionYear '2013'
 		packaging 'zip'
 		url 'http://code.web-education.net/projects/one-core'
@@ -26,11 +19,6 @@ def configurePom(def pom) {
 				id 'rafik.djedjig'
 				name 'Rafik Djedjig'
 				email 'rafik.djedjig@web-educcation.net'
-			}
-			developer {
-				id 'diane.wakim'
-				name 'Diane Wakim'
-				email 'diane.wakim@web-educcation.net'
 			}
 		}
 

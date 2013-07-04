@@ -1,10 +1,10 @@
 apply from: "gradle/vertx.gradle"
 
-project.evaluationDependsOn(':infra')
+project.evaluationDependsOn(':web-utils')
 project.evaluationDependsOn(':dataDictionary')
 
 dependencies {
-	provided project(':infra')
+	compile project(':web-utils')
 	provided project(':dataDictionary')
 }
 
