@@ -34,7 +34,7 @@ var userbook = function(){
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3>{{/list}}'
+				{{#list}}<h3>{{category}}</h3><p>{{value}}</p>{{/list}}'
 		},
 		action : {
 			search : function(o){
