@@ -22,17 +22,17 @@ public class UserBook extends Controller {
 		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				//TODO : check if current user has userbook node
-				if (request.params().contains("id")){//simulate user id in url
-					neo.send("START n=node(*) WHERE has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-					+ "CREATE (m {userId:'" + request.params().get("id") + "', "
-					+ "picture:'" + userBookData.getString("picture") + "',"
-					+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
+				if (request.params().contains("id")){
+					neo.send("START n=node(*) WHERE has(n.ENTPersonIdentifiant) "
+						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+						+ "CREATE UNIQUE (n)-[:USERBOOK]->(m {picture:'" + userBookData.getString("picture") + "',"
+						+ "motto:'', health:'', mood:'default'})");
 					for (Object hobby : hobbies) {
 						JsonObject jo = (JsonObject)hobby;
-						neo.send("START n=node(*) WHERE has(n.userId) AND n.userId='" + request.params().get("id") + "' "
-						+ "CREATE (m {category:'" + jo.getString("code") + "'}), "
-						+ "n-[:PUBLIC]->m ");
+						neo.send("START n=node(*),m=node(*) WHERE has(n.ENTPersonIdentifiant) "
+							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+							+ "CREATE UNIQUE (n)-[:USERBOOK]->(m)-[:PUBLIC]->(p {category:'"
+							+ jo.getString("code") + "', value:''})");
 					}
 				}
 				renderView(request, new JsonObject());
