@@ -1,0 +1,13 @@
+{
+	"main":"edu.one.core.workspace.Workspace",
+	"auto-redeploy": true,
+	"port": 8011,
+	"mode": "dev",
+	"mongodb-config": {
+		"address": "wse.mongodb.persistor",
+		"host": "localhost",
+		"port": 27017,
+		"db_name": "one",
+		"pool_size": 10
+	}
+}
