@@ -36,3 +36,8 @@
   width: 100%;
   border: 0px;
 }
+
+span[contenteditable]:hover{
+	background: yellow;
+	border:none;
+}

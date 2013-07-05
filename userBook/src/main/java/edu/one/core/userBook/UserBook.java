@@ -32,7 +32,7 @@ public class UserBook extends Controller {
 						neo.send("START n=node(*),m=node(*) WHERE has(n.ENTPersonIdentifiant) "
 							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 							+ "CREATE UNIQUE (n)-[:USERBOOK]->(m)-[:PUBLIC]->(p {category:'"
-							+ jo.getString("code") + "', value:''})");
+							+ jo.getString("code") + "', values:'[]'})");
 					}
 				}
 				renderView(request, new JsonObject());
@@ -71,7 +71,7 @@ public class UserBook extends Controller {
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "RETURN n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto? as motto, "
-						+ "m.mood? as mood, m.health? as health, p.category? as category, p.value? as value;"
+						+ "m.mood? as mood, m.health? as health, p.category? as category, p.values? as values;"
 						,request.response());
 				}
 			}
@@ -85,6 +85,16 @@ public class UserBook extends Controller {
 						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
 						, request.response());
 				}
+			}
+		});
+
+		rm.get("/api/edit-hobbies", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				neo.send("START n=node(*), m=node(*) MATCH n-->m WHERE has(n.ENTPersonIdentifiant) "
+					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(m.category) "
+					+ "AND m.category='" + request.params().get("category") + "' "
+					+ "SET m.values='" + request.params().get("values"));
 			}
 		});
 	}

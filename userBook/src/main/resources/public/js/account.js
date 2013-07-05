@@ -1,6 +1,5 @@
 var account = function(){
 
-	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 	var personDataExtractor = function(d) {
 		return {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
 			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
@@ -25,19 +24,35 @@ var account = function(){
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3>{{/list}}'
+				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span id="{{category}}" contenteditable="true">\
+				{{value}}</span>{{/values}}<span>more</span></p>{{/list}}'
 		},
 		action : {
 			profile : function(url) {
 				$.get(url)
 				.done(function(data){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
+					manageEditable();
+				})
+			},
+			editHobbies : function(url){
+				$.get(url)
+				.done(function(data){
+					console.log(data);
+					app.notify.info("modif ok");
 				})
 			}
 		}
 	});
 	return app;
 }();
+
+function manageEditable(){
+	console.log("hello");
+	var editable = document.getElementById('places');
+	editable.addEventListener("focus", function(){document.designMode = 'on';}, false);
+	editable.addEventListener("blur", function(){document.designMode = 'off'; console.log(this.innerHTML)}, false);
+}
 
 $(document).ready(function(){
 	account.init();
