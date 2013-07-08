@@ -1,14 +1,14 @@
 {
 	"main":"edu.one.core.workspace.Workspace",
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"port": 8011,
 	"mode": "dev",
 	"mongodb-config": {
 		"address": "wse.mongodb.persistor",
 		"host": "localhost",
 		"port": 27017,
-		"db_name": "one",
+		"db_name": "test_one",
 		"pool_size": 10
 	},
-	"files-repository" : "/home/dboissin/Prog/one-core/data/dev/files-repository"
+	"files-repository" : "/tmp"
 }

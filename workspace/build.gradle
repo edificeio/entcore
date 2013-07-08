@@ -4,10 +4,11 @@ project.evaluationDependsOn(':web-utils')
 
 dependencies {
 	compile project(':web-utils')
+  testCompile 'com.ning:async-http-client:1.7.17'
+  testCompile 'commons-codec:commons-codec:1.8'
 }
 
 test {
-	include 'com/wse/tracer/test/*'
 }
 
 def configurePom(def pom) {
