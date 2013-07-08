@@ -36,7 +36,10 @@ var account = function(){
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
 				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}" contenteditable="true">\
-				{{value}}</span>{{/values}}<span>more</span></p>{{/list}}'
+				{{value}}</span>{{/values}}<span>more</span></p>\
+				<form method="GET" action="/api/set-visibility" id="visible">\
+				<select><option>public</option><option>private</option>\
+				<input type="submit" value="ok" call="setVisibility"/></form>{{/list}}'
 		},
 		action : {
 			profile : function(url) {
@@ -48,6 +51,13 @@ var account = function(){
 			},
 			editHobbies : function(url){
 				$.get(url)
+				.done(function(data){
+					console.log(data);
+					app.notify.info("modif ok");
+				})
+			},
+			setVisibility : function(o){
+				$.get(o.url)
 				.done(function(data){
 					console.log(data);
 					app.notify.info("modif ok");

@@ -97,5 +97,12 @@ public class UserBook extends Controller {
 					+ "SET m.values='" + request.params().get("values"));
 			}
 		});
+
+		rm.get("/api/set-visibility", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				//TODO : neo request with SET relation TYPE from PRIVATE/PUBLIC to PUBLIC/PRIVATE
+			}
+		});
 	}
 }
