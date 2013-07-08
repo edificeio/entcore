@@ -14,6 +14,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.http.HttpClientRequest;
+import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
@@ -28,7 +32,9 @@ import com.ning.http.multipart.FilePart;
 
 public class WorkspaceTest extends TestVerticle {
 
-	private static final String RESOURCE_FILE = "/home/dboissin/Downloads/wedding.jpg";
+	private static final String RESOURCE_FILE = "./build/resources/test/lorem_ipsum.txt";
+	private static final String CONTENT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+			+ " Praesent laoreet nisi vel ipsum aliquam, a viverra sapien posuere.";
 
 	@Override
 	public void start() {
@@ -81,6 +87,37 @@ public class WorkspaceTest extends TestVerticle {
 		assertEquals(201, res.getStatusCode());
 		assertEquals("ok", new JsonObject(res.getResponseBody()).getString("status"));
 		testComplete();
+	}
+
+	@Test
+	public void testPostDocument2() throws Exception {
+		HttpClientRequest req = vertx.createHttpClient().setPort(8011).post("/document", new Handler<HttpClientResponse>() {
+			@Override
+			public void handle(final HttpClientResponse resp) {
+				resp.bodyHandler(new Handler<Buffer>() {
+					public void handle(Buffer body) {
+						container.logger().info(body.toString());
+						assertEquals(201, resp.statusCode());
+						assertEquals("ok", new JsonObject(body.toString("UTF-8")).getString("status"));
+						testComplete();
+					}
+				});
+			}
+		});
+
+		final String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
+		Buffer buffer = new Buffer();
+		final String body = "--" + boundary + "\r\n" +
+				"Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n" +
+				"Content-Type: image/gif\r\n" +
+				"\r\n" +
+				CONTENT + "\r\n" +
+				"--" + boundary + "--\r\n";
+
+		buffer.appendString(body);
+		req.headers().set("content-length", String.valueOf(buffer.length()));
+		req.headers().set("content-type", "multipart/form-data; boundary=" + boundary);
+		req.write(buffer).end();
 	}
 
 	@Test

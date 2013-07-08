@@ -156,7 +156,16 @@ public class Workspace extends Controller {
 							vertx.fileSystem().delete(result.getString("file"), new Handler<AsyncResult<Void>>() {
 								@Override
 								public void handle(AsyncResult<Void> event) {
-									documentDao.delete(id, request.response());
+									documentDao.delete(id, new Handler<JsonObject>() {
+										@Override
+										public void handle(JsonObject result) {
+											if ("ok".equals(result.getString("status"))) {
+												request.response().setStatusCode(204).end(result.toString());
+											} else {
+												request.response().setStatusCode(500).end(result.toString());
+											}
+										}
+									});
 								}
 							});
 						} else {
