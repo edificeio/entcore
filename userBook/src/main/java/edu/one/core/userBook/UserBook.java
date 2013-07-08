@@ -32,7 +32,7 @@ public class UserBook extends Controller {
 						neo.send("START n=node(*),m=node(*) WHERE has(n.ENTPersonIdentifiant) "
 							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 							+ "CREATE UNIQUE (n)-[:USERBOOK]->(m)-[:PUBLIC]->(p {category:'"
-							+ jo.getString("code") + "', values:'[]'})");
+							+ jo.getString("code") + "', values:'testval_othertestval'})");
 					}
 				}
 				renderView(request, new JsonObject());

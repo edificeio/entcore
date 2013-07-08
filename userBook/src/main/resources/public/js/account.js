@@ -1,9 +1,20 @@
+var userId = location.search.split('id=')[1];
+
 var account = function(){
 
 	var personDataExtractor = function(d) {
-		return {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
+		var hobbies = [];
+		for (obj in d.result){
+			var vals = [];
+			for (val in obj["values"].split("_")){
+				vals.push({"value":val});
+			}
+			hobbies.push({"category":obj["category"],values:vals});
+		}
+		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
 			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
-			"motto":d.result[0]["motto"],list:_.values(d.result) };
+			"motto":d.result[0]["motto"],list:hobbies };
+		return jo;
 	};
 
 	var app = Object.create(oneApp);
@@ -24,7 +35,7 @@ var account = function(){
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span id="{{category}}" contenteditable="true">\
+				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}" contenteditable="true">\
 				{{value}}</span>{{/values}}<span>more</span></p>{{/list}}'
 		},
 		action : {
@@ -48,12 +59,19 @@ var account = function(){
 }();
 
 function manageEditable(){
-	console.log("hello");
-	$('#places').focus(function(){document.designMode = 'on';});
-	$('#places').blur(function(){document.designMode = 'off';console.log(this.innerHTML);});
+	$('span[contenteditable="true"]').focus(function(){document.designMode = 'on';});
+	$('span[contenteditable="true"]').blur(function(){
+		document.designMode = 'off';
+		var values = this.innerHTML;
+		for (val in this.siblings().innerHTML){
+			values += "_" + val;
+		}
+		account.action.editHobbies("/api/edit-hobbies?id=" + userId
+			+ "&category=" + this.attr("class") + "&values=" + values);
+	});
 }
 
 $(document).ready(function(){
 	account.init();
-	account.action.profile("/api/person?id=Vxxrg020130624161244358")
+	account.action.profile("/api/person?id=" + userId);
 });
