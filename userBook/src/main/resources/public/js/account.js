@@ -49,9 +49,8 @@ var account = function(){
 
 function manageEditable(){
 	console.log("hello");
-	var editable = document.getElementById('places');
-	editable.addEventListener("focus", function(){document.designMode = 'on';}, false);
-	editable.addEventListener("blur", function(){document.designMode = 'off'; console.log(this.innerHTML)}, false);
+	$('#places').focus(function(){document.designMode = 'on';});
+	$('#places').blur(function(){document.designMode = 'off';console.log(this.innerHTML);});
 }
 
 $(document).ready(function(){
