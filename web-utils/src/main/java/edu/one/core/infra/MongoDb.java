@@ -1,5 +1,10 @@
 package edu.one.core.infra;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -7,6 +12,7 @@ import org.vertx.java.core.json.JsonObject;
 
 public class MongoDb {
 
+	private static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm.ss.SSS";
 	private final EventBus eb;
 	private final String address;
 
@@ -175,6 +181,16 @@ public class MongoDb {
 		jo.putString("action", "collectionStats");
 		jo.putString("collection", collection);
 		eb.send(address, jo, callback);
+	}
+
+	public static String formatDate(Date date) {
+		DateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
+		return df.format(date);
+	}
+
+	public static Date parseDate(String date) throws ParseException {
+		DateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
+		return df.parse(date);
 	}
 
 }
