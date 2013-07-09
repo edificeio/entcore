@@ -66,12 +66,13 @@ public class UserBook extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("id")){
-					neo.send("START n=node(*),m=node(*), p=node(*) MATCH n-[r]->m, m-[s]->p "
-						+ "WHERE has(n.ENTPersonIdentifiant) AND type(r)<>'APPARTIENT' AND type(s)<>'APPARTIENT' "
+					neo.send("START n=node(*) "
+						+ "MATCH (n)-[r]->(m) "
+						+ "WHERE has(n.ENTPersonIdentifiant) "
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-						+ "RETURN n.ENTPersonNomAffichage as displayName, "
+						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto? as motto, "
-						+ "m.mood? as mood, m.health? as health, p.category? as category, p.values? as values;"
+						+ "m.mood? as mood, m.health? as health, m.category? as category, m.values? as values;"
 						,request.response());
 				}
 			}
@@ -94,7 +95,7 @@ public class UserBook extends Controller {
 				neo.send("START n=node(*), m=node(*) MATCH n-->m WHERE has(n.ENTPersonIdentifiant) "
 					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(m.category) "
 					+ "AND m.category='" + request.params().get("category") + "' "
-					+ "SET m.values='" + request.params().get("values"));
+					+ "SET m.values='" + request.params().get("values") + "'");
 			}
 		});
 

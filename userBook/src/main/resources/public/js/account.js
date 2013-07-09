@@ -4,12 +4,14 @@ var account = function(){
 
 	var personDataExtractor = function(d) {
 		var hobbies = [];
-		for (obj in d.result){
-			var vals = [];
-			for (val in obj["values"].split("_")){
-				vals.push({"value":val});
+		if (d.result[0].values !== ""){
+			for (obj in d.result){
+				var vals = [];
+				for (val in obj.values.split("_")){
+					vals.push({"value":obj.values.split("_")[val]});
+				}
+				hobbies.push({"category":obj["category"],values:vals});
 			}
-			hobbies.push({"category":obj["category"],values:vals});
 		}
 		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
 			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
@@ -45,6 +47,7 @@ var account = function(){
 			profile : function(url) {
 				$.get(url)
 				.done(function(data){
+					console.log(data);
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
 				})
@@ -72,16 +75,17 @@ function manageEditable(){
 	$('span[contenteditable="true"]').focus(function(){document.designMode = 'on';});
 	$('span[contenteditable="true"]').blur(function(){
 		document.designMode = 'off';
-		var values = this.innerHTML;
-		for (val in this.siblings().innerHTML){
-			values += "_" + val;
+		var values = "";
+		for (val in this.parentNode.children){
+			values += val.innerHTML + "_";
+
 		}
-		account.action.editHobbies("/api/edit-hobbies?id=" + userId
-			+ "&category=" + this.attr("class") + "&values=" + values);
+		account.action.editHobbies("/api/edit-hobbies?id=Vaojs020130709130703897"
+			+ "&category=" + this.classList[0] + "&values=" + values);
 	});
 }
 
 $(document).ready(function(){
 	account.init();
-	account.action.profile("/api/person?id=" + userId);
+	account.action.profile("/api/person?id=Vnzwx020130709163939432");
 });
