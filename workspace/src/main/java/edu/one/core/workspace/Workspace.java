@@ -3,6 +3,7 @@ package edu.one.core.workspace;
 import static edu.one.core.infra.Utils.getOrElse;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +15,9 @@ import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -48,10 +51,82 @@ public class Workspace extends Controller {
 
 		final String filesRepository = config.getString("files-repository");
 
+		JsonObject gridfsConf = container.config().getObject("gridfs-config");
+		container.deployModule("com.wse~gridfs-persistor~0.1.0-SNAPSHOT", gridfsConf);
+
+		final String filesRepository = config.getString("files-repository");
+
 		rm.get("/workspace", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request);
+      }
+    });
+
+		rm.post("/gridfs", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				request.uploadHandler(new Handler<HttpServerFileUpload>() {
+					@Override
+					public void handle(HttpServerFileUpload event) {
+						final Buffer buff = new Buffer();
+						event.dataHandler(new Handler<Buffer>() {
+							@Override
+							public void handle(Buffer event) {
+								buff.appendBuffer(event);
+							}
+						});
+						event.endHandler(new Handler<Void>() {
+							@Override
+							public void handle(Void event) {
+								JsonObject save = new JsonObject();
+								save.putString("action", "save");
+								byte [] header = null;
+								try {
+									header = save.toString().getBytes("UTF-8");
+								} catch (UnsupportedEncodingException e) {
+									log.error(e.getMessage(), e);
+								}
+								if (header != null) {
+									buff.appendBytes(header).appendInt(header.length);
+									vertx.eventBus().send("wse.gridfs.persistor", buff, new  Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> event) {
+											request.response().end(event.body().toString());
+										}
+									});
+								}
+							}
+						});
+					}
+				});
+			}
+		});
+
+		rm.get("/gridfs/:id", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest event) {
+				log.info("get gridfs file");
+				String id = event.params().get("id");
+				JsonObject find = new JsonObject();
+				find.putString("action", "findone");
+				find.putObject("query", new JsonObject("{ \"_id\": \"" + id + "\"}"));
+				byte [] header = null;
+				try {
+					header = find.toString().getBytes("UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					log.error(e.getMessage());
+				}
+				if (header != null) {
+					Buffer buf = new Buffer(header);
+					buf.appendInt(header.length);
+				vertx.eventBus().send("wse.gridfs.persistor", buf, new  Handler<Message<Buffer>>() {
+					@Override
+					public void handle(Message<Buffer> res) {
+						event.response().end(res.body());
+					}
+				});
+				}
 			}
 		});
 
