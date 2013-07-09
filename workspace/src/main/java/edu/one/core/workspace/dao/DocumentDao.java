@@ -38,4 +38,42 @@ public class DocumentDao {
 		});
 	}
 
+	public void update(String id, JsonObject obj, final Handler<JsonObject> handler) {
+		mongo.update(DOCUMENTS_COLLECTION, idMatcher(id), obj, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonObject r = res.body();
+				if (r == null) {
+					r = new JsonObject();
+				}
+				handler.handle(r);
+			}
+		});
+	}
+
+	public void save(JsonObject document, final Handler<JsonObject> handler) {
+		mongo.save(DOCUMENTS_COLLECTION, document, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonObject r = res.body();
+				if (r == null) {
+					r = new JsonObject();
+				}
+				handler.handle(r);
+			}
+		});
+	}
+
+	public void find(JsonObject query, final Handler<JsonObject> handler) {
+		mongo.find(DOCUMENTS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonObject r = res.body();
+				if (r == null) {
+					r = new JsonObject();
+				}
+				handler.handle(r);
+			}
+		});
+	}
 }
