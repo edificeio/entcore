@@ -138,6 +138,19 @@ public class MongoDb {
 		eb.send(address, jo, callback);
 	}
 
+	public void distinct(String collection, String key, JsonObject matcher, Handler<Message<JsonObject>> callback) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "distinct");
+		jo.putString("collection", collection);
+		jo.putString("key", key);
+		jo.putObject("matcher", matcher);
+		eb.send(address, jo, callback);
+	}
+
+	public void distinct(String collection, String key, Handler<Message<JsonObject>> callback) {
+		distinct(collection, key, null, callback);
+	}
+
 	public void delete(String collection, JsonObject matcher, WriteConcern writeConcern,
 			Handler<Message<JsonObject>> callback) {
 		JsonObject jo = new JsonObject();
