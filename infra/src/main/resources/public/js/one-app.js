@@ -4,8 +4,8 @@ var oneApp = {
 		var that = this;
 		that.i18n.load();
 		$('body').delegate(that.scope, 'click',function(event) {
-			event.preventDefault();
 			if (!event.target.getAttribute('call')) return;
+			event.preventDefault();
 			var call = event.target.getAttribute('call');
 			that.action[call]({url : event.target.getAttribute('href'), target: event.target});
 		});
