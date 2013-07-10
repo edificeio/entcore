@@ -103,11 +103,11 @@ public class UserBook extends Controller {
 		rm.get("/api/set-visibility", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				neo.send("START r=relationship(*), s=relationship(*) MATCH (n)-[r]->(m),(m)-[s]->(p) "
+				neo.send("START r=relationship(*) MATCH (n)-[r]->(m),(m)-[s]->(p) "
 					+ "WHERE type(r)='USERBOOK' AND HAS (n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='"
 					+ request.params().get("id") + "' AND p.category='"+ request.params().get("category")
 					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
-					+ "RETURN n,r,m,j,p;");
+					+ "RETURN n,r,m,j,p");
 			}
 		});
 	}

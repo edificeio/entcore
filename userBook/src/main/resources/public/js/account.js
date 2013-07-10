@@ -11,7 +11,11 @@ var account = function(){
 				for (val in d.result[obj].values.split("_")){
 					vals.push({"value":d.result[obj].values.split("_")[val]});
 				}
-				hobbies.push({"category":obj["category"],values:vals});
+				hobbies.push({
+					"category":d.result[obj].category,
+					values:vals, 
+					"visibility":d.result[obj].relation.split(",")[1].slice(0,-1).trim()
+				});
 			}
 			if (d.result[obj].mood !== ""){
 				jo['mood'] = d.result[obj].mood;
@@ -42,10 +46,11 @@ var account = function(){
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
 				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}" contenteditable="true">\
-				{{value}}</span>{{/values}}<span>more</span></p>\
-				<form method="GET" action="/api/set-visibility" id="visible">\
-				<select><option>public</option><option>private</option>\
-				<input type="submit" value="ok" call="setVisibility"/></form>{{/list}}'
+				{{value}}</span>{{/values}}</p>\
+				<form method="GET" action="/api/set-visibility?&category={{category}}" id="visibility-form">\
+				<select id="visible"><option>PUBLIC</option><option>PRIVE</option>\
+				<input type="submit" value="ok" call="setVisibility"/></form>\
+				CURRENT : <span id="current-visibility">{{visibility}}</span>{{/list}}'
 		},
 		action : {
 			profile : function(url) {
@@ -63,7 +68,10 @@ var account = function(){
 				})
 			},
 			setVisibility : function(o){
-				$.get(o.url)
+				var url = o.target.form.action + '&value=' + $('#visible').val()
+					+ '&id=Vjsrc020130710175022472';
+				$('#current-visibility').html = $('#visible').val();
+				$.get(url)
 				.done(function(data){
 					console.log(data);
 					app.notify.info("modif ok");
