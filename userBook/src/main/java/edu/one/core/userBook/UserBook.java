@@ -93,10 +93,10 @@ public class UserBook extends Controller {
 		rm.get("/api/edit-hobbies", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				neo.send("START n=node(*), m=node(*) MATCH n-->m WHERE has(n.ENTPersonIdentifiant) "
-					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(m.category) "
-					+ "AND m.category='" + request.params().get("category") + "' "
-					+ "SET m.values='" + request.params().get("values") + "'");
+				neo.send("START n=node(*) MATCH (n)-[USERBOOK]->(m),(m)-->(p) WHERE has(n.ENTPersonIdentifiant) "
+					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(p.category) "
+					+ "AND p.category='" + request.params().get("category") + "' "
+					+ "SET p.values='" + request.params().get("values") + "'");
 			}
 		});
 

@@ -3,24 +3,28 @@ var userId = location.search.split('id=')[1];
 var account = function(){
 
 	var personDataExtractor = function(d) {
+		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
 		var hobbies = [];
-		if (d.result[0].values !== ""){
-			for (obj in d.result){
+		for (obj in d.result){
+			if (d.result[obj].category !== ""){
 				var vals = [];
-				for (val in obj.values.split("_")){
-					vals.push({"value":obj.values.split("_")[val]});
+				for (val in d.result[obj].values.split("_")){
+					vals.push({"value":d.result[obj].values.split("_")[val]});
 				}
 				hobbies.push({"category":obj["category"],values:vals});
 			}
+			if (d.result[obj].mood !== ""){
+				jo['mood'] = d.result[obj].mood;
+				jo['health'] = d.result[obj].health;
+				jo['motto'] = d.result[obj].motto;
+			}
 		}
-		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
-			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
-			"motto":d.result[0]["motto"],list:hobbies };
+		jo['list'] = hobbies;
 		return jo;
 	};
 
 	var app = Object.create(oneApp);
-	app.scope = "#userBook";
+	app.scope = "#person";
 	app.define ({
 		template : {
 			personne: '\
@@ -47,7 +51,6 @@ var account = function(){
 			profile : function(url) {
 				$.get(url)
 				.done(function(data){
-					console.log(data);
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
 				})
@@ -76,9 +79,11 @@ function manageEditable(){
 	$('span[contenteditable="true"]').blur(function(){
 		document.designMode = 'off';
 		var values = "";
-		for (val in this.parentNode.children){
-			values += val.innerHTML + "_";
-
+		var siblings = this.parentNode.childNodes;
+		for (val in siblings){
+			if (typeof(siblings[val]) === "object"){
+				values += siblings[val].innerHTML + "_";
+			}
 		}
 		account.action.editHobbies("/api/edit-hobbies?id=Vaojs020130709130703897"
 			+ "&category=" + this.classList[0] + "&values=" + values);
