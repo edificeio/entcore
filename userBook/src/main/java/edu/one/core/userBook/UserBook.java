@@ -25,14 +25,15 @@ public class UserBook extends Controller {
 				if (request.params().contains("id")){
 					neo.send("START n=node(*) WHERE has(n.ENTPersonIdentifiant) "
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-						+ "CREATE UNIQUE (n)-[:USERBOOK]->(m {picture:'" + userBookData.getString("picture") + "',"
-						+ "motto:'', health:'', mood:'default'})");
+						+ "CREATE (m {userId:'" + request.params().get("id") + "', "
+						+ "picture:'" + userBookData.getString("picture") + "',"
+						+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
 					for (Object hobby : hobbies) {
 						JsonObject jo = (JsonObject)hobby;
-						neo.send("START n=node(*),m=node(*) WHERE has(n.ENTPersonIdentifiant) "
+						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonIdentifiant) "
 							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-							+ "CREATE UNIQUE (n)-[:USERBOOK]->(m)-[:PUBLIC]->(p {category:'"
-							+ jo.getString("code") + "', values:'testval_othertestval'})");
+							+ "AND type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code") 
+							+ "', values:'testval_othertestval'}), m-[:PUBLIC]->p");
 					}
 				}
 				renderView(request, new JsonObject());
