@@ -15,6 +15,7 @@ import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
@@ -99,12 +100,30 @@ public abstract class Controller extends Verticle {
 		}
 	}
 
-	public void renderError(HttpServerRequest request) {
+	public void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
-		request.response().end();
+		if (error != null) {
+			request.response().end(error.encode());
+		} else {
+			request.response().end();
+		}
+	}
+
+	public void renderError(HttpServerRequest request) {
+		renderError(request, null);
+	}
+
+	public void renderJson(HttpServerRequest request, JsonObject jo, int status) {
+		request.response().putHeader("content-type", "text/json");
+		request.response().setStatusCode(status);
+		request.response().end(jo.encode());
 	}
 
 	public void renderJson(HttpServerRequest request, JsonObject jo) {
+		renderJson(request, jo, 200);
+	}
+
+	public void renderJson(HttpServerRequest request, JsonArray jo) {
 		request.response().putHeader("content-type", "text/json");
 		request.response().end(jo.encode());
 	}
