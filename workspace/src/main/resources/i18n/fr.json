@@ -1,3 +1,17 @@
 {
-	"workspace.title": "Espace de travail"
+	"workspace.title": "Espace de travail",
+	"workspace.header": "Espace de travail",
+	"workspace.documents" : "Documents",
+	"workspace.rack" : "Casier",
+	"workspace.add.document" : "Ajouter un document",
+	"workspace.send.rack" : "Envoyer un document",
+	"workspace.move.trash" : "Déplacer dans la corbeille",
+	"workspace.move" : "Déplacer",
+	"workspace.copy" : "Copier",
+	"workspace.trash" : "Corbeille",
+	"workspace.document.name" : "Nom du document",
+	"workspace.document.file" : "Fichier",
+	"workspace.rack.name" : "Nom du document",
+	"workspace.rack.file" : "Fichier",
+	"workspace.rack.to" : "Destinataire"
 }

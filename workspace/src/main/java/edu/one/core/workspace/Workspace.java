@@ -44,6 +44,13 @@ public class Workspace extends Controller {
 
 		final String filesRepository = config.getString("files-repository");
 
+		rm.get("/workspace", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(HttpServerRequest request) {
+				renderView(request);
+			}
+		});
+
 		rm.post("/document", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
@@ -63,9 +70,9 @@ public class Workspace extends Controller {
 							@Override
 							public void handle(Message<JsonObject> res) {
 								if ("ok".equals(res.body().getString("status"))) {
-									request.response().setStatusCode(201).end(res.body().toString());
+									renderJson(request, res.body(), 201);
 								} else {
-									request.response().setStatusCode(500).end(res.body().toString());
+									renderError(request, res.body());
 								}
 							}
 						});
@@ -83,7 +90,9 @@ public class Workspace extends Controller {
 						String status = res.getString("status");
 						JsonObject result = res.getObject("result");
 						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							request.response().sendFile(result.getString("file"));
+							request.response().putHeader("Content-Disposition" , "attachment; filename=" +
+									result.getString("name"))
+								.sendFile(result.getString("file"));
 						} else {
 							request.response().setStatusCode(404).end();
 						}
@@ -124,12 +133,11 @@ public class Workspace extends Controller {
 														new Handler<AsyncResult<Void>>() {
 													@Override
 													public void handle(AsyncResult<Void> event) {
-														request.response().setStatusCode(200)
-															.end(res.body().toString());
+														renderJson(request, res.body());
 													}
 												});
 											} else {
-												request.response().setStatusCode(500).end(res.body().toString());
+												renderError(request, res.body());
 											}
 										}
 									});
@@ -160,9 +168,9 @@ public class Workspace extends Controller {
 										@Override
 										public void handle(JsonObject result) {
 											if ("ok".equals(result.getString("status"))) {
-												request.response().setStatusCode(204).end(result.toString());
+												renderJson(request, result, 204);
 											} else {
-												request.response().setStatusCode(500).end(result.toString());
+												renderError(request, result);
 											}
 										}
 									});
@@ -186,9 +194,9 @@ public class Workspace extends Controller {
 						String status = res.body().getString("status");
 						JsonArray results = res.body().getArray("results");
 						if ("ok".equals(status) && results != null) {
-							request.response().end(results.encode());
+							renderJson(request, results);
 						} else {
-							request.response().end("[]");
+							renderJson(request, new JsonArray());
 						}
 					}
 				});
@@ -206,9 +214,9 @@ public class Workspace extends Controller {
 						String status = res.body().getString("status");
 						JsonArray results = res.body().getArray("results");
 						if ("ok".equals(status) && results != null) {
-							request.response().end(results.encode());
+							renderJson(request, results);
 						} else {
-							request.response().end("[]");
+							renderJson(request, new JsonArray());
 						}
 					}
 				});
@@ -224,9 +232,9 @@ public class Workspace extends Controller {
 					@Override
 					public void handle(JsonObject res) {
 						if ("ok".equals(res.getString("status"))) {
-							request.response().end(res.toString());
+							renderJson(request, res);
 						} else {
-							request.response().setStatusCode(404).end(res.toString());
+							renderJson(request, res, 404);
 						}
 					}
 				});
@@ -242,9 +250,9 @@ public class Workspace extends Controller {
 					@Override
 					public void handle(JsonObject res) {
 						if ("ok".equals(res.getString("status"))) {
-							request.response().end(res.toString());
+							renderJson(request, res);
 						} else {
-							request.response().setStatusCode(404).end(res.toString());
+							renderJson(request, res, 404);
 						}
 					}
 				});
@@ -279,7 +287,7 @@ public class Workspace extends Controller {
 								persist(dest);
 							}
 						} else {
-							request.response().setStatusCode(404).end(src.toString());
+							renderJson(request, src, 404);
 						}
 					}
 
@@ -288,9 +296,9 @@ public class Workspace extends Controller {
 							@Override
 							public void handle(JsonObject res) {
 								if ("ok".equals(res.getString("status"))) {
-									request.response().end(res.toString());
+									renderJson(request, res);
 								} else {
-									request.response().setStatusCode(500).end(res.toString());
+									renderError(request, res);
 								}
 							}
 						});
@@ -308,9 +316,9 @@ public class Workspace extends Controller {
 					public void handle(Message<JsonObject> res) {
 						if ("ok".equals(res.body().getString("status"))) {
 							JsonArray values = res.body().getArray("values", new JsonArray("[]"));
-							request.response().end(values.encode());
+							renderJson(request, values);
 						} else {
-							request.response().end("[]");
+							renderJson(request, new JsonArray());
 						}
 					}
 				});
@@ -337,9 +345,9 @@ public class Workspace extends Controller {
 							@Override
 							public void handle(Message<JsonObject> res) {
 								if ("ok".equals(res.body().getString("status"))) {
-									request.response().setStatusCode(201).end(res.body().toString());
+									renderJson(request, res.body(), 201);
 								} else {
-									request.response().setStatusCode(500).end(res.body().toString());
+									renderError(request, res.body());
 								}
 							}
 						});
@@ -359,9 +367,9 @@ public class Workspace extends Controller {
 						String status = res.body().getString("status");
 						JsonArray results = res.body().getArray("results");
 						if ("ok".equals(status) && results != null) {
-							request.response().end(results.encode());
+							renderJson(request, results);
 						} else {
-							request.response().end("[]");
+							renderJson(request, new JsonArray());
 						}
 					}
 				});
@@ -377,7 +385,8 @@ public class Workspace extends Controller {
 						String status = res.getString("status");
 						JsonObject result = res.getObject("result");
 						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							request.response().sendFile(result.getString("file"));
+							request.response().putHeader("Content-Disposition" , "attachment; filename=" +
+									result.getString("name")).sendFile(result.getString("file"));
 						} else {
 							request.response().setStatusCode(404).end();
 						}
@@ -403,9 +412,9 @@ public class Workspace extends Controller {
 										@Override
 										public void handle(JsonObject result) {
 											if ("ok".equals(result.getString("status"))) {
-												request.response().setStatusCode(204).end(result.toString());
+												renderJson(request, result, 204);
 											} else {
-												request.response().setStatusCode(500).end(result.toString());
+												renderError(request, result);
 											}
 										}
 									});
@@ -449,7 +458,7 @@ public class Workspace extends Controller {
 								persist(dest);
 							}
 						} else {
-							request.response().setStatusCode(404).end(src.toString());
+							renderJson(request, src, 404);
 						}
 					}
 
@@ -458,9 +467,9 @@ public class Workspace extends Controller {
 							@Override
 							public void handle(JsonObject res) {
 								if ("ok".equals(res.getString("status"))) {
-									request.response().end(res.toString());
+									renderJson(request, res);
 								} else {
-									request.response().setStatusCode(500).end(res.toString());
+									renderError(request, res);
 								}
 							}
 						});
@@ -479,9 +488,9 @@ public class Workspace extends Controller {
 					@Override
 					public void handle(JsonObject res) {
 						if ("ok".equals(res.getString("status"))) {
-							request.response().end(res.toString());
+							renderJson(request, res);
 						} else {
-							request.response().setStatusCode(404).end(res.toString());
+							renderJson(request, res, 404);
 						}
 					}
 				});

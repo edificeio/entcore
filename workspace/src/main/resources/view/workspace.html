@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}workspace.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#static}}css/workspace.css{{/static}}" media="all" />
+
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<header>
+			<h1>{{#i18n}}workspace.header{{/i18n}}</h1>
+		</header>
+		<section id="main">
+			<div class="workspace">
+				<nav class="left">
+					<ul>
+						<li><a call="documents" href="/documents">{{#i18n}}workspace.documents{{/i18n}}</a></li>
+						<li><a call="rack" href="/rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a></li>
+						<li><a call="trash" href="/documents/Trash">{{#i18n}}workspace.trash{{/i18n}}</a></li>
+						<li><a call="addDocument" href="/document">{{#i18n}}workspace.add.document{{/i18n}}</a></li>
+						<li><a call="sendRack" href="/rack">{{#i18n}}workspace.send.rack{{/i18n}}</a></li>
+					</ul>
+				</nav>
+				<div class="mod">
+					<div id="list"></div>
+					<div id="form-window"></div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>
