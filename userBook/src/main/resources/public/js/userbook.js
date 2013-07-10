@@ -2,9 +2,24 @@ var userbook = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 	var personDataExtractor = function(d) {
-		return {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
-			"health":d.result[0]["health"],"mood":d.result[0]["mood"],
-			"motto":d.result[0]["motto"],list:_.values(d.result) };
+		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
+		var hobbies = [];
+		for (obj in d.result){
+			if (d.result[obj].category !== ""){
+				var vals = [];
+				for (val in d.result[obj].values.split("_")){
+					vals.push({"value":d.result[obj].values.split("_")[val]});
+				}
+				hobbies.push({"category":d.result[obj].category,values:vals});
+			}
+			if (d.result[obj].mood !== ""){
+				jo['mood'] = d.result[obj].mood;
+				jo['health'] = d.result[obj].health;
+				jo['motto'] = d.result[obj].motto;
+			}
+		}
+		jo['list'] = hobbies;
+		return jo;
 	};
 
 	var app = Object.create(oneApp);
@@ -28,13 +43,14 @@ var userbook = function(){
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
-				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
+				{{#i18n}}userBook.class.write-message{{/i18n}}\
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
-				<div class="clear"></div><img src="/public/img/files.png" alt="files"/>\
-				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
-				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
+				<img src="/public/img/files.png" alt="files"/>\
+				{{#i18n}}userBook.class.see-portfolio{{/i18n}}</span>\
+				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p>{{value}}</p>{{/list}}'
+				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}">\
+				{{value}}</span>{{/values}}</p>{{/list}}'
 		},
 		action : {
 			search : function(o){

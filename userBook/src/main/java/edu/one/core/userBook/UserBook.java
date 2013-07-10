@@ -51,14 +51,14 @@ public class UserBook extends Controller {
 			public void handle(HttpServerRequest request) {
 				String neoRequest = "START n=node(*) ";
 				if (request.params().contains("name")){
-					neoRequest += ", m=node(*) MATCH n-[USERBOOK]->m WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage=~'" + request.params().get("name").substring(0,3) + ".*' AND has(m.motto)";
+					neoRequest += " MATCH (n)-[r*]->(m) WHERE has(n.ENTPersonNomAffichage) "
+						+ "AND n.ENTPersonNomAffichage=~'" + request.params().get("name").substring(0,3) + ".*'";
 				} else if (request.params().contains("class")){
 					neoRequest += "m=node(*) MATCH m<-[APPARTIENT]-n WHERE has(n.type) "
 						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "'";
 				}
 				neoRequest += " RETURN distinct n.ENTPersonIdentifiant as id, "
-					+ "n.ENTPersonNomAffichage as displayName, m.mood as mood";
+					+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood";
 				neo.send(neoRequest, request.response());
 			}
 		});
@@ -66,13 +66,13 @@ public class UserBook extends Controller {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("id")){
-					neo.send("START n=node(*) "
-						+ "MATCH (n)-[r]->(m) "
+					neo.send("START n=node(*) MATCH (n)-[r*]->(m) "
 						+ "WHERE has(n.ENTPersonIdentifiant) "
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonAdresse as address, m.motto? as motto, "
-						+ "m.mood? as mood, m.health? as health, m.category? as category, m.values? as values;"
+						+ "m.mood? as mood, m.health? as health, m.category? as category, "
+						+ "m.values? as values, EXTRACT(rel in r: type(rel)) as relation;"
 						,request.response());
 				}
 			}
