@@ -4,6 +4,8 @@ import static edu.one.core.infra.Utils.getOrElse;
 
 import java.io.File;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.vertx.java.core.AsyncResult;
@@ -206,8 +208,14 @@ public class Workspace extends Controller {
 		rm.get("/documents/:folder", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
-				String query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : \"" +
-					request.params().get("folder") + "\" }";
+				String query = null;
+				String expectedFolder = request.params().get("folder");
+				if (request.params().get("hierarchical") != null) {
+					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : \"" + expectedFolder + "\" }";
+				} else {
+					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : { \"$regex\" : \"^" +
+							expectedFolder + "(_|$)\" }}";
+				}
 				mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
@@ -311,12 +319,34 @@ public class Workspace extends Controller {
 		rm.get("/folders", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
-				mongo.distinct(DocumentDao.DOCUMENTS_COLLECTION, "folder", new Handler<Message<JsonObject>>() {
+				final String hierarchical = request.params().get("hierarchical");
+				String relativePath = request.params().get("relativePath");
+				String query = null;
+				if (relativePath != null) {
+					query = "{ \"folder\" : { \"$regex\" : \"^" + relativePath + "(_|$)\" }}";
+				} else {
+					query = "{}";
+				}
+				mongo.distinct(DocumentDao.DOCUMENTS_COLLECTION, "folder", new JsonObject(query),
+						new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
 						if ("ok".equals(res.body().getString("status"))) {
 							JsonArray values = res.body().getArray("values", new JsonArray("[]"));
-							renderJson(request, values);
+							JsonArray out = values;
+							if (hierarchical != null) {
+								Set<String> folders = new HashSet<String>();
+								for (Object value: values) {
+									String v = (String) value;
+									if (v != null && v.contains("_")) {
+										folders.add(v.substring(0, v.indexOf("_")));
+									} else {
+										folders.add(v);
+									}
+								}
+								out = new JsonArray(folders.toArray());
+							}
+							renderJson(request, out);
 						} else {
 							renderJson(request, new JsonArray());
 						}
