@@ -69,7 +69,7 @@ var account = function(){
 			},
 			setVisibility : function(o){
 				var url = o.target.form.action + '&value=' + $('#visible').val()
-					+ '&id=Vjsrc020130710175022472';
+					+ '&id=' + userId;
 				$('#current-visibility').html = $('#visible').val();
 				$.get(url)
 				.done(function(data){
@@ -93,12 +93,12 @@ function manageEditable(){
 				values += siblings[val].innerHTML + "_";
 			}
 		}
-		account.action.editHobbies("/api/edit-hobbies?id=Vaojs020130709130703897"
+		account.action.editHobbies("/api/edit-hobbies?id=" + userId
 			+ "&category=" + this.classList[0] + "&values=" + values);
 	});
 }
 
 $(document).ready(function(){
 	account.init();
-	account.action.profile("/api/person?id=Vnzwx020130709163939432");
+	account.action.profile("/api/person?id=" + userId);
 });

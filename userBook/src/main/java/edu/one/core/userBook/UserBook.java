@@ -22,21 +22,25 @@ public class UserBook extends Controller {
 		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				if (request.params().contains("id")){
-					neo.send("START n=node(*) WHERE has(n.ENTPersonIdentifiant) "
-						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-						+ "CREATE (m {userId:'" + request.params().get("id") + "', "
+				if (request.params().contains("init")){
+					neo.send("START n=node(*) WHERE has(n.ENTPersonNomAffichage) "
+						+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
+						+ "CREATE (m {userId:'" + request.params().get("init") + "', "
 						+ "picture:'" + userBookData.getString("picture") + "',"
 						+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
 					for (Object hobby : hobbies) {
 						JsonObject jo = (JsonObject)hobby;
-						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonIdentifiant) "
-							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonNomAffichage) "
+							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "AND type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code") 
 							+ "', values:'testval_othertestval'}), m-[:PUBLIC]->p");
 					}
+					neo.send("START n=node(*) WHERE has(n.ENTPersonNomAffichage) "
+							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
+							+ "RETURN n.ENTPersonIdentifiant",request.response());
+				} else if (request.params().contains("id")){
+					renderView(request);
 				}
-				renderView(request, new JsonObject());
 			}
 		});
 
