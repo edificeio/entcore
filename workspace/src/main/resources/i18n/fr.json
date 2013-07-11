@@ -13,5 +13,7 @@
 	"workspace.document.file" : "Fichier",
 	"workspace.rack.name" : "Nom du document",
 	"workspace.rack.file" : "Fichier",
-	"workspace.rack.to" : "Destinataire"
+	"workspace.rack.to" : "Destinataire",
+	"workspace.select.all" : "Tous",
+	"workspace.unselect.all" : "Aucun"
 }

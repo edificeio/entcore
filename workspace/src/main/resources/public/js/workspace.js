@@ -6,19 +6,32 @@ var workspace = function(){
 			documents : '<table class="striped alternate" summary="">\
 							<thead>\
 								<tr>\
+									<th scope="col">\
+										<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
+										<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+									</th>\
 									<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 									<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 									<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 								</tr>\
 							</thead>\
 							<tbody>\
-								{{#.}}\
+								{{#folders}}\
 								<tr>\
+									<td></td>\
+									<td>folder-icon</td>\
+									<td><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></td>\
+									<td></td>\
+								</tr>\
+								{{/folders}}\
+								{{#documents}}\
+								<tr>\
+									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
 									<td>{{modified}}</td>\
 								</tr>\
-								{{/.}}\
+								{{/documents}}\
 							</tbody>\
 						</table>',
 
@@ -85,8 +98,25 @@ var workspace = function(){
 		},
 		action : {
 			documents : function (o) {
+				var relativePath = undefined,
+					that = this,
+					directories;
 				$.get(o.url).done(function(response){
-					$('#list').html(app.template.render("documents", response));
+					if (o.url.match(/^\/documents\/.*?/g)) {
+						relativePath = o.url.substring(o.url.indexOf("/", 10) + 1, o.url.lastIndexOf("?"));
+					}
+					that.getFolders(o.url.indexOf("hierarchical=true") != -1, relativePath, function(data) {
+						directories = _.filter(data, function(dir) {
+							return dir !== relativePath && dir !== "Trash";
+						});
+						directories = _.map(directories, function(dir) {
+							if (dir.indexOf("_") !== -1) {
+								return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
+							}
+							return { name : dir, path : dir };
+						});
+						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
+					});
 				});
 			},
 
@@ -128,7 +158,45 @@ var workspace = function(){
 				}).done(function(data) {
 					location.reload(true);
 				}).error(function(data) {app.notify.error(data)});
+			},
+
+			getFolders : function(hierarchical, relativePath, action) {
+				var url = "/folders?";
+				if (hierarchical === true) {
+					url += "hierarchical=true&";
+				}
+				if (typeof relativePath != 'undefined') {
+					url += "relativePath=" + relativePath;
+				}
+				$.get(url)
+				.done(action)
+				.error(function(data) {app.notify.error(data)});
+			},
+
+			allCheckbox : function(o) {
+				var selected = o.url;
+				$(":checkbox").each(function() {
+					this.checked = selected;
+				});
+			},
+
+			moveTrash : function(o) {
+				var files = [];
+				$(":checkbox:checked").each(function(i) {
+					var obj = $(this);
+					$.ajax({
+						url : "/document/trash/" + obj.val(),
+						type: "PUT",
+						success: function() {
+							obj.parents("tr").remove();
+						},
+						error: function(data) {
+							app.notify.error(data);
+						}
+					});
+				});
 			}
+
 		}
 	});
 	return app;
@@ -136,4 +204,13 @@ var workspace = function(){
 
 $(document).ready(function(){
 	workspace.init();
+	workspace.action.documents({url : "/documents?hierarchical=true"});
+	workspace.action.getFolders(true, undefined, function(data) {
+		var html = "";
+		for (var i = 0; i < data.length; i++) {
+			if (data[i] === "Trash") continue;
+			html += '<a call="documents" href="/documents/' + data[i] + '">' + data[i] + "<br />";
+		}
+		$("#base-folders").html(html);
+	});
 });
