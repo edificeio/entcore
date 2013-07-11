@@ -189,7 +189,12 @@ public class Workspace extends Controller {
 		rm.get("/documents", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
-				String query = "{ \"file\" : { \"$exists\" : true }}";
+				String query = null;
+				if (request.params().get("hierarchical") != null) {
+					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : { \"$exists\" : false }}";
+				} else {
+					query = "{ \"file\" : { \"$exists\" : true }}";
+				}
 				mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
@@ -320,7 +325,7 @@ public class Workspace extends Controller {
 			@Override
 			public void handle(final HttpServerRequest request) {
 				final String hierarchical = request.params().get("hierarchical");
-				String relativePath = request.params().get("relativePath");
+				final String relativePath = request.params().get("relativePath");
 				String query = null;
 				if (relativePath != null) {
 					query = "{ \"folder\" : { \"$regex\" : \"^" + relativePath + "(_|$)\" }}";
@@ -338,10 +343,20 @@ public class Workspace extends Controller {
 								Set<String> folders = new HashSet<String>();
 								for (Object value: values) {
 									String v = (String) value;
-									if (v != null && v.contains("_")) {
-										folders.add(v.substring(0, v.indexOf("_")));
+									if (relativePath != null) {
+										if (v != null && v.contains("_") &&
+												v.indexOf("_", relativePath.length() + 1) != -1 &&
+												v.substring(v.indexOf("_", relativePath.length() + 1)).contains("_")) {
+											folders.add(v.substring(0, v.indexOf("_", relativePath.length() + 1)));
+										} else {
+											folders.add(v);
+										}
 									} else {
-										folders.add(v);
+										if (v != null && v.contains("_")) {
+											folders.add(v.substring(0, v.indexOf("_")));
+										} else {
+											folders.add(v);
+										}
 									}
 								}
 								out = new JsonArray(folders.toArray());
