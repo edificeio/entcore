@@ -13,6 +13,7 @@ var workspace = function(){
 									<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 									<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 									<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
+									<th scope="col"></th>\
 								</tr>\
 							</thead>\
 							<tbody>\
@@ -22,6 +23,7 @@ var workspace = function(){
 									<td>folder-icon</td>\
 									<td><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></td>\
 									<td></td>\
+									<td></td>\
 								</tr>\
 								{{/folders}}\
 								{{#documents}}\
@@ -30,6 +32,19 @@ var workspace = function(){
 									<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
 									<td>{{modified}}</td>\
+									<td>\
+										<a call="comment" href="{{_id}}">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+										<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
+									</td>\
+								</tr>\
+								<tr class="comments{{_id}} hidden">\
+									<td colspan="5">\
+										<ul>\
+										{{#comments}}\
+											<li>{{author}} - {{posted}} - <span>{{comment}}</span></li>\
+										{{/comments}}\
+										</ul>\
+									</td>\
 								</tr>\
 								{{/documents}}\
 							</tbody>\
@@ -95,6 +110,11 @@ var workspace = function(){
 						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 						</form>',
 
+			comment : '<form method="post" action="/document/{{id}}/comment">\
+							<label>{{#i18n}}workspace.commentaire{{/i18n}}</label>\
+							<textarea name="comment"></textarea>\
+							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
+						</form>',
 		},
 		action : {
 			documents : function (o) {
@@ -195,6 +215,27 @@ var workspace = function(){
 						}
 					});
 				});
+			},
+
+			comment : function(o) {
+				$('#form-window').html(app.template.render("comment", { id : o.url }));
+			},
+
+			sendComment : function(o) {
+				var form = $(o.target).parents("form"),
+					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
+				console.log(data);
+				$.post(form.attr("action"), data)
+				.done(function (data) {
+					location.reload(true);
+				})
+				.error(function (data) {
+					app.notify.error(data);
+				});
+			},
+
+			toggleComment : function(o) {
+				$(o.url).toggleClass("hidden");
 			}
 
 		}

@@ -15,5 +15,7 @@
 	"workspace.rack.file" : "Fichier",
 	"workspace.rack.to" : "Destinataire",
 	"workspace.select.all" : "Tous",
-	"workspace.unselect.all" : "Aucun"
+	"workspace.unselect.all" : "Aucun",
+	"workspace.document.comment" : "Ajouter un commentaire",
+	"workspace.document.comment.toggle" : "Afficher/Masquer les commentaires"
 }
