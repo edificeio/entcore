@@ -100,6 +100,10 @@ public abstract class Controller extends Verticle {
 		}
 	}
 
+	public void badRequest(HttpServerRequest request) {
+		request.response().setStatusCode(400).end();
+	}
+
 	public void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
 		if (error != null) {
