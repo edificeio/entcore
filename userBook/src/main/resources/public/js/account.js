@@ -7,13 +7,9 @@ var account = function(){
 		var hobbies = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
-				var vals = [];
-				for (val in d.result[obj].values.split("_")){
-					vals.push({"value":d.result[obj].values.split("_")[val]});
-				}
 				hobbies.push({
 					"category":d.result[obj].category,
-					values:vals, 
+					"values":d.result[obj].values,
 					"visibility":d.result[obj].relation.split(",")[1].slice(0,-1).trim()
 				});
 			}
@@ -45,8 +41,8 @@ var account = function(){
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}" contenteditable="true">\
-				{{value}}</span>{{/values}}</p>\
+				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}" contenteditable="true">\
+				{{values}}</span></p>\
 				<form method="GET" action="/api/set-visibility?&category={{category}}" id="visibility-form">\
 				<select id="visible"><option>PUBLIC</option><option>PRIVE</option>\
 				<input type="submit" value="ok" call="setVisibility"/></form>\
@@ -86,15 +82,8 @@ function manageEditable(){
 	$('span[contenteditable="true"]').focus(function(){document.designMode = 'on';});
 	$('span[contenteditable="true"]').blur(function(){
 		document.designMode = 'off';
-		var values = "";
-		var siblings = this.parentNode.childNodes;
-		for (val in siblings){
-			if (typeof(siblings[val]) === "object"){
-				values += siblings[val].innerHTML + "_";
-			}
-		}
 		account.action.editHobbies("/api/edit-hobbies?id=" + userId
-			+ "&category=" + this.classList[0] + "&values=" + values);
+			+ "&category=" + this.classList[0] + "&values=" + this.innerHTML);
 	});
 }
 

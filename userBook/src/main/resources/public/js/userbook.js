@@ -6,11 +6,7 @@ var userbook = function(){
 		var hobbies = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
-				var vals = [];
-				for (val in d.result[obj].values.split("_")){
-					vals.push({"value":d.result[obj].values.split("_")[val]});
-				}
-				hobbies.push({"category":d.result[obj].category,values:vals});
+				hobbies.push({"category":d.result[obj].category,"values":d.result[obj].values});
 			}
 			if (d.result[obj].mood !== ""){
 				jo['mood'] = d.result[obj].mood;
@@ -49,8 +45,8 @@ var userbook = function(){
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}</span>\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p>{{#values}}<span class="{{category}}">\
-				{{value}}</span>{{/values}}</p>{{/list}}'
+				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}">\
+				{{values}}</span></p>{{/list}}'
 		},
 		action : {
 			search : function(o){

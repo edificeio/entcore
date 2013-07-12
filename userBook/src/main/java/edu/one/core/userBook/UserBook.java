@@ -33,7 +33,7 @@ public class UserBook extends Controller {
 						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonNomAffichage) "
 							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "AND type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code") 
-							+ "', values:'testval_othertestval'}), m-[:PUBLIC]->p");
+							+ "', values:'testval, othertestval'}), m-[:PUBLIC]->p");
 					}
 					neo.send("START n=node(*) WHERE has(n.ENTPersonNomAffichage) "
 							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
@@ -100,7 +100,7 @@ public class UserBook extends Controller {
 				neo.send("START n=node(*) MATCH (n)-[USERBOOK]->(m),(m)-->(p) WHERE has(n.ENTPersonIdentifiant) "
 					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(p.category) "
 					+ "AND p.category='" + request.params().get("category") + "' "
-					+ "SET p.values='" + request.params().get("values") + "'");
+					+ "SET p.values='" + request.params().get("values") + "'", request.response());
 			}
 		});
 
