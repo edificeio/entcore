@@ -55,7 +55,13 @@ var userbook = function(){
 				.done(function(data){
 					$("#people").addClass('all').removeClass('single');
 					$("#person").html('');
-					$("#people").html(app.template.render('searchResults', dataExtractor(data)));
+					if (data.result[0] === undefined) {
+						app.notify.info("no results !");
+						$("#people").html('');
+						$("#person").html('');
+					} else {
+						$("#people").html(app.template.render('searchResults', dataExtractor(data)))
+					}
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},
@@ -74,7 +80,13 @@ var userbook = function(){
 				.done(function(data){
 					$("#people").addClass('all').removeClass('single');
 					$('#person').html('');
-					$("#people").html(app.template.render('searchResults', dataExtractor(data)));
+					if (data.result[0] === undefined) {
+						app.notify.info("no results !");
+						$("#people").html('');
+						$("#person").html('');
+					} else {
+						$("#people").html(app.template.render('searchResults', dataExtractor(data)));
+					}
 				})
 				.error(function(data){app.notify.error(data)})
 			}
@@ -86,6 +98,8 @@ var userbook = function(){
 
 $(document).ready(function(){
 	userbook.init();
-	var className = location.search.split('class=')[1];
-	userbook.action.searchClass("/api/class?name=" + className);
+	if (location.search.substring(1,6) === 'query'){
+		var className = location.search.split('class=')[1];
+		userbook.action.searchClass("/api/class?name=" + className);
+	}
 });
