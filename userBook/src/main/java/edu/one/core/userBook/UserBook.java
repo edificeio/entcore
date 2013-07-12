@@ -10,13 +10,13 @@ import org.vertx.java.core.json.JsonObject;
 public class UserBook extends Controller {
 
 	Neo neo;
-	JsonObject users;
+	JsonObject userBookData;
 
 	@Override
 	public void start() {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
-		final JsonObject userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
+		userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
 		final JsonArray hobbies = userBookData.getArray("hobbies");
 
 		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
@@ -27,7 +27,7 @@ public class UserBook extends Controller {
 						+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 						+ "CREATE (m {userId:'" + request.params().get("init") + "', "
 						+ "picture:'" + userBookData.getString("picture") + "',"
-						+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
+						+ "motto:'Ajoute ta devise', health:'Problèmes de santé ?', mood:'default'}), n-[:USERBOOK]->m ");
 					for (Object hobby : hobbies) {
 						JsonObject jo = (JsonObject)hobby;
 						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonNomAffichage) "
@@ -39,7 +39,7 @@ public class UserBook extends Controller {
 							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "RETURN n.ENTPersonIdentifiant",request.response());
 				} else if (request.params().contains("id")){
-					renderView(request);
+					renderView(request, userBookData);
 				}
 			}
 		});
@@ -95,13 +95,21 @@ public class UserBook extends Controller {
 			}
 		});
 
-		rm.get("/api/edit-hobbies", new Handler<HttpServerRequest>() {
+		rm.get("/api/edit-userbook-info", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				neo.send("START n=node(*) MATCH (n)-[USERBOOK]->(m),(m)-->(p) WHERE has(n.ENTPersonIdentifiant) "
+				String neoRequest = "START n=node(*) MATCH (n)-[USERBOOK]->(m)";
+				if (request.params().contains("category")){
+					neoRequest += ", (m)-->(p) WHERE has(n.ENTPersonIdentifiant) "
 					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(p.category) "
 					+ "AND p.category='" + request.params().get("category") + "' "
-					+ "SET p.values='" + request.params().get("values") + "'", request.response());
+					+ "SET p.values='" + request.params().get("values") + "'";
+				} else {
+					neoRequest += " WHERE has(n.ENTPersonIdentifiant) "
+					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id")
+					+ "' SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
+				}
+				neo.send(neoRequest, request.response());
 			}
 		});
 

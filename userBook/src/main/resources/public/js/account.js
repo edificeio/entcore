@@ -31,20 +31,23 @@ var account = function(){
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<p class="name">{{displayName}}</p>\
 				<p class="address">{{address}}</p>\
-				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} : {{motto}}</p>\
-				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
+				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} :\
+				<span contenteditable="true"> {{motto}}</span></p>\
+				<select class="mood">\
+				<option value="volvo" style="background-image:url(/public/img/reveur.png);">Rêveur</option></select>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
 				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<div class="clear"></div><img src="/public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
-				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p></div>\
+				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>\
+				<span contenteditable="true"> {{health}}</span></p></div>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}" contenteditable="true">\
+				{{#list}}<h3>{{category}}</h3><p id="category"><span class="{{category}}" contenteditable="true">\
 				{{values}}</span></p>\
 				<form method="GET" action="/api/set-visibility?&category={{category}}" id="visibility-form">\
-				<select id="visible"><option>PUBLIC</option><option>PRIVE</option>\
+				<select id="visible"><option>PUBLIC</option><option selected>PRIVE</option>\
 				<input type="submit" value="ok" call="setVisibility"/></form>\
 				CURRENT : <span id="current-visibility">{{visibility}}</span>{{/list}}'
 		},
@@ -56,7 +59,7 @@ var account = function(){
 					manageEditable();
 				})
 			},
-			editHobbies : function(url){
+			editUserBookInfo : function(url){
 				$.get(url)
 				.done(function(data){
 					console.log(data);
@@ -82,8 +85,13 @@ function manageEditable(){
 	$('span[contenteditable="true"]').focus(function(){document.designMode = 'on';});
 	$('span[contenteditable="true"]').blur(function(){
 		document.designMode = 'off';
-		account.action.editHobbies("/api/edit-hobbies?id=" + userId
-			+ "&category=" + this.classList[0] + "&values=" + this.innerHTML);
+		var parameters = "?id=" + userId;
+		if (this.parentNode.id === "category"){
+			parameters += "&category=" + this.classList[0] + "&values=" + this.innerHTML;
+		} else {
+			parameters += "&prop=" + this.parentNode.classList[0] + "&value=" + this.innerHTML;
+		}
+		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
 	});
 }
 
