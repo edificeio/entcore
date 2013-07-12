@@ -75,6 +75,7 @@ public class UserBook extends Controller {
 						+ "WHERE has(n.ENTPersonIdentifiant) "
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
+						+ "n.ENTPersonIdentifiant as id, "
 						+ "n.ENTPersonAdresse as address, m.motto? as motto, "
 						+ "m.mood? as mood, m.health? as health, m.category? as category, "
 						+ "m.values? as values, EXTRACT(rel in r: type(rel)) as relation;"

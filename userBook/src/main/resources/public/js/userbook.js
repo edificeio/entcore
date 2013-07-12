@@ -23,7 +23,7 @@ var userbook = function(){
 	app.define({
 		template : {
 			searchResults: '\
-				{{#list}}<div id="person-small">\
+				{{#list}}<div class="person-small" id={{id}}>\
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<span><a href="/api/person?id={{id}}" call="person">{{displayName}}</a></span>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
@@ -63,6 +63,8 @@ var userbook = function(){
 				$.get(o.url)
 				.done(function(data){
 					$("#people").addClass('single').removeClass('all');
+					$("div.person-small").removeClass('highlight');
+					$('#' + data.result[0].id).addClass('highlight');
 					$("#person").html(app.template.render('personne', personDataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data.status);})

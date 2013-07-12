@@ -2,14 +2,14 @@ div.single{
 	float:left;
 	width:250px;
 }
-div.single #person-small{
+div.single .person-small{
 	border:1px solid #C2C2C2;
 	height: 70px;
 	width: 210px;
 	float: left;
 	padding: 10px;
 }
-div.all #person-small{
+div.all .person-small{
 	border:1px solid #C2C2C2;
 	height: 70px;
 	width: 210px;
@@ -19,26 +19,26 @@ div.all #person-small{
 	margin: 5px;
 }
 
-#person-small span a{
+.person-small span a{
 	height:50%;
 	width:31%;
 	float:left;
 	font-size: 1em;
 	color:black;
 }
-#person-small img.avatar{
+.person-small img.avatar{
 	height:90%;
 	float:left;
 	margin-right:5px;
 }
-#person-small img.mood{
+.person-small img.mood{
 	width:20%;
 	float:right;
 }
-#person-small .actions{
+.person-small .actions{
 	float:right;
 }
-#person-small .actions img{
+.person-small .actions img{
 	width:20px;
 	height:15px;
 }
@@ -75,4 +75,7 @@ a{
 }
 .clear{
 	clear:both;
+}
+.highlight{
+	background-color: #CCC;
 }
