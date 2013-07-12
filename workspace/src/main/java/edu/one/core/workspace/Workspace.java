@@ -12,6 +12,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
@@ -317,6 +318,36 @@ public class Workspace extends Controller {
 						});
 					}
 
+				});
+			}
+		});
+
+		rm.post("/document/:id/comment", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				request.endHandler(new VoidHandler() {
+					@Override
+					protected void handle() {
+						String comment = request.formAttributes().get("comment");
+						if (comment != null && !comment.trim().isEmpty()) {
+							String query = "{ \"$push\" : { \"comments\":" + // TODO get author from session
+									" {\"author\" : \"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
+									"\", \"comment\": \"" + comment + "\" }}}";
+							documentDao.update(request.params().get("id"), new JsonObject(query),
+									new Handler<JsonObject>() {
+								@Override
+								public void handle(JsonObject res) {
+									if ("ok".equals(res.getString("status"))) {
+										renderJson(request, res);
+									} else {
+										renderError(request, res);
+									}
+								}
+							});
+						} else {
+							badRequest(request);
+						}
+					}
 				});
 			}
 		});
