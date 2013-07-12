@@ -120,7 +120,7 @@ public class UserBook extends Controller {
 					+ "WHERE type(r)='USERBOOK' AND HAS (n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='"
 					+ request.params().get("id") + "' AND p.category='"+ request.params().get("category")
 					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
-					+ "RETURN n,r,m,j,p");
+					+ "RETURN n,r,m,j,p", request.response());
 			}
 		});
 	}
