@@ -3,7 +3,12 @@ var workspace = function(){
 	app.scope = "#main";
 	app.define ({
 		template : {
-			documents : '<table class="striped alternate" summary="">\
+			documents : '<div>\
+							<a call="moveTrash" href="/document/trash">{{#i18n}}workspace.move.trash{{/i18n}}</a>\
+							<a call="moveOrCopy" href="/documents/move">{{#i18n}}workspace.move{{/i18n}}</a>\
+							<a call="moveOrCopy" href="/documents/copy">{{#i18n}}workspace.copy{{/i18n}}</a>\
+						</div>\
+						<table class="striped alternate" summary="">\
 							<thead>\
 								<tr>\
 									<th scope="col">\
@@ -50,9 +55,17 @@ var workspace = function(){
 							</tbody>\
 						</table>',
 
-			rack : '<table class="striped alternate" summary="">\
+			rack : '<div>\
+						<a call="moveTrash" href="/rack/trash">{{#i18n}}workspace.move.trash{{/i18n}}</a>\
+						<a call="moveOrCopy" href="/rack/documents/copy">{{#i18n}}workspace.copy{{/i18n}}</a>\
+					</div>\
+					<table class="striped alternate" summary="">\
 						<thead>\
 							<tr>\
+								<th scope="col">\
+									<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
+									<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}from{{/i18n}}</th>\
@@ -63,6 +76,7 @@ var workspace = function(){
 						<tbody>\
 							{{#.}}\
 							<tr>\
+								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
 								<td><a href="/rack/{{_id}}">{{name}}</a></td>\
 								<td>{{from}}</td>\
@@ -73,22 +87,38 @@ var workspace = function(){
 						</tbody>\
 					</table>',
 
-			trash :'<table class="striped alternate" summary="">\
+			trash :'<div>\
+					<a call="remove" href="">{{#i18n}}workspace.delete{{/i18n}}</a>\
+					</div>\
+					<table class="striped alternate" summary="">\
 						<thead>\
 							<tr>\
+								<th scope="col">\
+									<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
+									<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 							</tr>\
 						</thead>\
 						<tbody>\
-							{{#.}}\
+							{{#documents}}\
 							<tr>\
+								<td><input class="select-file" type="checkbox" name="files[]" value="/document/{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
-								<td>{{name}}</td>\
+								<td><a href="/document/{{_id}}">{{name}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
-							{{/.}}\
+							{{/documents}}\
+							{{#rack}}\
+							<tr>\
+								<td><input class="select-file" type="checkbox" name="files[]" value="/rack/{{_id}}" /></td>\
+								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
+								<td><a href="/rack/{{_id}}">{{name}}</a></td>\
+								<td>{{modified}}</td>\
+							</tr>\
+							{{/rack}}\
 						</tbody>\
 					</table>',
 
@@ -115,6 +145,12 @@ var workspace = function(){
 							<textarea name="comment"></textarea>\
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
 						</form>',
+
+			moveOrCopyDocuments : '<form action="{{action}}">\
+								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
+								<input type="text" name="folder" />\
+								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+							</form>',
 		},
 		action : {
 			documents : function (o) {
@@ -147,8 +183,11 @@ var workspace = function(){
 			},
 
 			trash : function (o) {
-				$.get(o.url).done(function(response){
-					$('#list').html(app.template.render("trash", response));
+				$.get("/documents/Trash").done(function(documents) {
+					$.get("/rack/documents/Trash").done(function(rack) {
+						$('#list').html(app.template.render("trash",
+								{ documents : documents, rack : rack }));
+					});
 				});
 			},
 
@@ -205,7 +244,7 @@ var workspace = function(){
 				$(":checkbox:checked").each(function(i) {
 					var obj = $(this);
 					$.ajax({
-						url : "/document/trash/" + obj.val(),
+						url : o.url + "/" + obj.val(),
 						type: "PUT",
 						success: function() {
 							obj.parents("tr").remove();
@@ -236,6 +275,56 @@ var workspace = function(){
 
 			toggleComment : function(o) {
 				$(o.url).toggleClass("hidden");
+			},
+
+			remove : function (o) {
+				var files = [];
+				$(":checkbox:checked").each(function(i) {
+					var obj = $(this);
+					$.ajax({
+						url : obj.val(),
+						type: "DELETE",
+						success: function() {
+							obj.parents("tr").remove();
+						},
+						error: function(data) {
+							app.notify.error(data);
+						}
+					});
+				});
+			},
+
+			moveOrCopy : function(o) {
+				$('#form-window').html(app.template.render("moveOrCopyDocuments", { action : o.url}));
+			},
+
+			moveOrCopyDocuments : function(o) {
+				var ids = "",
+					form = $(o.target).parents("form"),
+					action = form.attr("action"),
+					folder = form.children("input[name=folder]").val(),
+					method;
+
+				if (action.match(/copy$/g)) {
+					method = "POST";
+				} else {
+					method = "PUT";
+				}
+
+				$(":checkbox:checked").each(function(i) {
+					ids += "," + $(this).val();
+				});
+
+				$.ajax({
+					url : action + "/" + ids + "/" + folder,
+					type: method,
+					success: function() {
+						location.reload(true);
+					},
+					error: function(data) {
+						app.notify.error(data);
+					}
+				});
 			}
 
 		}

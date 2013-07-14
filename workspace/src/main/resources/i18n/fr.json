@@ -17,5 +17,8 @@
 	"workspace.select.all" : "Tous",
 	"workspace.unselect.all" : "Aucun",
 	"workspace.document.comment" : "Ajouter un commentaire",
-	"workspace.document.comment.toggle" : "Afficher/Masquer les commentaires"
+	"workspace.document.comment.toggle" : "Afficher/Masquer les commentaires",
+	"workspace.delete" : "Supprimer",
+	"workspace.move.path" : "Destination",
+	"workspace.valid" : "Appliquer"
 }
