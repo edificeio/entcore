@@ -8,6 +8,7 @@ import java.util.Date;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public class MongoDb {
@@ -44,6 +45,41 @@ public class MongoDb {
 
 	public void save(String collection, JsonObject document) {
 		save(collection, document, null, null);
+	}
+
+	public void insert(String collection, JsonArray documents, WriteConcern writeConcern,
+			Handler<Message<JsonObject>> callback) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "insert");
+		jo.putString("collection", collection);
+		if (documents.size() > 1) {
+			jo.putArray("documents", documents);
+			jo.putBoolean("multiple", true);
+		} else {
+			jo.putObject("document", (JsonObject) documents.get(0));
+		}
+		if (writeConcern != null) {
+			jo.putString("write_concern", writeConcern.name());
+		}
+		eb.send(address, jo, callback);
+	}
+
+	public void insert(String collection, JsonArray documents,
+			Handler<Message<JsonObject>> callback) {
+		insert(collection, documents, null, callback);
+	}
+
+	public void insert(String collection, JsonObject document,
+			Handler<Message<JsonObject>> callback) {
+		insert(collection, new JsonArray().add(document), null, callback);
+	}
+
+	public void insert(String collection, JsonArray documents) {
+		insert(collection, documents, null, null);
+	}
+
+	public void insert(String collection, JsonObject document) {
+		insert(collection, new JsonArray().add(document), null, null);
 	}
 
 	/**
