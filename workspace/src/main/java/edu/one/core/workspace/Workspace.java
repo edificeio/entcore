@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
@@ -255,6 +256,35 @@ public class Workspace extends Controller {
 			}
 		});
 
+		rm.put("/documents/move/:ids/:folder", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				String ids = request.params().get("ids"); // TODO refactor with json in request body
+				String folder = request.params().get("folder");
+				if (ids != null && folder != null &&
+						!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+					JsonArray idsArray = new JsonArray(ids.split(","));
+					String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+					String obj = "{ \"$set\" : { \"folder\": \"" + folder +
+							"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+					mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
+							new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r) {
+							JsonObject res = r.body();
+							if ("ok".equals(res.getString("status"))) {
+								renderJson(request, res);
+							} else {
+								renderJson(request, res, 404);
+							}
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+
 		rm.put("/document/trash/:id", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
@@ -270,6 +300,73 @@ public class Workspace extends Controller {
 						}
 					}
 				});
+			}
+		});
+
+		rm.post("/documents/copy/:ids/:folder", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				String ids = request.params().get("ids"); // TODO refactor with json in request body
+				String folder = request.params().get("folder");
+				if (ids != null && folder != null &&
+						!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+					JsonArray idsArray = new JsonArray(ids.split(","));
+					String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r) {
+							JsonObject src = r.body();
+							if ("ok".equals(src.getString("status")) && src.getArray("results") != null) {
+								JsonArray origs = src.getArray("results");
+								final JsonArray insert = new JsonArray();
+								final AtomicInteger number = new AtomicInteger(origs.size());
+								for (Object o: origs) {
+									JsonObject orig = (JsonObject) o;
+									final JsonObject dest = orig.copy();
+									String now = MongoDb.formatDate(new Date());
+									dest.removeField("_id");
+									dest.putString("created", now);
+									dest.putString("modified", now);
+									dest.putString("folder", request.params().get("folder"));
+									insert.add(dest);
+									String filePath = orig.getString("file");
+									if (filePath != null) {
+										String path = generateFilePath(filesRepository);
+										dest.putString("file", path);
+										vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
+											@Override
+											public void handle(AsyncResult<Void> copied) {
+												persist(insert, number.decrementAndGet());
+											}
+										});
+									} else {
+										persist(insert, number.decrementAndGet());
+									}
+								}
+							} else {
+								renderJson(request, src, 404);
+							}
+						}
+
+						private void persist(final JsonArray insert, int remains) {
+							if (remains == 0) {
+								mongo.insert(DocumentDao.DOCUMENTS_COLLECTION, insert, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> inserted) {
+										if ("ok".equals(inserted.body().getString("status"))){
+											renderJson(request, inserted.body());
+										} else {
+											renderError(request, inserted.body());
+										}
+									}
+								});
+							}
+						}
+
+					});
+				} else {
+					badRequest(request);
+				}
 			}
 		});
 
@@ -436,7 +533,7 @@ public class Workspace extends Controller {
 		rm.get("/rack/documents", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
-				String query = "{ \"file\" : { \"$exists\" : true }}"; // TODO add check on "to" attribute
+				String query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : { \"$ne\" : \"Trash\" }}"; // TODO add check on "to" attribute
 				mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
@@ -504,6 +601,73 @@ public class Workspace extends Controller {
 			}
 		});
 
+		rm.post("/rack/documents/copy/:ids/:folder", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				String ids = request.params().get("ids"); // TODO refactor with json in request body
+				String folder = request.params().get("folder");
+				if (ids != null && folder != null &&
+						!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+					JsonArray idsArray = new JsonArray(ids.split(","));
+					String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(criteria), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> r) {
+							JsonObject src = r.body();
+							if ("ok".equals(src.getString("status")) && src.getArray("results") != null) {
+								JsonArray origs = src.getArray("results");
+								final JsonArray insert = new JsonArray();
+								final AtomicInteger number = new AtomicInteger(origs.size());
+								for (Object o: origs) {
+									JsonObject orig = (JsonObject) o;
+									final JsonObject dest = orig.copy();
+									String now = MongoDb.formatDate(new Date());
+									dest.removeField("_id");
+									dest.putString("created", now);
+									dest.putString("modified", now);
+									dest.putString("folder", request.params().get("folder"));
+									insert.add(dest);
+									String filePath = orig.getString("file");
+									if (filePath != null) {
+										String path = generateFilePath(filesRepository);
+										dest.putString("file", path);
+										vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
+											@Override
+											public void handle(AsyncResult<Void> copied) {
+												persist(insert, number.decrementAndGet());
+											}
+										});
+									} else {
+										persist(insert, number.decrementAndGet());
+									}
+								}
+							} else {
+								renderJson(request, src, 404);
+							}
+						}
+
+						private void persist(final JsonArray insert, int remains) {
+							if (remains == 0) {
+								mongo.insert(DocumentDao.DOCUMENTS_COLLECTION, insert, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> inserted) {
+										if ("ok".equals(inserted.body().getString("status"))){
+											renderJson(request, inserted.body());
+										} else {
+											renderError(request, inserted.body());
+										}
+									}
+								});
+							}
+						}
+
+					});
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+
 		rm.put("/rack/copy/:id/:folder", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
@@ -567,6 +731,26 @@ public class Workspace extends Controller {
 							renderJson(request, res);
 						} else {
 							renderJson(request, res, 404);
+						}
+					}
+				});
+			}
+		});
+
+
+		rm.get("/rack/documents/Trash", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				String	query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : \"Trash\" }";
+				mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> res) {
+						String status = res.body().getString("status");
+						JsonArray results = res.body().getArray("results");
+						if ("ok".equals(status) && results != null) {
+							renderJson(request, results);
+						} else {
+							renderJson(request, new JsonArray());
 						}
 					}
 				});
