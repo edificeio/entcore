@@ -14,6 +14,7 @@
 		"edu.one.core~sync~0.1.0-SNAPSHOT",
 		"edu.one.core~userBook~0.1.0-SNAPSHOT",
 		"edu.one.core~workspace~0.1.0-SNAPSHOT",
+		"edu.one.core~app-registry~0.1.0-SNAPSHOT",
 		"edu.one~wordpress~1.0.0-SNAPSHOT"
 	]
 }
