@@ -5,8 +5,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 public class AppAuthFilter implements Filter {
 
 	@Override
-	public boolean verify(HttpServerRequest request) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public boolean canAccess(HttpServerRequest request) {
+		return true;
 	}
 
 	@Override

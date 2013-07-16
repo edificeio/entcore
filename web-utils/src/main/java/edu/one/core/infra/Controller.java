@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.one.core.infra;
 
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -11,16 +7,12 @@ import edu.one.core.infra.mustache.DevMustacheFactory;
 import edu.one.core.infra.mustache.I18nTemplateFunction;
 import edu.one.core.infra.mustache.StaticResourceTemplateFunction;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
@@ -118,7 +110,7 @@ public abstract class Controller extends Verticle {
 	}
 
 	public void redirect(HttpServerRequest request, String location) {
-		redirect(request, request.headers().get("Host"), location);
+		redirect(request, "http://" + request.headers().get("Host"), location);
 	}
 
 	public void redirect(HttpServerRequest request, String host, String location) {
