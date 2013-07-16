@@ -3,20 +3,20 @@
 		<title>{{#i18n}}auth.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
-		<style>
-			h1		{ font-size: 2em; background: black; color: white; }
-		</style>
 	</head>
 	<body>
 		<h1>{{#i18n}}auth.header{{/i18n}}</h1>
-		{{#error?}}<p style="color:red">auth.error.login</p>{{/error?}}
-		<form method="get" action="login">
-			<label>{{#i18n}}auth.email{{/i18n}}</label>
-			<input type="text" name="email" />
-
-			<label>{{#i18n}}auth.password{{/i18n}}</label>
-			<input type="text" name="password" />
-
+		{{#error}}<p style="color:red">{{message}}</p>{{/error}}
+		<form method="post" action="login">
+			<input type="hidden" name="callBack" value="{{callBack}}"/>
+			<p>
+				<label>{{#i18n}}auth.email{{/i18n}}</label>
+				<input type="text" name="email" />
+			</p>
+			<p>
+				<label>{{#i18n}}auth.password{{/i18n}}</label>
+				<input type="text" name="password" />
+			</p>
 			<input type="submit" value="{{#i18n}}auth.login{{/i18n}}" />
 		</form>
 	</body>

@@ -3,5 +3,11 @@
 	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
 	"port": 8009,
 	"auto-redeploy": true,
-	"mode": "dev"
+	"mode": "dev",
+	"authenticationServer" : {
+		"loginURL" : "http://localhost:8009/login",
+		"logoutURL" : "http://localhost:8009/login",
+		"loginCallback" : "http://localhost:8008/",
+		"logoutCallback" : "http://localhost:8009/logout"
+	}
 }
