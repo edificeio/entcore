@@ -10,5 +10,11 @@
 		"db_name": "test_one",
 		"pool_size": 10
 	},
+	"gridfs-config": {
+		"address": "wse.gridfs.persistor",
+		"host": "localhost",
+		"port": 27017,
+		"db_name": "test_one",
+	},
 	"files-repository" : "/tmp"
 }

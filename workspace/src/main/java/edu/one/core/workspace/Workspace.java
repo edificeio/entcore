@@ -1,32 +1,24 @@
 package edu.one.core.workspace;
 
-import static edu.one.core.infra.Utils.getOrElse;
-
-import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.RackDao;
+import edu.one.core.workspace.service.WorkspaceService;
 
 public class Workspace extends Controller {
 
@@ -49,219 +41,25 @@ public class Workspace extends Controller {
 		final DocumentDao documentDao = new DocumentDao(mongo);
 		final RackDao rackDao = new RackDao(mongo);
 
-		final String filesRepository = config.getString("files-repository");
-
 		JsonObject gridfsConf = container.config().getObject("gridfs-config");
 		container.deployModule("com.wse~gridfs-persistor~0.1.0-SNAPSHOT", gridfsConf);
 
-		final String filesRepository = config.getString("files-repository");
+		WorkspaceService service = new WorkspaceService(vertx, container, rm);
 
 		rm.get("/workspace", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				renderView(request);
-      }
-    });
-
-		rm.post("/gridfs", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				request.uploadHandler(new Handler<HttpServerFileUpload>() {
-					@Override
-					public void handle(HttpServerFileUpload event) {
-						final Buffer buff = new Buffer();
-						event.dataHandler(new Handler<Buffer>() {
-							@Override
-							public void handle(Buffer event) {
-								buff.appendBuffer(event);
-							}
-						});
-						event.endHandler(new Handler<Void>() {
-							@Override
-							public void handle(Void event) {
-								JsonObject save = new JsonObject();
-								save.putString("action", "save");
-								byte [] header = null;
-								try {
-									header = save.toString().getBytes("UTF-8");
-								} catch (UnsupportedEncodingException e) {
-									log.error(e.getMessage(), e);
-								}
-								if (header != null) {
-									buff.appendBytes(header).appendInt(header.length);
-									vertx.eventBus().send("wse.gridfs.persistor", buff, new  Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> event) {
-											request.response().end(event.body().toString());
-										}
-									});
-								}
-							}
-						});
-					}
-				});
 			}
 		});
 
-		rm.get("/gridfs/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest event) {
-				log.info("get gridfs file");
-				String id = event.params().get("id");
-				JsonObject find = new JsonObject();
-				find.putString("action", "findone");
-				find.putObject("query", new JsonObject("{ \"_id\": \"" + id + "\"}"));
-				byte [] header = null;
-				try {
-					header = find.toString().getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					log.error(e.getMessage());
-				}
-				if (header != null) {
-					Buffer buf = new Buffer(header);
-					buf.appendInt(header.length);
-				vertx.eventBus().send("wse.gridfs.persistor", buf, new  Handler<Message<Buffer>>() {
-					@Override
-					public void handle(Message<Buffer> res) {
-						event.response().end(res.body());
-					}
-				});
-				}
-			}
-		});
+		service.post("/document", "addDocument");
 
-		rm.post("/document", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				final String filename = generateFilePath(filesRepository);
-				FileUtils.writeUploadFile(request, filename, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject metadata) {
-						JsonObject doc = new JsonObject();
-						doc.putString("name", getOrElse(request
-								.params().get("name"), metadata.getString("filename")));
-						final String now = MongoDb.formatDate(new Date());
-						doc.putString("created", now);
-						doc.putString("modified", now);
-						doc.putObject("metadata", metadata);
-						doc.putString("file", filename);
-						mongo.save(DocumentDao.DOCUMENTS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								if ("ok".equals(res.body().getString("status"))) {
-									renderJson(request, res.body(), 201);
-								} else {
-									renderError(request, res.body());
-								}
-							}
-						});
-					}
-				});
-			}
-		});
+		service.get("/document/:id", "getDocument");
 
-		rm.get("/document/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				documentDao.findById(request.params().get("id"), new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject res) {
-						String status = res.getString("status");
-						JsonObject result = res.getObject("result");
-						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							request.response().putHeader("Content-Disposition" , "attachment; filename=" +
-									result.getString("name"))
-								.sendFile(result.getString("file"));
-						} else {
-							request.response().setStatusCode(404).end();
-						}
-					}
-				});
-			}
-		});
+		service.put("document/:id", "updateDocument");
 
-		rm.put("/document/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				final String filename = generateFilePath(filesRepository);
-				FileUtils.writeUploadFile(request, filename, new Handler<JsonObject>() {
-					@Override
-					public void handle(final JsonObject metadata) {
-						documentDao.findById(request.params().get("id"), new Handler<JsonObject>() {
-							@Override
-							public void handle(final JsonObject old) {
-								if ("ok".equals(old.getString("status"))) {
-									JsonObject set = new JsonObject();
-									JsonObject doc = new JsonObject();
-									doc.putString("name", getOrElse(request
-											.params().get("name"), metadata.getString("filename")));
-									final String now = MongoDb.formatDate(new Date());
-									doc.putString("modified", now);
-									doc.putObject("metadata", metadata);
-									doc.putString("file", filename);
-									String query = "{ \"_id\": \"" + request.params().get("id") + "\"}";
-									set.putObject("$set", doc);
-									mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
-											new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(final Message<JsonObject> res) {
-											String status = res.body().getString("status");
-											JsonObject result = old.getObject("result");
-											if ("ok".equals(status) && result != null) {
-												vertx.fileSystem().delete(result.getString("file"),
-														new Handler<AsyncResult<Void>>() {
-													@Override
-													public void handle(AsyncResult<Void> event) {
-														renderJson(request, res.body());
-													}
-												});
-											} else {
-												renderError(request, res.body());
-											}
-										}
-									});
-								} else {
-									request.response().setStatusCode(404).end();
-								}
-							}
-						});
-					}
-				});
-			}
-		});
-
-		rm.delete("/document/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				final String id = request.params().get("id");
-				documentDao.findById(id, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject res) {
-						String status = res.getString("status");
-						JsonObject result = res.getObject("result");
-						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							vertx.fileSystem().delete(result.getString("file"), new Handler<AsyncResult<Void>>() {
-								@Override
-								public void handle(AsyncResult<Void> event) {
-									documentDao.delete(id, new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject result) {
-											if ("ok".equals(result.getString("status"))) {
-												renderJson(request, result, 204);
-											} else {
-												renderError(request, result);
-											}
-										}
-									});
-								}
-							});
-						} else {
-							request.response().setStatusCode(404).end();
-						}
-					}
-				});
-			}
-		});
+		service.delete("/document/:id", "deleteDocument");
 
 		rm.get("/documents", new Handler<HttpServerRequest>() {
 			@Override
@@ -378,121 +176,10 @@ public class Workspace extends Controller {
 			}
 		});
 
-		rm.post("/documents/copy/:ids/:folder", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				String ids = request.params().get("ids"); // TODO refactor with json in request body
-				String folder = request.params().get("folder");
-				if (ids != null && folder != null &&
-						!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
-					JsonArray idsArray = new JsonArray(ids.split(","));
-					String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
-					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> r) {
-							JsonObject src = r.body();
-							if ("ok".equals(src.getString("status")) && src.getArray("results") != null) {
-								JsonArray origs = src.getArray("results");
-								final JsonArray insert = new JsonArray();
-								final AtomicInteger number = new AtomicInteger(origs.size());
-								for (Object o: origs) {
-									JsonObject orig = (JsonObject) o;
-									final JsonObject dest = orig.copy();
-									String now = MongoDb.formatDate(new Date());
-									dest.removeField("_id");
-									dest.putString("created", now);
-									dest.putString("modified", now);
-									dest.putString("folder", request.params().get("folder"));
-									insert.add(dest);
-									String filePath = orig.getString("file");
-									if (filePath != null) {
-										String path = generateFilePath(filesRepository);
-										dest.putString("file", path);
-										vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
-											@Override
-											public void handle(AsyncResult<Void> copied) {
-												persist(insert, number.decrementAndGet());
-											}
-										});
-									} else {
-										persist(insert, number.decrementAndGet());
-									}
-								}
-							} else {
-								renderJson(request, src, 404);
-							}
-						}
 
-						private void persist(final JsonArray insert, int remains) {
-							if (remains == 0) {
-								mongo.insert(DocumentDao.DOCUMENTS_COLLECTION, insert, new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> inserted) {
-										if ("ok".equals(inserted.body().getString("status"))){
-											renderJson(request, inserted.body());
-										} else {
-											renderError(request, inserted.body());
-										}
-									}
-								});
-							}
-						}
+		service.post("/documents/copy/:ids/:folder", "copyDocuments");
 
-					});
-				} else {
-					badRequest(request);
-				}
-			}
-		});
-
-		rm.put("/document/copy/:id/:folder", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				documentDao.findById(request.params().get("id"), new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject src) {
-						if ("ok".equals(src.getString("status")) && src.getObject("result") != null) {
-							JsonObject orig = src.getObject("result");
-							final JsonObject dest = orig.copy();
-							String now = MongoDb.formatDate(new Date());
-							dest.removeField("_id");
-							dest.putString("created", now);
-							dest.putString("modified", now);
-							dest.putString("folder", request.params().get("folder"));
-							String filePath = orig.getString("file");
-							if (filePath != null) {
-								String path = generateFilePath(filesRepository);
-								dest.putString("file", path);
-								vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
-									@Override
-									public void handle(AsyncResult<Void> copied) {
-										persist(dest);
-									}
-								});
-							} else {
-								persist(dest);
-							}
-						} else {
-							renderJson(request, src, 404);
-						}
-					}
-
-					private void persist(final JsonObject dest) {
-						documentDao.save(dest, new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject res) {
-								if ("ok".equals(res.getString("status"))) {
-									renderJson(request, res);
-								} else {
-									renderError(request, res);
-								}
-							}
-						});
-					}
-
-				});
-			}
-		});
+		service.post("/document/copy/:id/:folder", "copyDocument");
 
 		rm.post("/document/:id/comment", new Handler<HttpServerRequest>() {
 			@Override
@@ -574,37 +261,7 @@ public class Workspace extends Controller {
 			}
 		});
 
-		rm.post("/rack/:to", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				final String filename = generateFilePath(filesRepository);
-				FileUtils.writeUploadFile(request, filename, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject metadata) {
-						JsonObject doc = new JsonObject();
-						doc.putString("name", getOrElse(request
-								.params().get("name"), metadata.getString("filename")));
-						final String now = MongoDb.formatDate(new Date());
-						doc.putString("to", request.params().get("to")); // TODO check existance and validity (neo4j)
-						doc.putString("from", UUID.randomUUID().toString()); // TODO replace by user (session)
-						doc.putString("sent", now);
-						doc.putObject("metadata", metadata);
-						doc.putString("file", filename);
-						mongo.save(RackDao.RACKS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								if ("ok".equals(res.body().getString("status"))) {
-									renderJson(request, res.body(), 201);
-								} else {
-									renderError(request, res.body());
-								}
-							}
-						});
-					}
-				});
-			}
-		});
-
+		service.post("/rack/:to", "addRackDocument");
 
 		rm.get("/rack/documents", new Handler<HttpServerRequest>() {
 			@Override
@@ -625,175 +282,13 @@ public class Workspace extends Controller {
 			}
 		});
 
-		rm.get("/rack/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				rackDao.findById(request.params().get("id"), new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject res) {
-						String status = res.getString("status");
-						JsonObject result = res.getObject("result");
-						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							request.response().putHeader("Content-Disposition" , "attachment; filename=" +
-									result.getString("name")).sendFile(result.getString("file"));
-						} else {
-							request.response().setStatusCode(404).end();
-						}
-					}
-				});
-			}
-		});
+		service.get("/rack/:id", "getRackDocument");
 
-		rm.delete("/rack/:id", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				final String id = request.params().get("id");
-				rackDao.findById(id, new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject res) {
-						String status = res.getString("status");
-						JsonObject result = res.getObject("result");
-						if ("ok".equals(status) && result != null && result.getString("file") != null) {
-							vertx.fileSystem().delete(result.getString("file"), new Handler<AsyncResult<Void>>() {
-								@Override
-								public void handle(AsyncResult<Void> event) {
-									rackDao.delete(id, new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject result) {
-											if ("ok".equals(result.getString("status"))) {
-												renderJson(request, result, 204);
-											} else {
-												renderError(request, result);
-											}
-										}
-									});
-								}
-							});
-						} else {
-							request.response().setStatusCode(404).end();
-						}
-					}
-				});
-			}
-		});
+		service.delete("/rack/:id", "deleteRackDocument");
 
-		rm.post("/rack/documents/copy/:ids/:folder", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				String ids = request.params().get("ids"); // TODO refactor with json in request body
-				String folder = request.params().get("folder");
-				if (ids != null && folder != null &&
-						!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
-					JsonArray idsArray = new JsonArray(ids.split(","));
-					String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
-					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(criteria), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> r) {
-							JsonObject src = r.body();
-							if ("ok".equals(src.getString("status")) && src.getArray("results") != null) {
-								JsonArray origs = src.getArray("results");
-								final JsonArray insert = new JsonArray();
-								final AtomicInteger number = new AtomicInteger(origs.size());
-								for (Object o: origs) {
-									JsonObject orig = (JsonObject) o;
-									final JsonObject dest = orig.copy();
-									String now = MongoDb.formatDate(new Date());
-									dest.removeField("_id");
-									dest.putString("created", now);
-									dest.putString("modified", now);
-									dest.putString("folder", request.params().get("folder"));
-									insert.add(dest);
-									String filePath = orig.getString("file");
-									if (filePath != null) {
-										String path = generateFilePath(filesRepository);
-										dest.putString("file", path);
-										vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
-											@Override
-											public void handle(AsyncResult<Void> copied) {
-												persist(insert, number.decrementAndGet());
-											}
-										});
-									} else {
-										persist(insert, number.decrementAndGet());
-									}
-								}
-							} else {
-								renderJson(request, src, 404);
-							}
-						}
+		service.post("/rack/documents/copy/:ids/:folder", "copyRackDocuments");
 
-						private void persist(final JsonArray insert, int remains) {
-							if (remains == 0) {
-								mongo.insert(DocumentDao.DOCUMENTS_COLLECTION, insert, new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> inserted) {
-										if ("ok".equals(inserted.body().getString("status"))){
-											renderJson(request, inserted.body());
-										} else {
-											renderError(request, inserted.body());
-										}
-									}
-								});
-							}
-						}
-
-					});
-				} else {
-					badRequest(request);
-				}
-			}
-		});
-
-		rm.put("/rack/copy/:id/:folder", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(final HttpServerRequest request) {
-				rackDao.findById(request.params().get("id"), new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject src) {
-						if ("ok".equals(src.getString("status")) && src.getObject("result") != null) {
-							JsonObject orig = src.getObject("result");
-							final JsonObject dest = orig.copy();
-							String now = MongoDb.formatDate(new Date());
-							dest.removeField("_id");
-							dest.removeField("to"); // TODO add owner
-							dest.removeField("from");
-							dest.putString("created", now);
-							dest.putString("modified", now);
-							dest.putString("folder", request.params().get("folder"));
-							String filePath = orig.getString("file");
-							if (filePath != null) {
-								String path = generateFilePath(filesRepository);
-								dest.putString("file", path);
-								vertx.fileSystem().copy(filePath, path, new Handler<AsyncResult<Void>>() {
-									@Override
-									public void handle(AsyncResult<Void> copied) {
-										persist(dest);
-									}
-								});
-							} else {
-								persist(dest);
-							}
-						} else {
-							renderJson(request, src, 404);
-						}
-					}
-
-					private void persist(final JsonObject dest) {
-						documentDao.save(dest, new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject res) {
-								if ("ok".equals(res.getString("status"))) {
-									renderJson(request, res);
-								} else {
-									renderError(request, res);
-								}
-							}
-						});
-					}
-
-				});
-			}
-		});
+		service.post("/rack/document/copy/:id/:folder", "copyRackDocument");
 
 		rm.put("/rack/trash/:id", new Handler<HttpServerRequest>() {
 			@Override
@@ -813,7 +308,6 @@ public class Workspace extends Controller {
 			}
 		});
 
-
 		rm.get("/rack/documents/Trash", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
@@ -832,10 +326,6 @@ public class Workspace extends Controller {
 				});
 			}
 		});
-	}
-
-	private String generateFilePath(final String filesRepository) {
-		return filesRepository + File.separator + UUID.randomUUID().toString();
 	}
 
 }

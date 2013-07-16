@@ -128,7 +128,7 @@ public abstract class Controller extends Verticle {
 		request.response().setStatusCode(400).end();
 	}
 
-	public void renderError(HttpServerRequest request, JsonObject error) {
+	public static void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
 		if (error != null) {
 			request.response().end(error.encode());
@@ -137,30 +137,30 @@ public abstract class Controller extends Verticle {
 		}
 	}
 
-	public void renderError(HttpServerRequest request) {
+	public static void renderError(HttpServerRequest request) {
 		renderError(request, null);
 	}
 
-	public void renderJson(HttpServerRequest request, JsonObject jo, int status) {
+	public static void renderJson(HttpServerRequest request, JsonObject jo, int status) {
 		request.response().putHeader("content-type", "text/json");
 		request.response().setStatusCode(status);
 		request.response().end(jo.encode());
 	}
 
-	public void renderJson(HttpServerRequest request, JsonObject jo) {
+	public static void renderJson(HttpServerRequest request, JsonObject jo) {
 		renderJson(request, jo, 200);
 	}
 
-	public void renderJson(HttpServerRequest request, JsonArray jo) {
+	public static void renderJson(HttpServerRequest request, JsonArray jo) {
 		request.response().putHeader("content-type", "text/json");
 		request.response().end(jo.encode());
 	}
 
-	public void redirect(HttpServerRequest request, String location) {
+	public static void redirect(HttpServerRequest request, String location) {
 		redirect(request, "http://" + request.headers().get("Host"), location);
 	}
 
-	public void redirect(HttpServerRequest request, String host, String location) {
+	public static void redirect(HttpServerRequest request, String host, String location) {
 		request.response().setStatusCode(301);
 		request.response().putHeader("Location", host + location);
 		request.response().end();

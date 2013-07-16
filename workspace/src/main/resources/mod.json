@@ -7,14 +7,14 @@
 		"address": "wse.mongodb.persistor",
 		"host": "localhost",
 		"port": 27017,
-		"db_name": "one",
+		"db_name": "one_gridfs",
 		"pool_size": 10
 	},
 	"gridfs-config": {
 		"address": "wse.gridfs.persistor",
 		"host": "localhost",
 		"port": 27017,
-		"db_name": "one",
+		"db_name": "one_gridfs",
 		"pool_size": 10
 	},
 	"files-repository" : "/home/dboissin/Prog/one-core/data/dev/files-repository"
