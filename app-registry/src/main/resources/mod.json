@@ -2,5 +2,6 @@
 	"main":"edu.one.core.registry.AppRegistry",
 	"auto-redeploy": true,
 	"port": 8012,
-	"mode": "dev"
+	"mode": "dev",
+	"address" : "wse.app.registry"
 }

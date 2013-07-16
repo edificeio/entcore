@@ -1,8 +1,10 @@
 package edu.one.core.registry.service;
 
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.AbstractService;
@@ -14,9 +16,13 @@ public class AppRegistryService extends AbstractService {
 		super(vertx, container, rm);
 	}
 
-	@SecuredAction("test.action")
 	public void testExecute(HttpServerRequest request) {
 		request.response().end("Test execute works !!!");
+	}
+
+	public void collectApps(Message<JsonObject> message) {
+		container.logger().info(message.body().encode());
+		message.reply((new JsonObject()).putString("status", "ok"));
 	}
 
 }

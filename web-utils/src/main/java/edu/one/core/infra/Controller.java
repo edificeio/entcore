@@ -3,13 +3,17 @@ package edu.one.core.infra;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+
 import edu.one.core.infra.mustache.DevMustacheFactory;
 import edu.one.core.infra.mustache.I18nTemplateFunction;
 import edu.one.core.infra.mustache.StaticResourceTemplateFunction;
+
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.VoidHandler;
@@ -65,6 +69,12 @@ public abstract class Controller extends Verticle {
 			}
 		});
 
+		try {
+			StartupUtils.sendStartup(this.getClass().getSimpleName(),
+					vertx.eventBus(), config.getString("app-registry.address", "wse.app.registry"));
+		} catch (IOException e) {
+			log.error("Error application not registred.", e);
+		}
 		vertx.createHttpServer().requestHandler(rm).listen(config.getInteger("port"));
 	}
 

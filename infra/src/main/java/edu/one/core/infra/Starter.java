@@ -1,5 +1,6 @@
 package edu.one.core.infra;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -17,7 +18,20 @@ public class Starter extends Controller {
 			config = getConfig("", "mod.json");
 			super.start();
 			neo = new Neo(vertx.eventBus(),log);
-			deployApps();
+			String appRegistryModule = config.getString("app-registry");
+			container.deployModule(appRegistryModule, getConfig("../" +
+					appRegistryModule + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
+				@Override
+				public void handle(AsyncResult<String> event) {
+					if (event.succeeded()) {
+						try {
+							deployApps();
+						} catch (Exception e) {
+							log.error(e.getMessage(), e);
+						}
+					}
+				}
+			});
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}

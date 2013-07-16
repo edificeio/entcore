@@ -11,6 +11,12 @@ public class AppRegistry extends Controller {
 
 		AppRegistryService service = new AppRegistryService(vertx, container, rm);
 
+		try {
+			service.registerMethod(config.getString("address"), "collectApps");
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			log.error(e.getMessage(), e);
+		}
+
 		service.get("/test/invoke", "testExecute");
 	}
 

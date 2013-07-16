@@ -8,8 +8,10 @@ import java.util.Map;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 public abstract class AbstractService {
@@ -52,6 +54,26 @@ public abstract class AbstractService {
 				}
 			};
 		}
+	}
+
+	public void registerMethod(String address, String method)
+			throws NoSuchMethodException, IllegalAccessException {
+		final MethodHandle mh = lookup.bind(this, method,
+				MethodType.methodType(void.class, Message.class));
+		vertx.eventBus().registerHandler(address, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> message) {
+				try {
+					mh.invokeExact(message);
+				} catch (Throwable e) {
+					container.logger().error(e.getMessage(), e);
+					JsonObject json = new JsonObject().putString("status", "error")
+							.putString("message", e.getMessage());
+					message.reply(json);
+				}
+			}
+		});
 	}
 
 	public Map<String, String> getUriBinding() {
