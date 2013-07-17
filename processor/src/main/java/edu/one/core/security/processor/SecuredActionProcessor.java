@@ -46,7 +46,7 @@ public class SecuredActionProcessor extends AbstractProcessor {
 			}
 
 			// TODO check right method type else compile error ?
-			Set<String> controllerActions = actions.get(clazz.getQualifiedName());
+			Set<String> controllerActions = actions.get(clazz.getQualifiedName().toString());
 			if (controllerActions == null) {
 				controllerActions = new TreeSet<>();
 				actions.put(clazz.getQualifiedName().toString(), controllerActions);
