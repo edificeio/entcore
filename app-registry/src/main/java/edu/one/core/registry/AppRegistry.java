@@ -17,7 +17,9 @@ public class AppRegistry extends Controller {
 			log.error(e.getMessage(), e);
 		}
 
-		service.get("/test/invoke", "testExecute");
+		service.get("/applications", "listApplications");
+
+		service.get("/application/:name", "listApplicationActions");
 	}
 
 }

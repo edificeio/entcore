@@ -21,11 +21,15 @@ public class Neo  {
 		this.address = "wse.neo4j.persistor";
 	}
 
-	public void send(String query) {
+	public void send(String query, Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
 		jo.putString("query", query);
-		eb.send(address, jo);
+		eb.send(address, jo, handler);
+	}
+
+	public void send(String query) {
+		send(query, (Handler<Message<JsonObject>>) null);
 	}
 
 	public void sendMultiple(String query, String rs, String as, String vs) {

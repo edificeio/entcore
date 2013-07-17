@@ -18,14 +18,27 @@ public class Starter extends Controller {
 			config = getConfig("", "mod.json");
 			super.start();
 			neo = new Neo(vertx.eventBus(),log);
-			String appRegistryModule = config.getString("app-registry");
-			container.deployModule(appRegistryModule, getConfig("../" +
-					appRegistryModule + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
+			String neo4jPersistor = config.getString("neo4j-persistor");
+			container.deployModule(neo4jPersistor, getConfig("../" +
+					neo4jPersistor + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
+						String appRegistryModule = config.getString("app-registry");
 						try {
-							deployApps();
+							container.deployModule(appRegistryModule, getConfig("../" +
+									appRegistryModule + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
+								@Override
+								public void handle(AsyncResult<String> event) {
+									if (event.succeeded()) {
+										try {
+											deployApps();
+										} catch (Exception e) {
+											log.error(e.getMessage(), e);
+										}
+									}
+								}
+							});
 						} catch (Exception e) {
 							log.error(e.getMessage(), e);
 						}

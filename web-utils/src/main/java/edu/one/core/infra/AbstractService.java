@@ -12,6 +12,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
 public abstract class AbstractService {
@@ -21,12 +22,14 @@ public abstract class AbstractService {
 	protected final Container container;
 	private final RouteMatcher rm;
 	private final Map<String, String> uriBinding;
+	protected final Logger log;
 
 	public AbstractService(Vertx vertx, Container container, RouteMatcher rm) {
 		this.vertx = vertx;
 		this.container = container;
 		this.rm = rm;
 		this.uriBinding = new HashMap<>();
+		this.log = container.logger();
 	}
 
 	private Handler<HttpServerRequest> execute(String method) {
