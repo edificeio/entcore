@@ -1,19 +1,23 @@
 package edu.one.core.infra.request.filter;
 
 import edu.one.core.infra.request.CookieUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class UserAuthFilter implements Filter {
 
 	@Override
-	public boolean canAccess(HttpServerRequest request) {
+	public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
 		String oneSeesionId = CookieUtils.get("oneSessionId", request);
 		if (oneSeesionId == null) {
-			return false;
+			handler.handle(false);
+		} else {
+			handler.handle(true);
 		}
-		return true;
 	}
 
 	@Override
@@ -29,4 +33,5 @@ public class UserAuthFilter implements Filter {
 		request.response().putHeader("Location", location);
 		request.response().end();
 	}
+
 }

@@ -1,12 +1,13 @@
 package edu.one.core.infra.request.filter;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class AppAuthFilter implements Filter {
 
 	@Override
-	public boolean canAccess(HttpServerRequest request) {
-		return true;
+	public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
+		handler.handle(true);
 	}
 
 	@Override
