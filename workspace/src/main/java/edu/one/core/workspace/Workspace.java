@@ -16,6 +16,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.RackDao;
 import edu.one.core.workspace.service.WorkspaceService;
@@ -44,11 +45,11 @@ public class Workspace extends Controller {
 		JsonObject gridfsConf = container.config().getObject("gridfs-config");
 		container.deployModule("com.wse~gridfs-persistor~0.1.0-SNAPSHOT", gridfsConf);
 
-		WorkspaceService service = new WorkspaceService(vertx, container, rm);
+		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
 
-		rm.get("/workspace", new Handler<HttpServerRequest>() {
+		rm.get("/workspace", new SecurityHandler() {
 			@Override
-			public void handle(HttpServerRequest request) {
+			public void filter(HttpServerRequest request) {
 				renderView(request);
 			}
 		});

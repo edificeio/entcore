@@ -6,6 +6,7 @@ import static edu.one.core.infra.Controller.renderJson;
 import static edu.one.core.infra.Utils.getOrElse;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,6 +22,7 @@ import org.vertx.java.platform.Container;
 import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.security.SecuredAction;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.GenericDao;
 import edu.one.core.workspace.dao.RackDao;
@@ -32,8 +34,9 @@ public class WorkspaceService extends AbstractService {
 	private final DocumentDao documentDao;
 	private final RackDao rackDao;
 
-	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm) {
-		super(vertx, container, rm);
+	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+		super(vertx, container, rm, securedActions);
 		mongo = new MongoDb(vertx.eventBus(),
 				container.config().getObject("mongodb-config").getString("address"));
 		gridfsAddress = container.config().getObject("gridfs-config").getString("address");
@@ -41,6 +44,7 @@ public class WorkspaceService extends AbstractService {
 		rackDao = new RackDao(mongo);
 	}
 
+	@SecuredAction("workspace.document.add")
 	public void addDocument(HttpServerRequest request) {
 		JsonObject doc = new JsonObject();
 		String now = MongoDb.formatDate(new Date());
@@ -49,6 +53,7 @@ public class WorkspaceService extends AbstractService {
 		add(request, DocumentDao.DOCUMENTS_COLLECTION, doc);
 	}
 
+	@SecuredAction("workspace.rack.document.add")
 	public void addRackDocument(HttpServerRequest request) {
 		JsonObject doc = new JsonObject();
 		doc.putString("to", request.params().get("to")); // TODO check existance and validity (neo4j)
