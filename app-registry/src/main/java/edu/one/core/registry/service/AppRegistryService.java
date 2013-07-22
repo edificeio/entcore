@@ -44,7 +44,7 @@ public class AppRegistryService extends AbstractService {
 			neo.send(
 					"START n=node:node_auto_index(name={name}) " +
 					"MATCH n-[:PROVIDE]->a " +
-					"RETURN a.name as name, a.displayName as displayName",
+					"RETURN a.name as name, a.displayName as displayName, a.type as type",
 				params,
 				request.response()
 			);
@@ -62,10 +62,11 @@ public class AppRegistryService extends AbstractService {
 				JsonObject json = (JsonObject) o;
 				String name = json.getString("name");
 				String displayName = json.getString("displayName");
+				String type = json.getString("type", "WORKFLOW");
 				if (name != null && displayName != null &&
 						!name.trim().isEmpty() && !displayName.trim().isEmpty()) {
 					JsonArray tmp = new JsonArray();
-					tmp.addString(name).addString(displayName);
+					tmp.addString(name).addString(displayName).addString("SECURED_ACTION_" + type);
 					if (tmp.size() > 0) {
 						toQuery.addArray(tmp);
 					}
@@ -88,7 +89,7 @@ public class AppRegistryService extends AbstractService {
 							neo.send(
 								"START n=node:node_auto_index(name='" + application + "') " +
 								"FOREACH (action in " + actions + " : " +
-								"CREATE UNIQUE n-[:PROVIDE]->(a {type:'SECURED_ACTION', " +
+								"CREATE UNIQUE n-[:PROVIDE]->(a {type:head(tail(tail(action))), " +
 								"name:head(action), displayName:head(tail(action))})) " +
 								"RETURN n"
 							);

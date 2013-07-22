@@ -14,4 +14,6 @@ public @interface SecuredAction {
 
 	String value();
 
+	ActionType type() default ActionType.WORKFLOW;
+
 }

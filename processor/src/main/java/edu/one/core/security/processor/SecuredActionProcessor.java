@@ -52,7 +52,8 @@ public class SecuredActionProcessor extends AbstractProcessor {
 				actions.put(clazz.getQualifiedName().toString(), controllerActions);
 			}
 			controllerActions.add("{ \"name\" : \"" +  element.getSimpleName().toString() +
-					"\", \"displayName\" : \"" + annotation.value() + "\"}");
+					"\", \"displayName\" : \"" + annotation.value() + "\", \"type\" : \"" +
+					annotation.type().name() + "\"}");
 		}
 
 		Filer filer = processingEnv.getFiler();
