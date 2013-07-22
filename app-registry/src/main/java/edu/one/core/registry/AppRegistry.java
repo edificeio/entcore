@@ -9,7 +9,7 @@ public class AppRegistry extends Controller {
 	public void start() {
 		super.start();
 
-		AppRegistryService service = new AppRegistryService(vertx, container, rm);
+		AppRegistryService service = new AppRegistryService(vertx, container, rm, securedActions);
 
 		try {
 			service.registerMethod(config.getString("address"), "collectApps");

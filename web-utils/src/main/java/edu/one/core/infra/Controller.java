@@ -32,6 +32,7 @@ public abstract class Controller extends Verticle {
 	public TracerHelper trace;
 	private MustacheFactory mf;
 	private I18n i18n;
+	protected Map<String, String> securedActions;
 
 	@Override
 	public void start() {
@@ -70,7 +71,9 @@ public abstract class Controller extends Verticle {
 		});
 
 		try {
-			StartupUtils.sendStartup(this.getClass().getSimpleName(),
+			JsonArray actions = StartupUtils.loadSecuredActions();
+			securedActions = StartupUtils.securedActionsToMap(actions);
+			StartupUtils.sendStartup(this.getClass().getSimpleName(), actions,
 					vertx.eventBus(), config.getString("app-registry.address", "wse.app.registry"));
 		} catch (IOException e) {
 			log.error("Error application not registred.", e);

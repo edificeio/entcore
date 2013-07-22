@@ -20,8 +20,8 @@ public class AppRegistryService extends AbstractService {
 
 	private final Neo neo;
 
-	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm) {
-		super(vertx, container, rm);
+	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm, Map<String, String> securedActions) {
+		super(vertx, container, rm, securedActions);
 		neo = new Neo(vertx.eventBus(), log);
 	}
 

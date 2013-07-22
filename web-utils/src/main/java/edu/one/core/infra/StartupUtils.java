@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -14,20 +17,31 @@ import org.vertx.java.core.json.JsonObject;
 
 public class StartupUtils {
 
-	public static void sendStartup(String appName, EventBus eb, String address,
+	public static void sendStartup(String appName, JsonArray actions, EventBus eb, String address,
 			final Handler<Message<JsonObject>> handler) throws IOException {
-		JsonArray actions = loadSecuredActions();
+		if (actions == null || actions.size() == 0) {
+			actions = loadSecuredActions();
+		}
 		JsonObject jo = new JsonObject();
 		jo.putString("application", appName)
 		.putArray("actions", actions);
 		eb.send(address, jo, handler);
 	}
 
-	public static void sendStartup(String appName, EventBus eb, String address) throws IOException {
-		sendStartup(appName, eb, address, null);
+	public static void sendStartup(String appName, JsonArray actions, EventBus eb, String address) throws IOException {
+		sendStartup(appName, actions, eb, address, null);
 	}
 
-	private static JsonArray loadSecuredActions() throws IOException {
+	public static void sendStartup(String appName, EventBus eb, String address,
+			final Handler<Message<JsonObject>> handler) throws IOException {
+		sendStartup(appName, null, eb, address, handler);
+	}
+
+	public static void sendStartup(String appName, EventBus eb, String address) throws IOException {
+		sendStartup(appName, null, eb, address, null);
+	}
+
+	public static JsonArray loadSecuredActions() throws IOException {
 		String path = StartupUtils.class.getClassLoader().getResource(".").getPath();
 		File rootResources = new File(path);
 		JsonArray securedActions = new JsonArray();
@@ -57,6 +71,22 @@ public class StartupUtils {
 			}
 		}
 		return securedActions;
+	}
+
+	public static Map<String, String> securedActionsToMap(JsonArray securedActions) {
+		if (securedActions == null || securedActions.size() == 0) {
+			return Collections.emptyMap();
+		}
+		Map<String, String> actions = new HashMap<>();
+		for (Object a: securedActions) {
+			JsonObject action = (JsonObject) a;
+			String name = action.getString("name");
+			String type = action.getString("type");
+			if (name != null && type != null && !name.trim().isEmpty() && !type.trim().isEmpty()) {
+				actions.put(name, type);
+			}
+		}
+		return actions;
 	}
 
 }
