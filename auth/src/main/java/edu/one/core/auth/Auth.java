@@ -31,6 +31,7 @@ public class Auth extends Controller {
 		rm.post("/login", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
+				request.expectMultiPart(true);
 				request.endHandler(new VoidHandler() {
 					@Override
 					public void handle() {

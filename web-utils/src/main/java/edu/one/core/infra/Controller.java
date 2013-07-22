@@ -161,6 +161,7 @@ public abstract class Controller extends Verticle {
 	 * @param handler receive attributes
 	 */
 	public void bodyToParams(final HttpServerRequest request, final Handler<MultiMap> handler) {
+		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {

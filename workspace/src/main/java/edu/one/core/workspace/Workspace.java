@@ -422,6 +422,7 @@ public class Workspace extends Controller {
 		rm.post("/document/:id/comment", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(final HttpServerRequest request) {
+				request.expectMultiPart(true);
 				request.endHandler(new VoidHandler() {
 					@Override
 					protected void handle() {

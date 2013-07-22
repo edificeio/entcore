@@ -20,6 +20,7 @@ public class FileUtils {
 
 	public static void writeUploadFile(final HttpServerRequest request, final String filePath,
 			final Handler<JsonObject> handler) {
+		request.expectMultiPart(true);
 		request.uploadHandler(new Handler<HttpServerFileUpload>() {
 			@Override
 			public void handle(final HttpServerFileUpload upload) {
