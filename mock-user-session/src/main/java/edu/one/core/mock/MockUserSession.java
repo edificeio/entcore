@@ -41,9 +41,9 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 			return;
 		}
 
-		String actions = "[{ \"name\" : \"listApplications\", \"displayName\" : "
+		String actions = "[{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplications\", \"displayName\" : "
 				+ "\"app-registry.list.applications\", \"type\" : \"WORKFLOW\"}, "
-				+ "{ \"name\" : \"listApplicationActions\", \"displayName\" : "
+				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplicationActions\", \"displayName\" : "
 				+ "\"app-registry.list.actions\", \"type\" : \"WORKFLOW\"}"
 				+ "]";
 		JsonObject session = new JsonObject();
