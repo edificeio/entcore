@@ -41,10 +41,15 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 			return;
 		}
 
+		String actions = "[{ \"name\" : \"listApplications\", \"displayName\" : "
+				+ "\"app-registry.list.applications\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"listApplicationActions\", \"displayName\" : "
+				+ "\"app-registry.list.actions\", \"type\" : \"WORKFLOW\"}"
+				+ "]";
 		JsonObject session = new JsonObject();
 		session.putString("userId", "42d93f59-9b12-417d-b998-45b18bdd5afa");
 		session.putString("username", "blip");
-		session.putArray("authorizedActions", new JsonArray());
+		session.putArray("authorizedActions", new JsonArray(actions));
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
 	}
 

@@ -1,6 +1,8 @@
 package edu.one.core.registry;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.registry.service.AppRegistryService;
 
 public class AppRegistry extends Controller {
@@ -20,6 +22,9 @@ public class AppRegistry extends Controller {
 		service.get("/applications", "listApplications");
 
 		service.get("/application/:name", "listApplicationActions");
+
+		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), vertx.eventBus()));
+
 	}
 
 }

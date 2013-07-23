@@ -15,6 +15,7 @@ import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.Neo;
+import edu.one.core.security.SecuredAction;
 
 public class AppRegistryService extends AbstractService {
 
@@ -25,6 +26,7 @@ public class AppRegistryService extends AbstractService {
 		neo = new Neo(vertx.eventBus(), log);
 	}
 
+	@SecuredAction("app-registry.list.applications")
 	public void listApplications(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("type","APPLICATION");
@@ -36,6 +38,7 @@ public class AppRegistryService extends AbstractService {
 		);
 	}
 
+	@SecuredAction("app-registry.list.actions")
 	public void listApplicationActions(HttpServerRequest request) {
 		String name = request.params().get("name");
 		if (name != null && !name.trim().isEmpty()) {
