@@ -58,5 +58,9 @@ public abstract class SecurityHandler implements Handler<HttpServerRequest> {
 		}
 	}
 
+	public static void addFilter(Filter filter) {
+		chain.add(filter);
+	}
+
 	public abstract void filter(HttpServerRequest request);
 }
