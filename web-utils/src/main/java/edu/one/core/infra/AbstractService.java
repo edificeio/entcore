@@ -23,6 +23,7 @@ import org.vertx.java.platform.Container;
 import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.http.HttpMethod;
 import edu.one.core.infra.request.filter.SecurityHandler;
+import edu.one.core.infra.security.ActionType;
 
 public abstract class AbstractService {
 
@@ -218,7 +219,7 @@ public abstract class AbstractService {
 			bindings = new HashSet<>();
 			uriBinding.put(serviceMethod, bindings);
 		}
-		bindings.add(new Binding(httpMethod, Pattern.compile(regex), serviceMethod));
+		bindings.add(new Binding(httpMethod, Pattern.compile(regex), serviceMethod, actionType(serviceMethod)));
 	}
 
 	private void addRegEx(String input, HttpMethod httpMethod, String serviceMethod) {
@@ -227,7 +228,15 @@ public abstract class AbstractService {
 			bindings = new HashSet<>();
 			uriBinding.put(serviceMethod, bindings);
 		}
-		bindings.add(new Binding(httpMethod, Pattern.compile(input), serviceMethod));
+		bindings.add(new Binding(httpMethod, Pattern.compile(input), serviceMethod, actionType(serviceMethod)));
+	}
+
+	private ActionType actionType(String serviceMethod) {
+		try {
+			return ActionType.valueOf(securedActions.get(serviceMethod));
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return ActionType.UNSECURED;
+		}
 	}
 
 }
