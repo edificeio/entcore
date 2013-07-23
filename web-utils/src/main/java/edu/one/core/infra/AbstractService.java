@@ -122,7 +122,7 @@ public abstract class AbstractService {
 		if (method == null || method.trim().isEmpty()) {
 			throw new NullPointerException();
 		}
-		if (securedActions.containsKey(method)) {
+		if (securedActions.containsKey(this.getClass().getName() + "|" + method)) {
 			return executeSecure(method);
 		}
 		return execute(method);
@@ -200,7 +200,8 @@ public abstract class AbstractService {
 		return this;
 	}
 
-	private void addPattern(String input, HttpMethod httpMethod, String serviceMethod) {
+	private void addPattern(String input, HttpMethod httpMethod, String method) {
+		String serviceMethod = this.getClass().getName() + "|" + method;
 		Matcher m = Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)").matcher(input);
 		StringBuffer sb = new StringBuffer();
 		Set<String> groups = new HashSet<>();
@@ -222,7 +223,8 @@ public abstract class AbstractService {
 		bindings.add(new Binding(httpMethod, Pattern.compile(regex), serviceMethod, actionType(serviceMethod)));
 	}
 
-	private void addRegEx(String input, HttpMethod httpMethod, String serviceMethod) {
+	private void addRegEx(String input, HttpMethod httpMethod, String method) {
+		String serviceMethod = this.getClass().getName() + "|" + method;
 		Set<Binding> bindings = uriBinding.get(serviceMethod);
 		if (bindings == null) {
 			bindings = new HashSet<>();

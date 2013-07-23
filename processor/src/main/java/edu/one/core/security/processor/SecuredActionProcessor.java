@@ -51,7 +51,8 @@ public class SecuredActionProcessor extends AbstractProcessor {
 				controllerActions = new TreeSet<>();
 				actions.put(clazz.getQualifiedName().toString(), controllerActions);
 			}
-			controllerActions.add("{ \"name\" : \"" +  element.getSimpleName().toString() +
+			controllerActions.add("{ \"name\" : \"" + clazz.getQualifiedName().toString() + "|" +
+					element.getSimpleName().toString() +
 					"\", \"displayName\" : \"" + annotation.value() + "\", \"type\" : \"" +
 					annotation.type().name() + "\"}");
 		}
