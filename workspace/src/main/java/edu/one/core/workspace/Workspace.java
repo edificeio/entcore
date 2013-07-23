@@ -16,9 +16,11 @@ import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.RackDao;
+import edu.one.core.workspace.security.WorkspaceResourcesProvider;
 import edu.one.core.workspace.service.WorkspaceService;
 
 public class Workspace extends Controller {
@@ -47,9 +49,9 @@ public class Workspace extends Controller {
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
 
-		rm.get("/workspace", new SecurityHandler() {
+		rm.get("/workspace", new Handler<HttpServerRequest>() {
 			@Override
-			public void filter(HttpServerRequest request) {
+			public void handle(HttpServerRequest request) {
 				renderView(request);
 			}
 		});
@@ -327,6 +329,10 @@ public class Workspace extends Controller {
 				});
 			}
 		});
+
+		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
+				vertx.eventBus(), new WorkspaceResourcesProvider(mongo)));
+
 	}
 
 }

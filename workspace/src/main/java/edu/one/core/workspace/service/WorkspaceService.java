@@ -22,6 +22,7 @@ import org.vertx.java.platform.Container;
 import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.GenericDao;
@@ -138,10 +139,12 @@ public class WorkspaceService extends AbstractService {
 		});
 	}
 
+	@SecuredAction(value = "workspace.document.get", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
 		getFile(request, documentDao);
 	}
 
+	@SecuredAction(value = "workspace.rack.document.get", type = ActionType.RESOURCE)
 	public void getRackDocument(HttpServerRequest request) {
 		getFile(request, rackDao);
 	}
@@ -162,10 +165,12 @@ public class WorkspaceService extends AbstractService {
 		});
 	}
 
+	@SecuredAction(value = "workspace.document.delete", type = ActionType.RESOURCE)
 	public void deleteDocument(HttpServerRequest request) {
 		deleteFile(request, documentDao);
 	}
 
+	@SecuredAction(value = "workspace.rack.document.delete", type = ActionType.RESOURCE)
 	public void deleteRackDocument(HttpServerRequest request) {
 		deleteFile(request, rackDao);
 	}
