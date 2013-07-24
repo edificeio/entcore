@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.geoff.Geoff;
@@ -21,6 +22,7 @@ import org.neo4j.graphdb.index.IndexManager;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 
@@ -128,6 +130,7 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 		sendOK(m, json);
 	}
 
+	@SuppressWarnings("unchecked")
 	private JsonObject toJson (ExecutionResult result) {
 		JsonObject json = new JsonObject();
 		// TODO avoid "if null programming"
@@ -139,10 +142,16 @@ public class Neo4jPersistor extends BusModBase implements Handler<Message<JsonOb
 				JsonObject jsonRow = new JsonObject();
 				json.putObject(String.valueOf(i++), jsonRow);
 			for (Map.Entry<String, Object> column : row.entrySet()) {
-				String value = (column.getValue() == null) ? "" : column.getValue().toString();
-				jsonRow.putString(column.getKey(), value);
+				Object v = column.getValue();
+				if (v instanceof Iterable) {
+					jsonRow.putArray(column.getKey(), new JsonArray((List<Object>) v));
+				} else {
+					String value = (v == null) ? "" : v.toString();
+					jsonRow.putString(column.getKey(), value);
+				}
 			}
 		}
 		return new JsonObject().putObject("result", json) ;
 	}
+
 }
