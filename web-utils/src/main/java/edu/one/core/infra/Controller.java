@@ -113,7 +113,7 @@ public abstract class Controller extends Verticle {
 		}
 	}
 
-	public void badRequest(HttpServerRequest request) {
+	public static void badRequest(HttpServerRequest request) {
 		request.response().setStatusCode(400).end();
 	}
 

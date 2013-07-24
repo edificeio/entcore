@@ -1,0 +1,14 @@
+.app-registry nav ul {
+	width: 200px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+form {
+	width: 300px;
+}
+
+.hidden {
+	display: none;
+}

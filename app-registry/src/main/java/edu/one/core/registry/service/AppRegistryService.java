@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -14,6 +15,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.AbstractService;
+import static edu.one.core.infra.Controller.*;
 import edu.one.core.infra.Neo;
 import edu.one.core.security.SecuredAction;
 
@@ -54,6 +56,94 @@ public class AppRegistryService extends AbstractService {
 		} else {
 			request.response().setStatusCode(400).end();
 		}
+	}
+
+	@SecuredAction("app-registry.list.applications.actions")
+	public void listApplicationsWithActions(HttpServerRequest request) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("type","APPLICATION");
+		neo.send(
+			"START n=node:node_auto_index(type={type}) " +
+			"MATCH n-[r?:PROVIDE]->a " +
+			"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions",
+			params,
+			request.response()
+		);
+	}
+
+	//@SecuredAction("app-registry.create.role")
+	public void createRole(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				final String actions = request.formAttributes().get("actions");
+				final String roleName = request.formAttributes().get("role");
+				if (actions != null && roleName != null &&
+						!actions.trim().isEmpty() && !roleName.trim().isEmpty()) {
+					Map<String, Object> params = new HashMap<String, Object>();
+					params.put("roleName", roleName);
+					params.put("id", UUID.randomUUID().toString());
+					neo.send(
+							"START n=node:node_auto_index(name={roleName}) "+
+							"WITH count(*) AS exists " +
+							"WHERE exists=0" +
+							"CREATE (m {id:{id}, " +
+							"type:'ROLE', " +
+							"name:{roleName}" +
+							"}) " +
+							"RETURN m.id as id",
+							params,
+							new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if ("ok".equals(event.body().getString("status"))) {
+										Map<String, Object> params2 = new HashMap<String, Object>();
+										params2.put("roleName", roleName);
+										neo.send(
+											"START n=node:node_auto_index('name:(\"" +
+											actions.replaceAll(",", "\" \"") + "\")'), " +
+											"m=node:node_auto_index(name={roleName}) " +
+											"CREATE UNIQUE m-[:AUTHORIZE]->n",
+											params2, request.response()
+										);
+									} else {
+										badRequest(request);
+									}
+								}
+							}
+						);
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("app-registry.list.roles")
+	public void listRoles(HttpServerRequest request) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("type","ROLE");
+		neo.send(
+			"START n=node:node_auto_index(type={type}) " +
+			"RETURN n.id as id, n.name as name",
+			params,
+			request.response()
+		);
+	}
+
+	@SecuredAction("app-registry.list.roles.actions")
+	public void listRolesWithActions(HttpServerRequest request) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("type","ROLE");
+		neo.send(
+			"START n=node:node_auto_index(type={type}) " +
+			"MATCH n-[r?:AUTHORIZE]->a " +
+			"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions",
+			params,
+			request.response()
+		);
 	}
 
 	public void collectApps(final Message<JsonObject> message) {

@@ -1,0 +1,15 @@
+{
+	"app.registry.title": "Applications registry",
+	"app.registry.header": "Applications registry",
+	"app.registry.applications" : "Applications list",
+	"app.registry.roles" : "Roles list",
+	"app.registry.authorisations" : "Authorisations list",
+	"app.registry.select.all" : "All",
+	"app.registry.unselect.all" : "None",
+	"app.registry.createRole" : "Add role",
+	"app.registry.role" : "Role",
+	"app.registry.application" : "Application",
+	"app.registry.actions" : "Actions",
+	"app.registry.role.name" : "Role name",
+	"app.registry.valid" : "Valid"
+}

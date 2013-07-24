@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}app.registry.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#static}}css/app-registry.css{{/static}}" media="all" />
+
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/app-registry.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<header>
+			<h1>{{#i18n}}app.registry.header{{/i18n}}</h1>
+		</header>
+		<section id="main">
+			<div class="app-registry">
+				<nav class="left">
+					<ul>
+						<li><a call="applications" href="/applications/actions">{{#i18n}}app.registry.applications{{/i18n}}</a></li>
+						<li><a call="roles" href="/roles/actions">{{#i18n}}app.registry.roles{{/i18n}}</a></li>
+					</ul>
+				</nav>
+				<div class="mod">
+					<div id="list"></div>
+					<div id="form-window"></div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

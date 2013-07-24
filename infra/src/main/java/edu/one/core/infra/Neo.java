@@ -43,16 +43,20 @@ public class Neo  {
 	}
 
 	public void send(String query, Map<String,Object> params, final HttpServerResponse response) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		jo.putObject("params", new JsonObject(params));
-		eb.send(address, jo , new Handler<Message<JsonObject>>() {
+		send(query, params, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> m) {
 				response.putHeader("content-type", "text/json");
 				response.end(m.body().encode());
 			}
 		});
+	}
+
+	public void send(String query, Map<String,Object> params, Handler<Message<JsonObject>> handler) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		jo.putObject("params", new JsonObject(params));
+		eb.send(address, jo , handler);
 	}
 
 	public void send(String query, final HttpServerResponse response) {

@@ -44,7 +44,15 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 		String actions = "[{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplications\", \"displayName\" : "
 				+ "\"app-registry.list.applications\", \"type\" : \"WORKFLOW\"}, "
 				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplicationActions\", \"displayName\" : "
-				+ "\"app-registry.list.actions\", \"type\" : \"WORKFLOW\"}"
+				+ "\"app-registry.list.actions\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|createRole\", \"displayName\" : "
+				+ "\"app-registry.create.role\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listRoles\", \"displayName\" : "
+				+ "\"app-registry.list.roles\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listRolesWithActions\", \"displayName\" : "
+				+ "\"app-registry.list.roles.actions\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplicationsWithActions\", \"displayName\" : "
+				+ "\"app-registry.list.applications.actions\", \"type\" : \"WORKFLOW\"}"
 				+ "]";
 		JsonObject session = new JsonObject();
 		session.putString("userId", "42d93f59-9b12-417d-b998-45b18bdd5afa");
