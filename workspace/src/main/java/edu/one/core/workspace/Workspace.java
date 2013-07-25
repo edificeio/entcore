@@ -51,12 +51,7 @@ public class Workspace extends Controller {
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
 
-		rm.get("/workspace", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				renderView(request);
-			}
-		});
+		service.get("/workspace", "view", this);
 
 		service.post("/document", "addDocument");
 

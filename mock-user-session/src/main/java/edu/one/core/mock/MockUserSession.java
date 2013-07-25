@@ -53,6 +53,8 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 				+ "\"app-registry.list.roles.actions\", \"type\" : \"WORKFLOW\"}, "
 				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|view\", \"displayName\" : "
 				+ "\"app-registry.view\", \"type\" : \"WORKFLOW\"}, "
+				+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|view\", \"displayName\" : "
+				+ "\"workspace.view\", \"type\" : \"WORKFLOW\"}, "
 				+ "{ \"name\" : \"edu.one.core.registry.service.AppRegistryService|listApplicationsWithActions\", \"displayName\" : "
 				+ "\"app-registry.list.applications.actions\", \"type\" : \"WORKFLOW\"}"
 				+ "]";

@@ -20,6 +20,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.AbstractService;
+import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.security.ActionType;
@@ -44,6 +45,11 @@ public class WorkspaceService extends AbstractService {
 		gridfsAddress = container.config().getObject("gridfs-config").getString("address");
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
+	}
+
+	@SecuredAction("workspace.view")
+	public void view(HttpServerRequest request, Controller controller) {
+		controller.renderView(request);
 	}
 
 	//@SecuredAction("workspace.document.add")
