@@ -1,8 +1,5 @@
 package edu.one.core.registry;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
@@ -22,12 +19,7 @@ public class AppRegistry extends Controller {
 			log.error(e.getMessage(), e);
 		}
 
-		rm.get("/app-registry", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				renderView(request);
-			}
-		});
+		service.get("/app-registry", "view", this);
 
 		service.get("/applications", "listApplications");
 

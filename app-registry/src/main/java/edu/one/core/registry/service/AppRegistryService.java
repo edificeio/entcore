@@ -15,6 +15,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.AbstractService;
+import edu.one.core.infra.Controller;
 import static edu.one.core.infra.Controller.*;
 import edu.one.core.infra.Neo;
 import edu.one.core.security.SecuredAction;
@@ -26,6 +27,11 @@ public class AppRegistryService extends AbstractService {
 	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm, Map<String, String> securedActions) {
 		super(vertx, container, rm, securedActions);
 		neo = new Neo(vertx.eventBus(), log);
+	}
+
+	@SecuredAction("app-registry.view")
+	public void view(HttpServerRequest request, Controller controller) {
+		controller.renderView(request);
 	}
 
 	@SecuredAction("app-registry.list.applications")
