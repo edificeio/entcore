@@ -98,6 +98,60 @@ public abstract class AbstractService {
 		}
 	}
 
+	private Handler<HttpServerRequest> execute(String method, final Controller controller) {
+		try {
+			final MethodHandle mh = lookup.bind(this, method,
+					MethodType.methodType(void.class, HttpServerRequest.class, Controller.class));
+			return new Handler<HttpServerRequest>() {
+
+				@Override
+				public void handle(HttpServerRequest request) {
+					try {
+						mh.invokeExact(request, controller);
+					} catch (Throwable e) {
+						request.response().setStatusCode(500).end();
+					}
+				}
+			};
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+
+			return new Handler<HttpServerRequest>() {
+
+				@Override
+				public void handle(HttpServerRequest request) {
+					request.response().setStatusCode(404).end();
+				}
+			};
+		}
+	}
+
+	private Handler<HttpServerRequest> executeSecure(String method, final Controller controller) {
+		try {
+			final MethodHandle mh = lookup.bind(this, method,
+					MethodType.methodType(void.class, HttpServerRequest.class, Controller.class));
+			return new SecurityHandler() {
+
+				@Override
+				public void filter(HttpServerRequest request) {
+					try {
+						mh.invokeExact(request, controller);
+					} catch (Throwable e) {
+						request.response().setStatusCode(500).end();
+					}
+				}
+			};
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+
+			return new SecurityHandler() {
+
+				@Override
+				public void filter(HttpServerRequest request) {
+					request.response().setStatusCode(404).end();
+				}
+			};
+		}
+	}
+
 	public void registerMethod(String address, String method)
 			throws NoSuchMethodException, IllegalAccessException {
 		final MethodHandle mh = lookup.bind(this, method,
@@ -128,6 +182,16 @@ public abstract class AbstractService {
 		return execute(method);
 	}
 
+	private Handler<HttpServerRequest> bindHandler(String method, Controller controller) {
+		if (method == null || method.trim().isEmpty()) {
+			throw new NullPointerException();
+		}
+		if (securedActions.containsKey(this.getClass().getName() + "|" + method)) {
+			return executeSecure(method, controller);
+		}
+		return execute(method, controller);
+	}
+
 	public Map<String, Set<Binding>> getUriBinding() {
 		return this.uriBinding;
 	}
@@ -155,6 +219,12 @@ public abstract class AbstractService {
 	public AbstractService get(String pattern, String method) {
 		addPattern(pattern, HttpMethod.GET, method);
 		rm.get(pattern, bindHandler(method));
+		return this;
+	}
+
+	public AbstractService get(String pattern, String method, Controller controller) {
+		addPattern(pattern, HttpMethod.GET, method);
+		rm.get(pattern, bindHandler(method, controller));
 		return this;
 	}
 
