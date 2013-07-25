@@ -110,13 +110,15 @@ public class FileUtils {
 	}
 
 	public static void gridfsSendFile(String id, final String downloadName, final EventBus eb,
-			final String gridfsAddress, final HttpServerResponse response) {
+			final String gridfsAddress, final HttpServerResponse response, final boolean inline) {
 		gridfsReadFile(id, eb, gridfsAddress, new Handler<Buffer>() {
 			@Override
 			public void handle(Buffer file) {
-				response.putHeader("Content-Disposition",
-						"attachment; filename=" + downloadName)
-						.end(file);
+				if (!inline) {
+					response.putHeader("Content-Disposition",
+							"attachment; filename=" + downloadName);
+				}
+				response.end(file);
 			}
 		});
 	}

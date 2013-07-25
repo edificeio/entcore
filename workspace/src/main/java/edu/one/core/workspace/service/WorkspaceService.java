@@ -160,12 +160,26 @@ public class WorkspaceService extends AbstractService {
 				JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
 					FileUtils.gridfsSendFile(result.getString("file"),
-							result.getString("name"), eb, gridfsAddress, request.response());
+							result.getString("name"), eb, gridfsAddress, request.response(),
+							inlineDocumentResponse(result, request.params().get("application")));
 				} else {
 					request.response().setStatusCode(404).end();
 				}
 			}
 		});
+	}
+
+	private boolean inlineDocumentResponse(JsonObject doc, String application) {
+		JsonObject metadata = doc.getObject("metadata");
+		return metadata != null && (
+				"image/jpeg".equals(metadata.getString("content-type")) ||
+				"image/gif".equals(metadata.getString("content-type")) ||
+				"image/png".equals(metadata.getString("content-type")) ||
+				"image/tiff".equals(metadata.getString("content-type")) ||
+				"image/vnd.microsoft.icon".equals(metadata.getString("content-type")) ||
+				"image/svg+xml".equals(metadata.getString("content-type")) ||
+				("application/octet-stream".equals(metadata.getString("content-type")) && application != null)
+			);
 	}
 
 	@SecuredAction(value = "workspace.document.delete", type = ActionType.RESOURCE)
