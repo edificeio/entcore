@@ -30,6 +30,7 @@ import edu.one.core.workspace.dao.RackDao;
 
 public class WorkspaceService extends AbstractService {
 
+	public static final String WORKSPACE_NAME = "WORKSPACE";
 	private final String gridfsAddress;
 	private final MongoDb mongo;
 	private final DocumentDao documentDao;
@@ -45,7 +46,7 @@ public class WorkspaceService extends AbstractService {
 		rackDao = new RackDao(mongo);
 	}
 
-	@SecuredAction("workspace.document.add")
+	//@SecuredAction("workspace.document.add")
 	public void addDocument(HttpServerRequest request) {
 		JsonObject doc = new JsonObject();
 		String now = MongoDb.formatDate(new Date());
@@ -75,6 +76,8 @@ public class WorkspaceService extends AbstractService {
 							.getString("filename")));
 					doc.putObject("metadata", uploaded.getObject("metadata"));
 					doc.putString("file", uploaded.getString("_id"));
+					doc.putString("application", getOrElse(request.params()
+							.get("application"), WORKSPACE_NAME)); // TODO check if application name is valid
 					mongo.save(mongoCollection, doc, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> res) {

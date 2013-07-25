@@ -1,5 +1,7 @@
 package edu.one.core.workspace;
 
+import static edu.one.core.infra.Utils.getOrElse;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,10 +70,14 @@ public class Workspace extends Controller {
 			@Override
 			public void handle(final HttpServerRequest request) {
 				String query = null;
+				String forApplication = getOrElse(request.params()
+						.get("application"), WorkspaceService.WORKSPACE_NAME);
 				if (request.params().get("hierarchical") != null) {
-					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : { \"$exists\" : false }}";
+					query = "{ \"file\" : { \"$exists\" : true }, \"application\": \"" +
+							forApplication + "\", \"folder\" : { \"$exists\" : false }}";
 				} else {
-					query = "{ \"file\" : { \"$exists\" : true }}";
+					query = "{ \"file\" : { \"$exists\" : true }, \"application\": \"" +
+							forApplication + "\" }";
 				}
 				mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 					@Override
@@ -93,10 +99,14 @@ public class Workspace extends Controller {
 			public void handle(final HttpServerRequest request) {
 				String query = null;
 				String expectedFolder = request.params().get("folder");
+				String forApplication = getOrElse(request.params()
+						.get("application"), WorkspaceService.WORKSPACE_NAME);
 				if (request.params().get("hierarchical") != null) {
-					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : \"" + expectedFolder + "\" }";
+					query = "{ \"file\" : { \"$exists\" : true }, \"application\": \"" +
+							forApplication + "\", \"folder\" : \"" + expectedFolder + "\" }";
 				} else {
-					query = "{ \"file\" : { \"$exists\" : true }, \"folder\" : { \"$regex\" : \"^" +
+					query = "{ \"file\" : { \"$exists\" : true }, \"application\": \"" +
+							forApplication + "\", \"folder\" : { \"$regex\" : \"^" +
 							expectedFolder + "(_|$)\" }}";
 				}
 				mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
