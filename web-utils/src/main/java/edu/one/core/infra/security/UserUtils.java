@@ -47,10 +47,11 @@ public class UserUtils {
 	}
 
 	// TODO replace with real session busmod
-	public static void getSession(EventBus eb, HttpServerRequest request,
+	public static void getSession(EventBus eb, final HttpServerRequest request,
 			final Handler<JsonObject> handler) {
 		String oneSessionId = CookieUtils.get("oneSessionId", request);
 		if (oneSessionId != null) {
+			request.pause();
 			JsonObject findSession = new JsonObject()
 				.putString("action", "find")
 				.putString("sessionId", oneSessionId);
@@ -59,6 +60,7 @@ public class UserUtils {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					JsonObject session = message.body().getObject("session");
+					request.resume();
 					if ("ok".equals(message.body().getString("status")) && session != null) {
 						handler.handle(session);
 					} else {
