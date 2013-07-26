@@ -20,5 +20,7 @@
 	"workspace.document.comment.toggle" : "Afficher/Masquer les commentaires",
 	"workspace.delete" : "Supprimer",
 	"workspace.move.path" : "Destination",
-	"workspace.valid" : "Appliquer"
+	"workspace.valid" : "Appliquer",
+	"workspace.document.delete" : "Supprimer un document",
+	"workspace.document.get" : "Lire un document"
 }

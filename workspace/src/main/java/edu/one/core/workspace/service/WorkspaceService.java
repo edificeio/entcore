@@ -1,17 +1,20 @@
 package edu.one.core.workspace.service;
 
 import static edu.one.core.infra.Controller.badRequest;
+import static edu.one.core.infra.Controller.redirect;
 import static edu.one.core.infra.Controller.renderError;
 import static edu.one.core.infra.Controller.renderJson;
 import static edu.one.core.infra.Utils.getOrElse;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -50,6 +53,25 @@ public class WorkspaceService extends AbstractService {
 	@SecuredAction("workspace.view")
 	public void view(HttpServerRequest request, Controller controller) {
 		controller.renderView(request);
+	}
+
+	public void share(HttpServerRequest request, Controller controller) {
+		shareResource(request, controller);
+	}
+
+	public void shareDocument(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@SuppressWarnings({ "rawtypes", "unchecked" })
+			@Override
+			protected void handle() {
+				String id = request.formAttributes().get("resourceId");
+				List<String> shares = request.formAttributes().getAll("shares");
+				log.info("id : " + id + ", shares : " + new JsonArray((List) shares).encode());
+				redirect(request, "/workspace");
+			}
+		});
 	}
 
 	//@SecuredAction("workspace.document.add")

@@ -53,6 +53,10 @@ public class Workspace extends Controller {
 
 		service.get("/workspace", "view", this);
 
+		service.get("/share", "share", this);
+
+		service.post("/share", "shareDocument");
+
 		service.post("/document", "addDocument");
 
 		service.get("/document/:id", "getDocument");
