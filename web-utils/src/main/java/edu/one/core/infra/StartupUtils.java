@@ -15,6 +15,8 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import edu.one.core.infra.security.SecuredAction;
+
 public class StartupUtils {
 
 	public static void sendStartup(String appName, JsonArray actions, EventBus eb, String address,
@@ -73,17 +75,20 @@ public class StartupUtils {
 		return securedActions;
 	}
 
-	public static Map<String, String> securedActionsToMap(JsonArray securedActions) {
+	public static Map<String, SecuredAction> securedActionsToMap(JsonArray securedActions) {
 		if (securedActions == null || securedActions.size() == 0) {
 			return Collections.emptyMap();
 		}
-		Map<String, String> actions = new HashMap<>();
+		Map<String, SecuredAction> actions = new HashMap<>();
 		for (Object a: securedActions) {
 			JsonObject action = (JsonObject) a;
 			String name = action.getString("name");
+			String displayName = action.getString("displayName");
 			String type = action.getString("type");
-			if (name != null && type != null && !name.trim().isEmpty() && !type.trim().isEmpty()) {
-				actions.put(name, type);
+			if (name != null && type != null && displayName != null
+					&& !name.trim().isEmpty() && !type.trim().isEmpty()
+					&& !displayName.trim().isEmpty()) {
+				actions.put(name, new SecuredAction(name, displayName, type));
 			}
 		}
 		return actions;

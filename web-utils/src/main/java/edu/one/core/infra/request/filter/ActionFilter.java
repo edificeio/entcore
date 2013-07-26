@@ -1,21 +1,17 @@
 package edu.one.core.infra.request.filter;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.one.core.infra.http.Binding;
-import edu.one.core.infra.request.CookieUtils;
 import edu.one.core.infra.security.ActionType;
+import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.ResourcesProvider;
 import edu.one.core.infra.security.resources.UserInfos;
 
@@ -37,26 +33,17 @@ public class ActionFilter implements Filter {
 
 	@Override
 	public void canAccess(final HttpServerRequest request, final Handler<Boolean> handler) {
-		String oneSessionId = CookieUtils.get("oneSessionId", request);
-		if (oneSessionId != null) {
-			JsonObject findSession = new JsonObject();
-			findSession.putString("action", "find").
-				putString("sessionId", oneSessionId);
-			eb.send("wse.mock.session", findSession, new Handler<Message<JsonObject>>() {
+		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 
-				@Override
-				public void handle(Message<JsonObject> message) {
-					JsonObject session = message.body().getObject("session");
-					if ("ok".equals(message.body().getString("status")) && session != null) {
-						userIsAuthorized(request, session, handler);
-					} else {
-						handler.handle(false);
-					}
+			@Override
+			public void handle(JsonObject session) {
+				if (session != null) {
+					userIsAuthorized(request, session, handler);
+				} else {
+					handler.handle(false);
 				}
-			});
-		} else {
-			handler.handle(false);
-		}
+			}
+		});
 	}
 
 	@Override
@@ -78,7 +65,7 @@ public class ActionFilter implements Filter {
 
 	private void authorizeResourceAction(HttpServerRequest request, JsonObject session,
 			Binding binding, Handler<Boolean> handler) {
-		UserInfos user = sessionToUserInfos(session);
+		UserInfos user = UserUtils.sessionToUserInfos(session);
 		if (user != null && provider != null) {
 			provider.authorize(request, binding, user, handler);
 		} else {
@@ -113,15 +100,6 @@ public class ActionFilter implements Filter {
 			}
 		}
 		return null;
-	}
-
-	private UserInfos sessionToUserInfos(JsonObject session) {
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			return mapper.readValue(session.encode(), UserInfos.class);
-		} catch (IOException e) {
-			return null;
-		}
 	}
 
 }

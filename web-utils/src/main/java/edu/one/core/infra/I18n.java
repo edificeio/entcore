@@ -1,13 +1,19 @@
 package edu.one.core.infra;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 
 
 /*
@@ -27,6 +33,21 @@ public class I18n {
 				Locale l = Locale.forLanguageTag(new File(path).getName().split("\\.")[0]);
 				JsonObject jo = new JsonObject(vertx.fileSystem().readFileSync(path).toString());
 				messages.put(l,jo);
+			}
+
+			for (Locale l : messages.keySet()) {
+				InputStream in = this.getClass().
+						getResourceAsStream("/i18n/" + l.getLanguage() + ".utils.json");
+				if (in != null) {
+					String i18n = CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8));
+					JsonObject jo = new JsonObject(i18n);
+					JsonObject j = messages.get(l);
+					if (j == null) {
+						messages.put(l,jo);
+					} else {
+						messages.put(l, jo.mergeIn(j));
+					}
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

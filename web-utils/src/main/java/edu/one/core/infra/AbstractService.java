@@ -1,5 +1,8 @@
 package edu.one.core.infra;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -13,9 +16,11 @@ import java.util.regex.Pattern;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -24,6 +29,8 @@ import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.http.HttpMethod;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.infra.security.ActionType;
+import edu.one.core.infra.security.SecuredAction;
+import edu.one.core.infra.security.UserUtils;
 
 public abstract class AbstractService {
 
@@ -32,16 +39,19 @@ public abstract class AbstractService {
 	protected final Container container;
 	private final RouteMatcher rm;
 	private final Map<String, Set<Binding>> uriBinding;
-	private final Map<String, String> securedActions;
+	private final Map<String, SecuredAction> securedActions;
 	protected final Logger log;
+	protected final EventBus eb;
 
-	public AbstractService(Vertx vertx, Container container, RouteMatcher rm, Map<String, String> securedActions) {
+	public AbstractService(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, SecuredAction> securedActions) {
 		this.vertx = vertx;
 		this.container = container;
 		this.rm = rm;
 		this.uriBinding = new HashMap<>();
 		this.log = container.logger();
 		this.securedActions = securedActions;
+		this.eb = vertx.eventBus();
 	}
 
 	private Handler<HttpServerRequest> execute(String method) {
@@ -305,10 +315,58 @@ public abstract class AbstractService {
 
 	private ActionType actionType(String serviceMethod) {
 		try {
-			return ActionType.valueOf(securedActions.get(serviceMethod));
+			return ActionType.valueOf(securedActions.get(serviceMethod).getType());
 		} catch (IllegalArgumentException | NullPointerException e) {
 			return ActionType.UNSECURED;
 		}
+	}
+
+	protected void shareResource(final HttpServerRequest request, final Controller controller) {
+		final String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			final JsonArray actions = new JsonArray();
+			for (SecuredAction action: securedActions.values()) {
+				if (ActionType.RESOURCE.name().equals(action.getType())) {
+					JsonObject a = new JsonObject()
+						.putString("name", action.getName())
+						.putString("displayName", action.getDisplayName())
+						.putString("type", action.getType());
+					actions.add(a);
+				}
+			}
+			UserUtils.findVisibleUsers(eb, request, new Handler<JsonArray>() {
+				@Override
+				public void handle(JsonArray visibleUsers) {
+					JsonArray users = new JsonArray();
+					for(Object u : visibleUsers) {
+						JsonObject user = (JsonObject) u;
+						JsonArray userChoices = new JsonArray();
+						for (Object a: actions) {
+							JsonObject action = (JsonObject) a;
+							userChoices.add(action.getString("name") + "_" + user.getString("id"));
+						}
+						users.add(new JsonObject()
+							.putObject("user", user)
+							.putArray("choices", userChoices));
+					}
+					JsonObject share = new JsonObject()
+						.putString("postUri", request.path())
+						.putString("resourceId", id)
+						.putArray("actions", actions)
+						.putArray("users", users);
+					renderView(request, controller, share, "/view/shareResource.html");
+				}
+			});
+		} else {
+			renderView(request, controller, null, "/view/resourceNotFound.html");
+		}
+	}
+
+	private void renderView(HttpServerRequest request, Controller controller,
+			JsonObject share, String resourceName) {
+		InputStream in = this.getClass().getResourceAsStream(resourceName);
+		Reader r = new InputStreamReader(in);
+		controller.renderView(request, share, resourceName, r);
 	}
 
 }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}share.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<header>
+			<h1>{{#i18n}}share.header{{/i18n}}</h1>
+		</header>
+		<section id="main">
+		<div class="share">
+			<form method="post" action="{{postUri}}">
+				<input type="hidden" name="resourceId" value="{{resourceId}}" />
+				<table class="striped alternate" summary="">
+					<thead>
+						<tr>
+							<th scope="col"></th>
+							{{#actions}}
+							<th scope="col">{{#i18n}}{{displayName}}{{/i18n}}</th>
+							{{/actions}}
+						</tr>
+					</thead>
+					<tbody>
+						{{#users}}
+						<tr>
+							{{#user}}
+							<td>{{username}}</td>
+							{{/user}}
+							{{#choices}}
+							<td><input type="checkbox" name="shares" value="{{.}}" /></td>
+							{{/choices}}
+						</tr>
+						{{/users}}
+					</tbody>
+				</table>
+				<input type="submit" value="{{#i18n}}share.share{{/i18n}}" />
+			</form>
+		</div>
+	</section>
+	</body>
+</html>

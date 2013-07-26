@@ -24,7 +24,8 @@ public class AppRegistryService extends AbstractService {
 
 	private final Neo neo;
 
-	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm, Map<String, String> securedActions) {
+	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		neo = new Neo(vertx.eventBus(), log);
 	}

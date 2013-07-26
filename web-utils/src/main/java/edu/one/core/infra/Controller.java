@@ -7,8 +7,10 @@ import com.github.mustachejava.MustacheFactory;
 import edu.one.core.infra.mustache.DevMustacheFactory;
 import edu.one.core.infra.mustache.I18nTemplateFunction;
 import edu.one.core.infra.mustache.StaticResourceTemplateFunction;
+import edu.one.core.infra.security.SecuredAction;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public abstract class Controller extends Verticle {
 	public TracerHelper trace;
 	private MustacheFactory mf;
 	private I18n i18n;
-	protected Map<String, String> securedActions;
+	protected Map<String, SecuredAction> securedActions;
 
 	@Override
 	public void start() {
@@ -99,9 +101,18 @@ public abstract class Controller extends Verticle {
 	 * TODO : isolate sscope management 
 	 */
 	public void renderView(HttpServerRequest request, JsonObject params) {
+		renderView(request, params, null, null);
+	}
+
+	public void renderView(HttpServerRequest request, JsonObject params, String resourceName, Reader r) {
 		try {
 			if (params == null) { params = new JsonObject(); }
-			Mustache mustache = mf.compile(request.path() + ".html");
+			Mustache mustache;
+			if (resourceName != null && r != null && !resourceName.trim().isEmpty()) {
+				mustache = mf.compile(r, resourceName);
+			} else {
+				mustache = mf.compile(request.path() + ".html");
+			}
 			Writer writer = new StringWriter();
 			Object[] scopes = { params.toMap(), functionsScope(request)};
 			mustache.execute(writer, scopes).flush();
