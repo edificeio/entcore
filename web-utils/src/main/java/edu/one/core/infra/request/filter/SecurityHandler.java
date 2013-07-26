@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+
+import edu.one.core.infra.security.SecureHttpServerRequest;
 /*
  * Implement a Security Handler with a pre-configurate filters chain 
  */
@@ -52,7 +54,8 @@ public abstract class SecurityHandler implements Handler<HttpServerRequest> {
 	@Override
 	public void handle(HttpServerRequest request) {
 		if (chain != null && !chain.isEmpty()) {
-			chain.get(0).canAccess(request, chainToHandler(request));
+			SecureHttpServerRequest sr = new SecureHttpServerRequest(request);
+			chain.get(0).canAccess(sr, chainToHandler(sr));
 		} else {
 			filter(request);
 		}

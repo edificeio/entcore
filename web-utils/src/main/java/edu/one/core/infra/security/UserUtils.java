@@ -49,27 +49,35 @@ public class UserUtils {
 	// TODO replace with real session busmod
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 			final Handler<JsonObject> handler) {
-		String oneSessionId = CookieUtils.get("oneSessionId", request);
-		if (oneSessionId != null) {
-			request.pause();
-			JsonObject findSession = new JsonObject()
-				.putString("action", "find")
-				.putString("sessionId", oneSessionId);
-			eb.send("wse.mock.session", findSession, new Handler<Message<JsonObject>>() {
-
-				@Override
-				public void handle(Message<JsonObject> message) {
-					JsonObject session = message.body().getObject("session");
-					request.resume();
-					if ("ok".equals(message.body().getString("status")) && session != null) {
-						handler.handle(session);
-					} else {
-						handler.handle(null);
-					}
-				}
-			});
+		if (request instanceof SecureHttpServerRequest &&
+				((SecureHttpServerRequest) request).getSession() != null) {
+			handler.handle(((SecureHttpServerRequest) request).getSession());
 		} else {
-			handler.handle(null);
+			String oneSessionId = CookieUtils.get("oneSessionId", request);
+			if (oneSessionId != null) {
+				request.pause();
+				JsonObject findSession = new JsonObject()
+					.putString("action", "find")
+					.putString("sessionId", oneSessionId);
+				eb.send("wse.mock.session", findSession, new Handler<Message<JsonObject>>() {
+
+					@Override
+					public void handle(Message<JsonObject> message) {
+						JsonObject session = message.body().getObject("session");
+						request.resume();
+						if ("ok".equals(message.body().getString("status")) && session != null) {
+							if (request instanceof SecureHttpServerRequest) {
+								((SecureHttpServerRequest) request).setSession(session);
+							}
+							handler.handle(session);
+						} else {
+							handler.handle(null);
+						}
+					}
+				});
+			} else {
+				handler.handle(null);
+			}
 		}
 	}
 
