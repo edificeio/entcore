@@ -9,7 +9,6 @@ import static edu.one.core.infra.Utils.getOrElse;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.Handler;
@@ -26,6 +25,8 @@ import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.security.UserUtils;
+import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
 import edu.one.core.workspace.dao.DocumentDao;
@@ -77,22 +78,43 @@ public class WorkspaceService extends AbstractService {
 	}
 
 	@SecuredAction("workspace.document.add")
-	public void addDocument(HttpServerRequest request) {
-		JsonObject doc = new JsonObject();
-		String now = MongoDb.formatDate(new Date());
-		doc.putString("created", now);
-		doc.putString("modified", now);
-		add(request, DocumentDao.DOCUMENTS_COLLECTION, doc);
+	public void addDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					JsonObject doc = new JsonObject();
+					String now = MongoDb.formatDate(new Date());
+					doc.putString("created", now);
+					doc.putString("modified", now);
+					doc.putString("owner", userInfos.getUserId());
+					add(request, DocumentDao.DOCUMENTS_COLLECTION, doc);
+				} else {
+					request.response().setStatusCode(401).end();
+				}
+			}
+		});
 	}
 
 	@SecuredAction("workspace.rack.document.add")
-	public void addRackDocument(HttpServerRequest request) {
-		JsonObject doc = new JsonObject();
-		doc.putString("to", request.params().get("to")); // TODO check existance and validity (neo4j)
-		doc.putString("from", UUID.randomUUID().toString()); // TODO replace by user (session)
-		String now = MongoDb.formatDate(new Date());
-		doc.putString("sent", now);
-		add(request, RackDao.RACKS_COLLECTION, doc);
+	public void addRackDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					JsonObject doc = new JsonObject();
+					doc.putString("to", request.params().get("to")); // TODO check existance and validity (neo4j)
+					doc.putString("from", userInfos.getUserId());
+					String now = MongoDb.formatDate(new Date());
+					doc.putString("sent", now);
+					add(request, RackDao.RACKS_COLLECTION, doc);
+				} else {
+					request.response().setStatusCode(401).end();
+				}
+			}
+		});
 	}
 
 	private void add(final HttpServerRequest request, final String mongoCollection,

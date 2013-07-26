@@ -104,6 +104,9 @@ public class UserUtils {
 	}
 
 	public static UserInfos sessionToUserInfos(JsonObject session) {
+		if (session == null) {
+			return null;
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			return mapper.readValue(session.encode(), UserInfos.class);
@@ -119,6 +122,16 @@ public class UserUtils {
 		jo.putString("query", query);
 		jo.putObject("params", new JsonObject(params));
 		eb.send("wse.neo4j.persistor", jo, handler);
+  }
+
+	public static void getUserInfos(EventBus eb, HttpServerRequest request,
+			final Handler<UserInfos> handler) {
+		getSession(eb, request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject session) {
+				handler.handle(sessionToUserInfos(session));
+			}
+		});
 	}
 
 }
