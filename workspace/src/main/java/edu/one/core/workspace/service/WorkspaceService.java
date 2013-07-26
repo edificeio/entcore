@@ -55,10 +55,12 @@ public class WorkspaceService extends AbstractService {
 		controller.renderView(request);
 	}
 
+	@SecuredAction("workspace.share")
 	public void share(HttpServerRequest request, Controller controller) {
 		shareResource(request, controller);
 	}
 
+	@SecuredAction("workspace.share.document")
 	public void shareDocument(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -74,7 +76,7 @@ public class WorkspaceService extends AbstractService {
 		});
 	}
 
-	//@SecuredAction("workspace.document.add")
+	@SecuredAction("workspace.document.add")
 	public void addDocument(HttpServerRequest request) {
 		JsonObject doc = new JsonObject();
 		String now = MongoDb.formatDate(new Date());
