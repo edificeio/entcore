@@ -1,4 +1,5 @@
 {
 	"workspace.title": "Workspace",
-	"workspace.header": "Workspace"
+	"workspace.header": "Workspace",
+	"workspace.share" : "Share"
 }

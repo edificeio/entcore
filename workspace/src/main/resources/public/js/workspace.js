@@ -38,6 +38,7 @@ var workspace = function(){
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
 									<td>{{modified}}</td>\
 									<td>\
+										<a href="/share?id={{_id}}">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="comment" href="{{_id}}">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
 										<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
 									</td>\

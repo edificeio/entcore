@@ -6,7 +6,9 @@ import static edu.one.core.infra.Controller.renderError;
 import static edu.one.core.infra.Controller.renderJson;
 import static edu.one.core.infra.Utils.getOrElse;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,8 +59,45 @@ public class WorkspaceService extends AbstractService {
 	}
 
 	@SecuredAction("workspace.share")
-	public void share(HttpServerRequest request, Controller controller) {
-		shareResource(request, controller);
+	public void share(final HttpServerRequest request, final Controller controller) {
+		final String id  = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(UserInfos user) {
+					String matcher = "{\"_id\" : \"" + id + "\", "
+							+ "\"owner\" : \"" + user.getUserId() + "\"}";
+					mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(matcher),
+						new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> res) {
+								if (res  != null && res.body() != null &&
+										"ok".equals(res.body().getString("status"))) {
+									JsonArray shared = res.body().getObject("result").getArray("shared");
+									List<String> checked = new ArrayList<>();
+									if (shared != null && shared.size() > 0) {
+										for (Object o : shared) {
+											JsonObject userShared = (JsonObject) o;
+											String userId = userShared.getString("userId");
+											for (String attrName : userShared.getFieldNames()) {
+												if ("userId".equals(attrName)) continue;
+												if (userShared.getBoolean(attrName, false)) {
+													checked.add(attrName + "_" + userId);
+												}
+											}
+										}
+									}
+									shareResource(request, controller, checked);
+								} else {
+									badRequest(request);
+								}
+							}
+						});
+				}
+			});
+		} else {
+			badRequest(request);
+		}
 	}
 
 	@SecuredAction("workspace.share.document")
@@ -66,13 +105,55 @@ public class WorkspaceService extends AbstractService {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
 
-			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			protected void handle() {
-				String id = request.formAttributes().get("resourceId");
-				List<String> shares = request.formAttributes().getAll("shares");
-				log.info("id : " + id + ", shares : " + new JsonArray((List) shares).encode());
-				redirect(request, "/workspace");
+				final String id = request.formAttributes().get("resourceId");
+				final List<String> shares = request.formAttributes().getAll("shares");
+				if (id != null && shares != null && !id.trim().isEmpty()) {
+					UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+						@Override
+						public void handle(UserInfos user) {
+							if (user != null) {
+								Map<String, JsonObject> sharesMap = new HashMap<>();
+								for (String share : shares) {
+									String [] s = share.split("_");
+									if (s.length != 2) continue;
+									JsonObject j = sharesMap.get(s[1]);
+									if (j == null) {
+										j = new JsonObject().putString("userId", s[1]);
+										sharesMap.put(s[1], j);
+									}
+									j.putBoolean(s[0], true);
+								}
+								JsonArray sharedArray = new JsonArray();
+								for (JsonObject jo: sharesMap.values()) {
+									sharedArray.add(jo);
+								}
+								String criteria = "{\"_id\" : \"" + id + "\", "
+										+ "\"owner\" : \"" + user.getUserId() + "\"}";
+								String query = "{ \"$set\" : { \"shared\" : " + sharedArray.encode() + "}}";
+								mongo.update(DocumentDao.DOCUMENTS_COLLECTION,
+										new JsonObject(criteria), new JsonObject(query),
+										new Handler<Message<JsonObject>>() {
+
+											@Override
+											public void handle(Message<JsonObject> res) {
+												if ("ok".equals(res.body().getString("status"))) {
+													redirect(request, "/workspace");
+												} else {
+													renderError(request, res.body());
+												}
+											}
+										});
+							} else {
+								badRequest(request);
+							}
+						}
+					});
+				} else {
+					badRequest(request);
+				}
 			}
 		});
 	}

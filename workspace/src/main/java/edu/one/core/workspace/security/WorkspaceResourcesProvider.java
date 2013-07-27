@@ -28,7 +28,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				.substring(WorkspaceService.class.getName().length() + 1);
 		switch (method) {
 		case "getDocument":
-			authorizeGetDocument(request, user, handler);
+			authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 			break;
 		case "getRackDocument":
 			authorizeGetRackDocument(request, user, handler);
@@ -72,12 +72,12 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	}
 
 	private void authorizeGetDocument(HttpServerRequest request,
-			UserInfos user, Handler<Boolean> handler) {
+			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-					+ user.getUserId()+ "\", \"read\": true }}}]}";
+					+ user.getUserId()+ "\", \"" + serviceMethod + "\": true }}}]}";
 			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
