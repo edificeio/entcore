@@ -8,6 +8,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -321,7 +322,8 @@ public abstract class AbstractService {
 		}
 	}
 
-	protected void shareResource(final HttpServerRequest request, final Controller controller) {
+	protected void shareResource(final HttpServerRequest request, final Controller controller,
+			final List<String> checked) {
 		final String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			final JsonArray actions = new JsonArray();
@@ -343,7 +345,15 @@ public abstract class AbstractService {
 						JsonArray userChoices = new JsonArray();
 						for (Object a: actions) {
 							JsonObject action = (JsonObject) a;
-							userChoices.add(action.getString("name") + "_" + user.getString("id"));
+							String value = action.getString("name") + "_" + user.getString("id");
+							JsonObject c = new JsonObject()
+								.putString("value", value);
+							if (checked != null && checked.contains(value)) {
+								c.putString("checked", "checked");
+							} else {
+								c.putString("checked", "");
+							}
+							userChoices.add(c);
 						}
 						users.add(new JsonObject()
 							.putObject("user", user)

@@ -28,7 +28,7 @@
 							<td>{{username}}</td>
 							{{/user}}
 							{{#choices}}
-							<td><input type="checkbox" name="shares" value="{{.}}" /></td>
+							<td><input type="checkbox" name="shares" value="{{value}}" {{checked}}/></td>
 							{{/choices}}
 						</tr>
 						{{/users}}
