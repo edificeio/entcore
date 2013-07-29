@@ -39,7 +39,7 @@ public class UserUtils {
 						JsonObject result = res.body().getObject("result");
 						for (String key : result.getFieldNames()) {
 							JsonObject r = result.getObject(key);
-							if (session.getString("userId").equals(r.getString("userId"))) continue;
+							if (session.getString("userId").equals(r.getString("id"))) continue;
 							r.putString("username",
 									r.getString("firstName") + " " + r.getString("lastName"));
 							users.add(r);
