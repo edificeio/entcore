@@ -34,7 +34,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			authorizeGetRackDocument(request, user, handler);
 			break;
 		case "deleteDocument":
-			authorizeDeleteDocument(request, user, handler);
+			authorizeDeleteDocument(request, user, binding.getServiceMethod(), handler);
 			break;
 		case "deleteRackDocument":
 			authorizeDeleteRackDocument(request, user, handler);
@@ -50,10 +50,12 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	}
 
 	private void authorizeDeleteDocument(HttpServerRequest request,
-			UserInfos user, Handler<Boolean> handler) {
+			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
-			String query = "{ \"_id\": \"" + id + "\", \"owner\": \"" + user.getUserId() + "\"}";
+			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
 			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
@@ -77,7 +79,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-					+ user.getUserId()+ "\", \"" + serviceMethod + "\": true }}}]}";
+					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
 			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);

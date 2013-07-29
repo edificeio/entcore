@@ -124,7 +124,7 @@ public class WorkspaceService extends AbstractService {
 										j = new JsonObject().putString("userId", s[1]);
 										sharesMap.put(s[1], j);
 									}
-									j.putBoolean(s[0], true);
+									j.putBoolean(s[0].replaceAll("\\.", "-"), true);
 								}
 								JsonArray sharedArray = new JsonArray();
 								for (JsonObject jo: sharesMap.values()) {
