@@ -36,7 +36,10 @@ public class UserInfos {
 	}
 
 	private String userId;
+	private String firstName;
+	private String lastName;
 	private String username;
+	private String classId;
 	private List<Action> authorizedActions;
 
 	public String getUserId() {
@@ -63,5 +66,28 @@ public class UserInfos {
 		this.authorizedActions = authorizedActions;
 	}
 
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getClassId() {
+		return classId;
+	}
+
+	public void setClassId(String classId) {
+		this.classId = classId;
+	}
 
 }

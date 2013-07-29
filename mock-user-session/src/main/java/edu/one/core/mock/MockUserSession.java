@@ -57,8 +57,11 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 				+ "\"app-registry.list.applications.actions\", \"type\" : \"WORKFLOW\"}"
 				+ "]";
 		JsonObject session = new JsonObject();
-		session.putString("userId", "42d93f59-9b12-417d-b998-45b18bdd5afa");
-		session.putString("username", "blip");
+		session.putString("userId", "4420000042");
+		session.putString("firstName", "Nicolas");
+		session.putString("lastName", "LOPEZ");
+		session.putString("username", "Nicolas LOPEZ");
+		session.putString("classId", "4400000002$ORDINAIRE$CM2 de Mme Rousseau");
 		session.putArray("authorizedActions", new JsonArray(actions));
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
 	}
