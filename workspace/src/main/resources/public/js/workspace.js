@@ -315,6 +315,9 @@ var workspace = function(){
 				$(":checkbox:checked").each(function(i) {
 					ids += "," + $(this).val();
 				});
+				if (ids != "") {
+					ids = ids.substring(1);
+				}
 
 				$.ajax({
 					url : action + "/" + ids + "/" + folder,

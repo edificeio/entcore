@@ -3,6 +3,7 @@ package edu.one.core.workspace.security;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.MongoDb;
@@ -10,7 +11,6 @@ import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.security.resources.ResourcesProvider;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.workspace.dao.DocumentDao;
-import edu.one.core.workspace.dao.RackDao;
 import edu.one.core.workspace.service.WorkspaceService;
 
 public class WorkspaceResourcesProvider implements ResourcesProvider {
@@ -28,52 +28,40 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				.substring(WorkspaceService.class.getName().length() + 1);
 		switch (method) {
 		case "getDocument":
-			authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
-			break;
-		case "getRackDocument":
-			authorizeGetRackDocument(request, user, handler);
-			break;
+		case "commentDocument":
+		case "updateDocument":
+		case "moveDocument":
+		case "moveTrash":
+		case "copyDocument":
 		case "deleteDocument":
-			authorizeDeleteDocument(request, user, binding.getServiceMethod(), handler);
+			authorizeDocument(request, user, binding.getServiceMethod(), handler);
 			break;
-		case "deleteRackDocument":
-			authorizeDeleteRackDocument(request, user, handler);
+		case "moveDocuments":
+		case "copyDocuments":
+			authorizeDocuments(request, user, binding.getServiceMethod(), handler);
 			break;
 		default:
 			handler.handle(false);
 		}
 	}
 
-	private void authorizeDeleteRackDocument(HttpServerRequest request,
-			UserInfos user, Handler<Boolean> handler) {
-		authorizeGetRackDocument(request, user, handler);
-	}
-
-	private void authorizeDeleteDocument(HttpServerRequest request,
-			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
-		String id = request.params().get("id");
-		if (id != null && !id.trim().isEmpty()) {
-			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+	private void authorizeDocuments(HttpServerRequest request, UserInfos user,
+			String serviceMethod, Handler<Boolean> handler) {
+		String ids = request.params().get("ids");
+		if (ids != null && !ids.trim().isEmpty()) {
+			JsonArray idsArray = new JsonArray(ids.split(","));
+			String query = "{ \"_id\": { \"$in\" : " + idsArray.encode() + "}, "
+					+ "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
 					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
-			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
+			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION,
+					new JsonObject(query), idsArray.size(), handler);
 		} else {
 			handler.handle(false);
 		}
 	}
 
-	private void authorizeGetRackDocument(HttpServerRequest request,
-			UserInfos user, Handler<Boolean> handler) {
-		String id = request.params().get("id");
-		if (id != null && !id.trim().isEmpty()) {
-			String query = "{ \"_id\": \"" + id + "\", \"to\" : \"" + user.getUserId() + "\"}";
-			executeCountQuery(RackDao.RACKS_COLLECTION, new JsonObject(query), 1, handler);
-		} else {
-			handler.handle(false);
-		}
-	}
-
-	private void authorizeGetDocument(HttpServerRequest request,
+	private void authorizeDocument(HttpServerRequest request,
 			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {

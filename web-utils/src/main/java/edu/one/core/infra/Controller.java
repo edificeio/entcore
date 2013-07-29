@@ -128,6 +128,10 @@ public abstract class Controller extends Verticle {
 		request.response().setStatusCode(400).end();
 	}
 
+	public static void unauthorized(HttpServerRequest request) {
+		request.response().setStatusCode(401).end();
+	}
+
 	public static void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
 		if (error != null) {

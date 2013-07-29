@@ -1,6 +1,7 @@
 package edu.one.core.workspace.service;
 
 import static edu.one.core.infra.Controller.badRequest;
+import static edu.one.core.infra.Controller.unauthorized;
 import static edu.one.core.infra.Controller.redirect;
 import static edu.one.core.infra.Controller.renderError;
 import static edu.one.core.infra.Controller.renderJson;
@@ -9,8 +10,10 @@ import static edu.one.core.infra.Utils.getOrElse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.Handler;
@@ -96,7 +99,7 @@ public class WorkspaceService extends AbstractService {
 				}
 			});
 		} else {
-			badRequest(request);
+			unauthorized(request);
 		}
 	}
 
@@ -226,6 +229,7 @@ public class WorkspaceService extends AbstractService {
 		});
 	}
 
+	@SecuredAction(value = "workspace.document.update", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
 		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
 			@Override
@@ -277,16 +281,26 @@ public class WorkspaceService extends AbstractService {
 
 	@SecuredAction(value = "workspace.document.get", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
-		getFile(request, documentDao);
+		getFile(request, documentDao, null);
 	}
 
-	@SecuredAction(value = "workspace.rack.document.get", type = ActionType.RESOURCE)
-	public void getRackDocument(HttpServerRequest request) {
-		getFile(request, rackDao);
+	@SecuredAction("workspace.rack.document.get")
+	public void getRackDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					getFile(request, rackDao, user.getUserId());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
-	private void getFile(final HttpServerRequest request, GenericDao dao) {
-		dao.findById(request.params().get("id"), new Handler<JsonObject>() {
+	private void getFile(final HttpServerRequest request, GenericDao dao, String owner) {
+		dao.findById(request.params().get("id"), owner, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
@@ -317,17 +331,27 @@ public class WorkspaceService extends AbstractService {
 
 	@SecuredAction(value = "workspace.document.delete", type = ActionType.RESOURCE)
 	public void deleteDocument(HttpServerRequest request) {
-		deleteFile(request, documentDao);
+		deleteFile(request, documentDao, null);
 	}
 
-	@SecuredAction(value = "workspace.rack.document.delete", type = ActionType.RESOURCE)
-	public void deleteRackDocument(HttpServerRequest request) {
-		deleteFile(request, rackDao);
+	@SecuredAction("workspace.rack.document.delete")
+	public void deleteRackDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					deleteFile(request, rackDao, user.getUserId());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
-	private void deleteFile(final HttpServerRequest request, final GenericDao dao) {
+	private void deleteFile(final HttpServerRequest request, final GenericDao dao, String owner) {
 		final String id = request.params().get("id");
-		dao.findById(id, new Handler<JsonObject>() {
+		dao.findById(id, owner, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
@@ -361,21 +385,37 @@ public class WorkspaceService extends AbstractService {
 		});
 	}
 
+	@SecuredAction(value = "workspace.documents.copy", type = ActionType.RESOURCE)
 	public void copyDocuments(HttpServerRequest request) {
-		copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION);
+		copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION, null);
 	}
 
-	public void copyRackDocuments(HttpServerRequest request) {
-		copyFiles(request, RackDao.RACKS_COLLECTION);
+	@SecuredAction("workspace.rack.documents.copy")
+	public void copyRackDocuments(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					copyFiles(request, RackDao.RACKS_COLLECTION, user.getUserId());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
-	private void copyFiles(final HttpServerRequest request, final String collection) {
+	private void copyFiles(final HttpServerRequest request, final String collection, String owner) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
 		String folder = request.params().get("folder");
 		if (ids != null && folder != null &&
 				!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
-			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}";
+			if (owner != null) {
+				criteria += ", \"to\" : \"" + owner + "\"";
+			}
+			criteria += "}";
 			mongo.find(collection, new JsonObject(criteria), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> r) {
@@ -435,12 +475,24 @@ public class WorkspaceService extends AbstractService {
 		}
 	}
 
+	@SecuredAction(value = "workspace.document.copy", type = ActionType.RESOURCE)
 	public void copyDocument(HttpServerRequest request) {
 		copyFile(request, documentDao);
 	}
 
-	public void copyRackDocument(HttpServerRequest request) {
-		copyFile(request, rackDao);
+	@SecuredAction("workspace.document.copy")
+	public void copyRackDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					copyFile(request, rackDao);
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	private void copyFile(final HttpServerRequest request, final GenericDao dao) {
@@ -490,6 +542,297 @@ public class WorkspaceService extends AbstractService {
 				});
 			}
 
+		});
+	}
+
+	@SecuredAction("workspace.document.list.folders")
+	public void listFolders(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					final String hierarchical = request.params().get("hierarchical");
+					final String relativePath = request.params().get("relativePath");
+					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+							+ user.getUserId()+ "\"}}}]";
+					if (relativePath != null) {
+						query += ", \"folder\" : { \"$regex\" : \"^" + relativePath + "(_|$)\" }}";
+					} else {
+						query += "}";
+					}
+					mongo.distinct(DocumentDao.DOCUMENTS_COLLECTION, "folder", new JsonObject(query),
+							new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							if ("ok".equals(res.body().getString("status"))) {
+								JsonArray values = res.body().getArray("values", new JsonArray("[]"));
+								JsonArray out = values;
+								if (hierarchical != null) {
+									Set<String> folders = new HashSet<String>();
+									for (Object value: values) {
+										String v = (String) value;
+										if (relativePath != null) {
+											if (v != null && v.contains("_") &&
+													v.indexOf("_", relativePath.length() + 1) != -1 &&
+													v.substring(v.indexOf("_", relativePath.length() + 1)).contains("_")) {
+												folders.add(v.substring(0, v.indexOf("_", relativePath.length() + 1)));
+											} else {
+												folders.add(v);
+											}
+										} else {
+											if (v != null && v.contains("_")) {
+												folders.add(v.substring(0, v.indexOf("_")));
+											} else {
+												folders.add(v);
+											}
+										}
+									}
+									out = new JsonArray(folders.toArray());
+								}
+								renderJson(request, out);
+							} else {
+								renderJson(request, new JsonArray());
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.document.comment", type = ActionType.RESOURCE)
+	public void commentDocument(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				String comment = request.formAttributes().get("comment");
+				if (comment != null && !comment.trim().isEmpty()) {
+					String query = "{ \"$push\" : { \"comments\":" + // TODO get author from session
+							" {\"author\" : \"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
+							"\", \"comment\": \"" + comment + "\" }}}";
+					documentDao.update(request.params().get("id"), new JsonObject(query),
+							new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject res) {
+							if ("ok".equals(res.getString("status"))) {
+								renderJson(request, res);
+							} else {
+								renderError(request, res);
+							}
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.document.move", type = ActionType.RESOURCE)
+	public void moveDocument(final HttpServerRequest request) {
+		moveOne(request, request.params().get("folder"), documentDao, null);
+	}
+
+	@SecuredAction(value = "workspace.document.move.trash", type = ActionType.RESOURCE)
+	public void moveTrash(final HttpServerRequest request) {
+		moveOne(request, "Trash", documentDao, null);
+	}
+
+	@SecuredAction("workspace.rack.document.move.trash")
+	public void moveTrashRack(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					moveOne(request, "Trash", rackDao, user.getUserId());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	private void moveOne(final HttpServerRequest request, String folder, GenericDao dao, String owner) {
+		String obj = "{ \"$set\" : { \"folder\": \"" + folder +
+				"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+		dao.update(request.params().get("id"), new JsonObject(obj), owner, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject res) {
+				if ("ok".equals(res.getString("status"))) {
+					renderJson(request, res);
+				} else {
+					renderJson(request, res, 404);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.documents.move", type = ActionType.RESOURCE)
+	public void moveDocuments(final HttpServerRequest request) {
+		String ids = request.params().get("ids"); // TODO refactor with json in request body
+		String folder = request.params().get("folder");
+		if (ids != null && folder != null &&
+				!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+			JsonArray idsArray = new JsonArray(ids.split(","));
+			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+			String obj = "{ \"$set\" : { \"folder\": \"" + folder +
+					"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+			mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
+					new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> r) {
+					JsonObject res = r.body();
+					if ("ok".equals(res.getString("status"))) {
+						renderJson(request, res);
+					} else {
+						renderJson(request, res, 404);
+					}
+				}
+			});
+		} else {
+			badRequest(request);
+		}
+	}
+
+	@SecuredAction("workspace.documents.list")
+	public void listDocuments(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+							+ user.getUserId()+ "\"}}}]";
+					String forApplication = getOrElse(request.params()
+							.get("application"), WorkspaceService.WORKSPACE_NAME);
+					if (request.params().get("hierarchical") != null) {
+						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
+								forApplication + "\", \"folder\" : { \"$exists\" : false }}";
+					} else {
+						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
+								forApplication + "\" }";
+					}
+					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							String status = res.body().getString("status");
+							JsonArray results = res.body().getArray("results");
+							if ("ok".equals(status) && results != null) {
+								renderJson(request, results);
+							} else {
+								renderJson(request, new JsonArray());
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("workspace.documents.list.by.folder")
+	public void listDocumentsByFolder(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+							+ user.getUserId()+ "\"}}}]";
+					String expectedFolder = request.params().get("folder");
+					String forApplication = getOrElse(request.params()
+							.get("application"), WorkspaceService.WORKSPACE_NAME);
+					if (request.params().get("hierarchical") != null) {
+						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
+								forApplication + "\", \"folder\" : \"" + expectedFolder + "\" }";
+					} else {
+						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
+								forApplication + "\", \"folder\" : { \"$regex\" : \"^" +
+								expectedFolder + "(_|$)\" }}";
+					}
+					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							String status = res.body().getString("status");
+							JsonArray results = res.body().getArray("results");
+							if ("ok".equals(status) && results != null) {
+								renderJson(request, results);
+							} else {
+								renderJson(request, new JsonArray());
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("workspace.rack.list.documents")
+	public void listRackDocuments(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					String query = "{ \"to\": \"" + user.getUserId() + "\", "
+							+ "\"file\" : { \"$exists\" : true }, "
+							+ "\"folder\" : { \"$ne\" : \"Trash\" }}";
+					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query),
+							new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							String status = res.body().getString("status");
+							JsonArray results = res.body().getArray("results");
+							if ("ok".equals(status) && results != null) {
+								renderJson(request, results);
+							} else {
+								renderJson(request, new JsonArray());
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("workspace.rack.list.trash.documents")
+	public void listRackTrashDocuments(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					String query = "{ \"to\": \"" + user.getUserId() + "\", "
+							+ "\"file\" : { \"$exists\" : true }, \"folder\" : \"Trash\" }";
+					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							String status = res.body().getString("status");
+							JsonArray results = res.body().getArray("results");
+							if ("ok".equals(status) && results != null) {
+								renderJson(request, results);
+							} else {
+								renderJson(request, new JsonArray());
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
 		});
 	}
 
