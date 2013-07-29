@@ -48,6 +48,10 @@ public class Auth extends Controller {
 								&& "admin".equals(request.formAttributes().get("password"))) {
 							CookieUtils.set("oneSessionId", "1234", request.response());
 							redirect(request, callBack, "");
+						} else if ("lecteur".equals(request.formAttributes().get("email"))
+								&& "lecteur".equals(request.formAttributes().get("password"))) {
+							CookieUtils.set("oneSessionId", "2345", request.response());
+							redirect(request, callBack, "");
 						} else {
 							try {
 								redirect(request, "/login?"
