@@ -20,7 +20,7 @@ public class Workspace extends Server {
 
 		// Mongodb config
 		JsonObject mongodbConf = container.config().getObject("mongodb-config");
-		container.deployModule("io.vertx~mod-mongo-persistor~2.0.0-CR3-WSE-SNAPSHOT", mongodbConf, 1, new AsyncResultHandler<String>() {
+		container.deployModule("io.vertx~mod-mongo-persistor~2.0.0-final-WSE", mongodbConf, 1, new AsyncResultHandler<String>() {
 			public void handle(AsyncResult<String> ar) {
 				if (ar.succeeded()) {
 					result.setResult(null);
