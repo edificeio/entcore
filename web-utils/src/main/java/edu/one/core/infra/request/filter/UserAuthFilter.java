@@ -23,12 +23,13 @@ public class UserAuthFilter implements Filter {
 	@Override
 	public void deny(HttpServerRequest request) {
 		String callBack = "";
+		String location = "";
 		try {
 			callBack = "http://" + URLEncoder.encode(request.headers().get("Host") + request.uri(), "UTF-8");
+			location = "http://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8")
+					+ ":8009/login?callback=" + callBack;
 		} catch (UnsupportedEncodingException ex) {
 		}
-
-		String location = "http://localhost:8009/login?callback=" + callBack;
 		request.response().setStatusCode(301);
 		request.response().putHeader("Location", location);
 		request.response().end();
