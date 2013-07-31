@@ -279,7 +279,8 @@ public abstract class Controller extends Renders {
 						JsonArray userChoices = new JsonArray();
 						for (Object a: actions) {
 							JsonObject action = (JsonObject) a;
-							String value = action.getString("name") + "_" + user.getString("id");
+							String value = action.getString("name").replaceAll("\\.", "-") +
+									"_" + user.getString("id");
 							JsonObject c = new JsonObject()
 								.putString("value", value);
 							if (checked != null && checked.contains(value)) {
