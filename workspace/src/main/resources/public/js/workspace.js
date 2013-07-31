@@ -3,12 +3,7 @@ var workspace = function(){
 	app.scope = "#main";
 	app.define ({
 		template : {
-			documents : '<div>\
-							<a call="moveTrash" href="/document/trash">{{#i18n}}workspace.move.trash{{/i18n}}</a>\
-							<a call="moveOrCopy" href="/documents/move">{{#i18n}}workspace.move{{/i18n}}</a>\
-							<a call="moveOrCopy" href="/documents/copy">{{#i18n}}workspace.copy{{/i18n}}</a>\
-						</div>\
-						<table class="striped alternate" summary="">\
+			documents : '<table summary="">\
 							<thead>\
 								<tr>\
 									<th scope="col">\
@@ -39,7 +34,7 @@ var workspace = function(){
 									<td>{{modified}}</td>\
 									<td>\
 										<a href="/share?id={{_id}}">{{#i18n}}workspace.share{{/i18n}}</a>\
-										<a call="comment" href="{{_id}}">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+										<a call="comment" href="{{_id}}" class="button">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
 										<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
 									</td>\
 								</tr>\
@@ -56,11 +51,48 @@ var workspace = function(){
 							</tbody>\
 						</table>',
 
-			rack : '<div>\
-						<a call="moveTrash" href="/rack/trash">{{#i18n}}workspace.move.trash{{/i18n}}</a>\
-						<a call="moveOrCopy" href="/rack/documents/copy">{{#i18n}}workspace.copy{{/i18n}}</a>\
-					</div>\
-					<table class="striped alternate" summary="">\
+			documentsSquare : '<table summary="">\
+							<thead>\
+								<tr>\
+									<th scope="col">\
+										<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
+										<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+									</th>\
+								</tr>\
+							</thead>\
+							<tbody>\
+								<tr>\
+									<td>\
+										{{#folders}}\
+											<span class="folder-square left">folder-icon\
+											<a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a>\
+											</span>\
+										{{/folders}}\
+										{{#documents}}\
+											<span class="doc-square left">\
+												<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
+												<a href="/document/{{_id}}">{{name}}</a>\
+												<a call="comment" href="{{_id}}" class="button">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+												<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
+											</span>\
+										{{/documents}}\
+									</td>\
+								</tr>\
+								{{#documents}}\
+								<tr class="comments{{_id}} hidden">\
+									<td>\
+										<ul>\
+										{{#comments}}\
+											<li>{{author}} - {{posted}} - <span>{{comment}}</span></li>\
+										{{/comments}}\
+										</ul>\
+									</td>\
+								</tr>\
+								{{/documents}}\
+							</tbody>\
+						</table>',
+
+			rack : '<table class="striped alternate" summary="">\
 						<thead>\
 							<tr>\
 								<th scope="col">\
@@ -142,7 +174,7 @@ var workspace = function(){
 						</form>',
 
 			comment : '<form method="post" action="/document/{{id}}/comment">\
-							<label>{{#i18n}}workspace.commentaire{{/i18n}}</label>\
+							<label>{{#i18n}}workspace.leave.comment{{/i18n}}</label>\
 							<textarea name="comment"></textarea>\
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
 						</form>',
@@ -174,7 +206,7 @@ var workspace = function(){
 						});
 						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
 					});
-				});
+					});
 			},
 
 			rack : function (o) {
@@ -346,5 +378,5 @@ $(document).ready(function(){
 			html += '<a call="documents" href="/documents/' + data[i] + '">' + data[i] + "<br />";
 		}
 		$("#base-folders").html(html);
-	});
+});
 });

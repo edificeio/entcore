@@ -14,17 +14,31 @@
 		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body>
-		<header>
+		<header class="left">
 			<h1>{{#i18n}}workspace.header{{/i18n}}</h1>
 		</header>
 		<section id="main">
-			<div class="workspace">
+			<nav class="top left">
+				<div class="left">
+					<a call="addDocument" href="/document" class="button">{{#i18n}}workspace.add.document{{/i18n}}</a>
+				</div>
+				<div id="context" class="left">
+					<a call="moveTrash" href="/document/trash" class="button">{{#i18n}}workspace.move.trash{{/i18n}}</a>
+					<a call="moveOrCopy" href="/documents/move" class="button">{{#i18n}}workspace.move{{/i18n}}</a>
+					<a call="moveOrCopy" href="/documents/copy" class="button">{{#i18n}}workspace.copy{{/i18n}}</a>
+				</div>
+				<div id="view" class="left">
+					<a class="icon icon-losange" call="view" href="/documents?hierarchical=true"></a>
+					<a class="icon icon-nav" call="view" href="/documents?hierarchical=true"></a>
+				</div>
+			</nav>
+			<div class="workspace line">
 				<nav class="left">
 					<ul>
 						<li><a call="documents" href="/documents?hierarchical=true">{{#i18n}}workspace.documents{{/i18n}}</a></li>
+						<li><a href="">{{#i18n}}workspace.shared.documents{{/i18n}}</a></li>
 						<li><a call="rack" href="/rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a></li>
 						<li><a call="trash" href="">{{#i18n}}workspace.trash{{/i18n}}</a></li>
-						<li><a call="addDocument" href="/document">{{#i18n}}workspace.add.document{{/i18n}}</a></li>
 						<li><a call="sendRack" href="/rack">{{#i18n}}workspace.send.rack{{/i18n}}</a></li>
 					</ul>
 					<div id="base-folders">
