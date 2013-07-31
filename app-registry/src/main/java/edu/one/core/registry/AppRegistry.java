@@ -1,11 +1,11 @@
 package edu.one.core.registry;
 
-import edu.one.core.infra.Controller;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.registry.service.AppRegistryService;
 
-public class AppRegistry extends Controller {
+public class AppRegistry extends Server {
 
 	@Override
 	public void start() {
@@ -19,7 +19,7 @@ public class AppRegistry extends Controller {
 			log.error(e.getMessage(), e);
 		}
 
-		service.get("/app-registry", "view", this);
+		service.get("/app-registry", "view");
 
 		service.get("/applications", "listApplications");
 

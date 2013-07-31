@@ -26,7 +26,17 @@ public class I18n {
 	private final static Locale defaultLocale = Locale.FRENCH;
 	private Map<Locale, JsonObject> messages = new HashMap<>();
 
-	public I18n(Container container, Vertx vertx) {
+	private I18n(){}
+
+	private static class I18nHolder {
+		private static final I18n instance = new I18n();
+	}
+
+	public static I18n getInstance() {
+		return I18nHolder.instance;
+	}
+
+	public void init(Container container, Vertx vertx) {
 		try {
 			log = container.logger();
 			for(String path : vertx.fileSystem().readDirSync(messagesDir)) {

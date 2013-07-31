@@ -1,17 +1,22 @@
 package edu.one.core.history;
 
-import edu.one.core.infra.Controller;
+import static edu.one.core.infra.http.Renders.*;
+
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Renders;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class History extends Controller {
+public class History extends Server {
 
 	@Override
 	public void start() {
 		super.start();
+		final Renders render = new Renders(container);
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
@@ -22,7 +27,7 @@ public class History extends Controller {
 					file = file.replace(config.getString("log-path"), "").replace(".trace", "");
 					traceFiles.getArray("traceFiles").addObject(new JsonObject().putString("name", file));
 				}
-				renderView(request, traceFiles);
+				render.renderView(request, traceFiles);
 			}
 		});
 

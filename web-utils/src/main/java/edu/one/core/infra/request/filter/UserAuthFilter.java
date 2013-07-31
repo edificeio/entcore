@@ -29,6 +29,7 @@ public class UserAuthFilter implements Filter {
 			location = "http://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8")
 					+ ":8009/login?callback=" + callBack;
 		} catch (UnsupportedEncodingException ex) {
+			ex.printStackTrace();
 		}
 		request.response().setStatusCode(301);
 		request.response().putHeader("Location", location);

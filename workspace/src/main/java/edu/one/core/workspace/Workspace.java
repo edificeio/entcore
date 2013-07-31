@@ -5,14 +5,14 @@ import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.json.JsonObject;
 
-import edu.one.core.infra.Controller;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.security.WorkspaceResourcesProvider;
 import edu.one.core.workspace.service.WorkspaceService;
 
-public class Workspace extends Controller {
+public class Workspace extends Server {
 
 	@Override
 	public void start(final Future<Void> result) {
@@ -36,9 +36,9 @@ public class Workspace extends Controller {
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
 
-		service.get("/workspace", "view", this);
+		service.get("/workspace", "view");
 
-		service.get("/share", "share", this);
+		service.get("/share", "share");
 
 		service.post("/share", "shareDocument");
 

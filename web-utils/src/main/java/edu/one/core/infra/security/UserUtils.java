@@ -111,6 +111,7 @@ public class UserUtils {
 		try {
 			return mapper.readValue(session.encode(), UserInfos.class);
 		} catch (IOException e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

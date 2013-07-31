@@ -1,20 +1,24 @@
 package edu.one.core.directory;
 
+import static edu.one.core.infra.http.Renders.*;
 import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.datadictionary.dictionary.Dictionary;
-import edu.one.core.infra.Controller;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.http.Renders;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 
-public class Directory extends Controller {
+public class Directory extends Server {
 	
 	JsonObject admin;
 	Neo neo;
@@ -25,6 +29,7 @@ public class Directory extends Controller {
 	@Override
 	public void start() {
 		super.start();
+		final Renders render = new Renders(container);
 		neo = new Neo(vertx.eventBus(),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
@@ -39,7 +44,7 @@ public class Directory extends Controller {
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
+				render.renderView(request, new JsonObject());
 			}
 		});
 

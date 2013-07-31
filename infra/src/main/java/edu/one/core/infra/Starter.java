@@ -6,7 +6,9 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class Starter extends Controller {
+import edu.one.core.infra.http.Renders;
+
+public class Starter extends Server {
 
 	Neo neo;
 	String developerId = "";
@@ -48,9 +50,12 @@ public class Starter extends Controller {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
+
+		final Renders render = new Renders(container);
+
 			rm.get("/starter/dev", new Handler<HttpServerRequest> () {
 				public void handle(HttpServerRequest request) {
-					renderView(request);
+					render.renderView(request);
 				}
 			});
 

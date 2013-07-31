@@ -1,10 +1,5 @@
 package edu.one.core.workspace.service;
 
-import static edu.one.core.infra.Controller.badRequest;
-import static edu.one.core.infra.Controller.unauthorized;
-import static edu.one.core.infra.Controller.redirect;
-import static edu.one.core.infra.Controller.renderError;
-import static edu.one.core.infra.Controller.renderJson;
 import static edu.one.core.infra.Utils.getOrElse;
 
 import java.util.ArrayList;
@@ -26,7 +21,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
@@ -38,7 +32,7 @@ import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.dao.GenericDao;
 import edu.one.core.workspace.dao.RackDao;
 
-public class WorkspaceService extends AbstractService {
+public class WorkspaceService extends Controller {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 	private final String gridfsAddress;
@@ -57,12 +51,12 @@ public class WorkspaceService extends AbstractService {
 	}
 
 	@SecuredAction("workspace.view")
-	public void view(HttpServerRequest request, Controller controller) {
-		controller.renderView(request);
+	public void view(HttpServerRequest request) {
+		renderView(request);
 	}
 
 	@SecuredAction("workspace.share")
-	public void share(final HttpServerRequest request, final Controller controller) {
+	public void share(final HttpServerRequest request) {
 		final String id  = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -90,7 +84,7 @@ public class WorkspaceService extends AbstractService {
 											}
 										}
 									}
-									shareResource(request, controller, checked);
+									shareResource(request, checked);
 								} else {
 									badRequest(request);
 								}

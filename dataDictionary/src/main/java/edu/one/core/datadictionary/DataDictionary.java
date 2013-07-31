@@ -1,20 +1,23 @@
 package edu.one.core.datadictionary;
 
-import edu.one.core.infra.Controller;
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Renders;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class DataDictionary extends Controller {
+public class DataDictionary extends Server {
 
 	@Override
 	public void start()  {
 		super.start();
+		final Renders render = new Renders(container);
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request, new JsonObject());
+				render.renderView(request, new JsonObject());
 			}
 		});
 

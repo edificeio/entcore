@@ -1,13 +1,15 @@
 package edu.one.core.userBook;
 
-import edu.one.core.infra.Controller;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.http.Renders;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class UserBook extends Controller {
+public class UserBook extends Server {
 
 	Neo neo;
 	JsonObject userBookData;
@@ -16,6 +18,7 @@ public class UserBook extends Controller {
 	public void start() {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
+		final Renders render = new Renders(container);
 		userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
 		final JsonArray hobbies = userBookData.getArray("hobbies");
 
@@ -39,7 +42,7 @@ public class UserBook extends Controller {
 							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "RETURN n.ENTPersonIdentifiant",request.response());
 				} else if (request.params().contains("id")){
-					renderView(request, userBookData);
+					render.renderView(request, userBookData);
 				}
 			}
 		});
@@ -47,7 +50,7 @@ public class UserBook extends Controller {
 		rm.get("/annuaire", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request);
+				render.renderView(request);
 			}
 		});
 

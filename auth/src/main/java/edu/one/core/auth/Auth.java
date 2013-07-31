@@ -1,20 +1,26 @@
 package edu.one.core.auth;
 
-import edu.one.core.infra.Controller;
+import static edu.one.core.infra.http.Renders.*;
+
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Renders;
 import edu.one.core.infra.request.CookieUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class Auth extends Controller {
+public class Auth extends Server {
 
 	@Override
 	public void start() {
 		super.start();
+		final Renders render = new Renders(container);
 
 		rm.get("/login", new Handler<HttpServerRequest>() {
 			@Override
@@ -24,7 +30,7 @@ public class Auth extends Controller {
 				if (request.params().get("error") != null) {
 					context.putObject("error", new JsonObject().putString("message", request.params().get("error")));
 				}
-				renderView(request, context);
+				render.renderView(request, context);
 			}
 		});
 
@@ -68,7 +74,7 @@ public class Auth extends Controller {
 		rm.get("/logout", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request, config);
+				render.renderView(request, config);
 			}
 		});
 

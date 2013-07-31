@@ -1,23 +1,28 @@
 package edu.one.core.sync;
 
-import edu.one.core.infra.Controller;
+import static edu.one.core.infra.http.Renders.*;
+
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Renders;
 import edu.one.core.sync.aaf.SyncManager;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class Sync extends Controller {
+public class Sync extends Server {
 	private SyncManager syncMgr;
 
 	@Override
 	public void start() {
 		super.start();
+		final Renders render = new Renders(container);
 		syncMgr = new SyncManager(trace, vertx, container);
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				renderView(request);
+				render.renderView(request);
 			}
 		});
 

@@ -14,13 +14,12 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.AbstractService;
 import edu.one.core.infra.Controller;
-import static edu.one.core.infra.Controller.*;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 import edu.one.core.security.SecuredAction;
 
-public class AppRegistryService extends AbstractService {
+public class AppRegistryService extends Controller {
 
 	private final Neo neo;
 
@@ -31,8 +30,8 @@ public class AppRegistryService extends AbstractService {
 	}
 
 	@SecuredAction("app-registry.view")
-	public void view(HttpServerRequest request, Controller controller) {
-		controller.renderView(request);
+	public void view(HttpServerRequest request) {
+		renderView(request);
 	}
 
 	@SecuredAction("app-registry.list.applications")
