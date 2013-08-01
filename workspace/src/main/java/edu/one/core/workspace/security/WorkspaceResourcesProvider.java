@@ -54,7 +54,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 					+ "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
 					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
-			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION,
+			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION,
 					new JsonObject(query), idsArray.size(), handler);
 		} else {
 			handler.handle(false);
@@ -68,17 +68,20 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
 					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
-			executeCountQuery(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
+			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
 		}
 	}
 
-	private void executeCountQuery(String collection, JsonObject query, final int expectedCountResult,
+	private void executeCountQuery(final HttpServerRequest request, String collection,
+			JsonObject query, final int expectedCountResult,
 			final Handler<Boolean> handler) {
+		request.pause();
 		mongo.count(collection, query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				request.resume();
 				JsonObject res = event.body();
 				handler.handle(
 					res != null &&
