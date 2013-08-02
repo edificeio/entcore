@@ -3,6 +3,8 @@ package edu.one.core.directory;
 import static edu.one.core.infra.http.Renders.*;
 import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.datadictionary.dictionary.Dictionary;
+import edu.one.core.directory.profils.DefaultProfils;
+import edu.one.core.directory.profils.Profils;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.http.Renders;
@@ -13,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
-
 
 public class Directory extends Server {
 	
@@ -33,6 +35,7 @@ public class Directory extends Server {
 		neo = new Neo(vertx.eventBus(),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
+		final Profils p = new DefaultProfils(neo);
 
 		neo.send("START n=node:node_auto_index(id='" + admin.getString("id") + "') "
 			+ "WITH count(*) AS exists "
@@ -274,6 +277,58 @@ public class Directory extends Server {
 				}
 				trace.info("Exporting auth data for " + request.params().get("id"));
 				neo.send(neoRequest, request.response());
+			}
+		});
+
+		rm.post("/api/group-profil", new Handler<HttpServerRequest>() {
+
+			@Override
+			public void handle(final HttpServerRequest request) {
+				request.expectMultiPart(true);
+				request.endHandler(new VoidHandler() {
+
+					@Override
+					protected void handle() {
+						String profil = request.formAttributes().get("profil");
+						if (profil != null && !profil.trim().isEmpty()) {
+							p.createGroupProfil(profil, new Handler<JsonObject>() {
+
+								@Override
+								public void handle(JsonObject res) {
+									if ("ok".equals(res.getString("status"))) {
+										renderJson(request, res);
+									} else {
+										renderError(request, res);
+									}
+								}
+							});
+						} else {
+							badRequest(request);
+						}
+					}
+				});
+			}
+		});
+
+		vertx.eventBus().registerHandler("directory", new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(final Message<JsonObject> message) {
+				String action = message.body().getString("action");
+				switch (action) {
+				case "groups":
+					p.listGroupsProfils(new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject res) {
+							message.reply(res);
+						}
+					});
+					break;
+				default:
+					message.reply(new JsonObject()
+						.putString("status", "error")
+						.putString("message", "Invalid action."));
+				}
 			}
 		});
 
