@@ -10,7 +10,7 @@ var account = function(){
 				hobbies.push({
 					"category":d.result[obj].category,
 					"values":d.result[obj].values,
-					"visibility":d.result[obj].relation.split(",")[1].slice(0,-1).trim()
+					"visibility":d.result[obj].relation[1]
 				});
 			}
 			if (d.result[obj].mood !== ""){
@@ -82,8 +82,8 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('span[contenteditable="true"]').focus(function(){document.designMode = 'on';});
-	$('span[contenteditable="true"]').blur(function(){
+	$('span[contenteditable="true"]').onfocus(function(){document.designMode = 'on';});
+	$('span[contenteditable="true"]').onblur(function(){
 		document.designMode = 'off';
 		var parameters = "?id=" + userId;
 		if (this.parentNode.id === "category"){
