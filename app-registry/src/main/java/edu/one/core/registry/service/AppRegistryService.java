@@ -96,7 +96,7 @@ public class AppRegistryService extends Controller {
 					neo.send(
 							"START n=node:node_auto_index(name={roleName}) "+
 							"WITH count(*) AS exists " +
-							"WHERE exists=0" +
+							"WHERE exists=0 " +
 							"CREATE (m {id:{id}, " +
 							"type:'ROLE', " +
 							"name:{roleName}" +
@@ -233,27 +233,12 @@ public class AppRegistryService extends Controller {
 
 	public void collectApps(final Message<JsonObject> message) {
 		final String application = message.body().getString("application");
-		JsonArray securedActions = message.body().getArray("actions");
+		final JsonArray securedActions = message.body().getArray("actions");
 		if (application != null && securedActions != null && !application.trim().isEmpty()) {
-			final JsonArray toQuery = new JsonArray();
-			for (Object o: securedActions) {
-				JsonObject json = (JsonObject) o;
-				String name = json.getString("name");
-				String displayName = json.getString("displayName");
-				String type = json.getString("type", "WORKFLOW");
-				if (name != null && displayName != null &&
-						!name.trim().isEmpty() && !displayName.trim().isEmpty()) {
-					JsonArray tmp = new JsonArray();
-					tmp.addString(name).addString(displayName).addString("SECURED_ACTION_" + type);
-					if (tmp.size() > 0) {
-						toQuery.addArray(tmp);
-					}
-				}
-			}
 			neo.send(
 				"START n=node:node_auto_index(name='" + application + "') "+
 				"WITH count(*) AS exists " +
-				"WHERE exists=0" +
+				"WHERE exists=0 " +
 				"CREATE (m {id:'" + UUID.randomUUID().toString() + "', " +
 				"type:'APPLICATION', " +
 				"name:'" + application +
@@ -263,15 +248,30 @@ public class AppRegistryService extends Controller {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						if ("ok".equals(event.body().getString("status"))) {
-							String actions = toQuery.encode();
-							neo.send(
-								"START n=node:node_auto_index(name='" + application + "') " +
-								"FOREACH (action in " + actions + " : " +
-								"CREATE UNIQUE n-[:PROVIDE]->(a {type:head(tail(tail(action))), " +
-								"name:head(action), displayName:head(tail(action))})) " +
-								"RETURN n"
-							);
-						message.reply(event.body());
+							JsonArray queries = new JsonArray();
+							for (Object o: securedActions) {
+								JsonObject json = (JsonObject) o;
+								JsonObject q = new JsonObject();
+								q.putString("query",
+									"START n=node:node_auto_index(name={application}) " +
+									"CREATE UNIQUE n-[r:PROVIDE]->(a {type: {type}, " +
+									"name:{name}, displayName:{displayName}}) " +
+									"RETURN a.name as name"
+								);
+								q.putObject("params", json
+									.putString("application", application)
+									.putString("type", "SECURED_ACTION_" +
+											json.getString("type", "WORKFLOW")));
+								queries.addObject(q);
+							}
+							neo.sendBatch(queries, new Handler<Message<JsonObject>>() {
+
+								@Override
+								public void handle(Message<JsonObject> res) {
+									log.info(res.body());
+									message.reply(res.body());
+								}
+							});
 						}
 					}
 				}
