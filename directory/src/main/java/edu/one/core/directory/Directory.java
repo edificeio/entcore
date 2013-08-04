@@ -34,7 +34,9 @@ public class Directory extends Server {
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 
-		neo.send("START n=node(*) "
+		neo.send("START n=node:node_auto_index(id='" + admin.getString("id") + "') "
+			+ "WITH count(*) AS exists "
+			+ "WHERE exists=0 "
 			+ "CREATE (m {id:'" + admin.getString("id") + "', "
 			+ "type:'" + admin.getString("type") + "',"
 			+ "ENTPersonNom:'"+ admin.getString("firstname") +"', "
