@@ -1,11 +1,13 @@
 package edu.one.core.infra;
 
 import java.util.Map;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
@@ -19,6 +21,24 @@ public class Neo  {
 		this.eb = eb;
 		this. log = log;
 		this.address = "wse.neo4j.persistor";
+	}
+
+	public void sendBatch(JsonArray queries, Handler<Message<JsonObject>> handler) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "executeBatch");
+		jo.putArray("queries", queries);
+		eb.send(address, jo, handler);
+	}
+
+	public void sendBatch(JsonArray queries, final HttpServerResponse response) {
+		sendBatch(queries, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> m) {
+				response.putHeader("content-type", "text/json");
+				response.end(m.body().encode());
+			}
+		});
 	}
 
 	public void send(String query, Handler<Message<JsonObject>> handler) {
