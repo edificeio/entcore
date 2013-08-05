@@ -135,4 +135,55 @@ public class UserUtils {
 		});
 	}
 
+	public static void generateSessionInfos(EventBus eb, final String userId, final Handler<JsonObject> handler) {
+		String query =
+				"START n=node:node_auto_index(id={id}) " +
+				"MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
+				"RETURN distinct a.name as name, a.displayName as displayName, " +
+				"a.type as type, n.ENTPersonClasses as classe, " +
+				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
+				"n.ENTPersonNomAffichage as username";
+		Map<String, Object> params = new HashMap<>();
+		params.put("id", userId);
+		sendNeo4j(eb, query, params, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonObject result = message.body().getObject("result");
+				if ("ok".equals(message.body().getString("status")) && result != null &&
+						!result.getFieldNames().isEmpty()) {
+					JsonObject j = message.body().getObject("result").getObject("0");
+					JsonObject infos = new JsonObject()
+						.putString("userId", userId)
+						.putString("firstName", j.getString("firstname"))
+						.putString("lastName", j.getString("lastname"))
+						.putString("username", j.getString("username"))
+						.putString("classId", j.getString("classe"));
+					JsonArray actions = new JsonArray();
+					for (String attr : result.getFieldNames()) {
+						JsonObject json = result.getObject(attr);
+						json.removeField("firstname");
+						json.removeField("lastname");
+						json.removeField("username");
+						json.removeField("classe");
+						actions.add(json);
+					}
+					handler.handle(infos.putArray("authorizedActions", actions));
+				} else {
+					handler.handle(new JsonObject());
+				}
+			}
+		});
+	}
+
+	public static void generateUserInfos(EventBus eb, String userId, final Handler<UserInfos> handler) {
+		generateSessionInfos(eb, userId, new Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject json) {
+				handler.handle(sessionToUserInfos(json));
+			}
+		});
+	}
+
 }
