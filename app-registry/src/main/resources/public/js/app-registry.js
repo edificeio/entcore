@@ -37,6 +37,27 @@ var appRegistry = function(){
 					</div>\
 					{{/.}}',
 
+			authorizeGroups : '{{#groups}}\
+								<div>\
+									<form action="{{action}}">\
+										<div class="left">\
+											<label>{{name}}</label>\
+											<input type="hidden" name="groupId" value="{{id}}" />\
+										</div>\
+										<div class="right">\
+										{{#roles}}\
+											<label>{{rolename}}</label>\
+											<input type="checkbox" name="roleIds" value="{{roleid}}" {{checked}}/>\
+											<br />\
+										{{/roles}}\
+										</div>\
+										<div class="clear">\
+											<input type="button" call="authorizeGroupsSubmit" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
+										</div>\
+									</form>\
+								</div>\
+							{{/groups}}',
+
 			createRole : '<form action="{{action}}">\
 							<label>{{#i18n}}app.registry.role.name{{/i18n}}</label>\
 							<input type="text" name="role" />\
@@ -108,8 +129,59 @@ var appRegistry = function(){
 					}
 				})
 				.error(function(data) {app.notify.error(data)});
-			}
+			},
 
+			authorizeGroups: function(o) {
+				$.get("/roles")
+				.done(function(response) {
+					var roles = [];
+					if (response.status === "ok") {
+						for (var key in response.result) {
+							var a = response.result[key];
+							roles.push(a);
+						}
+						$.get("/groups/roles")
+						.done(function(resp) {
+							var groups = [];
+							if (resp.status === "ok") {
+								for (var key in resp.result) {
+									var a = resp.result[key],
+									r = [];
+									if (a.roles[0] == null) {
+										a.roles = [];
+									}
+									for (var idx in roles) {
+										if ($.inArray(roles[idx].id, a.roles) > -1) {
+											r.push({roleid : roles[idx].id, rolename : roles[idx].name, checked : "checked "});
+										} else {
+											r.push({roleid : roles[idx].id, rolename : roles[idx].name, checked : ""});
+										}
+									}
+									a.roles = r;
+									groups.push(a);
+								}
+							}
+							$('#list').html(app.template.render("authorizeGroups",
+									{ action : o.url, groups : groups}));
+						})
+						.error(function(data) {app.notify.error(data)});
+					}
+				})
+				.error(function(data) {app.notify.error(data)});
+			},
+
+			authorizeGroupsSubmit : function(o) {
+				var form = $(o.target).parents("form");
+				$.post(form.attr("action"), form.serialize())
+				.done(function(response) {
+					if (response.status === "ok") {
+						app.notify.done(app.i18n.bundle["app.registry.groups.authorized"]);
+					} else {
+						app.notify.error(response.message);
+					}
+				})
+				.error(function(data) {app.notify.error(data)});
+			}
 		}
 	});
 	return app;

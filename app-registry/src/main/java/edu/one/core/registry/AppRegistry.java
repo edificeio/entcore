@@ -33,6 +33,12 @@ public class AppRegistry extends Server {
 
 		service.get("/roles/actions", "listRolesWithActions");
 
+		service.get("/groups", "listGroups");
+
+		service.get("/groups/roles", "listGroupsWithRoles");
+
+		service.post("/authorize/group", "linkGroup");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), vertx.eventBus()));
 
 	}

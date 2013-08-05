@@ -1,6 +1,7 @@
 package edu.one.core.registry.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,9 +15,10 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.google.common.base.Joiner;
+
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
-import edu.one.core.infra.Server;
 import edu.one.core.security.SecuredAction;
 
 public class AppRegistryService extends Controller {
@@ -127,6 +129,57 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
+	public void linkGroup(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				List <String> roleIds = request.formAttributes().getAll("roleIds");
+				String groupId = request.formAttributes().get("groupId");
+				Map<String, Object> params = new HashMap<String, Object>();
+				params.put("groupId", groupId);
+				if (roleIds != null && groupId != null && !groupId.trim().isEmpty()) {
+					String deleteQuery =
+							"START m=node:node_auto_index(id={groupId}) "
+							+ "MATCH m-[r:AUTHORIZED]-() "
+							+ "DELETE r";
+					if (roleIds.isEmpty()) {
+						neo.send(deleteQuery, params, request.response());
+					} else {
+						JsonArray queries = new JsonArray();
+						queries.addObject(new JsonObject()
+							.putString("query", deleteQuery)
+							.putObject("params", new JsonObject(params)));
+						String createQuery =
+								"START n=node:node_auto_index('id:(" + Joiner.on(' ').join(roleIds) + ")'), "
+								+ "m=node:node_auto_index(id={groupId}) "
+								+ "CREATE UNIQUE m-[ra:AUTHORIZED]->n";
+						queries.addObject(new JsonObject()
+						.putString("query", createQuery)
+						.putObject("params", new JsonObject(params)));
+						neo.sendBatch(queries, request.response());
+					}
+					// TODO refactor with following commented code
+//					String query;
+//					if (roleIds.isEmpty()) {
+//						query = "START m=node:node_auto_index(id={groupId}) "
+//								+ "MATCH m-[r:AUTHORIZED]-() "
+//								+ "DELETE r";
+//					} else {
+//						query = "START n=node:node_auto_index('id:(" + Joiner.on(' ').join(roleIds) + ")'), "
+//								+ "m=node:node_auto_index(id={groupId}) "
+//								+ "MATCH m-[r:AUTHORIZED]-() "
+//								+ "CREATE m-[:AUTHORIZED]->n "
+//								+ "DELETE r ";
+//					}
+//					neo.send(query, params, request.response());
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
 	@SecuredAction("app-registry.list.roles")
 	public void listRoles(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -147,6 +200,32 @@ public class AppRegistryService extends Controller {
 			"START n=node:node_auto_index(type={type}) " +
 			"MATCH n-[r?:AUTHORIZE]->a " +
 			"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions",
+			params,
+			request.response()
+		);
+	}
+
+	public void listGroups(final HttpServerRequest request) {
+		eb.send("directory", new JsonObject().putString("action", "groups"),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					renderJson(request, res.body());
+				} else {
+					renderError(request, res.body());
+				}
+			}
+		});
+	}
+
+	public void listGroupsWithRoles(final HttpServerRequest request) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("type","GROUPE");
+		neo.send(
+			"START n=node:node_auto_index(type={type}) " +
+			"MATCH n-[r?:AUTHORIZED]->a " +
+			"RETURN distinct n.id as id, n.ENTGroupeNom as name, COLLECT(a.id) as roles",
 			params,
 			request.response()
 		);

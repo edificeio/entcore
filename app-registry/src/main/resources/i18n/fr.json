@@ -11,5 +11,7 @@
 	"app.registry.application" : "Application",
 	"app.registry.actions" : "Habilitations",
 	"app.registry.role.name" : "Nom du role",
-	"app.registry.valid" : "Valider"
+	"app.registry.valid" : "Valider",
+	"app.registry.groups.authorize" : "Attribuer des roles aux groupes",
+	"app.registry.groups.authorized" : "Roles attribués"
 }

@@ -11,5 +11,7 @@
 	"app.registry.application" : "Application",
 	"app.registry.actions" : "Actions",
 	"app.registry.role.name" : "Role name",
-	"app.registry.valid" : "Valid"
+	"app.registry.valid" : "Valid",
+	"app.registry.groups.authorize" : "Link groups to roles",
+	"app.registry.groups.authorized" : "Roles linked"
 }
