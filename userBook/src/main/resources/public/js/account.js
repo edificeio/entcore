@@ -33,8 +33,17 @@ var account = function(){
 				<p class="address">{{address}}</p>\
 				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} :\
 				<span contenteditable="true"> {{motto}}</span></p>\
-				<select class="mood">\
-				<option value="volvo" style="background-image:url(/public/img/reveur.png);">Rêveur</option></select>\
+				<select id="mood">\
+				<option value="amoureux">Amoureux</option>\
+				<option value="colere">En colère</option>\
+				<option value="content">Content</option>\
+				<option value="embete">Embêté</option>\
+				<option value="farceur">Farceur</option>\
+				<option value="fatigue">Fatigué</option>\
+				<option value="fier">Fier</option>\
+				<option value="malade">Malade</option>\
+				<option value="reveur">Rêveur</option>\
+				<option value="triste">Triste</option></select>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
 				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
