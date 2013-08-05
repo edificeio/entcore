@@ -82,9 +82,7 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('span[contenteditable="true"]').onfocus(function(){document.designMode = 'on';});
-	$('span[contenteditable="true"]').onblur(function(){
-		document.designMode = 'off';
+	$('span[contenteditable="true"]').blur(function(){
 		var parameters = "?id=" + userId;
 		if (this.parentNode.id === "category"){
 			parameters += "&category=" + this.classList[0] + "&values=" + this.innerHTML;
