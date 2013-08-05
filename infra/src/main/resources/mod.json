@@ -16,6 +16,7 @@
 		"edu.one.core~userBook~0.1.0-SNAPSHOT",
 		"edu.one.core~workspace~0.1.0-SNAPSHOT",
 		"edu.one.core~mock-user-session~0.1.0-SNAPSHOT",
+		"edu.one.core~communication~0.1.0-SNAPSHOT",
 		"edu.one~wordpress~1.0.0-SNAPSHOT"
 	]
 }

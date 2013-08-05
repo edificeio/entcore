@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}communication.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#static}}css/communication.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" />
+
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/communication.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<header>
+			<h1>{{#i18n}}communication.header{{/i18n}}</h1>
+		</header>
+		<section id="main">
+			<div class="communication">
+				<nav class="left">
+					<ul>
+						<li><a call="confProfils" href="/communication/profils">{{#i18n}}communication.conf.profils{{/i18n}}</a>
+					</ul>
+				</nav>
+				<div class="mod">
+					<div id="list"></div>
+					<div id="form-window"></div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

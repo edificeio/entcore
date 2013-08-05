@@ -1,0 +1,7 @@
+{
+	"main":"edu.one.core.communication.Communication",
+	"auto-redeploy": true,
+	"port": 8015,
+	"mode": "dev",
+	"address" : "wse.communication"
+}
