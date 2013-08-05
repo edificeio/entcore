@@ -47,7 +47,7 @@ var workspace = function(){
 									<td colspan="5">\
 										<ul>\
 										{{#comments}}\
-											<li>{{author}} - {{posted}} - <span>{{comment}}</span></li>\
+											<li>{{author}} - {{posted}} - <span>{{{comment}}}</span></li>\
 										{{/comments}}\
 										</ul>\
 									</td>\
