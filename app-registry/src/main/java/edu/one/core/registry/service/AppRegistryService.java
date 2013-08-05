@@ -68,15 +68,20 @@ public class AppRegistryService extends Controller {
 
 	@SecuredAction("app-registry.list.applications.actions")
 	public void listApplicationsWithActions(HttpServerRequest request) {
+		String actionType = request.params().get("actionType");
+		String query =
+				"START n=node:node_auto_index(type={type}) " +
+				"MATCH n-[r?:PROVIDE]->a ";
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("type","APPLICATION");
-		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
-			"MATCH n-[r?:PROVIDE]->a " +
-			"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions",
-			params,
-			request.response()
-		);
+		if (actionType != null &&
+				("WORKFLOW".equals(actionType) || "RESOURCE".equals(actionType))) {
+			query += "WHERE a.type = {actionType} ";
+			params.put("actionType", "SECURED_ACTION_" + actionType);
+		}
+		query += "RETURN n.id as id, n.name as name, "
+				+ "COLLECT([a.name, a.displayName, a.type]) as actions";
+		neo.send(query, params, request.response());
 	}
 
 	//@SecuredAction("app-registry.create.role")
