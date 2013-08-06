@@ -6,6 +6,8 @@ import java.io.Reader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -260,16 +262,22 @@ public abstract class Controller extends Renders {
 			final List<String> checked) {
 		final String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
-			final JsonArray actions = new JsonArray();
+			Map<String, JsonObject> resourceActions = new HashMap<>();
 			for (SecuredAction action: securedActions.values()) {
 				if (ActionType.RESOURCE.name().equals(action.getType())) {
-					JsonObject a = new JsonObject()
+					JsonObject a = resourceActions.get(action.getDisplayName());
+					if (a == null) {
+						a = new JsonObject()
 						.putString("name", action.getName())
 						.putString("displayName", action.getDisplayName())
 						.putString("type", action.getType());
-					actions.add(a);
+						resourceActions.put(action.getDisplayName(), a);
+					} else {
+						a.putString("name", a.getString("name") + "," + action.getName());
+					}
 				}
 			}
+			final JsonArray actions = new JsonArray(resourceActions.values().toArray());
 			UserUtils.findVisibleUsers(eb, request, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibleUsers) {
@@ -279,11 +287,15 @@ public abstract class Controller extends Renders {
 						JsonArray userChoices = new JsonArray();
 						for (Object a: actions) {
 							JsonObject action = (JsonObject) a;
-							String value = action.getString("name").replaceAll("\\.", "-") +
-									"_" + user.getString("id");
+							String value = action.getString("name").replaceAll("\\.", "-");
+							List<String> list = new ArrayList<>();
+							for (String s:  Arrays.asList(value.split(","))) {
+								list.add(s + "_" + user.getString("id"));
+							}
+							value += "_" + user.getString("id");
 							JsonObject c = new JsonObject()
 								.putString("value", value);
-							if (checked != null && checked.contains(value)) {
+							if (checked != null && checked.containsAll(list)) {
 								c.putString("checked", "checked");
 							} else {
 								c.putString("checked", "");
