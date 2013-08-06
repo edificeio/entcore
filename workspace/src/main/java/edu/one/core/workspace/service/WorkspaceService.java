@@ -97,7 +97,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
-	@SecuredAction("workspace.share.document")
+	@SecuredAction("workspace.share")
 	public void shareDocument(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -116,12 +116,16 @@ public class WorkspaceService extends Controller {
 								for (String share : shares) {
 									String [] s = share.split("_");
 									if (s.length != 2) continue;
-									JsonObject j = sharesMap.get(s[1]);
-									if (j == null) {
-										j = new JsonObject().putString("userId", s[1]);
-										sharesMap.put(s[1], j);
+									String [] actions = s[0].split(",");
+									if (actions.length < 1) continue;
+									for (int i = 0; i < actions.length; i++) {
+										JsonObject j = sharesMap.get(s[1]);
+										if (j == null) {
+											j = new JsonObject().putString("userId", s[1]);
+											sharesMap.put(s[1], j);
+										}
+										j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
 									}
-									j.putBoolean(s[0].replaceAll("\\.", "-"), true);
 								}
 								JsonArray sharedArray = new JsonArray();
 								for (JsonObject jo: sharesMap.values()) {
@@ -223,7 +227,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.document.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
 		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
 			@Override
@@ -273,7 +277,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.document.get", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
 		getFile(request, documentDao, null);
 	}
@@ -323,7 +327,7 @@ public class WorkspaceService extends Controller {
 			);
 	}
 
-	@SecuredAction(value = "workspace.document.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void deleteDocument(HttpServerRequest request) {
 		deleteFile(request, documentDao, null);
 	}
@@ -379,7 +383,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.documents.copy", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void copyDocuments(HttpServerRequest request) {
 		copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION, null);
 	}
@@ -469,7 +473,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
-	@SecuredAction(value = "workspace.document.copy", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void copyDocument(HttpServerRequest request) {
 		copyFile(request, documentDao);
 	}
@@ -598,7 +602,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.document.comment", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.comment", type = ActionType.RESOURCE)
 	public void commentDocument(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -627,12 +631,12 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.document.move", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocument(final HttpServerRequest request) {
 		moveOne(request, request.params().get("folder"), documentDao, null);
 	}
 
-	@SecuredAction(value = "workspace.document.move.trash", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveTrash(final HttpServerRequest request) {
 		moveOne(request, "Trash", documentDao, null);
 	}
@@ -667,7 +671,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.documents.move", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
 		String folder = request.params().get("folder");
