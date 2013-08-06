@@ -42,18 +42,6 @@ span[contenteditable]:hover{
 	border:none;
 }
 
-#mood{
-	display:block;
-	width:300px;
-	height:50px;
+#mood img{
+	width:40px;
 }
-select#mood option[value="amoureux"] { background-image:url(/public/img/amoureux.jpg); }
-select#mood option[value="triste"] { background-image:url(/public/img/triste.jpg); }
-select#mood option[value="colere"] { background-image:url(/public/img/colere.jpg); }
-select#mood option[value="embete"] { background-image:url(/public/img/embete.jpg); }
-select#mood option[value="content"] { background-image:url(/public/img/content.jpg); }
-select#mood option[value="farceur"] { background-image:url(/public/img/farceur.jpg); }
-select#mood option[value="malade"] { background-image:url(/public/img/malade.jpg); }
-select#mood option[value="reveur"] { background-image:url(/public/img/reveur.jpg); }
-select#mood option[value="fatigue"] { background-image:url(/public/img/fatigue.jpg); }
-select#mood option[value="fier"] { background-image:url(/public/img/fier.jpg); }

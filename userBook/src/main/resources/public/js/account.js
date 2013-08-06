@@ -33,17 +33,18 @@ var account = function(){
 				<p class="address">{{address}}</p>\
 				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} :\
 				<span contenteditable="true"> {{motto}}</span></p>\
-				<select id="mood">\
-				<option value="amoureux">Amoureux</option>\
-				<option value="colere">En colère</option>\
-				<option value="content">Content</option>\
-				<option value="embete">Embêté</option>\
-				<option value="farceur">Farceur</option>\
-				<option value="fatigue">Fatigué</option>\
-				<option value="fier">Fier</option>\
-				<option value="malade">Malade</option>\
-				<option value="reveur">Rêveur</option>\
-				<option value="triste">Triste</option></select>\
+				<form id="mood" action="/api/edit-userbook-info">\
+				<input type="radio" name="mood" checked value="default" /> Default\
+				<input type="radio" name="mood" value="love" /><img src="/public/img/amoureux.jpg" alt="amoureux"/> Amoureux\
+				<input type="radio" name="mood" value="angry" /><img src="/public/img/colere.jpg" alt="colere"/> En colère\
+				<input type="radio" name="mood" value="happy" /><img src="/public/img/content.jpg" alt="content"/> Content\
+				<input type="radio" name="mood" value="worried" /><img src="/public/img/embete.jpg" alt="embete"/> Embêté\
+				<input type="radio" name="mood" value="joker" /><img src="/public/img/farceur.jpg" alt="farceur"/> Farceur\
+				<input type="radio" name="mood" value="tired" /><img src="/public/img/fatigue.jpg" alt="fatigue"/> Fatigué\
+				<input type="radio" name="mood" value="proud" /><img src="/public/img/fier.jpg" alt="fier"/> Fier\
+				<input type="radio" name="mood" value="sick" /><img src="/public/img/malade.jpg" alt="malade"/> Malade\
+				<input type="radio" name="mood" value="dreamy" /><img src="/public/img/reveur.jpg" alt="reveur"/> Rêveur\
+				<input type="radio" name="mood" value="sad" /><img src="/public/img/triste.jpg" alt="triste"/> Triste</form>\
 				<div class="clear"></div>\
 				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
 				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
@@ -71,7 +72,6 @@ var account = function(){
 			editUserBookInfo : function(url){
 				$.get(url)
 				.done(function(data){
-					console.log(data);
 					app.notify.info("modif ok");
 				})
 			},
@@ -81,7 +81,6 @@ var account = function(){
 				$('#current-visibility').html = $('#visible').val();
 				$.get(url)
 				.done(function(data){
-					console.log(data);
 					app.notify.info("modif ok");
 				})
 			}
@@ -98,6 +97,10 @@ function manageEditable(){
 		} else {
 			parameters += "&prop=" + this.parentNode.classList[0] + "&value=" + this.innerHTML;
 		}
+		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
+	});
+	$('input[type="radio"][name="mood"]').click(function(){
+		var parameters = "?id=" + userId + "&prop=mood&value=" + this.value;
 		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
 	});
 }
