@@ -59,8 +59,14 @@ public class UserBook extends Server {
 			public void handle(HttpServerRequest request) {
 				String neoRequest = "START n=node(*) ";
 				if (request.params().contains("name")){
+					String[] names = request.params().get("name").split(" ");
+					String displayNameRegex = (names[0].length() > 3) ? "(?i)(" + names[0].substring(0,4) : "(?i)(" + names[0];
+					for (int i = 1; i < names.length; i++) {
+						displayNameRegex += (names[i].length() > 3) ? ".*|" + names[i].substring(0,4) : ".*|" + names[i];
+					}
+					displayNameRegex += ".*)";
 					neoRequest += " MATCH (n)-[r*]->(m) WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage=~'" + request.params().get("name").substring(0,3) + ".*'";
+						+ "AND n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
 				} else if (request.params().contains("class")){
 					neoRequest += "m=node(*) MATCH m<-[APPARTIENT]-n WHERE has(n.type) "
 						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "'";
