@@ -60,9 +60,9 @@ public class UserBook extends Server {
 				String neoRequest = "START n=node(*) ";
 				if (request.params().contains("name")){
 					String[] names = request.params().get("name").split(" ");
-					String displayNameRegex = (names[0].length() > 3) ? "(?i)(" + names[0].substring(0,4) : "(?i)(" + names[0];
+					String displayNameRegex = (names[0].length() > 3) ? "(?i)(.*" + names[0].substring(0,4) : "(?i)(.*" + names[0];
 					for (int i = 1; i < names.length; i++) {
-						displayNameRegex += (names[i].length() > 3) ? ".*|" + names[i].substring(0,4) : ".*|" + names[i];
+						displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
 					}
 					displayNameRegex += ".*)";
 					neoRequest += " MATCH (n)-[r*]->(m) WHERE has(n.ENTPersonNomAffichage) "
