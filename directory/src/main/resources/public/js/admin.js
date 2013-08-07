@@ -1,6 +1,6 @@
 var admin = function(){
 
-	var dataExtractor = function (d) { return {list : _.values(jQuery.parseJSON(d).result)}; };
+	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -65,12 +65,11 @@ var admin = function(){
 			classes : function(o) {
 				$.get(o.url)
 				.done(function(data){
-					var jo = jQuery.parseJSON(data);
-					if (!!$("#classes-" + jo.result[0]["schoolId"]).children().length) {
-						$("#classes-" + jo.result[0]["schoolId"]).html('');
+					if (!!$("#classes-" + data.result[0]["schoolId"]).children().length) {
+						$("#classes-" + data.result[0]["schoolId"]).html('');
 						return;
 					}
-					$("#classes-" + jo.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
+					$("#classes-" + data.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data);})
 			},
@@ -87,12 +86,11 @@ var admin = function(){
 			personnes : function(o) {
 				$.get(o.url)
 				.done(function(data){
-					var jo = jQuery.parseJSON(data);
-					if (!!$('#people-' + jo.result[0]["classId"]).children().length) {
-						$('#people-' + jo.result[0]["classId"]).html('');
+					if (!!$('#people-' + data.result[0]["classId"]).children().length) {
+						$('#people-' + data.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(data)));
+					$("#people-" + data.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
@@ -113,12 +111,11 @@ var admin = function(){
 			enseignants : function(o) {
 				$.get(o.url)
 				.done(function(data){
-					var jo = jQuery.parseJSON(data);
-					if (!!$('#people-' + jo.result[0]["classId"]).children().length) {
-						$('#people-' + jo.result[0]["classId"]).html('');
+					if (!!$('#people-' + data.result[0]["classId"]).children().length) {
+						$('#people-' + data.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + jo.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(data)));
+					$("#people-" + data.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
@@ -150,27 +147,27 @@ var admin = function(){
 						$('label').removeAttr('style');
 					}
 				})
-				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
+				.error(function(data){app.notify.error(data.status);})
 			},
 			createAdmin : function(o) {
 				var url = o.target.form.action + '?' + $('#create-admin').serialize()
 					+ '&ENTPerson=' + $('#choice').val();
 				$.get(url)
-				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
-				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
+				.done(function(data){app.notify.done(data.status);})
+				.error(function(data){app.notify.error(data.status);})
 			},
 			createGroup : function(o) {
 				var url = o.target.form.action + '?' + $('#create-group').serialize()
 					+ '&type=' + $('#type').val() + '&ENTGroupStructRattach=' + $('#parent').val();
 				$.get(url)
-				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
-				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
+				.done(function(data){app.notify.done(data.status);})
+				.error(function(data){app.notify.error(data.status);})
 			},
 			createSchool : function(o) {
 				var url = o.target.form.action + '?' + $('#create-school').serialize();
 				$.get(url)
-				.done(function(data){app.notify.done(jQuery.parseJSON(data).status);})
-				.error(function(data){app.notify.error(jQuery.parseJSON(data).status);})
+				.done(function(data){app.notify.done(data.status);})
+				.error(function(data){app.notify.error(data.status);})
 			},
 			view: function(o) {
 				switch(o.target.id){
