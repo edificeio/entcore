@@ -7,6 +7,7 @@ project.evaluationDependsOn(':dataDictionary')
 dependencies {
 	provided project(':infra')
 	compile project(':web-utils')
+  compile 'net.sf.opencsv:opencsv:2.4'
 	provided project(':dataDictionary')
 }
 

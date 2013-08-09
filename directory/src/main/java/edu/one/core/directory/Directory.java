@@ -1,13 +1,8 @@
 package edu.one.core.directory;
 
-import static edu.one.core.infra.http.Renders.*;
-import edu.one.core.datadictionary.dictionary.DefaultDictionary;
-import edu.one.core.datadictionary.dictionary.Dictionary;
-import edu.one.core.directory.profils.DefaultProfils;
-import edu.one.core.directory.profils.Profils;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.Neo;
-import edu.one.core.infra.http.Renders;
+import static edu.one.core.infra.http.Renders.badRequest;
+import static edu.one.core.infra.http.Renders.renderError;
+import static edu.one.core.infra.http.Renders.renderJson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +13,17 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import edu.one.core.datadictionary.dictionary.DefaultDictionary;
+import edu.one.core.datadictionary.dictionary.Dictionary;
+import edu.one.core.directory.be1d.BE1D;
+import edu.one.core.directory.profils.DefaultProfils;
+import edu.one.core.directory.profils.Profils;
+import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Renders;
 
 public class Directory extends Server {
 	
@@ -50,6 +55,21 @@ public class Directory extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				render.renderView(request, new JsonObject());
+			}
+		});
+
+		rm.get("/testbe1d", new Handler<HttpServerRequest>() {
+
+			@Override
+			public void handle(final HttpServerRequest r) {
+				new BE1D(vertx, container, "/opt/one/be1d").importPorteur(
+						new Handler<JsonArray>() {
+
+					@Override
+					public void handle(JsonArray m) {
+						renderJson(r, m);
+					}
+				});
 			}
 		});
 
