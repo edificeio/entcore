@@ -40,6 +40,7 @@ public class UserInfos {
 	private String lastName;
 	private String username;
 	private String classId;
+	private String type;
 	private List<Action> authorizedActions;
 
 	public String getUserId() {
@@ -88,6 +89,14 @@ public class UserInfos {
 
 	public void setClassId(String classId) {
 		this.classId = classId;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

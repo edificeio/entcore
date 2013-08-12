@@ -142,7 +142,7 @@ public class UserUtils {
 				"RETURN distinct a.name as name, a.displayName as displayName, " +
 				"a.type as type, n.ENTPersonClasses as classe, " +
 				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
-				"n.ENTPersonNomAffichage as username";
+				"n.ENTPersonNomAffichage as username, n.type as userType";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(eb, query, params, new Handler<Message<JsonObject>>() {
@@ -158,7 +158,8 @@ public class UserUtils {
 						.putString("firstName", j.getString("firstname"))
 						.putString("lastName", j.getString("lastname"))
 						.putString("username", j.getString("username"))
-						.putString("classId", j.getString("classe"));
+						.putString("classId", j.getString("classe"))
+						.putString("type", j.getString("userType"));
 					JsonArray actions = new JsonArray();
 					for (String attr : result.getFieldNames()) {
 						JsonObject json = result.getObject(attr);
@@ -166,6 +167,7 @@ public class UserUtils {
 						json.removeField("lastname");
 						json.removeField("username");
 						json.removeField("classe");
+						json.removeField("userType");
 						actions.add(json);
 					}
 					handler.handle(infos.putArray("authorizedActions", actions));
