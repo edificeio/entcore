@@ -36,7 +36,7 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 
 	private void doFind(Message<JsonObject> message) {
 		String sessionId = message.body().getString("sessionId");
-		if (!"1234".equals(sessionId) && !"2345".equals(sessionId)) {
+		if (!"1234".equals(sessionId) && !"2345".equals(sessionId) && !"3456".equals(sessionId)) {
 			sendError(message, "Invalid sessionId.");
 			return;
 		}
@@ -77,7 +77,28 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 			session.putString("firstName", "Nicolas");
 			session.putString("lastName", "LOPEZ");
 			session.putString("username", "Nicolas LOPEZ");
+			session.putString("type", "SUPERADMIN");
 			session.putString("classId", "4400000002$ORDINAIRE$CM2 de Mme Rousseau");
+			session.putArray("authorizedActions", new JsonArray(actions));
+		} else if ("2345".equals(sessionId)){
+			String actions = "["
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|getRackDocument\", \"displayName\" : \"workspace.rack.document.get\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listDocuments\", \"displayName\" : \"workspace.documents.list\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listDocumentsByFolder\", \"displayName\" : \"workspace.documents.list.by.folder\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listFolders\", \"displayName\" : \"workspace.document.list.folders\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listRackDocuments\", \"displayName\" : \"workspace.rack.list.documents\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listRackTrashDocuments\", \"displayName\" : \"workspace.rack.list.trash.documents\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|addDocument\", \"displayName\" : \"workspace.document.add\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|share\", \"displayName\" : \"workspace.share\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|shareDocument\", \"displayName\" : \"workspace.share.document\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|view\", \"displayName\" : \"workspace.view\", \"type\" : \"WORKFLOW\"}"
+					+ "]";
+			session.putString("userId", "d6647393-cf6a-42da-978d-cd7e184aa0e7");
+			session.putString("firstName", "Audrey");
+			session.putString("lastName", "DULOUD");
+			session.putString("username", "Audrey DULOUD");
+			session.putString("type", "ELEVE");
+			session.putString("classId", "74b97473-cd89-434d-801e-db689429bd65");
 			session.putArray("authorizedActions", new JsonArray(actions));
 		} else {
 			String actions = "["
@@ -87,13 +108,17 @@ public class MockUserSession extends BusModBase implements Handler<Message<JsonO
 					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listFolders\", \"displayName\" : \"workspace.document.list.folders\", \"type\" : \"WORKFLOW\"}, "
 					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listRackDocuments\", \"displayName\" : \"workspace.rack.list.documents\", \"type\" : \"WORKFLOW\"}, "
 					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|listRackTrashDocuments\", \"displayName\" : \"workspace.rack.list.trash.documents\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|addDocument\", \"displayName\" : \"workspace.document.add\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|share\", \"displayName\" : \"workspace.share\", \"type\" : \"WORKFLOW\"}, "
+					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|shareDocument\", \"displayName\" : \"workspace.share.document\", \"type\" : \"WORKFLOW\"}, "
 					+ "{ \"name\" : \"edu.one.core.workspace.service.WorkspaceService|view\", \"displayName\" : \"workspace.view\", \"type\" : \"WORKFLOW\"}"
 					+ "]";
-			session.putString("userId", "4420000018");
+			session.putString("userId", "14555fe0-af2b-4cf6-9a79-9e6bf0362cc9");
 			session.putString("firstName", "Audrey");
 			session.putString("lastName", "DULOUD");
 			session.putString("username", "Audrey DULOUD");
-			session.putString("classId", "4400000002$ORDINAIRE$CM2 de Mme Rousseau");
+			session.putString("type", "ELEVE");
+			session.putString("classId", "9eb6bcf5-1bec-4f5f-88c3-87a4973944e4");
 			session.putArray("authorizedActions", new JsonArray(actions));
 		}
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));

@@ -58,6 +58,10 @@ public class Auth extends Server {
 								&& "lecteur".equals(request.formAttributes().get("password"))) {
 							CookieUtils.set("oneSessionId", "2345", request.response());
 							redirect(request, callBack, "");
+						} else if ("contributeur".equals(request.formAttributes().get("email"))
+								&& "contributeur".equals(request.formAttributes().get("password"))) {
+							CookieUtils.set("oneSessionId", "3456", request.response());
+							redirect(request, callBack, "");
 						} else {
 							try {
 								redirect(request, "/login?"
