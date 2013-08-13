@@ -333,12 +333,16 @@ public class CommunicationController extends Controller {
 		} else {
 			query.append(" MATCH n-[:COMMUNIQUE*1..3]->m ");
 		}
+		query.append("WHERE has(m.id) AND m.id <> {userId} ");
 		if (expectedTypes != null && expectedTypes.size() > 0) {
-			query.append("WHERE has(m.type) AND m.type IN ")
+			query.append("AND has(m.type) AND m.type IN ")
 			.append(expectedTypes.encode().replaceAll("\"", "'"))
 			.append(" ");
 		}
-		query.append("RETURN distinct m.id as id, m.name as name, m.type as type");
+		query.append("RETURN distinct m.id as id, m.name? as name, "
+				+ "m.ENTPersonLogin? as username, m.type as type, "
+				+ "m.ENTPersonNom? as lastName, m.ENTPersonPrenom? as firstName "
+				+ "ORDER BY name, lastName ");
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 

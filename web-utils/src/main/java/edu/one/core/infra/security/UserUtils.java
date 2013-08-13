@@ -18,40 +18,30 @@ import edu.one.core.infra.security.resources.UserInfos;
 
 public class UserUtils {
 
-	// TODO replace this simple request
+	private static final JsonArray usersTypes = new JsonArray()
+			.addString("PERSRELELEVE")
+			.addString("ELEVE")
+			.addString("PERSEDUCNAT");
+
 	public static void findVisibleUsers(EventBus eb, final JsonObject session,
 			final Handler<JsonArray> handler) {
-		final JsonArray users = new JsonArray();
-		if (session != null && session.getString("classId") != null
-				&& session.getString("userId") != null) {
-			Map<String, Object> params = new HashMap<>();
-			params.put("classId", session.getString("classId"));
-			String query = "START n=node:node_auto_index(id={classId}) "
-					+ "MATCH n<-[:APPARTIENT]-m "
-					+ "RETURN distinct m.id as id, m.ENTPersonNom as lastName, "
-						+ "m.ENTPersonPrenom as firstName "
-					+ "ORDER BY m.ENTPersonNom";
-			sendNeo4j(eb, query, params, new Handler<Message<JsonObject>>() {
+		if (session != null && session.getString("userId") != null
+				&& !session.getString("userId").trim().isEmpty()) {
+			JsonObject m = new JsonObject()
+			.putString("userId", session.getString("userId"))
+			.putArray("expectedTypes", usersTypes);
+			eb.send("wse.communication.users", m, new Handler<Message<JsonArray>>() {
 
 				@Override
-				public void handle(Message<JsonObject> res) {
-					if (res.body() != null && "ok".equals(res.body().getString("status"))) {
-						JsonObject result = res.body().getObject("result");
-						for (String key : result.getFieldNames()) {
-							JsonObject r = result.getObject(key);
-							if (session.getString("userId").equals(r.getString("id"))) continue;
-							r.putString("username",
-									r.getString("firstName") + " " + r.getString("lastName"));
-							users.add(r);
-						}
-					}
-					handler.handle(users);
+				public void handle(Message<JsonArray> res) {
+					handler.handle(res.body());
 				}
 			});
 		} else {
-			handler.handle(users);
+			handler.handle(new JsonArray());
 		}
 	}
+
 
 	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
 			final Handler<JsonArray> handler) {
