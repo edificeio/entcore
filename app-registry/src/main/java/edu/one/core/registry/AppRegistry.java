@@ -39,6 +39,8 @@ public class AppRegistry extends Server {
 
 		service.post("/authorize/group", "linkGroup");
 
+		service.get("/schools", "listSchools");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), vertx.eventBus()));
 
 	}

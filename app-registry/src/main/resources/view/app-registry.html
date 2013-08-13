@@ -24,7 +24,11 @@
 					<ul>
 						<li><a call="applications" href="/applications/actions?actionType=WORKFLOW">{{#i18n}}app.registry.applications{{/i18n}}</a></li>
 						<li><a call="roles" href="/roles/actions">{{#i18n}}app.registry.roles{{/i18n}}</a></li>
-						<li><a call="authorizeGroups" href="/authorize/group">{{#i18n}}app.registry.groups.authorize{{/i18n}}</a>
+						{{#schools}}
+						<li>&nbsp;</li>
+						<li>{{name}}</li>
+						<li><a call="authorizeGroups" href="/authorize/group?schoolId={{id}}">{{#i18n}}app.registry.groups.authorize{{/i18n}}</a>
+						{{/schools}}
 					</ul>
 				</nav>
 				<div class="mod">

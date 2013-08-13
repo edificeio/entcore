@@ -140,7 +140,7 @@ var appRegistry = function(){
 							var a = response.result[key];
 							roles.push(a);
 						}
-						$.get("/groups/roles")
+						$.get("/groups/roles" + o.url.substring(o.url.indexOf('?')))
 						.done(function(resp) {
 							var groups = [];
 							if (resp.status === "ok") {

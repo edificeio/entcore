@@ -19,6 +19,8 @@ import com.google.common.base.Joiner;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.security.UserUtils;
+import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
 
 public class AppRegistryService extends Controller {
@@ -32,8 +34,20 @@ public class AppRegistryService extends Controller {
 	}
 
 	@SecuredAction("app-registry.view")
-	public void view(HttpServerRequest request) {
-		renderView(request);
+	public void view(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				listSchools(user, new Handler<JsonArray>() {
+
+					@Override
+					public void handle(JsonArray event) {
+						renderView(request, new JsonObject().putArray("schools", event));
+					}
+				});
+			}
+		});
 	}
 
 	@SecuredAction("app-registry.list.applications")
@@ -224,16 +238,56 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
+	public void listSchools(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					listSchools(user, new Handler<JsonArray>() {
+
+						@Override
+						public void handle(JsonArray event) {
+							renderJson(request, event);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	private void listSchools(UserInfos user, final Handler<JsonArray> handler) {
+		if (user != null) {
+			eb.send("wse.communication.schools", new JsonObject()
+			.putString("userId", user.getUserId())
+			.putString("userType", user.getType()), new Handler<Message<JsonArray>>() {
+
+				@Override
+				public void handle(Message<JsonArray> event) {
+					handler.handle(event.body());
+				}
+			});
+		} else {
+			handler.handle(new JsonArray());
+		}
+	}
+
 	public void listGroupsWithRoles(final HttpServerRequest request) {
+		String schoolId = request.params().get("schoolId");
+		String query = "START n=node:node_auto_index({type})";
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("type","GROUPE");
-		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
-			"MATCH n-[r?:AUTHORIZED]->a " +
-			"RETURN distinct n.id as id, n.ENTGroupeNom as name, COLLECT(a.id) as roles",
-			params,
-			request.response()
-		);
+		params.put("type","type:GROUP_*");
+		if (schoolId != null && !schoolId.trim().isEmpty()) {
+			params.put("schoolId", schoolId);
+			query += ", m=node:node_auto_index(id={schoolId}) " +
+					 "MATCH m<-[:DEPENDS*1..2]-n-[r?:AUTHORIZED]->a ";
+		} else {
+			query += " MATCH n-[r?:AUTHORIZED]->a ";
+		}
+		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles";
+		neo.send(query, params, request.response());
 	}
 
 	public void collectApps(final Message<JsonObject> message) {
