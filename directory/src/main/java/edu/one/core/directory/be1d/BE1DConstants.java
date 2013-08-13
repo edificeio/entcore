@@ -49,5 +49,6 @@ public final class BE1DConstants {
 	public static final String ENTPersonIdentifiant = "ENTPersonIdentifiant";
 	public static final String ENTPersonLogin = "ENTPersonLogin";
 	public static final String ENTPersonMotDePasse = "ENTPersonMotDePasse";
+	public static final String ENTPersonNomAffichage = "ENTPersonNomAffichage";
 
 }

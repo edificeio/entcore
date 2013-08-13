@@ -21,6 +21,7 @@ import au.com.bytecode.opencsv.CSVReadProc;
 
 import com.google.common.base.Joiner;
 
+import edu.one.core.datadictionary.generation.DisplayNameGenerator;
 import edu.one.core.datadictionary.generation.IdGenerator;
 import edu.one.core.datadictionary.generation.LoginGenerator;
 import edu.one.core.datadictionary.generation.PasswordGenerator;
@@ -40,6 +41,7 @@ public class BE1DImporter {
 	private final PasswordGenerator pwGenerator;
 	private final IdGenerator idGenerator;
 	private final LoginGenerator loginGenerator;
+	private final DisplayNameGenerator displayNameGenerator;
 
 	class Tuple<T> {
 		private final String s1;
@@ -104,6 +106,7 @@ public class BE1DImporter {
 		loginGenerator = new LoginGenerator();
 		pwGenerator = new PasswordGenerator();
 		idGenerator = new IdGenerator();
+		displayNameGenerator = new DisplayNameGenerator();
 		csv = CSV.separator(';').quote('\"').skipLines(1).charset("ISO-8859-1").create();
 		//charset("UTF-8").create();
 	}
@@ -263,7 +266,9 @@ public class BE1DImporter {
 				.putString(ENTPersRelElevTelPro, values[RespENTPersRelElevTelPro])
 				.putString(ENTPersonIdentifiant, idGenerator.generate())
 				.putString(ENTPersonLogin, loginGenerator
-						.generate(values[ENTPersonPrenomIdx], values[ENTPersonNomIdx]))
+						.generate(values[RespENTPersonPrenomIdx], values[RespENTPersonNomIdx]))
+				.putString(ENTPersonNomAffichage, displayNameGenerator
+						.generate(values[RespENTPersonPrenomIdx], values[RespENTPersonNomIdx]))
 				.putString(ENTPersonMotDePasse, pwGenerator.generate());
 
 				for (int i = 13; i < values.length; i += 4) {
@@ -307,6 +312,8 @@ public class BE1DImporter {
 				.putString(ENTPersonVille, values[ENTPersonVilleIdx])
 				.putString(ENTPersonIdentifiant, idGenerator.generate())
 				.putString(ENTPersonLogin, loginGenerator
+						.generate(values[ENTPersonPrenomIdx], values[ENTPersonNomIdx]))
+				.putString(ENTPersonNomAffichage, displayNameGenerator
 						.generate(values[ENTPersonPrenomIdx], values[ENTPersonNomIdx]))
 				.putString(ENTPersonMotDePasse, pwGenerator.generate());
 

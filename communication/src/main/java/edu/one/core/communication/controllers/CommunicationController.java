@@ -340,9 +340,9 @@ public class CommunicationController extends Controller {
 			.append(" ");
 		}
 		query.append("RETURN distinct m.id as id, m.name? as name, "
-				+ "m.ENTPersonLogin? as username, m.type as type, "
+				+ "m.ENTPersonLogin? as login, m.ENTPersonNomAffichage? as username, m.type as type, "
 				+ "m.ENTPersonNom? as lastName, m.ENTPersonPrenom? as firstName "
-				+ "ORDER BY name, lastName ");
+				+ "ORDER BY name, username ");
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 
