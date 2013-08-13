@@ -6,7 +6,6 @@
 }
 
 form {
-	width: 300px;
 }
 
 .hidden {
@@ -23,4 +22,8 @@ form {
 
 .clear {
 	clear: both;
+}
+
+.school-menu {
+	font-size: large;
 }

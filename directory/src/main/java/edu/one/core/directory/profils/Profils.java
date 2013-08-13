@@ -5,8 +5,9 @@ import org.vertx.java.core.json.JsonObject;
 
 public interface Profils {
 
+	@Deprecated
 	void createGroupProfil(String profil, Handler<JsonObject> handler);
 
-	void listGroupsProfils(Handler<JsonObject> handler);
+	void listGroupsProfils(Object [] typeFilter, String schoolId, Handler<JsonObject> handler);
 
 }

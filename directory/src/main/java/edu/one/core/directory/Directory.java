@@ -337,7 +337,10 @@ public class Directory extends Server {
 				String action = message.body().getString("action");
 				switch (action) {
 				case "groups":
-					p.listGroupsProfils(new Handler<JsonObject>() {
+					Object[] filterTypes = (message.body().getArray("types") != null) ?
+							message.body().getArray("types").toArray() : null;
+					p.listGroupsProfils(filterTypes, message.body().getString("schoolId"),
+							new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject res) {
 							message.reply(res);

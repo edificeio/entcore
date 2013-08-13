@@ -3,8 +3,10 @@ package edu.one.core.communication.controllers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -13,9 +15,13 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.google.common.base.Joiner;
+
+import edu.one.core.communication.profils.GroupProfil;
 import edu.one.core.communication.profils.ProfilFactory;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
@@ -28,8 +34,7 @@ public class CommunicationController extends Controller {
 	private final Neo neo;
 	private final ProfilFactory pf;
 	private static final List<String> profils = Collections.unmodifiableList(
-			Arrays.asList("ADMINISTRATEUR", "DIRECTEUR", "PERSONNEL_EN", "ENSEIGNANT",
-					"AGENT_CT", "ELEVE", "PARENT"));
+			Arrays.asList("ADMINISTRATEUR", "ELEVE", "PERSRELELEVE", "PERSEDUCNAT", "ENSEIGNANT"));
 
 	public CommunicationController(Vertx vertx, Container container,
 			RouteMatcher rm, Map<String, SecuredAction> securedActions) {
@@ -38,37 +43,70 @@ public class CommunicationController extends Controller {
 		pf = new ProfilFactory();
 	}
 
-	public void view(HttpServerRequest request) {
-		renderView(request);
+	public void view(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					listVisiblesSchools(user.getUserId(), user.getType(), new Handler<JsonArray>() {
+
+						@Override
+						public void handle(JsonArray event) {
+							renderView(request, new JsonObject().putArray("schools", event));
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
-	public void setGroupProfilsCommunication(final HttpServerRequest request) {
+	public void setGroupsProfilsMatrix(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				final List<String> profils = request.formAttributes().getAll("profil");
-				String groupId = request.formAttributes().get("groupId");
-				if (groupId != null && !groupId.trim().isEmpty() && profils != null) {
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", groupId);
+				final List<String> groupsProfils = request.formAttributes().getAll("groupProfil");
+				if (profils != null) {
+					Set<String> gpId = new HashSet<>(Arrays.asList(Joiner.on("_").join(groupsProfils).split("_")));
 					neo.send(
-						"START n=node:node_auto_index(id={id}) " +
-						"RETURN n.id as id, n.name as name",
-						params, new Handler<Message<JsonObject>>() {
+						"START n=node:node_auto_index('id:" + Joiner.on(" OR id:").join(gpId) + "') " +
+						"RETURN n.id as id, n.name as name, n.type as type",
+						null, new Handler<Message<JsonObject>>() {
 
 						@Override
 						public void handle(Message<JsonObject> res) {
 							if ("ok".equals(res.body().getString("status"))) {
-								JsonObject group = res.body().getObject("result").getObject("0");
-								if (group != null) {
-									JsonArray queries = new JsonArray();
-									for (String profil : profils) {
+								HashMap<String, GroupProfil> gps = new HashMap<>();
+								JsonObject result = res.body().getObject("result");
+								if (result != null) {
+									for (String attr : result.getFieldNames()) {
+										JsonObject json = result.getObject(attr);
 										try {
-											queries.addObject(pf.getProfil(profil)
-													.queryAddComGroupProfil(group));
+											gps.put(json.getString("id"), pf.getGroupProfil(json));
 										} catch (IllegalArgumentException e) {
 											log.error(e.getMessage(), e);
+										}
+									}
+									JsonArray queries = new JsonArray();
+									for (String gp : groupsProfils) {
+										String[] groupsId = gp.split("_");
+										if (groupsId.length != 2) continue;
+										GroupProfil gp1 = gps.get(groupsId[0]);
+										GroupProfil gp2 = gps.get(groupsId[1]);
+										if (gp1 != null && gp2 != null) {
+											JsonElement q = gp1.queryAddCommunicationLink(gp2);
+											if (q != null) {
+												if (q.isArray()) {
+													for (Object o: q.asArray()) {
+														queries.add(o);
+													}
+												} else {
+													queries.add(q);
+												}
+											}
 										}
 									}
 									neo.sendBatch(queries, request.response());
@@ -80,12 +118,22 @@ public class CommunicationController extends Controller {
 							}
 						}
 					});
-//					neo.send(
-//						"START n=node:node_auto_index(type='GROUPE')" +
-//						"MATCH n<-[:APPARTIENT]-m " +
-//						"WHERE n.ENTGroupeNom = {profil} " +
-//						"CREATE UNIQUE m-[:COMMUNIQUE]-n"
-//						, params, request.response());
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
+	public void setParentEnfantCommunication(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final List<String> groups = request.formAttributes().getAll("groupId");
+				if (groups != null) {
+					String query = GroupProfil.queryParentEnfantCommunication(groups);
+					neo.send(query, request.response());
 				} else {
 					badRequest(request);
 				}
@@ -102,14 +150,132 @@ public class CommunicationController extends Controller {
 
 			@Override
 			public void handle(UserInfos user) {
-				visibleUsers(user.getUserId(), allGroupsProfilsClasse(),
-						new Handler<JsonArray>() {
+				if (user != null) {
+					String schoolId = request.params().get("schoolId");
+					if ("SUPERADMIN".equals(user.getType())) {
+						eb.send("directory", new JsonObject().putString("action", "groups")
+								.putString("schoolId", schoolId),
+								new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> res) {
+								if ("ok".equals(res.body().getString("status"))) {
+									renderJson(request,
+											resultToJsonArray(res.body().getObject("result")));
+								} else {
+									renderError(request, res.body());
+								}
+							}
+						});
+					} else {
+						visibleUsers(user.getUserId(), schoolId, allGroupsProfilsClasse(),
+								new Handler<JsonArray>() {
 
-					@Override
-					public void handle(JsonArray event) {
-						renderJson(request, event);
+							@Override
+							public void handle(JsonArray event) {
+								renderJson(request, event);
+							}
+						});
 					}
-				});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	public void listVisiblesClassesEnfants(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String schoolId = request.params().get("schoolId");
+					if ("SUPERADMIN".equals(user.getType())) {
+						eb.send("directory", new JsonObject().putString("action", "groups")
+								.putArray("types", new JsonArray().addString("GROUP_CLASSE_ELEVE"))
+								.putString("schoolId", schoolId),
+								new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> res) {
+								if ("ok".equals(res.body().getString("status"))) {
+									renderJson(request,
+											resultToJsonArray(res.body().getObject("result")));
+								} else {
+									renderError(request, res.body());
+								}
+							}
+						});
+					} else {
+						visibleUsers(user.getUserId(), schoolId, new JsonArray().add("GROUP_CLASSE_ELEVE"),
+								new Handler<JsonArray>() {
+							@Override
+							public void handle(JsonArray event) {
+								renderJson(request, event);
+							}
+						});
+					}
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	public void listVisiblesSchools(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					listVisiblesSchools(user.getUserId(), user.getType(), new Handler<JsonArray>() {
+
+						@Override
+						public void handle(JsonArray event) {
+							renderJson(request, event);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	public void listVisiblesSchools(final Message<JsonObject> message) {
+		String userId = message.body().getString("userId");
+		String userType = message.body().getString("userType");
+		if (userId != null && !userId.trim().isEmpty()) {
+			listVisiblesSchools(userId, userType, new Handler<JsonArray>() {
+
+				@Override
+				public void handle(JsonArray event) {
+					message.reply(event);
+				}
+			});
+		} else {
+			message.reply(new JsonArray());
+		}
+	}
+
+	private void listVisiblesSchools(String userId, String userType,
+			final Handler<JsonArray> handler) {
+		String query = "START n=node:node_auto_index(type='ETABEDUCNAT') ";
+		Map<String, Object> params = new HashMap<>();
+		if (!"SUPERADMIN".equals(userType)) {
+			query += ", m=node:node_auto_index(id={userId}) " +
+					 "MATCH m-[:COMMUNIQUE]->g-[:DEPENDS*1..2]->n ";
+			params.put("userId", userId);
+		}
+		query += "RETURN n.id as id, n.ENTStructureNomCourant as name, n.type as type";
+		neo.send(query, params, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> m) {
+				if ("ok".equals(m.body().getString("status"))) {
+					handler.handle(resultToJsonArray(m.body().getObject("result")));
+				} else {
+					handler.handle(new JsonArray());
+				}
 			}
 		});
 	}
@@ -117,7 +283,7 @@ public class CommunicationController extends Controller {
 	private JsonArray allGroupsProfilsClasse() {
 		JsonArray gpc = new JsonArray();
 		for (String profil : profils) {
-			gpc.addString("GROUPE_CLASSE_" + profil);
+			gpc.addString("GROUP_CLASSE_" + profil);
 		}
 		return gpc;
 	}
@@ -125,8 +291,9 @@ public class CommunicationController extends Controller {
 	public void visibleUsers(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		if (userId != null && !userId.trim().isEmpty()) {
+			String schoolId = request.params().get("schoolId");
 			List<String> expectedTypes = request.params().getAll("expectedType");
-			visibleUsers(userId, new JsonArray(expectedTypes.toArray()), new Handler<JsonArray>() {
+			visibleUsers(userId, schoolId, new JsonArray(expectedTypes.toArray()), new Handler<JsonArray>() {
 
 				@Override
 				public void handle(JsonArray res) {
@@ -141,8 +308,9 @@ public class CommunicationController extends Controller {
 	public void visibleUsers(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
 		if (userId != null && !userId.trim().isEmpty()) {
+			String schoolId = message.body().getString("schoolId");
 			JsonArray expectedTypes = message.body().getArray("expectedTypes");
-			visibleUsers(userId, expectedTypes, new Handler<JsonArray>() {
+			visibleUsers(userId, schoolId, expectedTypes, new Handler<JsonArray>() {
 
 				@Override
 				public void handle(JsonArray res) {
@@ -154,17 +322,23 @@ public class CommunicationController extends Controller {
 		}
 	}
 
-	private void visibleUsers(String userId, JsonArray expectedTypes, final Handler<JsonArray> handler) {
+	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, final Handler<JsonArray> handler) {
 		StringBuilder query = new StringBuilder()
-			.append("START n = node:node_auto_index(id={userId}) ")
-			.append("MATCH n-[:COMMUNIQUE*]->m ");
+			.append("START n = node:node_auto_index(id={userId})");
+		Map<String, Object> params = new HashMap<>();
+		if (schoolId != null && !schoolId.trim().isEmpty()) {
+			query.append(", s=node:node_auto_index(id={schoolId}) "
+					+ "MATCH n-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->s "); //TODO manage leaf
+			params.put("schoolId", schoolId);
+		} else {
+			query.append(" MATCH n-[:COMMUNIQUE*1..3]->m ");
+		}
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("WHERE has(m.type) AND m.type IN ")
 			.append(expectedTypes.encode().replaceAll("\"", "'"))
 			.append(" ");
 		}
 		query.append("RETURN distinct m.id as id, m.name as name, m.type as type");
-		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 
@@ -172,13 +346,18 @@ public class CommunicationController extends Controller {
 			public void handle(Message<JsonObject> res) {
 				JsonArray r = new JsonArray();
 				if ("ok".equals(res.body().getString("status"))) {
-					JsonObject j = res.body().getObject("result");
-					for (String idx : j.getFieldNames()) {
-						r.addObject(j.getObject(idx));
-					}
+					r = resultToJsonArray(res.body().getObject("result"));
 				}
 				handler.handle(r);
 			}
 		});
+	}
+
+	private JsonArray resultToJsonArray(JsonObject j) {
+		JsonArray r = new JsonArray();
+		for (String idx : j.getFieldNames()) {
+			r.addObject(j.getObject(idx));
+		}
+		return r;
 	}
 }

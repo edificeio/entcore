@@ -14,16 +14,23 @@ public class Communication extends Server {
 
 		controller.get("/communication", "view");
 
-		controller.post("/communication/profils", "setGroupProfilsCommunication");
+		controller.post("/groups/profils", "setGroupsProfilsMatrix");
+
+		controller.post("/groups/parents/enfants", "setParentEnfantCommunication");
 
 		controller.get("/visible/:userId", "visibleUsers");
 
 		controller.get("/groups/profils", "listVisiblesGroupsProfil");
 
+		controller.get("/groups/classes/enfants", "listVisiblesClassesEnfants");
+
 		controller.get("/profils", "listProfils");
 
+		controller.get("/schools", "listVisiblesSchools");
+
 		try {
-			controller.registerMethod(config.getString("address"), "visibleUsers");
+			controller.registerMethod(config.getString("address") + ".users", "visibleUsers");
+			controller.registerMethod(config.getString("address") + ".schools", "listVisiblesSchools");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}

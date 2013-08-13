@@ -8,6 +8,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import com.google.common.base.Joiner;
+
 import edu.one.core.infra.Neo;
 
 public class DefaultProfils implements Profils {
@@ -62,14 +64,22 @@ public class DefaultProfils implements Profils {
 	}
 
 	@Override
-	public void listGroupsProfils(final Handler<JsonObject> handler) {
+	public void listGroupsProfils(Object [] typeFilter, String schoolId,
+			final Handler<JsonObject> handler) {
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("type","GROUPE");
-		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
-			"RETURN distinct n.ENTGroupeNom as name, n.id as id",
-			params,
-			new Handler<Message<JsonObject>>() {
+		if (typeFilter != null && typeFilter.length > 0) {
+			params.put("type", "type:" + Joiner.on(" OR type:").join(typeFilter));
+		} else {
+			params.put("type","type:GROUP_*");
+		}
+		String query = "START n=node:node_auto_index({type}) ";
+		if (schoolId != null && !schoolId.trim().isEmpty()) {
+			query += ", m=node:node_auto_index(id={schoolId}) " +
+					 "MATCH n-[:DEPENDS*1..2]->m ";
+			params.put("schoolId", schoolId);
+		}
+		query += "RETURN distinct n.name as name, n.id as id, n.type as type";
+		neo.send(query, params, new Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
