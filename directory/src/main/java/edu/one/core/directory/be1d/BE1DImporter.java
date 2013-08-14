@@ -33,6 +33,7 @@ public class BE1DImporter {
 	private final CSV csv;
 	private int count = 0;
 	private final JsonArray queries;
+	private final JsonArray queriesCom;
 	private final Map<String, Tuple<ArrayList<String>>> classesEleves;
 	private final Map<String, String> mappingEleveId;
 	private final List<JsonObject> parentsEnfantsMapping;
@@ -103,6 +104,7 @@ public class BE1DImporter {
 		parentsEnfantsMapping = new ArrayList<>();
 		classesGroupProfilsMapping = new ArrayList<>();
 		queries = new JsonArray();
+		queriesCom = new JsonArray();
 		loginGenerator = new LoginGenerator();
 		pwGenerator = new PasswordGenerator();
 		idGenerator = new IdGenerator();
@@ -132,6 +134,7 @@ public class BE1DImporter {
 			queries.add(new JsonObject()
 				.putString("query", createRelEN_RELATION_AVEC)
 				.putObject("params", mapping));
+			defaultParentsChildsCom(mapping);
 		}
 
 		List<String> childsIds = new ArrayList<>();
@@ -198,6 +201,8 @@ public class BE1DImporter {
 					" OR id:" + mapping.getString("parentGroupId"))));
 			groupsPC.add(mapping.getString("groupId"));
 			groupsPP.add(mapping.getString("parentGroupId"));
+			defaultInsideGroupCom(mapping.getString("groupId"));
+			defaultInsideGroupCom(mapping.getString("parentGroupId"));
 		}
 
 		queries.add(new JsonObject()
@@ -215,8 +220,14 @@ public class BE1DImporter {
 		neo.sendBatch(queries, new Handler<Message<JsonObject>>() {
 
 			@Override
-			public void handle(Message<JsonObject> m) {
-				handler.handle(new JsonObject().putObject(schoolName, m.body()));
+			public void handle(final Message<JsonObject> m) {
+				neo.sendBatch(queriesCom, new Handler<Message<JsonObject>>() {
+
+					@Override
+					public void handle(Message<JsonObject> message) {
+						handler.handle(new JsonObject().putObject(schoolName, m.body()));
+					}
+				});
 			}
 		});
 	}
@@ -357,4 +368,39 @@ public class BE1DImporter {
 		});
 	}
 
+	private void defaultInsideGroupCom(String groupId) {
+		String query =
+				"START n=node:node_auto_index(id={id}) " +
+				"MATCH n<-[:APPARTIENT]-m " +
+				"CREATE UNIQUE m-[:COMMUNIQUE]->n ";
+		String query2 =
+				"START n=node:node_auto_index(id={id}) " +
+				"MATCH n<-[:APPARTIENT]-m " +
+				"CREATE UNIQUE m<-[:COMMUNIQUE]-n ";
+		JsonObject params = new JsonObject().putString("id", groupId);
+		queriesCom
+			.addObject(toJsonObject(query, params))
+			.addObject(toJsonObject(query2, params));
+	}
+
+	private void defaultParentsChildsCom(JsonObject mapping) {
+		System.out.println(mapping.encode());
+		String query =
+				"START e=node:node_auto_index(id={childId}), " +
+				"p=node:node_auto_index(id={parentId}) " +
+				"CREATE UNIQUE e-[:COMMUNIQUE]->p";
+		String query2 =
+				"START e=node:node_auto_index(id={childId}), " +
+				"p=node:node_auto_index(id={parentId}) " +
+				"CREATE UNIQUE e<-[:COMMUNIQUE]-p";
+		System.out.println(toJsonObject(query, mapping).encode());
+		System.out.println(toJsonObject(query2, mapping).encode());
+		queriesCom.addObject(toJsonObject(query, mapping)).addObject(toJsonObject(query2, mapping));
+	}
+
+	private JsonObject toJsonObject(String query, JsonObject params) {
+		return new JsonObject()
+		.putString("query", query)
+		.putObject("params", (params != null) ? params : new JsonObject());
+	}
 }
