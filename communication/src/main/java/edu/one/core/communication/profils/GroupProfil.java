@@ -75,11 +75,11 @@ public class GroupProfil {
 			String query = "START n=node:node_auto_index({groupsIds}) " +
 					"MATCH n<-[:APPARTIENT]-e-[:EN_RELATION_AVEC]->p " +
 					"WHERE has(e.type) AND has(p.type) AND e.type = 'ELEVE' AND p.type = 'PERSRELELEVE' " +
-					"CREATE UNIQUE e-[:COMMUNIQUE]->p";
+					"CREATE UNIQUE e-[:COMMUNIQUE_DIRECT]->p";
 			String query2 = "START n=node:node_auto_index({groupsIds}) " +
 					"MATCH n<-[:APPARTIENT]-e-[:EN_RELATION_AVEC]->p " +
 					"WHERE has(e.type) AND has(p.type) AND e.type = 'ELEVE' AND p.type = 'PERSRELELEVE' " +
-					"CREATE UNIQUE e<-[:COMMUNIQUE]-p";
+					"CREATE UNIQUE e<-[:COMMUNIQUE_DIRECT]-p";
 			params.put("groupsIds", "id:" + Joiner.on(" OR id:").join(groupsIds));
 			queries.addObject(toJsonObject(query, params)).addObject(toJsonObject(query2, params));
 		}

@@ -331,7 +331,7 @@ public class CommunicationController extends Controller {
 					+ "MATCH n-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->s "); //TODO manage leaf
 			params.put("schoolId", schoolId);
 		} else {
-			query.append(" MATCH n-[:COMMUNIQUE*1..3]->m ");
+			query.append(" MATCH n-[:COMMUNIQUE*1..2]->l-[?:COMMUNIQUE]->m<-[?:COMMUNIQUE_DIRECT]-n ");
 		}
 		query.append("WHERE has(m.id) AND m.id <> {userId} ");
 		if (expectedTypes != null && expectedTypes.size() > 0) {

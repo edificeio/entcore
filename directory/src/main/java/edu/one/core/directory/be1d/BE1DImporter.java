@@ -388,11 +388,11 @@ public class BE1DImporter {
 		String query =
 				"START e=node:node_auto_index(id={childId}), " +
 				"p=node:node_auto_index(id={parentId}) " +
-				"CREATE UNIQUE e-[:COMMUNIQUE]->p";
+				"CREATE UNIQUE e-[:COMMUNIQUE_DIRECT]->p";
 		String query2 =
 				"START e=node:node_auto_index(id={childId}), " +
 				"p=node:node_auto_index(id={parentId}) " +
-				"CREATE UNIQUE e<-[:COMMUNIQUE]-p";
+				"CREATE UNIQUE e<-[:COMMUNIQUE_DIRECT]-p";
 		System.out.println(toJsonObject(query, mapping).encode());
 		System.out.println(toJsonObject(query2, mapping).encode());
 		queriesCom.addObject(toJsonObject(query, mapping)).addObject(toJsonObject(query2, mapping));
