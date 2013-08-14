@@ -68,18 +68,25 @@ public class GroupProfil {
 		return null;
 	}
 
-	public static String queryParentEnfantCommunication(List<String> groupsIds) {
-		String query = null;
+	public static JsonArray queryParentEnfantCommunication(List<String> groupsIds) {
+		JsonArray queries = new JsonArray();
 		if (groupsIds != null) {
-			query = "START n=node:node_auto_index('id:" + Joiner.on(" OR id:").join(groupsIds) + "') " +
+			Map<String, Object> params = new HashMap<>();
+			String query = "START n=node:node_auto_index({groupsIds}) " +
 					"MATCH n<-[:APPARTIENT]-e-[:EN_RELATION_AVEC]->p " +
 					"WHERE has(e.type) AND has(p.type) AND e.type = 'ELEVE' AND p.type = 'PERSRELELEVE' " +
-					"CREATE UNIQUE e-[:COMMUNIQUE]-p";
+					"CREATE UNIQUE e-[:COMMUNIQUE]->p";
+			String query2 = "START n=node:node_auto_index({groupsIds}) " +
+					"MATCH n<-[:APPARTIENT]-e-[:EN_RELATION_AVEC]->p " +
+					"WHERE has(e.type) AND has(p.type) AND e.type = 'ELEVE' AND p.type = 'PERSRELELEVE' " +
+					"CREATE UNIQUE e<-[:COMMUNIQUE]-p";
+			params.put("groupsIds", "id:" + Joiner.on(" OR id:").join(groupsIds));
+			queries.addObject(toJsonObject(query, params)).addObject(toJsonObject(query2, params));
 		}
-		return query;
+		return queries;
 	}
 
-	protected JsonObject toJsonObject(String query, Map<String, Object> params) {
+	protected static JsonObject toJsonObject(String query, Map<String, Object> params) {
 		return new JsonObject()
 				.putString("query", query)
 				.putObject("params", (params != null) ? new JsonObject(params) : new JsonObject());

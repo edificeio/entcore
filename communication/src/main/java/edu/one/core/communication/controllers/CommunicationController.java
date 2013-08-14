@@ -132,8 +132,8 @@ public class CommunicationController extends Controller {
 			protected void handle() {
 				final List<String> groups = request.formAttributes().getAll("groupId");
 				if (groups != null) {
-					String query = GroupProfil.queryParentEnfantCommunication(groups);
-					neo.send(query, request.response());
+					JsonArray queries = GroupProfil.queryParentEnfantCommunication(groups);
+					neo.sendBatch(queries, request.response());
 				} else {
 					badRequest(request);
 				}
