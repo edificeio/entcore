@@ -110,7 +110,7 @@ public class WorkspaceService extends Controller {
 					UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 						@Override
-						public void handle(UserInfos user) {
+						public void handle(final UserInfos user) {
 							if (user != null) {
 								Map<String, JsonObject> sharesMap = new HashMap<>();
 								for (String share : shares) {
@@ -127,7 +127,7 @@ public class WorkspaceService extends Controller {
 										j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
 									}
 								}
-								JsonArray sharedArray = new JsonArray();
+								final JsonArray sharedArray = new JsonArray();
 								for (JsonObject jo: sharesMap.values()) {
 									sharedArray.add(jo);
 								}
@@ -141,6 +141,7 @@ public class WorkspaceService extends Controller {
 											@Override
 											public void handle(Message<JsonObject> res) {
 												if ("ok".equals(res.body().getString("status"))) {
+													notifyShare(id, user, sharedArray);
 													redirect(request, "/workspace");
 												} else {
 													renderError(request, res.body());
@@ -157,6 +158,24 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
+	}
+
+	// TODO extract in external helper class
+	private void notifyShare(String resource, UserInfos user, JsonArray sharedArray) {
+		JsonArray recipients = new JsonArray();
+		for (Object j : sharedArray) {
+			JsonObject json = (JsonObject) j;
+			recipients.addString(json.getString("userId"));
+		}
+		JsonObject event = new JsonObject()
+		.putString("action", "add")
+		.putString("resource", resource)
+		.putString("sender", user.getUserId())
+		.putString("message", user.getUsername() +
+				" a partagé avec vous <a href=\"http://localhost:8011/document/"
+				+ resource + "\">un document</a>.")
+		.putArray("recipients", recipients);
+		eb.send("wse.timeline", event);
 	}
 
 	@SecuredAction("workspace.document.add")
@@ -365,6 +384,7 @@ public class WorkspaceService extends Controller {
 									@Override
 									public void handle(JsonObject result) {
 										if ("ok".equals(result.getString("status"))) {
+											notifyDelete(id);
 											renderJson(request, result, 204);
 										} else {
 											renderError(request, result);
@@ -381,6 +401,14 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
+	}
+
+	// TODO extract in external helper class
+	private void notifyDelete(String resource) {
+		JsonObject json = new JsonObject()
+		.putString("action", "delete")
+		.putString("resource", resource);
+		eb.send("wse.timeline", json);
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
