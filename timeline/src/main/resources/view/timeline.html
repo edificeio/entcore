@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}timeline.title{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#static}}css/timeline.css{{/static}}" media="all" />
+		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" />
+
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/timeline.js{{/static}}" type="text/javascript"></script>
+	</head>
+	<body>
+		<header>
+			<h1>{{#i18n}}timeline.header{{/i18n}}</h1>
+		</header>
+		<section id="main">
+			<div class="timeline">
+				<nav class="left">
+				</nav>
+				<div class="mod">
+					<div id="list"></div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

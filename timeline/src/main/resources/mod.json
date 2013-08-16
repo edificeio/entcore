@@ -1,0 +1,7 @@
+{
+	"main":"edu.one.core.timeline.Timeline",
+	"auto-redeploy": true,
+	"port": 8016,
+	"mode": "dev",
+	"address" : "wse.timeline"
+}
