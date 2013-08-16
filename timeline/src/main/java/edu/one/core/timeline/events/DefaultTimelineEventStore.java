@@ -1,22 +1,95 @@
 package edu.one.core.timeline.events;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+
+import edu.one.core.infra.MongoDb;
 
 
 public class DefaultTimelineEventStore implements TimelineEventStore {
 
+	private static final String TIMELINE_COLLECTION = "timeline";
+
+	private MongoDb mongo;
+
+	public DefaultTimelineEventStore(Vertx vertx, Container container) {
+		mongo = new MongoDb(vertx.eventBus(), container.config()
+				.getString("mongodb-address", "wse.mongodb.persistor"));
+	}
+
 	@Override
-	public void add(JsonObject event, Handler<JsonObject> result) {
+	public void add(JsonObject event, final Handler<JsonObject> result) {
+		JsonObject doc = validAndGet(event);
+		if (doc != null) {
+			doc.putObject("date", MongoDb.now());
+			mongo.save(TIMELINE_COLLECTION, doc, resultHandler(result));
+		} else {
+			result.handle(invalidArguments());
+		}
 	}
 
 	@Override
 	public void delete(String resource, Handler<JsonObject> result) {
+		if (resource != null && !resource.trim().isEmpty()) {
+			JsonObject query = new JsonObject()
+			.putString("resource", resource);
+			mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
+		} else {
+			result.handle(invalidArguments());
+		}
 	}
 
 	@Override
-	public void get(String recipient, int offset, int limit,
-			Handler<JsonObject> result) {
+	public void get(String recipient, int offset, int limit, Handler<JsonObject> result) {
+		if (recipient != null && !recipient.trim().isEmpty()) {
+			JsonObject query = new JsonObject().putString("recipients", recipient);
+			JsonObject sort = new JsonObject()
+			.putObject("$orderby", new JsonObject().putNumber("date", -1));
+			JsonObject keys = new JsonObject()
+			.putNumber("_id", 0)
+			.putNumber("message", 1)
+			.putNumber("date", 1)
+			.putNumber("comments", 1)
+			.putNumber("add-comment", 1);
+			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
+					offset, limit, 100, resultHandler(result));
+		} else {
+			result.handle(invalidArguments());
+		}
+	}
+
+	private JsonObject validAndGet(JsonObject json) {
+		if (json != null) {
+			JsonObject e = json.copy();
+			for (String attr: json.getFieldNames()) {
+				if (!FIELDS.contains(attr) || e.getValue(attr) == null) {
+					e.removeField(attr);
+				}
+			}
+			if (e.toMap().keySet().containsAll(REQUIRED_FIELDS)) {
+				return e;
+			}
+		}
+		return null;
+	}
+
+	private JsonObject invalidArguments() {
+		return new JsonObject().putString("status", "error")
+				.putString("message", "Invalid arguments.");
+	}
+
+
+	private Handler<Message<JsonObject>> resultHandler(final Handler<JsonObject> result) {
+		return new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> message) {
+				result.handle(message.body());
+			}
+		};
 	}
 
 }
