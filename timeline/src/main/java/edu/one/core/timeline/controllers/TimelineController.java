@@ -12,6 +12,8 @@ import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.security.SecuredAction;
+import edu.one.core.infra.security.UserUtils;
+import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.timeline.events.DefaultTimelineEventStore;
 import edu.one.core.timeline.events.TimelineEventStore;
 
@@ -27,6 +29,35 @@ public class TimelineController extends Controller {
 
 	public void view(HttpServerRequest request) {
 		renderView(request);
+	}
+
+	public void lastEvents(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String page = request.params().get("page");
+					int offset = 0;
+					try {
+						offset = 25 * Integer.parseInt(page);
+					} catch (NumberFormatException e) {}
+					store.get(user.getUserId(), offset, 25, new Handler<JsonObject>() {
+
+						@Override
+						public void handle(JsonObject res) {
+							if (res != null && "ok".equals(res.getString("status"))) {
+								renderJson(request, res);
+							} else {
+								renderError(request, res);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	public void busApi(final Message<JsonObject> message) {

@@ -12,6 +12,8 @@ public class Timeline extends Server {
 
 		timeline.get("/timeline", "view");
 
+		timeline.get("/lastNotifications", "lastEvents");
+
 		try {
 			timeline.registerMethod(config.getString("address"), "busApi");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
