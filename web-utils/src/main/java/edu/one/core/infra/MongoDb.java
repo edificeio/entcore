@@ -242,4 +242,8 @@ public class MongoDb {
 		return df.parse(date);
 	}
 
+	public static JsonObject now() {
+		return new JsonObject().putNumber("$date", System.currentTimeMillis());
+	}
+
 }
