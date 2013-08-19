@@ -2,9 +2,11 @@ package edu.one.core.userBook;
 
 import edu.one.core.infra.Server;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.infra.http.Renders;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -21,6 +23,9 @@ public class UserBook extends Server {
 		final Renders render = new Renders(container);
 		userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
 		final JsonArray hobbies = userBookData.getArray("hobbies");
+		final String workspaceUrl = config.getString("workspace-url", "http://localhost:8011");
+		final int port = config.getInteger("workspace-port", 8011);
+		final HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(port);
 
 		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
 			@Override
@@ -85,7 +90,7 @@ public class UserBook extends Server {
 						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonIdentifiant as id, "
-						+ "n.ENTPersonAdresse as address, m.motto? as motto, "
+						+ "n.ENTPersonAdresse as address, m.motto? as motto, m.picture? as photo,"
 						+ "m.mood? as mood, m.health? as health, m.category? as category, "
 						+ "m.values? as values, EXTRACT(rel in r: type(rel)) as relation;"
 						,request.response());
@@ -130,6 +135,13 @@ public class UserBook extends Server {
 					+ request.params().get("id") + "' AND p.category='"+ request.params().get("category")
 					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
 					+ "RETURN n,r,m,j,p", request.response());
+			}
+		});
+
+		rm.allWithRegEx(".*", new Handler<HttpServerRequest>() {
+			@Override
+			public void handle(final HttpServerRequest request) {
+				HttpClientUtils.proxy(request, client);
 			}
 		});
 	}

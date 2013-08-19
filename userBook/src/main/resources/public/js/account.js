@@ -29,6 +29,9 @@ var account = function(){
 		template : {
 			personne: '\
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+				<form id="upload-form" method="post" action="/document" enctype="multipart/form-data">\n\
+				<label>Changer l\'image</label><input type="file" name="file" value="Changer l\'image"/>\
+				<input call="sendPhoto" type="button" value="ok" /></form>\
 				<p class="name">{{displayName}}</p>\
 				<p class="address">{{address}}</p>\
 				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} :\
@@ -67,6 +70,7 @@ var account = function(){
 				.done(function(data){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
+					account.action.getPhoto(data.result[0].photo);
 				})
 			},
 			editUserBookInfo : function(url){
@@ -83,6 +87,34 @@ var account = function(){
 				.done(function(data){
 					app.notify.info("modif ok");
 				})
+			},
+			sendPhoto : function(elem, files) {
+				var form = new FormData();
+				form.append("image", $('#upload-form').children('input[type="file"]')[0].files[0]);
+				form.append("name","blablabla");
+				$.ajax({
+					url: "/document",
+					type: 'POST',
+					data: form,
+					cache: false,
+					contentType: false,
+					processData: false
+				}).done(function (data) {
+					if (data.status == "ok") {
+						account.action.editUserBookInfo("/api/edit-userbook-info?id=" + userId + "&prop=picture&value=" + data._id);
+						$('img[class="avatar"]')[0].setAttribute("src", "http://localhost:8011/document/" + data._id);
+					}
+				}).error(function (data) { console.log(data); });
+			},
+			getPhoto : function(photoId) {
+				$.ajax({
+					url: "document/" + photoId,
+					type: 'GET'
+				}).done(function (data) {
+					if (data !== "") {
+						$('img[class="avatar"]')[0].setAttribute("src", "http://localhost:8011/document/" + photoId);
+					}
+				}).error(function (data) { console.log(data); });
 			}
 		}
 	});
