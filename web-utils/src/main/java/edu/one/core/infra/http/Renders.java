@@ -59,6 +59,8 @@ public class Renders {
 			Mustache mustache;
 			if (resourceName != null && r != null && !resourceName.trim().isEmpty()) {
 				mustache = mf.compile(r, resourceName);
+			} else if (resourceName != null && !resourceName.trim().isEmpty()) {
+				mustache = mf.compile(resourceName);
 			} else {
 				mustache = mf.compile(request.path() + ".html");
 			}

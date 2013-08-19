@@ -1,9 +1,12 @@
 apply from: "gradle/vertx.gradle"
 
 project.evaluationDependsOn(':web-utils')
+project.evaluationDependsOn(':infra')
 
 dependencies {
 	compile project(':web-utils')
+	compile project(':infra')
+	compile 'jp.eisbahn:oauth2-server:1.1-SNAPSHOT'
 }
 
 test {
