@@ -1,8 +1,6 @@
 package edu.one.core.infra.security;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -22,6 +20,7 @@ public class UserUtils {
 			.addString("PERSRELELEVE")
 			.addString("ELEVE")
 			.addString("PERSEDUCNAT");
+	private static final String SESSION_ADDRESS = "wse.session";
 
 	public static void findVisibleUsers(EventBus eb, final JsonObject session,
 			final Handler<JsonArray> handler) {
@@ -58,7 +57,6 @@ public class UserUtils {
 		});
 	}
 
-	// TODO replace with real session busmod
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 			final Handler<JsonObject> handler) {
 		if (request instanceof SecureHttpServerRequest &&
@@ -66,12 +64,25 @@ public class UserUtils {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
 		} else {
 			String oneSessionId = CookieUtils.get("oneSessionId", request);
-			if (oneSessionId != null) {
+			String remoteUserId = null;
+			if (request instanceof SecureHttpServerRequest) {
+				remoteUserId = ((SecureHttpServerRequest) request).getAttribute("remote_user");
+			}
+			if ((oneSessionId == null || oneSessionId.trim().isEmpty()) &&
+					(remoteUserId == null || remoteUserId.trim().isEmpty())) {
+				handler.handle(null);
+				return;
+			} else {
 				request.pause();
-				JsonObject findSession = new JsonObject()
-					.putString("action", "find")
-					.putString("sessionId", oneSessionId);
-				eb.send("wse.mock.session", findSession, new Handler<Message<JsonObject>>() {
+				JsonObject findSession = new JsonObject();
+				if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
+					findSession.putString("action", "find")
+						.putString("sessionId", oneSessionId);
+				} else { // remote user (oauth)
+					findSession.putString("action", "findByUserId")
+					.putString("userId", remoteUserId);
+				}
+				eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
 
 					@Override
 					public void handle(Message<JsonObject> message) {
@@ -87,8 +98,6 @@ public class UserUtils {
 						}
 					}
 				});
-			} else {
-				handler.handle(null);
 			}
 		}
 	}
@@ -106,15 +115,6 @@ public class UserUtils {
 		}
 	}
 
-	private static void sendNeo4j(EventBus eb, String query, Map<String, Object> params,
-			Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		jo.putObject("params", new JsonObject(params));
-		eb.send("wse.neo4j.persistor", jo, handler);
-  }
-
 	public static void getUserInfos(EventBus eb, HttpServerRequest request,
 			final Handler<UserInfos> handler) {
 		getSession(eb, request, new Handler<JsonObject>() {
@@ -125,55 +125,34 @@ public class UserUtils {
 		});
 	}
 
-	public static void generateSessionInfos(EventBus eb, final String userId, final Handler<JsonObject> handler) {
-		String query =
-				"START n=node:node_auto_index(id={id}) " +
-				"MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
-				"RETURN distinct a.name as name, a.displayName as displayName, " +
-				"a.type as type, n.ENTPersonClasses as classe, " +
-				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
-				"n.ENTPersonNomAffichage as username, n.type as userType";
-		Map<String, Object> params = new HashMap<>();
-		params.put("id", userId);
-		sendNeo4j(eb, query, params, new Handler<Message<JsonObject>>() {
+	public static void createSession(EventBus eb, String userId,
+			final Handler<String> handler) {
+		JsonObject json = new JsonObject()
+		.putString("action", "create")
+		.putString("userId", userId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
 			@Override
-			public void handle(Message<JsonObject> message) {
-				JsonObject result = message.body().getObject("result");
-				if ("ok".equals(message.body().getString("status")) && result != null &&
-						!result.getFieldNames().isEmpty()) {
-					JsonObject j = message.body().getObject("result").getObject("0");
-					JsonObject infos = new JsonObject()
-						.putString("userId", userId)
-						.putString("firstName", j.getString("firstname"))
-						.putString("lastName", j.getString("lastname"))
-						.putString("username", j.getString("username"))
-						.putString("classId", j.getString("classe"))
-						.putString("type", j.getString("userType"));
-					JsonArray actions = new JsonArray();
-					for (String attr : result.getFieldNames()) {
-						JsonObject json = result.getObject(attr);
-						json.removeField("firstname");
-						json.removeField("lastname");
-						json.removeField("username");
-						json.removeField("classe");
-						json.removeField("userType");
-						actions.add(json);
-					}
-					handler.handle(infos.putArray("authorizedActions", actions));
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					handler.handle(res.body().getString("sessionId"));
 				} else {
-					handler.handle(new JsonObject());
+					handler.handle(null);
 				}
 			}
 		});
 	}
 
-	public static void generateUserInfos(EventBus eb, String userId, final Handler<UserInfos> handler) {
-		generateSessionInfos(eb, userId, new Handler<JsonObject>() {
+	public static void deleteSession(EventBus eb, String sessionId,
+			final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+		.putString("action", "drop")
+		.putString("sessionId", sessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
 			@Override
-			public void handle(JsonObject json) {
-				handler.handle(sessionToUserInfos(json));
+			public void handle(Message<JsonObject> res) {
+				handler.handle("ok".equals(res.body().getString("status")));
 			}
 		});
 	}

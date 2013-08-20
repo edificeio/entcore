@@ -2,6 +2,8 @@ package edu.one.core.infra.security;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.security.cert.X509Certificate;
@@ -20,9 +22,11 @@ public class SecureHttpServerRequest implements HttpServerRequest {
 
 	private final HttpServerRequest request;
 	private JsonObject session;
+	private final Map<String, String> attributes;
 
 	public SecureHttpServerRequest(HttpServerRequest request) {
 		this.request = request;
+		this.attributes = new HashMap<>();
 	}
 
 	@Override
@@ -144,6 +148,14 @@ public class SecureHttpServerRequest implements HttpServerRequest {
 
 	public void setSession(JsonObject session) {
 		this.session = session;
+	}
+
+	public void setAttribute(String attr, String value) {
+		attributes.put(attr, value);
+	}
+
+	public String getAttribute(String attr) {
+		return attributes.get(attr);
 	}
 
 }

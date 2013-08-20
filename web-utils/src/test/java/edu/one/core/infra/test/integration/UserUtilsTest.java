@@ -38,20 +38,20 @@ public class UserUtilsTest extends TestVerticle {
 		});
 	}
 
-	@Test
-	public void generateUserInfos() throws Exception {
-		UserUtils.generateUserInfos(eb, "4420000018", new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				assertEquals("Audrey", user.getFirstName());
-				assertEquals("DULOUD", user.getLastName());
-				assertEquals("Audrey DULOUD", user.getUsername());
-				assertEquals("4400000002$ORDINAIRE$CM2 de Mme Rousseau", user.getClassId());
-				assertEquals(24, user.getAuthorizedActions().size());
-				testComplete();
-			}
-		});
-	}
+//	@Test
+//	public void generateUserInfos() throws Exception {
+//		UserUtils.generateUserInfos(eb, "4420000018", new Handler<UserInfos>() {
+//
+//			@Override
+//			public void handle(UserInfos user) {
+//				assertEquals("Audrey", user.getFirstName());
+//				assertEquals("DULOUD", user.getLastName());
+//				assertEquals("Audrey DULOUD", user.getUsername());
+//				assertEquals("4400000002$ORDINAIRE$CM2 de Mme Rousseau", user.getClassId());
+//				assertEquals(24, user.getAuthorizedActions().size());
+//				testComplete();
+//			}
+//		});
+//	}
 
 }
