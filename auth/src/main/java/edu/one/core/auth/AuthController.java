@@ -14,8 +14,13 @@ import java.util.Map;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
+import jp.eisbahn.oauth2.server.endpoint.ProtectedResource;
 import jp.eisbahn.oauth2.server.endpoint.Token;
 import jp.eisbahn.oauth2.server.endpoint.Token.Response;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.Try;
+import jp.eisbahn.oauth2.server.fetcher.accesstoken.AccessTokenFetcherProvider;
+import jp.eisbahn.oauth2.server.fetcher.accesstoken.impl.DefaultAccessTokenFetcherProvider;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcher;
 import jp.eisbahn.oauth2.server.fetcher.clientcredential.ClientCredentialFetcherImpl;
 import jp.eisbahn.oauth2.server.granttype.GrantHandlerProvider;
@@ -25,12 +30,14 @@ import jp.eisbahn.oauth2.server.models.Request;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.auth.oauth.HttpServerRequestAdapter;
+import edu.one.core.auth.oauth.JsonRequestAdapter;
 import edu.one.core.auth.oauth.OAuthDataHandler;
 import edu.one.core.auth.oauth.OAuthDataHandlerFactory;
 import edu.one.core.infra.Controller;
@@ -46,6 +53,7 @@ public class AuthController extends Controller {
 
 	private final DataHandlerFactory oauthDataFactory;
 	private final Token token;
+	private final ProtectedResource protectedResource;
 	private static final String USERINFO_SCOPE = "userinfo";
 
 	public AuthController(Vertx vertx, Container container, RouteMatcher rm,
@@ -61,6 +69,11 @@ public class AuthController extends Controller {
 		this.token.setDataHandlerFactory(oauthDataFactory);
 		this.token.setGrantHandlerProvider(grantHandlerProvider);
 		this.token.setClientCredentialFetcher(clientCredentialFetcher);
+		AccessTokenFetcherProvider accessTokenFetcherProvider =
+				new DefaultAccessTokenFetcherProvider();
+		this.protectedResource = new ProtectedResource();
+		this.protectedResource.setDataHandlerFactory(oauthDataFactory);
+		this.protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 	}
 
 	public void authorize(final HttpServerRequest request) {
@@ -226,4 +239,48 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "userinfo", type = ActionType.RESOURCE)
+	public void userInfo(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, new org.vertx.java.core.Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject infos) {
+				if (infos != null) {
+					renderJson(request, infos);
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	public void oauthResourceServer(final Message<JsonObject> message) {
+		if (message.body() == null) {
+			message.reply(new JsonObject());
+			return;
+		}
+		validToken(message);
+	}
+
+	private void validToken(final Message<JsonObject> message) {
+		protectedResource.handleRequest(new JsonRequestAdapter(message.body()),
+				new Handler<Try<OAuthError,ProtectedResource.Response>>() {
+
+			@Override
+			public void handle(Try<OAuthError, ProtectedResource.Response> resp) {
+				ProtectedResource.Response response;
+				try {
+					response = resp.get();
+					JsonObject r = new JsonObject()
+					.putString("status", "ok")
+					.putString("client_id", response.getClientId())
+					.putString("remote_user", response.getRemoteUser())
+					.putString("scope", response.getScope());
+					message.reply(r);
+				} catch (OAuthError e) {
+					message.reply(new JsonObject().putString("error", e.getType()));
+				}
+			}
+		});
+	}
 }

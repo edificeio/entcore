@@ -1,6 +1,8 @@
 package edu.one.core.infra.request.filter;
 
 import edu.one.core.infra.request.CookieUtils;
+import edu.one.core.infra.security.SecureHttpServerRequest;
+import edu.one.core.infra.security.oauth.OAuthResourceProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -10,13 +12,25 @@ import org.vertx.java.core.http.HttpServerRequest;
 
 public class UserAuthFilter implements Filter {
 
+	private final OAuthResourceProvider oauth;
+
+	public UserAuthFilter() {
+		this.oauth = null;
+	}
+
+	public UserAuthFilter(OAuthResourceProvider oauth) {
+		this.oauth = oauth;
+	}
+
 	@Override
 	public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
 		String oneSeesionId = CookieUtils.get("oneSessionId", request);
-		if (oneSeesionId == null) {
-			handler.handle(false);
-		} else {
+		if (oneSeesionId != null) {
 			handler.handle(true);
+		} else if (oauth != null && request instanceof SecureHttpServerRequest) {
+			oauth.validToken((SecureHttpServerRequest) request, handler);
+		} else {
+			handler.handle(false);
 		}
 	}
 
