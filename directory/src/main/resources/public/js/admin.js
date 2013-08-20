@@ -31,7 +31,7 @@ var admin = function(){
 			,
 			personnes: "\
 				<br /><span>{{#list}}<a call='personne' href='/api/details?id={{userId}}'>\
-				{{lastName}} {{firstName}}</a> - <div id='details'></div>{{/list}}</span>"
+				{{lastName}} {{firstName}}</a> - {{/list}}</span><div id='details'></div>"
 			,
 			enseignants : "\
 				<br /><span>{{#list}}\
@@ -42,9 +42,9 @@ var admin = function(){
 				<span>{{#list}}{{lastName}} {{firstName}} - {{/list}}</span>"
 			,
 			personne : '\
-				{{#i18n}}directory.admin.lastname{{/i18n}}{{lastName}} - \
-				{{#i18n}}directory.admin.firstname{{/i18n}}{{firstName}} - \
-				{{#i18n}}directory.admin.address{{/i18n}}{{address}}'
+				{{#list}}{{#i18n}}directory.admin.lastname{{/i18n}} : {{lastName}} - \
+				{{#i18n}}directory.admin.firstname{{/i18n}} : {{firstName}} - \
+				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
 			,
 			exportAuth : 'Nom,Prénom,Login,Mot de passe\n'
 				+ '{{#list}}{{lastName}},{{firstName}},{{login}},{{password}}\n'
@@ -65,11 +65,15 @@ var admin = function(){
 			classes : function(o) {
 				$.get(o.url)
 				.done(function(data){
-					if (!!$("#classes-" + data.result[0]["schoolId"]).children().length) {
-						$("#classes-" + data.result[0]["schoolId"]).html('');
-						return;
+					if(undefined !== data.result[0]){
+						if (!!$("#classes-" + data.result[0]["schoolId"]).children().length) {
+							$("#classes-" + data.result[0]["schoolId"]).html('');
+							return;
+						}
+						$("#classes-" + data.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
+					} else {
+						app.notify.info("no resulst");
 					}
-					$("#classes-" + data.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data);})
 			},
@@ -90,7 +94,7 @@ var admin = function(){
 						$('#people-' + data.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + data.result[0]["schoolId"]).html(app.template.render('personnes', dataExtractor(data)));
+					$("#people-" + data.result[0]["classId"]).html(app.template.render('personnes', dataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
