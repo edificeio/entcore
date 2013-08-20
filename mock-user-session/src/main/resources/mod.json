@@ -1,6 +1,0 @@
-{
-	"main" : "edu.one.core.mock.MockUserSession",
-	"worker": true,
-	"preserve-cwd" : true,
-	"address" : "wse.mock.session"
-}

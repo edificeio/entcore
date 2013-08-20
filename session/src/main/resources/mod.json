@@ -1,0 +1,6 @@
+{
+	"main" : "edu.one.core.session.AuthManager",
+	"worker": true,
+	"preserve-cwd" : true,
+	"address" : "wse.session"
+}

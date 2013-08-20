@@ -1,6 +1,6 @@
 # Présentation
 
-Module Mock User Session
+Module User Session
 
 
 # Utilisation

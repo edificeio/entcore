@@ -15,7 +15,7 @@
 		"edu.one.core~sync~0.1.0-SNAPSHOT",
 		"edu.one.core~userBook~0.1.0-SNAPSHOT",
 		"edu.one.core~workspace~0.1.0-SNAPSHOT",
-		"edu.one.core~mock-user-session~0.1.0-SNAPSHOT",
+		"edu.one.core~session~0.1.0-SNAPSHOT",
 		"edu.one.core~communication~0.1.0-SNAPSHOT",
 		"edu.one.core~timeline~0.1.0-SNAPSHOT",
 		"edu.one~wordpress~1.0.0-SNAPSHOT"
