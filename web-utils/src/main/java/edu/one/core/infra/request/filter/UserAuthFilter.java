@@ -31,7 +31,7 @@ public class UserAuthFilter implements Filter {
 		} catch (UnsupportedEncodingException ex) {
 			ex.printStackTrace();
 		}
-		request.response().setStatusCode(301);
+		request.response().setStatusCode(302);
 		request.response().putHeader("Location", location);
 		request.response().end();
 	}

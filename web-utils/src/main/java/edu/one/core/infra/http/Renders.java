@@ -116,6 +116,16 @@ public class Renders {
 	}
 
 	public static void redirect(HttpServerRequest request, String host, String location) {
+		request.response().setStatusCode(302);
+		request.response().putHeader("Location", host + location);
+		request.response().end();
+	}
+
+	public static void redirectPermanent(HttpServerRequest request, String location) {
+		redirectPermanent(request, "http://" + request.headers().get("Host"), location);
+	}
+
+	public static void redirectPermanent(HttpServerRequest request, String host, String location) {
 		request.response().setStatusCode(301);
 		request.response().putHeader("Location", host + location);
 		request.response().end();
