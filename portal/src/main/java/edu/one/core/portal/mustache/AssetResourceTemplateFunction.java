@@ -7,7 +7,7 @@ import java.nio.file.FileSystem;
 public class AssetResourceTemplateFunction extends VertxTemplateFunction {
 	private String host;
 	private final static String protocol = "http://";
-	private final static String assetDir = "assets/templates";
+	private final static String assetDir = "assets/themes";
 	private  String themeName;
 
 	public AssetResourceTemplateFunction(String themeName) {
