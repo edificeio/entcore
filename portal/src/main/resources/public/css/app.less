@@ -1,0 +1,42 @@
+@import "modules";
+
+@header-height: 150px;
+
+html, body{
+  margin: 0;
+  height: 99%;
+}
+
+.container{
+  height: 100%;
+
+  header.main{
+    height: @header-height;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .main.wrapper{
+    .border-box;
+    z-index: 1;
+    padding-top: @header-height;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+    background: none;
+    padding-bottom: 15px;
+  }
+
+  section.main{
+    .border-box;
+    min-height: 100%;
+    padding: 15px;
+  }
+}
+
+.keep-scroll{
+  clear: both;
+}
