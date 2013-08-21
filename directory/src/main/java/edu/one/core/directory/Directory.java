@@ -49,6 +49,8 @@ public class Directory extends Server {
 			+ "type:'" + admin.getString("type") + "',"
 			+ "ENTPersonNom:'"+ admin.getString("firstname") +"', "
 			+ "ENTPersonPrenom:'"+ admin.getString("lastname") +"', "
+			+ "ENTPersonLogin:'"+ admin.getString("login") +"', "
+			+ "ENTPersonNomAffichage:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
 			+ "ENTPersonMotDePasse:'"+ admin.getString("password") +"'})");
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
