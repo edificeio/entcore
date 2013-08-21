@@ -86,6 +86,11 @@ public class ActionFilter implements Filter {
 				}
 			}
 		}
+		// TODO change this poor hack
+		if ("SUPERADMIN".equals(session.getString("type"))) {
+			handler.handle(true);
+			return;
+		}
 		handler.handle(false);
 	}
 
