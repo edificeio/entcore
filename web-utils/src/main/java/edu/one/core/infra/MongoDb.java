@@ -3,7 +3,10 @@ package edu.one.core.infra;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -246,4 +249,8 @@ public class MongoDb {
 		return new JsonObject().putNumber("$date", System.currentTimeMillis());
 	}
 
+	public static Date parseIsoDate(JsonObject date) {
+		Calendar c = DatatypeConverter.parseDateTime(date.getString("$date"));
+		return c.getTime();
+	}
 }
