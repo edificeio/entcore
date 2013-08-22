@@ -24,6 +24,7 @@ import edu.one.core.directory.profils.Profils;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.Renders;
+import edu.one.core.infra.security.BCrypt;
 
 public class Directory extends Server {
 	
@@ -51,7 +52,7 @@ public class Directory extends Server {
 			+ "ENTPersonPrenom:'"+ admin.getString("lastname") +"', "
 			+ "ENTPersonLogin:'"+ admin.getString("login") +"', "
 			+ "ENTPersonNomAffichage:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
-			+ "ENTPersonMotDePasse:'"+ admin.getString("password") +"'})");
+			+ "ENTPersonMotDePasse:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})");
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override
