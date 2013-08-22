@@ -1,4 +1,12 @@
 {
 	"auth.title": "One : Authentification",
-	"auth.header": "Authentification"
+	"auth.header": "Authentification",
+	"auth.activation.title" : "Activation de votre compte",
+	"auth.activation.header" : "Activation de votre compte",
+	"activation.error" : "Erreur lors de l'activation",
+	"auth.login" : "Login",
+	"auth.activation.code" : "Code d'activation",
+	"auth.activation.password" : "Mot de passe",
+	"auth.activation.confirm.password" : "Confirmation du mot de passe",
+	"auth.activation.invalid.argument" : "Le formulaire contient des erreurs"
 }

@@ -1,3 +1,11 @@
 {
-	"auth.title":"One : Authentication"
+	"auth.title":"One : Authentication",
+	"auth.activation.title" : "Account activation",
+	"auth.activation.header" : "Account activation",
+	"activation.error" : "Activation error",
+	"auth.login" : "Login",
+	"auth.activation.code" : "Activation code",
+	"auth.activation.password" : "Password",
+	"auth.activation.confirm.password" : "Confirm password",
+	"auth.activation.invalid.argument" : "Form errors"
 }

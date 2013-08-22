@@ -40,6 +40,8 @@ import edu.one.core.auth.oauth.HttpServerRequestAdapter;
 import edu.one.core.auth.oauth.JsonRequestAdapter;
 import edu.one.core.auth.oauth.OAuthDataHandler;
 import edu.one.core.auth.oauth.OAuthDataHandlerFactory;
+import edu.one.core.auth.users.DefaultUserAuthAccount;
+import edu.one.core.auth.users.UserAuthAccount;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
@@ -54,13 +56,15 @@ public class AuthController extends Controller {
 	private final DataHandlerFactory oauthDataFactory;
 	private final Token token;
 	private final ProtectedResource protectedResource;
+	private final UserAuthAccount userAuthAccount;
 	private static final String USERINFO_SCOPE = "userinfo";
 
 	public AuthController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
+		Neo neo = new Neo(eb, log);
 		this.oauthDataFactory = new OAuthDataHandlerFactory(
-				new Neo(eb, log),
+				neo,
 				new MongoDb(eb, container.config()
 						.getString("mongo.address", "wse.mongodb.persistor")));
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
@@ -74,6 +78,7 @@ public class AuthController extends Controller {
 		this.protectedResource = new ProtectedResource();
 		this.protectedResource.setDataHandlerFactory(oauthDataFactory);
 		this.protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
+		this.userAuthAccount = new DefaultUserAuthAccount(neo);
 	}
 
 	public void authorize(final HttpServerRequest request) {
@@ -283,4 +288,57 @@ public class AuthController extends Controller {
 			}
 		});
 	}
+
+	public void activeAccount(HttpServerRequest request) {
+		JsonObject json = new JsonObject();
+		if (request.params().contains("activationCode")) {
+			json.putString("activationCode", request.params().get("activationCode"));
+		}
+		renderView(request, json);
+	}
+
+	public void activeAccountSubmit(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String login = request.formAttributes().get("login");
+				final String activationCode = request.formAttributes().get("activationCode");
+				String password = request.formAttributes().get("password");
+				String confirmPassword = request.formAttributes().get("confirmPassword");
+				if (login == null || activationCode == null|| password == null ||
+						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
+						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+					JsonObject error = new JsonObject()
+					.putObject("error", new JsonObject()
+					.putString("message", "auth.activation.invalid.argument"));
+					if (activationCode != null) {
+						error.putString("activationCode", activationCode);
+					}
+					renderView(request, error);
+				} else {
+					userAuthAccount.activateAccount(login, activationCode, password,
+							new org.vertx.java.core.Handler<Boolean>() {
+
+						@Override
+						public void handle(Boolean activated) {
+							if (Boolean.TRUE.equals(activated)) {
+								redirect(request, "/login");
+							} else {
+								JsonObject error = new JsonObject()
+								.putObject("error", new JsonObject()
+								.putString("message", "activation.error"));
+								if (activationCode != null) {
+									error.putString("activationCode", activationCode);
+								}
+								renderView(request, error);
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+
 }

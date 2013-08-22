@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.security.BCrypt;
 
 public class OAuthDataHandler extends DataHandler {
 
@@ -80,7 +81,7 @@ public class OAuthDataHandler extends DataHandler {
 					if ("ok".equals(res.body().getString("status")) &&
 							result != null && result.size() == 1) {
 						JsonObject r = result.getObject("0");
-						if (r != null && password.equals(r.getString("password"))) {
+						if (r != null && BCrypt.checkpw(password, r.getString("password"))) {
 							handler.handle(r.getString("userId"));
 						} else {
 							handler.handle(null);

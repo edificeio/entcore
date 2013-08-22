@@ -21,10 +21,10 @@ import au.com.bytecode.opencsv.CSVReadProc;
 
 import com.google.common.base.Joiner;
 
+import edu.one.core.datadictionary.generation.ActivationCodeGenerator;
 import edu.one.core.datadictionary.generation.DisplayNameGenerator;
 import edu.one.core.datadictionary.generation.IdGenerator;
 import edu.one.core.datadictionary.generation.LoginGenerator;
-import edu.one.core.datadictionary.generation.PasswordGenerator;
 import edu.one.core.infra.Neo;
 
 public class BE1DImporter {
@@ -39,7 +39,7 @@ public class BE1DImporter {
 	private final List<JsonObject> parentsEnfantsMapping;
 	private final List<JsonObject> classesGroupProfilsMapping;
 	private final Neo neo;
-	private final PasswordGenerator pwGenerator;
+	private final ActivationCodeGenerator activationGenerator;
 	private final IdGenerator idGenerator;
 	private final LoginGenerator loginGenerator;
 	private final DisplayNameGenerator displayNameGenerator;
@@ -106,7 +106,7 @@ public class BE1DImporter {
 		queries = new JsonArray();
 		queriesCom = new JsonArray();
 		loginGenerator = new LoginGenerator();
-		pwGenerator = new PasswordGenerator();
+		activationGenerator = new ActivationCodeGenerator();
 		idGenerator = new IdGenerator();
 		displayNameGenerator = new DisplayNameGenerator();
 		csv = CSV.separator(';').quote('\"').skipLines(1).charset("ISO-8859-1").create();
@@ -280,7 +280,7 @@ public class BE1DImporter {
 						.generate(values[RespENTPersonPrenomIdx], values[RespENTPersonNomIdx]))
 				.putString(ENTPersonNomAffichage, displayNameGenerator
 						.generate(values[RespENTPersonPrenomIdx], values[RespENTPersonNomIdx]))
-				.putString(ENTPersonMotDePasse, pwGenerator.generate());
+				.putString("activationCode", activationGenerator.generate());
 
 				for (int i = 13; i < values.length; i += 4) {
 					String mapping = values[i]+values[i+1]+values[i+2]+values[i+3];
@@ -324,7 +324,7 @@ public class BE1DImporter {
 						.generate(values[ENTPersonPrenomIdx], values[ENTPersonNomIdx]))
 				.putString(ENTPersonNomAffichage, displayNameGenerator
 						.generate(values[ENTPersonPrenomIdx], values[ENTPersonNomIdx]))
-				.putString(ENTPersonMotDePasse, pwGenerator.generate());
+				.putString("activationCode", activationGenerator.generate());
 
 				Tuple<ArrayList<String>> eleves = classesEleves.get(values[ENTPersonClassesIdx]);
 				if (eleves == null) {

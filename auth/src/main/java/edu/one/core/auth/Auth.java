@@ -26,6 +26,10 @@ public class Auth extends Server {
 
 		auth.get("/oauth2/userinfo", "userInfo"); // TODO support version (api required version in headers)
 
+		auth.get("/activation", "activeAccount");
+
+		auth.post("/activation", "activeAccountSubmit");
+
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
