@@ -41,6 +41,10 @@ public class AppRegistry extends Server {
 
 		service.get("/schools", "listSchools");
 
+		service.post("/application/conf", "applicationConf");
+
+		service.get("/application/conf/:id", "application");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), vertx.eventBus()));
 
 	}

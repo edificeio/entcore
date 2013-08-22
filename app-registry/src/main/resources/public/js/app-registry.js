@@ -10,7 +10,7 @@ var appRegistry = function(){
 							</div>\
 							{{#.}}\
 							<div>\
-								{{#i18n}}app.registry.application{{/i18n}} : {{name}}<br />\
+								{{#i18n}}app.registry.application{{/i18n}} : <a call="application" href=\"/application/conf/{{id}}\">{{name}}</a><br />\
 								{{#i18n}}app.registry.actions{{/i18n}} :\
 								<ul>\
 								{{#actions}}\
@@ -63,6 +63,15 @@ var appRegistry = function(){
 							<input type="text" name="role" />\
 							<input call="addRole" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
 						</form>',
+
+			application : '<span>{{name}}</span>\
+							<form action="/application/conf">\
+								<input type="hidden" name="applicationId" value="{{id}}" />\
+								<input type="hidden" name="grantType" value="authorization_code" />\
+								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
+								<input type="text" name="secret" value="{{secret}}" />\
+								<input call="applicationConf" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
+							</form>'
 
 		},
 		action : {
@@ -176,6 +185,33 @@ var appRegistry = function(){
 				.done(function(response) {
 					if (response.status === "ok") {
 						app.notify.done(app.i18n.bundle["app.registry.groups.authorized"]);
+					} else {
+						app.notify.error(response.message);
+					}
+				})
+				.error(function(data) {app.notify.error(data)});
+			},
+
+			application : function(o) {
+				$.get(o.url)
+				.done(function(response) {
+					if (response.status === "ok") {
+						console.log(response.result["0"]);
+						$('#list').html(app.template.render("application",
+								response.result["0"]));
+					} else {
+						app.notify.error(response.message);
+					}
+				})
+				.error(function(data) {app.notify.error(data)});
+			},
+
+			applicationConf : function(o) {
+				var form = $(o.target).parents("form");
+				$.post(form.attr("action"), form.serialize())
+				.done(function(response) {
+					if (response.status === "ok") {
+						app.notify.done(app.i18n.bundle["app.registry.application.conf.updated"]);
 					} else {
 						app.notify.error(response.message);
 					}

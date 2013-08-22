@@ -290,6 +290,52 @@ public class AppRegistryService extends Controller {
 		neo.send(query, params, request.response());
 	}
 
+	@SecuredAction("app-registry.application")
+	public void application(HttpServerRequest request) {
+		String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("id", id);
+			neo.send(
+				"START n=node:node_auto_index(id={id}) " +
+				"RETURN n.id as id, n.name as name, " +
+					"n.grantType? as grantType, n.secret? as secret",
+				params,
+				request.response()
+			);
+		} else {
+			badRequest(request);
+		}
+	}
+
+	@SecuredAction("app-registry.application.conf")
+	public void applicationConf(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String applicationId = request.formAttributes().get("applicationId");
+				String grantType = request.formAttributes().get("grantType");
+				String secret = request.formAttributes().get("secret");
+				if (applicationId != null && grantType != null && secret != null &&
+						!applicationId.trim().isEmpty() && !grantType.trim().isEmpty() &&
+						!secret.trim().isEmpty()) {
+					String query =
+							"START n=node:node_auto_index(id={applicationId}) " +
+							"SET n.grantType = {grantType}, n.secret = {secret} ";
+					Map<String, Object> params = new HashMap<>();
+					params.put("applicationId", applicationId);
+					params.put("grantType", grantType);
+					params.put("secret", secret);
+					neo.send(query, params, request.response());
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
 	public void collectApps(final Message<JsonObject> message) {
 		final String application = message.body().getString("application");
 		final JsonArray securedActions = message.body().getArray("actions");
