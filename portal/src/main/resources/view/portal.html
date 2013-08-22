@@ -1,20 +1,58 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>{{#i18n}}admin.title{{/i18n}}</title>
-		<meta charset="utf-8" />
+    <head>
+        <title>{{#i18n}}admin.title{{/i18n}}</title>
+        <meta charset="utf-8" />
 
-		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#static}}js/portal.js{{/static}}" type="text/javascript"></script>
-	</head>
-	<body>
-		<header>
-			<h1>{{#i18n}}portal.header{{/i18n}}</h1>
-		</header>
-		
-	</body>
+        <link rel="stylesheet" type="text/css" href="../public/css/app.css" />
+        <link rel="stylesheet" type="text/css" href="{{#asset}}css/theme.css{{/asset}}" id="theme" />
+
+        <script src="{{#static}}js/jquery-1.9.1.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/underscore-min-1.4.4.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/mustache.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/humane.min.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/one-app.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/portal.js{{/static}}" type="text/javascript"></script>
+    </head>
+    <body>
+        <div class="centered container row">
+            <header class="main">
+                <section class="navbar row">
+                    <div class="cell six">
+                        <img src="/public/img/exemples/userIcon.png" />
+                        <span class="welcome-message">Bonjour Martin, bienvenue !</span>
+                    </div>
+                    <div class="cell six">
+                        <div class="account">
+                            <form class="search cell">
+                                <input type="text" value="Rechercher" />
+                                <input type="submit" value="OK" />
+                            </form>
+                            <i role="user"></i>
+                            <i role="shutdown"></i>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="row">
+                    <div class="logo" />
+                    <nav class="horizontal" role="apps-navigation">
+                        <a call="redirect" href="/whatsnew">{{#i18n}}portal.header.navigation.whatsnew{{/i18n}}</a>
+                        <a call="redirect" href="/pupils">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
+                        <a call="redirect" href="/apps">{{#i18n}}portal.header.navigation.myapps{{/i18n}}</a>
+                    </nav>
+                </section>
+
+            </header>
+            <div class="main wrapper">
+                <section class="main">
+
+
+                    <div id="directory"></div>
+                    <iframe id="applications" scrolling="no"></iframe>
+                    <div class="clear"></div>
+                </section>
+            </div>
+        </div>
+    </body>
 </html>

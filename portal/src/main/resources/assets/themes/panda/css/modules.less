@@ -1,0 +1,127 @@
+@import "elements";
+
+nav.vertical{
+  i{
+    margin-right: 5px;
+  }
+  ul{
+    padding-left: 0;
+    li{
+      a{
+        .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
+        .rounded-corners(10px);
+
+        border: 1px solid @light-grey;
+        margin: 5px;
+        line-height: 20px;
+        padding: 5px;
+        .run-transition(padding);
+      }
+
+      ul{
+        margin-left: 30px;
+        a{
+          background: @ultra-light-grey;
+        }
+      }
+    }
+
+    a.selected, a:hover{
+      background: @solid-blue;
+      color: #fff;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    a:hover{
+      padding-top: 10px;
+      padding-bottom: 10px;
+      .run-transition(padding);
+    }
+  }
+
+}
+
+article{
+  .rounded-corners(10px);
+  background: @light-grey-background;
+  border: 1px solid @light-grey;
+
+  header{
+    .vertical-gradient(@blue-top-gradient, @blue-bottom-gradient);
+    .rounded-corners-top(10px);
+    color: #fff;
+    padding: 7px;
+
+    h2{
+      font-size: 14px;
+    }
+  }
+
+}
+
+.navbar{
+  .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
+  .rounded-corners-bottom;
+
+  .welcome-message{
+    color: @medium-blue;
+    font-family: KGJune;
+    font-size: 24px;
+    padding-right: 10px;
+  }
+}
+
+nav.horizontal{
+  a{
+    font-family: KGJune;
+    text-transform: uppercase;
+    background: @orange;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 23px;
+    text-decoration: none;
+
+    .rounded-corners(10px);
+    .run-transition(background);
+    .run-transition(padding);
+  }
+  a:hover{
+    background: @dark-orange;
+    .run-transition(background);
+    .run-transition(padding);
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+.logo{
+  background: url(../img/illustrations/logo.png);
+  width: 245px;
+  height: 85px;
+}
+
+.search{
+  input[type=submit]{
+    height: 28px;
+    font-size: 18px;
+    padding-top: 4px;
+    .rounded-corners-right(5px)
+  }
+  input[type=text]{
+    padding: 5px;
+    color: #888;
+    padding-left: 27px;
+    background: url(../img/icons/search.png) no-repeat 3px #fff;
+    .rounded-corners-left(5px)
+  }
+}
+
+.icons-view{
+	a{
+		text-decoration: none;
+		color: #888;
+	}
+}

@@ -1,0 +1,131 @@
+@import "../../../../public/css/app";
+
+//Warm tones
+@orange: #FD841C;
+@dark-orange: #EA791C;
+
+//Cold tones
+@grey-top-gradient: #fff;
+@grey-bottom-gradient: #eee;
+@light-grey-background: #FDFDFD;
+@light-grey: #eee;
+@medium-grey: #ccc;
+@dark-grey: #C2C2C2;
+@ultra-light-grey: #F6F6F6;
+
+@blue-top-gradient: #3789C3;
+@blue-bottom-gradient: #3EC0D0;
+@medium-blue: #2F8CC9;
+@solid-blue: #3889C1;
+
+//Buttons: active
+@button-top-gradient: #3789C3;
+@button-bottom-gradient: #3EC0D0;
+
+//Buttons: disabled
+@disabled-button-top-gradient: #9F9F9F;
+@disabled-button-bottom-gradient: #EAEAEA;
+
+//Fonts
+@font-face {
+  font-family: KGJune;
+  src: url(../fonts/KGJuneBug.ttf);
+}
+
+@font-face {
+  font-family: Satellite;
+  src: url(../fonts/Satellite.otf);
+}
+
+//Icons
+i[role=new-mail]{
+  .icon(new-mail, 40px);
+  color: #fff;
+  font-size: 10px;
+  padding-left: 28px;
+  padding-top: 8px;
+  background-position: 0px 0px;
+  cursor: pointer;
+  .border-box;
+}
+
+i[role=storage]{
+  .icon(storage, 25px);
+}
+
+i[role=add]{
+  .icon(add, 27px);
+  width: 15px;
+}
+
+i[role=close]{
+  .icon(close, 15px);
+}
+
+i[role=show-icons]{
+  .icon(show-icons, 37px);
+}
+
+i[role=show-list]{
+  .icon(show-list, 37px);
+}
+
+i[role=configuration]{
+  .icon(configuration, 37px);
+}
+
+i[role=user]{
+  .icon(user, 30px);
+}
+
+i[role=shutdown]{
+  .icon(shutdown, 30px);
+}
+
+i[role=apps]{
+  .icon(apps, 27px);
+}
+
+i[role=workspace-large]{
+	.icon(workspace-large, 135px);
+}
+
+input[type=button], input[type=submit], a.button, button{
+  .vertical-gradient(@button-top-gradient, @button-bottom-gradient);
+  color: #fff;
+  font-family: KGJune;
+  text-transform: uppercase;
+  height: 40px;
+  display: inline-block;
+  .border-box;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 10px;
+  font-size: 23px;
+  border: 1px solid #eee;
+  .run-transition(height);
+}
+
+input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
+  background: @solid-blue;
+  height: 50px;
+  .run-transition(height);
+}
+
+input[type=button][disabled], input[type=submit][disabled], a.button[disabled], button[disabled]{
+  .vertical-gradient(@disabled-button-top-gradient, @disabled-button-bottom-gradient);
+  cursor: not-allowed;
+}
+
+input[type=button][disabled]:hover, input[type=submit][disabled]:hover, a.button[disabled]:hover, button[disabled]:hover{
+  height: 40px;
+}
+
+h1{
+  font-family: KGJune;
+  text-transform: uppercase;
+  color: @orange;
+  font-size: 27px;
+  margin-top: 0;
+}
+
