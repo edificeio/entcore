@@ -3,79 +3,78 @@
   width: 100%;
   position: relative;
   clear: both;
+}
 
-  .cell{
-    .border-box;
-    float: left;
-    display: block;
+.cell{
+  .border-box;
+  float: left;
+  display: block;
+}
+
+.right-magnet{
+  float: right;
+}
+
+.grid-cell-width(@cell-size: 1){
+  width: 1;
+}
+
+.grid-cell-width(@cell-size: 1){
+  @media screen and (min-width: 720px){
+    width: (98% / 12 * @cell-size);
   }
 
-  .cell.right-magnet{
-    float: right;
+  @media screen and (max-width: 720px){
+      width: 100%;
   }
+}
 
-  .grid-cell-width(@cell-size: 1){
-    width: 1;
-  }
+.one{
+  .grid-cell-width(1);
+}
 
-  .grid-cell-width(@cell-size: 1){
-    @media screen and (min-width: 720px){
-      width: (98% / 12 * @cell-size);
-      min-width: (720px / 12 * @cell-size);
-    }
+.two{
+  .grid-cell-width(2);
+}
 
-    @media screen and (max-width: 720px){
-        width: 100%;
-    }
-  }
+.three{
+  .grid-cell-width(3);
+}
 
-  .one{
-    .grid-cell-width(1);
-  }
+.four{
+  .grid-cell-width(4);
+}
 
-  .two{
-    .grid-cell-width(2);
-  }
+.five{
+  .grid-cell-width(5);
+}
 
-  .three{
-    .grid-cell-width(3);
-  }
+.six{
+  .grid-cell-width(6);
+}
 
-  .four{
-    .grid-cell-width(4);
-  }
+.seven{
+  .grid-cell-width(7);
+}
 
-  .five{
-    .grid-cell-width(5);
-  }
+.eight{
+  .grid-cell-width(8);
+}
 
-  .six{
-    .grid-cell-width(6);
-  }
+.nine{
+  .grid-cell-width(9);
+}
 
-  .seven{
-    .grid-cell-width(7);
-  }
+.ten{
+  .grid-cell-width(10);
+}
 
-  .eight{
-    .grid-cell-width(8);
-  }
+.eleven{
+  .grid-cell-width(11);
+}
 
-  .nine{
-    .grid-cell-width(9);
-  }
-
-  .ten{
-    .grid-cell-width(10);
-  }
-
-  .eleven{
-    .grid-cell-width(11);
-  }
-
-  .twelve{
-    .grid-cell-width(12);
-  }
+.twelve{
+  .grid-cell-width(12);
 }
 
 .centered{
@@ -150,6 +149,13 @@
   background:  linear-gradient(@top-color, @bottom-color);
 }
 
+.run-transition(@property: color, @speed: 150ms){
+  -o-transition: @property @speed ease;
+  -moz-transition: @property @speed ease;
+  -webkit-transition: @property @speed ease;
+  transition: @property @speed ease;
+}
+
 .border-box{
   box-sizing: -webkit-border-box;
   box-sizing: -moz-border-box;
@@ -172,4 +178,19 @@
 
 a, button, input[type=button], input[type=submit]{
   cursor: pointer;
+}
+
+i{
+  font-style: normal;
+}
+
+iframe{
+	border: none;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+body.app{
+	margin: 0;
 }
