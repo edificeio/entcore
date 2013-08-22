@@ -1,9 +1,14 @@
 package edu.one.core.datadictionary.generation;
 
 import java.text.Normalizer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class LoginGenerator extends FieldGenerator {
+
+	private static final Set<String> s = Collections.synchronizedSet(new HashSet<String>());
 
 	private static String removeAccents(String str) {
 		return Normalizer.normalize(str, Normalizer.Form.NFD)
@@ -17,8 +22,12 @@ public class LoginGenerator extends FieldGenerator {
 			String lastName = in[1];
 			String login = removeAccents(firstName).replaceAll(" ", "-").toLowerCase()
 					+ "." + removeAccents(lastName).replaceAll(" ", "-").toLowerCase();
-			//TODO: vérifier l'unicité du login
-			return login.replaceAll("'", "");
+			int i = 2;
+			String l = login + "";
+			while (!s.add(l)) {
+				l = login + i++;
+			}
+			return l.replaceAll("'", "");
 		} else {
 			return "";
 		}

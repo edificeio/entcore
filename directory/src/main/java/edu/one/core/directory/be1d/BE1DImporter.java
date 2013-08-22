@@ -293,9 +293,7 @@ public class BE1DImporter {
 					.putString("childId", t)
 					.putString("parentId", id));
 				}
-				queries.add(new JsonObject()
-				.putString("query", createEntity(row))
-				.putObject("params", row));
+				createUser(row);
 			}
 		});
 	}
@@ -360,12 +358,35 @@ public class BE1DImporter {
 				String mapping = values[ENTPersonNomPatroIdx]+values[ENTPersonNomIdx]
 						+values[ENTPersonPrenomIdx]+values[ENTPersonClassesIdx];
 				mappingEleveId.put(mapping, id);
-				queries.add(new JsonObject()
-				.putString("query", createEntity(row))
-				.putObject("params", row));
+				createUser(row);
 				count++;
 			}
 		});
+	}
+
+	private void createUser(JsonObject row) {
+		String id = row.getString("id");
+		String login = row.getString("ENTPersonLogin");
+		if (id == null || login == null) {
+			throw new IllegalArgumentException("Invalid user : " + row.encode());
+		}
+		queries.add(new JsonObject()
+		.putString("query", createEntity(row))
+		.putObject("params", row));
+		userLoginUnicity(id, login);
+	}
+
+	private void userLoginUnicity(String id, String login) {
+		// e.g. login -> 'ENTPersonLogin:tom.mate*'
+		String loginUnicity =
+			"START m=node:node_auto_index({login}), " +
+			"n=node:node_auto_index(id={nodeId}) " +
+			"WITH count(m) as nb, n " +
+			"WHERE nb > 1 " +
+			"SET n.ENTPersonLogin = n.ENTPersonLogin + nb ";
+		queries.add(toJsonObject(loginUnicity, new JsonObject()
+		.putString("nodeId", id)
+		.putString("login", "ENTPersonLogin:" + login + "*")));
 	}
 
 	private void defaultInsideGroupCom(String groupId) {
