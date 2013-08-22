@@ -2,6 +2,6 @@
 	"main":"edu.one.core.history.History",
 	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
 	"port": 8006,
-	"log-path": "/home/rdje/code/one/one-core/data/dev/",
+	"log-path": "/opt/one/history/",
 	"mode": "dev"
 }
