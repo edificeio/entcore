@@ -16,7 +16,10 @@ public class Starter extends Server {
 	@Override
 	public void start() {
 		try {
-			developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
+			if (vertx.fileSystem().existsSync("../../developer.id")) {
+				developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
+			}
+
 			config = getConfig("", "mod.json");
 			super.start();
 			neo = new Neo(vertx.eventBus(),log);
