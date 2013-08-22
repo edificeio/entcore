@@ -31,20 +31,20 @@ public class UserBook extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("init")){
-					neo.send("START n=node(*) WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
+					neo.send("START n=node:node_auto_index(type='ELEVE') WHERE "
+						+ "n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 						+ "CREATE (m {userId:'" + request.params().get("init") + "', "
 						+ "picture:'" + userBookData.getString("picture") + "',"
 						+ "motto:'Ajoute ta devise', health:'Problèmes de santé ?', mood:'default'}), n-[:USERBOOK]->m ");
 					for (Object hobby : hobbies) {
 						JsonObject jo = (JsonObject)hobby;
-						neo.send("START n=node(*),m=node(*) MATCH n-[r]->m WHERE has(n.ENTPersonNomAffichage) "
-							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
+						neo.send("START n=node:node_auto_index(type='ELEVE'),m=node(*) MATCH n-[r]->m WHERE "
+							+ "n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "AND type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code") 
 							+ "', values:'testval, othertestval'}), m-[:PUBLIC]->p");
 					}
-					neo.send("START n=node(*) WHERE has(n.ENTPersonNomAffichage) "
-							+ "AND n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
+					neo.send("START n=node:node_auto_index(type='ELEVE') WHERE "
+							+ "n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "RETURN n.ENTPersonIdentifiant",request.response());
 				} else if (request.params().contains("id")){
 					render.renderView(request, userBookData);
@@ -62,7 +62,7 @@ public class UserBook extends Server {
 		rm.get("/api/search", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				String neoRequest = "START n=node(*) ";
+				String neoRequest = "START n=node:node_auto_index(type='ELEVE') ";
 				if (request.params().contains("name")){
 					String[] names = request.params().get("name").split(" ");
 					String displayNameRegex = (names[0].length() > 3) ? "(?i)(.*" + names[0].substring(0,4) : "(?i)(.*" + names[0];
@@ -70,11 +70,10 @@ public class UserBook extends Server {
 						displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
 					}
 					displayNameRegex += ".*)";
-					neoRequest += " MATCH (n)-[r*]->(m) WHERE has(n.ENTPersonNomAffichage) "
-						+ "AND n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
+					neoRequest += " MATCH (n)-[r*]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
 				} else if (request.params().contains("class")){
-					neoRequest += "m=node(*) MATCH m<-[APPARTIENT]-n WHERE has(n.type) "
-						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("class") + "'";
+					neoRequest += ", m=node:node_auto_index(type='CLASSE') MATCH m<-[APPARTIENT]-n WHERE "
+						+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
 				}
 				neoRequest += " RETURN distinct n.ENTPersonIdentifiant as id, "
 					+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood";
@@ -85,9 +84,8 @@ public class UserBook extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("id")){
-					neo.send("START n=node(*) MATCH (n)-[r*]->(m) "
-						+ "WHERE has(n.ENTPersonIdentifiant) "
-						+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+					neo.send("START n=node:node_auto_index(type='ELEVE') MATCH (n)-[r*]->(m) "
+						+ "WHERE n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.ENTPersonIdentifiant as id, "
 						+ "n.ENTPersonAdresse as address, m.motto? as motto, m.picture? as photo,"
@@ -101,8 +99,9 @@ public class UserBook extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("name")){
-					neo.send("START n=node(*),m=node(*) MATCH n<-[APPARTIENT]-m WHERE has(m.type) "
-						+ "AND has(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("name") + "' "
+					neo.send("START n=node:node_auto_index(type='CLASSE'),m=node:node_auto_index(type='ELEVE')"
+						+ " MATCH n<-[APPARTIENT]-m WHERE HAS(n.ENTGroupeNom) AND"
+						+ " n.ENTGroupeNom='" + request.params().get("name") + "' "
 						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
 						, request.response());
 				}
@@ -112,15 +111,13 @@ public class UserBook extends Server {
 		rm.get("/api/edit-userbook-info", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				String neoRequest = "START n=node(*) MATCH (n)-[USERBOOK]->(m)";
+				String neoRequest = "START n=node:node_auto_index(type='ELEVE') MATCH (n)-[USERBOOK]->(m)";
 				if (request.params().contains("category")){
-					neoRequest += ", (m)-->(p) WHERE has(n.ENTPersonIdentifiant) "
-					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(p.category) "
+					neoRequest += ", (m)-->(p) WHERE n.ENTPersonIdentifiant='" + request.params().get("id") + "' AND has(p.category) "
 					+ "AND p.category='" + request.params().get("category") + "' "
 					+ "SET p.values='" + request.params().get("values") + "'";
 				} else {
-					neoRequest += " WHERE has(n.ENTPersonIdentifiant) "
-					+ "AND n.ENTPersonIdentifiant='" + request.params().get("id")
+					neoRequest += " WHERE n.ENTPersonIdentifiant='" + request.params().get("id")
 					+ "' SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
 				}
 				neo.send(neoRequest, request.response());
