@@ -27,6 +27,27 @@ public class Portal extends Server {
 				render.renderView(request);
 			}
 		});
+		
+		rm.get("/workspace", new Handler<HttpServerRequest>() {
+                    @Override
+		    public void handle(HttpServerRequest request){
+			render.renderView(request);
+                    }
+                });
+		
+		rm.get("/apps", new Handler<HttpServerRequest>() {
+                    @Override
+		    public void handle(HttpServerRequest request){
+			render.renderView(request);
+                    }
+                });
+		
+		rm.get("/pupils", new Handler<HttpServerRequest>() {
+                    @Override
+		    public void handle(HttpServerRequest request){
+			render.renderView(request);
+                    }
+                });
 
 		rm.getWithRegEx("\\/assets\\/.+", new Handler<HttpServerRequest>() {
 			public void handle(HttpServerRequest request) {
