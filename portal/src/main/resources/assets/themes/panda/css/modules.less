@@ -11,6 +11,7 @@ nav.vertical{
         .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
         .rounded-corners(10px);
 
+        font-size: 1em;
         border: 1px solid @light-grey;
         margin: 5px;
         line-height: 20px;
@@ -123,5 +124,29 @@ nav.horizontal{
 	a{
 		text-decoration: none;
 		color: #888;
+		font-size: 1em;
+	}
+}
+
+.list-view{
+	table{
+		border-collapse: collapse;
+		tr{
+			border-top: 1px solid @medium-grey;
+			background: transparent;
+			.run-transition(background);
+			td{
+				padding: 5px;
+				em{
+					font-size: 13px;
+					color: @medium-grey;
+					padding-left: 10px;
+				}
+			}
+		}
+		tr:hover{
+			background: @light-blue;
+			.run-transition(banckground);
+		}
 	}
 }

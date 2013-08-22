@@ -17,6 +17,7 @@
 @blue-bottom-gradient: #3EC0D0;
 @medium-blue: #2F8CC9;
 @solid-blue: #3889C1;
+@light-blue: #EBF4F9;
 
 //Buttons: active
 @button-top-gradient: #3789C3;
@@ -90,6 +91,10 @@ i[role=workspace-large]{
 	.icon(workspace-large, 135px);
 }
 
+i[role=doc-large]{
+	.icon(doc-large, 135px);
+}
+
 input[type=button], input[type=submit], a.button, button{
   .vertical-gradient(@button-top-gradient, @button-bottom-gradient);
   color: #fff;
@@ -127,5 +132,11 @@ h1{
   color: @orange;
   font-size: 27px;
   margin-top: 0;
+}
+
+a{
+	font-size: 12px;
+	color: @medium-blue;
+	text-decoration: none;
 }
 
