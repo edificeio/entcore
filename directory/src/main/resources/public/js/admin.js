@@ -191,7 +191,12 @@ var admin = function(){
 						$('#export').attr('hidden', '');
 						break;
 				}
-			}
+			},
+			testbe1d : function(o) {
+				$.get(o.url)
+				.done(function(data){app.notify.info(data);})
+				.error(function(data){app.notify.error(data);});
+			},
 		}
 	})
 	return app;

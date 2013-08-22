@@ -64,7 +64,7 @@ public class Directory extends Server {
 
 			@Override
 			public void handle(final HttpServerRequest r) {
-				new BE1D(vertx, container, "/opt/one/be1d").importPorteur(
+				new BE1D(vertx, container, config.getString("test-be1d-folder","/opt/one/be1d")).importPorteur(
 						new Handler<JsonArray>() {
 
 					@Override
