@@ -28,13 +28,6 @@ public class Portal extends Server {
 			}
 		});
 		
-		rm.get("/workspace", new Handler<HttpServerRequest>() {
-                    @Override
-		    public void handle(HttpServerRequest request){
-			render.renderView(request);
-                    }
-                });
-		
 		rm.get("/theme-documentation", new Handler<HttpServerRequest>() {
                     @Override
 		    public void handle(HttpServerRequest request){
@@ -43,13 +36,6 @@ public class Portal extends Server {
                 });
 		
 		rm.get("/apps", new Handler<HttpServerRequest>() {
-                    @Override
-		    public void handle(HttpServerRequest request){
-			render.renderView(request);
-                    }
-                });
-		
-		rm.get("/pupils", new Handler<HttpServerRequest>() {
                     @Override
 		    public void handle(HttpServerRequest request){
 			render.renderView(request);

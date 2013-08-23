@@ -12,7 +12,9 @@ var navigation = (function(){
 					data: styleUrl
 				};
 
-				messenger.sendMessage('#applications', message);
+				setTimeout(function(){
+					messenger.sendMessage('#applications', message);
+				}, 100);
 			});
 		}
 	};
@@ -39,7 +41,11 @@ var messenger = (function(){
 
 	return {
 		sendMessage: function(frame, message){
-			$(frame)[0].contentWindow.postMessage(JSON.stringify(message), window.location.href);
+			var origin = window.location.href;
+			if($(frame).attr('src').indexOf('http') !== -1){
+				origin = $(frame).attr('src');
+			}
+			$(frame)[0].contentWindow.postMessage(JSON.stringify(message), origin);
 		}
 	};
 }());

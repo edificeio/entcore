@@ -1,8 +1,10 @@
 var messenger = (function(){
 	"use strict";
 
+	var parentUrl = 'http://';
+
 	var send = function(message){
-		parent.window.postMessage(JSON.stringify(message), window.location.href);
+		parent.postMessage(JSON.stringify(message), parentUrl);
 	};
 
 	var messagesHandlers = {
@@ -30,6 +32,7 @@ var messenger = (function(){
 
 	if(window.addEventListener){
 		window.addEventListener('message', function(messageData){
+			parentUrl = messageData.origin;
 			var message = JSON.parse(messageData.data);
 			messagesHandlers[message.name](message);
 		});
