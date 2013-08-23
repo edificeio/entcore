@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="{{#static}}css/app.css{{/static}}" />
+	<link rel="stylesheet" type="text/css" href="{{#asset}}css/theme.css{{/asset}}" id="theme" />
+	<link rel="stylesheet" type="text/css" href="{{#static}}css/theme-documentation.css{{/static}}" />
+
+	<script type="text/javascript" src="{{#static}}js/prettify.js{{/static}}"></script>
+	<link rel="stylesheet" type="text/css" href="{{#static}}css/prettify.css{{/static}}" />
+</head>
+<body>
+	<div class="centered container row">
+		<h1>Structure</h1>
+
+		<h2>Panel</h2>
+
+		<article>
+			<div class="lorem">
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque hendrerit sed turpis nec interdum. In lobortis iaculis hendrerit.
+				Nullam porttitor mattis orci, quis rutrum leo fringilla eget. Sed egestas tellus eget felis dignissim,
+				eu sollicitudin neque tincidunt. Duis dignissim tempus eros sed elementum. Vestibulum vehicula quam dolor,
+				a luctus dolor cursus et. Donec eleifend, tortor non placerat consequat, leo turpis dapibus tellus, sodales
+				pellentesque ligula risus quis lectus. Integer nec mi arcu. Pellentesque semper accumsan convallis.
+				Mauris pharetra libero leo, quis tempus tortor tempus vel. Curabitur consequat enim at auctor lobortis.
+				Vestibulum dictum est in semper mattis. Cras volutpat metus justo, in blandit dui volutpat ac. Nullam pulvinar
+				elit vel magna suscipit luctus. Suspendisse eget massa non sapien accumsan rhoncus.
+			</div>
+		</article>
+
+		<pre class="prettyprint">
+	&lt;article&gt;
+		&lt;div class=&quot;lorem&quot;&gt;
+			...
+		&lt;/div&gt;
+	&lt;/article&gt;
+		</pre>
+
+		<h2>Grid</h2>
+
+		<div class="grid-exemple">
+			<div class="row">
+				<div class="twelve cell">.twelve</div>
+			</div>
+			<div class="row">
+				<div class="eleven cell">.eleven</div>
+				<div class="one cell">.one</div>
+			</div>
+			<div class="row">
+				<div class="ten cell">.ten</div>
+				<div class="two cell">.two</div>
+			</div>
+			<div class="row">
+				<div class="three cell">.three</div>
+				<div class="three cell">.three</div>
+				<div class="three cell">.three</div>
+				<div class="three cell">.three</div>
+			</div>
+			<div class="row">
+				<div class="four cell">.four</div>
+				<div class="six cell">.six</div>
+				<div class="two cell">.two</div>
+			</div>
+		</div>
+
+		<div class="clear"></div>
+
+		<pre class="prettyprint">
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;twelve cell&quot;&gt;.twelve&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;eleven cell&quot;&gt;.eleven&lt;/div&gt;
+		&lt;div class=&quot;one cell&quot;&gt;.one&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;ten cell&quot;&gt;.ten&lt;/div&gt;
+		&lt;div class=&quot;two cell&quot;&gt;.two&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;three cell&quot;&gt;.three&lt;/div&gt;
+		&lt;div class=&quot;three cell&quot;&gt;.three&lt;/div&gt;
+		&lt;div class=&quot;three cell&quot;&gt;.three&lt;/div&gt;
+		&lt;div class=&quot;three cell&quot;&gt;.three&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;four cell&quot;&gt;.four&lt;/div&gt;
+		&lt;div class=&quot;six cell&quot;&gt;.six&lt;/div&gt;
+		&lt;div class=&quot;two cell&quot;&gt;.two&lt;/div&gt;
+	&lt;/div&gt;
+		</pre>
+
+		<h1>Elements</h1>
+
+		<h2>Icons</h2>
+
+		<div class="all-icons">
+			<h4>Title icons</h4>
+			<h1><i role="storage"></i> Storage</h1>
+			<h1><i role="apps"></i> Apps</h1>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;h1&gt;&lt;i role=&quot;storage&quot;&gt;&lt;/i&gt; Storage&lt;/h1&gt;
+	&lt;h1&gt;&lt;i role=&quot;apps&quot;&gt;&lt;/i&gt; Apps&lt;/h1&gt;
+			</pre>
+
+			<h4>Link icons</h4>
+			<i role="show-icons"></i>
+			<i role="show-list"></i>
+			<i role="configuration"></i>
+			<i role="shutdown"></i>
+			<i role="user"></i>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;i role=&quot;show-icons&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;show-list&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;configuration&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;shutdown&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;user&quot;&gt;&lt;/i&gt;
+			</pre>
+
+			<h4>Files icons</h4>
+			<i role="doc"></i>
+			<i role="xls"></i>
+			<i role="folder"></i>
+			<i role="link"></i>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;xls&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;folder&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;link&quot;&gt;&lt;/i&gt;
+			</pre>
+
+			<h4>Large icons</h4>
+			<i role="workspace-large"></i>
+			<i role="doc-large"></i>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;i role=&quot;workspace-large&quot;&gt;&lt;/i&gt;
+	&lt;i role=&quot;doc-large&quot;&gt;&lt;/i&gt;
+			</pre>
+		</div>
+
+		<div class="clear"></div>
+
+		<h2>Typography</h2>
+
+			<h1>H1</h1>
+
+		<h2>Buttons</h2>
+			<button>Active</button>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;button&gt;Active&lt;/button&gt;
+			</pre>
+
+
+			<button><i role="add"></i> Add</button>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;button&gt;&lt;i role=&quot;add&quot;&gt;&lt;/i&gt; Add&lt;/button&gt;
+			</pre>
+
+			<button disabled>Disabled</button>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;button disabled&gt;Disabled&lt;/button&gt;
+			</pre>
+
+			<a class="button">Link-button</a>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;a class=&quot;button&quot;&gt;Link-button&lt;/a&gt;
+			</pre>
+
+			<a class="button" disabled>Disabled link-button</a>
+			<div class="clear"></div>
+
+			<pre class="prettyprint">
+	&lt;a class=&quot;button&quot; disabled&gt;Disabled link-button&lt;/a&gt;
+			</pre>
+
+		<h1>Modules</h1>
+
+		<h2>Navigation</h2>
+
+		<h3>Vertical</h3>
+
+		<nav class="vertical">
+			<ul>
+				<li>
+					<a>Link A</a>
+				</li>
+				<li>
+					<a>Link B</a>
+					<ul>
+						<li>
+							<a>Link B.1</a>
+						</li>
+						<li>
+							<a>Link B.2</a>
+						</li>
+						<li>
+							<a><i role="close"></i>Removable</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a>Link C</a>
+				</li>
+			</ul>
+		</nav>
+
+		<pre class="prettyprint">
+	&lt;nav class=&quot;vertical&quot;&gt;
+		&lt;ul&gt;
+			&lt;li&gt;
+				&lt;a&gt;Link A&lt;/a&gt;
+			&lt;/li&gt;
+			&lt;li&gt;
+				&lt;a&gt;Link B&lt;/a&gt;
+				&lt;ul&gt;
+					&lt;li&gt;
+						&lt;a&gt;Link B.1&lt;/a&gt;
+					&lt;/li&gt;
+					&lt;li&gt;
+						&lt;a&gt;Link B.2&lt;/a&gt;
+					&lt;/li&gt;
+					&lt;li&gt;
+						&lt;a&gt;&lt;i role=&quot;close&quot;&gt;&lt;/i&gt;Removable&lt;/a&gt;
+					&lt;/li&gt;
+				&lt;/ul&gt;
+			&lt;/li&gt;
+			&lt;li&gt;
+				&lt;a&gt;Link C&lt;/a&gt;
+			&lt;/li&gt;
+		&lt;/ul&gt;
+	&lt;/nav&gt;
+		</pre>
+
+		<h3>Horizontal</h3>
+
+		<div class="row horizontal-navigation-exemple">
+			<div class="twelve cell">
+				<nav class="horizontal">
+					<a>Link A</a>
+					<a>Link B</a>
+					<a>Link C</a>
+				</nav>
+			</div>
+		</div>
+
+		<pre class="prettyprint">
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;twelve cell&quot;&gt;
+			&lt;nav class=&quot;horizontal&quot;&gt;
+				&lt;a&gt;Link A&lt;/a&gt;
+				&lt;a&gt;Link B&lt;/a&gt;
+				&lt;a&gt;Link C&lt;/a&gt;
+			&lt;/nav&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+		</pre>
+
+		<h2>Lists</h2>
+
+		<h3>Table</h3>
+
+		<div class="row">
+			<article class="twelve cell list-view">
+				<table>
+					<thead>
+						<tr>
+							<th>
+
+							</th>
+							<th>
+								Column 1
+							</th>
+							<th>
+								Column 2
+							</th>
+							<th>
+								Column 3
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Value</td>
+							<td>Value</td>
+							<td>Value</td>
+						</tr>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Value</td>
+							<td>Value</td>
+							<td>Value</td>
+						</tr>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Value</td>
+							<td>Value</td>
+							<td>Value</td>
+						</tr>
+					</tbody>
+				</table>
+			</article>
+		</div>
+		<div class="clear"></div>
+
+		<pre class="prettyprint">
+	&lt;article class=&quot;twelve cell list-view&quot;&gt;
+		&lt;table&gt;
+			&lt;thead&gt;
+				&lt;tr&gt;
+					&lt;th&gt;&lt;/th&gt;
+					&lt;th&gt;Column 1&lt;/th&gt;
+					&lt;th&gt;Column 2&lt;/th&gt;
+					&lt;th&gt;Column 3&lt;/th&gt;
+				&lt;/tr&gt;
+			&lt;/thead&gt;
+			&lt;tbody&gt;
+				&lt;tr&gt;
+					&lt;td&gt;&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;&lt;/td&gt;
+					&lt;td&gt;Value&lt;/td&gt;
+					&lt;td&gt;Value&lt;/td&gt;
+					&lt;td&gt;Value&lt;/td&gt;
+				&lt;/tr&gt;
+				...
+			&lt;/tbody&gt;
+		&lt;/table&gt;
+	&lt;/article&gt;
+		</pre>
+
+		<h2>Forms</h2>
+
+		<h3>Search form</h3>
+
+		<form class="search">
+			<input type="text" />
+			<input type="submit" value="Search" />
+		</form>
+		<div class="clear"></div>
+
+		<pre class="prettyprint">
+	&lt;form class=&quot;search&quot;&gt;
+		&lt;input type=&quot;text&quot; /&gt;
+		&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;
+	&lt;/form&gt;
+		</pre>
+
+		<div class="clear"></div>
+
+		<h1>LESS usage</h1>
+
+		<p>LESS files are included into each other so that the app.css from the theme contains all CSS.</p>
+
+		<p>In the public structure, lib contains grid classes as well as various mixins meant to be used as
+			functions. Modules specifies the positioning of CSS components (navigation, lists...). App contains
+			the overall structure and serves as a main file meant to be delivered alone.</p>
+
+		<p>In the theme structure, elements styles all individual elements (h1, a, ...) and defines
+			colours specifications. Modules is
+			the file defining the styling of CSS components (it's the colours counterpart of modules in structure).
+			Theme is the main file and can be included in a view on its own.</p>
+
+		<h2>Icons</h2>
+
+		<p>Icons can be defined via a mixin. Path is optional and defaults to theme/img/icons. Size is applied for both
+			height and width, as icons are assumed to be squared.</p>
+
+	<pre class="prettyprint">
+	.myicon{
+		.icon(@myIconFileName, @size, @pathToIconsFolder);
+	}
+	</pre>
+
+		<h2>Prefixes shorthands</h2>
+
+		<p>Those mixins apply their corresponding CSS3 properties, with all vendor prefixes.</p>
+
+	<pre class="prettyprint">
+	.run-transition(@property, @speed);
+	.rounded-corners(@radius);
+	.rounded-corners-left(@radius);
+	.rounded-corners-right(@radius);
+	.rounded-corners-top(@radius);
+	.rounded-corners-bottom(@radius);
+	.vertical-gradient(@topColor, @bottomColor);
+	</pre>
+
+	</div>
+
+
+
+</body>
+</html>

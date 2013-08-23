@@ -35,6 +35,13 @@ public class Portal extends Server {
                     }
                 });
 		
+		rm.get("/theme-documentation", new Handler<HttpServerRequest>() {
+                    @Override
+		    public void handle(HttpServerRequest request){
+			render.renderView(request);
+                    }
+                });
+		
 		rm.get("/apps", new Handler<HttpServerRequest>() {
                     @Override
 		    public void handle(HttpServerRequest request){
