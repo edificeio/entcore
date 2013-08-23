@@ -80,24 +80,45 @@ nav.horizontal{
 }
 
 .list-view{
-	li{
-		list-style-type: none;
+	ul, header{
+		display: none;
+	}
+	table{
+		width: 100%;
+		td{
+			cursor: pointer;
+
+			img{
+				vertical-align: middle;
+			}
+		}
 	}
 }
 
 .icons-view{
+	table{
+		display: none;
+	}
 	li{
 		.cell;
 		.three;
 
+		margin-left: 0;
+		padding: 10px;
+
 		list-style-type: none;
+		img, i{
+			float: none !important;
+			margin-left: auto;
+			margin-right: auto;
+			cursor: pointer;
+		}
+
+		em{
+			display: none;
+		}
 	}
-	img, i{
-		float: none !important;
-		margin-left: auto;
-		margin-right: auto;
-		cursor: pointer;
-	}
+
 	a{
 		display: block;
 		text-align: center;
