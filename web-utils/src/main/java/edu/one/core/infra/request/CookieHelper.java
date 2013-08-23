@@ -52,7 +52,7 @@ public class CookieHelper {
 		response.headers().set("Set-Cookie", ServerCookieEncoder.encode(name, value));
 	}
 
-	public void set(String name, String value, long timeout, HttpServerResponse response) {
+	public static void set(String name, String value, long timeout, HttpServerResponse response) {
 		Cookie cookie = new DefaultCookie(name, value);
 		cookie.setMaxAge(timeout);
 		response.headers().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
@@ -69,8 +69,8 @@ public class CookieHelper {
 				log.error(e);
 				return;
 			}
+			response.headers().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
 		}
-		response.headers().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
 	}
 
 	private void signCookie(Cookie cookie)
