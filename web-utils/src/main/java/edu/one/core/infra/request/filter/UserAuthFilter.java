@@ -1,6 +1,6 @@
 package edu.one.core.infra.request.filter;
 
-import edu.one.core.infra.request.CookieUtils;
+import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
 import edu.one.core.infra.security.oauth.OAuthResourceProvider;
 
@@ -24,7 +24,7 @@ public class UserAuthFilter implements Filter {
 
 	@Override
 	public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
-		String oneSeesionId = CookieUtils.get("oneSessionId", request);
+		String oneSeesionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		if (oneSeesionId != null) {
 			handler.handle(true);
 		} else if (oauth != null && request instanceof SecureHttpServerRequest) {

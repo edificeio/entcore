@@ -11,7 +11,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.one.core.infra.request.CookieUtils;
+import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.resources.UserInfos;
 
 public class UserUtils {
@@ -63,7 +63,7 @@ public class UserUtils {
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
 		} else {
-			String oneSessionId = CookieUtils.get("oneSessionId", request);
+			String oneSessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 			String remoteUserId = null;
 			if (request instanceof SecureHttpServerRequest) {
 				remoteUserId = ((SecureHttpServerRequest) request).getAttribute("remote_user");

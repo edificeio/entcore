@@ -13,6 +13,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
+import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecuredAction;
 
 public abstract class Server extends Verticle {
@@ -35,6 +36,8 @@ public abstract class Server extends Verticle {
 		trace = new TracerHelper(vertx.eventBus(), "log.address", this.getClass().getSimpleName());
 		i18n = I18n.getInstance();
 		i18n.init(container, vertx);
+		CookieHelper.getInstance().init((String) vertx
+				.sharedData().getMap("server").get("signKey"), log);
 
 		log.info("Verticle: " + this.getClass().getSimpleName() + " starts on port: " + config.getInteger("port"));
 

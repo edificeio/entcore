@@ -45,7 +45,7 @@ import edu.one.core.auth.users.UserAuthAccount;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
-import edu.one.core.infra.request.CookieUtils;
+import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -201,7 +201,7 @@ public class AuthController extends Controller {
 								@Override
 								public void handle(String sessionId) {
 									if (sessionId != null && !sessionId.trim().isEmpty()) {
-										CookieUtils.set("oneSessionId", sessionId,
+										CookieHelper.getInstance().setSigned("oneSessionId", sessionId,
 												container.config().getLong("cookie_timeout", 1800L),
 												request.response());
 										redirect(request, callBack.toString(), "");
@@ -221,7 +221,7 @@ public class AuthController extends Controller {
 	}
 
 	public void logout(final HttpServerRequest request) {
-		String sessionId = CookieUtils.get("oneSessionId", request);
+		String sessionId = CookieHelper.get("oneSessionId", request);
 		String c = request.params().get("callback");
 		final StringBuilder callback = new StringBuilder();
 		if (c != null && !c.trim().isEmpty()) {
@@ -239,7 +239,7 @@ public class AuthController extends Controller {
 			@Override
 			public void handle(Boolean deleted) {
 				if (Boolean.TRUE.equals(deleted)) {
-					CookieUtils.set("oneSessionId", "", request.response());
+					CookieHelper.set("oneSessionId", "", request.response());
 				}
 				redirect(request, callback.toString(), "");
 			}

@@ -2,7 +2,7 @@ package edu.one.core.admin;
 
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.Renders;
-import edu.one.core.infra.request.CookieUtils;
+import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.request.filter.SecurityHandler;
 
 import org.vertx.java.core.Handler;
@@ -25,7 +25,7 @@ public class Admin extends Server {
 		rm.get("/logout", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				CookieUtils.set("oneSessionId", "", request.response());
+				CookieHelper.set("oneSessionId", "", request.response());
 				Renders.redirect(request, "localhost:8009", "/login");
 			}
 		});

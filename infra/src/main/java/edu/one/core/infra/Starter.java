@@ -24,6 +24,8 @@ public class Starter extends Server {
 
 			config = getConfig("", "mod.json");
 			super.start();
+			vertx.sharedData().getMap("server").put("signKey",
+					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK") + Math.random());
 			neo = new Neo(vertx.eventBus(),log);
 			final String neo4jPersistor = config.getString("neo4j-persistor");
 			container.deployModule(neo4jPersistor, getConfig("../" +
