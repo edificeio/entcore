@@ -37,6 +37,7 @@ public class Starter extends Server {
 								public void handle(AsyncResult<String> event) {
 									if (event.succeeded()) {
 										try {
+											deployExternalModules();
 											deployApps();
 										} catch (Exception e) {
 											log.error(e.getMessage(), e);
@@ -75,6 +76,16 @@ public class Starter extends Server {
 			String module = ((String)o).trim();
 			if (vertx.fileSystem().existsSync("../" + module)) {
 				container.deployModule(module, getConfig("../"+ module + "/", "mod.json"));
+			}
+		}
+	}
+
+	private void deployExternalModules() {
+		for (Object o : config.getArray("external-modules")){
+			JsonObject module = (JsonObject)o ;
+			if (module.getString("name") != null && module.getObject("config") != null) {
+				container.deployModule(module.getString("name"),
+						module.getObject("config"), module.getInteger("instances", 1));
 			}
 		}
 	}

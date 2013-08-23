@@ -19,5 +19,11 @@
 		"edu.one.core~communication~0.1.0-SNAPSHOT",
 		"edu.one.core~timeline~0.1.0-SNAPSHOT",
 		"edu.one~wordpress~1.0.0-SNAPSHOT"
-	]
+	],
+	"external-modules" : [{
+		"name" : "io.vertx~mod-mailer~2.0.0-final",
+		"config" : {
+			"address" : "wse.email"
+		}
+	}]
 }
