@@ -7,7 +7,7 @@
 	"poolsize" : 32,
 	"datastore-path" : "./data/dev/neo4j",
 	"neo4j" : {
-		"node_keys_indexable":"id,name,type",
+		"node_keys_indexable":"id,name,type,ENTPersonLogin",
 		"node_auto_indexing":"true"
 	}
 }
