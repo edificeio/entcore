@@ -201,7 +201,9 @@ public class AuthController extends Controller {
 								@Override
 								public void handle(String sessionId) {
 									if (sessionId != null && !sessionId.trim().isEmpty()) {
-										CookieUtils.set("oneSessionId", sessionId, request.response());
+										CookieUtils.set("oneSessionId", sessionId,
+												container.config().getLong("cookie_timeout", 1800L),
+												request.response());
 										redirect(request, callBack.toString(), "");
 									} else {
 										viewLogin(request, "auth.error.authenticationFailed", callBack.toString());
