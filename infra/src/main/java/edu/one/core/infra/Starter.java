@@ -1,5 +1,7 @@
 package edu.one.core.infra;
 
+import java.util.UUID;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
@@ -23,7 +25,7 @@ public class Starter extends Server {
 			config = getConfig("", "mod.json");
 			super.start();
 			neo = new Neo(vertx.eventBus(),log);
-			String neo4jPersistor = config.getString("neo4j-persistor");
+			final String neo4jPersistor = config.getString("neo4j-persistor");
 			container.deployModule(neo4jPersistor, getConfig("../" +
 					neo4jPersistor + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
 				@Override
@@ -31,6 +33,7 @@ public class Starter extends Server {
 					if (event.succeeded()) {
 						String appRegistryModule = config.getString("app-registry");
 						try {
+							initAutoIndex(getConfig("../" + neo4jPersistor + "/", "mod.json"));
 							container.deployModule(appRegistryModule, getConfig("../" +
 									appRegistryModule + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
 								@Override
@@ -88,6 +91,16 @@ public class Starter extends Server {
 						module.getObject("config"), module.getInteger("instances", 1));
 			}
 		}
+	}
+
+
+	private void initAutoIndex(JsonObject config) {
+		// FIXME poor hack to create auto index -> replace with equivalent : index --create node_auto_index -t Node
+		String query = "CREATE (n {id:'" + UUID.randomUUID().toString() + "'}) DELETE n";
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		vertx.eventBus().send(config.getString("address"), jo);
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {
