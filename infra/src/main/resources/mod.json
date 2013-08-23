@@ -18,7 +18,7 @@
 		"edu.one.core~session~0.1.0-SNAPSHOT",
 		"edu.one.core~communication~0.1.0-SNAPSHOT",
 		"edu.one.core~timeline~0.1.0-SNAPSHOT",
-		"edu.one.core~portal~0.1.0-SNAPSHOT"
+		"edu.one.core~portal~0.1.0-SNAPSHOT",
 		"edu.one~wordpress~1.0.0-SNAPSHOT"
 	],
 	"external-modules" : [{
