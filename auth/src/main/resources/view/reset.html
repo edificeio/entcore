@@ -1,0 +1,26 @@
+<html>
+	<head>
+		<title>{{#i18n}}auth.reset.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	</head>
+	<body>
+		<h1>{{#i18n}}auth.reset.header{{/i18n}}</h1>
+		{{#error}}<p style="color:red">{{#i18n}}{{message}}{{/i18n}}</p>{{/error}}
+		<form method="post" action="/reset">
+			<input type="hidden" name="resetCode" value="{{resetCode}}" />
+			<p>
+				<label>{{#i18n}}auth.login{{/i18n}}</label>
+				<input type="text" name="login" />
+			</p>
+			<p>
+				<label>{{#i18n}}auth.activation.password{{/i18n}}</label>
+				<input type="password" name="password" />
+			</p>
+			<p>
+				<label>{{#i18n}}auth.activation.confirm.password{{/i18n}}</label>
+				<input type="password" name="confirmPassword" />
+			</p>
+			<input type="submit" value="{{#i18n}}auth.reset{{/i18n}}" />
+		</form>
+	</body>
+</html>

@@ -30,6 +30,14 @@ public class Auth extends Server {
 
 		auth.post("/activation", "activeAccountSubmit");
 
+		auth.get("/forgot", "forgotPassword");
+
+		auth.post("/forgot", "forgotPasswordSubmit");
+
+		auth.get("/reset/:resetCode", "resetPassword");
+
+		auth.post("/reset", "resetPasswordSubmit");
+
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
 		} catch (NoSuchMethodException | IllegalAccessException e) {

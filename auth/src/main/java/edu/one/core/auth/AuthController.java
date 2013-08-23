@@ -78,7 +78,7 @@ public class AuthController extends Controller {
 		this.protectedResource = new ProtectedResource();
 		this.protectedResource.setDataHandlerFactory(oauthDataFactory);
 		this.protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		this.userAuthAccount = new DefaultUserAuthAccount(neo);
+		this.userAuthAccount = new DefaultUserAuthAccount(vertx, container);
 	}
 
 	public void authorize(final HttpServerRequest request) {
@@ -331,6 +331,92 @@ public class AuthController extends Controller {
 								.putString("message", "activation.error"));
 								if (activationCode != null) {
 									error.putString("activationCode", activationCode);
+								}
+								renderView(request, error);
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+
+	public void forgotPassword(HttpServerRequest request) {
+		renderView(request);
+	}
+
+	public void forgotPasswordSubmit(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String login = request.formAttributes().get("login");
+				if (login != null && !login.trim().isEmpty()) {
+					userAuthAccount.forgotPassword(login, new org.vertx.java.core.Handler<Boolean>() {
+
+						@Override
+						public void handle(Boolean sent) {
+							if (Boolean.TRUE.equals(sent)) {
+								renderView(request, new JsonObject()
+								.putString("message", "auth.resetCodeSent"), "message.html", null);
+							} else {
+								JsonObject error = new JsonObject()
+								.putObject("error", new JsonObject()
+								.putString("message", "forgot.error"));
+								renderView(request, error);
+							}
+						}
+					});
+				} else {
+					JsonObject error = new JsonObject()
+					.putObject("error", new JsonObject()
+					.putString("message", "forgot.error"));
+					renderView(request, error);
+				}
+			}
+		});
+	}
+
+	public void resetPassword(HttpServerRequest request) {
+		renderView(request, new JsonObject()
+		.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
+	}
+
+	public void resetPasswordSubmit(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String login = request.formAttributes().get("login");
+				final String resetCode = request.formAttributes().get("resetCode");
+				String password = request.formAttributes().get("password");
+				String confirmPassword = request.formAttributes().get("confirmPassword");
+				if (login == null || resetCode == null|| password == null ||
+						login.trim().isEmpty() || resetCode.trim().isEmpty() ||
+						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+					JsonObject error = new JsonObject()
+					.putObject("error", new JsonObject()
+					.putString("message", "auth.reset.invalid.argument"));
+					if (resetCode != null) {
+						error.putString("resetCode", resetCode);
+					}
+					renderView(request, error);
+				} else {
+					userAuthAccount.resetPassword(login, resetCode, password,
+							new org.vertx.java.core.Handler<Boolean>() {
+
+						@Override
+						public void handle(Boolean reseted) {
+							if (Boolean.TRUE.equals(reseted)) {
+								redirect(request, "/login");
+							} else {
+								JsonObject error = new JsonObject()
+								.putObject("error", new JsonObject()
+								.putString("message", "reset.error"));
+								if (resetCode != null) {
+									error.putString("resetCode", resetCode);
 								}
 								renderView(request, error);
 							}

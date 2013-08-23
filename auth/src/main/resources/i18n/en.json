@@ -7,5 +7,20 @@
 	"auth.activation.code" : "Activation code",
 	"auth.activation.password" : "Password",
 	"auth.activation.confirm.password" : "Confirm password",
-	"auth.activation.invalid.argument" : "Form errors"
+	"auth.activation.invalid.argument" : "Form errors",
+	"auth.reset" : "Reset",
+	"auth.reset.header" : "Password reset",
+	"auth.reset.title" : "Password reset",
+	"auth.activate" : "Activate",
+	"auth.forgot.header" : "Missing password",
+	"auth.forgot.title" : "Missing password",
+	"auth.forgot.send" : "Send",
+	"auth.message.header" : "",
+	"auth.message.title" : "",
+	"auth.resetCodeSent" : "Reset code sent",
+	"auth.reset.invalid.argument" : "Form errors",
+	"reset.error" : "Reset error",
+	"missing.password" : "Missing password",
+	"auth.email" : "Login",
+	"auth.password" : "Password"
 }

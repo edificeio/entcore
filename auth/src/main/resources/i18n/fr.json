@@ -8,5 +8,20 @@
 	"auth.activation.code" : "Code d'activation",
 	"auth.activation.password" : "Mot de passe",
 	"auth.activation.confirm.password" : "Confirmation du mot de passe",
-	"auth.activation.invalid.argument" : "Le formulaire contient des erreurs"
+	"auth.activation.invalid.argument" : "Le formulaire contient des erreurs",
+	"auth.reset" : "Réinitialiser",
+	"auth.reset.header" : "Réinitialisation du mot de passe",
+	"auth.reset.title" : "Réinitialisation du mot de passe",
+	"auth.activate" : "Activer",
+	"auth.forgot.header" : "Mot de passe oublié",
+	"auth.forgot.title" : "Mot de passe oublié",
+	"auth.forgot.send" : "Envoyer",
+	"auth.message.header" : "",
+	"auth.message.title" : "",
+	"auth.resetCodeSent" : "Code de réinitialisation envoyé",
+	"auth.reset.invalid.argument" : "Le formulaire contient des erreurs",
+	"reset.error" : "Erreur durant la réinitialisation",
+	"missing.password" : "Mot de passe oublié",
+	"auth.email" : "Login",
+	"auth.password" : "Mot de passe"
 }
