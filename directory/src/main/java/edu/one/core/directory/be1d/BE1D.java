@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -30,7 +29,6 @@ public class BE1D {
 	}
 
 	public void importPorteur(final Handler<JsonArray> handler) {
-		final AtomicInteger remaining = new AtomicInteger(0);
 		neo.send(
 				"START n=node:node_auto_index(type='ETABEDUCNAT') " +
 				"RETURN n.ENTStructureNomCourant as name", new Handler<Message<JsonObject>>() {
@@ -50,24 +48,34 @@ public class BE1D {
 						}
 					});
 					final JsonArray imports = new JsonArray();
-					final Handler<JsonObject> h = new Handler<JsonObject>() {
+					final List<Handler<JsonObject>> handlers = new ArrayList<>();
+					handlers.add(new Handler<JsonObject>() {
 
 						@Override
 						public void handle(JsonObject json) {
 							imports.addObject(json);
-							if (remaining.decrementAndGet() == 0) {
-								handler.handle(imports);
-							}
+							handler.handle(imports);
 						}
-					};
-					for (File f :folders) {
+					});
+					for (File folder :folders) {
+						final File f = folder;
 						if (!existingSchools.contains(f.getName())) {
-							remaining.incrementAndGet();
-							String schoolFolder = porteurFolder + File.separator + f.getName();
-							new BE1DImporter(vertx, container, schoolFolder)
-							.importSchool(f.getName(), h);
+							handlers.add(new Handler<JsonObject>() {
+
+								@Override
+								public void handle(JsonObject event) {
+									handlers.remove(handlers.size() - 1);
+									if (event != null) {
+										imports.addObject(event);
+									}
+									String schoolFolder = porteurFolder + File.separator + f.getName();
+									new BE1DImporter(vertx, container, schoolFolder)
+									.importSchool(f.getName(), handlers.get(handlers.size() - 1));
+								}
+							});
 						}
 					}
+					handlers.get(handlers.size() - 1).handle(null);
 				} else {
 					handler.handle(new JsonArray().addObject(res.body()));
 				}

@@ -405,7 +405,6 @@ public class BE1DImporter {
 	}
 
 	private void defaultParentsChildsCom(JsonObject mapping) {
-		System.out.println(mapping.encode());
 		String query =
 				"START e=node:node_auto_index(id={childId}), " +
 				"p=node:node_auto_index(id={parentId}) " +
@@ -414,8 +413,6 @@ public class BE1DImporter {
 				"START e=node:node_auto_index(id={childId}), " +
 				"p=node:node_auto_index(id={parentId}) " +
 				"CREATE UNIQUE e<-[:COMMUNIQUE_DIRECT]-p";
-		System.out.println(toJsonObject(query, mapping).encode());
-		System.out.println(toJsonObject(query2, mapping).encode());
 		queriesCom.addObject(toJsonObject(query, mapping)).addObject(toJsonObject(query2, mapping));
 	}
 
