@@ -19,7 +19,8 @@ public class UserUtils {
 	private static final JsonArray usersTypes = new JsonArray()
 			.addString("PERSRELELEVE")
 			.addString("ELEVE")
-			.addString("PERSEDUCNAT");
+			.addString("PERSEDUCNAT")
+			.addString("ENSEIGNANT");
 	private static final String SESSION_ADDRESS = "wse.session";
 
 	public static void findVisibleUsers(EventBus eb, final JsonObject session,

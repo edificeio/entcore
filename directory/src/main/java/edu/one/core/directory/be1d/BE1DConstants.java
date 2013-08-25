@@ -29,6 +29,18 @@ public final class BE1DConstants {
 	public static final int RespENTPersRelEleveTelMobile = 12;
 	public static final int RespENTPersRelElevTelPro = 10;
 
+	public static final int TeacherENTPersonCiviliteIdx = 0;
+	public static final int TeacherENTPersonNomIdx = 2;
+	public static final int TeacherENTPersonNomPatroIdx = 1;
+	public static final int TeacherENTPersonPrenomIdx = 3;
+	public static final int TeacherENTPersonAdresseIdx = 4;
+	public static final int TeacherENTPersonCodePostalIdx = 5;
+	public static final int TeacherENTPersonVilleIdx = 6;
+	public static final int TeacherENTPersonPaysIdx = 7;
+	public static final int TeacherENTPersonMailIdx = 8;
+	public static final int TeacherENTPersonTelPerso = 9;
+	public static final int TeacherENTPersRelEleveTelMobile = 10;
+
 	public static final String ENTPersonNom = "ENTPersonNom";
 	public static final String ENTPersonNomPatro = "ENTPersonNomPatro";
 	public static final String ENTPersonPrenom = "ENTPersonPrenom";

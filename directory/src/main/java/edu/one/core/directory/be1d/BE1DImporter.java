@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.vertx.java.core.Handler;
@@ -117,6 +118,7 @@ public class BE1DImporter {
 	public void importSchool(final String schoolName, final Handler<JsonObject> handler) {
 		String fileEleves = schoolFolder + File.separator + "CSVExtraction-eleves.csv";
 		String fileParents = schoolFolder + File.separator + "CSVExtraction-responsables.csv";
+		String fileTeachers = schoolFolder + File.separator + "CSVExtraction-enseignants.csv";
 
 		createSchool(schoolName);
 
@@ -217,6 +219,8 @@ public class BE1DImporter {
 		.putString("groupId", gpcId)
 		.putString("groupsIds", "id:" + Joiner.on(" OR id:").join(groupsPC))));
 
+		extractTeachers(fileTeachers);
+
 		neo.sendBatch(queries, new Handler<Message<JsonObject>>() {
 
 			@Override
@@ -252,6 +256,117 @@ public class BE1DImporter {
 		.putString("id", UUID.randomUUID().toString())
 		.putString("name", schoolName + "_PERSRELELEVE")
 		.putString("type", "GROUP_ETABEDUCNAT_PERSRELELEVE")));
+		queries.add(new JsonObject()
+		.putString("query", createGroupProfil)
+		.putObject("params", new JsonObject()
+		.putString("id", UUID.randomUUID().toString())
+		.putString("name", schoolName + "_ENSEIGNANT")
+		.putString("type", "GROUP_ETABEDUCNAT_ENSEIGNANT")));
+	}
+
+
+	private void extractTeachers(String fileTeachers) {
+		final Map<String, List<String>> classesTeachers = new HashMap<>();
+		csv.read(fileTeachers, new CSVReadProc() {
+
+			@Override
+			public void procRow(int rowIdx, String... values) {
+				String id = UUID.randomUUID().toString();
+				JsonObject row = new JsonObject()
+				.putString("id", id)
+				.putString("type", "ENSEIGNANT")
+				.putString(ENTPersonAdresse, values[TeacherENTPersonAdresseIdx])
+				.putString(ENTPersonCivilite, values[TeacherENTPersonCiviliteIdx])
+				.putString(ENTPersonCodePostal, values[TeacherENTPersonCodePostalIdx])
+				.putString(ENTPersonMail, values[TeacherENTPersonMailIdx])
+				.putString(ENTPersonNom, values[TeacherENTPersonNomIdx])
+				.putString(ENTPersonNomPatro, values[TeacherENTPersonNomPatroIdx])
+				.putString(ENTPersonPays, values[TeacherENTPersonPaysIdx])
+				.putString(ENTPersonPrenom, values[TeacherENTPersonPrenomIdx])
+				.putString(ENTPersonTelPerso, values[TeacherENTPersonTelPerso])
+				.putString(ENTPersonVille, values[TeacherENTPersonVilleIdx])
+				.putString(ENTPersRelEleveTelMobile, values[TeacherENTPersRelEleveTelMobile])
+				.putString(ENTPersonIdentifiant, idGenerator.generate())
+				.putString(ENTPersonLogin, loginGenerator
+						.generate(values[TeacherENTPersonPrenomIdx], values[TeacherENTPersonNomIdx]))
+				.putString(ENTPersonNomAffichage, displayNameGenerator
+						.generate(values[TeacherENTPersonPrenomIdx], values[TeacherENTPersonNomIdx]))
+				.putString("activationCode", activationGenerator.generate());
+
+				for (int i = 11; i < values.length; i++) {
+					String mapping = values[i];
+					if (mapping == null || mapping.trim().isEmpty()) continue;
+					if (!classesEleves.containsKey(mapping)) {
+						throw new IllegalArgumentException(
+								"Invalid classe for teacher at line " + rowIdx);
+					}
+					List<String> l = classesTeachers.get(mapping);
+					if (l == null) {
+						l = new ArrayList<>();
+						classesTeachers.put(mapping, l);
+					}
+					l.add(id);
+				}
+				createUser(row);
+			}
+		});
+		relationshipTeachers(classesTeachers);
+	}
+
+	private void relationshipTeachers(Map<String, List<String>> classesTeachers) {
+		String createRelsAppartientGroup =
+				"START n=node:node_auto_index(id={classId}), " +
+				"m=node:node_auto_index({nodeIds}) " +
+				"CREATE UNIQUE m-[:APPARTIENT]->n";
+		StringBuilder sb = new StringBuilder();
+		List<String> gcId = new ArrayList<>();
+		for (Entry<String, List<String>> e: classesTeachers.entrySet()) {
+			String groupId = UUID.randomUUID().toString();
+			queries.add(toJsonObject(createGroupProfil, new JsonObject()
+			.putString("id", groupId)
+			.putString("name", e.getKey() + "_ENSEIGNANT")
+			.putString("type", "GROUP_CLASSE_ENSEIGNANT")));
+			String ids = "id:" + Joiner.on(" OR id:").join(e.getValue());
+			queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+			.putString("classId", groupId)
+			.putString("nodeIds", ids)));
+			queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+			.putString("classId", classesEleves.get(e.getKey()).getS1())
+			.putString("nodeIds", ids)));
+			sb.append(" OR " + ids);
+			queries.add(toJsonObject(createRelsDepends, new JsonObject()
+			.putString("groupId", classesEleves.get(e.getKey()).getS1())
+			.putString("groupsIds", "id:" + groupId)));
+			defaultInsideGroupCom(groupId);
+			defaultTeacherClassCom(groupId);
+			gcId.add(groupId);
+		}
+		String schoolId = ((JsonObject) queries.get(0)).getObject("params").getString("id");
+		String gId = ((JsonObject) queries.get(3)).getObject("params").getString("id");
+
+		queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+		.putString("classId", schoolId)
+		.putString("nodeIds", sb.substring(4).toString())));
+
+		queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+		.putString("classId", gId)
+		.putString("nodeIds", sb.substring(4).toString())));
+
+		queries.add(toJsonObject(createRelsDepends, new JsonObject()
+		.putString("groupId", schoolId)
+		.putString("groupsIds", "id:" + gId)));
+
+		queries.add(toJsonObject(createRelsDepends, new JsonObject()
+		.putString("groupId", gId)
+		.putString("groupsIds", "id:" + Joiner.on(" OR id:").join(gcId))));
+
+		String allStudentGroup = ((JsonObject) queries.get(1)).getObject("params").getString("id");
+		String allParentsGroup = ((JsonObject) queries.get(2)).getObject("params").getString("id");
+		defaultInsideGroupCom(gId);
+		comBetweenGroup(gId, allStudentGroup);
+		comBetweenGroup(gId, allParentsGroup);
+		defaultOutGroupCom(allStudentGroup);
+		defaultOutGroupCom(allParentsGroup);
 	}
 
 	private void extractParents(String fileParents) {
@@ -389,6 +504,15 @@ public class BE1DImporter {
 		.putString("login", "ENTPersonLogin:" + login + "*")));
 	}
 
+	private void defaultOutGroupCom(String groupId) {
+		String query =
+				"START n=node:node_auto_index(id={id}) " +
+				"MATCH n<-[:APPARTIENT]-m " +
+				"CREATE UNIQUE n-[:COMMUNIQUE]->m ";
+		JsonObject params = new JsonObject().putString("id", groupId);
+		queriesCom.addObject(toJsonObject(query, params));
+	}
+
 	private void defaultInsideGroupCom(String groupId) {
 		String query =
 				"START n=node:node_auto_index(id={id}) " +
@@ -414,6 +538,29 @@ public class BE1DImporter {
 				"p=node:node_auto_index(id={parentId}) " +
 				"CREATE UNIQUE e<-[:COMMUNIQUE_DIRECT]-p";
 		queriesCom.addObject(toJsonObject(query, mapping)).addObject(toJsonObject(query2, mapping));
+	}
+
+	private void defaultTeacherClassCom(String teacherClassGroupId) {
+		String query =
+				"START n=node:node_auto_index(id={groupId}) " +
+				"MATCH n-[:DEPENDS]->c<-[:DEPENDS]-g " +
+				"WHERE has(c.type) AND c.type = 'CLASSE' AND has(g.type) AND " +
+				"(g.type = 'GROUP_CLASSE_ELEVE' OR g.type = 'GROUP_CLASSE_PERSRELELEVE') " +
+				"CREATE UNIQUE g-[:COMMUNIQUE]->n ";
+		JsonObject params = new JsonObject()
+		.putString("groupId", teacherClassGroupId);
+		queriesCom.addObject(toJsonObject(query, params));
+	}
+
+	private void comBetweenGroup(String outGroupId, String inGroupId) {
+		String query =
+				"START n=node:node_auto_index(id={outGroupId}), " +
+				"m=node:node_auto_index(id={inGroupId}) " +
+				"CREATE UNIQUE n-[:COMMUNIQUE]->m ";
+		JsonObject params = new JsonObject()
+		.putString("outGroupId", outGroupId)
+		.putString("inGroupId", inGroupId);
+		queriesCom.addObject(toJsonObject(query, params));
 	}
 
 	private JsonObject toJsonObject(String query, JsonObject params) {
