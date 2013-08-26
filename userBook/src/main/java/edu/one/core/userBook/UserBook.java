@@ -70,28 +70,48 @@ public class UserBook extends Server {
 						displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
 					}
 					displayNameRegex += ".*)";
-					neoRequest += " MATCH (n)-[r*]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
+					neoRequest += " MATCH (n)-[USERBOOK]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
 				} else if (request.params().contains("class")){
 					neoRequest += ", m=node:node_auto_index(type='CLASSE') MATCH m<-[APPARTIENT]-n WHERE "
 						+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
 				}
 				neoRequest += " RETURN distinct n.ENTPersonIdentifiant as id, "
-					+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood";
+					+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, n.type as type";
 				neo.send(neoRequest, request.response());
 			}
 		});
 		rm.get("/api/person", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				if (request.params().contains("id")){
-					neo.send("START n=node:node_auto_index(type='ELEVE') MATCH (n)-[r*]->(m) "
-						+ "WHERE n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
-						+ "RETURN distinct n.ENTPersonNomAffichage as displayName, "
-						+ "n.ENTPersonIdentifiant as id, "
-						+ "n.ENTPersonAdresse as address, m.motto? as motto, m.picture? as photo,"
-						+ "m.mood? as mood, m.health? as health, m.category? as category, "
-						+ "m.values? as values, EXTRACT(rel in r: type(rel)) as relation;"
-						,request.response());
+				if (request.params().contains("id") && request.params().contains("type")){
+					String personRequest = "";
+					String personRequestStart = "START n=node:node_auto_index(type='" + request.params().get("type") + "')";
+					String personRequestReturn= ",(n)-[USERBOOK]->(u),(u)-[r]->(c) WHERE has(n.ENTPersonIdentifiant) "
+							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+							+ "AND has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
+							+ "n.ENTPersonIdentifiant as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
+							+ "m.ENTPersonIdentifiant as relatedId,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+							+ "u.health? as health, c.category? as category, c.values? as values;";
+
+					switch(request.params().get("type")){
+						case "ELEVE":
+							personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
+								+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
+							break;
+						case "PERSEDUCNAT":
+							personRequest = personRequestStart + "MATCH (n)-[USERBOOK]->(u),(u)-[r]->(c) WHERE has(m.ENTPersonLogin) "
+								+ "AND has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+								+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.ENTPersonIdentifiant as id, "
+								+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+								+ "u.health? as health, c.category? as category, c.values? as values;";
+							break;
+						case "PERSRELELEVE":
+							personRequest = personRequestStart + ",m=node:node_auto_index(type='ELEVE') "
+								+ "MATCH (n)<-[EN_RELATION_AVEC]-(m)" + personRequestReturn;
+							break;
+
+					}
+					neo.send(personRequest,request.response());
 				}
 			}
 		});
@@ -101,8 +121,8 @@ public class UserBook extends Server {
 				if (request.params().contains("name")){
 					neo.send("START n=node:node_auto_index(type='CLASSE'),m=node:node_auto_index(type='ELEVE')"
 						+ " MATCH n<-[APPARTIENT]-m WHERE HAS(n.ENTGroupeNom) AND"
-						+ " n.ENTGroupeNom='" + request.params().get("name") + "' "
-						+ "RETURN m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
+						+ " n.ENTGroupeNom='" + request.params().get("name") + "' RETURN"
+						+ " m.type as type, m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
 						, request.response());
 				}
 			}

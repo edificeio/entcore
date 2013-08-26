@@ -13,6 +13,10 @@ var userbook = function(){
 				jo['health'] = d.result[obj].health;
 				jo['motto'] = d.result[obj].motto;
 			}
+			if (d.result[obj].relatedName !== ""){
+				jo['relatedName'] = d.result[obj].relatedName;
+				jo['relatedId'] = d.result[obj].relatedId;
+			}
 		}
 		jo['list'] = hobbies;
 		return jo;
@@ -25,7 +29,7 @@ var userbook = function(){
 			searchResults: '\
 				{{#list}}<div class="person-small" id={{id}}>\
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<span><a href="/api/person?id={{id}}" call="person">{{displayName}}</a></span>\
+				<span><a href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</a></span>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
 				<span class="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
 				<img src="/public/img/carnet.png" alt="carnet"/>\
@@ -43,6 +47,7 @@ var userbook = function(){
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<img src="/public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}</span>\
+				<a href="/api/person?id={{relatedId}}&type=PERSRELELEVE">{{relatedName}}</a>\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
 				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}">\
