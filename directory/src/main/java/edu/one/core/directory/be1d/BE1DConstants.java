@@ -40,6 +40,7 @@ public final class BE1DConstants {
 	public static final int TeacherENTPersonMailIdx = 8;
 	public static final int TeacherENTPersonTelPerso = 9;
 	public static final int TeacherENTPersRelEleveTelMobile = 10;
+	public static final int TeacherENTEnsFonctionDir = 11;
 
 	public static final String ENTPersonNom = "ENTPersonNom";
 	public static final String ENTPersonNomPatro = "ENTPersonNomPatro";
@@ -62,5 +63,6 @@ public final class BE1DConstants {
 	public static final String ENTPersonLogin = "ENTPersonLogin";
 	public static final String ENTPersonMotDePasse = "ENTPersonMotDePasse";
 	public static final String ENTPersonNomAffichage = "ENTPersonNomAffichage";
+	public static final String ENTEnsFonctionDir = "ENTEnsFonctionDir";
 
 }

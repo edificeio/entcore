@@ -262,11 +262,18 @@ public class BE1DImporter {
 		.putString("id", UUID.randomUUID().toString())
 		.putString("name", schoolName + "_ENSEIGNANT")
 		.putString("type", "GROUP_ETABEDUCNAT_ENSEIGNANT")));
+		queries.add(new JsonObject()
+		.putString("query", createGroupProfil)
+		.putObject("params", new JsonObject()
+		.putString("id", UUID.randomUUID().toString())
+		.putString("name", schoolName + "_DIRECTEUR")
+		.putString("type", "GROUP_ETABEDUCNAT_DIRECTEUR")));
 	}
 
 
 	private void extractTeachers(String fileTeachers) {
 		final Map<String, List<String>> classesTeachers = new HashMap<>();
+		final List<String> directors = new ArrayList<>();
 		csv.read(fileTeachers, new CSVReadProc() {
 
 			@Override
@@ -293,7 +300,13 @@ public class BE1DImporter {
 						.generate(values[TeacherENTPersonPrenomIdx], values[TeacherENTPersonNomIdx]))
 				.putString("activationCode", activationGenerator.generate());
 
-				for (int i = 11; i < values.length; i++) {
+				if (values[TeacherENTEnsFonctionDir] != null &&
+						"OUI".equals(values[TeacherENTEnsFonctionDir].trim().toUpperCase())) {
+					row.putBoolean(ENTEnsFonctionDir, true);
+					directors.add(id);
+				}
+
+				for (int i = 12; i < values.length; i++) {
 					String mapping = values[i];
 					if (mapping == null || mapping.trim().isEmpty()) continue;
 					if (!classesEleves.containsKey(mapping)) {
@@ -310,10 +323,10 @@ public class BE1DImporter {
 				createUser(row);
 			}
 		});
-		relationshipTeachers(classesTeachers);
+		relationshipTeachers(classesTeachers, directors);
 	}
 
-	private void relationshipTeachers(Map<String, List<String>> classesTeachers) {
+	private void relationshipTeachers(Map<String, List<String>> classesTeachers, List<String> directors) {
 		String createRelsAppartientGroup =
 				"START n=node:node_auto_index(id={classId}), " +
 				"m=node:node_auto_index({nodeIds}) " +
@@ -367,6 +380,16 @@ public class BE1DImporter {
 		comBetweenGroup(gId, allParentsGroup);
 		defaultOutGroupCom(allStudentGroup);
 		defaultOutGroupCom(allParentsGroup);
+
+		// directors
+		String directorsId = ((JsonObject) queries.get(4)).getObject("params").getString("id");
+		queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+		.putString("classId", directorsId)
+		.putString("nodeIds", "id:" + Joiner.on(" OR id:").join(directors))));
+		queries.add(toJsonObject(createRelsDepends, new JsonObject()
+		.putString("groupId", schoolId)
+		.putString("groupsIds", "id:" + directorsId)));
+		defaultInsideGroupCom(directorsId);
 	}
 
 	private void extractParents(String fileParents) {
@@ -547,9 +570,19 @@ public class BE1DImporter {
 				"WHERE has(c.type) AND c.type = 'CLASSE' AND has(g.type) AND " +
 				"(g.type = 'GROUP_CLASSE_ELEVE' OR g.type = 'GROUP_CLASSE_PERSRELELEVE') " +
 				"CREATE UNIQUE g-[:COMMUNIQUE]->n ";
+		String query2 =
+				"START n=node:node_auto_index(id={groupId}), " +
+				"m=node:node_auto_index(id={groupDirectorId}) " +
+				"MATCH n-[:DEPENDS]->c<-[:DEPENDS]-g " +
+				"WHERE has(c.type) AND c.type = 'CLASSE' AND has(g.type) AND " +
+				"g.type = 'GROUP_CLASSE_PERSRELELEVE' " +
+				"CREATE UNIQUE g-[:COMMUNIQUE]->m ";
 		JsonObject params = new JsonObject()
 		.putString("groupId", teacherClassGroupId);
 		queriesCom.addObject(toJsonObject(query, params));
+		queriesCom.addObject(toJsonObject(query2, params.copy()
+				.putString("groupDirectorId",
+				((JsonObject) queries.get(4)).getObject("params").getString("id"))));
 	}
 
 	private void comBetweenGroup(String outGroupId, String inGroupId) {
