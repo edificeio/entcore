@@ -216,6 +216,12 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
+nav.vertical ul li ul {
+  display: none;
+}
+nav.vertical ul li.selected ul {
+  display: block;
+}
 .navbar {
   height: 40px;
 }
@@ -274,14 +280,33 @@ nav.horizontal a {
   border-top-left-radius: 0;
 }
 .list-view ul,
-.list-view header {
+.list-view header,
+.list-view h2 {
   display: none;
 }
 .list-view table {
   width: 100%;
 }
+.list-view table tr.overline {
+  border-bottom: none;
+}
+.list-view table tr.underline {
+  border-top: none;
+  padding-bottom: 15px;
+}
+.list-view table tr.underline td {
+  vertical-align: bottom;
+}
+.list-view table tr.underline:hover {
+  background: transparent;
+}
 .list-view table td {
   cursor: pointer;
+}
+.list-view table td h2 {
+  clear: both;
+  margin-top: 15px;
+  margin-bottom: 0;
 }
 .list-view table td img {
   vertical-align: middle;
@@ -347,7 +372,8 @@ section .contextual-buttons .action-buttons {
     width: 100%;
   }
 }
-section .contextual-buttons .action-buttons button {
+section .contextual-buttons .action-buttons button,
+section .contextual-buttons .action-buttons a.button {
   vertical-align: top;
 }
 section .contextual-buttons .display-buttons {

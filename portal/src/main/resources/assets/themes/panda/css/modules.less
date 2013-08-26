@@ -1,4 +1,141 @@
+@import "../../../../public/css/app";
 @import "elements";
+
+//Fonts
+@font-face {
+	font-family: KGJune;
+	src: url(../fonts/KGJuneBug.ttf);
+}
+
+@font-face {
+	font-family: Satellite;
+	src: url(../fonts/Satellite.otf);
+}
+
+//Icons
+i[role=new-mail]{
+	.icon(new-mail, 40px);
+	color: #fff;
+	font-size: 10px;
+	padding-left: 28px;
+	padding-top: 8px;
+	background-position: 0px 0px;
+	cursor: pointer;
+	.border-box;
+}
+
+i[role=storage]{
+	.icon(storage, 25px);
+}
+
+i[role=add]{
+	.icon(add, 27px);
+	width: 15px;
+}
+
+i[role=close]{
+	.icon(close, 15px);
+}
+
+i[role=show-icons]{
+	.icon(show-icons, 37px);
+}
+
+i[role=show-list]{
+	.icon(show-list, 37px);
+}
+
+i[role=configuration]{
+	.icon(configuration, 37px);
+}
+
+i[role=user]{
+	.icon(user, 30px);
+}
+
+i[role=shutdown]{
+	.icon(shutdown, 30px);
+}
+
+i[role=apps]{
+	.icon(apps, 27px);
+}
+
+i[role=workspace-large]{
+	.icon(workspace-large, 135px);
+}
+
+i[role=doc-large]{
+	.icon(doc-large, 135px);
+}
+
+i[role=doc]{
+	.icon(doc, 32px);
+}
+
+i[role=xls]{
+	.icon(xls, 32px);
+}
+
+i[role=folder]{
+	.icon(folder, 32px);
+}
+
+i[role=link]{
+	.icon(link, 32px);
+}
+
+a.button{
+	padding-left: 7px;
+	padding-right: 7px;
+}
+
+input[type=button], input[type=submit], a.button, button{
+	.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
+	color: #fff;
+	font-family: KGJune;
+	text-transform: uppercase;
+	height: 40px;
+	display: inline-block;
+	.border-box;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 10px;
+	font-size: 23px;
+	border: 1px solid #eee;
+	line-height: 40px;
+	.run-transition(height);
+}
+
+input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
+	background: @solid-blue;
+	height: 50px;
+	line-height: 50px;
+	.run-transition(height);
+}
+
+input[type=button][disabled], input[type=submit][disabled], a.button[disabled], button[disabled]{
+	.vertical-gradient(@disabled-button-top-gradient, @disabled-button-bottom-gradient);
+	cursor: not-allowed;
+}
+
+input[type=button][disabled]:hover, input[type=submit][disabled]:hover, a.button[disabled]:hover, button[disabled]:hover{
+	height: 40px;
+}
+
+h1{
+	font-family: KGJune;
+	text-transform: uppercase;
+	color: @orange;
+	font-size: 27px;
+	margin-top: 0;
+}
+
+a{
+	font-size: 12px;
+	color: @medium-blue;
+	text-decoration: none;
+}
 
 nav.vertical{
   i{
@@ -124,7 +261,7 @@ nav.horizontal{
 }
 
 .icons-view{
-	a{
+	li a{
 		text-decoration: none;
 		color: #888;
 		font-size: 1em;
@@ -152,6 +289,9 @@ nav.horizontal{
 			border-top: 1px solid @medium-grey;
 			background: transparent;
 			.run-transition(background);
+			td.container-cell{
+				padding: 0px;
+			}
 			td{
 				padding: 5px;
 				em{
@@ -159,9 +299,42 @@ nav.horizontal{
 					color: @medium-grey;
 					padding-left: 10px;
 				}
+
+				h2{
+					font-size: 14px;
+					background: #eee;
+					border: 1px solid #ccc;
+					font-weight: normal;
+					padding: 5px;
+				}
+
+				a{
+					font-size: 1em;
+				}
+
+				a{
+					margin: 3px;
+				}
+
+				.action-cell{
+					margin-top: 20px;
+				}
+
+				ul{
+					margin-top: 0px;
+					marginl-eft: 0px;
+					padding-left: 0px;
+
+					li{
+						font-size: 12px;
+						list-style-type: none;
+						background: #fff;
+						padding: 5px;
+					}
+				}
 			}
 		}
-		tr:hover{
+		tbody tr:hover{
 			background: @light-blue;
 			.run-transition(banckground);
 		}

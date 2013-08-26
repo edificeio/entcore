@@ -1,3 +1,65 @@
+var tools = (function(){
+	return {
+		roleFromFileType: function(fileType){
+			var types = {
+				'doc': function(type){
+					return type.indexOf('officedocument') !== -1 && type.indexOf('wordprocessing') !== -1;
+				}
+			}
+
+			for(var type in types){
+				if(types[type](fileType)){
+					return type;
+				}
+			}
+
+			return 'unknown';
+		},
+		formatResponse: function(response){
+			for(var i = 0; i < response.length; i++){
+				response[i].metadata['content-type'] = tools.roleFromFileType(response[i].metadata['content-type']);
+				response[i].created = response[i].created.split(' ')[0];
+				response[i].modified = response[i].modified.split(' ')[0];
+
+				if(!response[i].comments){
+					continue;
+				}
+
+				for(var j = 0; j < response[i].comments.length; j++){
+					response[i].comments[j].posted = response[i].comments[j].posted.split(' ')[0];
+					if(response[i].comments[j].author === '') {
+						response[i].comments[j].author = ''
+					}
+				}
+			}
+			return response;
+		}
+	}
+}());
+
+var navigation = (function(){
+	var updater = {
+		redirect: function(action){
+			$('nav.vertical a, nav.vertical li').removeClass('selected');
+			var current = $('nav.vertical a[call=' + action + ']');
+			current.addClass('selected');
+			current.parent().addClass('selected');
+		}
+	};
+
+	$(document).ready(function(){
+		$('nav.vertical a').on('click', function(){
+			updater.redirect($(this).attr('call'));
+		})
+	});
+
+	updater.redirect('documents');
+
+	return updater;
+}());
+
+
+
 var workspace = function(){
 	var app = Object.create(oneApp);
 	app.scope = "#main";
@@ -7,8 +69,7 @@ var workspace = function(){
 							<thead>\
 								<tr>\
 									<th scope="col">\
-										<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
-										<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+										<input type="checkbox" call="allCheckbox" />\
 									</th>\
 									<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 									<th scope="col">{{#i18n}}name{{/i18n}}</th>\
@@ -20,84 +81,53 @@ var workspace = function(){
 								{{#folders}}\
 								<tr>\
 									<td></td>\
-									<td>folder-icon</td>\
+									<td><i role="folder"></i></td>\
 									<td><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></td>\
 									<td></td>\
 									<td></td>\
 								</tr>\
 								{{/folders}}\
 								{{#documents}}\
-								<tr>\
+								<tr class="overline">\
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
-									<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
+									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
-									<td>{{modified}}</td>\
+									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 									<td>\
-										<a href="/share?id={{_id}}">{{#i18n}}workspace.share{{/i18n}}</a>\
-										<a call="comment" href="{{_id}}" class="button">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
-										<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
+										<a href="/share?id={{_id}}" class="magnet-right">{{#i18n}}workspace.share{{/i18n}}</a>\
 									</td>\
 								</tr>\
-								<tr class="comments{{_id}} hidden">\
-									<td colspan="5">\
-										<ul>\
+								<tr class="comments{{_id}} underline">\
+									<td colspan="5" class="container-cell">\
+										<a call="comment" href="{{_id}}" class="button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
+										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" call="hideComment">X</i></h2>\
+										<ul class="row">\
 										{{#comments}}\
-											<li>{{author}} - {{posted}} - <span>{{{comment}}}</span></li>\
+											<li class="twelve cell">{{author}} - {{#formatDate}}{{posted}}{{/formatDate}} - <span>{{{comment}}}</span></li>\
 										{{/comments}}\
 										</ul>\
 									</td>\
 								</tr>\
 								{{/documents}}\
 							</tbody>\
-						</table>',
-
-			documentsSquare : '<table summary="">\
-							<thead>\
-								<tr>\
-									<th scope="col">\
-										<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
-										<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
-									</th>\
-								</tr>\
-							</thead>\
-							<tbody>\
-								<tr>\
-									<td>\
-										{{#folders}}\
-											<span class="folder-square left">folder-icon\
-											<a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a>\
-											</span>\
-										{{/folders}}\
-										{{#documents}}\
-											<span class="doc-square left">\
-												<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-												<a href="/document/{{_id}}">{{name}}</a>\
-												<a call="comment" href="{{_id}}" class="button">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
-												<a call="toggleComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.toggle{{/i18n}}</a>\
-											</span>\
-										{{/documents}}\
-									</td>\
-								</tr>\
-								{{#documents}}\
-								<tr class="comments{{_id}} hidden">\
-									<td>\
-										<ul>\
-										{{#comments}}\
-											<li>{{author}} - {{posted}} - <span>{{comment}}</span></li>\
-										{{/comments}}\
-										</ul>\
-									</td>\
-								</tr>\
-								{{/documents}}\
-							</tbody>\
-						</table>',
+						</table>\
+						<header></header>\
+						<ul>\
+						{{#folders}}\
+						<li><i role="folder-large"></i><a>{{name}}</a></li>\
+						{{/folders}}\
+						{{#documents}}\
+						<li><i role="{{#metadata}}{{content-type}}{{/metadata}}-large"></i><a>{{name}}</a></li>\
+						{{/documents}}\
+						<div class="clear"></div>\
+						</ul>',
 
 			rack : '<table class="striped alternate" summary="">\
 						<thead>\
 							<tr>\
 								<th scope="col">\
-									<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
-									<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+									<input type="checkbox" call="allCheckbox" />\
 								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
@@ -127,8 +157,7 @@ var workspace = function(){
 						<thead>\
 							<tr>\
 								<th scope="col">\
-									<a call="allCheckbox" href="checked">{{#i18n}}workspace.select.all{{/i18n}}</a>\
-									<a call="allCheckbox" href="">{{#i18n}}workspace.unselect.all{{/i18n}}</a>\
+									<input type="checkbox" call="allCheckbox" />\
 								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
@@ -139,7 +168,7 @@ var workspace = function(){
 							{{#documents}}\
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="/document/{{_id}}" /></td>\
-								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
+								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 								<td><a href="/document/{{_id}}">{{name}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
@@ -149,7 +178,7 @@ var workspace = function(){
 								<td><input class="select-file" type="checkbox" name="files[]" value="/rack/{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
 								<td><a href="/rack/{{_id}}">{{name}}</a></td>\
-								<td>{{modified}}</td>\
+								<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 							</tr>\
 							{{/rack}}\
 						</tbody>\
@@ -183,7 +212,7 @@ var workspace = function(){
 								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
 								<input type="text" name="folder" />\
 								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
-							</form>',
+							</form>'
 		},
 		action : {
 			documents : function (o) {
@@ -204,32 +233,44 @@ var workspace = function(){
 							}
 							return { name : dir, path : dir };
 						});
-						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
-					});
-					});
-			},
 
-			rack : function (o) {
-				$.get(o.url).done(function(response){
-					$('#list').html(app.template.render("rack", response));
+						response = tools.formatResponse(response);
+						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
+						messenger.requireResize();
+					});
 				});
 			},
-
+			iconsView: function(o){
+				$('.list').removeClass('list-view').addClass('icons-view');
+			},
+			listView: function(o){
+				$('.list').removeClass('icons-view').addClass('list-view');
+			},
+			rack : function (o) {
+				$.get(o.url).done(function(response){
+					response = tools.formatResponse(response);
+					$('#list').html(app.template.render("rack", response));
+					messenger.requireResize();
+				});
+			},
 			trash : function (o) {
 				$.get("/documents/Trash").done(function(documents) {
 					$.get("/rack/documents/Trash").done(function(rack) {
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
+						messenger.requireResize();
 					});
 				});
 			},
 
 			addDocument : function (o) {
 				$('#form-window').html(app.template.render("addDocument", {}));
+				messenger.requireResize();
 			},
 
 			sendRack : function(o){
 				$('#form-window').html(app.template.render("sendRack", {}));
+				messenger.requireResize();
 			},
 
 			sendFile : function(o) {
@@ -266,10 +307,12 @@ var workspace = function(){
 			},
 
 			allCheckbox : function(o) {
-				var selected = o.url;
+				var selected = o.target.checked;
 				$(":checkbox").each(function() {
 					this.checked = selected;
 				});
+
+				//o.target.checked = !o.target.checked;
 			},
 
 			moveTrash : function(o) {
@@ -291,6 +334,7 @@ var workspace = function(){
 
 			comment : function(o) {
 				$('#form-window').html(app.template.render("comment", { id : o.url }));
+				messenger.requireResize();
 			},
 
 			sendComment : function(o) {
@@ -306,10 +350,14 @@ var workspace = function(){
 				});
 			},
 
-			toggleComment : function(o) {
-				$(o.url).toggleClass("hidden");
+			showComment : function(o) {
+				$(o.target).parent().find('ul, h2').show();
+				messenger.requestResize();
 			},
-
+			hideComment: function(o){
+				$(o.target).parent().parent().find('ul, h2').hide();
+				messenger.requestResize();
+			},
 			remove : function (o) {
 				var files = [];
 				$(":checkbox:checked").each(function(i) {
@@ -329,6 +377,7 @@ var workspace = function(){
 
 			moveOrCopy : function(o) {
 				$('#form-window').html(app.template.render("moveOrCopyDocuments", { action : o.url}));
+				messenger.requireResize();
 			},
 
 			moveOrCopyDocuments : function(o) {
@@ -375,8 +424,8 @@ $(document).ready(function(){
 		var html = "";
 		for (var i = 0; i < data.length; i++) {
 			if (data[i] === "Trash") continue;
-			html += '<a call="documents" href="/documents/' + data[i] + '">' + data[i] + "<br />";
+			html += '<li><a call="documents" href="/documents/' + data[i] + '">' + data[i] + "</a></li>";
 		}
-		$("#base-folders").html(html);
+		$(".base-folders").html(html);
 });
 });

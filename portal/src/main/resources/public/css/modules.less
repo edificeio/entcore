@@ -17,8 +17,15 @@ nav.vertical{
           margin-top: 2px;
         }
       }
-
+	  ul{
+		  display: none;
+	  }
     }
+	li.selected{
+		ul{
+			display: block;
+		}
+	}
   }
 }
 
@@ -80,13 +87,32 @@ nav.horizontal{
 }
 
 .list-view{
-	ul, header{
+	ul, header, h2{
 		display: none;
 	}
 	table{
 		width: 100%;
+		tr.overline{
+			border-bottom: none;
+		}
+		tr.underline{
+			border-top: none;
+			padding-bottom: 15px;
+			td{
+				vertical-align: bottom;
+			}
+		}
+		tr.underline:hover{
+			background: transparent;
+		}
 		td{
 			cursor: pointer;
+
+			h2{
+				clear: both;
+				margin-top: 15px;
+				margin-bottom: 0;
+			}
 
 			img{
 				vertical-align: middle;
@@ -134,7 +160,7 @@ section{
       line-height: 50px;
 
       margin-bottom: 10px;
-      button{
+      button, a.button{
         vertical-align: top;
       }
     }

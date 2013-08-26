@@ -41,6 +41,16 @@ var messenger = (function(){
 	return {
 		sendMessage: function(message){
 			send(message);
+		},
+		requireResize: function(){
+			var appSizeMessage = {
+				name: 'resize',
+				data: {
+					height: $(document).outerHeight(true) + 1
+				}
+			};
+
+			send(appSizeMessage);
 		}
 	};
 }());

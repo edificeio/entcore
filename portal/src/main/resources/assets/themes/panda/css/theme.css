@@ -216,6 +216,12 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
+nav.vertical ul li ul {
+  display: none;
+}
+nav.vertical ul li.selected ul {
+  display: block;
+}
 .navbar {
   height: 40px;
 }
@@ -274,14 +280,33 @@ nav.horizontal a {
   border-top-left-radius: 0;
 }
 .list-view ul,
-.list-view header {
+.list-view header,
+.list-view h2 {
   display: none;
 }
 .list-view table {
   width: 100%;
 }
+.list-view table tr.overline {
+  border-bottom: none;
+}
+.list-view table tr.underline {
+  border-top: none;
+  padding-bottom: 15px;
+}
+.list-view table tr.underline td {
+  vertical-align: bottom;
+}
+.list-view table tr.underline:hover {
+  background: transparent;
+}
 .list-view table td {
   cursor: pointer;
+}
+.list-view table td h2 {
+  clear: both;
+  margin-top: 15px;
+  margin-bottom: 0;
 }
 .list-view table td img {
   vertical-align: middle;
@@ -347,7 +372,8 @@ section .contextual-buttons .action-buttons {
     width: 100%;
   }
 }
-section .contextual-buttons .action-buttons button {
+section .contextual-buttons .action-buttons button,
+section .contextual-buttons .action-buttons a.button {
   vertical-align: top;
 }
 section .contextual-buttons .display-buttons {
@@ -669,6 +695,7 @@ button {
   border-radius: 10px;
   font-size: 23px;
   border: 1px solid #eee;
+  line-height: 40px;
   -o-transition: height 150ms ease;
   -moz-transition: height 150ms ease;
   -webkit-transition: height 150ms ease;
@@ -680,6 +707,7 @@ a.button:hover,
 button:hover {
   background: #3889c1;
   height: 50px;
+  line-height: 50px;
   -o-transition: height 150ms ease;
   -moz-transition: height 150ms ease;
   -webkit-transition: height 150ms ease;
@@ -895,7 +923,7 @@ nav.horizontal a:hover {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
-.icons-view a {
+.icons-view li a {
   text-decoration: none;
   color: #888;
   font-size: 1em;
@@ -925,6 +953,9 @@ nav.horizontal a:hover {
   -webkit-transition: background 150ms ease;
   transition: background 150ms ease;
 }
+.list-view table tr td.container-cell {
+  padding: 0px;
+}
 .list-view table tr td {
   padding: 5px;
 }
@@ -933,7 +964,34 @@ nav.horizontal a:hover {
   color: #cccccc;
   padding-left: 10px;
 }
-.list-view table tr:hover {
+.list-view table tr td h2 {
+  font-size: 14px;
+  background: #eee;
+  border: 1px solid #ccc;
+  font-weight: normal;
+  padding: 5px;
+}
+.list-view table tr td a {
+  font-size: 1em;
+}
+.list-view table tr td a {
+  margin: 3px;
+}
+.list-view table tr td .action-cell {
+  margin-top: 20px;
+}
+.list-view table tr td ul {
+  margin-top: 0px;
+  marginl-eft: 0px;
+  padding-left: 0px;
+}
+.list-view table tr td ul li {
+  font-size: 12px;
+  list-style-type: none;
+  background: #fff;
+  padding: 5px;
+}
+.list-view table tbody tr:hover {
   background: #ebf4f9;
   -o-transition: banckground 150ms ease;
   -moz-transition: banckground 150ms ease;

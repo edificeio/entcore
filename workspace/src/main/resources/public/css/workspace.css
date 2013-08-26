@@ -1,11 +1,5 @@
 /*---------- GENERAL -----------*/
-@font-face {
-	font-family: 'KGJune';
-	src: url('font/KGJuneBug.ttf') format('truetype');
-	font-weight: normal;
-	font-style: normal;
 
-}
 header{
 	width:20%;
 }
@@ -18,20 +12,7 @@ body {
 }
 
 /*---------- MENUS -----------*/
-.workspace nav ul {
-	width: 200px;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-.workspace nav ul li, .button{
-	background-color:#FBFBFB;
-	border : 1px #CCC solid;
-	border-radius:10px;
-	margin : 10px 5px 0px 5px;
-	height: 35px;
-	padding: 5px;
-}
+
 .button{
 	font-family: KGJune, sans-serif;
 	font-size:1.8em;
