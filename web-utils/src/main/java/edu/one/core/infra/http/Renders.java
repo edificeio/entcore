@@ -101,6 +101,10 @@ public class Renders {
 		request.response().setStatusCode(401).end();
 	}
 
+	public static void notFound(HttpServerRequest request) {
+		request.response().setStatusCode(404).end();
+	}
+
 	public static void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
 		if (error != null) {

@@ -70,6 +70,10 @@ public class WorkspaceService extends Controller {
 							public void handle(Message<JsonObject> res) {
 								if (res  != null && res.body() != null &&
 										"ok".equals(res.body().getString("status"))) {
+									if (res.body().getObject("result") == null) {
+										notFound(request);
+										return;
+									}
 									JsonArray shared = res.body().getObject("result").getArray("shared");
 									List<String> checked = new ArrayList<>();
 									if (shared != null && shared.size() > 0) {
