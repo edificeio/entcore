@@ -69,6 +69,14 @@ i[role=doc-large]{
 	.icon(doc-large, 135px);
 }
 
+i[role=xls-large]{
+	.icon(xls-large, 135px);
+}
+
+i[role=folder-large]{
+	.icon(folder-large, 135px);
+}
+
 i[role=doc]{
 	.icon(doc, 32px);
 }
@@ -284,16 +292,21 @@ nav.horizontal{
 				border-top-right-radius: 10px;
 			}
 		}
-
+		tbody{
+			tr:nth-child(4n+1), tr:nth-child(4n+2){
+				background: @light-blue;
+			}
+		}
 		tr{
 			border-top: 1px solid @medium-grey;
 			background: transparent;
-			.run-transition(background);
 			td.container-cell{
 				padding: 0px;
 			}
 			td{
 				padding: 5px;
+				font-size: 12px;
+
 				em{
 					font-size: 13px;
 					color: @medium-grey;
@@ -309,11 +322,11 @@ nav.horizontal{
 				}
 
 				a{
-					font-size: 1em;
+					margin: 5px;
 				}
 
-				a{
-					margin: 3px;
+				a.button{
+					font-size: 1.3em;
 				}
 
 				.action-cell{
@@ -328,15 +341,11 @@ nav.horizontal{
 					li{
 						font-size: 12px;
 						list-style-type: none;
-						background: #fff;
 						padding: 5px;
+						background: #fafafa;
 					}
 				}
 			}
-		}
-		tbody tr:hover{
-			background: @light-blue;
-			.run-transition(banckground);
 		}
 	}
 }

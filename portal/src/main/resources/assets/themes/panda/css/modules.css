@@ -297,12 +297,6 @@ nav.horizontal a {
 .list-view table tr.underline td {
   vertical-align: bottom;
 }
-.list-view table tr.underline:hover {
-  background: transparent;
-}
-.list-view table td {
-  cursor: pointer;
-}
 .list-view table td h2 {
   clear: both;
   margin-top: 15px;
@@ -322,6 +316,7 @@ nav.horizontal a {
   float: left;
   display: block;
   width: 1;
+  margin: 10px;
   margin-left: 0;
   padding: 10px;
   list-style-type: none;
@@ -343,13 +338,23 @@ nav.horizontal a {
   margin-right: auto;
   cursor: pointer;
 }
+.icons-view li input[type=checkbox] {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
 .icons-view li em {
   display: none;
 }
-.icons-view a {
+.icons-view li a {
   display: block;
   text-align: center;
   margin: 10px;
+  width: 100%;
+  position: relative;
+}
+.icons-view li:nth-child(3n + 4) {
+  clear: left;
 }
 section .contextual-buttons .action-buttons {
   box-sizing: -webkit-border-box;
@@ -364,7 +369,7 @@ section .contextual-buttons .action-buttons {
 }
 @media screen and (min-width: 720px) {
   section .contextual-buttons .action-buttons {
-    width: 65.33333333333333%;
+    width: 81.66666666666666%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -389,7 +394,7 @@ section .contextual-buttons .display-buttons {
 }
 @media screen and (min-width: 720px) {
   section .contextual-buttons .display-buttons {
-    width: 32.666666666666664%;
+    width: 16.333333333333332%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -613,6 +618,30 @@ i[role=doc-large] {
   height: 135px;
   width: 135px;
   background: url("../img/icons/doc-large.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=xls-large] {
+  height: 135px;
+  width: 135px;
+  background: url("../img/icons/xls-large.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=folder-large] {
+  height: 135px;
+  width: 135px;
+  background: url("../img/icons/folder-large.png") no-repeat center;
   display: block;
   box-sizing: -webkit-border-box;
   box-sizing: -moz-border-box;
@@ -945,19 +974,20 @@ nav.horizontal a:hover {
 .list-view table thead tr:first-child th:last-child {
   border-top-right-radius: 10px;
 }
+.list-view table tbody tr:nth-child(4n+1),
+.list-view table tbody tr:nth-child(4n+2) {
+  background: #ebf4f9;
+}
 .list-view table tr {
   border-top: 1px solid #cccccc;
   background: transparent;
-  -o-transition: background 150ms ease;
-  -moz-transition: background 150ms ease;
-  -webkit-transition: background 150ms ease;
-  transition: background 150ms ease;
 }
 .list-view table tr td.container-cell {
   padding: 0px;
 }
 .list-view table tr td {
   padding: 5px;
+  font-size: 12px;
 }
 .list-view table tr td em {
   font-size: 13px;
@@ -972,10 +1002,10 @@ nav.horizontal a:hover {
   padding: 5px;
 }
 .list-view table tr td a {
-  font-size: 1em;
+  margin: 5px;
 }
-.list-view table tr td a {
-  margin: 3px;
+.list-view table tr td a.button {
+  font-size: 1.3em;
 }
 .list-view table tr td .action-cell {
   margin-top: 20px;
@@ -988,13 +1018,6 @@ nav.horizontal a:hover {
 .list-view table tr td ul li {
   font-size: 12px;
   list-style-type: none;
-  background: #fff;
   padding: 5px;
-}
-.list-view table tbody tr:hover {
-  background: #ebf4f9;
-  -o-transition: banckground 150ms ease;
-  -moz-transition: banckground 150ms ease;
-  -webkit-transition: banckground 150ms ease;
-  transition: banckground 150ms ease;
+  background: #fafafa;
 }

@@ -102,12 +102,7 @@ nav.horizontal{
 				vertical-align: bottom;
 			}
 		}
-		tr.underline:hover{
-			background: transparent;
-		}
 		td{
-			cursor: pointer;
-
 			h2{
 				clear: both;
 				margin-top: 15px;
@@ -129,10 +124,12 @@ nav.horizontal{
 		.cell;
 		.three;
 
+		margin: 10px;
 		margin-left: 0;
 		padding: 10px;
 
 		list-style-type: none;
+
 		img, i{
 			float: none !important;
 			margin-left: auto;
@@ -140,15 +137,27 @@ nav.horizontal{
 			cursor: pointer;
 		}
 
+		input[type=checkbox]{
+			position: absolute;
+			left: 10px;
+			top: 10px;
+		}
+
 		em{
 			display: none;
 		}
+
+		a{
+			display: block;
+			text-align: center;
+			margin: 10px;
+			width: 100%;
+			position: relative;
+		}
 	}
 
-	a{
-		display: block;
-		text-align: center;
-		margin: 10px;
+	li:nth-child(3n + 4){
+		clear: left;
 	}
 }
 
@@ -156,7 +165,7 @@ section{
   .contextual-buttons{
     .action-buttons{
       .cell;
-      .eight;
+      .ten;
       line-height: 50px;
 
       margin-bottom: 10px;
@@ -166,7 +175,7 @@ section{
     }
     .display-buttons{
       .cell;
-      .four;
+      .two;
       float: right;
       text-align: right;
 

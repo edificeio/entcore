@@ -23,15 +23,19 @@
 							<ul class="base-folders">
 							</ul>
 						</li>
-						<li><a href="">{{#i18n}}workspace.shared.documents{{/i18n}}</a></li>
+						<li><a href="/documents/shared" call="documents">{{#i18n}}workspace.shared.documents{{/i18n}}</a></li>
 						<li>
 							<a call="rack" href="/rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a>
 						</li>
 						<li>
 							<a call="trash" href="">{{#i18n}}workspace.trash{{/i18n}}</a>
 						</li>
-						<li><a call="sendRack" href="/rack">{{#i18n}}workspace.send.rack{{/i18n}}</a></li>
+						<li>
+							<a call="sendRack" href="/rack">{{#i18n}}workspace.send.rack{{/i18n}}</a>
+						</li>
+
 					</ul>
+					<a>Créer un dossier</a>
 				</nav>
 			</section>
 			<section class="eight cell list-view list">
@@ -48,6 +52,9 @@
 						</a>
 						<a call="moveOrCopy" href="/documents/copy" class="button">
 							{{#i18n}}workspace.copy{{/i18n}}
+						</a>
+						<a call="openShare" href="/documents/share" class="button">
+							{{#i18n}}workspace.share{{/i18n}}
 						</a>
 					</div>
 					<div class="display-buttons">

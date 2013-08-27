@@ -4,6 +4,9 @@ var tools = (function(){
 			var types = {
 				'doc': function(type){
 					return type.indexOf('officedocument') !== -1 && type.indexOf('wordprocessing') !== -1;
+				},
+				'xls': function(type){
+					return type.indexOf('officedocument') !== -1 && type.indexOf('spreadsheet') !== -1;
 				}
 			}
 
@@ -41,19 +44,18 @@ var navigation = (function(){
 	var updater = {
 		redirect: function(action){
 			$('nav.vertical a, nav.vertical li').removeClass('selected');
-			var current = $('nav.vertical a[call=' + action + ']');
+			var current = $('nav.vertical a[href="' + action + '"]');
 			current.addClass('selected');
 			current.parent().addClass('selected');
+			current.parent('li').parent('ul').parent('li').addClass('selected')
 		}
 	};
 
 	$(document).ready(function(){
-		$('nav.vertical a').on('click', function(){
-			updater.redirect($(this).attr('call'));
+		$('nav.vertical').on('click', 'a', function(){
+			updater.redirect($(this).attr('href'));
 		})
 	});
-
-	updater.redirect('documents');
 
 	return updater;
 }());
@@ -79,12 +81,15 @@ var workspace = function(){
 							</thead>\
 							<tbody>\
 								{{#folders}}\
-								<tr>\
+								<tr class="overline">\
 									<td></td>\
 									<td><i role="folder"></i></td>\
-									<td><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></td>\
+									<td><strong><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
 									<td></td>\
 									<td></td>\
+								</tr>\
+								<tr class="underline">\
+									<td colspan="5"></td>\
 								</tr>\
 								{{/folders}}\
 								{{#documents}}\
@@ -94,7 +99,7 @@ var workspace = function(){
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 									<td>\
-										<a href="/share?id={{_id}}" class="magnet-right">{{#i18n}}workspace.share{{/i18n}}</a>\
+										<a href="/share?id={{_id}}" class="right-magnet">{{#i18n}}workspace.share{{/i18n}}</a>\
 									</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
@@ -104,7 +109,7 @@ var workspace = function(){
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" call="hideComment">X</i></h2>\
 										<ul class="row">\
 										{{#comments}}\
-											<li class="twelve cell">{{author}} - {{#formatDate}}{{posted}}{{/formatDate}} - <span>{{{comment}}}</span></li>\
+											<li class="twelve cell"><em>{{author}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
 										{{/comments}}\
 										</ul>\
 									</td>\
@@ -112,13 +117,22 @@ var workspace = function(){
 								{{/documents}}\
 							</tbody>\
 						</table>\
-						<header></header>\
+						<header>&nbsp;</header>\
 						<ul>\
 						{{#folders}}\
-						<li><i role="folder-large"></i><a>{{name}}</a></li>\
+						<li>\
+							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+						</li>\
 						{{/folders}}\
 						{{#documents}}\
-						<li><i role="{{#metadata}}{{content-type}}{{/metadata}}-large"></i><a>{{name}}</a></li>\
+						<li>\
+							<a href="/document/{{_id}}">\
+								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large"></i>\
+								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
+							</a>\
+							<a href="/document/{{_id}}">{{name}}</a>\
+						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
 						</ul>',
@@ -352,11 +366,11 @@ var workspace = function(){
 
 			showComment : function(o) {
 				$(o.target).parent().find('ul, h2').show();
-				messenger.requestResize();
+				messenger.requireResize();
 			},
 			hideComment: function(o){
 				$(o.target).parent().parent().find('ul, h2').hide();
-				messenger.requestResize();
+				messenger.requireResize();
 			},
 			remove : function (o) {
 				var files = [];
@@ -427,5 +441,6 @@ $(document).ready(function(){
 			html += '<li><a call="documents" href="/documents/' + data[i] + '">' + data[i] + "</a></li>";
 		}
 		$(".base-folders").html(html);
-});
+		navigation.redirect('/documents?hierarchical=true');
+	});
 });
