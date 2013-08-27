@@ -21,11 +21,9 @@ public class UserBook extends Server {
 		super.start();
 		neo = new Neo(vertx.eventBus(),log);
 		final Renders render = new Renders(container);
-		userBookData= new JsonObject(vertx.fileSystem().readFileSync("userBook-data.json").toString());
+		userBookData= config.getObject("user-book-data");
 		final JsonArray hobbies = userBookData.getArray("hobbies");
-		final String workspaceUrl = config.getString("workspace-url", "http://localhost:8011");
-		final int port = config.getInteger("workspace-port", 8011);
-		final HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(port);
+		final HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(8011);
 
 		rm.get("/mon-compte", new Handler<HttpServerRequest>() {
 			@Override
@@ -47,7 +45,7 @@ public class UserBook extends Server {
 							+ "n.ENTPersonNomAffichage='" + request.params().get("init") + "' "
 							+ "RETURN n.ENTPersonIdentifiant",request.response());
 				} else if (request.params().contains("id")){
-					render.renderView(request, userBookData);
+					render.renderView(request, config);
 				}
 			}
 		});

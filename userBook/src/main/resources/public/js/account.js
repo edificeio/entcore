@@ -102,7 +102,7 @@ var account = function(){
 				}).done(function (data) {
 					if (data.status == "ok") {
 						account.action.editUserBookInfo("/api/edit-userbook-info?id=" + userId + "&prop=picture&value=" + data._id);
-						$('img[class="avatar"]')[0].setAttribute("src", "http://localhost:8011/document/" + data._id);
+						$('img[class="avatar"]')[0].setAttribute("src", "/document/" + data._id);
 					}
 				}).error(function (data) { console.log(data); });
 			},
@@ -112,7 +112,7 @@ var account = function(){
 					type: 'GET'
 				}).done(function (data) {
 					if (data !== "") {
-						$('img[class="avatar"]')[0].setAttribute("src", "http://localhost:8011/document/" + photoId);
+						$('img[class="avatar"]')[0].setAttribute("src", "/document/" + photoId);
 					}
 				}).error(function (data) { console.log(data); });
 			}
