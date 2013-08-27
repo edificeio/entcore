@@ -213,7 +213,7 @@ var workspace = function(){
 							<input type="text" name="name" />\
 							<label>{{#i18n}}workspace.document.file{{/i18n}}</label>\
 							<input type="file" name="file" />\
-							<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
+							<input call="sendFile" type="button" style="clear:both" value="{{#i18n}}upload{{/i18n}}" />\
 							</form>',
 
 			sendRack : '<form id="upload-form" method="post" action="/rack" enctype="multipart/form-data">\
@@ -235,7 +235,7 @@ var workspace = function(){
 			moveOrCopyDocuments : '<form action="{{action}}">\
 								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
 								<input type="text" name="folder" />\
-								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+								<input call="moveOrCopyDocuments" type="button" style="clear:both" value="{{#i18n}}workspace.valid{{/i18n}}" />\
 							</form>'
 		},
 		action : {
@@ -323,6 +323,7 @@ var workspace = function(){
 				if ("/rack" === action) {
 					action += '/' + form.children('input[name=to]').val();
 				}
+				navigation.closeLightbox();
 				$.ajax({
 					url: action + '?' + form.serialize(),
 					type: 'POST',
@@ -384,6 +385,7 @@ var workspace = function(){
 			},
 
 			sendComment : function(o) {
+				navigation.closeLightbox();
 				var form = $(o.target).parents("form"),
 					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
 				$.post(form.attr("action"), data)
@@ -404,6 +406,7 @@ var workspace = function(){
 				messenger.requireResize();
 			},
 			remove : function (o) {
+				navigation.closeLightbox()
 				var files = [];
 				$(":checkbox:checked").each(function(i) {
 					var obj = $(this);
@@ -430,6 +433,7 @@ var workspace = function(){
 			},
 
 			moveOrCopyDocuments : function(o) {
+				navigation.closeLightbox()
 				var ids = "",
 					form = $(o.target).parents("form"),
 					action = form.attr("action"),
