@@ -430,3 +430,16 @@ header h2 {
 .clear {
   clear: both;
 }
+.lightbox-window form {
+  padding: 15px;
+}
+.lightbox-window form input,
+.lightbox-window form label {
+  display: block;
+  float: left;
+  width: 150px;
+}
+.lightbox-window form label {
+  clear: left;
+  font-size: 12px;
+}

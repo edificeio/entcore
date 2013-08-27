@@ -29,6 +29,24 @@ var messenger = (function(){
 		},
 		resize: function(message){
 			$('#applications').height(message.data.height);
+		},
+		lightbox: function(message){
+			//We can't put a black background on the whole view (iframe + container) without killing the positioning,
+			//therefore we're dropping the opacity of the elements and darkening the background to
+			//get the same result
+			$('header').addClass('lightbox-header');
+			$('body').addClass('lightbox-body');
+			$('section.main').addClass('lightbox-main');
+			var close = this.closeLightbox;
+			$('body').one('click', function(){
+				close();
+				$('iframe').attr('src', $('iframe').attr('src'));
+			});
+		},
+		closeLightbox: function(message){
+			$('header').removeClass('lightbox-header');
+			$('body').removeClass('lightbox-body');
+			$('section.main').removeClass('lightbox-main');
 		}
 	};
 

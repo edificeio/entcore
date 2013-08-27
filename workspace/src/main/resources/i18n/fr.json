@@ -26,5 +26,9 @@
 	"workspace.valid" : "Appliquer",
 	"workspace.document.delete" : "Supprimer un document",
 	"workspace.document.get" : "Lire un document",
-	"workspace.share" : "Partager"
+	"workspace.share" : "Partager",
+	"upload": "Envoyer",
+	"workspace.comment": "Commenter",
+	"workspace.contrib": "Contribuer",
+	"workspace.read": "Consulter"
 }

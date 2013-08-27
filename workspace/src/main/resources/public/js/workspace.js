@@ -48,6 +48,16 @@ var navigation = (function(){
 			current.addClass('selected');
 			current.parent().addClass('selected');
 			current.parent('li').parent('ul').parent('li').addClass('selected')
+		},
+		openLightbox: function(){
+			$('.lightbox-backdrop').fadeIn();
+			$('.lightbox-window').fadeIn();
+			messenger.requireLightbox();
+		},
+		closeLightbox: function(){
+			$('.lightbox-backdrop').fadeOut();
+			$('.lightbox-window').fadeOut();
+			messenger.closeLightbox();
 		}
 	};
 
@@ -97,14 +107,13 @@ var workspace = function(){
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
+									<td></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
-									<td>\
-										<a href="/share?id={{_id}}" class="right-magnet">{{#i18n}}workspace.share{{/i18n}}</a>\
-									</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
 									<td colspan="5" class="container-cell">\
 										<a call="comment" href="{{_id}}" class="button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+										<a href="/share?id={{_id}}" call="share" class="button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" call="hideComment">X</i></h2>\
 										<ul class="row">\
@@ -267,6 +276,16 @@ var workspace = function(){
 					messenger.requireResize();
 				});
 			},
+			share: function(o){
+				$.get(o.url, function(data){
+					navigation.openLightbox();
+					$('#form-window').html(data);
+					$('#form-window table').addClass('monoline');
+					$('.lightbox-backdrop').one('click', function(){
+						navigation.closeLightbox();
+					})
+				})
+			},
 			trash : function (o) {
 				$.get("/documents/Trash").done(function(documents) {
 					$.get("/rack/documents/Trash").done(function(rack) {
@@ -279,12 +298,20 @@ var workspace = function(){
 
 			addDocument : function (o) {
 				$('#form-window').html(app.template.render("addDocument", {}));
+				navigation.openLightbox();
 				messenger.requireResize();
+				$('.lightbox-backdrop').one('click', function(){
+					navigation.closeLightbox();
+				})
 			},
 
 			sendRack : function(o){
 				$('#form-window').html(app.template.render("sendRack", {}));
+				navigation.openLightbox();
 				messenger.requireResize();
+				$('.lightbox-backdrop').one('click', function(){
+					navigation.closeLightbox();
+				})
 			},
 
 			sendFile : function(o) {
@@ -348,13 +375,16 @@ var workspace = function(){
 
 			comment : function(o) {
 				$('#form-window').html(app.template.render("comment", { id : o.url }));
+				navigation.openLightbox();
 				messenger.requireResize();
+				$('.lightbox-backdrop').one('click', function(){
+					navigation.closeLightbox();
+				})
 			},
 
 			sendComment : function(o) {
 				var form = $(o.target).parents("form"),
 					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
-				console.log(data);
 				$.post(form.attr("action"), data)
 				.done(function (data) {
 					location.reload(true);
@@ -391,7 +421,11 @@ var workspace = function(){
 
 			moveOrCopy : function(o) {
 				$('#form-window').html(app.template.render("moveOrCopyDocuments", { action : o.url}));
+				navigation.openLightbox();
 				messenger.requireResize();
+				$('.lightbox-backdrop').one('click', function(){
+					navigation.closeLightbox();
+				})
 			},
 
 			moveOrCopyDocuments : function(o) {

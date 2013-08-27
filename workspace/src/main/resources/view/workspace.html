@@ -13,6 +13,7 @@
 		<script type="text/javascript" src="http://localhost:8017/public/js/iframe.js"></script>
 	</head>
 	<body class="app">
+		<section class="lightbox-backdrop"></section>
 		<div class="row" id="main">
 			<section class="four cell">
 				<h1><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</h1>
@@ -53,9 +54,6 @@
 						<a call="moveOrCopy" href="/documents/copy" class="button">
 							{{#i18n}}workspace.copy{{/i18n}}
 						</a>
-						<a call="openShare" href="/documents/share" class="button">
-							{{#i18n}}workspace.share{{/i18n}}
-						</a>
 					</div>
 					<div class="display-buttons">
 						<i call="iconsView" role="show-icons"></i>
@@ -64,7 +62,10 @@
 				</nav>
 				<div class="workspace row">
 					<div class="mod">
-						<div id="form-window"></div>
+
+						<section class="lightbox-window">
+							<div id="form-window" class="flowing"></div>
+						</section>
 						<article id="list">
 
 						</article>

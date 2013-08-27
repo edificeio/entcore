@@ -51,6 +51,24 @@ var messenger = (function(){
 			};
 
 			send(appSizeMessage);
+		},
+		requireLightbox: function(){
+			var appSizeMessage = {
+				name: 'lightbox',
+				data: {
+				}
+			};
+
+			send(appSizeMessage);
+		},
+		closeLightbox: function(){
+			var appSizeMessage = {
+				name: 'closeLightbox',
+				data: {
+				}
+			};
+
+			send(appSizeMessage);
 		}
 	};
 }());

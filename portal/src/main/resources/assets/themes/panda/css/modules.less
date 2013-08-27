@@ -96,6 +96,7 @@ i[role=link]{
 a.button{
 	padding-left: 7px;
 	padding-right: 7px;
+	padding-top: 0px !important;
 }
 
 input[type=button], input[type=submit], a.button, button{
@@ -277,6 +278,16 @@ nav.horizontal{
 }
 
 .list-view{
+	table.monoline{
+		tbody{
+			tr:nth-child(even){
+				background: @light-blue;
+			}
+			tr:nth-child(odd){
+				background: @ultra-light-grey;
+			}
+		}
+	}
 	table{
 		.rounded-corners(10px);
 		border-collapse: collapse;
