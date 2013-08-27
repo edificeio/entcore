@@ -98,9 +98,9 @@ public class UserBook extends Server {
 							personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
 								+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
 							break;
-						case "PERSEDUCNAT":
-							personRequest = personRequestStart + "MATCH (n)-[USERBOOK]->(u),(u)-[r]->(c) WHERE has(m.ENTPersonLogin) "
-								+ "AND has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
+						case "ENSEIGNANT":
+							personRequest = personRequestStart + "MATCH (n)-[USERBOOK]->(u),(u)-[r]->(c) "
+								+ "WHERE has(n.ENTPersonIdentifiant) AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 								+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.ENTPersonIdentifiant as id, "
 								+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
 								+ "u.health? as health, c.category? as category, c.values? as values;";
@@ -119,9 +119,8 @@ public class UserBook extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				if (request.params().contains("name")){
-					neo.send("START n=node:node_auto_index(type='CLASSE'),m=node:node_auto_index(type='ELEVE')"
-						+ " MATCH n<-[APPARTIENT]-m WHERE HAS(n.ENTGroupeNom) AND"
-						+ " n.ENTGroupeNom='" + request.params().get("name") + "' RETURN"
+					neo.send("START n=node:node_auto_index(type='CLASSE') MATCH (n)<-[APPARTIENT]-(m) WHERE HAS(n.ENTGroupeNom) AND"
+						+ " n.ENTGroupeNom='" + request.params().get("name") + "' AND (m.type='ENSEIGNANT' OR m.type='ELEVE') RETURN"
 						+ " m.type as type, m.ENTPersonIdentifiant as id,m.ENTPersonNomAffichage as displayName"
 						, request.response());
 				}
