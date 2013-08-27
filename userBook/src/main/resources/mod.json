@@ -4,7 +4,8 @@
 	"port": 8101,
 	"mode": "dev",
 	"auto-redeploy": true,
-	"workspace-url": "http://localhost:8011",
+	"workspace-url": "localhost",
+	"workspace-port":8011,
 	"user-book-data":{
 		"picture": "no-avatar.jpg",
 		"hobbies":[

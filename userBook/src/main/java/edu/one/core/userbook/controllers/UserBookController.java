@@ -1,0 +1,200 @@
+package edu.one.core.userbook.controllers;
+
+import edu.one.core.infra.Controller;
+import edu.one.core.infra.Neo;
+import edu.one.core.infra.http.HttpClientUtils;
+import edu.one.core.infra.security.UserUtils;
+import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.security.SecuredAction;
+import java.util.Map;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.http.HttpClient;
+import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+
+
+public class UserBookController extends Controller{
+
+	private Neo neo;
+	private JsonObject config;
+	private JsonObject userBookData;
+	private HttpClient client;
+
+	public UserBookController(Vertx vertx, Container container,
+		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
+			super(vertx, container, rm, securedActions);
+			this.neo = new Neo(vertx.eventBus(),log);
+			this.config = config;
+			userBookData= config.getObject("user-book-data");
+			client = vertx.createHttpClient()
+							.setHost(config.getString("workspace-url"))
+							.setPort(config.getInteger("workspace-port"));
+		}
+
+	@SecuredAction("userbook.authent")
+	public void monCompte(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				initUserBookNode(user.getUserId());
+			}
+		});
+		renderView(request, config);
+	}
+
+	private void initUserBookNode(String userId){
+		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
+			+ "CREATE (m {picture:'" + userBookData.getString("picture") + "',"
+			+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
+		JsonArray hobbies = userBookData.getArray("hobbies");
+		for (Object hobby : hobbies) {
+			JsonObject jo = (JsonObject)hobby;
+			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
+				+ "type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code")
+				+ "', values:''}), m-[:PUBLIC]->p");
+		}
+	}
+
+	@SecuredAction("userbook.authent")
+	public void annuaire(HttpServerRequest request) {
+		renderView(request);
+	}
+
+	@SecuredAction("userbook.authent")
+	public void search(HttpServerRequest request) {
+		String neoRequest = "START n=node:node_auto_index('type:ELEVE OR type:ENSEIGNANT') ";
+		if (request.params().contains("name")){
+			String[] names = request.params().get("name").split(" ");
+			String displayNameRegex = (names[0].length() > 3) ? "(?i)(.*" + names[0].substring(0,4) : "(?i)(.*" + names[0];
+			for (int i = 1; i < names.length; i++) {
+				displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
+			}
+			displayNameRegex += ".*)";
+			neoRequest += " MATCH (n)-[USERBOOK]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
+		} else if (request.params().contains("class")){
+			neoRequest += ", m=node:node_auto_index(type='CLASSE') MATCH m<-[APPARTIENT]-n WHERE "
+				+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
+		}
+		neoRequest += " RETURN distinct n.id as id, "
+			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, n.type as type";
+		neo.send(neoRequest, request.response());
+	}
+
+	@SecuredAction("userbook.authent")
+	public void person(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				String personRequest = "";
+				String personRequestStart = "START n=node:node_auto_index(id='" + request.params().get("id") + "')";
+				String personRequestReturn= ",(n)-[USERBOOK]->(u),(u)-[PUBLIC]->(c) WHERE has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
+						+ "n.id as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
+						+ "m.id as relatedId,m.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+						+ "u.health? as health, c.category? as category, c.values? as values;";
+
+				switch(request.params().get("type")){
+					case "ELEVE":
+						personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
+							+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
+						break;
+					case "ENSEIGNANT":
+						personRequest = personRequestStart + " MATCH (n)-[USERBOOK]->(u),(u)-[PUBLIC]->(c) "
+							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
+							+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+							+ "u.health? as health, c.category? as category, c.values? as values;";
+						break;
+					case "PERSRELELEVE":
+						personRequest = personRequestStart + ",m=node:node_auto_index(type='ELEVE') "
+							+ "MATCH (n)<-[EN_RELATION_AVEC]-(m)" + personRequestReturn;
+						break;
+				}
+				neo.send(personRequest,request.response());
+			}
+		});
+
+	}
+
+	@SecuredAction("userbook.authent")
+	public void account(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				String personRequest = "";
+				String personRequestStart = "START n=node:node_auto_index(id='" + user.getUserId() + "')";
+				String personRequestReturn= ",(n)-[USERBOOK]->(u),(u)-[r]->(c) WHERE has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
+						+ "n.id as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
+						+ "m.id as relatedId,m.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+						+ "u.health? as health, c.category? as category, c.values? as values;";
+
+				switch(user.getType()){
+					case "ELEVE":
+						personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
+							+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
+						break;
+					case "ENSEIGNANT":
+						personRequest = personRequestStart + "MATCH (n)-[USERBOOK]->(u),(u)-[r]->(c) "
+							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
+							+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+							+ "u.health? as health, c.category? as category, c.values? as values;";
+						break;
+					case "PERSRELELEVE":
+						personRequest = personRequestStart + ",m=node:node_auto_index(type='ELEVE') "
+							+ "MATCH (n)<-[EN_RELATION_AVEC]-(m)" + personRequestReturn;
+						break;
+				}
+				neo.send(personRequest,request.response());
+			}
+		});
+	}
+
+	@SecuredAction("userbook.authent")
+	public void myClass(HttpServerRequest request) {
+		if (request.params().contains("name")){
+			neo.send("START n=node:node_auto_index(type='CLASSE') MATCH (n)<-[APPARTIENT]-(m) WHERE HAS(n.ENTGroupeNom) AND"
+				+ " n.ENTGroupeNom='" + request.params().get("name") + "' AND (m.type='ENSEIGNANT' OR m.type='ELEVE') RETURN"
+				+ " m.type as type, m.id as id,m.ENTPersonNomAffichage as displayName"
+				, request.response());
+		}
+	}
+
+	@SecuredAction("userbook.authent")
+	public void editUserBookInfo(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				String neoRequest = "START n=node:node_auto_index(id='" + user.getUserId() + "') MATCH (n)-[USERBOOK]->(m)";
+				if (request.params().contains("category")){
+					neoRequest += ", (m)-->(p) WHERE has(p.category) "
+					+ "AND p.category='" + request.params().get("category") + "' "
+					+ "SET p.values='" + request.params().get("values") + "'";
+				} else {
+					neoRequest += " SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
+				}
+				neo.send(neoRequest, request.response());
+			}
+		});
+	}
+
+	@SecuredAction("userbook.authent")
+	public void setVisibility(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				neo.send("START n=node_auto_index(id='') MATCH (n)-[USERBOOK]->(m),(m)-[s]->(p) "
+					+ "WHERE p.category='"+ request.params().get("category")
+					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
+					+ "RETURN n,r,m,j,p", request.response());
+			}
+		});
+	}
+
+	@SecuredAction("userbook.authent")
+	public void proxyDocument(final HttpServerRequest request) {
+		HttpClientUtils.proxy(request, client);
+	}
+
+}

@@ -77,9 +77,7 @@ var userbook = function(){
 				.done(function(data){
 					$("#people").addClass('single').removeClass('all');
 					$("div.person-small").removeClass('highlight');
-					if (data.result[0].type === 'PERSRELELEVE'){
-						$('#' + data.result[0].relatedId).addClass('highlight');
-					} else {
+					if (data.result[0].type !== 'PERSRELELEVE'){
 						$('#' + data.result[0].id).addClass('highlight');
 					}
 					$("#person").html(app.template.render('personne', personDataExtractor(data)));

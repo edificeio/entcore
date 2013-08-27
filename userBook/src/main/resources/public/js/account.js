@@ -1,5 +1,3 @@
-var userId = location.search.split('id=')[1];
-
 var account = function(){
 
 	var personDataExtractor = function(d) {
@@ -9,8 +7,7 @@ var account = function(){
 			if (d.result[obj].category !== ""){
 				hobbies.push({
 					"category":d.result[obj].category,
-					"values":d.result[obj].values,
-					"visibility":d.result[obj].relation[1]
+					"values":d.result[obj].values
 				});
 			}
 			if (d.result[obj].mood !== ""){
@@ -80,8 +77,7 @@ var account = function(){
 				})
 			},
 			setVisibility : function(o){
-				var url = o.target.form.action + '&value=' + $('#visible').val()
-					+ '&id=' + userId;
+				var url = o.target.form.action + '&value=' + $('#visible').val();
 				$('#current-visibility').html = $('#visible').val();
 				$.get(url)
 				.done(function(data){
@@ -101,7 +97,7 @@ var account = function(){
 					processData: false
 				}).done(function (data) {
 					if (data.status == "ok") {
-						account.action.editUserBookInfo("/api/edit-userbook-info?id=" + userId + "&prop=picture&value=" + data._id);
+						account.action.editUserBookInfo("/api/edit-userbook-info?prop=picture&value=" + data._id);
 						$('img[class="avatar"]')[0].setAttribute("src", "/document/" + data._id);
 					}
 				}).error(function (data) { console.log(data); });
@@ -123,21 +119,21 @@ var account = function(){
 
 function manageEditable(){
 	$('span[contenteditable="true"]').blur(function(){
-		var parameters = "?id=" + userId;
+		var parameters = "";
 		if (this.parentNode.id === "category"){
-			parameters += "&category=" + this.classList[0] + "&values=" + this.innerHTML;
+			parameters += "?category=" + this.classList[0] + "&values=" + this.innerHTML;
 		} else {
-			parameters += "&prop=" + this.parentNode.classList[0] + "&value=" + this.innerHTML;
+			parameters += "?prop=" + this.parentNode.classList[0] + "&value=" + this.innerHTML;
 		}
 		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
 	});
 	$('input[type="radio"][name="mood"]').click(function(){
-		var parameters = "?id=" + userId + "&prop=mood&value=" + this.value;
+		var parameters = "?prop=mood&value=" + this.value;
 		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
 	});
 }
 
 $(document).ready(function(){
 	account.init();
-	account.action.profile("/api/person?id=" + userId);
+	account.action.profile("/api/account");
 });
