@@ -36,6 +36,12 @@ var oneApp = {
 						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toLocaleDateString();
 						return dt;
 					};
+				},
+				'formatDateTime' : function() {
+					return function(str) {
+						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toLocaleString();
+						return dt;
+					};
 				}
 			});
 			return Mustache.render(this[name] === undefined ? name : this[name], data);

@@ -54,7 +54,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			.putNumber("date", 1)
 			.putNumber("comments", 1)
 			.putNumber("add-comment", 1);
-			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
+			mongo.find(TIMELINE_COLLECTION, sort.putObject("$query", query), null, keys,
 					offset, limit, 100, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());

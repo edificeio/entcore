@@ -6,7 +6,7 @@ var timeline = function(){
 
 			lastNotifications : '<div>\
 								{{#results}}\
-									<span>{{#date}}{{$date}}{{/date}} - {{{message}}}</span><br />\
+									<div class="panel">{{{message}}} <span class="right">{{#formatDateTime}}{{#date}}{{$date}}{{/date}}{{/formatDateTime}}</span></div><br />\
 								{{/results}}\
 								</div>'
 

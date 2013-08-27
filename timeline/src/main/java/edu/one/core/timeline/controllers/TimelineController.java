@@ -11,9 +11,9 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.security.SecuredAction;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.security.SecuredAction;
 import edu.one.core.timeline.events.DefaultTimelineEventStore;
 import edu.one.core.timeline.events.TimelineEventStore;
 
@@ -22,15 +22,17 @@ public class TimelineController extends Controller {
 	private TimelineEventStore store;
 
 	public TimelineController(Vertx vertx, Container container,
-			RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		store = new DefaultTimelineEventStore(vertx, container);
 	}
 
+	@SecuredAction("timeline.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@SecuredAction("timeline.events")
 	public void lastEvents(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
