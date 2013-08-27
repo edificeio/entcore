@@ -47,7 +47,7 @@ var admin = function(){
 				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
 			,
 			exportAuth : 'Nom,Prénom,Login,Mot de passe\n'
-				+ '{{#list}}{{lastName}},{{firstName}},{{login}},{{password}}\n'
+				+ '{{#list}}{{lastName}},{{firstName}},{{login}},{{activationCode}}\n'
 				+ '{{/list}}'
 			,
 			personnesEcole :'\

@@ -286,17 +286,19 @@ public class Directory extends Server {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String neoRequest = "";
-				if (request.params().get("id").equals("all")){
-					neoRequest = "START m=node(*) WHERE has(m.type) "
-							+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+				if (request.params().get("id").equals("all")){ // TODO filter by school
+					neoRequest = "START m=node:node_auto_index(" +
+							"'type:ELEVE OR type:PERSEDUCNAT OR type:PERSRELELEVE OR type:ENSEIGNANT') " +
+							"WHERE has(m.activationCode) "
 							+ "RETURN distinct m.id,m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, "
-							+ "m.ENTPersonLogin as login, m.ENTPersonMotDePasse as password";
+							+ "m.ENTPersonLogin as login, m.activationCode as activationCode";
 				} else {
-					neoRequest = "START n=node(*), m=node(*) MATCH n<--m WHERE has(n.id) AND n.id='" + request.params().get("id") + "' "
-							+ "AND has(m.type) AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
+					neoRequest = "START m=node:node_auto_index(id='" + request.params().get("id") + "') "
+							+ "WHERE has(m.activationCode) AND has(m.type) AND (m.type='ELEVE' "
+							+ "OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE' OR m.type='ENSEIGNANT') "
 							+ "RETURN distinct m.id,m.ENTPersonNom as lastName,"
 							+ "m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, "
-							+ "m.ENTPersonMotDePasse as password";
+							+ "m.activationCode as activationCode";
 				}
 				trace.info("Exporting auth data for " + request.params().get("id"));
 				neo.send(neoRequest, request.response());
