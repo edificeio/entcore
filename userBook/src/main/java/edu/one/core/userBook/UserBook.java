@@ -90,7 +90,7 @@ public class UserBook extends Server {
 							+ "AND n.ENTPersonIdentifiant='" + request.params().get("id") + "' "
 							+ "AND has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
 							+ "n.ENTPersonIdentifiant as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
-							+ "m.ENTPersonIdentifiant as relatedId,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+							+ "m.ENTPersonIdentifiant as relatedId,m.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
 							+ "u.health? as health, c.category? as category, c.values? as values;";
 
 					switch(request.params().get("type")){

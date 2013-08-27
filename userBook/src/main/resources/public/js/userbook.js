@@ -4,6 +4,7 @@ var userbook = function(){
 	var personDataExtractor = function(d) {
 		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
 		var hobbies = [];
+		var related = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
 				hobbies.push({"category":d.result[obj].category,"values":d.result[obj].values});
@@ -14,11 +15,11 @@ var userbook = function(){
 				jo['motto'] = d.result[obj].motto;
 			}
 			if (d.result[obj].relatedName !== ""){
-				jo['relatedName'] = d.result[obj].relatedName;
-				jo['relatedId'] = d.result[obj].relatedId;
+				related.push({"relatedName":d.result[obj].relatedName, "relatedId":d.result[obj].relatedId,"relatedType":d.result[obj].relatedType});
 			}
 		}
 		jo['list'] = hobbies;
+		jo['relations'] = related;
 		return jo;
 	};
 
@@ -47,7 +48,8 @@ var userbook = function(){
 				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
 				<img src="/public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}</span>\
-				<a href="/api/person?id={{relatedId}}&type=PERSRELELEVE">{{relatedName}}</a>\
+				{{#relations}}<p><a href="/api/person?id={{relatedId}}&type={{relatedType}}" call="person">\
+				{{relatedName}}</a></p>{{/relations}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
 				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}">\
@@ -75,7 +77,11 @@ var userbook = function(){
 				.done(function(data){
 					$("#people").addClass('single').removeClass('all');
 					$("div.person-small").removeClass('highlight');
-					$('#' + data.result[0].id).addClass('highlight');
+					if (data.result[0].type === 'PERSRELELEVE'){
+						$('#' + data.result[0].relatedId).addClass('highlight');
+					} else {
+						$('#' + data.result[0].id).addClass('highlight');
+					}
 					$("#person").html(app.template.render('personne', personDataExtractor(data)));
 				})
 				.error(function(data){app.notify.error(data.status);})
