@@ -44,6 +44,7 @@ public class BE1DImporter {
 	private final IdGenerator idGenerator;
 	private final LoginGenerator loginGenerator;
 	private final DisplayNameGenerator displayNameGenerator;
+	private final Vertx vertx;
 
 	class Tuple<T> {
 		private final String s1;
@@ -99,6 +100,7 @@ public class BE1DImporter {
 
 	public BE1DImporter(Vertx vertx, Container container, String schoolFolder) {
 		neo = new Neo(vertx.eventBus(), container.logger());
+		this.vertx = vertx;
 		this.schoolFolder = schoolFolder;
 		classesEleves = new HashMap<>();
 		mappingEleveId = new HashMap<>();
@@ -149,7 +151,7 @@ public class BE1DImporter {
 			classIds.add(t.getS1());
 			childsIds.addAll(t.getS2());
 		}
-		String schoolId = ((JsonObject) queries.get(0)).getObject("params").getString("id");
+		final String schoolId = ((JsonObject) queries.get(0)).getObject("params").getString("id");
 
 		// relationship between school and childs
 		queries.add(new JsonObject()
@@ -230,6 +232,16 @@ public class BE1DImporter {
 					@Override
 					public void handle(Message<JsonObject> message) {
 						handler.handle(new JsonObject().putObject(schoolName, m.body()));
+						WordpressHelper wp = new WordpressHelper(vertx.eventBus(), schoolId);
+						for (Object o: queries) {
+							wp.queryToEntity((JsonObject) o);
+						}
+						try {
+							wp.send();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				});
 			}
@@ -306,6 +318,7 @@ public class BE1DImporter {
 					directors.add(id);
 				}
 
+				final StringBuilder sb = new StringBuilder();
 				for (int i = 12; i < values.length; i++) {
 					String mapping = values[i];
 					if (mapping == null || mapping.trim().isEmpty()) continue;
@@ -313,6 +326,7 @@ public class BE1DImporter {
 						throw new IllegalArgumentException(
 								"Invalid classe for teacher at line " + rowIdx);
 					}
+					sb.append("|" + mapping);
 					List<String> l = classesTeachers.get(mapping);
 					if (l == null) {
 						l = new ArrayList<>();
@@ -320,6 +334,7 @@ public class BE1DImporter {
 					}
 					l.add(id);
 				}
+				row.putString(ENTPersonClasses, sb.substring(1).toString());
 				createUser(row);
 			}
 		});
@@ -420,6 +435,7 @@ public class BE1DImporter {
 						.generate(values[RespENTPersonPrenomIdx], values[RespENTPersonNomIdx]))
 				.putString("activationCode", activationGenerator.generate());
 
+				final StringBuilder sb = new StringBuilder();
 				for (int i = 13; i < values.length; i += 4) {
 					String mapping = values[i]+values[i+1]+values[i+2]+values[i+3];
 					String t = mappingEleveId.get(mapping);
@@ -427,10 +443,12 @@ public class BE1DImporter {
 						throw new IllegalArgumentException(
 								"tuple nom+prenom+classe is empty for PERSRELELEVE at line " + rowIdx + ".");
 					}
+					sb.append("|" + values[i+3]);
 					parentsEnfantsMapping.add(new JsonObject()
 					.putString("childId", t)
 					.putString("parentId", id));
 				}
+				row.putString(ENTPersonClasses, sb.substring(1).toString());
 				createUser(row);
 			}
 		});
@@ -472,7 +490,8 @@ public class BE1DImporter {
 					.putString("query", createClass)
 					.putObject("params", new JsonObject()
 					.putString("id", eleves.getS1())
-					.putString("name", values[ENTPersonClassesIdx])));
+					.putString("name", values[ENTPersonClassesIdx])
+					.putString("type", "CLASSE")));
 					String gId = UUID.randomUUID().toString();
 					queries.add(new JsonObject()
 					.putString("query", createGroupProfil)

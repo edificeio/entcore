@@ -18,13 +18,25 @@
 		"edu.one.core~session~0.1.0-SNAPSHOT",
 		"edu.one.core~communication~0.1.0-SNAPSHOT",
 		"edu.one.core~timeline~0.1.0-SNAPSHOT",
-		"edu.one.core~portal~0.1.0-SNAPSHOT",
-		"edu.one~wordpress~1.0.0-SNAPSHOT"
+		"edu.one.core~portal~0.1.0-SNAPSHOT"
 	],
-	"external-modules" : [{
-		"name" : "io.vertx~mod-mailer~2.0.0-final",
-		"config" : {
-			"address" : "wse.email"
+	"external-modules" : [
+		{
+			"name" : "io.vertx~mod-mailer~2.0.0-final",
+			"config" : {
+				"address" : "wse.email"
+			}
+		},{
+			"name" : "edu.one~wordpress~1.0.0-SNAPSHOT",
+			"config" : {
+				"bus-address":"wpconnector.address",
+				"host":"localhost",
+				"wp-plugin-url":"/wp_one/?api=1&method=one_",
+				"table-path":"table.json",
+				"log-file":"connector.log",
+				"token":"blabla",
+				"profile-groups" : { "PERSEDUCNAT" : "730", "PERSRELELEVE" : "729", "ELEVE" : "728" }
+			}
 		}
-	}]
+	]
 }
