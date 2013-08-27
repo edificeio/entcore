@@ -33,7 +33,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
 				"WHERE n.activationCode = {activationCode} AND n.ENTPersonMotDePasse? IS NULL " +
 				"SET n.ENTPersonMotDePasse = {password}, n.activationCode = null " +
-				"RETURN n.ENTPersonMotDePasse";
+				"RETURN n.ENTPersonMotDePasse as password, n.id as id";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -42,8 +42,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				handler.handle("ok".equals(res.body().getString("status"))
-						&& res.body().getObject("result").getObject("0") != null);
+				if ("ok".equals(res.body().getString("status"))
+						&& res.body().getObject("result").getObject("0") != null) {
+					vertx.eventBus().publish(
+							container.config().getString("address.activation", "wse.activation.hack"),
+							res.body().getObject("result").getObject("0").getString("id"));
+					handler.handle(true);
+				} else {
+					handler.handle(false);
+				}
 			}
 		});
 	}
