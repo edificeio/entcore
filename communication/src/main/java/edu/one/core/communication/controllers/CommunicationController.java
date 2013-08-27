@@ -25,9 +25,9 @@ import edu.one.core.communication.profils.GroupProfil;
 import edu.one.core.communication.profils.ProfilFactory;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
-import edu.one.core.infra.security.SecuredAction;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.security.SecuredAction;
 
 public class CommunicationController extends Controller {
 
@@ -37,12 +37,13 @@ public class CommunicationController extends Controller {
 			Arrays.asList("ADMINISTRATEUR", "ELEVE", "PERSRELELEVE", "PERSEDUCNAT", "ENSEIGNANT"));
 
 	public CommunicationController(Vertx vertx, Container container,
-			RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		neo = new Neo(vertx.eventBus(), log);
 		pf = new ProfilFactory();
 	}
 
+	@SecuredAction("communication.view")
 	public void view(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -63,6 +64,7 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.conf.profils.matrix")
 	public void setGroupsProfilsMatrix(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -125,6 +127,7 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.conf.pe.com")
 	public void setParentEnfantCommunication(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -141,10 +144,12 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.list.profils")
 	public void listProfils(HttpServerRequest request) {
 		renderJson(request, new JsonArray(profils.toArray()));
 	}
 
+	@SecuredAction("communication.list.group.profil")
 	public void listVisiblesGroupsProfil(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -183,6 +188,7 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.list.classes.student")
 	public void listVisiblesClassesEnfants(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -221,6 +227,7 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.list.schools")
 	public void listVisiblesSchools(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -288,6 +295,7 @@ public class CommunicationController extends Controller {
 		return gpc;
 	}
 
+	@SecuredAction("communication.visible.user")
 	public void visibleUsers(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		if (userId != null && !userId.trim().isEmpty()) {
