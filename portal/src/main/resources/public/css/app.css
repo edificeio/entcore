@@ -534,3 +534,6 @@ body.lightbox-body section.lightbox-main {
 .flowing form {
   padding: 0;
 }
+.flowing form input {
+  clear: both;
+}

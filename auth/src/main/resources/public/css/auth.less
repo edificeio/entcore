@@ -1,0 +1,157 @@
+//Warm tones
+@orange: #FD841C;
+@dark-orange: #EA791C;
+
+//Cold tones
+@grey-top-gradient: #fff;
+@grey-bottom-gradient: #eee;
+@light-grey-background: #FDFDFD;
+@light-grey: #eee;
+@medium-grey: #ccc;
+@dark-grey: #C2C2C2;
+@ultra-light-grey: #F6F6F6;
+
+@blue-top-gradient: #3789C3;
+@blue-bottom-gradient: #3EC0D0;
+@medium-blue: #2F8CC9;
+@solid-blue: #3889C1;
+@light-blue: #EBF4F9;
+
+//Buttons: active
+@button-top-gradient: #3789C3;
+@button-bottom-gradient: #3EC0D0;
+
+//Buttons: disabled
+@disabled-button-top-gradient: #9F9F9F;
+@disabled-button-bottom-gradient: #EAEAEA;
+
+.rounded-corners-top (@radius: 5px) {
+	-webkit-border-top-left-radius: @radius;
+	-webkit-border-top-right-radius: @radius;
+	-moz-border-top-left-radius: @radius;
+	-moz-border-top-right-radius: @radius;
+	-ms-border-top-left-radius: @radius;
+	-ms-border-top-right-radius: @radius;
+	-o-border-top-left-radius: @radius;
+	-o-border-top-right-radius: @radius;
+	border-top-left-radius: @radius;
+	border-top-right-radius: @radius;
+}
+
+body{
+	font-size: 12px;
+}
+
+//Fonts
+@font-face {
+	font-family: KGJune;
+	src: url(../fonts/KGJuneBug.ttf);
+}
+
+@font-face {
+	font-family: Satellite;
+	src: url(../fonts/Satellite.otf);
+}
+
+.panel{
+	width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	border: 1px solid #ccc;
+	background: #eee;
+	border-radius: 10px;
+	font-family: Arial;
+
+	.vertical-gradient(#fff, #eee);
+
+	form{
+		padding: 15px;
+	}
+
+	h1{
+		margin: 0;
+		padding: 3px;
+		padding-left: 10px;
+		.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
+		font-size: 18px;
+		.rounded-corners-top(10px);
+		font-family: KGJune;
+		font-size: 23px;
+		color: #fff;
+	}
+
+	label{
+		display: block;
+		width: 150px;
+		color: #666;
+	}
+
+	input{
+		clear: left;
+	}
+
+	input[type=submit]{
+		cursor: pointer;
+	}
+
+	input[type=button], input[type=submit], a.button, button{
+		.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
+		color: #fff;
+		font-family: KGJune;
+		text-transform: uppercase;
+		height: 40px;
+		display: block;
+		.border-box;
+		padding-top: 0px;
+		padding-bottom: 5px;
+		border-radius: 10px;
+		margin-bottom: 10px;
+		margin-top: 10px;
+		font-size: 23px;
+
+		float: right;
+		border: 1px solid #eee;
+		line-height: 40px;
+		.run-transition(height);
+	}
+
+	input[type=text], input[type=password]{
+		padding: 5px;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		width: 100%;
+	}
+
+	input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
+		background: @solid-blue;
+		height: 50px;
+		line-height: 50px;
+		.run-transition(height);
+	}
+
+	.vertical-gradient(@top-color: blue, @bottom-color: white){
+		background: -webkit-linear-gradient(@top-color, @bottom-color);
+		background: -moz-linear-gradient(@top-color, @bottom-color);
+		background: -o-linear-gradient(@top-color, @bottom-color);
+		background:  linear-gradient(@top-color, @bottom-color);
+	}
+
+	.run-transition(@property: color, @speed: 150ms){
+		-o-transition: @property @speed ease;
+		-moz-transition: @property @speed ease;
+		-webkit-transition: @property @speed ease;
+		transition: @property @speed ease;
+	}
+
+	.border-box{
+		box-sizing: -webkit-border-box;
+		box-sizing: -moz-border-box;
+		box-sizing: -o-border-box;
+		box-sizing: border-box;
+	}
+
+	a{
+		font-size: 12px;
+		color: @medium-blue;
+	}
+}
