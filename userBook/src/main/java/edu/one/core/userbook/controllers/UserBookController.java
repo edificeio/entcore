@@ -73,25 +73,25 @@ public class UserBookController extends Controller {
 			public void handle(UserInfos user) {
 				String personRequest = "";
 				String personRequestStart = "START n=node:node_auto_index(id='" + request.params().get("id") + "')";
-				String personRequestReturn= ",(n)-[USERBOOK]->(u),(u)-[PUBLIC]->(c) WHERE has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
-						+ "n.id as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
-						+ "m.id as relatedId,m.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
-						+ "u.health? as health, c.category? as category, c.values? as values;";
+				String personRequestReturn= ",(n)-[USERBOOK]->(m)-[PUBLIC]->(p) RETURN distinct n.ENTPersonNomAffichage as displayName, "
+						+ "n.id as id,n.ENTPersonAdresse as address, u.ENTPersonNomAffichage as relatedName, "
+						+ "u.id as relatedId,u.type as relatedType,m.motto? as motto, m.picture? as photo, m.mood? as mood, "
+						+ "m.health? as health, p.category? as category, p.values? as values;";
 
 				switch(request.params().get("type")){
 					case "ELEVE":
-						personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
-							+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
+						personRequest = personRequestStart + ",u=node:node_auto_index(type='PERSRELELEVE') "
+							+ "MATCH (n)-[EN_RELATION_AVEC]->(u)" + personRequestReturn;
 						break;
 					case "ENSEIGNANT":
-						personRequest = personRequestStart + " MATCH (n)-[USERBOOK]->(u),(u)-[PUBLIC]->(c) "
+						personRequest = personRequestStart + " MATCH (n)-[USERBOOK]->(m)-[PUBLIC]->(p) "
 							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
-							+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
-							+ "u.health? as health, c.category? as category, c.values? as values;";
+							+ "n.ENTPersonAdresse as address,m.motto? as motto, m.picture? as photo, m.mood? as mood, "
+							+ "m.health? as health, p.category? as category, p.values? as values;";
 						break;
 					case "PERSRELELEVE":
-						personRequest = personRequestStart + ",m=node:node_auto_index(type='ELEVE') "
-							+ "MATCH (n)<-[EN_RELATION_AVEC]-(m)" + personRequestReturn;
+						personRequest = personRequestStart + ",u=node:node_auto_index(type='ELEVE') "
+							+ "MATCH (n)<-[EN_RELATION_AVEC]-(u)" + personRequestReturn;
 						break;
 				}
 				neo.send(personRequest,request.response());
@@ -105,29 +105,12 @@ public class UserBookController extends Controller {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				String personRequest = "";
-				String personRequestStart = "START n=node:node_auto_index(id='" + user.getUserId() + "')";
-				String personRequestReturn= ",(n)-[USERBOOK]->(u),(u)-[r]->(c) WHERE has(m.ENTPersonLogin) RETURN distinct n.ENTPersonNomAffichage as displayName, "
-						+ "n.id as id,n.ENTPersonAdresse as address, m.ENTPersonNomAffichage as relatedName, "
-						+ "m.id as relatedId,m.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
-						+ "u.health? as health, c.category? as category, c.values? as values;";
-
-				switch(user.getType()){
-					case "ELEVE":
-						personRequest = personRequestStart + ",m=node:node_auto_index(type='PERSRELELEVE') "
-							+ "MATCH (n)-[EN_RELATION_AVEC]->(m)" + personRequestReturn;
-						break;
-					case "ENSEIGNANT":
-						personRequest = personRequestStart + "MATCH (n)-[USERBOOK]->(u),(u)-[r]->(c) "
-							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
-							+ "n.ENTPersonAdresse as address,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
-							+ "u.health? as health, c.category? as category, c.values? as values;";
-						break;
-					case "PERSRELELEVE":
-						personRequest = personRequestStart + ",m=node:node_auto_index(type='ELEVE') "
-							+ "MATCH (n)<-[EN_RELATION_AVEC]-(m)" + personRequestReturn;
-						break;
-				}
+				String personRequest  = "START n=node:node_auto_index(id='" + user.getUserId() + "'), "
+						+ "m=node:node_auto_index(type='USERBOOK'), p=node:node_auto_index(type='HOBBIES') "
+						+ "MATCH n-[USERBOOK]->m-[r]->p "
+						+ "RETURN n.ENTPersonNomAffichage as displayName, n.id as id, "
+						+ "m.motto as motto, m.health as health, m.picture as photo, m.mood as mood, "
+						+ "type(r) as visibility, p.category as category, p.values as values;";
 				neo.send(personRequest,request.response());
 			}
 		});
@@ -166,10 +149,10 @@ public class UserBookController extends Controller {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				neo.send("START n=node_auto_index(id='') MATCH (n)-[USERBOOK]->(m),(m)-[s]->(p) "
-					+ "WHERE p.category='"+ request.params().get("category")
+				neo.send("START n=node:node_auto_index(id='" + user.getUserId() + "') MATCH (n)-[USERBOOK]->(m)-[s]->(p) "
+					+ "WHERE has(p.category) AND p.category='"+ request.params().get("category")
 					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
-					+ "RETURN n,r,m,j,p", request.response());
+					+ "RETURN n,m,j,p", request.response());
 			}
 		});
 	}
@@ -182,13 +165,13 @@ public class UserBookController extends Controller {
 	public void initUserBookNode(final Message<JsonObject> message){
 		String  userId = message.body().getString("userId");
 		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
-			+ "CREATE (m {picture:'" + userBookData.getString("picture") + "',"
+			+ "CREATE (m {type:'USERBOOK',picture:'" + userBookData.getString("picture") + "',"
 			+ "motto:'Ajoute ta devise !', health:'Problèmes de santé ?', mood:'default'}), n-[:USERBOOK]->m ");
 		JsonArray hobbies = userBookData.getArray("hobbies");
 		for (Object hobby : hobbies) {
 			JsonObject jo = (JsonObject)hobby;
 			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
-				+ "type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code")
+				+ "type(r)='USERBOOK' CREATE (p {type:'HOBBIES',category:'" + jo.getString("code")
 				+ "', values:'exemple'}), m-[:PUBLIC]->p");
 		}
 	}

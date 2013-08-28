@@ -1,19 +1,19 @@
 var account = function(){
 
 	var personDataExtractor = function(d) {
-		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
+		var jo = {"displayName":d.result[0]["displayName"],
+			"address":d.result[0]["address"],
+			"mood":d.result[0]["mood"],
+			"motto":d.result[0]["motto"],
+			"health":d.result[0]["health"]};
 		var hobbies = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
 				hobbies.push({
 					"category":d.result[obj].category,
-					"values":d.result[obj].values
+					"values":d.result[obj].values,
+					"visibility":d.result[obj].visibility
 				});
-			}
-			if (d.result[obj].mood !== ""){
-				jo['mood'] = d.result[obj].mood;
-				jo['health'] = d.result[obj].health;
-				jo['motto'] = d.result[obj].motto;
 			}
 		}
 		jo['list'] = hobbies;
