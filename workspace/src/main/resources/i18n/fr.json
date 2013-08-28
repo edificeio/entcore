@@ -30,5 +30,7 @@
 	"upload": "Envoyer",
 	"workspace.comment": "Commenter",
 	"workspace.contrib": "Contribuer",
-	"workspace.read": "Consulter"
+	"workspace.read": "Consulter",
+	"name": "Titre",
+	"modified": "Mise à jour"
 }

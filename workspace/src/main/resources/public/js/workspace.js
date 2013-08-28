@@ -83,10 +83,9 @@ var workspace = function(){
 									<th scope="col">\
 										<input type="checkbox" call="allCheckbox" />\
 									</th>\
-									<th scope="col">{{#i18n}}type{{/i18n}}</th>\
-									<th scope="col">{{#i18n}}name{{/i18n}}</th>\
-									<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 									<th scope="col"></th>\
+									<th scope="col" class="nine">{{#i18n}}name{{/i18n}}</th>\
+									<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 								</tr>\
 							</thead>\
 							<tbody>\
@@ -95,7 +94,6 @@ var workspace = function(){
 									<td></td>\
 									<td><i role="folder"></i></td>\
 									<td><strong><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
-									<td></td>\
 									<td></td>\
 								</tr>\
 								<tr class="underline">\
@@ -107,11 +105,10 @@ var workspace = function(){
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 									<td><a href="/document/{{_id}}">{{name}}</a></td>\
-									<td></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
-									<td colspan="5" class="container-cell">\
+									<td colspan="4" class="container-cell">\
 										<a call="comment" href="{{_id}}" class="button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
 										<a href="/share?id={{_id}}" call="share" class="button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
