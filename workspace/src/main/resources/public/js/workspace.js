@@ -366,7 +366,9 @@ var workspace = function(){
 						url : o.url + "/" + obj.val(),
 						type: "PUT",
 						success: function() {
-							obj.parents("tr").remove();
+							var parentLine = obj.parents("tr");
+							parentLine.next().remove();
+							parentLine.remove();
 						},
 						error: function(data) {
 							app.notify.error(data);
