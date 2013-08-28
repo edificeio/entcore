@@ -48,7 +48,7 @@ public class UserBookController extends Controller {
 
 	@SecuredAction("userbook.authent")
 	public void search(HttpServerRequest request) {
-		String neoRequest = "START n=node:node_auto_index('type:ELEVE OR type:ENSEIGNANT') ";
+		String neoRequest = "START n=node:node_auto_index('type:ELEVE OR type:ENSEIGNANT OR type:PERSRELELEVE') ";
 		if (request.params().contains("name")){
 			String[] names = request.params().get("name").split(" ");
 			String displayNameRegex = (names[0].length() > 3) ? "(?i)(.*" + names[0].substring(0,4) : "(?i)(.*" + names[0];
@@ -62,7 +62,7 @@ public class UserBookController extends Controller {
 				+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
 		}
 		neoRequest += " RETURN distinct n.id as id, "
-			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, n.type as type";
+			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, m.picture? as photo, n.type as type";
 		neo.send(neoRequest, request.response());
 	}
 
@@ -119,9 +119,9 @@ public class UserBookController extends Controller {
 	@SecuredAction("userbook.authent")
 	public void myClass(HttpServerRequest request) {
 		if (request.params().contains("name")){
-			neo.send("START n=node:node_auto_index(type='CLASSE') MATCH (n)<-[APPARTIENT]-(m) WHERE HAS(n.ENTGroupeNom) AND"
-				+ " n.ENTGroupeNom='" + request.params().get("name") + "' AND (m.type='ENSEIGNANT' OR m.type='ELEVE') RETURN"
-				+ " m.type as type, m.id as id,m.ENTPersonNomAffichage as displayName"
+			neo.send("START n=node:node_auto_index(type='CLASSE'), m=node:node_auto_index('type:ENSEIGNANT OR type:ELEVE') "
+				+ "MATCH (n)<-[APPARTIENT]-(m), (m)-[USERBOOK]->(u) WHERE HAS(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("name") + "' "
+				+ "RETURN distinct m.type as type, m.id as id,m.ENTPersonNomAffichage as displayName, u.mood? as mood, u.picture? as photo"
 				, request.response());
 		}
 	}
