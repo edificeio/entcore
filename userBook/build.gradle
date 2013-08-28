@@ -2,10 +2,12 @@ apply from: "gradle/vertx.gradle"
 
 project.evaluationDependsOn(':infra')
 project.evaluationDependsOn(':web-utils')
+project.evaluationDependsOn(':processor')
 
 dependencies {
 	provided project(':infra')
 	compile project(':web-utils')
+	compile project(':processor')
 }
 
 test {
