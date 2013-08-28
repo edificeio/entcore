@@ -996,6 +996,7 @@ nav.horizontal a:hover {
   height: 28px;
   font-size: 18px;
   padding-top: 4px;
+  line-height: 1em;
   -webkit-border-top-right-radius: 5px;
   -webkit-border-bottom-right-radius: 5px;
   -moz-border-top-right-radius: 5px;
