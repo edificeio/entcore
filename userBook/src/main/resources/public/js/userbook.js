@@ -13,9 +13,9 @@ var userbook = function(){
 				jo['mood'] = d.result[obj].mood;
 				jo['health'] = d.result[obj].health;
 				jo['motto'] = d.result[obj].motto;
+				related.push({"relatedName":d.result[obj].relatedName, "relatedId":d.result[obj].relatedId,"relatedType":d.result[obj].relatedType});
 			}
 			if (d.result[obj].relatedName !== ""){
-				related.push({"relatedName":d.result[obj].relatedName, "relatedId":d.result[obj].relatedId,"relatedType":d.result[obj].relatedType});
 			}
 		}
 		jo['list'] = hobbies;
