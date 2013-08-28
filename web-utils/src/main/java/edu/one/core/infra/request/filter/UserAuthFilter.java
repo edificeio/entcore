@@ -25,7 +25,7 @@ public class UserAuthFilter implements Filter {
 	@Override
 	public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
 		String oneSeesionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-		if (oneSeesionId != null) {
+		if (oneSeesionId != null && !oneSeesionId.trim().isEmpty()) {
 			handler.handle(true);
 		} else if (oauth != null && request instanceof SecureHttpServerRequest) {
 			oauth.validToken((SecureHttpServerRequest) request, handler);
