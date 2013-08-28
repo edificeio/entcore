@@ -221,7 +221,7 @@ public class AuthController extends Controller {
 	}
 
 	public void logout(final HttpServerRequest request) {
-		String sessionId = CookieHelper.get("oneSessionId", request);
+		String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		String c = request.params().get("callback");
 		final StringBuilder callback = new StringBuilder();
 		if (c != null && !c.trim().isEmpty()) {
