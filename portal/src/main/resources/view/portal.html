@@ -20,7 +20,7 @@
                 <section class="navbar row">
                     <div class="cell six">
                         <img src="/public/img/exemples/userIcon.png" />
-                        <span class="welcome-message">Bonjour Martin, bienvenue !</span>
+                        <span class="welcome-message">Bonjour {{userFirstname}}, bienvenue !</span>
                     </div>
                     <div class="cell six">
                         <div class="account">
@@ -29,7 +29,7 @@
                                 <input type="submit" value="OK" />
                             </form>
                             <a call="redirect" href="http://localhost:8101/mon-compte"><i role="user"></i></a>
-                            <i role="shutdown"></i>
+                            <a href="http://localhost:8009/logout?callback=http://localhost:8017/portal"><i role="shutdown"></i></a>
                             <div class="clear"></div>
                         </div>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="logo" />
                     <nav class="horizontal" role="apps-navigation">
                         <a call="redirect" href="http://localhost:8016/timeline">{{#i18n}}portal.header.navigation.whatsnew{{/i18n}}</a>
-                        <a call="redirect" href="http://localhost:8101/annuaire">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
+                        <a call="redirect" href="http://localhost:8101/annuaire?query=class={{userClass}}">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
                         <a call="redirect" href="http://localhost:8017/apps">{{#i18n}}portal.header.navigation.myapps{{/i18n}}</a>
                     </nav>
                 </section>
