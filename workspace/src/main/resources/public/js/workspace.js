@@ -282,7 +282,7 @@ var workspace = function(){
 					navigation.openLightbox();
 					$('#form-window').html(data);
 					$('#form-window table').addClass('monoline');
-					$('.lightbox-backdrop').one('click', function(){
+					$('.lightbox-backdrop, input[type=submit]').one('click', function(){
 						navigation.closeLightbox();
 					})
 				})
