@@ -369,6 +369,9 @@ var workspace = function(){
 							var parentLine = obj.parents("tr");
 							parentLine.next().remove();
 							parentLine.remove();
+
+							var parentCell = obj.parents("li");
+							parentCell.remove();
 						},
 						error: function(data) {
 							app.notify.error(data);
