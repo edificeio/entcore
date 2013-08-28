@@ -208,7 +208,7 @@ var workspace = function(){
 					</table>',
 
 			addDocument : '<form id="upload-form" method="post" action="/document" enctype="multipart/form-data">\
-							<h1>workspace.add.document</h1>\
+							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 							<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
 							<input type="text" name="name" />\
 							<label>{{#i18n}}workspace.document.file{{/i18n}}</label>\
