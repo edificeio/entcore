@@ -18,6 +18,7 @@ public class UserBook extends Server {
 				.get("/api/class", "myClass")
 				.get("/api/edit-userbook-info", "editUserBookInfo")
 				.get("/api/set-visibility", "setVisibility")
+				.postWithRegEx(".*", "proxyDocument")
 				.getWithRegEx(".*", "proxyDocument");
 	}
 }
