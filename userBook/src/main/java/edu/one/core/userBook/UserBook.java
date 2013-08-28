@@ -2,15 +2,17 @@ package edu.one.core.userBook;
 
 import edu.one.core.infra.Server;
 import edu.one.core.userbook.controllers.UserBookController;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UserBook extends Server {
 
 	@Override
 	public void start() {
 		super.start();
-		UserBookController userBook = new UserBookController(vertx, container, rm, securedActions, config);
+		UserBookController userBookController = new UserBookController(vertx, container, rm, securedActions, config);
 
-		userBook.get("/mon-compte", "monCompte")
+		userBookController.get("/mon-compte", "monCompte")
 				.get("/annuaire", "annuaire")
 				.get("/api/search","search")
 				.get("/api/person", "person")
@@ -20,5 +22,11 @@ public class UserBook extends Server {
 				.get("/api/set-visibility", "setVisibility")
 				.postWithRegEx(".*", "proxyDocument")
 				.getWithRegEx(".*", "proxyDocument");
+
+		try {
+			userBookController.registerMethod("wse.activation.hack", "initUserBookNode");
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 }

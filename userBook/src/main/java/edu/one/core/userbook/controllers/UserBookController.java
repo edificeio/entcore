@@ -9,6 +9,7 @@ import edu.one.core.security.SecuredAction;
 import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -17,7 +18,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 
-public class UserBookController extends Controller{
+public class UserBookController extends Controller {
 
 	private Neo neo;
 	private JsonObject config;
@@ -37,26 +38,7 @@ public class UserBookController extends Controller{
 
 	@SecuredAction("userbook.authent")
 	public void monCompte(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				initUserBookNode(user.getUserId());
-			}
-		});
 		renderView(request, config);
-	}
-
-	private void initUserBookNode(String userId){
-		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
-			+ "CREATE (m {picture:'" + userBookData.getString("picture") + "',"
-			+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
-		JsonArray hobbies = userBookData.getArray("hobbies");
-		for (Object hobby : hobbies) {
-			JsonObject jo = (JsonObject)hobby;
-			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
-				+ "type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code")
-				+ "', values:''}), m-[:PUBLIC]->p");
-		}
 	}
 
 	@SecuredAction("userbook.authent")
@@ -195,6 +177,20 @@ public class UserBookController extends Controller{
 	@SecuredAction("userbook.authent")
 	public void proxyDocument(final HttpServerRequest request) {
 		HttpClientUtils.proxy(request, client);
+	}
+
+	public void initUserBookNode(final Message<JsonObject> message){
+		String  userId = message.body().getString("userId");
+		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
+			+ "CREATE (m {picture:'" + userBookData.getString("picture") + "',"
+			+ "motto:'Ajoute ta devise !', health:'Problèmes de santé ?', mood:'default'}), n-[:USERBOOK]->m ");
+		JsonArray hobbies = userBookData.getArray("hobbies");
+		for (Object hobby : hobbies) {
+			JsonObject jo = (JsonObject)hobby;
+			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
+				+ "type(r)='USERBOOK' CREATE (p {category:'" + jo.getString("code")
+				+ "', values:'exemple'}), m-[:PUBLIC]->p");
+		}
 	}
 
 }
