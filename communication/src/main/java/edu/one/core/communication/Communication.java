@@ -12,7 +12,7 @@ public class Communication extends Server {
 
 		Controller controller = new CommunicationController(vertx, container, rm, securedActions);
 
-		controller.get("/communication", "view");
+		controller.get("/admin", "view");
 
 		controller.post("/groups/profils", "setGroupsProfilsMatrix");
 

@@ -6,10 +6,10 @@
 	"mode": "dev",
 	"url_infra":"http://localhost:8001",
 	"one-apps": [
-		{"name" : "dataDictionary","url":"http://localhost:8010"},
 		{"name" : "directory","url":"http://localhost:8003"},
+		{"name" : "appRegistry","url":"http://localhost:8012"},
+		{"name" : "communication","url":"http://localhost:8015"},
 		{"name" : "history", "url":"http://localhost:8006"},
-		{"name" : "sync", "url":"http://localhost:8005"},
-		{"name" : "infra", "url":"http://localhost:8001"}
+		{"name" : "sync", "url":"http://localhost:8005"}
 	]
 }

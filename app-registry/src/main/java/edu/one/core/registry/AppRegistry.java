@@ -19,7 +19,7 @@ public class AppRegistry extends Server {
 			log.error(e.getMessage(), e);
 		}
 
-		service.get("/app-registry", "view");
+		service.get("/admin", "view");
 
 		service.get("/applications", "listApplications");
 
