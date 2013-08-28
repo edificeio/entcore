@@ -68,6 +68,7 @@ var account = function(){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
 					account.action.getPhoto(data.result[0].photo);
+					messenger.requireResize();
 				})
 			},
 			editUserBookInfo : function(url){

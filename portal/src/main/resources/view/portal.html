@@ -23,15 +23,15 @@
                         <span class="welcome-message">Bonjour {{userFirstname}}, bienvenue !</span>
                     </div>
                     <div class="cell six">
-                        <div class="account">
+                        <nav class="account" role="apps-navigation">
                             <form class="search cell">
                                 <input type="text" value="Rechercher" />
                                 <input type="submit" value="OK" />
                             </form>
-                            <a call="redirect" href="http://localhost:8101/mon-compte"><i role="user"></i></a>
+                            <a><i role="user" call="redirect" href="http://localhost:8101/mon-compte"></i></a>
                             <a href="http://localhost:8009/logout?callback=http://localhost:8017/portal"><i role="shutdown"></i></a>
                             <div class="clear"></div>
-                        </div>
+                        </nav>
                     </div>
                 </section>
                 <section class="row">

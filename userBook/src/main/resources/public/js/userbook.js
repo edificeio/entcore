@@ -69,6 +69,8 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', dataExtractor(data)))
 					}
+
+					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},
@@ -96,6 +98,8 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', dataExtractor(data)));
 					}
+
+						messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data)})
 			}
