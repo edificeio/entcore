@@ -37,12 +37,32 @@ i[role=close]{
 	.icon(close, 15px);
 }
 
+i[role=notification]{
+	.icon(notification, 23px);
+}
+
 i[role=show-icons]{
 	.icon(show-icons, 37px);
 }
 
+i[role=show-details]{
+	.icon(show-details, 37px);
+}
+
 i[role=show-list]{
 	.icon(show-list, 37px);
+}
+
+i[role=show-icons].selected{
+	.icon(show-icons-selected, 37px);
+}
+
+i[role=show-details].selected{
+	.icon(show-details-selected, 37px);
+}
+
+i[role=show-list].selected{
+	.icon(show-list-selected, 37px);
 }
 
 i[role=configuration]{
@@ -93,6 +113,10 @@ i[role=link]{
 	.icon(link, 32px);
 }
 
+i[role=userbook]{
+	.icon(userbook, 25px);
+}
+
 a.button{
 	padding-left: 7px;
 	padding-right: 7px;
@@ -138,6 +162,22 @@ h1{
 	color: @orange;
 	font-size: 27px;
 	margin-top: 0;
+}
+
+h4{
+	font-family: Arial;
+	font-size: 14px;
+	color: @medium-blue;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	font-weight: normal;
+	cursor: pointer;
+}
+
+h2{
+	font-family: Arial;
+	font-size: 20px;
+	color: @medium-blue;
 }
 
 a{
@@ -186,6 +226,15 @@ nav.vertical{
     }
   }
 
+}
+
+article.box{
+	border: 1px solid #ccc;
+}
+
+article.box.selected{
+	background: @medium-blue;
+	color: #fff;
 }
 
 article{
@@ -359,5 +408,11 @@ nav.horizontal{
 				}
 			}
 		}
+	}
+}
+
+dl{
+	dd{
+		line-height: 35px;
 	}
 }

@@ -105,3 +105,17 @@ $(document).ready(function(){
 
 	navigationController.start();
 });
+
+var ui = (function(){
+
+	$(document).ready(function(){
+		$('.display-buttons i').on('click', function(){
+			$(this).parent().find('i').removeClass('selected');
+			$(this).addClass('selected');
+		})
+	});
+
+	return {
+
+	}
+}());

@@ -179,9 +179,10 @@ section{
       float: right;
       text-align: right;
 
-      i{
-        float: right;
-      }
+		i{
+			float: right;
+			cursor: pointer;
+		}
     }
 
     article{
@@ -230,5 +231,59 @@ header{
 	label{
 		clear: left;
 		font-size: 12px;
+	}
+}
+
+.text-container{
+	padding: 10px;
+
+	h1{
+		margin-top: 1em;
+	}
+}
+
+.box{
+	min-height: 100px;
+	.bottom-locked{
+		position: absolute;
+		bottom: 7px;
+	}
+	.avatar{
+		padding: 5px;
+		img{
+			margin-top: 5px;
+		}
+	}
+}
+
+.cell{
+	img{
+		max-width: 100%;
+	}
+}
+
+section.selection{
+
+}
+
+dl{
+	dd{
+		margin-left: 0;
+	}
+	dt{
+		clear: left;
+	}
+}
+
+.mini-box{
+	.cell{
+		height: 50px;
+		line-height: 50px;
+		.avatar{
+			padding: 5px;
+		}
+		img{
+			vertical-align: middle;
+		}
 	}
 }

@@ -9,5 +9,7 @@
 	"userBook.profile.health": "Santé et alimentation",
 	"userBook.profile.mood": "Humeur",
 	"userBook.profile.motto" : "Devise",
-	"userBook.account.myAccount":"Accéder à mon Compte"
+	"userBook.account.myAccount":"Accéder à mon Compte",
+	"userBook.profile.family": "Famille",
+	"userBook.profile.address": "Adresse"
 }

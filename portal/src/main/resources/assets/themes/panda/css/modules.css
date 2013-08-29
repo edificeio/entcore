@@ -3,6 +3,10 @@
   width: 100%;
   position: relative;
   clear: both;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
 }
 .cell {
   box-sizing: -webkit-border-box;
@@ -246,6 +250,9 @@ nav.vertical ul li.selected ul {
   display: block;
   float: right;
 }
+.navbar .account img {
+  max-width: 100%;
+}
 .navbar .account i {
   margin-top: 3px;
 }
@@ -321,6 +328,9 @@ nav.horizontal a {
   padding: 10px;
   list-style-type: none;
 }
+.icons-view li img {
+  max-width: 100%;
+}
 @media screen and (min-width: 720px) {
   .icons-view li {
     width: 24.5%;
@@ -367,6 +377,9 @@ section .contextual-buttons .action-buttons {
   line-height: 50px;
   margin-bottom: 10px;
 }
+section .contextual-buttons .action-buttons img {
+  max-width: 100%;
+}
 @media screen and (min-width: 720px) {
   section .contextual-buttons .action-buttons {
     width: 81.66666666666666%;
@@ -392,6 +405,9 @@ section .contextual-buttons .display-buttons {
   float: right;
   text-align: right;
 }
+section .contextual-buttons .display-buttons img {
+  max-width: 100%;
+}
 @media screen and (min-width: 720px) {
   section .contextual-buttons .display-buttons {
     width: 16.333333333333332%;
@@ -404,6 +420,7 @@ section .contextual-buttons .display-buttons {
 }
 section .contextual-buttons .display-buttons i {
   float: right;
+  cursor: pointer;
 }
 section .contextual-buttons article li {
   list-style-type: none;
@@ -442,6 +459,44 @@ header h2 {
 .lightbox-window form label {
   clear: left;
   font-size: 12px;
+}
+.text-container {
+  padding: 10px;
+}
+.text-container h1 {
+  margin-top: 1em;
+}
+.box {
+  min-height: 100px;
+}
+.box .bottom-locked {
+  position: absolute;
+  bottom: 7px;
+}
+.box .avatar {
+  padding: 5px;
+}
+.box .avatar img {
+  margin-top: 5px;
+}
+.cell img {
+  max-width: 100%;
+}
+dl dd {
+  margin-left: 0;
+}
+dl dt {
+  clear: left;
+}
+.mini-box .cell {
+  height: 50px;
+  line-height: 50px;
+}
+.mini-box .cell .avatar {
+  padding: 5px;
+}
+.mini-box .cell img {
+  vertical-align: middle;
 }
 html,
 body {
@@ -600,6 +655,18 @@ i[role=close] {
   float: left;
   vertical-align: middle;
 }
+i[role=notification] {
+  height: 23px;
+  width: 23px;
+  background: url("../img/icons/notification.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=show-icons] {
   height: 37px;
   width: 37px;
@@ -612,10 +679,58 @@ i[role=show-icons] {
   float: left;
   vertical-align: middle;
 }
+i[role=show-details] {
+  height: 37px;
+  width: 37px;
+  background: url("../img/icons/show-details.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=show-list] {
   height: 37px;
   width: 37px;
   background: url("../img/icons/show-list.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=show-icons].selected {
+  height: 37px;
+  width: 37px;
+  background: url("../img/icons/show-icons-selected.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=show-details].selected {
+  height: 37px;
+  width: 37px;
+  background: url("../img/icons/show-details-selected.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=show-list].selected {
+  height: 37px;
+  width: 37px;
+  background: url("../img/icons/show-list-selected.png") no-repeat center;
   display: block;
   box-sizing: -webkit-border-box;
   box-sizing: -moz-border-box;
@@ -768,6 +883,18 @@ i[role=link] {
   float: left;
   vertical-align: middle;
 }
+i[role=userbook] {
+  height: 25px;
+  width: 25px;
+  background: url("../img/icons/userbook.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 a.button {
   padding-left: 7px;
   padding-right: 7px;
@@ -836,6 +963,20 @@ h1 {
   font-size: 27px;
   margin-top: 0;
 }
+h4 {
+  font-family: Arial;
+  font-size: 14px;
+  color: #2f8cc9;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  font-weight: normal;
+  cursor: pointer;
+}
+h2 {
+  font-family: Arial;
+  font-size: 20px;
+  color: #2f8cc9;
+}
 a {
   font-size: 12px;
   color: #2f8cc9;
@@ -887,6 +1028,13 @@ nav.vertical ul a:hover {
   -moz-transition: padding 150ms ease;
   -webkit-transition: padding 150ms ease;
   transition: padding 150ms ease;
+}
+article.box {
+  border: 1px solid #ccc;
+}
+article.box.selected {
+  background: #2f8cc9;
+  color: #fff;
 }
 article {
   -webkit-border-radius: 10px;
@@ -1098,4 +1246,7 @@ nav.horizontal a:hover {
   list-style-type: none;
   padding: 5px;
   background: #fafafa;
+}
+dl dd {
+  line-height: 35px;
 }

@@ -3,28 +3,39 @@
 	<head>
 		<title>{{#i18n}}userBook.class.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" type="text/css" />
 		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/userbook.js{{/static}}" type="text/javascript"></script>
-		<link type="text/css" rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" media="screen" />
-		<link type="text/css" rel="stylesheet" href="{{#static}}css/classe.css{{/static}}" media="screen" />
 		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
 	</head>
 	<body class="app">
-		<h1>{{#i18n}}userBook.class.title{{/i18n}}</h1>
-		<p><a href="mon-compte">{{#i18n}}userBook.account.myAccount{{/i18n}}</a></p>
-		<div id="annuaire">
+		<section class="annuaire">
+			<div class="contextual-buttons">
+				<a href="/mon-compte" class="right-magnet">{{#i18n}}userBook.account.myAccount{{/i18n}}</a>
+				<div class="display-buttons clear">
+					<i role="show-icons" call="showList" class="selected"></i>
+					<i role="show-details" call="showFirstPerson"></i>
+				</div>
+			</div>
+			<h1><i role="userbook"></i>{{#i18n}}userBook.class.title{{/i18n}}</h1>
+		</section>
+
+
+		<div class="annuaire">
 			<div id="search">
-				<form method="GET" action="api/search" id="search-form">
-					<input type="text" name="name"/>
+				<form method="GET" action="/api/search" id="search-form" class="search">
+					<input type="text" name="name" value="Recherche"/>
 					<input type="submit" call="search" value="OK"/>
 				</form>
 			</div>
-			<div id="people" class="all"></div>
-			<div id="person"></div>
+			<div class="row clear">
+				<div id="people" class="twelve cell"></div>
+				<div id="person" class="eight cell text-container"></div>
+			</div>
 		</div>
 	</body>
 </html>
