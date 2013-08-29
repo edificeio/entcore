@@ -9,6 +9,10 @@ var messenger = (function(){
 
 	var messagesHandlers = {
 		'set-style': function(message){
+			if($('link[href="' + message.data + '"]').length > 0){
+				return;
+			}
+
 			$('<link />', {
 					rel: 'stylesheet',
 					href: message.data,
