@@ -347,6 +347,7 @@ nav.horizontal a {
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
+  max-width: 135px;
 }
 .icons-view li input[type=checkbox] {
   position: absolute;
@@ -1249,6 +1250,9 @@ nav.horizontal a:hover {
 }
 dl dd {
   line-height: 35px;
+}
+img[src=""] {
+  display: none;
 }
 body {
   background: #c2c2c2;

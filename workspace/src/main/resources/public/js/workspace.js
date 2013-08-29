@@ -7,6 +7,9 @@ var tools = (function(){
 				},
 				'xls': function(type){
 					return type.indexOf('officedocument') !== -1 && type.indexOf('spreadsheet') !== -1;
+				},
+				'img': function(type){
+					return type.indexOf('image') !== -1;
 				}
 			}
 
@@ -21,6 +24,9 @@ var tools = (function(){
 		formatResponse: function(response){
 			for(var i = 0; i < response.length; i++){
 				response[i].metadata['content-type'] = tools.roleFromFileType(response[i].metadata['content-type']);
+				if(response[i].metadata['content-type'] === 'img'){
+					response[i].thumbnail = 'document/' + response[i]._id;
+				}
 				response[i].created = response[i].created.split(' ')[0];
 				response[i].modified = response[i].modified.split(' ')[0];
 
@@ -133,8 +139,10 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}">\
-								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large"></i>\
+							<a href="/document/{{_id}}">\
+								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
+									<img src="{{thumbnail}}" alt="thumbnail" />\
+								</i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
 							<a href="document/{{_id}}">{{name}}</a>\

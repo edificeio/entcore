@@ -347,6 +347,7 @@ nav.horizontal a {
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
+  max-width: 135px;
 }
 .icons-view li input[type=checkbox] {
   position: absolute;
