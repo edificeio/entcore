@@ -261,6 +261,7 @@ var workspace = function(){
 
 						response = tools.formatResponse(response);
 						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
+						navigation.redirect(o.url);
 						messenger.requireResize();
 					});
 				});
@@ -491,7 +492,7 @@ $(document).ready(function(){
 		var html = "";
 		for (var i = 0; i < data.length; i++) {
 			if (data[i] === "Trash") continue;
-			html += '<li><a call="documents" href="documents/' + data[i] + '">' + data[i] + "</a></li>";
+			html += '<li><a call="documents" href="/documents/' + data[i] + '?hierarchical=true">' + data[i] + "</a></li>";
 		}
 		$(".base-folders").html(html);
 		navigation.redirect('documents?hierarchical=true');
