@@ -4,11 +4,13 @@ var timeline = function(){
 	app.define ({
 		template : {
 
-			lastNotifications : '<div>\
-								{{#results}}\
-									<div class="panel">{{{message}}} <span class="right">{{#formatDateTime}}{{#date}}{{$date}}{{/date}}{{/formatDateTime}}</span></div><br />\
-								{{/results}}\
-								</div>'
+			lastNotifications : '{{#results}}\
+									<div class="row line">\
+										<div class="cell nine">{{{message}}}</div>\
+										<div class="cell three right-magnet"><em>{{#formatDateTime}}{{#date}}{{$date}}{{/date}}{{/formatDateTime}}</em></div>\
+										<div class="clear"></div>\
+									</div>\
+								{{/results}}'
 
 		},
 		action : {
