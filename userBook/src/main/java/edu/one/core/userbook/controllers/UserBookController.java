@@ -138,6 +138,9 @@ public class UserBookController extends Controller {
 					+ "SET p.values='" + request.params().get("values") + "'";
 				} else {
 					neoRequest += " SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
+					if ("mood".equals(request.params().get("prop")) || "motto".equals(request.params().get("prop"))){
+						notifyShare(request.params().get("value"), user, null);
+					}
 				}
 				neo.send(neoRequest, request.response());
 			}
@@ -177,5 +180,19 @@ public class UserBookController extends Controller {
 	}
 
 
+		// TODO extract in external helper class
+		// TODO get sharedArray (of people who are allowed to see me)
+	private void notifyShare(String resource, UserInfos user, JsonArray sharedArray) {
+		JsonArray recipients = new JsonArray();
+		recipients.addString(user.getUserId());
+		JsonObject event = new JsonObject()
+		.putString("action", "add")
+		.putString("resource", resource)
+		.putString("sender", user.getUserId())
+		.putString("message", "<a href=\"http://localhost:8101/annuaire#"
+				+  user.getUserId() + "#" + user.getType() + "\">" + user.getUsername() + "</a> a modifié son profil : " + resource)
+		.putArray("recipients", recipients);
+		eb.send("wse.timeline", event);
+	}
 
 }
