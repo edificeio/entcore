@@ -17,7 +17,7 @@
   display: block;
 }
 .right-magnet {
-  float: right;
+  float: right !important;
 }
 .one {
   width: 1;
@@ -248,7 +248,7 @@ nav.vertical ul li.selected ul {
   box-sizing: border-box;
   float: left;
   display: block;
-  float: right;
+  float: right !important;
 }
 .navbar .account img {
   max-width: 100%;
@@ -455,17 +455,20 @@ header h2 {
 .lightbox-window form label {
   display: block;
   float: left;
-  width: 150px;
 }
 .lightbox-window form label {
   clear: left;
   font-size: 12px;
+  width: 150px;
 }
 .text-container {
   padding: 10px;
 }
 .text-container h1 {
   margin-top: 1em;
+}
+.text-container article {
+  margin-bottom: 15px;
 }
 .box {
   min-height: 100px;
@@ -498,6 +501,27 @@ dl dt {
 }
 .mini-box .cell img {
   vertical-align: middle;
+}
+.flowing {
+  height: 100%;
+  padding: 15px;
+}
+.flowing section,
+.flowing div,
+.flowing form {
+  height: 100%;
+}
+.flowing thead {
+  display: block;
+}
+.flowing tbody {
+  overflow-y: auto;
+  height: 200px;
+  margin-bottom: 10px;
+  display: block;
+}
+.flowing form {
+  padding: 0;
 }
 html,
 body {
@@ -552,13 +576,23 @@ section.lightbox-backdrop {
 section.lightbox-window {
   position: fixed;
   z-index: 15;
-  background: #efefef;
+  background: #fff;
   height: 300px;
-  width: 90%;
   top: 0;
-  left: 5%;
+  left: 50%;
   display: none;
   border-radius: 5px;
+}
+section.lightbox-window input[type=submit],
+section.lightbox-window input[type=button] {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+.close-lightbox {
+  float: right;
+  margin: 10px;
+  cursor: pointer;
 }
 body.lightbox-body {
   background: #666;
@@ -568,30 +602,6 @@ body.lightbox-body header.lightbox-header {
 }
 body.lightbox-body section.lightbox-main {
   background: rgba(255, 255, 255, 0.3);
-}
-.flowing {
-  height: 100%;
-  padding: 15px;
-}
-.flowing section,
-.flowing div,
-.flowing form {
-  height: 100%;
-}
-.flowing thead {
-  display: block;
-}
-.flowing tbody {
-  overflow-y: auto;
-  height: 200px;
-  margin-bottom: 10px;
-  display: block;
-}
-.flowing form {
-  padding: 0;
-}
-.flowing form input {
-  clear: both;
 }
 @font-face {
   font-family: KGJune;
@@ -618,6 +628,42 @@ i[role=new-mail] {
   box-sizing: -moz-border-box;
   box-sizing: -o-border-box;
   box-sizing: border-box;
+}
+i[role=send-mail] {
+  height: 41px;
+  width: 41px;
+  background: url("../img/icons/send-mail.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=view-folder] {
+  height: 41px;
+  width: 41px;
+  background: url("../img/icons/view-folder.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=view-book] {
+  height: 41px;
+  width: 41px;
+  background: url("../img/icons/view-book.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
 }
 i[role=storage] {
   height: 25px;
@@ -648,6 +694,18 @@ i[role=close] {
   height: 15px;
   width: 15px;
   background: url("../img/icons/close.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=close-2x] {
+  height: 30px;
+  width: 30px;
+  background: url("../img/icons/close-2x.png") no-repeat center;
   display: block;
   box-sizing: -webkit-border-box;
   box-sizing: -moz-border-box;
@@ -901,6 +959,14 @@ a.button {
   padding-right: 7px;
   padding-top: 0px !important;
 }
+.small.button {
+  line-height: 30px;
+  height: 30px;
+}
+.small.button:hover {
+  line-height: 40px;
+  height: 40px;
+}
 input[type=button],
 input[type=submit],
 a.button,
@@ -918,7 +984,6 @@ button {
   box-sizing: -moz-border-box;
   box-sizing: -o-border-box;
   box-sizing: border-box;
-  padding-top: 5px;
   padding-bottom: 5px;
   border-radius: 10px;
   font-size: 23px;
@@ -928,6 +993,10 @@ button {
   -moz-transition: height 150ms ease;
   -webkit-transition: height 150ms ease;
   transition: height 150ms ease;
+}
+textarea {
+  width: 100%;
+  height: 130px;
 }
 input[type=button]:hover,
 input[type=submit]:hover,
@@ -1035,7 +1104,33 @@ article.box {
 }
 article.box.selected {
   background: #2f8cc9;
+}
+article.box.selected h4 {
   color: #fff;
+}
+article.box.selected i[role=view-folder] {
+  height: 41px;
+  width: 41px;
+  background: url("../img/icons/view-folder-white.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+article.box.selected i[role=view-book] {
+  height: 41px;
+  width: 41px;
+  background: url("../img/icons/view-book-white.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
 }
 article {
   -webkit-border-radius: 10px;
@@ -1075,6 +1170,13 @@ article thead th {
 article header th,
 article thead th {
   padding: 5px;
+}
+article em {
+  color: #666;
+}
+article .line {
+  border-bottom: 1px dashed #ccc;
+  padding-bottom: 10px;
 }
 .navbar {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
@@ -1178,6 +1280,19 @@ nav.horizontal a:hover {
   color: #888;
   font-size: 1em;
 }
+.icons-view li a img {
+  padding: 7px;
+  border: 1px solid #CCC;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  -ms-border-radius: 8px;
+  -o-border-radius: 8px;
+  border-radius: 8px;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+}
 .list-view table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;
 }
@@ -1227,6 +1342,10 @@ nav.horizontal a:hover {
   border: 1px solid #ccc;
   font-weight: normal;
   padding: 5px;
+  color: #000;
+}
+.list-view table tr td h2 i {
+  cursor: pointer;
 }
 .list-view table tr td a {
   margin: 5px;
@@ -1247,6 +1366,7 @@ nav.horizontal a:hover {
   list-style-type: none;
   padding: 5px;
   background: #fafafa;
+  width: 100%;
 }
 dl dd {
   line-height: 35px;

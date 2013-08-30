@@ -108,14 +108,30 @@ $(document).ready(function(){
 
 var ui = (function(){
 
+	var ui = {
+		showLightbox: function(){
+			$('.lightbox-backdrop').fadeIn();
+			$('.lightbox-window').fadeIn();
+			$('.lightbox-window').css({ 'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px'});
+			messenger.requireLightbox();
+		},
+		hideLightbox: function(){
+			$('.lightbox-backdrop').fadeOut();
+			$('.lightbox-window').fadeOut();
+			messenger.closeLightbox();
+		}
+	};
+
 	$(document).ready(function(){
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');
 			$(this).addClass('selected');
+		});
+
+		$('.close-lightbox i').on('click', function(){
+			ui.hideLightbox();
 		})
 	});
 
-	return {
-
-	}
+	return ui;
 }());

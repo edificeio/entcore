@@ -17,7 +17,7 @@
   display: block;
 }
 .right-magnet {
-  float: right;
+  float: right !important;
 }
 .one {
   width: 1;
@@ -248,7 +248,7 @@ nav.vertical ul li.selected ul {
   box-sizing: border-box;
   float: left;
   display: block;
-  float: right;
+  float: right !important;
 }
 .navbar .account img {
   max-width: 100%;
@@ -455,17 +455,20 @@ header h2 {
 .lightbox-window form label {
   display: block;
   float: left;
-  width: 150px;
 }
 .lightbox-window form label {
   clear: left;
   font-size: 12px;
+  width: 150px;
 }
 .text-container {
   padding: 10px;
 }
 .text-container h1 {
   margin-top: 1em;
+}
+.text-container article {
+  margin-bottom: 15px;
 }
 .box {
   min-height: 100px;
@@ -498,6 +501,27 @@ dl dt {
 }
 .mini-box .cell img {
   vertical-align: middle;
+}
+.flowing {
+  height: 100%;
+  padding: 15px;
+}
+.flowing section,
+.flowing div,
+.flowing form {
+  height: 100%;
+}
+.flowing thead {
+  display: block;
+}
+.flowing tbody {
+  overflow-y: auto;
+  height: 200px;
+  margin-bottom: 10px;
+  display: block;
+}
+.flowing form {
+  padding: 0;
 }
 html,
 body {
@@ -552,13 +576,23 @@ section.lightbox-backdrop {
 section.lightbox-window {
   position: fixed;
   z-index: 15;
-  background: #efefef;
+  background: #fff;
   height: 300px;
-  width: 90%;
   top: 0;
-  left: 5%;
+  left: 50%;
   display: none;
   border-radius: 5px;
+}
+section.lightbox-window input[type=submit],
+section.lightbox-window input[type=button] {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+.close-lightbox {
+  float: right;
+  margin: 10px;
+  cursor: pointer;
 }
 body.lightbox-body {
   background: #666;
@@ -568,28 +602,4 @@ body.lightbox-body header.lightbox-header {
 }
 body.lightbox-body section.lightbox-main {
   background: rgba(255, 255, 255, 0.3);
-}
-.flowing {
-  height: 100%;
-  padding: 15px;
-}
-.flowing section,
-.flowing div,
-.flowing form {
-  height: 100%;
-}
-.flowing thead {
-  display: block;
-}
-.flowing tbody {
-  overflow-y: auto;
-  height: 200px;
-  margin-bottom: 10px;
-  display: block;
-}
-.flowing form {
-  padding: 0;
-}
-.flowing form input {
-  clear: both;
 }

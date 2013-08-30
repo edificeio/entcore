@@ -17,7 +17,7 @@
   display: block;
 }
 .right-magnet {
-  float: right;
+  float: right !important;
 }
 .one {
   width: 1;

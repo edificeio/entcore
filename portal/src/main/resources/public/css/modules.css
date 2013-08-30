@@ -17,7 +17,7 @@
   display: block;
 }
 .right-magnet {
-  float: right;
+  float: right !important;
 }
 .one {
   width: 1;
@@ -248,7 +248,7 @@ nav.vertical ul li.selected ul {
   box-sizing: border-box;
   float: left;
   display: block;
-  float: right;
+  float: right !important;
 }
 .navbar .account img {
   max-width: 100%;
@@ -455,17 +455,20 @@ header h2 {
 .lightbox-window form label {
   display: block;
   float: left;
-  width: 150px;
 }
 .lightbox-window form label {
   clear: left;
   font-size: 12px;
+  width: 150px;
 }
 .text-container {
   padding: 10px;
 }
 .text-container h1 {
   margin-top: 1em;
+}
+.text-container article {
+  margin-bottom: 15px;
 }
 .box {
   min-height: 100px;
@@ -498,4 +501,25 @@ dl dt {
 }
 .mini-box .cell img {
   vertical-align: middle;
+}
+.flowing {
+  height: 100%;
+  padding: 15px;
+}
+.flowing section,
+.flowing div,
+.flowing form {
+  height: 100%;
+}
+.flowing thead {
+  display: block;
+}
+.flowing tbody {
+  overflow-y: auto;
+  height: 200px;
+  margin-bottom: 10px;
+  display: block;
+}
+.flowing form {
+  padding: 0;
 }

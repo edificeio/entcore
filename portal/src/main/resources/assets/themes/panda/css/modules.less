@@ -24,6 +24,18 @@ i[role=new-mail]{
 	.border-box;
 }
 
+i[role=send-mail]{
+	.icon(send-mail, 41px);
+}
+
+i[role=view-folder]{
+	.icon(view-folder, 41px);
+}
+
+i[role=view-book]{
+	.icon(view-book, 41px);
+}
+
 i[role=storage]{
 	.icon(storage, 25px);
 }
@@ -35,6 +47,10 @@ i[role=add]{
 
 i[role=close]{
 	.icon(close, 15px);
+}
+
+i[role=close-2x]{
+	.icon(close-2x, 30px);
 }
 
 i[role=notification]{
@@ -123,6 +139,16 @@ a.button{
 	padding-top: 0px !important;
 }
 
+.small.button{
+	line-height: 30px;
+	height: 30px;
+}
+
+.small.button:hover{
+	line-height: 40px;
+	height: 40px;
+}
+
 input[type=button], input[type=submit], a.button, button{
 	.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
 	color: #fff;
@@ -131,13 +157,17 @@ input[type=button], input[type=submit], a.button, button{
 	height: 40px;
 	display: inline-block;
 	.border-box;
-	padding-top: 5px;
 	padding-bottom: 5px;
 	border-radius: 10px;
 	font-size: 23px;
 	border: 1px solid #eee;
 	line-height: 40px;
 	.run-transition(height);
+}
+
+textarea{
+	width: 100%;
+	height: 130px;
 }
 
 input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
@@ -234,7 +264,17 @@ article.box{
 
 article.box.selected{
 	background: @medium-blue;
-	color: #fff;
+	h4{
+		color: #fff;
+	}
+
+	i[role=view-folder]{
+		.icon(view-folder-white, 41px);
+	}
+
+	i[role=view-book]{
+		.icon(view-book-white, 41px);
+	}
 }
 
 article{
@@ -255,6 +295,14 @@ article{
 		th{
 			padding: 5px;
 		}
+	}
+
+	em{
+		color: #666;
+	}
+	.line{
+		border-bottom: 1px dashed #ccc;
+		padding-bottom: 10px;
 	}
 }
 
@@ -324,6 +372,13 @@ nav.horizontal{
 		text-decoration: none;
 		color: #888;
 		font-size: 1em;
+
+		img{
+			padding: 7px;
+			border: 1px solid #CCC;
+			.rounded-corners(8px);
+			.border-box;
+		}
 	}
 }
 
@@ -380,6 +435,11 @@ nav.horizontal{
 					border: 1px solid #ccc;
 					font-weight: normal;
 					padding: 5px;
+					color: #000;
+
+					i{
+						cursor: pointer;
+					}
 				}
 
 				a{
@@ -404,6 +464,7 @@ nav.horizontal{
 						list-style-type: none;
 						padding: 5px;
 						background: #fafafa;
+						width: 100%;
 					}
 				}
 			}

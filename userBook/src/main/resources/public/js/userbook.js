@@ -38,9 +38,9 @@ var userbook = function(){
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
-									<img src="/public/img/mailto.png" alt="mailto"/>\
-									<img src="/public/img/carnet.png" alt="carnet"/>\
-									<img src="/public/img/files.png" alt="files"/>\
+									<i role="send-mail"></i>\
+									<i role="view-book"></i>\
+									<i role="view-folder"></i>\
 								</span>\
 								</div>\
 							</div>\
@@ -71,15 +71,15 @@ var userbook = function(){
 				</div>\
 				<article id="actions" class="row text-container">\
 					<div class="row mini-box">\
-						<div class="cell one"><img src="/public/img/mailto.png" alt="mailto" /></div>\
+						<div class="cell one"><i role="send-mail"></i></div>\
 						<a class="cell ten">{{#i18n}}userBook.class.write-message{{/i18n}}</a>\
 					</div>\
 					<div class="row mini-box">\
-						<div class="cell one"><img src="/public/img/carnet.png" alt="carnet"/></div>\
+						<div class="cell one"><i role="view-book"></i></div>\
 						<a class="cell ten">{{#i18n}}userBook.class.edit-notebook{{/i18n}}</a>\
 					</div>\
 					<div class="row mini-box">\
-						<div class="cell one"><img src="/public/img/files.png" alt="files"/></div>\
+						<div class="cell one"><i role="view-folder"></i></div>\
 						<a class="cell ten">{{#i18n}}userBook.class.see-portfolio{{/i18n}}</a>\
 					</div>\
 					<div class="clear"></div>\
@@ -94,8 +94,17 @@ var userbook = function(){
 				</article>\
 				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1><p>{{health}}</p>\
 				<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
-				{{#list}}<h3>{{category}}</h3><p><span class="{{category}}">\
-				{{values}}</span></p>{{/list}}'
+				<article class="text-container">\
+					{{#list}}\
+					<div class="row line">\
+						<div class="three cell">{{category}}</div>\
+						<div class="eight cell"><em>{{values}}</em></div>\
+						<div class="one cell"></div>\
+						<div class="clear"></div>\
+					</div>\
+					{{/list}}\
+					<div class="clear"></div>\
+				</article>'
 		},
 		action : {
 			search : function(o){

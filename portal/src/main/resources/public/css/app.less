@@ -54,13 +54,24 @@ section.lightbox-backdrop{
 section.lightbox-window{
 	position: fixed;
 	z-index: 15;
-	background: #efefef;
+	background: #fff;
 	height: 300px;
-	width: 90%;
 	top: 0;
-	left: 5%;
+	left: 50%;
 	display: none;
 	border-radius: 5px;
+
+	input[type=submit], input[type=button]{
+		position: absolute;
+		right: 10px;
+		bottom: 10px;
+	}
+}
+
+.close-lightbox{
+	float: right;
+	margin: 10px;
+	cursor: pointer;
 }
 
 body.lightbox-body{
@@ -74,27 +85,5 @@ body.lightbox-body{
 	}
 }
 
-.flowing{
-	height: 100%;
-	padding: 15px;
-	section, div, form{
-		height: 100%;
-	}
-	thead{
-		display: block;
-	}
-	tbody{
-		overflow-y: auto;
-		height: 200px;
-		margin-bottom: 10px;
-		display: block;
-	}
 
-	form{
-		padding: 0;
-		input{
-			clear: both;
-		}
-	}
-}
 
