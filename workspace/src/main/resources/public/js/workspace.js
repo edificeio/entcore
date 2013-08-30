@@ -290,8 +290,9 @@ var workspace = function(){
 			},
 			share: function(o){
 				$.get(o.url, function(data){
-					ui.showLightbox();
 					$('#form-window').html(data);
+					ui.showLightbox();
+
 					$('#form-window table').addClass('monoline');
 					$('.lightbox-backdrop, input[type=submit]').one('click', function(){
 						ui.hideLightbox();
