@@ -166,14 +166,16 @@ public class UserBookController extends Controller {
 		String  userId = message.body().getString("userId");
 		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
 			+ "CREATE (m {type:'USERBOOK',picture:'" + userBookData.getString("picture") + "',"
-			+ "motto:'Ajoute ta devise !', health:'Problèmes de santé ?', mood:'default'}), n-[:USERBOOK]->m ");
+			+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
 		JsonArray hobbies = userBookData.getArray("hobbies");
 		for (Object hobby : hobbies) {
 			JsonObject jo = (JsonObject)hobby;
 			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
 				+ "type(r)='USERBOOK' CREATE (p {type:'HOBBIES',category:'" + jo.getString("code")
-				+ "', values:'exemple'}), m-[:PUBLIC]->p");
+				+ "', values:''}), m-[:PUBLIC]->p");
 		}
 	}
+
+
 
 }

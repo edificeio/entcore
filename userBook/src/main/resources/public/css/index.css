@@ -41,6 +41,9 @@ span[contenteditable]:hover{
 	background: yellow;
 	border:none;
 }
+span[contenteditable]{
+	display:block;
+}
 
 #mood img{
 	width:40px;
