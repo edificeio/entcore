@@ -189,4 +189,10 @@ var userbook = function(){
 $(document).ready(function(){
 	userbook.init();
 	userbook.action.refreshClassList();
+	if (location.href.indexOf("#",0)!==0){
+		var id = location.href.split("#")[1];
+		userbook.action.person(
+			{"url":"/api/person?id="+ location.href.split("#")[1] + "&type=" + location.href.split("#")[2]}
+		);
+	}
 });
