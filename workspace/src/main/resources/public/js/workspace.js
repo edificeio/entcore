@@ -47,23 +47,18 @@ var tools = (function(){
 }());
 
 var navigation = (function(){
+	var currentURL = '/documents';
 	var updater = {
 		redirect: function(action){
 			$('nav.vertical a, nav.vertical li').removeClass('selected');
 			var current = $('nav.vertical a[href="' + action + '"]');
 			current.addClass('selected');
 			current.parent().addClass('selected');
-			current.parent('li').parent('ul').parent('li').addClass('selected')
+			current.parent('li').parent('ul').parent('li').addClass('selected');
+			currentURL = action;
 		},
-		openLightbox: function(){
-			$('.lightbox-backdrop').fadeIn();
-			$('.lightbox-window').fadeIn();
-			messenger.requireLightbox();
-		},
-		closeLightbox: function(){
-			$('.lightbox-backdrop').fadeOut();
-			$('.lightbox-window').fadeOut();
-			messenger.closeLightbox();
+		currentUrl: function(){
+			return currentURL;
 		}
 	};
 
@@ -76,8 +71,6 @@ var navigation = (function(){
 	return updater;
 }());
 
-
-
 var workspace = function(){
 	var app = Object.create(oneApp);
 	app.scope = "#main";
@@ -87,7 +80,7 @@ var workspace = function(){
 							<thead>\
 								<tr>\
 									<th scope="col">\
-										<input type="checkbox" call="allCheckbox" />\
+										<input type="checkbox" class="selectAllCheckboxes" />\
 									</th>\
 									<th scope="col"></th>\
 									<th scope="col" class="nine">{{#i18n}}name{{/i18n}}</th>\
@@ -115,10 +108,10 @@ var workspace = function(){
 								</tr>\
 								<tr class="comments{{_id}} underline">\
 									<td colspan="4" class="container-cell">\
-										<a call="comment" href="{{_id}}" class="button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
-										<a href="share?id={{_id}}" call="share" class="button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
+										<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+										<a href="/share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
-										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" call="hideComment">X</i></h2>\
+										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" role="close" call="hideComment"></i></h2>\
 										<ul class="row">\
 										{{#comments}}\
 											<li class="twelve cell"><em>{{author}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
@@ -155,7 +148,7 @@ var workspace = function(){
 						<thead>\
 							<tr>\
 								<th scope="col">\
-									<input type="checkbox" call="allCheckbox" />\
+									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
@@ -178,14 +171,11 @@ var workspace = function(){
 						</tbody>\
 					</table>',
 
-			trash :'<div>\
-					<a call="remove" href="">{{#i18n}}workspace.delete{{/i18n}}</a>\
-					</div>\
-					<table class="striped alternate" summary="">\
+			trash :'<table class="striped alternate" summary="">\
 						<thead>\
 							<tr>\
 								<th scope="col">\
-									<input type="checkbox" call="allCheckbox" />\
+									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
 								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
@@ -212,13 +202,13 @@ var workspace = function(){
 						</tbody>\
 					</table>',
 
-			addDocument : '<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
+			addDocument : '	<form id="upload-form" method="post" action="/document" enctype="multipart/form-data">\
 							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 							<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
 							<input type="text" name="name" />\
 							<label>{{#i18n}}workspace.document.file{{/i18n}}</label>\
 							<input type="file" name="file" />\
-							<input call="sendFile" type="button" style="clear:both" value="{{#i18n}}upload{{/i18n}}" />\
+							<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 							</form>',
 
 			sendRack : '<form id="upload-form" method="post" action="rack" enctype="multipart/form-data">\
@@ -235,20 +225,27 @@ var workspace = function(){
 						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 						</form>',
 
-			comment : '<form method="post" action="document/{{id}}/comment">\
-							<label>{{#i18n}}workspace.leave.comment{{/i18n}}</label>\
+			comment : '<form method="post" action="/document/{{id}}/comment">\
+							<h1>{{#i18n}}workspace.comment{{/i18n}}</h1>\
 							<textarea name="comment"></textarea>\
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
 						</form>',
 
-			moveOrCopyDocuments : '<form action="{{action}}">\
+			moveDocuments : '<form action="{{action}}">\
+								<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
 								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
 								<input type="text" name="folder" />\
-								<input call="moveOrCopyDocuments" type="button" style="clear:both" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+							</form>',
+			copyDocuments : '<form action="{{action}}">\
+								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
+								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
+								<input type="text" name="folder" />\
+								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
 							</form>'
 		},
 		action : {
-			documents : function (o) {
+			documents : function (o, callback) {
 				var relativePath = undefined,
 					that = this,
 					directories;
@@ -271,6 +268,10 @@ var workspace = function(){
 						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
 						navigation.redirect(o.url);
 						messenger.requireResize();
+
+						if(typeof callback === 'function'){
+							callback();
+						}
 					});
 				});
 			},
@@ -289,11 +290,11 @@ var workspace = function(){
 			},
 			share: function(o){
 				$.get(o.url, function(data){
-					navigation.openLightbox();
+					ui.showLightbox();
 					$('#form-window').html(data);
 					$('#form-window table').addClass('monoline');
 					$('.lightbox-backdrop, input[type=submit]').one('click', function(){
-						navigation.closeLightbox();
+						ui.hideLightbox();
 					})
 				})
 			},
@@ -309,10 +310,10 @@ var workspace = function(){
 
 			addDocument : function (o) {
 				$('#form-window').html(app.template.render("addDocument", {}));
-				navigation.openLightbox();
+				ui.showLightbox();
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
-					navigation.closeLightbox();
+					ui.hideLightbox();
 				})
 			},
 
@@ -341,7 +342,7 @@ var workspace = function(){
 				if ("rack" === action) {
 					action += '/' + form.children('select[name=to]').val();
 				}
-				navigation.closeLightbox();
+				ui.hideLightbox();
 				$.ajax({
 					url: action + '?' + form.serialize(),
 					type: 'POST',
@@ -366,17 +367,11 @@ var workspace = function(){
 				.done(action)
 				.error(function(data) {app.notify.error(data)});
 			},
-
-			allCheckbox : function(o) {
-				var selected = o.target.checked;
-				$(":checkbox").each(function() {
-					this.checked = selected;
-				});
-
-				//o.target.checked = !o.target.checked;
-			},
-
 			moveTrash : function(o) {
+				if(navigation.currentUrl().indexOf('trash') !== -1){
+					this.remove(o);
+					return;
+				}
 				var files = [];
 				$(":checkbox:checked").each(function(i) {
 					var obj = $(this);
@@ -400,20 +395,28 @@ var workspace = function(){
 
 			comment : function(o) {
 				$('#form-window').html(app.template.render("comment", { id : o.url }));
-				navigation.openLightbox();
+				ui.showLightbox();
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
-					navigation.closeLightbox();
+					ui.hideLightbox();
 				})
 			},
 
 			sendComment : function(o) {
-				navigation.closeLightbox();
+				ui.hideLightbox();
 				var form = $(o.target).parents("form"),
+					url = form.attr('action'),
 					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
-				$.post(form.attr("action"), data)
+
+				var that = this;
+				$.post(url, data)
 				.done(function (data) {
-					location.reload(true);
+					that.documents({url: navigation.currentUrl()}, function(){
+						var targetFile = url.split('/')[2];
+						var commentsLine = $('.comments' + targetFile);
+						commentsLine.find('h2').show();
+						commentsLine.find('ul').show();
+					});
 				})
 				.error(function (data) {
 					app.notify.error(data);
@@ -421,16 +424,16 @@ var workspace = function(){
 			},
 
 			showComment : function(o) {
-				$(o.target).parent().find('ul, h2').show();
+				$(o.target).parent().find('ul, h2').slideDown();
 				messenger.requireResize();
 			},
 			hideComment: function(o){
-				$(o.target).parent().parent().find('ul, h2').hide();
+				$(o.target).parent().parent().find('ul, h2').slideUp();
 				messenger.requireResize();
 			},
 			remove : function (o) {
-				navigation.closeLightbox()
 				var files = [];
+
 				$(":checkbox:checked").each(function(i) {
 					var obj = $(this);
 					$.ajax({
@@ -446,17 +449,24 @@ var workspace = function(){
 				});
 			},
 
-			moveOrCopy : function(o) {
-				$('#form-window').html(app.template.render("moveOrCopyDocuments", { action : o.url}));
-				navigation.openLightbox();
+			move : function(o) {
+				$('#form-window').html(app.template.render("moveDocuments", { action : o.url}));
+				ui.showLightbox();
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
-					navigation.closeLightbox();
+					ui.hideLightbox();
 				})
 			},
-
+			copy : function(o) {
+				$('#form-window').html(app.template.render("copyDocuments", { action : o.url}));
+				ui.showLightbox();
+				messenger.requireResize();
+				$('.lightbox-backdrop').one('click', function(){
+					ui.hideLightbox();
+				})
+			},
 			moveOrCopyDocuments : function(o) {
-				navigation.closeLightbox()
+				ui.hideLightbox();
 				var ids = "",
 					form = $(o.target).parents("form"),
 					action = form.attr("action"),
@@ -505,4 +515,17 @@ $(document).ready(function(){
 		$(".base-folders").html(html);
 		navigation.redirect('documents?hierarchical=true');
 	});
+
+	$('.workspace').on('click', '.select-file, .selectAllCheckboxes', function(){
+		if($('.select-file:checked').length > 0){
+			$('.contextual').attr('disabled', false);
+		}
+		else{
+			$('.contextual').attr('disabled', true);
+		}
+	});
+
+	$('.workspace').on('change', '.selectAllCheckboxes', function(){
+		$('input[type=checkbox]').attr('checked', this.checked);
+	})
 });

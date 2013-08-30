@@ -994,6 +994,13 @@ button {
   -webkit-transition: height 150ms ease;
   transition: height 150ms ease;
 }
+input[type=button] i,
+input[type=submit] i,
+a.button i,
+button i {
+  margin-right: 5px;
+  margin-top: 5px;
+}
 textarea {
   width: 100%;
   height: 130px;

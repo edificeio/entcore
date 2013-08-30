@@ -32,5 +32,6 @@
 	"workspace.contrib": "Contribuer",
 	"workspace.read": "Consulter",
 	"name": "Titre",
-	"modified": "Mise à jour"
+	"modified": "Mise à jour",
+	"send": "Envoyer"
 }

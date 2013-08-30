@@ -1,10 +1,12 @@
 var messenger = (function(){
 	"use strict";
 
-	var parentUrl = 'http://';
+	var parentUrl;
 
 	var send = function(message){
-		parent.postMessage(JSON.stringify(message), parentUrl);
+		if(parentUrl !== undefined){
+			parent.postMessage(JSON.stringify(message), parentUrl);
+		}
 	};
 
 	var messagesHandlers = {

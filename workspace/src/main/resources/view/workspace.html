@@ -29,7 +29,7 @@
 							<a call="rack" href="rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a>
 						</li>
 						<li>
-							<a call="trash" href="">{{#i18n}}workspace.trash{{/i18n}}</a>
+							<a call="trash" href="/documents/trash">{{#i18n}}workspace.trash{{/i18n}}</a>
 						</li>
 						<li>
 							<a call="sendRack" href="rack">{{#i18n}}workspace.send.rack{{/i18n}}</a>
@@ -45,13 +45,13 @@
 						<a call="addDocument" href="document" class="button">
 							<i role="add"></i>{{#i18n}}workspace.add.document{{/i18n}}
 						</a>
-						<a call="moveTrash" href="document/trash" class="button">
+						<a call="moveTrash" href="/document/trash" disabled class="contextual button">
 							{{#i18n}}workspace.move.trash{{/i18n}}
 						</a>
-						<a call="moveOrCopy" href="documents/move" class="button">
+						<a call="move" href="/documents/move" disabled class="contextual button">
 							{{#i18n}}workspace.move{{/i18n}}
 						</a>
-						<a call="moveOrCopy" href="documents/copy" class="button">
+						<a call="copy" href="/documents/copy" disabled class="contextual button">
 							{{#i18n}}workspace.copy{{/i18n}}
 						</a>
 					</div>
@@ -64,8 +64,12 @@
 					<div class="mod">
 
 						<section class="lightbox-window">
-							<div class="close-lightbox"></div>
+							<div class="close-lightbox">
+								<i role="close-2x"></i>
+							</div>
+
 							<div id="form-window" class="flowing"></div>
+							<div class="clear"></div>
 						</section>
 						<article id="list">
 
