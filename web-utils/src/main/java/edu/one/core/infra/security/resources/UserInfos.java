@@ -41,6 +41,7 @@ public class UserInfos {
 	private String username;
 	private String classId;
 	private String type;
+	private String login;
 	private List<Action> authorizedActions;
 
 	public String getUserId() {
@@ -97,6 +98,14 @@ public class UserInfos {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
 	}
 
 }

@@ -167,7 +167,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"RETURN distinct a.name as name, a.displayName as displayName, " +
 				"a.type as type, n.ENTPersonClasses? as classe, " +
 				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
-				"n.ENTPersonNomAffichage as username, n.type as userType";
+				"n.ENTPersonNomAffichage as username, n.type as userType, " +
+				"n.ENTPersonLogin as login";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
@@ -184,6 +185,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						.putString("lastName", j.getString("lastname"))
 						.putString("username", j.getString("username"))
 						.putString("classId", j.getString("classe"))
+						.putString("login", j.getString("login"))
 						.putString("type", j.getString("userType"));
 					JsonArray actions = new JsonArray();
 					for (String attr : result.getFieldNames()) {
@@ -192,6 +194,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						json.removeField("lastname");
 						json.removeField("username");
 						json.removeField("classe");
+						json.removeField("login");
 						json.removeField("userType");
 						actions.add(json);
 					}
