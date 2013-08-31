@@ -41,22 +41,24 @@ public abstract class Server extends Verticle {
 
 		log.info("Verticle: " + this.getClass().getSimpleName() + " starts on port: " + config.getInteger("port"));
 
+		final String prefix = getPathPrefix(config);
 		// Serve public static resource like img, css, js. By convention in /public directory
 		// Dummy impl
-		rm.getWithRegEx("\\/public\\/.+", new Handler<HttpServerRequest>() {
+		rm.getWithRegEx(prefix.replaceAll("\\/", "\\/") + "\\/public\\/.+",
+				new Handler<HttpServerRequest>() {
 			public void handle(HttpServerRequest request) {
-				request.response().sendFile("." + request.path());
+				request.response().sendFile("." + request.path().substring(prefix.length()));
 			}
 		});
 
-		rm.get("/i18n", new Handler<HttpServerRequest>() {
+		rm.get(prefix + "/i18n", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Controller.renderJson(request, i18n.load(request.headers().get("Accept-Language")));
 			}
 		});
 
-		rm.get("/monitoring", new Handler<HttpServerRequest>() {
+		rm.get(prefix + "/monitoring", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest event) {
 				Controller.renderJson(event, new JsonObject().putString("test", "ok"));
@@ -88,6 +90,20 @@ public abstract class Server extends Verticle {
 				handler.handle(request.formAttributes());
 			}
 		});
+	}
+
+	public static String getPathPrefix(JsonObject config) {
+		String path = config.getString("path-prefix");
+		if (path == null) {
+			String verticle = config.getString("main");
+			if (verticle != null && !verticle.trim().isEmpty() && verticle.contains(".")) {
+				path = verticle.substring(verticle.lastIndexOf('.') + 1).toLowerCase();
+			}
+		}
+		if ("".equals(path) || "/".equals(path)) {
+			return "";
+		}
+		return "/" + path;
 	}
 
 }

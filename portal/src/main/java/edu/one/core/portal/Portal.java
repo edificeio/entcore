@@ -11,10 +11,10 @@ public class Portal extends Server {
 
 		PortalService service = new PortalService(vertx, container, rm, securedActions);
 
-		service.get("/portal", "portal")
+		service.get("/", "portal")
 				.get("/theme-documentation", "themeDocumentation")
 				.get("/apps", "apps")
-				.getWithRegEx("\\/assets\\/.+", "assets");
+				.getWithRegEx("/assets/.+", "assets");
 
 	}
 

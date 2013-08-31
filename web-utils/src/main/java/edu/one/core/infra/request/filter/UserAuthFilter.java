@@ -40,8 +40,11 @@ public class UserAuthFilter implements Filter {
 		String location = "";
 		try {
 			callBack = "http://" + URLEncoder.encode(request.headers().get("Host") + request.uri(), "UTF-8");
-			location = "http://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8")
-					+ ":8009/login?callback=" + callBack;
+			location = "http://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8");
+			if (request.headers().get("X-Forwarded-For") == null) {
+				location += ":8009";
+			}
+			location += "/auth/login?callback=" + callBack;
 		} catch (UnsupportedEncodingException ex) {
 			ex.printStackTrace();
 		}

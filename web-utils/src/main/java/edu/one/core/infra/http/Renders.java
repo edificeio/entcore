@@ -19,10 +19,12 @@ import com.github.mustachejava.TemplateFunction;
 import com.google.common.collect.Collections2;
 
 import edu.one.core.infra.I18n;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.mustache.DevMustacheFactory;
 import edu.one.core.infra.mustache.I18nTemplateFunction;
 import edu.one.core.infra.mustache.StaticResourceTemplateFunction;
 import edu.one.core.infra.mustache.VertxTemplateFunction;
+
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -31,15 +33,17 @@ public class Renders {
 	private final MustacheFactory mf;
 	protected final Logger log;
 	private Map<String, VertxTemplateFunction> templateFunctions;
+	protected final String pathPrefix;
 
 	public Renders(Container container) {
 		this.log = container.logger();
+		this.pathPrefix = Server.getPathPrefix(container.config());
 		this.mf = "dev".equals(container.config().getString("mode"))
 				? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 
 		templateFunctions = new HashMap<>();
-		templateFunctions.put("infra", new StaticResourceTemplateFunction( "8001")); // FIXME get port from infra module
-		templateFunctions.put("static", new StaticResourceTemplateFunction());
+		templateFunctions.put("infra", new StaticResourceTemplateFunction("/infra/public", "8001")); // FIXME get port from infra module
+		templateFunctions.put("static", new StaticResourceTemplateFunction(pathPrefix + "/public"));
 		templateFunctions.put("i18n", new I18nTemplateFunction(I18n.getInstance()));
 
 	}
@@ -80,7 +84,11 @@ public class Renders {
 			} else if (resourceName != null && !resourceName.trim().isEmpty()) {
 				mustache = mf.compile(resourceName);
 			} else {
-				mustache = mf.compile(request.path() + ".html");
+				String template = request.path().substring(pathPrefix.length());
+				if (template == null || template.trim().isEmpty()) {
+					template = pathPrefix.substring(1);
+				}
+				mustache = mf.compile(template + ".html");
 			}
 			Writer writer = new StringWriter();
 			Object[] scopes = { params.toMap(), setTemplateFunctionRequest(request)};

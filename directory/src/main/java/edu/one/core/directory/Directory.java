@@ -54,7 +54,7 @@ public class Directory extends Server {
 			+ "ENTPersonNomAffichage:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
 			+ "ENTPersonMotDePasse:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})");
 
-		rm.get("/admin", new Handler<HttpServerRequest>() {
+		rm.get("/directory/admin", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				render.renderView(request, new JsonObject());
@@ -282,7 +282,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/export", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/export", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String neoRequest = "";

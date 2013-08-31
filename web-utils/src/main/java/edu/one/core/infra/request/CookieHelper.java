@@ -53,14 +53,28 @@ public class CookieHelper {
 	}
 
 	public static void set(String name, String value, long timeout, HttpServerResponse response) {
+		set(name, value, timeout, "/", response);
+	}
+
+	public static void set(String name, String value, long timeout, String path, HttpServerResponse response) {
 		Cookie cookie = new DefaultCookie(name, value);
 		cookie.setMaxAge(timeout);
+		if (path != null && !path.trim().isEmpty()) {
+			cookie.setPath(path);
+		}
 		response.headers().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
 	}
 
 	public void setSigned(String name, String value, long timeout, HttpServerResponse response) {
+		setSigned(name, value, timeout, "/", response);
+	}
+
+	public void setSigned(String name, String value, long timeout, String path, HttpServerResponse response) {
 		Cookie cookie = new DefaultCookie(name, value);
 		cookie.setMaxAge(timeout);
+		if (path != null && !path.trim().isEmpty()) {
+			cookie.setPath(path);
+		}
 		if (signKey != null) {
 			try {
 				signCookie(cookie);
@@ -83,6 +97,10 @@ public class CookieHelper {
 	}
 
 	public String getSigned(String name, HttpServerRequest request) {
+		return getSigned(name, "/", request);
+	}
+
+	public String getSigned(String name, String path, HttpServerRequest request) {
 		if (request.headers().get("Cookie") != null) {
 			Set<Cookie> cookies = CookieDecoder.decode(request.headers().get("Cookie"));
 			for (Cookie c : cookies) {
@@ -92,10 +110,14 @@ public class CookieHelper {
 					String value = c.getValue().substring(0, idx);
 					String signature = c.getValue().substring(idx+1);
 					String calcSign = null;
+					String cookiePath = path;
+					if (cookiePath == null || cookiePath.trim().isEmpty()) {
+						cookiePath = c.getPath();
+					}
 					try {
 						calcSign = HmacSha1.sign(
 								c.getDomain()+c.getName()+
-								c.getPath()+value, signKey);
+								cookiePath+value, signKey);
 					} catch (InvalidKeyException | NoSuchAlgorithmException
 							| IllegalStateException
 							| UnsupportedEncodingException e) {

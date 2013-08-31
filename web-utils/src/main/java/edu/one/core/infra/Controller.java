@@ -170,48 +170,56 @@ public abstract class Controller extends Renders {
 	}
 
 	public Controller get(String pattern, String method) {
+		pattern = addPathPrefix(pattern);
 		addPattern(pattern, HttpMethod.GET, method);
 		rm.get(pattern, bindHandler(method));
 		return this;
 	}
 
 	public Controller put(String pattern, String method) {
+		pattern = addPathPrefix(pattern);
 		addPattern(pattern, HttpMethod.PUT, method);
 		rm.put(pattern, bindHandler(method));
 		return this;
 	}
 
 	public Controller post(String pattern, String method) {
+		pattern = addPathPrefix(pattern);
 		addPattern(pattern, HttpMethod.POST, method);
 		rm.post(pattern, bindHandler(method));
 		return this;
 	}
 
 	public Controller delete(String pattern, String method) {
+		pattern = addPathPrefix(pattern);
 		addPattern(pattern, HttpMethod.DELETE, method);
 		rm.delete(pattern, bindHandler(method));
 		return this;
 	}
 
 	public Controller getWithRegEx(String regex, String method) {
+		regex = addPathPrefix(regex).replaceAll("\\/", "\\/");
 		addRegEx(regex, HttpMethod.GET, method);
 		rm.getWithRegEx(regex, bindHandler(method));
 		return this;
 	}
 
 	public Controller putWithRegEx(String regex, String method) {
+		regex = addPathPrefix(regex).replaceAll("\\/", "\\/");
 		addRegEx(regex, HttpMethod.PUT, method);
 		rm.putWithRegEx(regex, bindHandler(method));
 		return this;
 	}
 
 	public Controller postWithRegEx(String regex, String method) {
+		regex = addPathPrefix(regex).replaceAll("\\/", "\\/");
 		addRegEx(regex, HttpMethod.POST, method);
 		rm.postWithRegEx(regex, bindHandler(method));
 		return this;
 	}
 
 	public Controller deleteWithRegEx(String regex, String method) {
+		regex = addPathPrefix(regex).replaceAll("\\/", "\\/");
 		addRegEx(regex, HttpMethod.DELETE, method);
 		rm.deleteWithRegEx(regex, bindHandler(method));
 		return this;
@@ -256,6 +264,16 @@ public abstract class Controller extends Renders {
 		} catch (IllegalArgumentException | NullPointerException e) {
 			return ActionType.UNSECURED;
 		}
+	}
+
+	private String addPathPrefix(String pattern) {
+		if (pattern == null || pattern.trim().isEmpty()) {
+			return pathPrefix;
+		}
+		if (!pattern.trim().startsWith("/")) {
+			return pathPrefix + "/" + pattern.trim();
+		}
+		return pathPrefix + pattern.trim();
 	}
 
 	protected void shareResource(final HttpServerRequest request,

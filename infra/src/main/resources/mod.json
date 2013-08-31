@@ -3,6 +3,7 @@
 	"port": 8001,
 	"mode": "dev",
 	"auto-redeploy": true,
+	"path-prefix" : "infra",
 	"app-registry" : "edu.one.core~app-registry~0.1.0-SNAPSHOT",
 	"neo4j-persistor" : "com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT",
 	"one-modules": [

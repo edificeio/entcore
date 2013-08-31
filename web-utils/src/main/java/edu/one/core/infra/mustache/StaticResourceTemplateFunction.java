@@ -2,27 +2,31 @@ package edu.one.core.infra.mustache;
 
 public class StaticResourceTemplateFunction extends VertxTemplateFunction {
 
-	private String host;
-	private String infraPort;
+	private final String infraPort;
 
 	// TODO : make configurable
-	private final static String publicDir = "public";
+	private final String publicDir;
 	private final static String protocol = "http://";
 
-	public StaticResourceTemplateFunction() {}
+	public StaticResourceTemplateFunction(String publicDir) {
+		this.publicDir = publicDir;
+		this.infraPort = null;
+	}
 
-	public StaticResourceTemplateFunction(String infraPort) {
+	public StaticResourceTemplateFunction(String publicDir, String infraPort) {
+		this.publicDir = publicDir;
 		this.infraPort = infraPort;
 	}
 
 	@Override
 	public String apply(String path) {
-		host = infraPort == null ?
-				request.headers().get("Host") :
-				request.headers().get("Host").split(":")[0] + ":" + infraPort;
+		String host = request.headers().get("Host");
+		if (infraPort != null && request.headers().get("X-Forwarded-For") == null) {
+			host = request.headers().get("Host").split(":")[0] + ":" + infraPort;
+		}
 		return protocol
 				+ host
-				+ "/" + publicDir 
+				+ ((publicDir != null && publicDir.startsWith("/")) ? publicDir : "/" + publicDir)
 				+ "/" + path;
 	}
 }

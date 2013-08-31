@@ -4,5 +4,6 @@
 	"port": 8017,
 	"auto-redeploy": true,
 	"mode": "dev",
-	"skin": "panda"
+	"skin": "panda",
+	"path-prefix" : ""
 }

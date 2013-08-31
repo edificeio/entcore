@@ -34,7 +34,7 @@ public class PortalService extends Controller {
 				JsonObject jo = new JsonObject()
 					.putString("userFirstname", user.getFirstName())
 					.putString("userClass", user.getClassId());
-				renderView(request,jo);
+				renderView(request, jo, "portal.html", null);
 			}
 		});
 	}

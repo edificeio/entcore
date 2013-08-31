@@ -59,7 +59,7 @@ var oneApp = {
 	i18n : {
 		load : function () {
 			var that = this;
-			$.get('/i18n').done(function(data) {
+			$.get('i18n').done(function(data) { // TODO improve i18n get
 				that.bundle = data;
 			});
 		},

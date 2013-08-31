@@ -62,7 +62,7 @@ public class Starter extends Server {
 
 		final Renders render = new Renders(container);
 
-			rm.get("/starter/dev", new Handler<HttpServerRequest> () {
+			rm.get("/infra/starter/dev", new Handler<HttpServerRequest> () {
 				public void handle(HttpServerRequest request) {
 					render.renderView(request);
 				}
