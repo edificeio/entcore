@@ -30,25 +30,25 @@ var userbook = function(){
 			searchResults: '\
 				{{#list}}<div class="person-small" id={{id}}>\
 				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<span><a href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</a></span>\
+				<span><a href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</a></span>\
 				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
-				<span class="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
-				<img src="/public/img/carnet.png" alt="carnet"/>\
-				<img src="/public/img/files.png" alt="files"/>\
+				<span class="actions"><img src="public/img/mailto.png" alt="mailto"/>\
+				<img src="public/img/carnet.png" alt="carnet"/>\
+				<img src="public/img/files.png" alt="files"/>\
 				</span></div>{{/list}}',
 			personne: '\
-				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+				<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<p class="name">{{displayName}}</p>\
 				<p class="address">{{address}}</p>\
 				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} : {{motto}}</p>\
-				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
+				<img src="public/img/reveur.png" alt="panda" class="mood"/>\
 				<div class="clear"></div>\
-				<span id="actions"><img src="/public/img/mailto.png" alt="mailto"/>\
+				<span id="actions"><img src="public/img/mailto.png" alt="mailto"/>\
 				{{#i18n}}userBook.class.write-message{{/i18n}}\
-				<img src="/public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
-				<img src="/public/img/files.png" alt="files"/>\
+				<img src="public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
+				<img src="public/img/files.png" alt="files"/>\
 				{{#i18n}}userBook.class.see-portfolio{{/i18n}}</span>\
-				{{#relations}}<p><a href="/api/person?id={{relatedId}}&type={{relatedType}}" call="person">\
+				{{#relations}}<p><a href="api/person?id={{relatedId}}&type={{relatedType}}" call="person">\
 				{{relatedName}}</a></p>{{/relations}}\
 				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>{{health}}</p>\
 				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
@@ -113,6 +113,6 @@ $(document).ready(function(){
 	userbook.init();
 	if (location.search.substring(1,6) === 'query'){
 		var className = location.search.split('class=')[1];
-		userbook.action.searchClass("/api/class?name=" + className);
+		userbook.action.searchClass("api/class?name=" + className);
 	}
 });

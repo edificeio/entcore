@@ -71,7 +71,7 @@ var communication = function(){
 			},
 
 			confParentsEnfants : function(o) {
-				$.get("/groups/classes/enfants" + o.url.substring(o.url.indexOf('?')))
+				$.get("groups/classes/enfants" + o.url.substring(o.url.indexOf('?')))
 				.done(function(groups) {
 					$('#list').html(app.template.render("confParentsEnfants",
 							{ action : o.url, groups : groups }));

@@ -26,5 +26,5 @@ var timeline = function(){
 
 $(document).ready(function(){
 	timeline.init();
-	timeline.action.lastNotifications({url : "/lastNotifications"});
+	timeline.action.lastNotifications({url : "lastNotifications"});
 });

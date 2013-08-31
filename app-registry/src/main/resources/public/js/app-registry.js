@@ -6,11 +6,11 @@ var appRegistry = function(){
 			applications : '<div>\
 								<a call="allCheckbox" href="checked">{{#i18n}}app.registry.select.all{{/i18n}}</a>\
 								<a call="allCheckbox" href="">{{#i18n}}app.registry.unselect.all{{/i18n}}</a>\
-								<a call="createRole" href="/role">{{#i18n}}app.registry.createRole{{/i18n}}</a>\
+								<a call="createRole" href="role">{{#i18n}}app.registry.createRole{{/i18n}}</a>\
 							</div>\
 							{{#.}}\
 							<div>\
-								{{#i18n}}app.registry.application{{/i18n}} : <a call="application" href=\"/application/conf/{{id}}\">{{name}}</a><br />\
+								{{#i18n}}app.registry.application{{/i18n}} : <a call="application" href=\"application/conf/{{id}}\">{{name}}</a><br />\
 								{{#i18n}}app.registry.actions{{/i18n}} :\
 								<ul>\
 								{{#actions}}\
@@ -116,7 +116,7 @@ var appRegistry = function(){
 					$.post(form.attr("action"), form.serialize() + "&actions=" + actions.substring(1))
 					.done(function(response) {
 						$('#form-window').empty();
-						appRegistry.action.roles({url : "/roles/actions"});
+						appRegistry.action.roles({url : "roles/actions"});
 					})
 					.error(function(data) {app.notify.error(data)});
 				}
@@ -141,7 +141,7 @@ var appRegistry = function(){
 			},
 
 			authorizeGroups: function(o) {
-				$.get("/roles")
+				$.get("roles")
 				.done(function(response) {
 					var roles = [];
 					if (response.status === "ok") {
@@ -149,7 +149,7 @@ var appRegistry = function(){
 							var a = response.result[key];
 							roles.push(a);
 						}
-						$.get("/groups/roles" + o.url.substring(o.url.indexOf('?')))
+						$.get("groups/roles" + o.url.substring(o.url.indexOf('?')))
 						.done(function(resp) {
 							var groups = [];
 							if (resp.status === "ok") {

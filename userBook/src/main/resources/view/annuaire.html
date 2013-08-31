@@ -15,10 +15,10 @@
 	</head>
 	<body class="app">
 		<h1>{{#i18n}}userBook.class.title{{/i18n}}</h1>
-		<p><a href="/mon-compte">{{#i18n}}userBook.account.myAccount{{/i18n}}</a></p>
+		<p><a href="mon-compte">{{#i18n}}userBook.account.myAccount{{/i18n}}</a></p>
 		<div id="annuaire">
 			<div id="search">
-				<form method="GET" action="/api/search" id="search-form">
+				<form method="GET" action="api/search" id="search-form">
 					<input type="text" name="name"/>
 					<input type="submit" call="search" value="OK"/>
 				</form>

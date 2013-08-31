@@ -93,7 +93,7 @@ var workspace = function(){
 								<tr class="overline">\
 									<td></td>\
 									<td><i role="folder"></i></td>\
-									<td><strong><a call="documents" href="/documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
+									<td><strong><a call="documents" href="documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
 									<td></td>\
 								</tr>\
 								<tr class="underline">\
@@ -104,13 +104,13 @@ var workspace = function(){
 								<tr class="overline">\
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-									<td><a href="/document/{{_id}}">{{name}}</a></td>\
+									<td><a href="document/{{_id}}">{{name}}</a></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
 									<td colspan="4" class="container-cell">\
 										<a call="comment" href="{{_id}}" class="button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
-										<a href="/share?id={{_id}}" call="share" class="button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
+										<a href="share?id={{_id}}" call="share" class="button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" call="hideComment">X</i></h2>\
 										<ul class="row">\
@@ -127,17 +127,17 @@ var workspace = function(){
 						<ul>\
 						{{#folders}}\
 						<li>\
-							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
 						</li>\
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="/document/{{_id}}">\
+							<a href="document/{{_id}}">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large"></i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
-							<a href="/document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
@@ -161,7 +161,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
-								<td><a href="/rack/{{_id}}">{{name}}</a></td>\
+								<td><a href="rack/{{_id}}">{{name}}</a></td>\
 								<td>{{from}}</td>\
 								<td>{{to}}</a></td>\
 								<td>{{sent}}</td>\
@@ -187,24 +187,24 @@ var workspace = function(){
 						<tbody>\
 							{{#documents}}\
 							<tr>\
-								<td><input class="select-file" type="checkbox" name="files[]" value="/document/{{_id}}" /></td>\
+								<td><input class="select-file" type="checkbox" name="files[]" value="document/{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="/document/{{_id}}">{{name}}</a></td>\
+								<td><a href="document/{{_id}}">{{name}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
 							{{/documents}}\
 							{{#rack}}\
 							<tr>\
-								<td><input class="select-file" type="checkbox" name="files[]" value="/rack/{{_id}}" /></td>\
+								<td><input class="select-file" type="checkbox" name="files[]" value="rack/{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
-								<td><a href="/rack/{{_id}}">{{name}}</a></td>\
+								<td><a href="rack/{{_id}}">{{name}}</a></td>\
 								<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 							</tr>\
 							{{/rack}}\
 						</tbody>\
 					</table>',
 
-			addDocument : '<form id="upload-form" method="post" action="/document" enctype="multipart/form-data">\
+			addDocument : '<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
 							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 							<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
 							<input type="text" name="name" />\
@@ -213,7 +213,7 @@ var workspace = function(){
 							<input call="sendFile" type="button" style="clear:both" value="{{#i18n}}upload{{/i18n}}" />\
 							</form>',
 
-			sendRack : '<form id="upload-form" method="post" action="/rack" enctype="multipart/form-data">\
+			sendRack : '<form id="upload-form" method="post" action="rack" enctype="multipart/form-data">\
 						<label>{{#i18n}}workspace.rack.name{{/i18n}}</label>\
 						<input type="text" name="name" />\
 						<label>{{#i18n}}workspace.rack.to{{/i18n}}</label>\
@@ -223,7 +223,7 @@ var workspace = function(){
 						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 						</form>',
 
-			comment : '<form method="post" action="/document/{{id}}/comment">\
+			comment : '<form method="post" action="document/{{id}}/comment">\
 							<label>{{#i18n}}workspace.leave.comment{{/i18n}}</label>\
 							<textarea name="comment"></textarea>\
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
@@ -241,8 +241,8 @@ var workspace = function(){
 					that = this,
 					directories;
 				$.get(o.url).done(function(response){
-					if (o.url.match(/^\/documents\/.*?/g)) {
-						relativePath = o.url.substring(o.url.indexOf("/", 10) + 1, o.url.lastIndexOf("?"));
+					if (o.url.match(/^documents\/.*?/g)) {
+						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
 					}
 					that.getFolders(o.url.indexOf("hierarchical=true") != -1, relativePath, function(data) {
 						directories = _.filter(data, function(dir) {
@@ -285,8 +285,8 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
-				$.get("/documents/Trash").done(function(documents) {
-					$.get("/rack/documents/Trash").done(function(rack) {
+				$.get("documents/Trash").done(function(documents) {
+					$.get("rack/documents/Trash").done(function(rack) {
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
 						messenger.requireResize();
@@ -317,7 +317,7 @@ var workspace = function(){
 					fd = new FormData(),
 					action = form.attr('action');
 				fd.append('file', form.children('input[type=file]')[0].files[0]);
-				if ("/rack" === action) {
+				if ("rack" === action) {
 					action += '/' + form.children('input[name=to]').val();
 				}
 				navigation.closeLightbox();
@@ -334,7 +334,7 @@ var workspace = function(){
 			},
 
 			getFolders : function(hierarchical, relativePath, action) {
-				var url = "/folders?";
+				var url = "folders?";
 				if (hierarchical === true) {
 					url += "hierarchical=true&";
 				}
@@ -474,14 +474,14 @@ var workspace = function(){
 
 $(document).ready(function(){
 	workspace.init();
-	workspace.action.documents({url : "/documents?hierarchical=true"});
+	workspace.action.documents({url : "documents?hierarchical=true"});
 	workspace.action.getFolders(true, undefined, function(data) {
 		var html = "";
 		for (var i = 0; i < data.length; i++) {
 			if (data[i] === "Trash") continue;
-			html += '<li><a call="documents" href="/documents/' + data[i] + '">' + data[i] + "</a></li>";
+			html += '<li><a call="documents" href="documents/' + data[i] + '">' + data[i] + "</a></li>";
 		}
 		$(".base-folders").html(html);
-		navigation.redirect('/documents?hierarchical=true');
+		navigation.redirect('documents?hierarchical=true');
 	});
 });

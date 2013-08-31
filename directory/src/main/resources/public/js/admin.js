@@ -8,34 +8,34 @@ var admin = function(){
 		template : {
 			ecole : "\
 				{{#list}}<h3>{{name}}</h3>\
-				<a call='classes' href='/api/classes?id={{id}}'>\
+				<a call='classes' href='api/classes?id={{id}}'>\
 				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
-				<a href='/api/export?id={{id}}' call='exportAuth'>\
+				<a href='api/export?id={{id}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
 				<div id='classes-{{id}}'></div>{{/list}}"
 			,
 			groupes : "\
 				{{#list}}<h3>{{name}}</h3>\
-				<a call='membres' href='/api/membres?data={{people}}'>\
+				<a call='membres' href='api/membres?data={{people}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>{{/list}}"
 			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
-				<a call='personnes' href='/api/personnes?id={{classId}}'>\
+				<a call='personnes' href='api/personnes?id={{classId}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
-				 - <a href='/api/enseignants?id={{classId}}' call='enseignants'>\
+				 - <a href='api/enseignants?id={{classId}}' call='enseignants'>\
 				{{#i18n}}directory.admin.add-teacher{{/i18n}}</a>\
-				 - <a href='/api/export?id={{classId}}' call='exportAuth'>\
+				 - <a href='api/export?id={{classId}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
 				<div id='people-{{classId}}'></div>{{/list}}"
 			,
 			personnes: "\
-				<br /><span>{{#list}}<a call='personne' href='/api/details?id={{userId}}'>\
+				<br /><span>{{#list}}<a call='personne' href='api/details?id={{userId}}'>\
 				{{lastName}} {{firstName}}</a> - {{/list}}</span><div id='details'></div>"
 			,
 			enseignants : "\
 				<br /><span>{{#list}}\
-				<a call='personne' href='/api/link?class={{classId}}&id={{userId}}'>\
+				<a call='personne' href='api/link?class={{classId}}&id={{userId}}'>\
 				{{lastName}} {{firstName}}</a> - {{/list}}</span>"
 			,
 			membres : "\
