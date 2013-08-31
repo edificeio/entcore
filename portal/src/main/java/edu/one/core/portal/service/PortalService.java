@@ -34,7 +34,8 @@ public class PortalService extends Controller {
 				JsonObject jo = new JsonObject()
 					.putString("userFirstname", user.getFirstName())
 					.putString("userClass", user.getClassId());
-				renderView(request, jo, "portal.html", null);
+				JsonObject apps = container.config().getObject("applications");
+				renderView(request, jo.mergeIn(apps), "portal.html", null);
 			}
 		});
 	}
@@ -45,7 +46,7 @@ public class PortalService extends Controller {
 
 	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
 	public void apps(HttpServerRequest request) {
-		renderView(request);
+		renderView(request, container.config().getObject("applications"));
 	}
 
 	public void assets(HttpServerRequest request) {

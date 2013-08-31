@@ -28,8 +28,8 @@
                                 <input type="text" value="Rechercher" />
                                 <input type="submit" value="OK" />
                             </form>
-                            <a><i role="user" call="redirect" href="http://localhost:8101/mon-compte"></i></a>
-                            <a href="http://localhost:8009/logout?callback=http://localhost:8017/portal"><i role="shutdown"></i></a>
+                            <a><i role="user" call="redirect" href="{{userbook}}/mon-compte"></i></a>
+                            <a href="{{auth}}/logout?callback={{portal}}"><i role="shutdown"></i></a>
                             <div class="clear"></div>
                         </nav>
                     </div>
@@ -37,9 +37,9 @@
                 <section class="row">
                     <div class="logo" />
                     <nav class="horizontal" role="apps-navigation">
-                        <a call="redirect" href="http://localhost:8016/timeline">{{#i18n}}portal.header.navigation.whatsnew{{/i18n}}</a>
-                        <a call="redirect" href="http://localhost:8101/annuaire?query=class={{userClass}}">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
-                        <a call="redirect" href="http://localhost:8017/apps">{{#i18n}}portal.header.navigation.myapps{{/i18n}}</a>
+                        <a call="redirect" href="{{timeline}}">{{#i18n}}portal.header.navigation.whatsnew{{/i18n}}</a>
+                        <a call="redirect" href="{{userbook}}/annuaire?query=class={{userClass}}">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
+                        <a call="redirect" href="{{portal}}/apps">{{#i18n}}portal.header.navigation.myapps{{/i18n}}</a>
                     </nav>
                 </section>
 
