@@ -31,11 +31,15 @@ public class PortalService extends Controller {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				JsonObject jo = new JsonObject()
-					.putString("userFirstname", user.getFirstName())
-					.putString("userClass", user.getClassId());
-				JsonObject apps = container.config().getObject("applications");
-				renderView(request, jo.mergeIn(apps), "portal.html", null);
+				if (user != null) {
+					JsonObject jo = new JsonObject()
+						.putString("userFirstname", user.getFirstName())
+						.putString("userClass", user.getClassId());
+					JsonObject apps = container.config().getObject("applications");
+					renderView(request, jo.mergeIn(apps), "portal.html", null);
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}
