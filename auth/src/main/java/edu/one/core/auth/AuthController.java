@@ -239,7 +239,7 @@ public class AuthController extends Controller {
 			@Override
 			public void handle(Boolean deleted) {
 				if (Boolean.TRUE.equals(deleted)) {
-					CookieHelper.set("oneSessionId", "", request.response());
+					CookieHelper.set("oneSessionId", "", 0l, request.response());
 				}
 				redirect(request, callback.toString(), "");
 			}

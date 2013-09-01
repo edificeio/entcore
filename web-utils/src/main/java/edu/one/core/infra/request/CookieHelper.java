@@ -49,7 +49,7 @@ public class CookieHelper {
 	}
 
 	public static void set(String name, String value, HttpServerResponse response) {
-		response.headers().set("Set-Cookie", ServerCookieEncoder.encode(name, value));
+		set(name, value, Long.MIN_VALUE, response);
 	}
 
 	public static void set(String name, String value, long timeout, HttpServerResponse response) {
