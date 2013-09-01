@@ -5,14 +5,11 @@ import java.util.UUID;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-
-import edu.one.core.infra.http.Renders;
 
 public class Starter extends Server {
 
-	Neo neo;
 	String developerId = "";
 
 	@Override
@@ -26,33 +23,22 @@ public class Starter extends Server {
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
 					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK") + Math.random());
-			neo = new Neo(vertx.eventBus(),log);
-			final String neo4jPersistor = config.getString("neo4j-persistor");
-			container.deployModule(neo4jPersistor, getConfig("../" +
-					neo4jPersistor + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
+			deployModule(config.getObject("neo4j-persistor"), new Handler<AsyncResult<String>>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
-						String appRegistryModule = config.getString("app-registry");
-						try {
-							initAutoIndex(getConfig("../" + neo4jPersistor + "/", "mod.json"));
-							container.deployModule(appRegistryModule, getConfig("../" +
-									appRegistryModule + "/", "mod.json"), 1, new Handler<AsyncResult<String>>() {
-								@Override
-								public void handle(AsyncResult<String> event) {
-									if (event.succeeded()) {
-										try {
-											deployExternalModules();
-											deployApps();
-										} catch (Exception e) {
-											log.error(e.getMessage(), e);
-										}
-									}
+						initAutoIndex(config.getObject("neo4j-persistor")
+								.getObject("config", new JsonObject()));
+						deployModule(config.getObject("app-registry"),
+								new Handler<AsyncResult<String>>() {
+							@Override
+							public void handle(AsyncResult<String> event) {
+								if (event.succeeded()) {
+									deployModules(config.getArray("external-modules"));
+									deployModules(config.getArray("one-modules"));
 								}
-							});
-						} catch (Exception e) {
-							log.error(e.getMessage(), e);
-						}
+							}
+						});
 					}
 				}
 			});
@@ -60,41 +46,42 @@ public class Starter extends Server {
 			log.error(ex.getMessage());
 		}
 
-		final Renders render = new Renders(container);
-
-			rm.get("/infra/starter/dev", new Handler<HttpServerRequest> () {
-				public void handle(HttpServerRequest request) {
-					render.renderView(request);
-				}
-			});
-
-			rm.get("/starter/test", new Handler<HttpServerRequest> () {
-				public void handle(final HttpServerRequest request) {
-					neo.send(request);
-				}
-			});
-
 	}
 
-	private void deployApps() throws Exception {
-		for (Object o : config.getArray("one-modules")){
-			String module = ((String)o).trim();
-			if (vertx.fileSystem().existsSync("../" + module)) {
-				container.deployModule(module, getConfig("../"+ module + "/", "mod.json"));
+	private void deployModule(JsonObject module, Handler<AsyncResult<String>> handler) {
+		if (module.getString("name") == null) {
+			return;
+		}
+		JsonObject conf = module.getObject("config");
+		if (conf == null) {
+			try {
+				conf = getConfig("../" + module.getString("name") + "/", "mod.json");
+			} catch (Exception e) {
+				return;
 			}
 		}
+		container.deployModule(module.getString("name"),
+				conf, module.getInteger("instances", 1), handler);
 	}
 
-	private void deployExternalModules() {
-		for (Object o : config.getArray("external-modules")){
-			JsonObject module = (JsonObject)o ;
-			if (module.getString("name") != null && module.getObject("config") != null) {
-				container.deployModule(module.getString("name"),
-						module.getObject("config"), module.getInteger("instances", 1));
+	private void deployModules(JsonArray modules) {
+		for (Object o : modules) {
+			JsonObject module = (JsonObject) o;
+			if (module.getString("name") == null) {
+				continue;
 			}
+			JsonObject conf = module.getObject("config");
+			if (conf == null) {
+				try {
+					conf = getConfig("../" + module.getString("name") + "/", "mod.json");
+				} catch (Exception e) {
+					continue;
+				}
+			}
+			container.deployModule(module.getString("name"),
+					conf, module.getInteger("instances", 1));
 		}
 	}
-
 
 	private void initAutoIndex(JsonObject config) {
 		// FIXME poor hack to create auto index -> replace with equivalent : index --create node_auto_index -t Node
@@ -102,7 +89,7 @@ public class Starter extends Server {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
 		jo.putString("query", query);
-		vertx.eventBus().send(config.getString("address"), jo);
+		vertx.eventBus().send(config.getString("address", "wse.neo4j.persistor"), jo);
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {
