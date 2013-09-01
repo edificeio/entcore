@@ -25,7 +25,7 @@ var account = function(){
 	app.define ({
 		template : {
 			personne: '\
-				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+				<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data">\n\
 				<label>Changer l\'image</label><input type="file" name="file" value="Changer l\'image"/>\
 				<input call="sendPhoto" type="button" value="ok" /></form>\

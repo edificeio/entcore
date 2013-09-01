@@ -29,9 +29,9 @@ var userbook = function(){
 		template : {
 			searchResults: '\
 				{{#list}}<div class="person-small" id={{id}}>\
-				<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+				<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 				<span><a href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</a></span>\
-				<img src="/public/img/reveur.png" alt="panda" class="mood"/>\
+				<img src="public/img/reveur.png" alt="panda" class="mood"/>\
 				<span class="actions"><img src="public/img/mailto.png" alt="mailto"/>\
 				<img src="public/img/carnet.png" alt="carnet"/>\
 				<img src="public/img/files.png" alt="files"/>\

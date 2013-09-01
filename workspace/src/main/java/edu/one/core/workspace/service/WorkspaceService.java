@@ -146,7 +146,7 @@ public class WorkspaceService extends Controller {
 											public void handle(Message<JsonObject> res) {
 												if ("ok".equals(res.body().getString("status"))) {
 													notifyShare(id, user, sharedArray);
-													redirect(request, "/workspace");
+													redirect(request, "/workspace/workspace");
 												} else {
 													renderError(request, res.body());
 												}

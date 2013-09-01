@@ -10,7 +10,7 @@ public class Timeline extends Server {
 		super.start();
 		TimelineController timeline = new TimelineController(vertx, container, rm, securedActions);
 
-		timeline.get("/", "view");
+		timeline.get("/timeline", "view");
 
 		timeline.get("/lastNotifications", "lastEvents");
 
