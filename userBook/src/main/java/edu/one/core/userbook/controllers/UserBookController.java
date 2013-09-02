@@ -62,7 +62,7 @@ public class UserBookController extends Controller {
 				+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
 		}
 		neoRequest += " RETURN distinct n.id as id, "
-			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, m.picture? as photo, n.type as type";
+			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, m.userid? as userId, m.picture? as photo, n.type as type";
 		neo.send(neoRequest, request.response());
 	}
 
@@ -75,7 +75,7 @@ public class UserBookController extends Controller {
 				String personRequestStart = "START n=node:node_auto_index(id='" + request.params().get("id") + "')";
 				String personRequestReturn= " RETURN distinct n.ENTPersonNomAffichage as displayName, "
 						+ "n.id as id,n.ENTPersonAdresse as address, u.ENTPersonNomAffichage? as relatedName, "
-						+ "u.id? as relatedId,u.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+						+ "u.id? as relatedId,u.type as relatedType,u.userid? as userId, u.motto? as motto, u.picture? as photo, u.mood? as mood, "
 						+ "u.health? as health, p.category? as category, p.values? as values;";
 
 				switch(request.params().get("type")){
@@ -87,14 +87,14 @@ public class UserBookController extends Controller {
 						personRequest = personRequestStart + " MATCH (n)-[USERBOOK]->(m)-[PUBLIC]->(p) "
 							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
 							+ "n.ENTPersonAdresse as address,m.motto? as motto, m.picture? as photo, m.mood? as mood, "
-							+ "m.health? as health, p.category? as category, p.values? as values;";
+							+ "m.health? as health, m.userid? as userId, p.category? as category, p.values? as values;";
 						break;
 					case "PERSRELELEVE":
 						personRequest = personRequestStart + ",u=node:node_auto_index('type:USERBOOK OR type:ELEVE') "
 							+ "MATCH (p)<-[PUBLIC]-(m)<-[USERBOOK?]-(n)<-[EN_RELATION_AVEC]-(u) "
 							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
 							+ "n.ENTPersonAdresse as address, u.ENTPersonNomAffichage as relatedName, "
-							+ "u.id as relatedId,u.type as relatedType,m.motto? as motto, m.picture? as photo, "
+							+ "u.id as relatedId,u.type as relatedType,m.userid? as userId, m.motto? as motto, m.picture? as photo, "
 							+ "m.mood? as mood, m.health? as health, p.category? as category, p.values? as values;";
 						break;
 				}
@@ -113,7 +113,7 @@ public class UserBookController extends Controller {
 						+ "m=node:node_auto_index(type='USERBOOK'), p=node:node_auto_index(type='HOBBIES') "
 						+ "MATCH n-[USERBOOK]->m-[r]->p "
 						+ "RETURN n.ENTPersonNomAffichage as displayName, n.id as id, "
-						+ "m.motto as motto, m.health as health, m.picture as photo, m.mood as mood, "
+						+ "m.motto as motto, m.health as health, m.picture as photo, m.userid as userId, m.mood as mood, "
 						+ "type(r) as visibility, p.category as category, p.values as values;";
 				neo.send(personRequest,request.response());
 			}
@@ -128,7 +128,7 @@ public class UserBookController extends Controller {
 					+ "MATCH (n)<-[:APPARTIENT|USERBOOK]-(m) WHERE n.ENTGroupeNom?='" 
 					+ request.params().get("name") + "' RETURN distinct m.type as type, "
 					+ "m.id as id,m.ENTPersonNomAffichage as displayName, n.mood? as mood, "
-					+ "n.picture? as photo;";
+					+ "n.userid? as userId, n.picture? as photo;";
 			neo.send(neoRequest, request.response());
 		}
 	}
@@ -176,7 +176,7 @@ public class UserBookController extends Controller {
 		String  userId = message.body().getString("userId");
 		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
 			+ "CREATE (m {type:'USERBOOK',picture:'" + userBookData.getString("picture") + "',"
-			+ "motto:'', health:'', mood:'default'}), n-[:USERBOOK]->m ");
+			+ "motto:'', health:'', mood:'default', userid:'" + userId + "'}), n-[:USERBOOK]->m ");
 		JsonArray hobbies = userBookData.getArray("hobbies");
 		for (Object hobby : hobbies) {
 			JsonObject jo = (JsonObject)hobby;

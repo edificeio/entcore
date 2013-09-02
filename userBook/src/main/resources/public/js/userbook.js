@@ -3,34 +3,37 @@ var userbook = function(){
 	var classDataAdaptor = function (d) {
 		var list = [];
 		for (obj in d.result){
-			if (d.result[obj].photo !=='' && d.result[obj].mood !==''){
-				list.push(d.result[obj]);
-			} else if (d.result[obj].photo === ''){
+			if (d.result[obj].userId !== d.result[obj].id){
 				d.result[obj].mood= 'default';
-				list.push(d.result[obj]);
+				d.result[obj].photo= '';
 			}
+			list.push(d.result[obj]);
 		}
-		return {list :list}; 
+		return {list : list}; 
 	};
 	var searchDataAdaptor = function (d) {
 		var list = [];
 		for (obj in d.result){
-			if (d.result[obj].photo ==='' && d.result[obj].mood ===''){
+			if (d.result[obj].photo ==='' && d.result[obj].mood ==='' && d.result[obj].userId === ''){
 				d.result[obj].mood= 'default';
 				list.push(d.result[obj]);
-			} else if (d.result[obj].photo !=='' && d.result[obj].mood !==''){
+			} else if (d.result[obj].userId === d.result[obj].id){
 				list.push(d.result[obj]);
 			}
 		}
 		return {list : list}; 
 	};
 	var personDataAdaptor = function(d) {
-		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
-			"motto":d.result[0]["motto"],"health":d.result[0]["health"],"photo":d.result[0]["photo"]};
-		jo['mood'] = (d.result[0].photo === '') ? 'default' : d.result[0].mood;
+		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
 		var hobbies = [];
 		var related = [];
 		for (obj in d.result){
+			if (d.result[obj].userId !== d.result[obj].id){
+				jo['mood'] = 'default'; jo['health']=''; jo['photo']='';  jo['motto']='';
+			} else if (d.result[obj].userId === d.result[obj].id){
+				jo['mood'] = d.result[obj].mood; jo['health']=d.result[obj].health; 
+				jo['photo']=d.result[obj].photo;  jo['motto']=d.result[obj].motto;
+			}
 			if (d.result[obj].category !== ""){
 				hobbies.push({"category":d.result[obj].category,"values":d.result[obj].values});
 			}
@@ -140,7 +143,11 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)))
 					}
-
+					for (var i=0; i< classDataAdaptor(data).list.length; i++){
+						if (searchDataAdaptor(data).list[i].photo !== ''){
+							userbook.action.getPhoto(searchDataAdaptor(data).list[i].photo, searchDataAdaptor(data).list[i].id);
+						}
+					}
 					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data.status);})
@@ -172,6 +179,7 @@ var userbook = function(){
 				.done(function(data){
 					that.showPerson(data)
 					messenger.requireResize();
+					userbook.action.getPhoto(data.result[0].photo,'');
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},
@@ -180,6 +188,23 @@ var userbook = function(){
 					var className = location.search.split('class=')[1];
 					userbook.action.searchClass("api/class?name=" + className);
 				}
+			},
+			getPhoto : function(photoId, userId) {
+				if (photoId === ''){
+					return;
+				}
+				$.ajax({
+					url: "document/" + photoId,
+					type: 'GET'
+				}).done(function (data) {
+					if (data !== "") {
+						if (userId !== ''){
+							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"/document/" + photoId);
+						} else {
+							$('div#person div.avatar img')[0].setAttribute('src',"/document/" + photoId);
+						}
+					}
+				}).error(function (data) { console.log(data); });
 			},
 			searchClass : function(url) {
 				$.get(url)
@@ -195,7 +220,11 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
-
+					for (var i=0; i< classDataAdaptor(data).list.length; i++){
+						if (classDataAdaptor(data).list[i].photo !== ''){
+							userbook.action.getPhoto(classDataAdaptor(data).list[i].photo, classDataAdaptor(data).list[i].id);
+						}
+					}
 					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data)})
