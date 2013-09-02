@@ -84,6 +84,8 @@ public class Workspace extends Server {
 
 		service.get("/rack/documents/Trash", "listRackTrashDocuments");
 
+		service.get("/users/available-rack", "rackAvailableUsers");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
 				vertx.eventBus(), new WorkspaceResourcesProvider(mongo)));
 

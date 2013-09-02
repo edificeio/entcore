@@ -21,9 +21,12 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.google.common.base.Joiner;
+
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.Neo;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -39,6 +42,7 @@ public class WorkspaceService extends Controller {
 	private final MongoDb mongo;
 	private final DocumentDao documentDao;
 	private final RackDao rackDao;
+	private final Neo neo;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -48,6 +52,7 @@ public class WorkspaceService extends Controller {
 		gridfsAddress = container.config().getObject("gridfs-config").getString("address");
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
+		neo = new Neo(eb, log);
 	}
 
 	@SecuredAction("workspace.view")
@@ -209,12 +214,36 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(final UserInfos userInfos) {
 				if (userInfos != null) {
-					JsonObject doc = new JsonObject();
-					doc.putString("to", request.params().get("to")); // TODO check existance and validity (neo4j)
-					doc.putString("from", userInfos.getUserId());
-					String now = MongoDb.formatDate(new Date());
-					doc.putString("sent", now);
-					add(request, RackDao.RACKS_COLLECTION, doc);
+					final String to = request.params().get("to");
+					if (to != null && !to.trim().isEmpty()) {
+						String query =
+								"START n=node:node_auto_index(id={id}) " +
+								"RETURN count(n) as nb";
+						Map<String, Object> params = new HashMap<>();
+						params.put("id", to);
+						request.pause();
+						neo.send(query, params, new Handler<Message<JsonObject>>() {
+
+							@Override
+							public void handle(Message<JsonObject> res) {
+								request.resume();
+								if ("ok".equals(res.body().getString("status")) &&
+										"1".equals(res.body().getObject("result")
+												.getObject("0").getString("nb"))) {
+									JsonObject doc = new JsonObject();
+									doc.putString("to", to);
+									doc.putString("from", userInfos.getUserId());
+									String now = MongoDb.formatDate(new Date());
+									doc.putString("sent", now);
+									add(request, RackDao.RACKS_COLLECTION, doc);
+								} else {
+									badRequest(request);
+								}
+							}
+						});
+					} else {
+						badRequest(request);
+					}
 				} else {
 					request.response().setStatusCode(401).end();
 				}
@@ -861,6 +890,38 @@ public class WorkspaceService extends Controller {
 					});
 				} else {
 					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("workspace.rack.available.users")
+	public void rackAvailableUsers(final HttpServerRequest request) {
+		UserUtils.findVisibleUsers(eb, request, new Handler<JsonArray>() {
+
+			@Override
+			public void handle(JsonArray users) {
+				List<String> ids = new ArrayList<>();
+				for (Object o: users) {
+					JsonObject user = (JsonObject) o;
+					String id = user.getString("id");
+					if (id != null && !id.trim().isEmpty()) {
+						ids.add(id);
+					}
+				}
+				if (ids.size() > 0) {
+					String query =
+							"START n=node:node_auto_index({ids}) " +
+							"MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
+							"WHERE has(a.name) AND a.name={action}" +
+							"RETURN distinct n.id as id, n.ENTPersonNomAffichage as username";
+					Map<String, Object> params = new HashMap<>();
+					params.put("ids", "id:" + Joiner.on(" OR id:").join(ids));
+					params.put("action", "edu.one.core.workspace.service.WorkspaceService|listRackDocuments");
+					neo.send(query, params, request.response());
+				} else {
+					renderJson(request, new JsonObject()
+					.putString("status", "ok").putObject("result", new JsonObject()));
 				}
 			}
 		});

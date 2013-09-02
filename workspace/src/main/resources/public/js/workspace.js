@@ -217,7 +217,11 @@ var workspace = function(){
 						<label>{{#i18n}}workspace.rack.name{{/i18n}}</label>\
 						<input type="text" name="name" />\
 						<label>{{#i18n}}workspace.rack.to{{/i18n}}</label>\
-						<input type="text" name="to" />\
+						<select name="to">\
+						{{#users}}\
+							<option value="{{id}}">{{username}}</option>\
+						{{/users}}\
+						</select>\
 						<label>{{#i18n}}workspace.rack.file{{/i18n}}</label>\
 						<input type="file" name="file" />\
 						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
@@ -304,12 +308,20 @@ var workspace = function(){
 			},
 
 			sendRack : function(o){
-				$('#form-window').html(app.template.render("sendRack", {}));
-				navigation.openLightbox();
-				messenger.requireResize();
-				$('.lightbox-backdrop').one('click', function(){
-					navigation.closeLightbox();
-				})
+				$.get("users/available-rack").done(function(response) {
+					if (response.status === "ok") {
+						var users = [];
+						for (var key in response.result) {
+							users.push(response.result[key]);
+						}
+						$('#form-window').html(app.template.render("sendRack", { users : users }));
+						navigation.openLightbox();
+						messenger.requireResize();
+						$('.lightbox-backdrop').one('click', function(){
+							navigation.closeLightbox();
+						});
+					}
+				});
 			},
 
 			sendFile : function(o) {
@@ -318,7 +330,7 @@ var workspace = function(){
 					action = form.attr('action');
 				fd.append('file', form.children('input[type=file]')[0].files[0]);
 				if ("rack" === action) {
-					action += '/' + form.children('input[name=to]').val();
+					action += '/' + form.children('select[name=to]').val();
 				}
 				navigation.closeLightbox();
 				$.ajax({
