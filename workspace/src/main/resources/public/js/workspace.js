@@ -571,17 +571,16 @@ $(document).ready(function(){
 		navigation.redirect('documents?hierarchical=true');
 	});
 
-	$('.workspace').on('click', '.select-file, .selectAllCheckboxes', function(){
+	$('.workspace').on('change', '.select-file, .selectAllCheckboxes', function(){
+		if($(this).hasClass('selectAllCheckboxes')){
+			$('#list :checkbox').prop('checked', this.checked);
+		}
 		if($('.select-file:checked').length > 0){
-			$('.contextual').prop('disabled', false);
+			$('.contextual').removeAttr('disabled');
 		}
 		else{
-			$('.contextual').prop('disabled', true);
+			$('.contextual').attr('disabled', 'disabled');
 		}
-	});
-
-	$('.workspace').on('change', '.selectAllCheckboxes', function(){
-		$('#list :checkbox').prop('checked', this.checked);
 	});
 
 	$('.workspace').on('mousedown', '.editable', function(){
