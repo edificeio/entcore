@@ -1,20 +1,40 @@
 var userbook = function(){
 
-	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
-	var personDataExtractor = function(d) {
-		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
+	var classDataAdaptor = function (d) {
+		var list = [];
+		for (obj in d.result){
+			if (d.result[obj].photo !=='' && d.result[obj].mood !==''){
+				list.push(d.result[obj]);
+			} else if (d.result[obj].photo === ''){
+				d.result[obj].mood= 'default';
+				list.push(d.result[obj]);
+			}
+		}
+		return {list :list}; 
+	};
+	var searchDataAdaptor = function (d) {
+		var list = [];
+		for (obj in d.result){
+			if (d.result[obj].photo ==='' && d.result[obj].mood ===''){
+				d.result[obj].mood= 'default';
+				list.push(d.result[obj]);
+			} else if (d.result[obj].photo !=='' && d.result[obj].mood !==''){
+				list.push(d.result[obj]);
+			}
+		}
+		return {list : list}; 
+	};
+	var personDataAdaptor = function(d) {
+		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"],
+			"motto":d.result[0]["motto"],"health":d.result[0]["health"],"photo":d.result[0]["photo"]};
+		jo['mood'] = (d.result[0].photo === '') ? 'default' : d.result[0].mood;
 		var hobbies = [];
 		var related = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
 				hobbies.push({"category":d.result[obj].category,"values":d.result[obj].values});
 			}
-			if (d.result[obj].mood !== ""){
-				jo['mood'] = d.result[obj].mood;
-				jo['health'] = d.result[obj].health;
-				jo['motto'] = d.result[obj].motto;
-			}
-			if (d.result[obj].mood === ""){
+			if (d.result[obj].relatedType !== "USERBOOK"){
 				related.push({"relatedName":d.result[obj].relatedName, "relatedId":d.result[obj].relatedId,"relatedType":d.result[obj].relatedType});
 			}
 		}
@@ -44,7 +64,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><img src="public/img/reveur.png" alt="panda" /></div>\
+							<div class="two cell"><img src="public/img/{{mood}}.jpg" alt="panda" /></div>\
 					</article>\
 				</div>\
 				{{/list}}',
@@ -64,7 +84,7 @@ var userbook = function(){
 							<em class="six cell">{{motto}}</em>\
 						</div>\
 						<div class="row mini-box">\
-							<div class="two cell avatar"><img src="public/img/reveur.png" alt="panda" /></div>\
+							<div class="two cell avatar"><img src="public/img/{{mood}}.jpg" alt="panda" /></div>\
 							<em class="ten cell text-container">Je suis rêveuse</em>\
 						</div>\
 					</article>\
@@ -118,7 +138,7 @@ var userbook = function(){
 						$("#people").html('');
 						$("#person").html('');
 					} else {
-						$("#people").html(app.template.render('searchResults', dataExtractor(data)))
+						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)))
 					}
 
 					messenger.requireResize();
@@ -135,7 +155,7 @@ var userbook = function(){
 				if (data.result[0].type !== 'PERSRELELEVE'){
 					$('#' + data.result[0].id).addClass('selected');
 				}
-				$("#person").html(app.template.render('personne', personDataExtractor(data)));
+				$("#person").html(app.template.render('personne', personDataAdaptor(data)));
 			},
 			showFirstPerson: function(){
 				var that = this;
@@ -173,7 +193,7 @@ var userbook = function(){
 						$("#people").html('');
 						$("#person").html('');
 					} else {
-						$("#people").html(app.template.render('searchResults', dataExtractor(data)));
+						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
 
 					messenger.requireResize();

@@ -56,7 +56,7 @@ public class UserBookController extends Controller {
 				displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
 			}
 			displayNameRegex += ".*)";
-			neoRequest += " MATCH (n)-[USERBOOK]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
+			neoRequest += " MATCH (n)-[USERBOOK?]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
 		} else if (request.params().contains("class")){
 			neoRequest += ", m=node:node_auto_index(type='CLASSE') MATCH m<-[APPARTIENT]-n WHERE "
 				+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
@@ -73,15 +73,15 @@ public class UserBookController extends Controller {
 			public void handle(UserInfos user) {
 				String personRequest = "";
 				String personRequestStart = "START n=node:node_auto_index(id='" + request.params().get("id") + "')";
-				String personRequestReturn= ",(n)-[USERBOOK]->(m)-[PUBLIC]->(p) RETURN distinct n.ENTPersonNomAffichage as displayName, "
-						+ "n.id as id,n.ENTPersonAdresse as address, u.ENTPersonNomAffichage as relatedName, "
-						+ "u.id as relatedId,u.type as relatedType,m.motto? as motto, m.picture? as photo, m.mood? as mood, "
-						+ "m.health? as health, p.category? as category, p.values? as values;";
+				String personRequestReturn= " RETURN distinct n.ENTPersonNomAffichage as displayName, "
+						+ "n.id as id,n.ENTPersonAdresse as address, u.ENTPersonNomAffichage? as relatedName, "
+						+ "u.id? as relatedId,u.type as relatedType,u.motto? as motto, u.picture? as photo, u.mood? as mood, "
+						+ "u.health? as health, p.category? as category, p.values? as values;";
 
 				switch(request.params().get("type")){
 					case "ELEVE":
-						personRequest = personRequestStart + ",u=node:node_auto_index(type='PERSRELELEVE') "
-							+ "MATCH (n)-[EN_RELATION_AVEC]->(u)" + personRequestReturn;
+						personRequest = personRequestStart + ",u=node:node_auto_index('type:USERBOOK OR type:PERSRELELEVE') "
+							+ "MATCH (n)-[:EN_RELATION_AVEC|USERBOOK]->(u)-[PUBLIC]->(p)" + personRequestReturn;
 						break;
 					case "ENSEIGNANT":
 						personRequest = personRequestStart + " MATCH (n)-[USERBOOK]->(m)-[PUBLIC]->(p) "
@@ -90,8 +90,12 @@ public class UserBookController extends Controller {
 							+ "m.health? as health, p.category? as category, p.values? as values;";
 						break;
 					case "PERSRELELEVE":
-						personRequest = personRequestStart + ",u=node:node_auto_index(type='ELEVE') "
-							+ "MATCH (n)<-[EN_RELATION_AVEC]-(u)" + personRequestReturn;
+						personRequest = personRequestStart + ",u=node:node_auto_index('type:USERBOOK OR type:ELEVE') "
+							+ "MATCH (p)<-[PUBLIC]-(m)<-[USERBOOK?]-(n)<-[EN_RELATION_AVEC]-(u) "
+							+ "RETURN distinct n.ENTPersonNomAffichage as displayName, n.id as id, "
+							+ "n.ENTPersonAdresse as address, u.ENTPersonNomAffichage as relatedName, "
+							+ "u.id as relatedId,u.type as relatedType,m.motto? as motto, m.picture? as photo, "
+							+ "m.mood? as mood, m.health? as health, p.category? as category, p.values? as values;";
 						break;
 				}
 				neo.send(personRequest,request.response());
@@ -119,10 +123,13 @@ public class UserBookController extends Controller {
 	@SecuredAction("userbook.authent")
 	public void myClass(HttpServerRequest request) {
 		if (request.params().contains("name")){
-			neo.send("START n=node:node_auto_index(type='CLASSE'), m=node:node_auto_index('type:ENSEIGNANT OR type:ELEVE') "
-				+ "MATCH (n)<-[APPARTIENT]-(m), (m)-[USERBOOK]->(u) WHERE HAS(n.ENTGroupeNom) AND n.ENTGroupeNom='" + request.params().get("name") + "' "
-				+ "RETURN distinct m.type as type, m.id as id,m.ENTPersonNomAffichage as displayName, u.mood? as mood, u.picture? as photo"
-				, request.response());
+			String neoRequest = "START n=node:node_auto_index('type:CLASSE OR type:USERBOOK'), "
+					+ "m=node:node_auto_index('type:ENSEIGNANT OR type:ELEVE') "
+					+ "MATCH (n)<-[:APPARTIENT|USERBOOK]-(m) WHERE n.ENTGroupeNom?='" 
+					+ request.params().get("name") + "' RETURN distinct m.type as type, "
+					+ "m.id as id,m.ENTPersonNomAffichage as displayName, n.mood? as mood, "
+					+ "n.picture? as photo;";
+			neo.send(neoRequest, request.response());
 		}
 	}
 
