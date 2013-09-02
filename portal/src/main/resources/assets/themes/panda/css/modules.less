@@ -36,8 +36,20 @@ i[role=view-book]{
 	.icon(view-book, 41px);
 }
 
+i[role=public]{
+	.icon(public, 25px);
+}
+
+i[role=prive]{
+	.icon(prive, 25px);
+}
+
 i[role=storage]{
-	.icon(storage, 25px);
+	 .icon(storage, 25px);
+}
+
+i[role=orange-user]{
+	.icon(orange-user, 25px);
 }
 
 i[role=add]{
@@ -135,6 +147,60 @@ i[role=link]{
 
 i[role=userbook]{
 	.icon(userbook, 25px);
+}
+
+i[role=angry-panda]{
+	.icon(angry-panda, 50px);
+}
+
+i[role=default-panda]{
+	.icon(default-panda, 50px);
+}
+
+i[role=dreamy-panda]{
+	.icon(dreamy-panda, 50px);
+}
+
+i[role=happy-panda]{
+	.icon(happy-panda, 50px);
+}
+
+i[role=joker-panda]{
+	.icon(joker-panda, 50px);
+}
+
+i[role=love-panda]{
+	.icon(love-panda, 50px);
+}
+
+i[role=proud-panda]{
+	.icon(proud-panda, 50px);
+}
+
+i[role=sad-panda]{
+	.icon(sad-panda, 50px);
+}
+
+i[role=sick-panda]{
+	.icon(sick-panda, 50px);
+}
+
+i[role=tired-panda]{
+	.icon(tired-panda, 50px);
+}
+
+i[role=worried-panda]{
+	.icon(worried-panda, 50px);
+}
+
+i[role=arrow-bottom]{
+	.icon(arrow-bottom, 9px);
+}
+
+.small-panda{
+	width: 25px !important;
+	height: 25px !important;
+	background-size: 100% auto;
 }
 
 a.button{
@@ -318,7 +384,6 @@ article{
 	}
 	.line{
 		border-bottom: 1px dashed #ccc;
-		padding-bottom: 10px;
 	}
 }
 
@@ -501,3 +566,39 @@ img[src=""]{
 	color: #666;
 	font-style: italic;
 }
+
+.enhanced-select{
+	background: #fefefe;
+	.rounded-corners(10px);
+	border: 1px solid #ccc;
+
+	.option, .current{
+		padding-left: 20px;
+		cursor: pointer;
+		font-size: 14px;
+	}
+	span{
+		color: #333;
+	}
+	.current{
+		background-image: url(../img/icons/arrow-bottom.png);
+		background-repeat: no-repeat;
+		background-position: 5px 15px;
+		.rounded-corners-top(10px);
+	}
+
+	.options-list{
+
+		border: 1px solid #ccc;
+		background: #fff;
+	}
+
+	.editing{
+		background-color: @solid-blue;
+		span{
+			color: #fff;
+		}
+
+	}
+}
+

@@ -168,13 +168,15 @@
   @icons-root: "../img/icons/";
   @icons-extension: ".png";
 
-  height: @icon-size;
-  width: @icon-size;
-  background: url("@{icons-root}@{icon-name}@{icons-extension}") no-repeat center;
-  display: block;
-  .border-box;
-  float: left;
-  vertical-align: middle;
+	height: @icon-size;
+	width: @icon-size;
+	background-image: url("@{icons-root}@{icon-name}@{icons-extension}");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	.border-box;
+	float: left;
+	vertical-align: middle;
 }
 
 a, button, input[type=button], input[type=submit]{

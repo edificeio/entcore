@@ -132,7 +132,22 @@ var ui = (function(){
 
 		$('.close-lightbox i').on('click', function(){
 			ui.hideLightbox();
-		})
+		});
+
+		$('body').on('mousedown', '.enhanced-select .current', function(){
+			var select = $(this).parent();
+			var optionsList = select.children('.options-list');
+			var that = this;
+			$(that).addClass('editing');
+			optionsList.slideDown();
+			optionsList.children('.option').on('mousedown', function(){
+				$(that).removeClass('editing');
+				select.data('selected', $(this).data('value'));
+				$(that).html($(this).html());
+				optionsList.slideUp();
+				select.change();
+			})
+		});
 	});
 
 	return ui;

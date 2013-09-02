@@ -25,41 +25,95 @@ var account = function(){
 	app.define ({
 		template : {
 			personne: '\
-				<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
-				<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data">\n\
-				<label>Changer l\'image</label><input type="file" name="file" value="Changer l\'image"/>\
-				<input call="sendPhoto" type="button" value="ok" /></form>\
-				<p class="name">{{displayName}}</p>\
-				<p class="address">{{address}}</p>\
-				<p class="motto">{{#i18n}}userBook.profile.motto{{/i18n}} :\
-				<span contenteditable="true"> {{motto}}</span></p>\
-				<form id="mood" action="api/edit-userbook-info">\
-				<input type="radio" name="mood" checked value="default" /> Default\
-				<input type="radio" name="mood" value="love" /><img src="public/img/amoureux.jpg" alt="amoureux"/> Amoureux\
-				<input type="radio" name="mood" value="angry" /><img src="public/img/colere.jpg" alt="colere"/> En colère\
-				<input type="radio" name="mood" value="happy" /><img src="public/img/content.jpg" alt="content"/> Content\
-				<input type="radio" name="mood" value="worried" /><img src="public/img/embete.jpg" alt="embete"/> Embêté\
-				<input type="radio" name="mood" value="joker" /><img src="public/img/farceur.jpg" alt="farceur"/> Farceur\
-				<input type="radio" name="mood" value="tired" /><img src="public/img/fatigue.jpg" alt="fatigue"/> Fatigué\
-				<input type="radio" name="mood" value="proud" /><img src="public/img/fier.jpg" alt="fier"/> Fier\
-				<input type="radio" name="mood" value="sick" /><img src="public/img/malade.jpg" alt="malade"/> Malade\
-				<input type="radio" name="mood" value="dreamy" /><img src="public/img/reveur.jpg" alt="reveur"/> Rêveur\
-				<input type="radio" name="mood" value="sad" /><img src="public/img/triste.jpg" alt="triste"/> Triste</form>\
+				<div class="row box">\
+					<div class="avatar cell four">\
+						<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+					</div>\
+					<article class="cell eight text-container right-magnet">\
+						<h2>{{displayName}}</h2>\
+						<div class="row">\
+							<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
+							<em class="six cell">{{address}}</em>\
+						</div>\
+						<div class="row">\
+							<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
+							<em class="six cell" contenteditable="true" data-property="motto">{{motto}}</em>\
+						</div>\
+					</article>\
+					<article class="eight cell text-container right-magnet">\
+						<h2>Ma photo</h2>\
+						<form id="upload-form" method="post" action="/document" enctype="multipart/form-data" class="search">\
+							<input type="file" name="file" value="Changer l\'image"/>\
+							<input call="sendPhoto" type="button" class="clear" value="ok" />\
+						</form>\
+					</article>\
+				<div class="cell eight enhanced-select right-magnet" data-selected="{{mood}}">\
+					<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{mood}}</span></div>\
+					<div class="options-list">\
+						<div class="option" data-value="default">\
+							<i role="default-panda" class="small-panda"></i>\
+							<span>Default</span>\
+						</div>\
+						<div class="option" data-value="love">\
+							<i role="love-panda" class="small-panda"></i>\
+							<span>Amoureux</span>\
+						</div>\
+						<div class="option" data-value="angry">\
+							<i role="angry-panda" class="small-panda"></i>\
+							<span>En colère</span>\
+						</div>\
+						<div class="option" data-value="happy">\
+							<i role="happy-panda" class="small-panda"></i>\
+							<span>Content</span>\
+						</div>\
+						<div class="option" data-value="worried">\
+							<i role="worried-panda" class="small-panda"></i>\
+							<span>Embêté</span>\
+						</div>\
+						<div class="option" data-value="tired">\
+							<i role="tired-panda" class="small-panda"></i> \
+							<span>Fatigué</span>\
+						</div>\
+						<div class="option" data-value="proud">\
+							<i role="proud-panda" class="small-panda"></i><span>Fier</span>\
+						</div>\
+						<div class="option" data-value="sick">\
+							<i role="sick-panda" class="small-panda"></i>\
+							<span>Malade</span>\
+						</div>\
+						<div class="option" data-value="dreamy">\
+							<i role="dreamy-panda" class="small-panda"></i>\
+							<span>Rêveur</span>\
+						</div>\
+						<div class="option" data-value="sad">\
+							<i role="sad-panda" class="small-panda"></i>\
+							<span>Triste</span>\
+						</div>\
+						<div class="option" data-value="joker">\
+							<i role="joker-panda" class="small-panda"></i>\
+							<span>Farceur</span>\
+						</div>\
+					</div>\
+				</div>\
+				</form>\
+				</div>\
 				<div class="clear"></div>\
-				<span id="actions"><img src="public/img/mailto.png" alt="mailto"/>\
-				{{#i18n}}userBook.class.write-message{{/i18n}}<div class="clear"></div>\
-				<img src="public/img/carnet.png" alt="carnet"/>{{#i18n}}userBook.class.edit-notebook{{/i18n}}\
-				<div class="clear"></div><img src="public/img/files.png" alt="files"/>\
-				{{#i18n}}userBook.class.see-portfolio{{/i18n}}\
-				<h3>{{#i18n}}userBook.profile.health{{/i18n}}</h3><p>\
-				<span contenteditable="true"> {{health}}</span></p></div>\
-				<h2>{{#i18n}}userBook.interests{{/i18n}}</h2>\
-				{{#list}}<h3>{{category}}</h3><p id="category"><span class="{{category}}" contenteditable="true">\
-				{{values}}</span></p>\
-				<form method="GET" action="api/set-visibility?&category={{category}}" id="visibility-form">\
-				<select id="visible"><option>PUBLIC</option><option selected>PRIVE</option>\
-				<input type="submit" value="ok" call="setVisibility"/></form>\
-				CURRENT : <span id="current-visibility">{{visibility}}</span>{{/list}}'
+				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h3>\
+				<article class="text-container">\
+					<em contenteditable="true" data-property="health"> {{health}}</em>\
+				</article>\
+				<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
+				<article class="text-container">\
+				{{#list}}\
+					<div class="row line" data-category="{{category}}">\
+						<div class="three cell"><span>{{category}}</span></div>\
+						<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
+						<div class="one cell"><i role="{{visibility}}" href="/api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
+						<div class="clear"></div>\
+					</div>\
+				{{/list}}\
+				</article>\
+				'
 		},
 		action : {
 			profile : function(url) {
@@ -74,7 +128,6 @@ var account = function(){
 			editUserBookInfo : function(url){
 				$.get(url)
 				.done(function(data){
-					app.notify.info("modif ok");
 				})
 			},
 			setVisibility : function(o){
@@ -84,6 +137,17 @@ var account = function(){
 				.done(function(data){
 					app.notify.info("modif ok");
 				})
+			},
+			changeVisibility: function(o){
+				var newRole = 'public';
+				if($(o.target).attr('role') === 'public'){
+					newRole = 'private';
+				}
+				var url = o.url + '&value=' + newRole;
+				$.get(url)
+					.done(function(data){
+						$(o.target).attr('role', newRole);
+					})
 			},
 			sendPhoto : function(elem, files) {
 				var form = new FormData();
@@ -119,19 +183,21 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('span[contenteditable="true"]').blur(function(){
+	$('em[contenteditable="true"]').blur(function(){
 		var parameters = "";
-		if (this.parentNode.id === "category"){
-			parameters += "?category=" + this.classList[0] + "&values=" + this.innerHTML;
+		var parentLine = $(this).parent().parent();
+		if (parentLine.data('category')){
+			parameters += "?category=" + parentLine.data('category') + "&values=" + $(this).text();
 		} else {
-			parameters += "?prop=" + this.parentNode.classList[0] + "&value=" + this.innerHTML;
+			parameters += "?prop=" + $(this).data('property') + "&value=" + $(this).text();
 		}
 		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
 	});
-	$('input[type="radio"][name="mood"]').click(function(){
-		var parameters = "?prop=mood&value=" + this.value;
-		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
-	});
+
+	$('.enhanced-select').on('change', function(){
+		var parameters = "?prop=mood&value=" + $(this).data('selected');
+		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
+	})
 }
 
 $(document).ready(function(){
