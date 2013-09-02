@@ -90,7 +90,7 @@ public class AppRegistryService extends Controller {
 		params.put("type","APPLICATION");
 		if (actionType != null &&
 				("WORKFLOW".equals(actionType) || "RESOURCE".equals(actionType))) {
-			query += "WHERE a.type = {actionType} ";
+			query += "WHERE r IS NULL OR a.type = {actionType} ";
 			params.put("actionType", "SECURED_ACTION_" + actionType);
 		}
 		query += "RETURN n.id as id, n.name as name, "
@@ -326,6 +326,37 @@ public class AppRegistryService extends Controller {
 							"SET n.grantType = {grantType}, n.secret = {secret} ";
 					Map<String, Object> params = new HashMap<>();
 					params.put("applicationId", applicationId);
+					params.put("grantType", grantType);
+					params.put("secret", secret);
+					neo.send(query, params, request.response());
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("app-registry.create.external.app")
+	public void createExternalApp(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String name = request.formAttributes().get("name");
+				String grantType = request.formAttributes().get("grantType");
+				String secret = request.formAttributes().get("secret");
+				if (name != null && !name.trim().isEmpty() &&
+						grantType != null && !grantType.trim().isEmpty()) {
+					String query = "CREATE (c { id: {id}, type: 'APPLICATION', name: {name}, grantType: {grantType} ";
+					if (secret != null && !secret.trim().isEmpty()) {
+						query += ", secret: {secret} })";
+					} else {
+						query += "})";
+					}
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", UUID.randomUUID().toString());
+					params.put("name", name);
 					params.put("grantType", grantType);
 					params.put("secret", secret);
 					neo.send(query, params, request.response());

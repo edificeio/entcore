@@ -15,5 +15,6 @@
 	"app.registry.groups.authorize" : "Link groups to roles",
 	"app.registry.groups.authorized" : "Roles linked",
 	"app.registry.application.conf.updated" : "Configuration updated",
-	"app.registry.application.secret" : "Secret"
+	"app.registry.application.secret" : "Secret",
+	"app.registry.createExternalApp" : "External application create"
 }

@@ -15,5 +15,6 @@
 	"app.registry.groups.authorize" : "Attribuer des roles aux groupes",
 	"app.registry.groups.authorized" : "Roles attribués",
 	"app.registry.application.conf.updated" : "Configuration mise à jour",
-	"app.registry.application.secret" : "Secret"
+	"app.registry.application.secret" : "Secret",
+	"app.registry.createExternalApp" : "Créer une application externe"
 }

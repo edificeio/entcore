@@ -7,6 +7,7 @@ var appRegistry = function(){
 								<a call="allCheckbox" href="checked">{{#i18n}}app.registry.select.all{{/i18n}}</a>\
 								<a call="allCheckbox" href="">{{#i18n}}app.registry.unselect.all{{/i18n}}</a>\
 								<a call="createRole" href="role">{{#i18n}}app.registry.createRole{{/i18n}}</a>\
+								<a call="createExternalApp" href="application/external">{{#i18n}}app.registry.createExternalApp{{/i18n}}</a>\
 							</div>\
 							{{#.}}\
 							<div>\
@@ -71,7 +72,17 @@ var appRegistry = function(){
 								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
 								<input type="text" name="secret" value="{{secret}}" />\
 								<input call="applicationConf" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
-							</form>'
+							</form>',
+
+			createExternalApp : '<h3>{{#i18n}}app.registry.createExternalApp{{/i18n}}</h3>\
+							<form action="{{action}}">\
+								<input type="hidden" name="grantType" value="authorization_code" />\
+								<label>{{#i18n}}app.registry.application{{/i18n}}</label>\
+								<input type="text" name="name" /><br />\
+								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
+								<input type="text" name="secret" /><br />\
+								<input call="createExternalAppSubmit" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
+							</form>',
 
 		},
 		action : {
@@ -212,6 +223,24 @@ var appRegistry = function(){
 				.done(function(response) {
 					if (response.status === "ok") {
 						app.notify.done(app.i18n.bundle["app.registry.application.conf.updated"]);
+					} else {
+						app.notify.error(response.message);
+					}
+				})
+				.error(function(data) {app.notify.error(data)});
+			},
+
+			createExternalApp : function(o) {
+				$('#list').html(app.template.render("createExternalApp", { action : o.url}));
+			},
+
+			createExternalAppSubmit : function(o) {
+				var form = $(o.target).parents("form");
+				$.post(form.attr("action"), form.serialize())
+				.done(function(response) {
+					if (response.status === "ok") {
+						$('#form-window').empty();
+						appRegistry.action.applications({url : "applications/actions?actionType=WORKFLOW"});
 					} else {
 						app.notify.error(response.message);
 					}
