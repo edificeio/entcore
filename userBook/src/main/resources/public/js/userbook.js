@@ -28,7 +28,7 @@ var userbook = function(){
 		var hobbies = [];
 		var related = [];
 		for (obj in d.result){
-			if (d.result[obj].userId !== d.result[obj].id){
+			if (d.result[obj].userId !== d.result[obj].id && d.result[obj].relatedType === 'USERBOOK'){
 				jo['mood'] = 'default'; jo['health']=''; jo['photo']='';  jo['motto']='';
 			} else if (d.result[obj].userId === d.result[obj].id){
 				jo['mood'] = d.result[obj].mood; jo['health']=d.result[obj].health; 
@@ -87,8 +87,8 @@ var userbook = function(){
 							<em class="six cell">{{motto}}</em>\
 						</div>\
 						<div class="row mini-box">\
-							<div class="two cell avatar"><img src="public/img/{{mood}}.jpg" alt="panda" /></div>\
-							<em class="ten cell text-container">Je suis rêveuse</em>\
+							<div class="two cell avatar"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+							<em class="ten cell text-container mood">Je suis rêveuse</em>\
 						</div>\
 					</article>\
 				</div>\
@@ -180,6 +180,7 @@ var userbook = function(){
 					that.showPerson(data)
 					messenger.requireResize();
 					userbook.action.getPhoto(data.result[0].photo,'');
+					$('em.mood').html(moods[data.result[0].mood]);
 				})
 				.error(function(data){app.notify.error(data.status);})
 			},

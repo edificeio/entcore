@@ -43,7 +43,7 @@ public class UserBookController extends Controller {
 
 	@SecuredAction("userbook.authent")
 	public void annuaire(HttpServerRequest request) {
-		renderView(request);
+		renderView(request, config);
 	}
 
 	@SecuredAction("userbook.authent")

@@ -16,17 +16,17 @@
 			{"code":"places","label":"Endroits"}
 		],
 		"moods":[
-			{"code":"default","label":"","image":""},
-			{"code":"happy","label":"Je suis content !","image":"content.png"},
-			{"code":"proud","label":"Je suis fier","image":"fier.png"},
-			{"code":"dreamy","label":"Je suis rêveur...","image":"reveur.png"},
-			{"code":"love","label":"Je suis amoureux","image":"amoureux.png"},
-			{"code":"tired","label":"Je suis fatigué","image":"fatigue.png"},
-			{"code":"angry","label":"Je suis en colère","image":"colere.png"},
-			{"code":"worried","label":"Je suis embêté...","image":"embete.png"},
-			{"code":"sick","label":"Je suis malade","image":"malade.png"},
-			{"code":"joker","label":"Je suis farceur","image":"farceur.png"},
-			{"code":"sad","label":"Je suis triste","image":"triste.png"}
+			{"code":"default","label":"","image":"default.png"},
+			{"code":"happy","label":"Je suis content(e) !","image":"happy.png"},
+			{"code":"proud","label":"Je suis fier(e)","image":"proud.png"},
+			{"code":"dreamy","label":"Je suis rêveur(se)","image":"dreamy.png"},
+			{"code":"love","label":"Je suis amoureux(se)","image":"love.png"},
+			{"code":"tired","label":"Je suis fatigué(e)","image":"tired.png"},
+			{"code":"angry","label":"Je suis en colère","image":"angry.png"},
+			{"code":"worried","label":"Je suis embêté(e)","image":"worried.png"},
+			{"code":"sick","label":"Je suis malade","image":"sick.png"},
+			{"code":"joker","label":"Je suis farceur(se)","image":"joker.png"},
+			{"code":"sad","label":"Je suis triste","image":"sad.png"}
 		]
 	}
 	
