@@ -383,6 +383,7 @@ nav.horizontal a {
 .enhanced-select {
   position: relative;
   margin-top: 15px;
+  z-index: 5;
 }
 .enhanced-select .option {
   width: 100%;
