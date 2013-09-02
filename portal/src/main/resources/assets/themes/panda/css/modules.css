@@ -529,9 +529,7 @@ dl dt {
   padding: 0;
 }
 .flowing .cancel-flow thead,
-.flowing .cancel-flow tbody {
-  display: table-row-group;
-}
+.flowing .cancel-flow tbody,
 .flowing .cancel-flow table {
   display: table;
 }

@@ -177,6 +177,7 @@ var workspace = function(){
 								<th scope="col">\
 									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
+								<th></th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 							</tr>\
