@@ -348,6 +348,7 @@ nav.horizontal a {
   margin-right: auto;
   cursor: pointer;
   max-width: 135px;
+  height: 135px;
 }
 .icons-view li input[type=checkbox] {
   position: absolute;
@@ -502,6 +503,10 @@ dl dt {
 .mini-box .cell img {
   vertical-align: middle;
 }
+.large-box {
+  min-width: 300px;
+  min-height: 150px;
+}
 .flowing {
   height: 100%;
   padding: 15px;
@@ -522,4 +527,21 @@ dl dt {
 }
 .flowing form {
   padding: 0;
+}
+.flowing .cancel-flow thead,
+.flowing .cancel-flow tbody {
+  display: table-row-group;
+}
+.flowing .cancel-flow table {
+  display: table;
+}
+td.icon {
+  width: 25px !important;
+  height: 25px !important;
+}
+td.text {
+  min-width: 150px !important;
+}
+td.main-cell {
+  width: 100% !important;
 }

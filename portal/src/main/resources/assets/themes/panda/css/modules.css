@@ -348,6 +348,7 @@ nav.horizontal a {
   margin-right: auto;
   cursor: pointer;
   max-width: 135px;
+  height: 135px;
 }
 .icons-view li input[type=checkbox] {
   position: absolute;
@@ -502,6 +503,10 @@ dl dt {
 .mini-box .cell img {
   vertical-align: middle;
 }
+.large-box {
+  min-width: 300px;
+  min-height: 150px;
+}
 .flowing {
   height: 100%;
   padding: 15px;
@@ -522,6 +527,23 @@ dl dt {
 }
 .flowing form {
   padding: 0;
+}
+.flowing .cancel-flow thead,
+.flowing .cancel-flow tbody {
+  display: table-row-group;
+}
+.flowing .cancel-flow table {
+  display: table;
+}
+td.icon {
+  width: 25px !important;
+  height: 25px !important;
+}
+td.text {
+  min-width: 150px !important;
+}
+td.main-cell {
+  width: 100% !important;
 }
 html,
 body {
@@ -580,8 +602,10 @@ section.lightbox-window {
   height: 300px;
   top: 0;
   left: 50%;
+  right: 15%;
   display: none;
   border-radius: 5px;
+  padding-bottom: 40px;
 }
 section.lightbox-window input[type=submit],
 section.lightbox-window input[type=button] {
@@ -906,6 +930,18 @@ i[role=doc] {
   float: left;
   vertical-align: middle;
 }
+i[role=img] {
+  height: 25px;
+  width: 25px;
+  background: url("../img/icons/img.png") no-repeat center;
+  display: block;
+  box-sizing: -webkit-border-box;
+  box-sizing: -moz-border-box;
+  box-sizing: -o-border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=xls] {
   height: 32px;
   width: 32px;
@@ -1139,6 +1175,11 @@ article.box.selected i[role=view-book] {
   float: left;
   vertical-align: middle;
 }
+tr.selected td {
+  font-weight: bold;
+  color: #fff;
+  background: #3889c1;
+}
 article {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -1300,13 +1341,13 @@ nav.horizontal a:hover {
   box-sizing: -o-border-box;
   box-sizing: border-box;
 }
-.list-view table.monoline tbody tr:nth-child(even) {
+table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;
 }
-.list-view table.monoline tbody tr:nth-child(odd) {
+table.monoline tbody tr:nth-child(odd) {
   background: #f6f6f6;
 }
-.list-view table {
+table {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
@@ -1314,36 +1355,36 @@ nav.horizontal a:hover {
   border-radius: 10px;
   border-collapse: collapse;
 }
-.list-view table thead tr {
+table thead tr {
   border: none;
 }
-.list-view table thead tr:first-child th:first-child {
+table thead tr:first-child th:first-child {
   border-top-left-radius: 10px;
 }
-.list-view table thead tr:first-child th:last-child {
+table thead tr:first-child th:last-child {
   border-top-right-radius: 10px;
 }
-.list-view table tbody tr:nth-child(4n+1),
-.list-view table tbody tr:nth-child(4n+2) {
+table tbody tr:nth-child(4n+1),
+table tbody tr:nth-child(4n+2) {
   background: #ebf4f9;
 }
-.list-view table tr {
+table tr {
   border-top: 1px solid #cccccc;
   background: transparent;
 }
-.list-view table tr td.container-cell {
+table tr td.container-cell {
   padding: 0px;
 }
-.list-view table tr td {
+table tr td {
   padding: 5px;
   font-size: 12px;
 }
-.list-view table tr td em {
+table tr td em {
   font-size: 13px;
   color: #cccccc;
   padding-left: 10px;
 }
-.list-view table tr td h2 {
+table tr td h2 {
   font-size: 14px;
   background: #eee;
   border: 1px solid #ccc;
@@ -1351,24 +1392,24 @@ nav.horizontal a:hover {
   padding: 5px;
   color: #000;
 }
-.list-view table tr td h2 i {
+table tr td h2 i {
   cursor: pointer;
 }
-.list-view table tr td a {
+table tr td a {
   margin: 5px;
 }
-.list-view table tr td a.button {
+table tr td a.button {
   font-size: 1.3em;
 }
-.list-view table tr td .action-cell {
+table tr td .action-cell {
   margin-top: 20px;
 }
-.list-view table tr td ul {
+table tr td ul {
   margin-top: 0px;
   marginl-eft: 0px;
   padding-left: 0px;
 }
-.list-view table tr td ul li {
+table tr td ul li {
   font-size: 12px;
   list-style-type: none;
   padding: 5px;
@@ -1380,4 +1421,8 @@ dl dd {
 }
 img[src=""] {
   display: none;
+}
+.editable {
+  color: #666;
+  font-style: italic;
 }

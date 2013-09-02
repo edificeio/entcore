@@ -138,6 +138,7 @@ nav.horizontal{
 			margin-right: auto;
 			cursor: pointer;
 			max-width: @icon-size;
+			height: @icon-size;
 		}
 
 		input[type=checkbox]{
@@ -296,6 +297,11 @@ dl{
 	}
 }
 
+.large-box{
+	min-width: 300px;
+	min-height: 150px;
+}
+
 .flowing{
 	height: 100%;
 	padding: 15px;
@@ -315,4 +321,26 @@ dl{
 	form{
 		padding: 0;
 	}
+
+	.cancel-flow{
+		thead, tbody{
+			display: table-row-group;
+		}
+		table{
+			display: table;
+		}
+	}
+}
+
+td.icon{
+	width: 25px !important;
+	height: 25px !important;
+}
+
+td.text{
+	min-width: 150px !important;
+}
+
+td.main-cell{
+	width: 100% !important;
 }

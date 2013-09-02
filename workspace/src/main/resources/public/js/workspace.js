@@ -177,7 +177,6 @@ var workspace = function(){
 								<th scope="col">\
 									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
-								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
 							</tr>\
@@ -231,17 +230,59 @@ var workspace = function(){
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
 						</form>',
 
-			moveDocuments : '<form action="{{action}}">\
+			moveDocuments : '<form action="{{action}}" class="cancel-flow">\
 								<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
-								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
-								<input type="text" name="folder" />\
-								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+								<table class="monoline folders large-box">\
+									{{#folders}}\
+										<tr>\
+											<td class="icon">\
+												<input type="radio" name="folder" />\
+											</td>\
+											<td class="icon">\
+												<i role="folder"></i>\
+											</td>\
+											<td class="folderPath main-cell">{{.}}</td>\
+										</tr>\
+									{{/folders}}\
+									<tr>\
+										<td class="icon">\
+											<input type="radio" name="folder" />\
+										</td>\
+										<td class="icon">\
+										</td>\
+										<td class="folderPath editable main-cell" contenteditable>Nouveau dossier</td>\
+									</tr>\
+								</table>\
+								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
 							</form>',
-			copyDocuments : '<form action="{{action}}">\
+			copyDocuments : '<form action="{{action}}" class="cancel-flow">\
 								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
-								<label>{{#i18n}}workspace.move.path{{/i18n}}</label>\
-								<input type="text" name="folder" />\
-								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.valid{{/i18n}}" />\
+								<table class="monoline folders large-box">\
+								{{#folders}}\
+									<tr>\
+										<td class="icon">\
+											<input type="checkbox" />\
+										</td>\
+										<td class="icon">\
+											<i role="folder"></i>\
+										</td>\
+										<td class="folderPath main-cell">\
+											{{.}}\
+										</td>\
+									</tr>\
+								{{/folders}}\
+									<tr>\
+										<td class="icon">\
+											<input type="checkbox" />\
+										</td>\
+										<td class="icon">\
+										</td>\
+										<td class="folderPath editable main-cell" contenteditable>\
+											Nouveau dossier\
+										</td>\
+									</tr>\
+								</table>\
+								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
 							</form>'
 		},
 		action : {
@@ -277,9 +318,11 @@ var workspace = function(){
 			},
 			iconsView: function(o){
 				$('.list').removeClass('list-view').addClass('icons-view');
+				messenger.requireResize();
 			},
 			listView: function(o){
 				$('.list').removeClass('icons-view').addClass('list-view');
+				messenger.requireResize();
 			},
 			rack : function (o) {
 				$.get(o.url).done(function(response){
@@ -300,8 +343,9 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
-				$.get("documents/Trash").done(function(documents) {
-					$.get("rack/documents/Trash").done(function(rack) {
+				$.get("/documents/Trash").done(function(documents) {
+					$.get("/rack/documents/Trash").done(function(rack) {
+						documents = tools.formatResponse(documents);
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
 						messenger.requireResize();
@@ -374,7 +418,7 @@ var workspace = function(){
 					return;
 				}
 				var files = [];
-				$(":checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked").each(function(i) {
 					var obj = $(this);
 					$.ajax({
 						url : o.url + "/" + obj.val(),
@@ -435,7 +479,7 @@ var workspace = function(){
 			remove : function (o) {
 				var files = [];
 
-				$(":checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked").each(function(i) {
 					var obj = $(this);
 					$.ajax({
 						url : obj.val(),
@@ -451,16 +495,25 @@ var workspace = function(){
 			},
 
 			move : function(o) {
-				$('#form-window').html(app.template.render("moveDocuments", { action : o.url}));
-				ui.showLightbox();
+				workspace.action.getFolders(true, undefined, function(data) {
+					var folders = _.reject(data, function(item){ return item === 'Trash' });
+					$('#form-window').html(app.template.render("moveDocuments", { action : o.url, folders: folders }));
+					ui.showLightbox();
+				});
+
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
 					ui.hideLightbox();
 				})
 			},
 			copy : function(o) {
-				$('#form-window').html(app.template.render("copyDocuments", { action : o.url}));
-				ui.showLightbox();
+				workspace.action.getFolders(true, undefined, function(data) {
+					var folders = _.reject(data, function(item){ return item === 'Trash' });
+					$('#form-window').html(app.template.render("copyDocuments", { action : o.url, folders: folders }));
+
+					ui.showLightbox();
+				});
+
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
 					ui.hideLightbox();
@@ -471,7 +524,6 @@ var workspace = function(){
 				var ids = "",
 					form = $(o.target).parents("form"),
 					action = form.attr("action"),
-					folder = form.children("input[name=folder]").val(),
 					method;
 
 				if (action.match(/copy$/g)) {
@@ -480,23 +532,25 @@ var workspace = function(){
 					method = "PUT";
 				}
 
-				$(":checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked").each(function(i) {
 					ids += "," + $(this).val();
 				});
 				if (ids != "") {
 					ids = ids.substring(1);
 				}
 
-				$.ajax({
-					url : action + "/" + ids + "/" + folder,
-					type: method,
-					success: function() {
-						location.reload(true);
-					},
-					error: function(data) {
-						app.notify.error(data);
-					}
-				});
+				$('.folders :checkbox:checked, .folders :radio:checked').each(function(){
+					$.ajax({
+						url : action + "/" + ids + "/" + $(this).parents('tr').find('.folderPath').text(),
+						type: method,
+						success: function() {
+							location.reload(true);
+						},
+						error: function(data) {
+							app.notify.error(data);
+						}
+					});
+				})
 			}
 
 		}
@@ -519,14 +573,20 @@ $(document).ready(function(){
 
 	$('.workspace').on('click', '.select-file, .selectAllCheckboxes', function(){
 		if($('.select-file:checked').length > 0){
-			$('.contextual').attr('disabled', false);
+			$('.contextual').prop('disabled', false);
 		}
 		else{
-			$('.contextual').attr('disabled', true);
+			$('.contextual').prop('disabled', true);
 		}
 	});
 
 	$('.workspace').on('change', '.selectAllCheckboxes', function(){
-		$('input[type=checkbox]').attr('checked', this.checked);
-	})
+		$('#list :checkbox').prop('checked', this.checked);
+	});
+
+	$('.workspace').on('mousedown', '.editable', function(){
+		$(this).html(' ');
+		$(this).focus();
+		$(this).parent().find('input').prop('checked', true);
+	});
 });
