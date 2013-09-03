@@ -1,18 +1,26 @@
 var userbook = function(){
 
 	var classDataAdaptor = function (d) {
-		var list = [];
+		var listStudents = [];
+		var listTeachers = [];
 		for (obj in d.result){
 			if (d.result[obj].userId !== d.result[obj].id){
 				d.result[obj].mood= 'default';
 				d.result[obj].photo= '';
 			}
-			list.push(d.result[obj]);
+			if (d.result[obj].type === 'ELEVE'){
+				listStudents.push(d.result[obj]);
+			} else if (d.result[obj].type === 'ENSEIGNANT'){
+				listTeachers.push(d.result[obj]);
+			}
 		}
-		return {list : list}; 
+		return {students: listStudents, teachers: listTeachers}; 
 	};
 	var searchDataAdaptor = function (d) {
 		var list = [];
+		var listStudents = [];
+		var listTeachers = [];
+		var listParents = [];
 		for (obj in d.result){
 			if (d.result[obj].photo ==='' && d.result[obj].mood ==='' && d.result[obj].userId === ''){
 				d.result[obj].mood= 'default';
@@ -21,7 +29,16 @@ var userbook = function(){
 				list.push(d.result[obj]);
 			}
 		}
-		return {list : list}; 
+		for (obj in list){
+			if (d.result[obj].type === 'ELEVE'){
+				listStudents.push(list[obj]);
+			} else if (d.result[obj].type === 'ENSEIGNANT'){
+				listTeachers.push(list[obj]);
+			} else {
+				listParents.push(list[obj]);
+			}
+		}
+		return {students: listStudents, teachers: listTeachers, parents: listParents}; 
 	};
 	var personDataAdaptor = function(d) {
 		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
@@ -51,7 +68,49 @@ var userbook = function(){
 	app.define({
 		template : {
 			searchResults: '\
-				{{#list}}\
+				{{#teachers}}\
+				<div class="cell four text-container" >\
+					<article class="box row person" id={{id}}>\
+							<div class="four cell avatar"><img src="/public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="six cell">\
+								<div class="row">\
+									<h4 href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
+								</div>\
+								<div class="row bottom-locked">\
+									<span class="actions">\
+									<i role="send-mail"></i>\
+									<i role="view-book"></i>\
+									<i role="view-folder"></i>\
+								</span>\
+								</div>\
+							</div>\
+							<div class="two cell"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+					</article>\
+				</div>\
+				{{/teachers}}\
+				<div class="clear"></div>\
+				{{#parents}}\
+				<div class="cell four text-container" >\
+					<article class="box row person" id={{id}}>\
+							<div class="four cell avatar"><img src="/public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="six cell">\
+								<div class="row">\
+									<h4 href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
+								</div>\
+								<div class="row bottom-locked">\
+									<span class="actions">\
+									<i role="send-mail"></i>\
+									<i role="view-book"></i>\
+									<i role="view-folder"></i>\
+								</span>\
+								</div>\
+							</div>\
+							<div class="two cell"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+					</article>\
+				</div>\
+				{{/parents}}\
+				<div class="clear"></div>\
+				{{#students}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
 							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
@@ -70,7 +129,7 @@ var userbook = function(){
 							<div class="two cell"><img src="public/img/{{mood}}.jpg" alt="panda" /></div>\
 					</article>\
 				</div>\
-				{{/list}}',
+				{{/students}}',
 			personne: '\
 				<div class="row box">\
 					<div class="avatar cell four">\
