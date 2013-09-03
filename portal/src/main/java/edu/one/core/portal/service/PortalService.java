@@ -6,11 +6,14 @@ import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.portal.mustache.AssetResourceTemplateFunction;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
+
 import java.util.Map;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -50,7 +53,9 @@ public class PortalService extends Controller {
 
 	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
 	public void apps(HttpServerRequest request) {
-		renderView(request, container.config().getObject("applications"));
+		JsonObject json = new JsonObject()
+		.putArray("apps", container.config().getArray("apps", new JsonArray()));
+		renderView(request, json);
 	}
 
 	public void assets(HttpServerRequest request) {

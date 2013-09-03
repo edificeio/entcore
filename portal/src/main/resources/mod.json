@@ -7,10 +7,12 @@
 	"skin": "panda",
 	"path-prefix" : "",
 	"applications" : {
-		"workspace" : "http://localhost:8011/workspace",
 		"timeline" : "http://localhost:8016/timeline",
 		"userbook" : "http://localhost:8101/userbook",
 		"auth" : "http://localhost:8009/auth",
 		"portal" : "http://localhost:8017"
-	}
+	},
+	"apps" : [
+		{ "icon" : "workspace-large", "name" : "Espace documentaire", "uri" : "http://localhost:8011/workspace/workspace" }
+	]
 }

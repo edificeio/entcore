@@ -16,10 +16,12 @@
 		<nav role="apps-navigation" class="list icons-view">
 			<article class="list icons-view">
 				<ul>
+					{{#apps}}
 					<li>
-						<i role="workspace-large" href="{{workspace}}/workspace" call="redirect"></i>
-						<a href="http://localhost:8011/workspace" call="redirect">Espace documentaire</a>
+						<i role="{{icon}}" href="{{uri}}" call="redirect"></i>
+						<a href="{{uri}}" call="redirect">{{name}}</a>
 					</li>
+					{{/apps}}
 				</ul>
 				<div class="clear"></div>
 			</article>
