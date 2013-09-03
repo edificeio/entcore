@@ -3,15 +3,15 @@
   width: 100%;
   position: relative;
   clear: both;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 .cell {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -180,9 +180,9 @@
   margin-right: auto;
 }
 .border-box {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 a,
@@ -242,9 +242,9 @@ nav.vertical ul li.selected ul {
   margin-top: 8px;
 }
 .navbar .account {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -328,9 +328,9 @@ nav.horizontal a {
   display: none;
 }
 .icons-view li {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -414,9 +414,9 @@ nav.horizontal a {
   vertical-align: middle;
 }
 section .contextual-buttons .action-buttons {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -442,9 +442,9 @@ section .contextual-buttons .action-buttons a.button {
   vertical-align: top;
 }
 section .contextual-buttons .display-buttons {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -617,9 +617,9 @@ body {
   z-index: 2;
 }
 .container .main.wrapper {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   z-index: 1;
   padding-top: 150px;
@@ -632,9 +632,9 @@ body {
   padding-bottom: 15px;
 }
 .container section.main {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   min-height: 100%;
   padding: 15px;
@@ -707,9 +707,9 @@ i[role=new-mail] {
   padding-top: 8px;
   background-position: 0px 0px;
   cursor: pointer;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 i[role=send-mail] {
@@ -719,9 +719,9 @@ i[role=send-mail] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -733,9 +733,9 @@ i[role=view-folder] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -747,9 +747,9 @@ i[role=view-book] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -761,9 +761,9 @@ i[role=public] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -775,9 +775,9 @@ i[role=prive] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -789,9 +789,9 @@ i[role=storage] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -803,9 +803,9 @@ i[role=orange-user] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -817,9 +817,9 @@ i[role=add] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -832,9 +832,9 @@ i[role=close] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -846,9 +846,9 @@ i[role=close-2x] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -860,9 +860,9 @@ i[role=notification] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -874,9 +874,9 @@ i[role=show-icons] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -888,9 +888,9 @@ i[role=show-details] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -902,9 +902,9 @@ i[role=show-list] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -916,9 +916,9 @@ i[role=show-icons].selected {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -930,9 +930,9 @@ i[role=show-details].selected {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -944,9 +944,9 @@ i[role=show-list].selected {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -958,9 +958,9 @@ i[role=configuration] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -972,9 +972,9 @@ i[role=user] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -986,9 +986,9 @@ i[role=shutdown] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1000,9 +1000,9 @@ i[role=apps] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1014,9 +1014,9 @@ i[role=workspace-large] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1028,9 +1028,9 @@ i[role=doc-large] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1042,9 +1042,9 @@ i[role=xls-large] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1056,9 +1056,9 @@ i[role=folder-large] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1070,9 +1070,9 @@ i[role=doc] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1084,9 +1084,9 @@ i[role=img] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1098,9 +1098,9 @@ i[role=xls] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1112,9 +1112,9 @@ i[role=folder] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1126,9 +1126,9 @@ i[role=link] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1140,9 +1140,9 @@ i[role=userbook] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1154,9 +1154,9 @@ i[role=angry-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1168,9 +1168,9 @@ i[role=default-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1182,9 +1182,9 @@ i[role=dreamy-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1196,9 +1196,9 @@ i[role=happy-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1210,9 +1210,9 @@ i[role=joker-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1224,9 +1224,9 @@ i[role=love-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1238,9 +1238,9 @@ i[role=proud-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1252,9 +1252,9 @@ i[role=sad-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1266,9 +1266,9 @@ i[role=sick-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1280,9 +1280,9 @@ i[role=tired-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1294,9 +1294,9 @@ i[role=worried-panda] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1308,9 +1308,9 @@ i[role=arrow-bottom] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1362,9 +1362,9 @@ button {
   text-transform: uppercase;
   height: 40px;
   display: inline-block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   padding-bottom: 5px;
   border-radius: 10px;
@@ -1509,9 +1509,9 @@ article.box.selected i[role=view-folder] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1523,9 +1523,9 @@ article.box.selected i[role=view-book] {
   background-repeat: no-repeat;
   background-position: center;
   display: block;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
@@ -1695,9 +1695,9 @@ nav.horizontal a:hover {
   -ms-border-radius: 8px;
   -o-border-radius: 8px;
   border-radius: 8px;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 table.monoline tbody tr:nth-child(even) {

@@ -3,15 +3,15 @@
   width: 100%;
   position: relative;
   clear: both;
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 .cell {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -180,9 +180,9 @@
   margin-right: auto;
 }
 .border-box {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 a,
@@ -242,9 +242,9 @@ nav.vertical ul li.selected ul {
   margin-top: 8px;
 }
 .navbar .account {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -328,9 +328,9 @@ nav.horizontal a {
   display: none;
 }
 .icons-view li {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -414,9 +414,9 @@ nav.horizontal a {
   vertical-align: middle;
 }
 section .contextual-buttons .action-buttons {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
@@ -442,9 +442,9 @@ section .contextual-buttons .action-buttons a.button {
   vertical-align: top;
 }
 section .contextual-buttons .display-buttons {
-  box-sizing: -webkit-border-box;
-  box-sizing: -moz-border-box;
-  box-sizing: -o-border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
