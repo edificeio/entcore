@@ -504,7 +504,6 @@ header h2 {
 }
 .lightbox-window form label {
   clear: left;
-  font-size: 12px;
   width: 150px;
 }
 .text-container {
@@ -577,6 +576,11 @@ dl dt {
 .flowing .cancel-flow tbody,
 .flowing .cancel-flow table {
   display: table;
+}
+.flowing .cancel-flow section,
+.flowing .cancel-flow div,
+.flowing .cancel-flow form {
+  height: auto;
 }
 td.icon {
   width: 25px !important;
@@ -1328,6 +1332,20 @@ a.button {
 .small.button:hover {
   line-height: 40px;
   height: 40px;
+}
+input[type=text] {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  line-height: 25px;
+}
+label {
+  font-size: 16px;
+  color: #333333;
+  line-height: 30px;
 }
 input[type=button],
 input[type=submit],

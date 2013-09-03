@@ -137,6 +137,13 @@ var ui = (function(){
 		$('body').on('click', '.file-button', function(e){
 			var linkedId = $(this).data('linked');
 			$('#' + linkedId).click();
+			$('#' + linkedId).on('change', function(e){
+				var fileUrl = $(this).val();
+				if(fileUrl.indexOf('fakepath') !== -1){
+					fileUrl = fileUrl.split('fakepath')[1];
+				}
+				$('#' + linkedId + '-content').text(fileUrl);
+			})
 
 			e.preventDefault();
 		})

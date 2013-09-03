@@ -150,7 +150,7 @@ var workspace = function(){
 								<th scope="col">\
 									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
-								<th scope="col">{{#i18n}}type{{/i18n}}</th>\
+								<th scope="col"></th>\
 								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}from{{/i18n}}</th>\
 								<th scope="col">{{#i18n}}to{{/i18n}}</th>\
@@ -161,7 +161,7 @@ var workspace = function(){
 							{{#.}}\
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
-								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
+								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 								<td><a href="rack/{{_id}}">{{name}}</a></td>\
 								<td>{{from}}</td>\
 								<td>{{to}}</a></td>\
@@ -171,7 +171,7 @@ var workspace = function(){
 						</tbody>\
 					</table>',
 
-			trash :'<table class="striped alternate" summary="">\
+			trash :'<table class="striped alternate monoline" summary="">\
 						<thead>\
 							<tr>\
 								<th scope="col">\
@@ -201,13 +201,25 @@ var workspace = function(){
 							{{/rack}}\
 						</tbody>\
 					</table>',
-
-			addDocument : '	<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
+			addDocument : '	<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cancel-flow">\
 							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
-							<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
-							<input type="text" name="name" />\
-							<label>{{#i18n}}workspace.document.file{{/i18n}}</label>\
-							<input type="file" name="file" />\
+							<div class="row">\
+								<div class="four cell">\
+									<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
+								</div>\
+								<div class="eight cell">\
+									<input type="text" name="name" />\
+								</div>\
+							</div>\
+				            <div class="row">\
+								<div class="eight cell right-magnet">\
+									<div class="hidden-content">\
+										<input type="file" name="file" id="new-file" />\
+									</div>\
+									<button class="file-button" data-linked="new-file">Choisir</button>\
+									<em id="new-file-content">Aucun fichier</em>\
+								</div>\
+							</div>\
 							<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 							</form>',
 
@@ -384,9 +396,9 @@ var workspace = function(){
 				var form = $('#upload-form'),
 					fd = new FormData(),
 					action = form.attr('action');
-				fd.append('file', form.children('input[type=file]')[0].files[0]);
+				fd.append('file', form.find('input[type=file]')[0].files[0]);
 				if ("rack" === action) {
-					action += '/' + form.children('select[name=to]').val();
+					action += '/' + form.find('input[name=to]').val();
 				}
 				ui.hideLightbox();
 				$.ajax({

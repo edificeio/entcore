@@ -504,7 +504,6 @@ header h2 {
 }
 .lightbox-window form label {
   clear: left;
-  font-size: 12px;
   width: 150px;
 }
 .text-container {
@@ -577,6 +576,11 @@ dl dt {
 .flowing .cancel-flow tbody,
 .flowing .cancel-flow table {
   display: table;
+}
+.flowing .cancel-flow section,
+.flowing .cancel-flow div,
+.flowing .cancel-flow form {
+  height: auto;
 }
 td.icon {
   width: 25px !important;
