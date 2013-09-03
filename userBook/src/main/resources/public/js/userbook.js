@@ -31,10 +31,10 @@ var userbook = function(){
 				{{#list}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="/public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
-									<h4 href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
+									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
@@ -44,14 +44,14 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><img src="/public/img/reveur.png" alt="panda" /></div>\
+							<div class="two cell"><img src="public/img/reveur.png" alt="panda" /></div>\
 					</article>\
 				</div>\
 				{{/list}}',
 			personne: '\
 				<div class="row box">\
 					<div class="avatar cell four">\
-						<img src="/public/img/no-avatar.jpg" alt="user" />\
+						<img src="public/img/no-avatar.jpg" alt="user" />\
 					</div>\
 					<article class="cell eight text-container right-magnet">\
 						<h2>{{displayName}}</h2>\
@@ -64,7 +64,7 @@ var userbook = function(){
 							<em class="six cell">{{motto}}</em>\
 						</div>\
 						<div class="row mini-box">\
-							<div class="two cell avatar"><img src="/public/img/reveur.png" alt="panda" /></div>\
+							<div class="two cell avatar"><img src="public/img/reveur.png" alt="panda" /></div>\
 							<em class="ten cell text-container">Je suis rêveuse</em>\
 						</div>\
 					</article>\
@@ -88,7 +88,7 @@ var userbook = function(){
 				<article class="text-container">\
 					{{#relations}}\
 						<p>\
-							<a href="/api/person?id={{relatedId}}&type={{relatedType}}" call="person">{{relatedName}}</a>\
+							<a href="api/person?id={{relatedId}}&type={{relatedType}}" call="person">{{relatedName}}</a>\
 						</p>\
 					{{/relations}}\
 				</article>\
@@ -158,7 +158,7 @@ var userbook = function(){
 			refreshClassList: function(){
 				if (location.search.substring(1,6) === 'query'){
 					var className = location.search.split('class=')[1];
-					userbook.action.searchClass("/api/class?name=" + className);
+					userbook.action.searchClass("api/class?name=" + className);
 				}
 			},
 			searchClass : function(url) {

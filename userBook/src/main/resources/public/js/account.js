@@ -27,7 +27,7 @@ var account = function(){
 			personne: '\
 				<div class="row box">\
 					<div class="avatar cell four">\
-						<img src="/public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+						<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 					</div>\
 					<article class="cell eight text-container right-magnet">\
 						<h2>{{displayName}}</h2>\
@@ -108,7 +108,7 @@ var account = function(){
 					<div class="row line" data-category="{{category}}">\
 						<div class="three cell"><span>{{category}}</span></div>\
 						<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
-						<div class="one cell"><i role="{{visibility}}" href="/api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
+						<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
 						<div class="clear"></div>\
 					</div>\
 				{{/list}}\
@@ -196,7 +196,7 @@ function manageEditable(){
 
 	$('.enhanced-select').on('change', function(){
 		var parameters = "?prop=mood&value=" + $(this).data('selected');
-		account.action.editUserBookInfo("/api/edit-userbook-info" + parameters);
+		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
 	})
 }
 
