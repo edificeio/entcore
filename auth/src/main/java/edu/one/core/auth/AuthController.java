@@ -326,7 +326,7 @@ public class AuthController extends Controller {
 						@Override
 						public void handle(Boolean activated) {
 							if (Boolean.TRUE.equals(activated)) {
-								redirect(request, "/login");
+								redirect(request, "/auth/login");
 							} else {
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()
@@ -412,7 +412,7 @@ public class AuthController extends Controller {
 						@Override
 						public void handle(Boolean reseted) {
 							if (Boolean.TRUE.equals(reseted)) {
-								redirect(request, "/login");
+								redirect(request, "/auth/login");
 							} else {
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()

@@ -119,7 +119,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		.putString("from", container.config().getString("email", "noreply@one1d.fr"))
 		.putString("subject", "Réinitialisation du mot de passe") // TODO i18n
 		.putString("body", container.config()
-				.getString("host", "http://localhost:8009") + "/reset/" + resetCode); // TODO template
+				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode); // TODO template
 		container.logger().debug(json.encode());
 		vertx.eventBus().send(EMAIL_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
