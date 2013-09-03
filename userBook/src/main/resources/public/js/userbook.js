@@ -224,6 +224,8 @@ var userbook = function(){
 					$('#' + data.result[0].id).addClass('selected');
 				}
 				$("#person").html(app.template.render('personne', personDataAdaptor(data)));
+				$('i[role=show-icons]').removeClass('selected');
+				$('i[role=show-details]').addClass('selected');
 			},
 			showFirstPerson: function(){
 				var that = this;
