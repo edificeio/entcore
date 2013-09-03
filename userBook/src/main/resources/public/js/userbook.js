@@ -71,10 +71,10 @@ var userbook = function(){
 				{{#teachers}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="/public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
-									<h4 href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
+									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
@@ -84,7 +84,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
 					</article>\
 				</div>\
 				{{/teachers}}\
@@ -92,10 +92,10 @@ var userbook = function(){
 				{{#parents}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="/public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
-									<h4 href="/api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
+									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
@@ -105,7 +105,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
 					</article>\
 				</div>\
 				{{/parents}}\
@@ -126,7 +126,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><img src="public/img/{{mood}}.jpg" alt="panda" /></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
 					</article>\
 				</div>\
 				{{/students}}',
@@ -146,7 +146,7 @@ var userbook = function(){
 							<em class="six cell">{{motto}}</em>\
 						</div>\
 						<div class="row mini-box">\
-							<div class="two cell avatar"><img src="/public/img/{{mood}}.jpg" alt="panda" /></div>\
+							<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
 							<em class="ten cell text-container mood">Je suis rêveuse</em>\
 						</div>\
 					</article>\
@@ -254,14 +254,14 @@ var userbook = function(){
 					return;
 				}
 				$.ajax({
-					url: "document/" + photoId,
+					url: "workspace/document/" + photoId,
 					type: 'GET'
 				}).done(function (data) {
 					if (data !== "") {
 						if (userId !== ''){
-							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"/document/" + photoId);
+							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
 						} else {
-							$('div#person div.avatar img')[0].setAttribute('src',"/document/" + photoId);
+							$('div#person div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
 						}
 					}
 				}).error(function (data) { console.log(data); });

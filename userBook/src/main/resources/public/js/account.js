@@ -42,7 +42,7 @@ var account = function(){
 					</article>\
 					<article class="eight cell text-container right-magnet">\
 						<h2>Ma photo</h2>\
-						<form id="upload-form" method="post" action="/document" enctype="multipart/form-data" class="search">\
+						<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data" class="search">\
 							<input type="file" name="file" value="Changer l\'image"/>\
 							<input call="sendPhoto" type="button" class="clear" value="ok" />\
 						</form>\
@@ -169,7 +169,7 @@ var account = function(){
 			},
 			getPhoto : function(photoId) {
 				$.ajax({
-					url: "document/" + photoId,
+					url: "workspace/document/" + photoId,
 					type: 'GET'
 				}).done(function (data) {
 					if (data !== "") {
