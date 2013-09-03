@@ -111,7 +111,7 @@ public class Directory extends Server {
 				neo.send("START n=node(*) , m=node(*) MATCH n<--m WHERE has(m.type) AND has(n.id) AND n.id='"
 						+ request.params().get("id") +"'"
 						+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
-						+ "RETURN distinct m.id as userId,m.ENTPersonNom as firstName,"
+						+ "RETURN distinct m.id as userId, m.activationCode? as code, m.ENTPersonNom as firstName,"
 						+ "m.ENTPersonPrenom as lastName, n.id as classId", request.response());
 			}
 		});
@@ -135,7 +135,10 @@ public class Directory extends Server {
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id",request.params().get("id"));
-				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct n.ENTPersonNom as lastName, n.ENTPersonPrenom as firstName, n.ENTPersonAdresse as address", params, request.response());
+				neo.send("START n=node:node_auto_index(id={id}) RETURN distinct "
+						+ "n.ENTPersonLogin as login, n.ENTPersonAdresse as address, "
+						+ "n.activationCode? as code;"
+					, params, request.response());
 			}
 		});
 

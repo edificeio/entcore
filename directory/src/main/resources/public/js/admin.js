@@ -1,6 +1,18 @@
 var admin = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
+	var personDataAdaptor = function (d) {
+		var activated = [];
+		var nonActivated = [];
+		for (obj in d.result){
+			if (d.result[obj].code === ''){
+				activated.push(d.result[obj]);
+			} else {
+				nonActivated.push(d.result[obj]);
+			}
+		}
+		return {activated :activated, nonActivated: nonActivated}; 
+	};
 
 	var app = Object.create(oneApp);
 	app.scope = "#annuaire";
@@ -30,8 +42,10 @@ var admin = function(){
 				<div id='people-{{classId}}'></div>{{/list}}"
 			,
 			personnes: "\
-				<br /><span>{{#list}}<a call='personne' href='api/details?id={{userId}}'>\
-				{{lastName}} {{firstName}}</a> - {{/list}}</span><div id='details'></div>"
+				<br /><span>{{#activated}}<a call='personne' href='api/details?id={{userId}}'>\
+				{{lastName}} {{firstName}}</a> - {{/activated}}{{#nonActivated}}\
+				<a call='personne' href='/api/details?id={{userId}}' style='background-color:yellow;'>\
+				{{lastName}} {{firstName}}</a> - {{/nonActivated}}</span><div id='details'></div>"
 			,
 			enseignants : "\
 				<br /><span>{{#list}}\
@@ -42,8 +56,7 @@ var admin = function(){
 				<span>{{#list}}{{lastName}} {{firstName}} - {{/list}}</span>"
 			,
 			personne : '\
-				{{#list}}{{#i18n}}directory.admin.lastname{{/i18n}} : {{lastName}} - \
-				{{#i18n}}directory.admin.firstname{{/i18n}} : {{firstName}} - \
+				{{#list}}{{#i18n}}directory.admin.login{{/i18n}} : {{login}} / {{code}} - \
 				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
 			,
 			exportAuth : 'Nom,Prénom,Login,Mot de passe\n'
@@ -94,7 +107,7 @@ var admin = function(){
 						$('#people-' + data.result[0]["classId"]).html('');
 						return;
 					}
-					$("#people-" + data.result[0]["classId"]).html(app.template.render('personnes', dataExtractor(data)));
+					$("#people-" + data.result[0]["classId"]).html(app.template.render('personnes', personDataAdaptor(data)));
 				})
 				.error(function(data){app.notify.error(data)})
 			},
