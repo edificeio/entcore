@@ -134,6 +134,13 @@ var ui = (function(){
 			ui.hideLightbox();
 		});
 
+		$('body').on('click', '.file-button', function(e){
+			var linkedId = $(this).data('linked');
+			$('#' + linkedId).click();
+
+			e.preventDefault();
+		})
+
 		$('body').on('mousedown', '.enhanced-select .current', function(){
 			var select = $(this).parent();
 			var optionsList = select.children('.options-list');

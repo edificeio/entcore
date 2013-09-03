@@ -29,90 +29,95 @@ var account = function(){
 					<div class="avatar cell four">\
 						<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
 					</div>\
-					<article class="cell eight text-container right-magnet">\
-						<h2>{{displayName}}</h2>\
-						<div class="row">\
-							<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
-							<em class="six cell">{{address}}</em>\
-						</div>\
-						<div class="row">\
-							<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
-							<em class="six cell" contenteditable="true" data-property="motto">{{motto}}</em>\
-						</div>\
-					</article>\
-					<article class="eight cell text-container right-magnet">\
-						<h2>Ma photo</h2>\
-						<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data" class="search">\
-							<input type="file" name="file" value="Changer l\'image"/>\
-							<input call="sendPhoto" type="button" class="clear" value="ok" />\
-						</form>\
-					</article>\
-				<div class="cell eight enhanced-select right-magnet" data-selected="{{mood}}">\
-					<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{mood}}</span></div>\
-					<div class="options-list">\
-						<div class="option" data-value="default">\
-							<i role="default-panda" class="small-panda"></i>\
-							<span>Default</span>\
-						</div>\
-						<div class="option" data-value="love">\
-							<i role="love-panda" class="small-panda"></i>\
-							<span>Amoureux</span>\
-						</div>\
-						<div class="option" data-value="angry">\
-							<i role="angry-panda" class="small-panda"></i>\
-							<span>En colère</span>\
-						</div>\
-						<div class="option" data-value="happy">\
-							<i role="happy-panda" class="small-panda"></i>\
-							<span>Content</span>\
-						</div>\
-						<div class="option" data-value="worried">\
-							<i role="worried-panda" class="small-panda"></i>\
-							<span>Embêté</span>\
-						</div>\
-						<div class="option" data-value="tired">\
-							<i role="tired-panda" class="small-panda"></i> \
-							<span>Fatigué</span>\
-						</div>\
-						<div class="option" data-value="proud">\
-							<i role="proud-panda" class="small-panda"></i><span>Fier</span>\
-						</div>\
-						<div class="option" data-value="sick">\
-							<i role="sick-panda" class="small-panda"></i>\
-							<span>Malade</span>\
-						</div>\
-						<div class="option" data-value="dreamy">\
-							<i role="dreamy-panda" class="small-panda"></i>\
-							<span>Rêveur</span>\
-						</div>\
-						<div class="option" data-value="sad">\
-							<i role="sad-panda" class="small-panda"></i>\
-							<span>Triste</span>\
-						</div>\
-						<div class="option" data-value="joker">\
-							<i role="joker-panda" class="small-panda"></i>\
-							<span>Farceur</span>\
-						</div>\
+					<div class="eight cell text-container">\
+						<article class="cell twelve text-container right-magnet">\
+							<h2>{{displayName}}</h2>\
+							<div class="row">\
+								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
+								<em class="six cell">{{address}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
+								<em class="six cell" contenteditable="true" data-property="motto">{{motto}}</em>\
+							</div>\
+						</article>\
+						<article class="twelve cell text-container right-magnet">\
+							<h2>Ma photo</h2>\
+							<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data">\
+								<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->\
+								<div class="hidden-content">\
+									<input type="file" name="file" value="Changer l\'image" id="avatar"/>\
+								</div>\
+								<button class="file-button" data-linked="avatar">Changer ma photo</button>\
+							</form>\
+						</article>\
 					</div>\
 				</div>\
-				</form>\
-				</div>\
-				<div class="clear"></div>\
-				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h3>\
-				<article class="text-container">\
-					<em contenteditable="true" data-property="health"> {{health}}</em>\
-				</article>\
-				<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
-				<article class="text-container">\
-				{{#list}}\
-					<div class="row line" data-category="{{category}}">\
-						<div class="three cell"><span>{{category}}</span></div>\
-						<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
-						<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
-						<div class="clear"></div>\
+				<div class="text-container clear">\
+					<div class="enhanced-select" data-selected="{{mood}}">\
+						<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{mood}}</span></div>\
+						<div class="options-list">\
+							<div class="option" data-value="default">\
+								<i role="default-panda" class="small-panda"></i>\
+								<span>Default</span>\
+							</div>\
+							<div class="option" data-value="love">\
+								<i role="love-panda" class="small-panda"></i>\
+								<span>Amoureux</span>\
+							</div>\
+							<div class="option" data-value="angry">\
+								<i role="angry-panda" class="small-panda"></i>\
+								<span>En colère</span>\
+							</div>\
+							<div class="option" data-value="happy">\
+								<i role="happy-panda" class="small-panda"></i>\
+								<span>Content</span>\
+							</div>\
+							<div class="option" data-value="worried">\
+								<i role="worried-panda" class="small-panda"></i>\
+								<span>Embêté</span>\
+							</div>\
+							<div class="option" data-value="tired">\
+								<i role="tired-panda" class="small-panda"></i> \
+								<span>Fatigué</span>\
+							</div>\
+							<div class="option" data-value="proud">\
+								<i role="proud-panda" class="small-panda"></i><span>Fier</span>\
+							</div>\
+							<div class="option" data-value="sick">\
+								<i role="sick-panda" class="small-panda"></i>\
+								<span>Malade</span>\
+							</div>\
+							<div class="option" data-value="dreamy">\
+								<i role="dreamy-panda" class="small-panda"></i>\
+								<span>Rêveur</span>\
+							</div>\
+							<div class="option" data-value="sad">\
+								<i role="sad-panda" class="small-panda"></i>\
+								<span>Triste</span>\
+							</div>\
+							<div class="option" data-value="joker">\
+								<i role="joker-panda" class="small-panda"></i>\
+								<span>Farceur</span>\
+							</div>\
+						</div>\
 					</div>\
-				{{/list}}\
-				</article>\
+					<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
+					<article class="text-container">\
+					{{#list}}\
+						<div class="row line" data-category="{{category}}">\
+							<div class="three cell"><span>{{category}}</span></div>\
+							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
+							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
+							<div class="clear"></div>\
+						</div>\
+					{{/list}}\
+					</article>\
+					<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h3>\
+					<article class="text-container">\
+						<em contenteditable="true" data-property="health"> {{health}}</em>\
+					</article>\
+				</div>\
 				'
 		},
 		action : {
@@ -151,7 +156,7 @@ var account = function(){
 			},
 			sendPhoto : function(elem, files) {
 				var form = new FormData();
-				form.append("image", $('#upload-form').children('input[type="file"]')[0].files[0]);
+				form.append("image", $('#upload-form').find('input[type="file"]')[0].files[0]);
 				form.append("name","blablabla");
 				$.ajax({
 					url: "document",
@@ -196,7 +201,12 @@ function manageEditable(){
 
 	$('.enhanced-select').on('change', function(){
 		var parameters = "?prop=mood&value=" + $(this).data('selected');
+
 		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
+	});
+
+	$('#avatar').on('change', function(){
+		account.action.sendPhoto(this);
 	})
 }
 

@@ -174,7 +174,6 @@ var userbook = function(){
 						</p>\
 					{{/relations}}\
 				</article>\
-				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1><p>{{health}}</p>\
 				<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
 				<article class="text-container">\
 					{{#list}}\
@@ -186,7 +185,10 @@ var userbook = function(){
 					</div>\
 					{{/list}}\
 					<div class="clear"></div>\
-				</article>'
+				</article>\
+				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>\
+				<article class="text-container">{{health}}</article>\
+	'
 		},
 		action : {
 			search : function(o){

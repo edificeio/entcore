@@ -591,4 +591,10 @@ td.main-cell {
 em[contenteditable=true] {
   display: block;
   border-bottom: 1px dashed;
+  line-height: 35px;
+}
+div.hidden-content {
+  height: 0px;
+  width: 0px;
+  overflow: hidden;
 }
