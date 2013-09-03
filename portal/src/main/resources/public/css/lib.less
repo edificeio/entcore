@@ -144,10 +144,12 @@
 }
 
 .vertical-gradient(@top-color: blue, @bottom-color: white){
-  background: -webkit-linear-gradient(@top-color, @bottom-color);
-  background: -moz-linear-gradient(@top-color, @bottom-color);
-  background: -o-linear-gradient(@top-color, @bottom-color);
-  background:  linear-gradient(@top-color, @bottom-color);
+	background: -webkit-linear-gradient(@top-color, @bottom-color);
+	background: -moz-linear-gradient(@top-color, @bottom-color);
+	background: -o-linear-gradient(@top-color, @bottom-color);
+	background:  linear-gradient(@top-color, @bottom-color);
+	-pie-background: linear-gradient(@top-color, @bottom-color);
+	behavior: url(/assets/themes/panda/css/PIE.htc);
 }
 
 .run-transition(@property: color, @speed: 150ms){

@@ -48,6 +48,7 @@ var messenger = (function(){
 			$('header').removeClass('lightbox-header');
 			$('body').removeClass('lightbox-body');
 			$('section.main').removeClass('lightbox-main');
+			$('body').unbind('click');
 		}
 	};
 

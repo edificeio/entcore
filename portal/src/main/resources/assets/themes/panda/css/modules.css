@@ -1355,6 +1355,8 @@ button {
   background: -moz-linear-gradient(#3789c3, #3ec0d0);
   background: -o-linear-gradient(#3789c3, #3ec0d0);
   background: linear-gradient(#3789c3, #3ec0d0);
+  -pie-background: linear-gradient(#3789c3, #3ec0d0);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   color: #fff;
   font-family: KGJune;
   text-transform: uppercase;
@@ -1405,6 +1407,8 @@ button[disabled] {
   background: -moz-linear-gradient(#9f9f9f, #eaeaea);
   background: -o-linear-gradient(#9f9f9f, #eaeaea);
   background: linear-gradient(#9f9f9f, #eaeaea);
+  -pie-background: linear-gradient(#9f9f9f, #eaeaea);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   cursor: not-allowed;
 }
 input[type=button][disabled]:hover,
@@ -1412,6 +1416,7 @@ input[type=submit][disabled]:hover,
 a.button[disabled]:hover,
 button[disabled]:hover {
   height: 40px;
+  line-height: 40px;
 }
 h1 {
   font-family: KGJune;
@@ -1450,6 +1455,8 @@ nav.vertical ul li a {
   background: -moz-linear-gradient(#ffffff, #eeeeee);
   background: -o-linear-gradient(#ffffff, #eeeeee);
   background: linear-gradient(#ffffff, #eeeeee);
+  -pie-background: linear-gradient(#ffffff, #eeeeee);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
@@ -1543,6 +1550,8 @@ article thead {
   background: -moz-linear-gradient(#3789c3, #3ec0d0);
   background: -o-linear-gradient(#3789c3, #3ec0d0);
   background: linear-gradient(#3789c3, #3ec0d0);
+  -pie-background: linear-gradient(#3789c3, #3ec0d0);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   -webkit-border-top-left-radius: 10px;
   -webkit-border-top-right-radius: 10px;
   -moz-border-top-left-radius: 10px;
@@ -1578,6 +1587,8 @@ article .line {
   background: -moz-linear-gradient(#ffffff, #eeeeee);
   background: -o-linear-gradient(#ffffff, #eeeeee);
   background: linear-gradient(#ffffff, #eeeeee);
+  -pie-background: linear-gradient(#ffffff, #eeeeee);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   -webkit-border-bottom-left-radius: 5px;
   -webkit-border-bottom-right-radius: 5px;
   -moz-border-bottom-left-radius: 5px;
@@ -1658,6 +1669,7 @@ nav.horizontal a:hover {
   padding: 5px;
   color: #888;
   padding-left: 27px;
+  line-height: auto;
   background: url(../img/icons/search.png) no-repeat 3px #ffffff;
   -webkit-border-top-left-radius: 5px;
   -webkit-border-bottom-left-radius: 5px;

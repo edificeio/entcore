@@ -270,6 +270,7 @@ input[type=button][disabled], input[type=submit][disabled], a.button[disabled], 
 
 input[type=button][disabled]:hover, input[type=submit][disabled]:hover, a.button[disabled]:hover, button[disabled]:hover{
 	height: 40px;
+	line-height: 40px;
 }
 
 h1{
@@ -451,13 +452,14 @@ nav.horizontal{
 		line-height: 1em;
 		.rounded-corners-right(5px)
   }
-  input[type=text]{
-    padding: 5px;
-    color: #888;
-    padding-left: 27px;
-    background: url(../img/icons/search.png) no-repeat 3px #fff;
-    .rounded-corners-left(5px)
-  }
+	input[type=text]{
+		padding: 5px;
+		color: #888;
+		padding-left: 27px;
+		line-height: auto;
+		background: url(../img/icons/search.png) no-repeat 3px #fff;
+		.rounded-corners-left(5px)
+	}
 }
 
 .icons-view{
