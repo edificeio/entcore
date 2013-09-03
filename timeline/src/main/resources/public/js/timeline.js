@@ -5,7 +5,7 @@ var timeline = function(){
 		template : {
 
 			lastNotifications : '{{#results}}\
-									<div class="row line">\
+									<div class="row line text-container">\
 										<div class="cell nine">{{{message}}}</div>\
 										<div class="cell three right-magnet"><em>{{#formatDateTime}}{{#date}}{{$date}}{{/date}}{{/formatDateTime}}</em></div>\
 										<div class="clear"></div>\

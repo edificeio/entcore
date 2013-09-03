@@ -298,6 +298,9 @@ nav.horizontal a {
 .line span[contenteditable=true] {
   background: #fff;
 }
+.line a {
+  font-size: 16px;
+}
 .list-view ul,
 .list-view header,
 .list-view h2 {
@@ -596,6 +599,7 @@ em[contenteditable=true] {
   display: block;
   border-bottom: 1px dashed;
   line-height: 35px;
+  height: 35px;
 }
 div.hidden-content {
   height: 0px;
