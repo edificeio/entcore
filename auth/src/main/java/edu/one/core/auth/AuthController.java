@@ -229,21 +229,28 @@ public class AuthController extends Controller {
 				callback.append(URLDecoder.decode(c, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 				log.error(e.getMessage(), e);
-				callback.append("/login");
+				callback.append(container.config()
+						.getObject("authenticationServer").getString("logoutCallback", "/auth/login"));
 			}
 		} else {
-			callback.append("/login");
+			callback.append(container.config()
+					.getObject("authenticationServer").getString("logoutCallback", "/auth/login"));
 		}
-		UserUtils.deleteSession(eb, sessionId, new org.vertx.java.core.Handler<Boolean>() {
 
-			@Override
-			public void handle(Boolean deleted) {
-				if (Boolean.TRUE.equals(deleted)) {
-					CookieHelper.set("oneSessionId", "", 0l, request.response());
+		if (sessionId != null && !sessionId.trim().isEmpty()) {
+			UserUtils.deleteSession(eb, sessionId, new org.vertx.java.core.Handler<Boolean>() {
+
+				@Override
+				public void handle(Boolean deleted) {
+					if (Boolean.TRUE.equals(deleted)) {
+						CookieHelper.set("oneSessionId", "", 0l, request.response());
+					}
+					redirect(request, callback.toString(), "");
 				}
-				redirect(request, callback.toString(), "");
-			}
-		});
+			});
+		} else {
+			redirect(request, callback.toString(), "");
+		}
 	}
 
 	@SecuredAction(value = "userinfo", type = ActionType.RESOURCE)

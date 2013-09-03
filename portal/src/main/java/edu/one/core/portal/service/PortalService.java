@@ -38,8 +38,8 @@ public class PortalService extends Controller {
 					JsonObject jo = new JsonObject()
 						.putString("userFirstname", user.getFirstName())
 						.putString("userClass", user.getClassId());
-					JsonObject apps = container.config().getObject("applications");
-					renderView(request, jo.mergeIn(apps), "portal.html", null);
+					JsonObject urls = container.config().getObject("urls");
+					renderView(request, jo.mergeIn(urls), "portal.html", null);
 				} else {
 					unauthorized(request);
 				}
