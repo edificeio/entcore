@@ -171,7 +171,28 @@ var workspace = function(){
 							</tr>\
 							{{/.}}\
 						</tbody>\
-					</table>',
+					</table>\
+					<header>&nbsp;</header>\
+						<ul>\
+						{{#folders}}\
+						<li>\
+							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+						</li>\
+						{{/folders}}\
+						{{#documents}}\
+						<li>\
+							<a href="/document/{{_id}}">\
+								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
+									<img src="{{thumbnail}}" alt="thumbnail" />\
+								</i>\
+								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
+							</a>\
+							<a href="/document/{{_id}}">{{name}}</a>\
+						</li>\
+						{{/documents}}\
+						<div class="clear"></div>\
+						</ul>',
 
 			trash :'<table class="striped alternate monoline" summary="">\
 						<thead>\
@@ -202,7 +223,28 @@ var workspace = function(){
 							</tr>\
 							{{/rack}}\
 						</tbody>\
-					</table>',
+					</table>\
+					<header>&nbsp;</header>\
+						<ul>\
+						{{#folders}}\
+						<li>\
+							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+						</li>\
+						{{/folders}}\
+						{{#documents}}\
+						<li>\
+							<a href="/document/{{_id}}">\
+								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
+									<img src="{{thumbnail}}" alt="thumbnail" />\
+								</i>\
+								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
+							</a>\
+							<a href="/document/{{_id}}">{{name}}</a>\
+						</li>\
+						{{/documents}}\
+						<div class="clear"></div>\
+						</ul>',
 			addDocument : '	<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cancel-flow">\
 							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 							<div class="row">\

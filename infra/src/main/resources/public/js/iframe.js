@@ -146,6 +146,10 @@ var ui = (function(){
 			})
 
 			e.preventDefault();
+		});
+
+		$('.search input[type=text]').on('focus', function(){
+			$(this).val(' ');
 		})
 
 		$('body').on('mousedown', '.enhanced-select .current', function(){

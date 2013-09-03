@@ -95,5 +95,9 @@ var navigationController = (function(){
 $(document).ready(function(){
 	"use strict";
 
+	$('.search input[type=text]').on('focus', function(){
+		$(this).val(' ');
+	})
+
 	navigationController.start();
 });
