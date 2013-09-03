@@ -195,7 +195,7 @@ var userbook = function(){
 				var url = o.target.form.action + '?' + $('#search-form').serialize();
 				$.get(url)
 				.done(function(data){
-					$("#people").addClass('all').removeClass('single');
+					$("#people").removeClass('four').addClass('twelve');
 					$("#person").html('');
 					if (data.result[0] === undefined) {
 						app.notify.info("no results !");

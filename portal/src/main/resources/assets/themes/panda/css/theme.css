@@ -1669,7 +1669,7 @@ nav.horizontal a:hover {
   padding: 5px;
   color: #888;
   padding-left: 27px;
-  line-height: auto;
+  line-height: 14px;
   background: url(../img/icons/search.png) no-repeat 3px #ffffff;
   -webkit-border-top-left-radius: 5px;
   -webkit-border-bottom-left-radius: 5px;
