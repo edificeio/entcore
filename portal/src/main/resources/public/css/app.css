@@ -688,3 +688,6 @@ body.lightbox-body header.lightbox-header {
 body.lightbox-body section.lightbox-main {
   background: rgba(255, 255, 255, 0.3);
 }
+iframe {
+  overflow: hidden;
+}
