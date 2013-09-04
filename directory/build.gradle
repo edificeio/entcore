@@ -3,12 +3,14 @@ apply from: "gradle/vertx.gradle"
 project.evaluationDependsOn(':infra')
 project.evaluationDependsOn(':web-utils')
 project.evaluationDependsOn(':dataDictionary')
+project.evaluationDependsOn(':processor')
 
 dependencies {
 	provided project(':infra')
 	compile project(':web-utils')
   compile 'net.sf.opencsv:opencsv:2.4'
 	provided project(':dataDictionary')
+	compile project(':processor')
 }
 
 test {
