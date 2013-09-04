@@ -61,7 +61,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/testbe1d", new Handler<HttpServerRequest>() {
+		rm.get("/directory/testbe1d", new Handler<HttpServerRequest>() {
 
 			@Override
 			public void handle(final HttpServerRequest r) {
@@ -76,7 +76,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/ecole", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/ecole", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -85,7 +85,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/groupes", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/groupes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -94,7 +94,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/classes", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/classes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -104,7 +104,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/personnes", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/personnes", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -116,7 +116,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/membres", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/membres", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				String[] people = request.params().get("data").replaceAll("\\[","").replaceAll("\\]","").split(", ");
@@ -130,7 +130,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/details", new Handler<HttpServerRequest>() {
+		rm.get("/directory/api/details", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -142,7 +142,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/enseignants", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/enseignants", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String, Object> params = new HashMap<String, Object>();
@@ -152,7 +152,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/link", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/link", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				Map<String,Object> params = new HashMap<String,Object>();
@@ -163,7 +163,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/create-user", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/create-user", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				JsonObject obj = new JsonObject();
@@ -202,7 +202,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/create-admin", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/create-admin", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				String start = "";
@@ -237,7 +237,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.get("/api/create-group", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/create-group", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				List users = new ArrayList<String>();
@@ -265,7 +265,7 @@ public class Directory extends Server {
 			}
 		});
 		
-		rm.get("/api/create-school", new Handler<HttpServerRequest>(){
+		rm.get("/directory/api/create-school", new Handler<HttpServerRequest>(){
 			@Override
 			public void handle(HttpServerRequest request) {
 				JsonObject obj = new JsonObject().putString("id", request.params().get("ENTSchoolId"))
@@ -308,7 +308,7 @@ public class Directory extends Server {
 			}
 		});
 
-		rm.post("/api/group-profil", new Handler<HttpServerRequest>() {
+		rm.post("/directory/api/group-profil", new Handler<HttpServerRequest>() {
 
 			@Override
 			public void handle(final HttpServerRequest request) {

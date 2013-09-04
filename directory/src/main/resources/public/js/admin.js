@@ -44,7 +44,7 @@ var admin = function(){
 			personnes: "\
 				<br /><span>{{#activated}}<a call='personne' href='api/details?id={{userId}}'>\
 				{{lastName}} {{firstName}}</a> - {{/activated}}{{#nonActivated}}\
-				<a call='personne' href='/api/details?id={{userId}}' style='background-color:yellow;'>\
+				<a call='personne' href='api/details?id={{userId}}' style='background-color:yellow;'>\
 				{{lastName}} {{firstName}}</a> - {{/nonActivated}}</span><div id='details'></div>"
 			,
 			enseignants : "\
