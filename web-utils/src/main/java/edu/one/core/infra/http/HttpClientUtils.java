@@ -50,7 +50,6 @@ public class HttpClientUtils {
 				uri = uri.replaceFirst(req.path(), prefix + req.path());
 			}
 		}
-		System.out.println(uri);
 		final HttpClientRequest cReq = client.request(req.method(), uri,
 				new Handler<HttpClientResponse>() {
 			public void handle(HttpClientResponse cRes) {
