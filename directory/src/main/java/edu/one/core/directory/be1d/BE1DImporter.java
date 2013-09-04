@@ -438,6 +438,7 @@ public class BE1DImporter {
 				final StringBuilder sb = new StringBuilder();
 				for (int i = 13; i < values.length; i += 4) {
 					String mapping = values[i]+values[i+1]+values[i+2]+values[i+3];
+					if (mapping == null || mapping.trim().isEmpty()) continue;
 					String t = mappingEleveId.get(mapping);
 					if (t == null) {
 						throw new IllegalArgumentException(
