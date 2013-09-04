@@ -198,11 +198,15 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)))
 					}
-					for (var i=0; i< classDataAdaptor(data).list.length; i++){
-						if (searchDataAdaptor(data).list[i].photo !== ''){
-							userbook.action.getPhoto(searchDataAdaptor(data).list[i].photo, searchDataAdaptor(data).list[i].id);
+
+						var getPhoto = function(item){
+							if (item.photo !== ''){
+								userbook.action.getPhoto(item.photo, item.id);
+							}
 						}
-					}
+						_.each(classDataAdaptor(data).students, getPhoto);
+						_.each(classDataAdaptor(data).teachers, getPhoto);
+
 					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data.status);})
@@ -261,9 +265,16 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
+
+					var getPhoto = function(item){
+						if (item.photo !== ''){
+							userbook.action.getPhoto(item.photo, item.id);
+						}
+					}
+					_.each(classDataAdaptor(data).students, getPhoto);
+					_.each(classDataAdaptor(data).teachers, getPhoto);
 					messenger.requireResize();
 				})
-				.error(function(data){app.notify.error(data)})
 			}
 		}
 	})
