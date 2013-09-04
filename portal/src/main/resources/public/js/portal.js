@@ -6,7 +6,6 @@ var navigation = (function(){
 		redirect: function(url){
 			$('#applications').attr('src', url);
 			$('#applications').on('load', function(e){
-				console.log(e);
 				var styleUrl = $('#theme').attr('href');
 				var message = {
 					name: 'set-style',

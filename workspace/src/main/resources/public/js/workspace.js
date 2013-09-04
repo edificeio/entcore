@@ -50,23 +50,52 @@ var tools = (function(){
 				}
 			}
 			return response;
+		},
+		mapFolderName: function(dir){
+			if (dir.indexOf("_") !== -1) {
+				return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
+			}
+			return { name : dir, path : dir };
 		}
 	}
 }());
 
 var navigation = (function(){
 	var currentURL = '/documents';
+
+	var showFolders = function(path){
+		workspace.action.getFolders(true, path, function(data) {
+			var currentPath = path;
+			data.forEach(function(folder){
+				if(folder === currentPath || folder === 'Trash'){
+					return;
+				}
+				var folderData = tools.mapFolderName(folder);
+				var folderNode = '\
+				<li>\
+					<a call="documents" href="documents/' + folderData.path + '?hierarchical=true">' + folderData.name + '</a>\
+					<ul data-folder="' + folderData.path + '"></ul>\
+				</li>';
+				$('[data-folder="' + currentPath + '"]').append(folderNode);
+				showFolders(folderData.path);
+			})
+		});
+	};
+
 	var updater = {
 		redirect: function(action){
 			$('nav.vertical a, nav.vertical li').removeClass('selected');
 			var current = $('nav.vertical a[href="' + action + '"]');
 			current.addClass('selected');
 			current.parent().addClass('selected');
-			current.parent('li').parent('ul').parent('li').addClass('selected');
+			current.parents('li').addClass('selected');
 			currentURL = action;
 		},
 		currentUrl: function(){
 			return currentURL;
+		},
+		showFolders: function(path){
+			showFolders(path);
 		}
 	};
 
@@ -293,7 +322,7 @@ var workspace = function(){
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
 						</form>',
 
-			moveDocuments : '<form action="{{action}}" class="cancel-flow">\
+			moveDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
 								<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
 								<table class="monoline folders large-box">\
 									{{#folders}}\
@@ -304,7 +333,9 @@ var workspace = function(){
 											<td class="icon">\
 												<i role="folder"></i>\
 											</td>\
-											<td class="folderPath main-cell">{{.}}</td>\
+											<td class="folderPath main-cell">\
+												<a href="{{path}}" call="move">{{name}}</a>\
+											</td>\
 										</tr>\
 									{{/folders}}\
 									<tr>\
@@ -318,7 +349,7 @@ var workspace = function(){
 								</table>\
 								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
 							</form>',
-			copyDocuments : '<form action="{{action}}" class="cancel-flow">\
+			copyDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
 								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
 								<table class="monoline folders large-box">\
 								{{#folders}}\
@@ -330,7 +361,9 @@ var workspace = function(){
 											<i role="folder"></i>\
 										</td>\
 										<td class="folderPath main-cell">\
-											{{.}}\
+											<a call="copy" href="{{path}}">\
+												{{name}}\
+											</a>\
 										</td>\
 									</tr>\
 								{{/folders}}\
@@ -361,12 +394,7 @@ var workspace = function(){
 						directories = _.filter(data, function(dir) {
 							return dir !== relativePath && dir !== "Trash";
 						});
-						directories = _.map(directories, function(dir) {
-							if (dir.indexOf("_") !== -1) {
-								return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
-							}
-							return { name : dir, path : dir };
-						});
+						directories = _.map(directories, tools.mapFolderName);
 
 						response = tools.formatResponse(response);
 						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
@@ -468,7 +496,7 @@ var workspace = function(){
 				if (hierarchical === true) {
 					url += "hierarchical=true&";
 				}
-				if (typeof relativePath != 'undefined') {
+				if (relativePath) {
 					url += "relativePath=" + relativePath;
 				}
 				$.get(url)
@@ -520,7 +548,7 @@ var workspace = function(){
 				$.post(url, data)
 				.done(function (data) {
 					that.documents({url: navigation.currentUrl()}, function(){
-						var targetFile = url.split('/')[2];
+						var targetFile = url.split('/')[1];
 						var commentsLine = $('.comments' + targetFile);
 						commentsLine.find('h2').show();
 						commentsLine.find('ul').show();
@@ -559,9 +587,13 @@ var workspace = function(){
 			},
 
 			move : function(o) {
-				workspace.action.getFolders(true, undefined, function(data) {
-					var folders = _.reject(data, function(item){ return item === 'Trash' });
-					$('#form-window').html(app.template.render("moveDocuments", { action : o.url, folders: folders }));
+				workspace.action.getFolders(true, o.url, function(data) {
+					var folders = _.reject(data, function(item){
+							return item === 'Trash' || item === o.url;
+						});
+					folders = _.map(folders, tools.mapFolderName);
+
+					$('#form-window').html(app.template.render("moveDocuments", { action : 'documents/move', folders: folders, currentPath: o.url }));
 					ui.showLightbox();
 				});
 
@@ -571,9 +603,14 @@ var workspace = function(){
 				})
 			},
 			copy : function(o) {
-				workspace.action.getFolders(true, undefined, function(data) {
-					var folders = _.reject(data, function(item){ return item === 'Trash' });
-					$('#form-window').html(app.template.render("copyDocuments", { action : o.url, folders: folders }));
+				workspace.action.getFolders(true, o.url, function(data) {
+					var folders = _.reject(data, function(item){
+						return item === 'Trash' || item === o.url;
+					});
+
+					folders = _.map(folders, tools.mapFolderName);
+
+					$('#form-window').html(app.template.render("copyDocuments", { action : 'documents/copy', folders: folders, currentPath: o.url }));
 
 					ui.showLightbox();
 				});
@@ -604,8 +641,15 @@ var workspace = function(){
 				}
 
 				$('.folders :checkbox:checked, .folders :radio:checked').each(function(){
+					var path = $(this).parents('form').data('current-path');
+					if(path){
+						path = path + '_' + $(this).parents('tr').find('.folderPath').text();
+					}
+					else{
+						path = $(this).parents('tr').find('.folderPath').text();
+					}
 					$.ajax({
-						url : action + "/" + ids + "/" + $(this).parents('tr').find('.folderPath').text(),
+						url : action + "/" + ids + "/" + path,
 						type: method,
 						success: function() {
 							location.reload(true);
@@ -622,18 +666,18 @@ var workspace = function(){
 	return app;
 }();
 
+
+
+
+
 $(document).ready(function(){
 	workspace.init();
 	workspace.action.documents({url : "documents?hierarchical=true"});
 	workspace.action.getFolders(true, undefined, function(data) {
-		var html = "";
-		for (var i = 0; i < data.length; i++) {
-			if (data[i] === "Trash") continue;
-			html += '<li><a call="documents" href="documents/' + data[i] + '?hierarchical=true">' + data[i] + "</a></li>";
-		}
-		$(".base-folders").html(html);
 		navigation.redirect('documents?hierarchical=true');
 	});
+
+	navigation.showFolders(undefined);
 
 	$('.workspace').on('change', '.select-file, .selectAllCheckboxes', function(){
 		if($(this).hasClass('selectAllCheckboxes')){

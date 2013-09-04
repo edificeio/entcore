@@ -21,7 +21,7 @@
 					<ul>
 						<li>
 							<a call="documents" href="documents?hierarchical=true">{{#i18n}}workspace.documents{{/i18n}}</a>
-							<ul class="base-folders">
+							<ul data-folder="undefined">
 							</ul>
 						</li>
 						<li><a href="documents/shared" call="documents">{{#i18n}}workspace.shared.documents{{/i18n}}</a></li>
@@ -48,10 +48,10 @@
 						<a call="moveTrash" href="document/trash" disabled class="contextual button">
 							{{#i18n}}workspace.move.trash{{/i18n}}
 						</a>
-						<a call="move" href="documents/move" disabled class="contextual button">
+						<a call="move" disabled class="contextual button">
 							{{#i18n}}workspace.move{{/i18n}}
 						</a>
-						<a call="copy" href="documents/copy" disabled class="contextual button">
+						<a call="copy" disabled class="contextual button">
 							{{#i18n}}workspace.copy{{/i18n}}
 						</a>
 					</div>

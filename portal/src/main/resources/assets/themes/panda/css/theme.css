@@ -584,6 +584,7 @@ dl dt {
 .flowing .cancel-flow tbody,
 .flowing .cancel-flow table {
   display: table;
+  height: auto;
 }
 .flowing .cancel-flow section,
 .flowing .cancel-flow div,
