@@ -27,8 +27,14 @@ var tools = (function(){
 				if(response[i].metadata['content-type'] === 'img'){
 					response[i].thumbnail = 'document/' + response[i]._id;
 				}
-				response[i].created = response[i].created.split(' ')[0];
-				response[i].modified = response[i].modified.split(' ')[0];
+
+				if(response[i].created){
+					response[i].created = response[i].created.split(' ')[0];
+					response[i].modified = response[i].modified.split(' ')[0];
+				}
+				if(response[i].sent){
+					response[i].sent = response[i].sent.split(' ')[0];
+				}
 
 				if(!response[i].comments){
 					response[i].commentsCount = 0;
@@ -427,10 +433,10 @@ var workspace = function(){
 							users.push(response.result[key]);
 						}
 						$('#form-window').html(app.template.render("sendRack", { users : users }));
-						navigation.openLightbox();
+						ui.showLightbox();
 						messenger.requireResize();
 						$('.lightbox-backdrop').one('click', function(){
-							navigation.closeLightbox();
+							ui.hideLightbox();
 						});
 					}
 				});
@@ -442,7 +448,7 @@ var workspace = function(){
 					action = form.attr('action');
 				fd.append('file', form.find('input[type=file]')[0].files[0]);
 				if ("rack" === action) {
-					action += '/' + form.find('input[name=to]').val();
+					action += '/' + form.find('input[name=to], select[name=to]').val();
 				}
 				ui.hideLightbox();
 				$.ajax({
