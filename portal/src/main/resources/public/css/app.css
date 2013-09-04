@@ -301,6 +301,11 @@ nav.horizontal a {
 .line a {
   font-size: 16px;
 }
+i.liquid {
+  width: 100% !important;
+  height: auto;
+  background-size: 100% auto;
+}
 .list-view ul,
 .list-view header,
 .list-view h2 {

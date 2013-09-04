@@ -84,7 +84,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="liquid"></i></div>\
 					</article>\
 				</div>\
 				{{/teachers}}\
@@ -105,7 +105,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="liquid"></i></div>\
 					</article>\
 				</div>\
 				{{/parents}}\
@@ -126,7 +126,7 @@ var userbook = function(){
 								</span>\
 								</div>\
 							</div>\
-							<div class="two cell"><i role="{{mood}}-panda" class="small-panda"></i></div>\
+							<div class="two cell"><i role="{{mood}}-panda" class="liquid"></i></div>\
 					</article>\
 				</div>\
 				{{/students}}',
