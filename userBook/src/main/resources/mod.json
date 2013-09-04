@@ -6,6 +6,7 @@
 	"auto-redeploy": true,
 	"workspace-url": "localhost",
 	"workspace-port":8011,
+	"workspace-prefix" : "/workspace",
 	"user-book-data":{
 		"picture": "no-avatar.jpg",
 		"hobbies":[

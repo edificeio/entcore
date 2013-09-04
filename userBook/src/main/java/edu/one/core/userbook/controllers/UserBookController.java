@@ -169,7 +169,7 @@ public class UserBookController extends Controller {
 
 	@SecuredAction("userbook.authent")
 	public void proxyDocument(final HttpServerRequest request) {
-		HttpClientUtils.proxy(request, client);
+		HttpClientUtils.proxy(request, client, "\\" + pathPrefix, config.getString("workspace-prefix"));
 	}
 
 	public void initUserBookNode(final Message<JsonObject> message){

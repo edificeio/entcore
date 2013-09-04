@@ -154,7 +154,7 @@ var account = function(){
 				form.append("image", $('#upload-form').children('input[type="file"]')[0].files[0]);
 				form.append("name","blablabla");
 				$.ajax({
-					url: "workspace/document",
+					url: "document",
 					type: 'POST',
 					data: form,
 					cache: false,
@@ -163,17 +163,17 @@ var account = function(){
 				}).done(function (data) {
 					if (data.status == "ok") {
 						account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
-						$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + data._id);
+						$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
 					}
 				}).error(function (data) { console.log(data); });
 			},
 			getPhoto : function(photoId) {
 				$.ajax({
-					url: "workspace/document/" + photoId,
+					url: "document/" + photoId,
 					type: 'GET'
 				}).done(function (data) {
 					if (data !== "") {
-						$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + photoId);
+						$('img[class="avatar"]')[0].setAttribute("src", "document/" + photoId);
 					}
 				}).error(function (data) { console.log(data); });
 			}

@@ -254,14 +254,14 @@ var userbook = function(){
 					return;
 				}
 				$.ajax({
-					url: "workspace/document/" + photoId,
+					url: "document/" + photoId,
 					type: 'GET'
 				}).done(function (data) {
 					if (data !== "") {
 						if (userId !== ''){
-							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"document/" + photoId);
 						} else {
-							$('div#person div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+							$('div#person div.avatar img')[0].setAttribute('src',"document/" + photoId);
 						}
 					}
 				}).error(function (data) { console.log(data); });
