@@ -301,7 +301,7 @@ $(document).ready(function(){
 	if (location.href.indexOf("#",0)!==-1){
 		var id = location.href.split("#")[1];
 		userbook.action.person(
-			{"url":"/api/person?id="+ location.href.split("#")[1] + "&type=" + location.href.split("#")[2]}
+			{"url":"api/person?id="+ location.href.split("#")[1] + "&type=" + location.href.split("#")[2]}
 		);
 	}
 });
