@@ -5,16 +5,12 @@
 package edu.one.core.directory.be1d;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
-
-import com.google.common.base.Joiner;
 
 /**
  *
@@ -23,7 +19,6 @@ import com.google.common.base.Joiner;
 public class WordpressHelper {
 	private EventBus eb;
 	private Map<String, JsonObject> schools;
-	private Set<String> persons; // Map<String, JsonObject> persons;
 	private Map<String, JsonObject> groups;
 	private String SCHOOL_ATTR = "ecole";
 	private String CLASS_ATTR = "classe";
@@ -33,7 +28,6 @@ public class WordpressHelper {
 		this.eb = eb;
 		this.school = school;
 		schools = new HashMap<>();
-		persons = new HashSet<>();
 		groups = new HashMap<>();
 	}
 
@@ -56,7 +50,6 @@ public class WordpressHelper {
 			case "ELEVE":
 			case "PERSRELELEVE":
 			case "PERSEDUCNAT" :
-				persons.add(entity.getString("id"));
 				break;
 			default :
 				break;
@@ -127,11 +120,13 @@ public class WordpressHelper {
 
 	private void usersFromNeo() {
 		String query =
-				"START n=node:node_auto_index({ids}) " +
-				"RETURN n.id as id, n.type as type, n.ENTPersonLogin as ENTPersonLogin, " +
-				"n.activationCode as activationCode, n.ENTPersonClasses as ENTPersonClasses ";
+				"START n=node:node_auto_index(id={schoolId}), u=node:node_auto_index({types}) " +
+				"MATCH n<-[:DEPENDS]-gpe<-[:APPARTIENT]-u " +
+				"RETURN distinct u.id as id, u.type as type, u.ENTPersonLogin as ENTPersonLogin, " +
+				"u.activationCode as activationCode, u.ENTPersonClasses as ENTPersonClasses ";
 		JsonObject params = new JsonObject()
-		.putString("ids", "id:" + Joiner.on(" OR id:").join(persons));
+		.putString("schoolId", school)
+		.putString("types", "type:ELEVE OR type:ENSEIGNANT OR type:PERSEDUCNAT OR type:PERSRELELEVE");
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
 		jo.putString("query", query);
