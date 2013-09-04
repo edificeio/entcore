@@ -34,7 +34,24 @@ public class HttpClientUtils {
 	}
 
 	public static void proxy(final HttpServerRequest req, HttpClient client) {
-		final HttpClientRequest cReq = client.request(req.method(), req.uri(),
+		proxy(req, client, null, null);
+	}
+
+	public static void proxy(final HttpServerRequest req, HttpClient client, String prefix) {
+		proxy(req, client, prefix, null);
+	}
+
+	public static void proxy(final HttpServerRequest req, HttpClient client, String prefix, String replacement) {
+		String uri = req.uri();
+		if (prefix != null && !prefix.trim().isEmpty()) {
+			if (replacement != null && !replacement.trim().isEmpty()) {
+				uri = uri.replaceFirst(prefix, replacement);
+			} else {
+				uri = uri.replaceFirst(req.path(), prefix + req.path());
+			}
+		}
+		System.out.println(uri);
+		final HttpClientRequest cReq = client.request(req.method(), uri,
 				new Handler<HttpClientResponse>() {
 			public void handle(HttpClientResponse cRes) {
 				req.response().setStatusCode(cRes.statusCode());
