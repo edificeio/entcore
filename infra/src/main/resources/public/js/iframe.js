@@ -152,9 +152,17 @@ var ui = (function(){
 			$(this).val(' ');
 		})
 
-		$('body').on('mousedown', '.enhanced-select .current', function(){
+		$('body').on('mousedown', '.enhanced-select .current', function(e){
 			var select = $(this).parent();
 			var optionsList = select.children('.options-list');
+
+			if($(this).hasClass('editing')){
+				$(this).removeClass('editing');
+				optionsList.slideUp();
+				e.preventDefault();
+				return;
+			}
+
 			var that = this;
 			$(that).addClass('editing');
 			optionsList.slideDown();
@@ -164,7 +172,7 @@ var ui = (function(){
 				$(that).html($(this).html());
 				optionsList.slideUp();
 				select.change();
-			})
+			});
 		});
 	});
 
