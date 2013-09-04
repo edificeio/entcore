@@ -109,7 +109,7 @@ var workspace = function(){
 								<tr class="comments{{_id}} underline">\
 									<td colspan="4" class="container-cell">\
 										<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
-										<a href="/share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
+										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" role="close" call="hideComment"></i></h2>\
 										<ul class="row">\
@@ -202,7 +202,7 @@ var workspace = function(){
 						</tbody>\
 					</table>',
 
-			addDocument : '	<form id="upload-form" method="post" action="/document" enctype="multipart/form-data">\
+			addDocument : '	<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
 							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 							<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
 							<input type="text" name="name" />\
@@ -344,8 +344,8 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
-				$.get("/documents/Trash").done(function(documents) {
-					$.get("/rack/documents/Trash").done(function(rack) {
+				$.get("documents/trash").done(function(documents) {
+					$.get("rack/documents/trash").done(function(rack) {
 						documents = tools.formatResponse(documents);
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
@@ -566,7 +566,7 @@ $(document).ready(function(){
 		var html = "";
 		for (var i = 0; i < data.length; i++) {
 			if (data[i] === "Trash") continue;
-			html += '<li><a call="documents" href="/documents/' + data[i] + '?hierarchical=true">' + data[i] + "</a></li>";
+			html += '<li><a call="documents" href="documents/' + data[i] + '?hierarchical=true">' + data[i] + "</a></li>";
 		}
 		$(".base-folders").html(html);
 		navigation.redirect('documents?hierarchical=true');
