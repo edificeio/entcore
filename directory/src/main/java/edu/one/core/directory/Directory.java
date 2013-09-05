@@ -35,6 +35,6 @@ public class Directory extends Server {
 			log.error(e.getMessage(), e);
 		}
 
-		SecurityHandler.addFilter(new ActionFilter(directoryController.securedUriBinding(), vertx.eventBus()));
+		SecurityHandler.addFilter(new ActionFilter(directoryController.securedUriBinding(), Server.getEventBus(vertx)));
 	}
 }

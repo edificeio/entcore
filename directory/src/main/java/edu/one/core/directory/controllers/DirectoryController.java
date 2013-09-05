@@ -7,6 +7,7 @@ import edu.one.core.directory.profils.DefaultProfils;
 import edu.one.core.directory.profils.Profils;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.security.BCrypt;
 import edu.one.core.security.SecuredAction;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -24,22 +26,24 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 
-public class DirectoryController extends Controller{
+public class DirectoryController extends Controller {
 
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
 	private Dictionary d;
 	private Profils p;
+	protected final EventBus eb;
 
 	public DirectoryController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
-			this.neo = new Neo(vertx.eventBus(),log);
+			this.eb = Server.getEventBus(vertx);
+			this.neo = new Neo(eb,log);
 			this.config = config;
-			d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
-			admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
-			p = new DefaultProfils(neo);
+			this.d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
+			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
+			this.p = new DefaultProfils(neo);
 		}
 
 	@SecuredAction("directory.authent")
@@ -140,7 +144,7 @@ public class DirectoryController extends Controller{
 					.putString("classe", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 					.putString("type", request.params().get("ENTPersonProfils"))
 					.putString("password", "dummypass");
-			vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+			eb.send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 				public void handle(Message event) {
 					container.logger().info("MESSAGE : " + event.body());
 				}
@@ -209,7 +213,7 @@ public class DirectoryController extends Controller{
 				.putString("nom", request.params().get("ENTGroupName"))
 				.putString("parent", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 				.putString("type", request.params().get("type"));
-		vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+		eb.send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 			public void handle(Message event) {
 				container.logger().info("MESSAGE : " + event.body());
 			}
@@ -227,7 +231,7 @@ public class DirectoryController extends Controller{
 		JsonObject obj = new JsonObject().putString("id", request.params().get("ENTSchoolId"))
 				.putString("nom", request.params().get("ENTSchoolName"))
 				.putString("type", "ETABEDUCNAT");
-		vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+		eb.send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 			public void handle(Message event) {
 				container.logger().info("MESSAGE : " + event.body());
 			}
