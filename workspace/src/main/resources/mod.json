@@ -3,6 +3,7 @@
 	"auto-redeploy": true,
 	"port": 8011,
 	"mode": "dev",
+	"host" : "http://localhost:8011",
 	"mongodb-config": {
 		"address": "wse.mongodb.persistor",
 		"host": "localhost",
@@ -16,6 +17,5 @@
 		"port": 27017,
 		"db_name": "one_gridfs",
 		"pool_size": 10
-	},
-	"files-repository" : "/home/dboissin/Prog/one-core/data/dev/files-repository"
+	}
 }

@@ -182,8 +182,9 @@ public class WorkspaceService extends Controller {
 		.putString("resource", resource)
 		.putString("sender", user.getUserId())
 		.putString("message", user.getUsername() +
-				" a partagé avec vous <a href=\"http://localhost:8011/document/"
-				+ resource + "\">un document</a>.")
+				" a partagé avec vous <a href=\"" +
+				container.config().getString("host", "http://localhost:8011") +
+				pathPrefix + "/document/" + resource + "\">un document</a>.")
 		.putArray("recipients", recipients);
 		eb.send("wse.timeline", event);
 	}
