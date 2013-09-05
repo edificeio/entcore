@@ -2,16 +2,11 @@ var admin = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 	var personDataAdaptor = function (d) {
-		var activated = [];
-		var nonActivated = [];
 		for (obj in d.result){
-			if (d.result[obj].code === ''){
-				activated.push(d.result[obj]);
-			} else {
-				nonActivated.push(d.result[obj]);
-			}
+			d.result[obj]['notActivated'] = d.result[obj].code === '' ? false : true;
+			d.result[obj]['isProfessor'] = d.result[obj].type === 'ENSEIGNANT' ? true : false;
 		}
-		return {activated :activated, nonActivated: nonActivated}; 
+		return {list : _.values(d.result)};
 	};
 
 	var app = Object.create(oneApp);
@@ -42,10 +37,17 @@ var admin = function(){
 				<div id='people-{{classId}}'></div>{{/list}}"
 			,
 			personnes: "\
-				<br /><span>{{#activated}}<a call='personne' href='api/details?id={{userId}}'>\
-				{{lastName}} {{firstName}}</a> - {{/activated}}{{#nonActivated}}\
-				<a call='personne' href='api/details?id={{userId}}' style='background-color:yellow;'>\
-				{{lastName}} {{firstName}}</a> - {{/nonActivated}}</span><div id='details'></div>"
+				<br /><span>\
+					{{#list}}\
+					<a call='personne' href='api/details?id={{userId}}'\
+						style='\
+							{{#notActivated}}color:red;{{/notActivated}}\
+							{{#isProfessor}}font-weight:bold;{{/isProfessor}}\
+						'\
+					>\
+					{{lastName}} {{firstName}}</a> - \
+					{{/list}}\
+				</span><div id='details'></div>"
 			,
 			enseignants : "\
 				<br /><span>{{#list}}\

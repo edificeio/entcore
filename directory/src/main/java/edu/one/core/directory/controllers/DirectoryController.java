@@ -11,6 +11,7 @@ import edu.one.core.infra.Server;
 import edu.one.core.infra.security.BCrypt;
 import edu.one.core.security.SecuredAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,11 +87,13 @@ public class DirectoryController extends Controller {
 
 	@SecuredAction("directory.authent")
 	public void people(HttpServerRequest request) {
-		neo.send("START n=node(*) , m=node(*) MATCH n<--m WHERE has(m.type) AND has(n.id) AND n.id='"
-				+ request.params().get("id") +"'"
-				+ "AND (m.type='ELEVE' OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE') "
-				+ "RETURN distinct m.id as userId, m.activationCode? as code, m.ENTPersonNom as firstName,"
-				+ "m.ENTPersonPrenom as lastName, n.id as classId", request.response());
+		Map<String, Object> params = new HashMap<>();
+		params.put("classId",request.params().get("id"));
+		neo.send("START n=node:node_auto_index(id={classId}) "
+				+ "MATCH n<-[:APPARTIENT]-m "
+				+ "WHERE m.type IN ['ELEVE','ENSEIGNANT','PERSRELELEVE'] "
+				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode? as code, m.ENTPersonNom as firstName,"
+				+ "m.ENTPersonPrenom as lastName, n.id as classId", params, request.response());
 	}
 
 	@SecuredAction("directory.authent")
