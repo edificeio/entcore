@@ -123,7 +123,7 @@ var account = function(){
 		},
 		action : {
 			profile : function(url) {
-				$.get(url)
+				One.get(url)
 				.done(function(data){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
@@ -131,14 +131,13 @@ var account = function(){
 				})
 			},
 			editUserBookInfo : function(url){
-				$.get(url)
+				One.get(url)
 				.done(function(data){
 				})
 			},
 			setVisibility : function(o){
-				var url = o.target.form.action + '&value=' + $('#visible').val();
 				$('#current-visibility').html = $('#visible').val();
-				$.get(url)
+				One.get(o.target.form.action, { value:  $('#visible').val() })
 				.done(function(data){
 					app.notify.info("modif ok");
 				})
@@ -148,8 +147,8 @@ var account = function(){
 				if($(o.target).attr('role') === 'public'){
 					newRole = 'private';
 				}
-				var url = o.url + '&value=' + newRole;
-				$.get(url)
+
+				One.get(o.url, {value: newRole })
 					.done(function(data){
 						$(o.target).attr('role', newRole);
 					})
@@ -158,19 +157,23 @@ var account = function(){
 				var form = new FormData();
 				form.append("image", $('#upload-form').find('input[type="file"]')[0].files[0]);
 				form.append("name","blablabla");
-				$.ajax({
-					url: "document?application=userbook&protected=true",
-					type: 'POST',
-					data: form,
-					cache: false,
-					contentType: false,
-					processData: false
-				}).done(function (data) {
-					if (data.status == "ok") {
-						account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
-						$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
-					}
-				}).error(function (data) { console.log(data); });
+
+
+				One.postFile("document?application=userbook&protected=true", form)
+					.done(function (data) {
+						if (data.status == "ok") {
+							account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
+							$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + data._id);
+						}
+					});
+			},
+			getPhoto : function(photoId) {
+				One.get("workspace/document/" + photoId)
+					.done(function (data) {
+						if (data !== "") {
+							$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + photoId);
+						}
+					});
 			}
 		}
 	});

@@ -33,5 +33,13 @@
 	"workspace.read": "Consulter",
 	"name": "Titre",
 	"modified": "Mise à jour",
-	"send": "Envoyer"
+	"choose": "Choisir",
+	"nofile": "Aucun fichier",
+	"send": "Envoyer",
+	"e400": "Le client a rencontré une erreur",
+	"e401": "Vous n'avez pas les droits d'accès pour ce contenu",
+	"e403": "Le serveur a refusé votre requête",
+	"e404": "Adresse introuvable",
+	"e408": "Temps d'attente dépassé, veuillez réessayer",
+	"e500": "Le serveur a rencontré une erreur"
 }

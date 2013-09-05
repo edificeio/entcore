@@ -16,7 +16,7 @@ var timeline = function(){
 		action : {
 
 			lastNotifications : function (o) {
-				$.get(o.url).done(function(response){
+				One.get(o.url).done(function(response){
 					$('#list').html(app.template.render("lastNotifications", response));
 				});
 			}

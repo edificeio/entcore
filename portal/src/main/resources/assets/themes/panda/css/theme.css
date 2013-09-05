@@ -1841,6 +1841,14 @@ img[src=""] {
 .enhanced-select .editing span {
   color: #fff;
 }
+.humane-original-error {
+  background: #fd841c;
+  border: 3px solid #fff;
+  font-family: KGJune;
+  font-size: 30px;
+  opacity: 1;
+  cursor: pointer;
+}
 body {
   background: #c2c2c2;
   font-family: Arial;

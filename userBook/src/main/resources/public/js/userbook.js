@@ -187,7 +187,7 @@ var userbook = function(){
 		action : {
 			search : function(o){
 				var url = o.target.form.action + '?' + $('#search-form').serialize();
-				$.get(url)
+				One.get(url)
 				.done(function(data){
 					$("#people").removeClass('four').addClass('twelve');
 					$("#person").html('');
@@ -227,23 +227,21 @@ var userbook = function(){
 			},
 			showFirstPerson: function(){
 				var that = this;
-				$.get($('.person').first().find('h4').attr('href'))
+				One.get($('.person').first().find('h4').attr('href'))
 					.done(function(data){
 						that.showPerson(data)
 						messenger.requireResize();
-					})
-					.error(function(data){app.notify.error(data.status);})
+					});
 			},
 			person : function(o){
 				var that = this;
-				$.get(o.url)
-				.done(function(data){
-					that.showPerson(data)
-					messenger.requireResize();
-					userbook.action.getPhoto(data.result[0].photo,'');
-					$('em.mood').html(moods[data.result[0].mood]);
-				})
-				.error(function(data){app.notify.error(data.status);})
+				One.get(o.url)
+					.done(function(data){
+						that.showPerson(data)
+						messenger.requireResize();
+						userbook.action.getPhoto(data.result[0].photo,'');
+						$('em.mood').html(moods[data.result[0].mood]);
+					});
 			},
 			refreshClassList: function(){
 				if (location.search.substring(1,6) === 'query'){
@@ -251,8 +249,24 @@ var userbook = function(){
 					userbook.action.searchClass("api/class?name=" + className);
 				}
 			},
+
+			getPhoto : function(photoId, userId) {
+				if (photoId === ''){
+					return;
+				}
+				One.get("workspace/document/" + photoId)
+					.done(function (data) {
+						if (data !== "") {
+							if (userId !== ''){
+								$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+							} else {
+								$('div#person div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+							}
+						}
+					});
+			},
 			searchClass : function(url) {
-				$.get(url)
+				One.get(url)
 				.done(function(data){
 					$("#people .text-container.twelve").addClass('four').removeClass('twelve');
 					$("#people").removeClass('four').addClass('twelve');

@@ -295,8 +295,8 @@ var workspace = function(){
 									<div class="hidden-content">\
 										<input type="file" name="file" id="new-file" />\
 									</div>\
-									<button class="file-button" data-linked="new-file">Choisir</button>\
-									<em id="new-file-content">Aucun fichier</em>\
+									<button class="file-button" data-linked="new-file">{{#i18n}}choose{{/i18n}}</button>\
+									<em id="new-file-content">{{#i18n}}nofile{{/i18n}}</em>\
 								</div>\
 							</div>\
 							<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
@@ -386,7 +386,7 @@ var workspace = function(){
 				var relativePath = undefined,
 					that = this,
 					directories;
-				$.get(o.url).done(function(response){
+				One.get(o.url).done(function(response){
 					if (o.url.match(/^documents\/.*?/g)) {
 						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
 					}
@@ -416,14 +416,14 @@ var workspace = function(){
 				messenger.requireResize();
 			},
 			rack : function (o) {
-				$.get(o.url).done(function(response){
+				One.get(o.url).done(function(response){
 					response = tools.formatResponse(response);
 					$('#list').html(app.template.render("rack", response));
 					messenger.requireResize();
 				});
 			},
 			share: function(o){
-				$.get(o.url, function(data){
+				One.get(o.url).done(function(data){
 					$('#form-window').html(data);
 					ui.showLightbox();
 
@@ -434,8 +434,8 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
-				$.get("documents/Trash").done(function(documents) {
-					$.get("rack/documents/Trash").done(function(rack) {
+				One.get("documents/Trash").done(function(documents) {
+					One.get("rack/documents/Trash").done(function(rack) {
 						documents = tools.formatResponse(documents);
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
@@ -454,7 +454,7 @@ var workspace = function(){
 			},
 
 			sendRack : function(o){
-				$.get("users/available-rack").done(function(response) {
+				One.get("users/available-rack").done(function(response) {
 					if (response.status === "ok") {
 						var users = [];
 						for (var key in response.result) {
@@ -479,29 +479,23 @@ var workspace = function(){
 					action += '/' + form.find('input[name=to], select[name=to]').val();
 				}
 				ui.hideLightbox();
-				$.ajax({
-					url: action + '?' + form.serialize(),
-					type: 'POST',
-					data: fd,
-					cache: false,
-					contentType: false,
-					processData: false
-				}).done(function(data) {
-					location.reload(true);
-				}).error(function(data) {app.notify.error(data)});
+				One.postFile(action + '?' + form.serialize(), fd)
+					.done(function(){
+						location.reload(true);
+					})
 			},
 
 			getFolders : function(hierarchical, relativePath, action) {
-				var url = "folders?";
-				if (hierarchical === true) {
-					url += "hierarchical=true&";
+				var params = {
+					hierarchical: hierarchical
+				};
+				if(relativePath){
+					params.relativePath = relativePath;
 				}
-				if (relativePath) {
-					url += "relativePath=" + relativePath;
-				}
-				$.get(url)
-				.done(action)
-				.error(function(data) {app.notify.error(data)});
+
+				One.get('folders', params)
+					.done(action)
+					.error(function(data) {app.notify.error(data)});
 			},
 			moveTrash : function(o) {
 				if(navigation.currentUrl().indexOf('trash') !== -1){
@@ -511,21 +505,15 @@ var workspace = function(){
 				var files = [];
 				$("#list :checkbox:checked").each(function(i) {
 					var obj = $(this);
-					$.ajax({
-						url : o.url + "/" + obj.val(),
-						type: "PUT",
-						success: function() {
+					One.put(o.url + "/" + obj.val())
+						.done(function(data){
 							var parentLine = obj.parents("tr");
 							parentLine.next().remove();
 							parentLine.remove();
 
 							var parentCell = obj.parents("li");
 							parentCell.remove();
-						},
-						error: function(data) {
-							app.notify.error(data);
-						}
-					});
+						});
 				});
 			},
 
@@ -545,7 +533,8 @@ var workspace = function(){
 					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
 
 				var that = this;
-				$.post(url, data)
+
+				One.post(url, data)
 				.done(function (data) {
 					that.documents({url: navigation.currentUrl()}, function(){
 						var targetFile = url.split('/')[1];
@@ -573,16 +562,10 @@ var workspace = function(){
 
 				$("#list :checkbox:checked").each(function(i) {
 					var obj = $(this);
-					$.ajax({
-						url : obj.val(),
-						type: "DELETE",
-						success: function() {
+					One.delete(obj.val())
+						.done(function(){
 							obj.parents("tr").remove();
-						},
-						error: function(data) {
-							app.notify.error(data);
-						}
-					});
+						});
 				});
 			},
 
@@ -628,9 +611,9 @@ var workspace = function(){
 					method;
 
 				if (action.match(/copy$/g)) {
-					method = "POST";
+					method = "post";
 				} else {
-					method = "PUT";
+					method = "put";
 				}
 
 				$("#list :checkbox:checked").each(function(i) {
@@ -648,16 +631,10 @@ var workspace = function(){
 					else{
 						path = $(this).parents('tr').find('.folderPath').text();
 					}
-					$.ajax({
-						url : action + "/" + ids + "/" + path,
-						type: method,
-						success: function() {
+					One[method](action + "/" + ids + "/" + path)
+						.done(function(){
 							location.reload(true);
-						},
-						error: function(data) {
-							app.notify.error(data);
-						}
-					});
+						});
 				})
 			}
 
@@ -665,10 +642,6 @@ var workspace = function(){
 	});
 	return app;
 }();
-
-
-
-
 
 $(document).ready(function(){
 	workspace.init();

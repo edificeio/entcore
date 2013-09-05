@@ -1,3 +1,6 @@
+humane.timeout = 0;
+humane.clickToClose = true;
+
 var oneApp = {
 	scope : '#main',
 	init : function() {
@@ -53,7 +56,7 @@ var oneApp = {
 		warn : function (msg) {},
 		info : function (msg) { this.instance('info')(msg); },
 		instance : function(level) {
-			return humane.spawn({ addnCls: 'humane-original-' + level, timeout: 3000 });
+			return humane.spawn({ addnCls: 'humane-original-' + level });
 		}
 	},
 	i18n : {
