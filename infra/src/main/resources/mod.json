@@ -23,6 +23,24 @@
 	],
 	"external-modules" : [
 		{
+			"name" : "io.vertx~mod-mongo-persistor~2.0.0-final-WSE",
+			"config" : {
+				"address": "wse.mongodb.persistor",
+				"host": "localhost",
+				"port": 27017,
+				"db_name": "one_gridfs",
+				"pool_size": 10
+			}
+		},{
+			"name" : "com.wse~gridfs-persistor~0.1.0-SNAPSHOT",
+			"config" : {
+				"address": "wse.gridfs.persistor",
+				"host": "localhost",
+				"port": 27017,
+				"db_name": "one_gridfs",
+				"pool_size": 10
+			}
+		},{
 			"name" : "io.vertx~mod-mailer~2.0.0-final",
 			"config" : {
 				"address" : "wse.email"

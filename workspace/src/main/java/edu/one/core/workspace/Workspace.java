@@ -1,12 +1,9 @@
 package edu.one.core.workspace;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
-import org.vertx.java.core.json.JsonObject;
 
-import edu.one.core.infra.Server;
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.security.WorkspaceResourcesProvider;
@@ -18,21 +15,8 @@ public class Workspace extends Server {
 	public void start(final Future<Void> result) {
 		super.start();
 
-		// Mongodb config
-		JsonObject mongodbConf = container.config().getObject("mongodb-config");
-		container.deployModule("io.vertx~mod-mongo-persistor~2.0.0-final-WSE", mongodbConf, 1, new AsyncResultHandler<String>() {
-			public void handle(AsyncResult<String> ar) {
-				if (ar.succeeded()) {
-					result.setResult(null);
-				} else {
-					log.error(ar.cause().getMessage());
-				}
-			}
-		});
-		final MongoDb mongo = new MongoDb(Server.getEventBus(vertx), mongodbConf.getString("address"));
-
-		JsonObject gridfsConf = container.config().getObject("gridfs-config");
-		container.deployModule("com.wse~gridfs-persistor~0.1.0-SNAPSHOT", gridfsConf);
+		final MongoDb mongo = new MongoDb(Server.getEventBus(vertx),
+				container.config().getString("mongo-address", "wse.mongodb.persistor"));
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
 

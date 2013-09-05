@@ -49,8 +49,8 @@ public class WorkspaceService extends Controller {
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		mongo = new MongoDb(Server.getEventBus(vertx),
-				container.config().getObject("mongodb-config").getString("address"));
-		gridfsAddress = container.config().getObject("gridfs-config").getString("address");
+				container.config().getString("mongo-address", "wse.mongodb.persistor"));
+		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
