@@ -4,16 +4,19 @@
  */
 package edu.one.core.sync.aaf;
 
-import edu.one.core.datadictionary.dictionary.DefaultDictionary;
-import edu.one.core.infra.TracerHelper;
 import java.io.FileReader;
 import java.util.List;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import edu.one.core.datadictionary.dictionary.DefaultDictionary;
+import edu.one.core.infra.Server;
+import edu.one.core.infra.TracerHelper;
 
 /**
  *
@@ -30,8 +33,8 @@ public class SyncManager {
 		this.vertx = vertx;
 		aafSaxHandler = new AafSaxContentHandler(trace, new DefaultDictionary(
 				vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json"));
-		wordpressHelper = new WordpressHelper(trace, vertx.eventBus());
-		aafGeoffHelper = new AafGeoffHelper(trace, vertx.eventBus(), wordpressHelper);
+		wordpressHelper = new WordpressHelper(trace, Server.getEventBus(vertx));
+		aafGeoffHelper = new AafGeoffHelper(trace, Server.getEventBus(vertx), wordpressHelper);
 		try {
 			xr = XMLReaderFactory.createXMLReader();
 		} catch (SAXException ex) {

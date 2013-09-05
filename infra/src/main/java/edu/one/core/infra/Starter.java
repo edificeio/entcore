@@ -1,12 +1,18 @@
 package edu.one.core.infra;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.UUID;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import com.google.common.io.CharStreams;
 
 public class Starter extends Server {
 
@@ -18,7 +24,6 @@ public class Starter extends Server {
 			if (vertx.fileSystem().existsSync("../../developer.id")) {
 				developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
 			}
-
 			config = getConfig("", "mod.json");
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
@@ -89,7 +94,7 @@ public class Starter extends Server {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
 		jo.putString("query", query);
-		vertx.eventBus().send(config.getString("address", "wse.neo4j.persistor"), jo);
+		Server.getEventBus(vertx).send(config.getString("address", "wse.neo4j.persistor"), jo);
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {

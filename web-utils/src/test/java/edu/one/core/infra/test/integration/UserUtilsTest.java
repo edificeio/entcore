@@ -11,6 +11,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
+import edu.one.core.infra.Server;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 
@@ -20,7 +21,7 @@ public class UserUtilsTest extends TestVerticle {
 
 	@Override
 	public void start() {
-		eb = vertx.eventBus();
+		eb = Server.getEventBus(vertx);
 
 		JsonObject config = new JsonObject()
 		.putString("server-uri", "http://localhost:7474/db/data/")

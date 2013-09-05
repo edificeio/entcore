@@ -29,7 +29,7 @@ public class Workspace extends Server {
 				}
 			}
 		});
-		final MongoDb mongo = new MongoDb(vertx.eventBus(), mongodbConf.getString("address"));
+		final MongoDb mongo = new MongoDb(Server.getEventBus(vertx), mongodbConf.getString("address"));
 
 		JsonObject gridfsConf = container.config().getObject("gridfs-config");
 		container.deployModule("com.wse~gridfs-persistor~0.1.0-SNAPSHOT", gridfsConf);
@@ -87,7 +87,7 @@ public class Workspace extends Server {
 		service.get("/users/available-rack", "rackAvailableUsers");
 
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
-				vertx.eventBus(), new WorkspaceResourcesProvider(mongo)));
+				Server.getEventBus(vertx), new WorkspaceResourcesProvider(mongo)));
 
 	}
 

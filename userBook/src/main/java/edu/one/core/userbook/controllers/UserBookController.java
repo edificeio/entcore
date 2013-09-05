@@ -1,12 +1,7 @@
 package edu.one.core.userbook.controllers;
 
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.Neo;
-import edu.one.core.infra.http.HttpClientUtils;
-import edu.one.core.infra.security.UserUtils;
-import edu.one.core.infra.security.resources.UserInfos;
-import edu.one.core.security.SecuredAction;
 import java.util.Map;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -16,6 +11,14 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
+
+import edu.one.core.infra.Controller;
+import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
+import edu.one.core.infra.http.HttpClientUtils;
+import edu.one.core.infra.security.UserUtils;
+import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.security.SecuredAction;
 
 
 public class UserBookController extends Controller {
@@ -28,7 +31,7 @@ public class UserBookController extends Controller {
 	public UserBookController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
-			this.neo = new Neo(vertx.eventBus(),log);
+			this.neo = new Neo(Server.getEventBus(vertx),log);
 			this.config = config;
 			userBookData= config.getObject("user-book-data");
 			client = vertx.createHttpClient()

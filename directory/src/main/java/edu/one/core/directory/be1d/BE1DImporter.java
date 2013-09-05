@@ -27,6 +27,7 @@ import edu.one.core.datadictionary.generation.DisplayNameGenerator;
 import edu.one.core.datadictionary.generation.IdGenerator;
 import edu.one.core.datadictionary.generation.LoginGenerator;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 
 public class BE1DImporter {
 
@@ -99,7 +100,7 @@ public class BE1DImporter {
 	}
 
 	public BE1DImporter(Vertx vertx, Container container, String schoolFolder) {
-		neo = new Neo(vertx.eventBus(), container.logger());
+		neo = new Neo(Server.getEventBus(vertx), container.logger());
 		this.vertx = vertx;
 		this.schoolFolder = schoolFolder;
 		classesEleves = new HashMap<>();
@@ -232,7 +233,7 @@ public class BE1DImporter {
 					@Override
 					public void handle(Message<JsonObject> message) {
 						handler.handle(new JsonObject().putObject(schoolName, m.body()));
-						WordpressHelper wp = new WordpressHelper(vertx.eventBus(), schoolId);
+						WordpressHelper wp = new WordpressHelper(Server.getEventBus(vertx), schoolId);
 						for (Object o: queries) {
 							wp.queryToEntity((JsonObject) o);
 						}

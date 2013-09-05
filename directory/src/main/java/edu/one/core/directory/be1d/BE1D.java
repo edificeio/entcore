@@ -13,6 +13,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 
 public class BE1D {
 
@@ -25,7 +26,7 @@ public class BE1D {
 		this.vertx = vertx;
 		this.container = container;
 		this.porteurFolder = porteurFolder;
-		this.neo = new Neo(vertx.eventBus(), container.logger());
+		this.neo = new Neo(Server.getEventBus(vertx), container.logger());
 	}
 
 	public void importPorteur(final Handler<JsonArray> handler) {

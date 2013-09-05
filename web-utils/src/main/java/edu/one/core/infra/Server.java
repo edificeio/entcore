@@ -5,7 +5,10 @@ import java.util.Map;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -33,7 +36,7 @@ public abstract class Server extends Verticle {
 			config = container.config();
 		}
 		rm = new RouteMatcher();
-		trace = new TracerHelper(vertx.eventBus(), "log.address", this.getClass().getSimpleName());
+		trace = new TracerHelper(Server.getEventBus(vertx), "log.address", this.getClass().getSimpleName());
 		i18n = I18n.getInstance();
 		i18n.init(container, vertx);
 		CookieHelper.getInstance().init((String) vertx
@@ -69,7 +72,7 @@ public abstract class Server extends Verticle {
 			JsonArray actions = StartupUtils.loadSecuredActions();
 			securedActions = StartupUtils.securedActionsToMap(actions);
 			StartupUtils.sendStartup(this.getClass().getSimpleName(), actions,
-					vertx.eventBus(), config.getString("app-registry.address", "wse.app.registry"));
+					Server.getEventBus(vertx), config.getString("app-registry.address", "wse.app.registry"));
 		} catch (IOException e) {
 			log.error("Error application not registred.", e);
 		}
@@ -104,6 +107,10 @@ public abstract class Server extends Verticle {
 			return "";
 		}
 		return "/" + path;
+	}
+
+	public static EventBus getEventBus(Vertx vertx) {
+		return new EventBusWithLogger(vertx.eventBus());
 	}
 
 }

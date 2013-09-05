@@ -13,6 +13,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.Server;
 
 public class MongoDbTest extends TestVerticle {
 
@@ -20,7 +21,7 @@ public class MongoDbTest extends TestVerticle {
 
 	@Override
 	public void start() {
-		EventBus eb = vertx.eventBus();
+		EventBus eb = Server.getEventBus(vertx);
 		JsonObject config = new JsonObject();
 		config.putString("address", "test.persistor");
 		config.putString("db_name", System.getProperty("vertx.mongo.database", "test_db"));

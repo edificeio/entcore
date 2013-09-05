@@ -19,6 +19,7 @@ import com.google.common.base.Joiner;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
@@ -30,7 +31,7 @@ public class AppRegistryService extends Controller {
 	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
-		neo = new Neo(vertx.eventBus(), log);
+		neo = new Neo(Server.getEventBus(vertx), log);
 	}
 
 	@SecuredAction("app-registry.view")

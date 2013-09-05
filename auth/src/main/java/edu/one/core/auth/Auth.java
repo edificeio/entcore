@@ -46,7 +46,7 @@ public class Auth extends Server {
 
 		SecurityHandler.clearFilters();
 		SecurityHandler.addFilter(
-				new UserAuthFilter(new DefaultOAuthResourceProvider(vertx.eventBus())));
+				new UserAuthFilter(new DefaultOAuthResourceProvider(Server.getEventBus(vertx))));
 	}
 
 }

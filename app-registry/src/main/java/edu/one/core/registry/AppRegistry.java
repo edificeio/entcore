@@ -12,7 +12,6 @@ public class AppRegistry extends Server {
 		super.start();
 
 		AppRegistryService service = new AppRegistryService(vertx, container, rm, securedActions);
-
 		try {
 			service.registerMethod(config.getString("address"), "collectApps");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
@@ -47,7 +46,7 @@ public class AppRegistry extends Server {
 
 		service.post("/application/external", "createExternalApp");
 
-		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), vertx.eventBus()));
+		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), Server.getEventBus(vertx)));
 
 	}
 

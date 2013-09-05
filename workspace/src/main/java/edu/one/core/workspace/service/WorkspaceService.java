@@ -27,6 +27,7 @@ import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -47,7 +48,7 @@ public class WorkspaceService extends Controller {
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
-		mongo = new MongoDb(vertx.eventBus(),
+		mongo = new MongoDb(Server.getEventBus(vertx),
 				container.config().getObject("mongodb-config").getString("address"));
 		gridfsAddress = container.config().getObject("gridfs-config").getString("address");
 		documentDao = new DocumentDao(mongo);

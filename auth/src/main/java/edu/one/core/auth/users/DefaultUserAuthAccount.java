@@ -11,6 +11,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Server;
 import edu.one.core.infra.security.BCrypt;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
@@ -21,7 +22,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private static final String EMAIL_ADDRESS = "wse.email";
 
 	public DefaultUserAuthAccount(Vertx vertx, Container container) {
-		this.neo = new Neo(vertx.eventBus(), container.logger());
+		this.neo = new Neo(Server.getEventBus(vertx), container.logger());
 		this.vertx = vertx;
 		this.container = container;
 	}
@@ -47,7 +48,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					JsonObject jo = new JsonObject().putString(
 							"userId", 
 							res.body().getObject("result").getObject("0").getString("id"));
-					vertx.eventBus().publish(
+					Server.getEventBus(vertx).publish(
 							container.config().getString("address.activation", "wse.activation.hack"),
 							jo);
 					handler.handle(true);
@@ -121,7 +122,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		.putString("body", container.config()
 				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode); // TODO template
 		container.logger().debug(json.encode());
-		vertx.eventBus().send(EMAIL_ADDRESS, json, new Handler<Message<JsonObject>>() {
+		Server.getEventBus(vertx).send(EMAIL_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {

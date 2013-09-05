@@ -7,6 +7,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.Server;
 
 
 public class DefaultTimelineEventStore implements TimelineEventStore {
@@ -16,7 +17,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	private MongoDb mongo;
 
 	public DefaultTimelineEventStore(Vertx vertx, Container container) {
-		mongo = new MongoDb(vertx.eventBus(), container.config()
+		mongo = new MongoDb(Server.getEventBus(vertx), container.config()
 				.getString("mongodb-address", "wse.mongodb.persistor"));
 	}
 

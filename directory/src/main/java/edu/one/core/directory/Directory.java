@@ -38,7 +38,7 @@ public class Directory extends Server {
 	public void start() {
 		super.start();
 		final Renders render = new Renders(container);
-		neo = new Neo(vertx.eventBus(),log);
+		neo = new Neo(Server.getEventBus(vertx),log);
 		d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
 		admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 		final Profils p = new DefaultProfils(neo);
@@ -177,7 +177,7 @@ public class Directory extends Server {
 							.putString("classe", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 							.putString("type", request.params().get("ENTPersonProfils"))
 							.putString("password", "dummypass");
-					vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+					Server.getEventBus(vertx).send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 						public void handle(Message event) {
 							container.logger().info("MESSAGE : " + event.body());
 						}
@@ -250,7 +250,7 @@ public class Directory extends Server {
 						.putString("nom", request.params().get("ENTGroupName"))
 						.putString("parent", "4400000002_ORDINAIRE_CM2deMmeRousseau")
 						.putString("type", request.params().get("type"));
-				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+				Server.getEventBus(vertx).send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 					public void handle(Message event) {
 						container.logger().info("MESSAGE : " + event.body());
 					}
@@ -271,7 +271,7 @@ public class Directory extends Server {
 				JsonObject obj = new JsonObject().putString("id", request.params().get("ENTSchoolId"))
 						.putString("nom", request.params().get("ENTSchoolName"))
 						.putString("type", "ETABEDUCNAT");
-				vertx.eventBus().send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
+				Server.getEventBus(vertx).send(config.getString("wp-connector.address"), obj, new Handler<Message>() {
 					public void handle(Message event) {
 						container.logger().info("MESSAGE : " + event.body());
 					}
@@ -338,7 +338,7 @@ public class Directory extends Server {
 			}
 		});
 
-		vertx.eventBus().registerHandler("directory", new Handler<Message<JsonObject>>() {
+		Server.getEventBus(vertx).registerHandler("directory", new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(final Message<JsonObject> message) {

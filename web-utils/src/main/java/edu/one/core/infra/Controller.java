@@ -54,7 +54,7 @@ public abstract class Controller extends Renders {
 		this.rm = rm;
 		this.uriBinding = new HashMap<>();
 		this.securedActions = securedActions;
-		this.eb = vertx.eventBus();
+		this.eb = Server.getEventBus(vertx);
 	}
 
 	private Handler<HttpServerRequest> execute(final String method) {
@@ -119,7 +119,7 @@ public abstract class Controller extends Renders {
 			throws NoSuchMethodException, IllegalAccessException {
 		final MethodHandle mh = lookup.bind(this, method,
 				MethodType.methodType(void.class, Message.class));
-		vertx.eventBus().registerHandler(address, new Handler<Message<JsonObject>>() {
+		Server.getEventBus(vertx).registerHandler(address, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {

@@ -1,5 +1,7 @@
 apply from: "gradle/vertx.gradle"
 
+project.evaluationDependsOn(':web-utils')
+
 dependencies {
 	compile project(':web-utils')
 }
