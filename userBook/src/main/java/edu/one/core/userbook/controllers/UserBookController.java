@@ -2,6 +2,7 @@ package edu.one.core.userbook.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -51,23 +52,36 @@ public class UserBookController extends Controller {
 	}
 
 	@SecuredAction("userbook.authent")
-	public void search(HttpServerRequest request) {
-		String neoRequest = "START n=node:node_auto_index('type:ELEVE OR type:ENSEIGNANT OR type:PERSRELELEVE') ";
-		if (request.params().contains("name")){
-			String[] names = request.params().get("name").split(" ");
-			String displayNameRegex = (names[0].length() > 3) ? "(?i)(.*" + names[0].substring(0,4) : "(?i)(.*" + names[0];
-			for (int i = 1; i < names.length; i++) {
-				displayNameRegex += (names[i].length() > 3) ? ".*|.*" + names[i].substring(0,4) : ".*|.*" + names[i];
+	public void search(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String name = request.params().get("name");
+					String filter = "";
+					if (name != null && !name.trim().isEmpty()) {
+						filter = "AND m.ENTPersonNomAffichage=~{regex} ";
+					}
+					String query =
+							"START n=node:node_auto_index(id={id}) " +
+							"MATCH n-[:COMMUNIQUE*1..2]->l-[?:COMMUNIQUE]->m<-[?:COMMUNIQUE_DIRECT]-n " +
+							"WITH m " +
+							"MATCH m-[?:USERBOOK]->u " +
+							"WHERE has(m.id) AND m.id <> {id} AND has(m.ENTPersonLogin) " +
+							"AND has(m.ENTPersonNomAffichage) " + filter +
+							"RETURN distinct m.id as id, m.ENTPersonNomAffichage as displayName, " +
+							"u.mood? as mood, u.userid? as userId, u.picture? as photo, m.type as type " +
+							"ORDER BY displayName";
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", user.getUserId());
+					params.put("regex", "(?i)^.*?" + Pattern.quote(name.trim()) + ".*?$");
+					neo.send(query, params, request.response());
+				} else {
+					unauthorized(request);
+				}
 			}
-			displayNameRegex += ".*)";
-			neoRequest += " MATCH (n)-[USERBOOK?]->(m) WHERE n.ENTPersonNomAffichage=~'" + displayNameRegex + "'";
-		} else if (request.params().contains("class")){
-			neoRequest += ", m=node:node_auto_index(type='CLASSE') MATCH m<-[APPARTIENT]-n WHERE "
-				+ " m.ENTGroupeNom='" + request.params().get("class") + "'";
-		}
-		neoRequest += " RETURN distinct n.id as id, "
-			+ "n.ENTPersonNomAffichage as displayName, m.mood? as mood, m.userid? as userId, m.picture? as photo, n.type as type";
-		neo.send(neoRequest, request.response());
+		});
 	}
 
 	@SecuredAction("userbook.authent")

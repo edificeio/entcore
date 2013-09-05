@@ -2,5 +2,6 @@
 	"userBook.title": "My account",
 	"userBook.header": "My account",
 	"userBook.interests": "My interests",
-	"userBook.health": "Health"
+	"userBook.health": "Health",
+	"userBook.search" : "Search"
 }

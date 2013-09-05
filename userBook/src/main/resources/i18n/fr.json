@@ -11,5 +11,6 @@
 	"userBook.profile.motto" : "Devise",
 	"userBook.account.myAccount":"Accéder à mon Compte",
 	"userBook.profile.family": "Famille",
-	"userBook.profile.address": "Adresse"
+	"userBook.profile.address": "Adresse",
+	"userBook.search" : "Recherche"
 }
