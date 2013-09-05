@@ -697,6 +697,13 @@ body.lightbox-body section.lightbox-main {
 iframe {
   overflow: hidden;
 }
+html.app {
+  min-height: 0;
+  height: auto;
+}
+html.app body {
+  background: #fff;
+}
 @font-face {
   font-family: KGJune;
   src: url(../fonts/KGJuneBug.ttf);
@@ -1857,7 +1864,7 @@ body section.main {
   background: #fff;
   border-radius: 10px;
 }
-body.app {
+html.app body {
   background: #fff;
 }
 .flowing thead {

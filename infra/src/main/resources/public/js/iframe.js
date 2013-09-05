@@ -25,7 +25,7 @@ var messenger = (function(){
 					var appSizeMessage = {
 						name: 'resize',
 						data: {
-							height: $(document).outerHeight(true) + 1
+							height: $('html').outerHeight(true) + 1
 						}
 					};
 
@@ -52,7 +52,7 @@ var messenger = (function(){
 			var appSizeMessage = {
 				name: 'resize',
 				data: {
-					height: $(document).outerHeight(true) + 1
+					height: $('html').outerHeight(true) + 1
 				}
 			};
 

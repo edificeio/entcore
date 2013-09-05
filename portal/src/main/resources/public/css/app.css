@@ -697,3 +697,10 @@ body.lightbox-body section.lightbox-main {
 iframe {
   overflow: hidden;
 }
+html.app {
+  min-height: 0;
+  height: auto;
+}
+html.app body {
+  background: #fff;
+}
