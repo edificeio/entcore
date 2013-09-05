@@ -89,6 +89,9 @@ public class I18n {
 	 * Header example : "Accept-Language:fr,en-us;q=0.8,fr-fr;q=0.5,en;q=0.3"
 	 */
 	private Locale getLocale(String acceptLanguage) {
+		if (acceptLanguage == null) {
+			acceptLanguage = "fr";
+		}
 		String[] langs = acceptLanguage.split(",");
 		return Locale.forLanguageTag(langs[0].split("-")[0]);
 	}
