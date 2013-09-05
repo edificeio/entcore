@@ -1,5 +1,6 @@
 package edu.one.core.userbook.controllers;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.vertx.java.core.Handler;
@@ -124,16 +125,30 @@ public class UserBookController extends Controller {
 	}
 
 	@SecuredAction("userbook.authent")
-	public void myClass(HttpServerRequest request) {
-		if (request.params().contains("name")){
-			String neoRequest = "START n=node:node_auto_index('type:CLASSE OR type:USERBOOK'), "
-					+ "m=node:node_auto_index('type:ENSEIGNANT OR type:ELEVE') "
-					+ "MATCH (n)<-[:APPARTIENT|USERBOOK]-(m) WHERE n.ENTGroupeNom?='" 
-					+ request.params().get("name") + "' RETURN distinct m.type as type, "
-					+ "m.id as id,m.ENTPersonNomAffichage as displayName, n.mood? as mood, "
-					+ "n.userid? as userId, n.picture? as photo;";
-			neo.send(neoRequest, request.response());
-		}
+	public void myClass(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String query =
+							"START n=node:node_auto_index(id={id}) " +
+							"MATCH n-[:APPARTIENT]->c " +
+							"WITH c " +
+							"MATCH c<-[:APPARTIENT]-m-[?:USERBOOK]->u " +
+							"WHERE has(c.type) AND c.type = 'CLASSE' AND has(m.ENTPersonLogin) " +
+							"RETURN distinct m.type as type, m.id as id, " +
+							"m.ENTPersonNomAffichage as displayName, u.mood? as mood, " +
+							"u.userid? as userId, u.picture? as photo " +
+							"ORDER BY type DESC, displayName ";
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", user.getUserId());
+					neo.send(query, params, request.response());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("userbook.authent")
