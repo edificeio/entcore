@@ -10,6 +10,12 @@ var messenger = (function(){
 	};
 
 	var messagesHandlers = {
+		'set-history': function(message){
+			var history = message.data;
+			for(var i = 0; i < message.data.length; i++){
+				window.history.pushState({ link: message.data[i] }, null, '/?app=' + message.data[i]);
+			}
+		},
 		'set-style': function(message){
 			if($('link[href="' + message.data + '"]').length > 0){
 				return;
@@ -69,7 +75,7 @@ var messenger = (function(){
 		},
 		closeLightbox: function(){
 			var appSizeMessage = {
-				name: 'closeLightbox',
+				name: 'close-lightbox',
 				data: {
 				}
 			};
@@ -95,9 +101,24 @@ var navigationController = (function(){
 					name: 'redirect',
 					data: data.url
 				});
+			},
+			moveHistory: function(data){
+				messenger.sendMessage({
+					name: 'move-history',
+					data: data
+				})
 			}
 		}
 	});
+
+	window.onpopstate = function(e){
+		if(e.state === null){
+			return;
+		}
+
+		app.action.moveHistory({ stepSize: 1, action: 'pop' });
+		e.preventDefault();
+	};
 
 	return app;
 }());

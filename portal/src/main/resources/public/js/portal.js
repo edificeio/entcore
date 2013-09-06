@@ -1,21 +1,53 @@
 var navigation = (function(){
 	"use strict";
 
+	var portalHistory = [];
 	var currentUrl = '/workspace';
-	return {
-		redirect: function(url){
-			$('#applications').attr('src', url);
-			$('#applications').on('load', function(e){
-				var styleUrl = $('#theme').attr('href');
-				var message = {
-					name: 'set-style',
-					data: styleUrl
-				};
 
+	var setStyle = function(){
+		var styleUrl = $('#theme').attr('href');
+		var message = {
+			name: 'set-style',
+			data: styleUrl
+		};
+
+		return message;
+	};
+
+	var setHistory = function(){
+		var message = {
+			name: 'set-history',
+			data: history
+		};
+
+		return message;
+	};
+
+	return {
+		redirect: function(data, invisible){
+			if(!invisible){
+				portalHistory.push(data);
+			}
+
+			history.pushState({}, null, '/?app=' + data);
+
+			$('#applications').attr('src', data);
+
+			$('#applications').on('load', function(e){
 				setTimeout(function(){
-					messenger.sendMessage('#applications', message);
+					messenger.sendMessage('#applications', setStyle());
+					messenger.sendMessage('#applications', setHistory());
 				}, 100);
 			});
+		},
+		moveHistory: function(data){
+			if(data.action === 'pop'){
+				if(portalHistory.length){
+					portalHistory.length = portalHistory.length - 1;
+				}
+
+				navigation.redirect(portalHistory[portalHistory.length - 1], true);
+			}
 		}
 	};
 }());
@@ -43,11 +75,14 @@ var messenger = (function(){
 				$('iframe').attr('src', $('iframe').attr('src'));
 			});
 		},
-		closeLightbox: function(message){
+		'close-lightbox': function(message){
 			$('header').removeClass('lightbox-header');
 			$('body').removeClass('lightbox-body');
 			$('section.main').removeClass('lightbox-main');
 			$('body').unbind('click');
+		},
+		'move-history': function(message){
+			navigation.moveHistory(message.data);
 		}
 	};
 
@@ -76,7 +111,14 @@ var navigationController = (function(){
 	app.scope = 'nav[role=apps-navigation]';
 	app.start = function(){
 		this.init();
-		navigation.redirect('/apps');
+		var redirect = window.location.href.split('?app=');
+		var appUrl = '/apps';
+
+		if(redirect.length > 1){
+			appUrl = redirect[1].split('&')[0];
+		}
+
+		navigation.redirect(appUrl);
 	};
 
 	app.define({
@@ -96,7 +138,7 @@ $(document).ready(function(){
 
 	$('.search input[type=text]').on('focus', function(){
 		$(this).val(' ');
-	})
+	});
 
 	navigationController.start();
 });

@@ -15,8 +15,7 @@
 
 		<h2>Panel</h2>
 
-		<article>
-			<div class="lorem">
+		<article class="text-container">
 				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque hendrerit sed turpis nec interdum. In lobortis iaculis hendrerit.
 				Nullam porttitor mattis orci, quis rutrum leo fringilla eget. Sed egestas tellus eget felis dignissim,
 				eu sollicitudin neque tincidunt. Duis dignissim tempus eros sed elementum. Vestibulum vehicula quam dolor,
@@ -25,14 +24,11 @@
 				Mauris pharetra libero leo, quis tempus tortor tempus vel. Curabitur consequat enim at auctor lobortis.
 				Vestibulum dictum est in semper mattis. Cras volutpat metus justo, in blandit dui volutpat ac. Nullam pulvinar
 				elit vel magna suscipit luctus. Suspendisse eget massa non sapien accumsan rhoncus.
-			</div>
 		</article>
 
 		<pre class="prettyprint">
-	&lt;article&gt;
-		&lt;div class=&quot;lorem&quot;&gt;
+	&lt;article class=&quot;text-container&quot;&gt;
 			...
-		&lt;/div&gt;
 	&lt;/article&gt;
 		</pre>
 
@@ -90,6 +86,21 @@
 	&lt;/div&gt;
 		</pre>
 
+		<h2>Boxes</h2>
+
+		<div class="row">
+			<article class="box four">
+				<div class="four cell avatar">
+					<img src="/assets/themes/panda/img/icons/happy-panda.png" />
+				</div>
+				<div class="six cell">
+					<div class="row">
+						<h4>Box</h4>
+					</div>
+				</div>
+			</article>
+		</div>
+
 		<h1>Elements</h1>
 
 		<h2>Icons</h2>
@@ -143,6 +154,19 @@
 			<pre class="prettyprint">
 	&lt;i role=&quot;workspace-large&quot;&gt;&lt;/i&gt;
 	&lt;i role=&quot;doc-large&quot;&gt;&lt;/i&gt;
+			</pre>
+
+			<h4>Liquid icons</h4>
+			<p>Liquid icons adapt to the size of their container.</p>
+
+			<div class="row">
+				<div class="one cell">
+					<i role="workspace-large" class="liquid"></i>
+				</div>
+			</div>
+
+			<pre>
+	&lt;i role=&quot;workspace-large&quot; class=&quot;liquid&quot;&gt;&lt;/i&gt;
 			</pre>
 		</div>
 

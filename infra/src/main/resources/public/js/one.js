@@ -29,8 +29,8 @@ var http = (function(){
 					}
 				})
 				.fail(function(e){
-					if(typeof that.statusCallbacks[event] === 'function'){
-						that.statusCallbacks['e' + e.status];
+					if(typeof that.statusCallbacks['e' + e.status] === 'function'){
+						that.statusCallbacks['e' + e.status](e);
 					}
 
 					oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
