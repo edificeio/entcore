@@ -29,7 +29,7 @@ var navigation = (function(){
 				portalHistory.push(data);
 			}
 
-			history.pushState({}, null, '/?app=' + data);
+			history.pushState({}, null, '#app=' + data);
 
 			$('#applications').attr('src', data);
 
@@ -111,8 +111,10 @@ var navigationController = (function(){
 	app.scope = 'nav[role=apps-navigation]';
 	app.start = function(){
 		this.init();
-		var redirect = window.location.href.split('?app=');
-		var appUrl = '/apps';
+		var redirect = window.location.href.split('#app=');
+		var appUrl = $('.horizontal[role=apps-navigation] a')
+			.first()
+			.attr('href');
 
 		if(redirect.length > 1){
 			appUrl = redirect[1].split('&')[0];
