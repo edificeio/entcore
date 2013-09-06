@@ -317,15 +317,27 @@ public class CommunicationController extends Controller {
 	public void visibleUsers(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
 		if (userId != null && !userId.trim().isEmpty()) {
+			String action = message.body().getString("action", "");
 			String schoolId = message.body().getString("schoolId");
 			JsonArray expectedTypes = message.body().getArray("expectedTypes");
-			visibleUsers(userId, schoolId, expectedTypes, new Handler<JsonArray>() {
+			Handler<JsonArray> responseHandler = new Handler<JsonArray>() {
 
 				@Override
 				public void handle(JsonArray res) {
 					message.reply(res);
 				}
-			});
+			};
+			switch (action) {
+			case "visibleUsers":
+				visibleUsers(userId, schoolId, expectedTypes, responseHandler);
+				break;
+			case "usersCanSeeMe":
+				usersCanSeeMe(userId, responseHandler);
+				break;
+			default:
+				message.reply(new JsonArray());
+				break;
+			}
 		} else {
 			message.reply(new JsonArray());
 		}
@@ -352,6 +364,29 @@ public class CommunicationController extends Controller {
 				+ "m.ENTPersonLogin? as login, m.ENTPersonNomAffichage? as username, m.type as type, "
 				+ "m.ENTPersonNom? as lastName, m.ENTPersonPrenom? as firstName "
 				+ "ORDER BY name, username ");
+		params.put("userId", userId);
+		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonArray r = new JsonArray();
+				if ("ok".equals(res.body().getString("status"))) {
+					r = resultToJsonArray(res.body().getObject("result"));
+				}
+				handler.handle(r);
+			}
+		});
+	}
+
+	private void usersCanSeeMe(String userId, final Handler<JsonArray> handler) {
+		String query =
+				"START n=node:node_auto_index(id={userId}) " +
+				"MATCH n<-[:COMMUNIQUE*1..2]-l<-[?:COMMUNIQUE]-m-[?:COMMUNIQUE_DIRECT]->n " +
+				"WHERE has(m.id) AND m.id <> {userId} AND has(m.ENTPersonLogin) " +
+				"RETURN distinct m.id as id, m.ENTPersonLogin as login, " +
+				"m.ENTPersonNomAffichage? as username, m.type as type " +
+				"ORDER BY username ";
+		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 

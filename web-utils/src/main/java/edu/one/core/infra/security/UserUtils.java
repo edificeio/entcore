@@ -16,46 +16,50 @@ import edu.one.core.infra.security.resources.UserInfos;
 
 public class UserUtils {
 
+	private static final String COMMUNICATION_USERS = "wse.communication.users";
+	private static final String SESSION_ADDRESS = "wse.session";
 	private static final JsonArray usersTypes = new JsonArray()
 			.addString("PERSRELELEVE")
 			.addString("ELEVE")
 			.addString("PERSEDUCNAT")
 			.addString("ENSEIGNANT");
-	private static final String SESSION_ADDRESS = "wse.session";
 
-	public static void findVisibleUsers(EventBus eb, final JsonObject session,
-			final Handler<JsonArray> handler) {
-		if (session != null && session.getString("userId") != null
-				&& !session.getString("userId").trim().isEmpty()) {
-			JsonObject m = new JsonObject()
-			.putString("userId", session.getString("userId"))
-			.putArray("expectedTypes", usersTypes);
-			eb.send("wse.communication.users", m, new Handler<Message<JsonArray>>() {
-
-				@Override
-				public void handle(Message<JsonArray> res) {
-					handler.handle(res.body());
-				}
-			});
-		} else {
-			handler.handle(new JsonArray());
-		}
-	}
-
-
-	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
-			final Handler<JsonArray> handler) {
+	private static void findUsers(final EventBus eb, HttpServerRequest request,
+			final JsonObject query, final Handler<JsonArray> handler) {
 		getSession(eb, request, new Handler<JsonObject>() {
 
 			@Override
 			public void handle(JsonObject session) {
-				if (session != null) {
-					findVisibleUsers(eb, session, handler);
+				if (session != null && session.getString("userId") != null
+						&& !session.getString("userId").trim().isEmpty()) {
+					query.putString("userId", session.getString("userId"));
+					eb.send(COMMUNICATION_USERS, query, new Handler<Message<JsonArray>>() {
+
+						@Override
+						public void handle(Message<JsonArray> res) {
+							handler.handle(res.body());
+						}
+					});
 				} else {
 					handler.handle(new JsonArray());
 				}
 			}
 		});
+	}
+
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
+			final Handler<JsonArray> handler) {
+		JsonObject m = new JsonObject()
+		.putString("action", "visibleUsers")
+		.putArray("expectedTypes", usersTypes);
+		findUsers(eb, request, m, handler);
+	}
+
+	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,
+			final Handler<JsonArray> handler) {
+		JsonObject m = new JsonObject()
+		.putString("action", "usersCanSeeMe");
+		findUsers(eb, request, m, handler);
 	}
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
