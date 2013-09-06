@@ -123,7 +123,8 @@ public class WordpressHelper {
 				"START n=node:node_auto_index(id={schoolId}), u=node:node_auto_index({types}) " +
 				"MATCH n<-[:DEPENDS]-gpe<-[:APPARTIENT]-u " +
 				"RETURN distinct u.id as id, u.type as type, u.ENTPersonLogin as ENTPersonLogin, " +
-				"u.activationCode as activationCode, u.ENTPersonClasses as ENTPersonClasses ";
+				"u.activationCode as activationCode, u.ENTPersonClasses as ENTPersonClasses, " +
+				"u.ENTPersonNomAffichage as ENTPersonNomAffichage";
 		JsonObject params = new JsonObject()
 		.putString("schoolId", school)
 		.putString("types", "type:ELEVE OR type:ENSEIGNANT OR type:PERSEDUCNAT OR type:PERSRELELEVE");
