@@ -1,6 +1,9 @@
 package edu.one.core.userbook.controllers;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -16,6 +19,7 @@ import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.infra.security.UserUtils;
@@ -29,6 +33,7 @@ public class UserBookController extends Controller {
 	private JsonObject config;
 	private JsonObject userBookData;
 	private HttpClient client;
+	private final NotificationHelper notification;
 
 	public UserBookController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
@@ -41,6 +46,7 @@ public class UserBookController extends Controller {
 							.setPort(config.getInteger("workspace-port"))
 							.setMaxPoolSize(16)
 							.setKeepAlive(false);
+			notification = new NotificationHelper(eb, container);
 		}
 
 	@SecuredAction("userbook.authent")
@@ -171,7 +177,8 @@ public class UserBookController extends Controller {
 	public void editUserBookInfo(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
+				if (user != null) {
 				String neoRequest = "START n=node:node_auto_index(id='" + user.getUserId() + "') MATCH (n)-[USERBOOK]->(m)";
 				if (request.params().contains("category")){
 					neoRequest += ", (m)-->(p) WHERE has(p.category) "
@@ -180,10 +187,13 @@ public class UserBookController extends Controller {
 				} else {
 					neoRequest += " SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
 					if ("mood".equals(request.params().get("prop")) || "motto".equals(request.params().get("prop"))){
-						notifyShare(request.params().get("value"), user, null);
+						notifyTimeline(request, user);
 					}
 				}
 				neo.send(neoRequest, request.response());
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}
@@ -229,20 +239,32 @@ public class UserBookController extends Controller {
 		}
 	}
 
+	private void notifyTimeline(final HttpServerRequest request, final UserInfos user) {
+		UserUtils.findUsersCanSeeMe(eb, request, new Handler<JsonArray>() {
 
-		// TODO extract in external helper class
-		// TODO get sharedArray (of people who are allowed to see me)
-	private void notifyShare(String resource, UserInfos user, JsonArray sharedArray) {
-		JsonArray recipients = new JsonArray();
-		recipients.addString(user.getUserId());
-		JsonObject event = new JsonObject()
-		.putString("action", "add")
-		.putString("resource", resource)
-		.putString("sender", user.getUserId())
-		.putString("message", "<a href=\"http://localhost:8101/annuaire#"
-				+  user.getUserId() + "#" + user.getType() + "\">" + user.getUsername() + "</a> a modifié son profil : " + resource)
-		.putArray("recipients", recipients);
-		eb.send("wse.timeline", event);
+			@Override
+			public void handle(JsonArray users) {
+				String action = request.params().get("prop");
+				List<String> userIds = new ArrayList<>();
+				for (Object o: users) {
+					JsonObject u = (JsonObject) o;
+					userIds.add(u.getString("id"));
+				}
+				JsonObject params = new JsonObject()
+				.putString("uri", container.config().getString("host") + pathPrefix +
+						"/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("username", user.getUsername())
+				.putString("motto", request.params().get("value"))
+				.putString("moodImg", request.params().get("value"));
+				try {
+					notification.notifyTimeline(request, user, userIds,
+							user.getUserId()+System.currentTimeMillis()+action,
+							"notify-" + action + ".html", params);
+				} catch (IOException e) {
+					log.error("Unable to send timeline notification", e);
+				}
+			}
+		});
 	}
 
 }
