@@ -703,6 +703,8 @@ html.app {
 }
 html.app body {
   background: #fff;
+  min-height: 100%;
+  height: auto;
 }
 @font-face {
   font-family: KGJune;
