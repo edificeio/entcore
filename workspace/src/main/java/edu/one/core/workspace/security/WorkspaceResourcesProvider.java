@@ -28,6 +28,8 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				.substring(WorkspaceService.class.getName().length() + 1);
 		switch (method) {
 		case "getDocument":
+			authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
+			break;
 		case "commentDocument":
 		case "updateDocument":
 		case "moveDocument":
@@ -56,6 +58,19 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION,
 					new JsonObject(query), idsArray.size(), handler);
+		} else {
+			handler.handle(false);
+		}
+	}
+
+	private void authorizeGetDocument(HttpServerRequest request,
+			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
+		String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
+					"\"}, { \"protected\" : true}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
+			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
 		}

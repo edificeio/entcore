@@ -201,6 +201,12 @@ public class WorkspaceService extends Controller {
 					doc.putString("created", now);
 					doc.putString("modified", now);
 					doc.putString("owner", userInfos.getUserId());
+					String application = request.params().get("application");
+					String protectedContent = request.params().get("protected");
+					if (application != null && !application.trim().isEmpty() &&
+							"true".equals(protectedContent)) {
+						doc.putBoolean("protected", true);
+					}
 					add(request, DocumentDao.DOCUMENTS_COLLECTION, doc);
 				} else {
 					request.response().setStatusCode(401).end();
