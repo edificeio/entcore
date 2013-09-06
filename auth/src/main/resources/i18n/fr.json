@@ -2,7 +2,7 @@
 	"auth.title": "One : Authentification",
 	"auth.header": "CONNEXION",
 	"auth.activation.title" : "Activation de votre compte",
-	"auth.activation.header" : "Activation de votre compte",
+	"auth.activation.header" : "ACTIVER MON COMPTE",
 	"activation.error" : "Erreur lors de l'activation",
 	"auth.login" : "Connexion",
 	"auth.activation.code" : "Code d'activation",
@@ -23,5 +23,6 @@
 	"reset.error" : "Erreur durant la réinitialisation",
 	"missing.password" : "Mot de passe oublié",
 	"auth.email" : "Identifiant",
-	"auth.password" : "Mot de passe"
+	"auth.password" : "Mot de passe",
+	"auth.activateAccount": "Activer mon compte"
 }
