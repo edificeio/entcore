@@ -5,7 +5,8 @@ var account = function(){
 			"address":d.result[0]["address"],
 			"mood":d.result[0]["mood"],
 			"motto":d.result[0]["motto"],
-			"health":d.result[0]["health"]};
+			"health":d.result[0]["health"],
+			"photo" : d.result[0]["photo"]};
 		var hobbies = [];
 		for (obj in d.result){
 			if (d.result[obj].category !== ""){
@@ -27,7 +28,7 @@ var account = function(){
 			personne: '\
 				<div class="row box">\
 					<div class="avatar cell four">\
-						<img src="public/img/no-avatar.jpg" alt="user" class="avatar"/>\
+						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>\
 					</div>\
 					<div class="eight cell text-container">\
 						<article class="cell twelve text-container right-magnet">\
@@ -126,7 +127,6 @@ var account = function(){
 				.done(function(data){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
-					account.action.getPhoto(data.result[0].photo);
 					messenger.requireResize();
 				})
 			},
@@ -169,16 +169,6 @@ var account = function(){
 					if (data.status == "ok") {
 						account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
 						$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
-					}
-				}).error(function (data) { console.log(data); });
-			},
-			getPhoto : function(photoId) {
-				$.ajax({
-					url: "document/" + photoId,
-					type: 'GET'
-				}).done(function (data) {
-					if (data !== "") {
-						$('img[class="avatar"]')[0].setAttribute("src", "document/" + photoId);
 					}
 				}).error(function (data) { console.log(data); });
 			}

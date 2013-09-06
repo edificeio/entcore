@@ -65,7 +65,7 @@ var userbook = function(){
 				{{#teachers}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -86,7 +86,7 @@ var userbook = function(){
 				{{#parents}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -107,7 +107,7 @@ var userbook = function(){
 				{{#students}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
-							<div class="four cell avatar"><img src="public/img/no-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -247,23 +247,6 @@ var userbook = function(){
 					userbook.action.searchClass("api/class?name=" + className);
 				}
 			},
-			getPhoto : function(photoId, userId) {
-				if (photoId === ''){
-					return;
-				}
-				$.ajax({
-					url: "document/" + photoId,
-					type: 'GET'
-				}).done(function (data) {
-					if (data !== "") {
-						if (userId !== ''){
-							$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"document/" + photoId);
-						} else {
-							$('div#person div.avatar img')[0].setAttribute('src',"document/" + photoId);
-						}
-					}
-				}).error(function (data) { console.log(data); });
-			},
 			searchClass : function(url) {
 				$.get(url)
 				.done(function(data){
@@ -277,11 +260,6 @@ var userbook = function(){
 						$("#person").html('');
 					} else {
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
-					}
-					for (var i=0; i< classDataAdaptor(data).list.length; i++){
-						if (classDataAdaptor(data).list[i].photo !== ''){
-							userbook.action.getPhoto(classDataAdaptor(data).list[i].photo, classDataAdaptor(data).list[i].id);
-						}
 					}
 					messenger.requireResize();
 				})

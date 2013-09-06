@@ -9,6 +9,7 @@ import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 public class HttpClientUtils {
 
@@ -34,14 +35,20 @@ public class HttpClientUtils {
 	}
 
 	public static void proxy(final HttpServerRequest req, HttpClient client) {
-		proxy(req, client, null, null);
+		proxy(req, client, null, null, null);
 	}
 
 	public static void proxy(final HttpServerRequest req, HttpClient client, String prefix) {
-		proxy(req, client, prefix, null);
+		proxy(req, client, prefix, null, null);
 	}
 
-	public static void proxy(final HttpServerRequest req, HttpClient client, String prefix, String replacement) {
+	public static void proxy(final HttpServerRequest req, HttpClient client,
+			String prefix, String replacement) {
+		proxy(req, client, prefix, replacement, null);
+	}
+
+	public static void proxy(final HttpServerRequest req, HttpClient client,
+			String prefix, String replacement, final JsonObject defaultResult) {
 		String uri = req.uri();
 		if (prefix != null && !prefix.trim().isEmpty()) {
 			if (replacement != null && !replacement.trim().isEmpty()) {
@@ -53,19 +60,34 @@ public class HttpClientUtils {
 		final HttpClientRequest cReq = client.request(req.method(), uri,
 				new Handler<HttpClientResponse>() {
 			public void handle(HttpClientResponse cRes) {
-				req.response().setStatusCode(cRes.statusCode());
-				req.response().headers().set(cRes.headers());
-				req.response().setChunked(true);
-				cRes.dataHandler(new Handler<Buffer>() {
-					public void handle(Buffer data) {
-						req.response().write(data);
+				if (defaultResult != null && defaultResult.getString("content") != null &&
+						(cRes.statusCode() < 200 || cRes.statusCode() >= 300)) {
+					if (defaultResult.getObject("headers") != null) {
+						for (String header: defaultResult.getObject("headers").getFieldNames()) {
+							req.response().headers().add(header,
+									defaultResult.getObject("headers").getString(header));
+						}
 					}
-				});
-				cRes.endHandler(new VoidHandler() {
-					public void handle() {
-						req.response().end();
+					if ("file".equals(defaultResult.getString("type"))) {
+						req.response().sendFile(defaultResult.getString("content"));
+					} else {
+						req.response().end(defaultResult.getString("content"));
 					}
-				});
+				} else {
+					req.response().setStatusCode(cRes.statusCode());
+					req.response().headers().set(cRes.headers());
+					req.response().setChunked(true);
+					cRes.dataHandler(new Handler<Buffer>() {
+						public void handle(Buffer data) {
+							req.response().write(data);
+						}
+					});
+					cRes.endHandler(new VoidHandler() {
+						public void handle() {
+							req.response().end();
+						}
+					});
+				}
 			}
 		});
 		cReq.headers().set(req.headers());

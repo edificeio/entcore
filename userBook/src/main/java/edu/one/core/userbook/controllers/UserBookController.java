@@ -38,7 +38,9 @@ public class UserBookController extends Controller {
 			userBookData= config.getObject("user-book-data");
 			client = vertx.createHttpClient()
 							.setHost(config.getString("workspace-url"))
-							.setPort(config.getInteger("workspace-port"));
+							.setPort(config.getInteger("workspace-port"))
+							.setMaxPoolSize(16)
+							.setKeepAlive(false);
 		}
 
 	@SecuredAction("userbook.authent")
@@ -201,7 +203,16 @@ public class UserBookController extends Controller {
 
 	@SecuredAction("userbook.authent")
 	public void proxyDocument(final HttpServerRequest request) {
-		HttpClientUtils.proxy(request, client, "\\" + pathPrefix, config.getString("workspace-prefix"));
+		String defaultImg = request.params().get("userbook-dimg");
+		JsonObject defaultContent = null;
+		log.debug(defaultImg);
+		if (defaultImg != null) {
+			defaultContent = new JsonObject()
+			.putString("type", "file")
+			.putString("content", defaultImg);
+		}
+		HttpClientUtils.proxy(request, client, "\\" + pathPrefix,
+				config.getString("workspace-prefix"), defaultContent);
 	}
 
 	public void initUserBookNode(final Message<JsonObject> message){
