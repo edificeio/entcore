@@ -1,5 +1,6 @@
 package edu.one.core.infra.http;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -77,22 +78,7 @@ public class Renders {
 
 	public void renderView(HttpServerRequest request, JsonObject params, String resourceName, Reader r) {
 		try {
-			if (params == null) { params = new JsonObject(); }
-			Mustache mustache;
-			if (resourceName != null && r != null && !resourceName.trim().isEmpty()) {
-				mustache = mf.compile(r, resourceName);
-			} else if (resourceName != null && !resourceName.trim().isEmpty()) {
-				mustache = mf.compile(resourceName);
-			} else {
-				String template = request.path().substring(pathPrefix.length());
-				if (template == null || template.trim().isEmpty()) {
-					template = pathPrefix.substring(1);
-				}
-				mustache = mf.compile(template + ".html");
-			}
-			Writer writer = new StringWriter();
-			Object[] scopes = { params.toMap(), setTemplateFunctionRequest(request)};
-			mustache.execute(writer, scopes).flush();
+			Writer writer = processTemplate(request, params, resourceName, r);
 			request.response().putHeader("content-type", "text/html");
 			request.response().end(writer.toString());
 		} catch (Exception e) {
@@ -100,6 +86,33 @@ public class Renders {
 			log.error(e.getMessage());
 			renderError(request);
 		}
+	}
+
+	public String processTemplate(HttpServerRequest request, String template, JsonObject params)
+			throws IOException {
+		return processTemplate(request, params, template, null).toString();
+	}
+
+	private Writer processTemplate(HttpServerRequest request,
+			JsonObject params, String resourceName, Reader r)
+			throws IOException {
+		if (params == null) { params = new JsonObject(); }
+		Mustache mustache;
+		if (resourceName != null && r != null && !resourceName.trim().isEmpty()) {
+			mustache = mf.compile(r, resourceName);
+		} else if (resourceName != null && !resourceName.trim().isEmpty()) {
+			mustache = mf.compile(resourceName);
+		} else {
+			String template = request.path().substring(pathPrefix.length());
+			if (template == null || template.trim().isEmpty()) {
+				template = pathPrefix.substring(1);
+			}
+			mustache = mf.compile(template + ".html");
+		}
+		Writer writer = new StringWriter();
+		Object[] scopes = { params.toMap(), setTemplateFunctionRequest(request)};
+		mustache.execute(writer, scopes).flush();
+		return writer;
 	}
 
 	public static void badRequest(HttpServerRequest request) {
