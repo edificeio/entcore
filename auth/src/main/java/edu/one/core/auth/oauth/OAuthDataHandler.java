@@ -70,6 +70,7 @@ public class OAuthDataHandler extends DataHandler {
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
 					"START n=node:node_auto_index(ENTPersonLogin={login}) " +
+					"WHERE has(n.ENTPersonMotDePasse) " +
 					"RETURN n.id as userId, n.ENTPersonMotDePasse as password";
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("login", username);
