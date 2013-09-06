@@ -25,7 +25,7 @@ var messenger = (function(){
 					var appSizeMessage = {
 						name: 'resize',
 						data: {
-							height: $('html').outerHeight(true) + 1
+							height: $('body').height() + 1
 						}
 					};
 
