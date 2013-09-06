@@ -17,25 +17,19 @@ var userbook = function(){
 		return {students: listStudents, teachers: listTeachers}; 
 	};
 	var searchDataAdaptor = function (d) {
-		var list = [];
 		var listStudents = [];
 		var listTeachers = [];
 		var listParents = [];
 		for (obj in d.result){
 			if (d.result[obj].photo ==='' && d.result[obj].mood ==='' && d.result[obj].userId === ''){
 				d.result[obj].mood= 'default';
-				list.push(d.result[obj]);
-			} else if (d.result[obj].userId === d.result[obj].id){
-				list.push(d.result[obj]);
 			}
-		}
-		for (obj in list){
 			if (d.result[obj].type === 'ELEVE'){
-				listStudents.push(list[obj]);
+				listStudents.push(d.result[obj]);
 			} else if (d.result[obj].type === 'ENSEIGNANT'){
-				listTeachers.push(list[obj]);
+				listTeachers.push(d.result[obj]);
 			} else {
-				listParents.push(list[obj]);
+				listParents.push(d.result[obj]);
 			}
 		}
 		return {students: listStudents, teachers: listTeachers, parents: listParents}; 
