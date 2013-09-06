@@ -93,6 +93,7 @@ public class Renders {
 			Writer writer = new StringWriter();
 			Object[] scopes = { params.toMap(), setTemplateFunctionRequest(request)};
 			mustache.execute(writer, scopes).flush();
+			request.response().putHeader("content-type", "text/html");
 			request.response().end(writer.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
