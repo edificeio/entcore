@@ -159,7 +159,7 @@ var account = function(){
 				form.append("image", $('#upload-form').find('input[type="file"]')[0].files[0]);
 				form.append("name","blablabla");
 				$.ajax({
-					url: "document",
+					url: "document?application=userbook&protected=true",
 					type: 'POST',
 					data: form,
 					cache: false,
