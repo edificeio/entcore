@@ -75,12 +75,12 @@ var messenger = (function(){
 
 			send(appSizeMessage);
 		},
-		notify: function(){
+		notify: function(type, message){
 			send({
 				name: 'notify',
 				data: {
-					type: 'error',
-					message: "e" + e.status
+					type: type,
+					message: message
 				}
 			});
 		},

@@ -878,8 +878,8 @@ i[role=close-2x] {
   vertical-align: middle;
 }
 i[role=notification] {
-  height: 23px;
-  width: 23px;
+  height: 27px;
+  width: 27px;
   background-image: url("../img/icons/notification.png");
   background-repeat: no-repeat;
   background-position: center;
