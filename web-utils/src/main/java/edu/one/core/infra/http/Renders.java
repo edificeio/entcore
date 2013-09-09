@@ -127,6 +127,17 @@ public class Renders {
 		request.response().setStatusCode(404).end();
 	}
 
+	public static void notModified(HttpServerRequest request) {
+		notModified(request, null);
+	}
+
+	public static void notModified(HttpServerRequest request, String fileId) {
+		if (fileId != null && !fileId.trim().isEmpty()) {
+			request.response().headers().add("ETag", fileId);
+		}
+		request.response().setStatusCode(304).end();
+	}
+
 	public static void renderError(HttpServerRequest request, JsonObject error) {
 		request.response().setStatusCode(500);
 		if (error != null) {

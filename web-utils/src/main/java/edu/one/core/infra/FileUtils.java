@@ -11,6 +11,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.json.JsonObject;
 
+import edu.one.core.infra.http.ETag;
+
 public class FileUtils {
 
 	public static JsonObject metadata(HttpServerFileUpload upload) {
@@ -109,7 +111,7 @@ public class FileUtils {
 		}
 	}
 
-	public static void gridfsSendFile(String id, final String downloadName, final EventBus eb,
+	public static void gridfsSendFile(final String id, final String downloadName, final EventBus eb,
 			final String gridfsAddress, final HttpServerResponse response, final boolean inline) {
 		gridfsReadFile(id, eb, gridfsAddress, new Handler<Buffer>() {
 			@Override
@@ -117,6 +119,8 @@ public class FileUtils {
 				if (!inline) {
 					response.putHeader("Content-Disposition",
 							"attachment; filename=" + downloadName);
+				} else {
+					ETag.addHeader(response, id);
 				}
 				response.end(file);
 			}

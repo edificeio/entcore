@@ -61,7 +61,8 @@ public class HttpClientUtils {
 				new Handler<HttpClientResponse>() {
 			public void handle(HttpClientResponse cRes) {
 				if (defaultResult != null && defaultResult.getString("content") != null &&
-						(cRes.statusCode() < 200 || cRes.statusCode() >= 300)) {
+						(cRes.statusCode() < 200 || (cRes.statusCode() >= 300 &&
+						cRes.statusCode() != 304))) {
 					if (defaultResult.getObject("headers") != null) {
 						for (String header: defaultResult.getObject("headers").getFieldNames()) {
 							req.response().headers().add(header,
