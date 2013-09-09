@@ -479,7 +479,7 @@ var workspace = function(){
 					action += '/' + form.find('input[name=to], select[name=to]').val();
 				}
 				ui.hideLightbox();
-				One.postFile(action + '?' + form.serialize(), fd)
+				One.postFile(action + '?' + form.serialize(), fd, {})
 					.done(function(){
 						location.reload(true);
 					})

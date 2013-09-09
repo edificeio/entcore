@@ -159,7 +159,7 @@ var account = function(){
 				form.append("name","blablabla");
 
 
-				One.postFile("document?application=userbook&protected=true", form)
+				One.postFile("document?application=userbook&protected=true", form, {})
 					.done(function (data) {
 						if (data.status == "ok") {
 							account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
