@@ -28,6 +28,8 @@ var messenger = (function(){
 				})
 				.appendTo('head')
 				.on('load', function(){
+					$('body').show();
+
 					var appSizeMessage = {
 						name: 'resize',
 						data: {
@@ -126,6 +128,7 @@ var navigationController = (function(){
 $(document).ready(function(){
 	"use strict";
 
+	$('body').hide();
 	navigationController.start();
 });
 
