@@ -128,7 +128,10 @@ var navigationController = (function(){
 $(document).ready(function(){
 	"use strict";
 
-	$('body').hide();
+	if(parent !== window){
+		$('body').hide();
+	}
+
 	navigationController.start();
 });
 
