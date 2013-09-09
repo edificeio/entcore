@@ -3,6 +3,13 @@
 		<title>{{#i18n}}auth.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<link rel="stylesheet" href="{{#static}}css/auth.css{{/static}}" type="text/css" />
+		<script type="text/javascript">
+			window.addEventListener('load', function(e){
+				if(parent !== window){
+					parent.location.href = window.location.href;
+				}
+			})
+		</script>
 	</head>
 	<body>
 		<div class="panel">
