@@ -275,7 +275,7 @@ var workspace = function(){
 								</i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
-							<a href="/document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
