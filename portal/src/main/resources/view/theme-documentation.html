@@ -3,8 +3,19 @@
 <head>
 	<title></title>
 	<link rel="stylesheet" type="text/css" href="{{#static}}css/app.css{{/static}}" />
-	<link rel="stylesheet" type="text/css" href="{{#asset}}css/theme.css{{/asset}}" id="theme" />
 	<link rel="stylesheet" type="text/css" href="{{#static}}css/theme-documentation.css{{/static}}" />
+
+	<link rel="stylesheet/less" type="text/css" href="{{#asset}}css/theme.less{{/asset}}" />
+	<script type="text/javascript" src="{{#static}}js/less-1.4.1.min.js{{/static}}"></script>
+	<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+			setTimeout(function(){
+				$('#lessOutput').text($('style').text());
+			})
+		})
+	</script>
 
 	<script type="text/javascript" src="{{#static}}js/prettify.js{{/static}}"></script>
 	<link rel="stylesheet" type="text/css" href="{{#static}}css/prettify.css{{/static}}" />
@@ -424,7 +435,20 @@
 	.vertical-gradient(@topColor, @bottomColor);
 	</pre>
 
+		<div class="row">
+			<h1>LESS compiler</h1>
+
+			<div class="clear"></div>
+		<pre id="lessOutput">
+
+		</pre>
+		</div>
+
 	</div>
+
+
+
+
 
 
 
