@@ -127,7 +127,7 @@ var userbook = function(){
 			personne: '\
 				<div class="row box">\
 					<div class="avatar cell four">\
-						<img src="public/img/no-avatar.jpg" alt="user" />\
+						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
 					</div>\
 					<article class="cell eight text-container right-magnet">\
 						<h2>{{displayName}}</h2>\
@@ -196,20 +196,12 @@ var userbook = function(){
 						$("#people").html('');
 						$("#person").html('');
 					} else {
-						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)))
+						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)));
 					}
-
-						var getPhoto = function(item){
-							if (item.photo !== ''){
-								userbook.action.getPhoto(item.photo, item.id);
-							}
-						}
-						_.each(classDataAdaptor(data).students, getPhoto);
-						_.each(classDataAdaptor(data).teachers, getPhoto);
 
 					messenger.requireResize();
 				})
-				.error(function(data){app.notify.error(data.status);})
+				.error(function(data){app.notify.error(data.status);});
 			},
 			showList: function(){
 				this.refreshClassList();
@@ -229,7 +221,7 @@ var userbook = function(){
 				var that = this;
 				One.get($('.person').first().find('h4').attr('href'))
 					.done(function(data){
-						that.showPerson(data)
+						that.showPerson(data);
 						messenger.requireResize();
 					});
 			},
@@ -237,9 +229,8 @@ var userbook = function(){
 				var that = this;
 				One.get(o.url)
 					.done(function(data){
-						that.showPerson(data)
+						that.showPerson(data);
 						messenger.requireResize();
-						userbook.action.getPhoto(data.result[0].photo,'');
 						$('em.mood').html(moods[data.result[0].mood]);
 					});
 			},
@@ -254,13 +245,13 @@ var userbook = function(){
 				if (photoId === ''){
 					return;
 				}
-				One.get("workspace/document/" + photoId)
+				One.get("document/" + photoId)
 					.done(function (data) {
 						if (data !== "") {
 							if (userId !== ''){
-								$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+								$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"document/" + photoId);
 							} else {
-								$('div#person div.avatar img')[0].setAttribute('src',"workspace/document/" + photoId);
+								$('div#person div.avatar img')[0].setAttribute('src',"document/" + photoId);
 							}
 						}
 					});
@@ -279,19 +270,11 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
-
-					var getPhoto = function(item){
-						if (item.photo !== ''){
-							userbook.action.getPhoto(item.photo, item.id);
-						}
-					}
-					_.each(classDataAdaptor(data).students, getPhoto);
-					_.each(classDataAdaptor(data).teachers, getPhoto);
 					messenger.requireResize();
-				})
+				});
 			}
 		}
-	})
+	});
 	return app;
 }();
 

@@ -44,7 +44,7 @@ var account = function(){
 						</article>\
 						<article class="twelve cell text-container right-magnet">\
 							<h2>Ma photo</h2>\
-							<form id="upload-form" method="post" action="workspace/document" enctype="multipart/form-data">\
+							<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
 								<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->\
 								<div class="hidden-content">\
 									<input type="file" name="file" value="Changer l\'image" id="avatar"/>\
@@ -163,15 +163,7 @@ var account = function(){
 					.done(function (data) {
 						if (data.status == "ok") {
 							account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
-							$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + data._id);
-						}
-					});
-			},
-			getPhoto : function(photoId) {
-				One.get("workspace/document/" + photoId)
-					.done(function (data) {
-						if (data !== "") {
-							$('img[class="avatar"]')[0].setAttribute("src", "workspace/document/" + photoId);
+							$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
 						}
 					});
 			}
