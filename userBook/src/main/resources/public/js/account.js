@@ -30,15 +30,15 @@ var account = function(){
 					<div class="avatar cell four">\
 						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>\
 					</div>\
-					<div class="eight cell text-container">\
+					<div class="eight cell text-container right-magnet">\
 						<article class="cell twelve text-container right-magnet">\
 							<h2>{{displayName}}</h2>\
 							<div class="row">\
-								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>\
 								<em class="six cell">{{address}}</em>\
 							</div>\
 							<div class="row">\
-								<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.motto{{/i18n}}</label></div>\
 								<em class="six cell" contenteditable="true" data-property="motto">{{motto}}</em>\
 							</div>\
 						</article>\

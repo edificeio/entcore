@@ -18,5 +18,8 @@
 	"e403": "Le serveur a refusé votre requête",
 	"e404": "Adresse introuvable",
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
-	"e500": "Le serveur a rencontré une erreur"
+	"e500": "Le serveur a rencontré une erreur",
+	"userBook.teachers": "Enseignants",
+	"userBook.parents": "Parents",
+	"userBook.students": "Élèves"
 }

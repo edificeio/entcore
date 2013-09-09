@@ -14,7 +14,12 @@ var userbook = function(){
 				listTeachers.push(d.result[obj]);
 			}
 		}
-		return {students: listStudents, teachers: listTeachers}; 
+		return {
+			students: listStudents,
+			anyStudent: listStudents.length > 0,
+			teachers: listTeachers,
+			anyTeacher: listTeachers.length > 0
+		};
 	};
 	var searchDataAdaptor = function (d) {
 		var listStudents = [];
@@ -32,7 +37,14 @@ var userbook = function(){
 				listParents.push(d.result[obj]);
 			}
 		}
-		return {students: listStudents, teachers: listTeachers, parents: listParents}; 
+		return {
+			students: listStudents,
+			anyStudent: listStudents.length > 0,
+			teachers: listTeachers,
+			anyTeacher: listTeachers.length > 0,
+			parents: listParents,
+			anyParent: listParents.length > 0
+		};
 	};
 	var personDataAdaptor = function(d) {
 		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
@@ -62,6 +74,9 @@ var userbook = function(){
 	app.define({
 		template : {
 			searchResults: '\
+				{{#anyTeacher}}\
+					<h1>{{#i18n}}userBook.teachers{{/i18n}}</h1>\
+				{{/anyTeacher}}\
 				{{#teachers}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
@@ -83,6 +98,9 @@ var userbook = function(){
 				</div>\
 				{{/teachers}}\
 				<div class="clear"></div>\
+				{{#anyParent}}\
+					<h1>{{#i18n}}userBook.parents{{/i18n}}</h1>\
+				{{/anyParent}}\
 				{{#parents}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
@@ -104,6 +122,9 @@ var userbook = function(){
 				</div>\
 				{{/parents}}\
 				<div class="clear"></div>\
+				{{#anyStudent}}\
+					<h1>{{#i18n}}userBook.students{{/i18n}}</h1>\
+				{{/anyStudent}}\
 				{{#students}}\
 				<div class="cell four text-container" >\
 					<article class="box row person" id={{id}}>\
