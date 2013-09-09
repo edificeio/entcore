@@ -260,22 +260,6 @@ var userbook = function(){
 					userbook.action.searchClass("api/class");
 				}
 			},
-
-			getPhoto : function(photoId, userId) {
-				if (photoId === ''){
-					return;
-				}
-				One.get("document/" + photoId)
-					.done(function (data) {
-						if (data !== "") {
-							if (userId !== ''){
-								$('article#'+ userId +' div.avatar img')[0].setAttribute('src',"document/" + photoId);
-							} else {
-								$('div#person div.avatar img')[0].setAttribute('src',"document/" + photoId);
-							}
-						}
-					});
-			},
 			searchClass : function(url) {
 				One.get(url)
 				.done(function(data){
