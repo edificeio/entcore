@@ -99,7 +99,7 @@ public class AppRegistryService extends Controller {
 		neo.send(query, params, request.response());
 	}
 
-	//@SecuredAction("app-registry.create.role")
+	@SecuredAction("app-registry.create.role")
 	public void createRole(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -149,6 +149,7 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
+	@SecuredAction("app-registry.link.Group")
 	public void linkGroup(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -225,6 +226,7 @@ public class AppRegistryService extends Controller {
 		);
 	}
 
+	@SecuredAction("app-registry.list.groups")
 	public void listGroups(final HttpServerRequest request) {
 		eb.send("directory", new JsonObject().putString("action", "groups"),
 				new Handler<Message<JsonObject>>() {
@@ -239,6 +241,7 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
+	@SecuredAction("app-registry.list.schools")
 	public void listSchools(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -275,6 +278,7 @@ public class AppRegistryService extends Controller {
 		}
 	}
 
+	@SecuredAction("app-registry.list.groups.roles")
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String schoolId = request.params().get("schoolId");
 		String query = "START n=node:node_auto_index({type})";
