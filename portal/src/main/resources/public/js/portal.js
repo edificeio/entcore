@@ -36,7 +36,7 @@ var navigation = (function(){
 			$('#applications').on('load', function(e){
 				setTimeout(function(){
 					messenger.sendMessage('#applications', setStyle());
-					messenger.sendMessage('#applications', setHistory());
+//					messenger.sendMessage('#applications', setHistory());
 				}, 100);
 			});
 		},
