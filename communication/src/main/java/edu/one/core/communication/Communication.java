@@ -3,6 +3,8 @@ package edu.one.core.communication;
 import edu.one.core.communication.controllers.CommunicationController;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Server;
+import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.infra.request.filter.SecurityHandler;
 
 public class Communication extends Server {
 
@@ -34,6 +36,8 @@ public class Communication extends Server {
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}
+
+		SecurityHandler.addFilter(new ActionFilter(controller.securedUriBinding(), getEventBus(vertx)));
 
 	}
 
