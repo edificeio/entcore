@@ -70,7 +70,7 @@ public class UserBookController extends Controller {
 							"MATCH n-[:COMMUNIQUE*1..2]->l-[?:COMMUNIQUE]->m<-[?:COMMUNIQUE_DIRECT]-n " +
 							"WITH m " +
 							"MATCH m-[?:USERBOOK]->u " +
-							"WHERE has(m.id) AND m.id <> {id} AND has(m.ENTPersonLogin) " +
+							"WHERE has(m.id) AND has(m.ENTPersonLogin) " +
 							"AND has(m.ENTPersonNomAffichage) " + filter +
 							"RETURN distinct m.id as id, m.ENTPersonNomAffichage as displayName, " +
 							"u.mood? as mood, u.userid? as userId, u.picture? as photo, m.type as type " +
