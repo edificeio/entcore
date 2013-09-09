@@ -18,10 +18,10 @@
 				<ul>
 					{{#apps}}
 					<li>
-						<a{{#target}} href="{{uri}}" target="{{target}}"{{/target}}>
-							<i role="{{icon}}"{{^target}} href="{{uri}}" call="redirect"{{/target}}></i>
+						<a href="{{uri}}" {{#target}}target="{{target}}"{{/target}}>
+							<i role="{{icon}}"></i>
 						</a>
-						<a href="{{uri}}" {{#target}}target="{{target}}"{{/target}}{{^target}}call="redirect"{{/target}}>{{name}}</a>
+						<a href="{{uri}}" {{#target}}target="{{target}}"{{/target}}>{{name}}</a>
 					</li>
 					{{/apps}}
 				</ul>
