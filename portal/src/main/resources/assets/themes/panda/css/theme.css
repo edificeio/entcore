@@ -789,6 +789,7 @@ i[role=public] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  cursor: pointer;
 }
 i[role=prive] {
   height: 25px;
@@ -803,6 +804,7 @@ i[role=prive] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  cursor: pointer;
 }
 i[role=storage] {
   height: 25px;

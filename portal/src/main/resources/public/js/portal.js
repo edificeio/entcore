@@ -33,6 +33,7 @@ var navigation = (function(){
 
 			$('#applications').attr('src', data);
 
+			$('#applications').unbind('load');
 			$('#applications').on('load', function(e){
 				setTimeout(function(){
 					messenger.sendMessage('#applications', setStyle());
