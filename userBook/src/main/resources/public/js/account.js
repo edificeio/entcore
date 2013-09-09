@@ -13,7 +13,7 @@ var account = function(){
 				hobbies.push({
 					"category":d.result[obj].category,
 					"values":d.result[obj].values,
-					"visibility":d.result[obj].visibility
+					"visibility":d.result[obj].visibility.toLowerCase()
 				});
 			}
 		}
@@ -109,7 +109,7 @@ var account = function(){
 						<div class="row line" data-category="{{category}}">\
 							<div class="three cell"><span>{{category}}</span></div>\
 							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
-							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility"></i></div>\
+							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
 						</div>\
 					{{/list}}\
