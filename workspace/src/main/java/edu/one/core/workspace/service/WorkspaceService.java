@@ -268,7 +268,7 @@ public class WorkspaceService extends Controller {
 				if ("ok".equals(uploaded.getString("status"))) {
 					doc.putString("name", getOrElse(request
 							.params().get("name"), uploaded.getObject("metadata")
-							.getString("filename")));
+							.getString("filename"), false));
 					doc.putObject("metadata", uploaded.getObject("metadata"));
 					doc.putString("file", uploaded.getString("_id"));
 					doc.putString("application", getOrElse(request.params()
