@@ -28,6 +28,7 @@ import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.Server;
+import edu.one.core.infra.http.ETag;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -364,9 +365,14 @@ public class WorkspaceService extends Controller {
 				String status = res.getString("status");
 				JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
-					FileUtils.gridfsSendFile(result.getString("file"),
-							result.getString("name"), eb, gridfsAddress, request.response(),
-							inlineDocumentResponse(result, request.params().get("application")));
+					boolean inline = inlineDocumentResponse(result, request.params().get("application"));
+					if (inline && ETag.check(request, result.getString("file"))) {
+						notModified(request, result.getString("file"));
+					} else {
+						FileUtils.gridfsSendFile(result.getString("file"),
+								result.getString("name"), eb, gridfsAddress, request.response(),
+								inline);
+					}
 				} else {
 					request.response().setStatusCode(404).end();
 				}
