@@ -66,7 +66,7 @@ public class Workspace extends Server {
 
 		service.put("/rack/trash/:id", "moveTrashRack");
 
-		service.get("/rack/documents/trash", "listRackTrashDocuments");
+		service.get("/rack/documents/Trash", "listRackTrashDocuments");
 
 		service.get("/users/available-rack", "rackAvailableUsers");
 

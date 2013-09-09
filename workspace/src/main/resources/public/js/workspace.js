@@ -140,7 +140,7 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="/document/{{_id}}">\
+							<a href="document/{{_id}}">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
@@ -182,19 +182,19 @@ var workspace = function(){
 						<ul>\
 						{{#folders}}\
 						<li>\
-							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
 						</li>\
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="/document/{{_id}}">\
+							<a href="document/{{_id}}">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
-							<a href="/document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
@@ -234,13 +234,13 @@ var workspace = function(){
 						<ul>\
 						{{#folders}}\
 						<li>\
-							<a><i role="folder-large" href="/documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="/documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
+							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
 						</li>\
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="/document/{{_id}}">\
+							<a href="document/{{_id}}">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
@@ -287,7 +287,7 @@ var workspace = function(){
 						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
 						</form>',
 
-			comment : '<form method="post" action="/document/{{id}}/comment">\
+			comment : '<form method="post" action="document/{{id}}/comment">\
 							<h1>{{#i18n}}workspace.comment{{/i18n}}</h1>\
 							<textarea name="comment"></textarea>\
 							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
@@ -406,8 +406,8 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
-				$.get("documents/trash").done(function(documents) {
-					$.get("rack/documents/trash").done(function(rack) {
+				$.get("documents/Trash").done(function(documents) {
+					$.get("rack/documents/Trash").done(function(rack) {
 						documents = tools.formatResponse(documents);
 						$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
