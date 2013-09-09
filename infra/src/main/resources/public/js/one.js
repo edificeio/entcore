@@ -33,7 +33,13 @@ var http = (function(){
 						that.statusCallbacks['e' + e.status](e);
 					}
 
-					oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
+					if(parent !== window){
+						messenger.notify('error', 'e' + e.status);
+					}
+					else{
+						oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
+					}
+
 					console.log('HTTP error:' + e.status);
 					console.log(e);
 				});

@@ -83,6 +83,9 @@ var messenger = (function(){
 		},
 		'move-history': function(message){
 			navigation.moveHistory(message.data);
+		},
+		notify: function(message){
+			oneApp.notify[message.data.type](oneApp.i18n.i18n()(message.data.message));
 		}
 	};
 

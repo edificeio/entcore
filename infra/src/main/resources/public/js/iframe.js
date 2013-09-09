@@ -75,6 +75,15 @@ var messenger = (function(){
 
 			send(appSizeMessage);
 		},
+		notify: function(){
+			send({
+				name: 'notify',
+				data: {
+					type: 'error',
+					message: "e" + e.status
+				}
+			});
+		},
 		closeLightbox: function(){
 			var appSizeMessage = {
 				name: 'close-lightbox',
