@@ -66,7 +66,12 @@ var http = (function(){
 			if(typeof data === 'object' || typeof  data === 'string'){
 				params.data = data;
 				if(type === 'get' || type === 'delete'){
-					url += '?' + that.serialize(data);
+					if(url.indexOf('?') !== -1){
+						url += '&' + that.serialize(data);
+					}
+					else{
+						url += '?' + that.serialize(data);
+					}
 				}
 			}
 			params.type = type.toUpperCase();

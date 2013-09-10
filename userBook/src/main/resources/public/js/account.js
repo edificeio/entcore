@@ -109,7 +109,7 @@ var account = function(){
 						<div class="row line" data-category="{{category}}">\
 							<div class="three cell"><span>{{category}}</span></div>\
 							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
-							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?&category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
+							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
 						</div>\
 					{{/list}}\
@@ -135,22 +135,15 @@ var account = function(){
 				.done(function(data){
 				})
 			},
-			setVisibility : function(o){
-				$('#current-visibility').html = $('#visible').val();
-				One.get(o.target.form.action, { value:  $('#visible').val() })
-				.done(function(data){
-					app.notify.info("modif ok");
-				})
-			},
 			changeVisibility: function(o){
-				var newRole = 'public';
+				var newRole = 'PUBLIC';
 				if($(o.target).attr('role') === 'public'){
-					newRole = 'private';
+					newRole = 'PRIVE';
 				}
 
-				One.get(o.url, {value: newRole })
+				One.get(o.url, { value: newRole })
 					.done(function(data){
-						$(o.target).attr('role', newRole);
+						$(o.target).attr('role', newRole.toLowerCase());
 					})
 			},
 			sendPhoto : function(elem, files) {
