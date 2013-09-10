@@ -29,7 +29,7 @@ var navigation = (function(){
 				portalHistory.push(data);
 			}
 
-			history.pushState({}, null, '#app=' + data);
+
 
 			$('#applications').attr('src', data);
 
@@ -37,18 +37,25 @@ var navigation = (function(){
 			$('#applications').on('load', function(e){
 				setTimeout(function(){
 					messenger.sendMessage('#applications', setStyle());
-//					messenger.sendMessage('#applications', setHistory());
+					history.pushState({}, null, '#app=' + data);
 				}, 100);
 			});
 		},
-		moveHistory: function(data){
-			if(data.action === 'pop'){
-				if(portalHistory.length){
-					portalHistory.length = portalHistory.length - 1;
-				}
+		applyHash: function(){
+			var redirect = window.location.href.split('#app=');
+			var appUrl = $('.horizontal[role=apps-navigation] a')
+				.first()
+				.attr('href');
 
-				navigation.redirect(portalHistory[portalHistory.length - 1], true);
+			if(redirect.length > 1){
+				appUrl = redirect[1].split('&')[0];
 			}
+
+			navigation.redirect(appUrl);
+		},
+		back: function(){
+			portalHistory.length = portalHistory.length - 1;
+			navigation.redirect(portalHistory.length - 1);
 		}
 	};
 }());
@@ -82,9 +89,6 @@ var messenger = (function(){
 			$('section.main').removeClass('lightbox-main');
 			$('body').unbind('click');
 		},
-		'move-history': function(message){
-			navigation.moveHistory(message.data);
-		},
 		notify: function(message){
 			oneApp.notify[message.data.type](oneApp.i18n.i18n()(message.data.message));
 		}
@@ -115,16 +119,7 @@ var navigationController = (function(){
 	app.scope = 'nav[role=apps-navigation]';
 	app.start = function(){
 		this.init();
-		var redirect = window.location.href.split('#app=');
-		var appUrl = $('.horizontal[role=apps-navigation] a')
-			.first()
-			.attr('href');
-
-		if(redirect.length > 1){
-			appUrl = redirect[1].split('&')[0];
-		}
-
-		navigation.redirect(appUrl);
+		navigation.applyHash();
 	};
 
 	app.define({
@@ -147,4 +142,10 @@ $(document).ready(function(){
 	});
 
 	navigationController.start();
+});
+
+$(window).on('hashchange', function() {
+	"use strict";
+
+	navigation.applyHash();
 });

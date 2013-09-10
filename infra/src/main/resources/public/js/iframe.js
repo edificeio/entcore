@@ -130,15 +130,6 @@ var navigationController = (function(){
 		}
 	});
 
-	window.onpopstate = function(e){
-		if(e.state === null){
-			return;
-		}
-
-		app.action.moveHistory({ stepSize: 1, action: 'pop' });
-		e.preventDefault();
-	};
-
 	return app;
 }());
 
