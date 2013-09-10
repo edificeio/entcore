@@ -21,17 +21,12 @@ var admin = function(){
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
 				<div id='classes-{{id}}'></div>{{/list}}"
 			,
-			groupes : "\
-				{{#list}}<h3>{{name}}</h3>\
-				<a call='membres' href='api/membres?data={{people}}'>\
-				{{#i18n}}directory.admin.see-people{{/i18n}}</a>{{/list}}"
-			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
 				<a call='personnes' href='api/personnes?id={{classId}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
-				 - <a href='api/enseignants?id={{classId}}' call='enseignants'>\
-				{{#i18n}}directory.admin.add-teacher{{/i18n}}</a>\
+				 - <a href=\"{{classId}}\" call=\"addUser\">\
+				{{#i18n}}directory.admin.create-user{{/i18n}}</a>\
 				 - <a href='api/export?id={{classId}}' call='exportAuth'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
 				<div id='people-{{classId}}'></div>{{/list}}"
@@ -49,14 +44,6 @@ var admin = function(){
 					{{/list}}\
 				</span><div id='details'></div>"
 			,
-			enseignants : "\
-				<br /><span>{{#list}}\
-				<a call='personne' href='api/link?class={{classId}}&id={{userId}}'>\
-				{{lastName}} {{firstName}}</a> - {{/list}}</span>"
-			,
-			membres : "\
-				<span>{{#list}}{{lastName}} {{firstName}} - {{/list}}</span>"
-			,
 			personne : '\
 				{{#list}}{{#i18n}}directory.admin.login{{/i18n}} : {{login}} / {{code}} - \
 				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
@@ -67,7 +54,22 @@ var admin = function(){
 			,
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
-				{{lastName}} {{firstName}} - {{/list}}'
+				{{lastName}} {{firstName}} - {{/list}}',
+			addUser : '<span>{{#i18n}}directory.admin.create-user{{/i18n}}</span>\
+				<form action="api/user">\
+				<input type="hidden" name="classId" value="{{classId}}" />\
+				<label>{{#i18n}}directory.admin.lastname{{/i18n}}</label>\
+				<input type="text" name="lastname" />\
+				<label>{{#i18n}}directory.admin.firstname{{/i18n}}</label>\
+				<input type="text" name="firstname" />\
+				<label>{{#i18n}}directory.admin.type{{/i18n}}</label>\
+				<select name="type">\
+					<option value="ENSEIGNANT">{{#i18n}}directory.admin.teacher{{/i18n}}</option>\
+					<option value="ELEVE">{{#i18n}}directory.admin.student{{/i18n}}</option>\
+					<option value="PERSRELELEVE">{{#i18n}}directory.admin.parent{{/i18n}}</option>\
+				</select>\
+				<input call="addUserSubmit" type="button" value="{{#i18n}}directory.admin.create{{/i18n}}" />\
+			</form>'
 		},
 		action : {
 			ecole : function(o) {
@@ -92,13 +94,6 @@ var admin = function(){
 				})
 				.error(function(data){app.notify.error(data);})
 			},
-			groupes : function(o) {
-				if (!!$('#groups').children().length) {
-					$('#groups').html('');
-					return;
-				}
-				app.template.getAndRender(o.url, 'groupes', '#groups', dataExtractor);
-			},
 			personnesEcole : function(o) {
 				app.template.getAndRender(o.url, 'personnesEcole', '#users', dataExtractor);
 			},
@@ -113,30 +108,13 @@ var admin = function(){
 				})
 				.error(function(data){app.notify.error(data)})
 			},
-			membres : function(o) {
-				if (!!$('#members').children('form').length) {
-					$('#members').html('');
-					return;
-				}
-				app.template.getAndRender(o.url, 'membres', '#members', dataExtractor);
-			},
+
 			personne : function(o) {
 				if (!!$('#details').children('form').length) {
 					$('#details').html('');
 					return;
 				}
 				app.template.getAndRender(o.url, 'personne', '#details', dataExtractor);
-			},
-			enseignants : function(o) {
-				$.get(o.url)
-				.done(function(data){
-					if (!!$('#people-' + data.result[0]["classId"]).children().length) {
-						$('#people-' + data.result[0]["classId"]).html('');
-						return;
-					}
-					$("#people-" + data.result[0]["schoolId"]).html(app.template.render('enseignants', dataExtractor(data)));
-				})
-				.error(function(data){app.notify.error(data)})
 			},
 			exportAuth : function(o) {
 				$.get(o.url)
@@ -147,71 +125,23 @@ var admin = function(){
 				})
 				.error(function(data){app.notify.error(data)})
 			},
-			createUser : function(o) {
-				var url = o.target.form.action + '?' + $('#create-user').serialize()
-					+ '&ENTPersonProfils=' + $('#profile').val()
-					+ '&ENTPersonStructRattach=' + $('#groupe').val();
-				$.get(url)
-				.done(function(data){
-					if (data.result === "error"){
-						$('label').removeAttr('style');
-						for (obj in data){
-							if (obj !== "result"){
-								$('#' + obj).attr("style", "color:red");
-							}
-						}
-						app.notify.error("{{#i18n}}directory.admin.form-error{{/i18n}}");
+			addUser : function(o) {
+				var json = { classId : o.url };
+				$("#people-" + o.url).html(app.template.render('addUser', json));
+			},
+			addUserSubmit : function(o) {
+				var form = $(o.target).parents("form");
+				$.post(form.attr("action"), form.serialize())
+				.done(function(response) {
+					if (response.status === "ok") {
+						$('#people-' + form.children("input[name='classId']").attr("value")).empty();
+						app.notify.done(app.i18n.bundle["directory.admin.user.created"]);
 					} else {
-						app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
-						$('label').removeAttr('style');
+						app.notify.error(response.message);
 					}
 				})
-				.error(function(data){app.notify.error(data.status);})
-			},
-			createAdmin : function(o) {
-				var url = o.target.form.action + '?' + $('#create-admin').serialize()
-					+ '&ENTPerson=' + $('#choice').val();
-				$.get(url)
-				.done(function(data){app.notify.done(data.status);})
-				.error(function(data){app.notify.error(data.status);})
-			},
-			createGroup : function(o) {
-				var url = o.target.form.action + '?' + $('#create-group').serialize()
-					+ '&type=' + $('#type').val() + '&ENTGroupStructRattach=' + $('#parent').val();
-				$.get(url)
-				.done(function(data){app.notify.done(data.status);})
-				.error(function(data){app.notify.error(data.status);})
-			},
-			createSchool : function(o) {
-				var url = o.target.form.action + '?' + $('#create-school').serialize();
-				$.get(url)
-				.done(function(data){app.notify.done(data.status);})
-				.error(function(data){app.notify.error(data.status);})
-			},
-			view: function(o) {
-				switch(o.target.id){
-					case 'disp':
-						$('#creation').attr('hidden', '');
-						$('#display').removeAttr('hidden');
-						$('#export').attr('hidden', '');
-						break;
-					case 'exports':
-						$('#creation').attr('hidden', '');
-						$('#display').attr('hidden');
-						$('#export').removeAttr('hidden');
-						break;
-					case 'create':
-						$('#creation').removeAttr('hidden');
-						$('#display').attr('hidden', '');
-						$('#export').attr('hidden', '');
-						break;
-				}
-			},
-			testbe1d : function(o) {
-				$.get(o.url)
-				.done(function(data){app.notify.info(data);})
-				.error(function(data){app.notify.error(data);});
-			},
+				.error(function(data) {app.notify.error(data)});
+			}
 		}
 	})
 	return app;

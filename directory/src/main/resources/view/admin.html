@@ -15,97 +15,11 @@
 		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
 		
 		<div id="annuaire">
-		<a href="testbe1d" call="testbe1d">{{#i18n}}TEST BE1D{{/i18n}}</a>
-		<a href="admin" call="view" id="disp">{{#i18n}}directory.admin.display{{/i18n}}</a> - 
-		<a href="admin" call="view" id="create">{{#i18n}}directory.admin.create{{/i18n}}</a> - 
-		<a href="admin" call="view" id="exports">{{#i18n}}directory.admin.export{{/i18n}}</a>
+			<a href="api/export?id=all" call="exportAuth" id="export">{{#i18n}}directory.admin.export{{/i18n}}</a>
 			<div id="display">
-				<a href="api/export?id=all" call="exportAuth" hidden id="export">{{#i18n}}directory.admin.exports{{/i18n}}</a>
 				<h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2>
 				<a href="api/ecole" call="ecole">{{#i18n}}directory.admin.see-schools{{/i18n}}</a>
 				<div id="schools"></div>
-				<h2>{{#i18n}}directory.admin.groups{{/i18n}}</h2>
-				<a href="api/groupes" call="groupes">{{#i18n}}directory.admin.see-groups{{/i18n}}</a>
-				<div id="groups"></div><br><div id="members"></div>
-			</div>
-			<div id="creation" hidden>
-				<h3>{{#i18n}}directory.admin.create-school{{/i18n}}</h3>
-				<form method="GET" action="api/create-school" id="create-school">
-					<label id="ENTSchoolId">{{#i18n}}directory.admin.id{{/i18n}}* </label>
-					<input type="text" name="ENTSchoolId"/><br>
-					<label id="ENTSchoolName">{{#i18n}}directory.admin.name{{/i18n}}* </label>
-					<input type="text" name="ENTSchoolName"/><br>
-					<input type="submit" call="createSchool" action="api/create-school" value="OK"/>
-				</form>
-				<h3>{{#i18n}}directory.admin.create-user{{/i18n}}</h3>
-				<form method="GET" action="api/create-user" id="create-user">
-					<label id="ENTPersonIdentifiant">{{#i18n}}directory.admin.id{{/i18n}}* </label>
-					<input type="text" name="ENTPersonIdentifiant"/><br>
-					<label id="ENTPersonNom">{{#i18n}}directory.admin.lastname{{/i18n}}* </label>
-					<input type="text" name="ENTPersonNom"/><br>
-					<label id="ENTPersonPrenom">{{#i18n}}directory.admin.firstname{{/i18n}}* </label>
-					<input type="text" name="ENTPersonPrenom"/><br>
-					<label id="ENTPersonDateNaissance">{{#i18n}}directory.admin.birthdate{{/i18n}}* </label>
-					<input type="text" name="ENTPersonDateNaissance"/><br>
-					<label id="ENTPersonProfils">{{#i18n}}directory.admin.profile{{/i18n}}* </label>
-					<select id="profile">
-						<option value="ELEVE">Élève</option>
-						<option value="PERSEDUCNAT">Personnel</option>
-						<option value="PERSRELELEVE">Parent</option>
-					</select><br>
-					<label id="ENTPersonStructRattach">{{#i18n}}directory.admin.group{{/i18n}}* </label>
-					<select id="groupe">
-						<option value="CM2 de Mme Rousseau">CM2 de Mme Rousseau</option>
-						<option value="CE1-CE2 (Mme Leclerc)">CE1-CE2 (Mme Leclerc)</option>
-					</select><br>
-					<input type="submit" call="createUser" action="api/create-user" value="OK"/>
-				</form>
-				<h3>{{#i18n}}directory.admin.create-group{{/i18n}}</h3>
-					<form method="GET" action="api/create-group" id="create-group">
-						<label id="ENTGroupId">{{#i18n}}directory.admin.id{{/i18n}}* </label>
-						<input type="text" name="ENTGroupId"/><br>
-						<label id="ENTGroupName">{{#i18n}}directory.admin.name{{/i18n}}:</label>
-						<input type="text" name="ENTGroupName"/><br>
-						<label id="ENTGroupeType">{{#i18n}}directory.admin.type{{/i18n}}* </label>
-						<select id="type">
-							<option value="CLASSE">{{#i18n}}directory.admin.class{{/i18n}}</option>
-							<option value="GROUPE">{{#i18n}}directory.admin.group{{/i18n}}</option>
-						</select><br>
-						<label id="ENTGroupeSchool">{{#i18n}}directory.admin.parent{{/i18n}}* </label>
-						<select id="parent">
-							<option value="CM2 de Mme Rousseau">Jean Moulin</option>
-							<option value="CE1-CE2 (Mme Leclerc)">Georges Brassens</option>
-						</select><br>
-						<a href="api/personnes?id=4400000002" call="personnesEcole">{{#i18n}}directory.admin.add-people{{/i18n}}</a>
-						<div id="users"></div>
-						<input type="submit" call="createGroup" action="api/create-group" value="OK"/>
-					</form>
-					<h3>{{#i18n}}directory.admin.create-admin{{/i18n}}</h3>
-					<form method="GET" action="api/create-admin" id="create-admin">
-						<label id="ENTAdminChoice">Personne existante </label>
-						<select id="choice">
-							<option value="none"></option>
-							<option value="Anne Rousseau">Anne Rousseau</option>
-							<option value="Gilles Leclerq">Gilles Leclerq</option>
-						</select><br>{{#i18n}}directory.admin.or{{/i18n}}<br>
-						{{#i18n}}directory.admin.create-user{{/i18n}} : <br>
-						<label id="ENTAdminId">{{#i18n}}directory.admin.id{{/i18n}}* </label>
-						<input type="text" name="ENTAdminId"/><br>
-						<label id="ENTAdminNom">{{#i18n}}directory.admin.lastname{{/i18n}}* </label>
-						<input type="text" name="ENTAdminNom"/><br>
-						<label id="ENTAdminPrenom">{{#i18n}}directory.admin.firstname{{/i18n}}* </label>
-						<input type="text" name="ENTAdminPrenom"/><br>
-						<label id="ENTAdminBirthdate">{{#i18n}}directory.admin.birthdate{{/i18n}}* </label>
-						<input type="text" name="ENTAdminBirthdate"/><br><br>
-						{{#i18n}}directory.admin.access{{/i18n}} : 
-						<input type="checkbox" name="all" value="all" />Tout - 
-						<input type="checkbox" name="groupe1" value="groupe1" />Groupement 1 - 
-						<input type="checkbox" name="groupe2" value="groupe2" />Groupement 2 - 
-						<input type="checkbox" name="ecole1" value="ecole1" />École 1 - 
-						<input type="checkbox" name="ecole2" value="ecole2" />École 2
-						<br>
-						<input type="submit" call="createAdmin" action="api/create-admin" value="OK"/>
-					</form>
 			</div>
 		</div>
 	</body>

@@ -1,3 +1,6 @@
 {
-	"directory.admin.title": "Directory"
+	"directory.admin.title": "Directory",
+	"directory.admin.teacher":"Teacher",
+	"directory.admin.student":"Student",
+	"directory.admin.user.created" : "User created"
 }

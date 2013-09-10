@@ -16,17 +16,10 @@ public class Directory extends Server {
 		directoryController.get("/admin", "directory")
 				.get("/testbe1d", "testBe1d")
 				.get("/api/ecole", "school")
-				.get("/api/groupes", "groups")
 				.get("/api/classes", "classes")
 				.get("/api/personnes", "people")
-				.get("/api/membres", "members")
 				.get("/api/details", "details")
-				.get("/api/enseignants", "teachers")
-				.get("/api/link", "link")
-				.get("/api/create-user", "createUser")
-				.get("/api/create-admin", "createAdmin")
-				.get("/api/create-group", "createGroup")
-				.get("/api/create-school", "createSchool")
+				.post("/api/user", "createUser")
 				.get("/api/export", "export")
 				.post("/api/group-profil", "groupProfile");
 		try {
@@ -35,6 +28,6 @@ public class Directory extends Server {
 			log.error(e.getMessage(), e);
 		}
 
-		SecurityHandler.addFilter(new ActionFilter(directoryController.securedUriBinding(), Server.getEventBus(vertx)));
+		SecurityHandler.addFilter(new ActionFilter(directoryController.securedUriBinding(), getEventBus(vertx)));
 	}
 }

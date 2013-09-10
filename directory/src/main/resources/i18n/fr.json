@@ -26,6 +26,8 @@
 	"directory.admin.class":"Classe",
 	"directory.admin.type":"Type",
 	"directory.admin.parent":"Parent",
+	"directory.admin.teacher":"Enseignant",
+	"directory.admin.student":"Eleve",
 	"directory.admin.address":"Adresse",
 	"directory.admin.lastname":"Nom",
 	"directory.admin.firstname":"Prénom",
@@ -34,5 +36,6 @@
 	"directory.admin.access":"Droits",
 	"directory.admin.or":"OU",
 	"directory.admin.birthdate":"Date de naissance",
-	"directory.admin.profile":"Profil"
+	"directory.admin.profile":"Profil",
+	"directory.admin.user.created" : "Utilisateur créé"
 }
