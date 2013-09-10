@@ -57,10 +57,18 @@ var messenger = (function(){
 			send(message);
 		},
 		requireResize: function(){
+			var bodySize = $('body').outerHeight(true);
+			var windowSize = $('.lightbox-window').outerHeight(true);
+
+			var newSize = bodySize;
+			if(windowSize > bodySize){
+				newSize = windowSize;
+			}
+
 			var appSizeMessage = {
 				name: 'resize',
 				data: {
-					height: $('html').outerHeight(true) + 1
+					height: newSize + 1
 				}
 			};
 
