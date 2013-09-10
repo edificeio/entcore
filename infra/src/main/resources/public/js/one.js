@@ -22,6 +22,7 @@ var http = (function(){
 			params.contentType=false;
 			params.processData = false;
 			params.cache = false;
+
 			$.ajax(params)
 				.done(function(e){
 					if(typeof that.statusCallbacks.done === 'function'){

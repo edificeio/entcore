@@ -99,18 +99,6 @@ var messenger = (function(){
 var navigationController = (function(){
 	"use strict";
 
-	$(document).ready(function(){
-		$('a').on('click', function(e){
-			if(!$(this).attr('target') && parent !== window){
-				messenger.sendMessage({
-					name: 'redirect',
-					data: $(this).attr('href')
-				});
-				e.preventDefault();
-			}
-		});
-	});
-
 	var app = Object.create(oneApp);
 	app.scope = 'nav[role=apps-navigation]';
 	app.start = function(){
