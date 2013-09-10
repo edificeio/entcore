@@ -323,7 +323,7 @@ public class AuthController extends Controller {
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
-					.putString("message", "auth.activation.invalid.argument"));
+					.putString("message", I18n.getInstance().translate("auth.activation.invalid.argument", request.headers().get("Accept-Language"))));
 					if (activationCode != null) {
 						error.putString("activationCode", activationCode);
 					}
@@ -409,7 +409,7 @@ public class AuthController extends Controller {
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
-					.putString("message", "auth.reset.invalid.argument"));
+					.putString("message", I18n.getInstance().translate("auth.reset.invalid.argument", request.headers().get("Accept-Language"))));
 					if (resetCode != null) {
 						error.putString("resetCode", resetCode);
 					}
@@ -425,7 +425,7 @@ public class AuthController extends Controller {
 							} else {
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()
-								.putString("message", "reset.error"));
+								.putString("message", I18n.getInstance().translate("reset.error", request.headers().get("Accept-Language"))));
 								if (resetCode != null) {
 									error.putString("resetCode", resetCode);
 								}
