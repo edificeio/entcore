@@ -169,7 +169,7 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}">\
+							<a href="document/{{_id}}" call>\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
@@ -217,7 +217,7 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}">\
+							<a href="document/{{_id}}" call>\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
@@ -269,7 +269,7 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}">\
+							<a href="document/{{_id}}" call>\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
