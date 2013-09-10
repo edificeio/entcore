@@ -287,7 +287,7 @@ public abstract class Controller extends Renders {
 					if (a == null) {
 						a = new JsonObject()
 						.putString("name", action.getName())
-						.putString("displayName", action.getDisplayName())
+						.putString("displayName", I18n.getInstance().translate(action.getDisplayName(), request.headers().get("Accept-Language")))
 						.putString("type", action.getType());
 						resourceActions.put(action.getDisplayName(), a);
 					} else {

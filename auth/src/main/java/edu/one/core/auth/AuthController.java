@@ -43,6 +43,7 @@ import edu.one.core.auth.oauth.OAuthDataHandlerFactory;
 import edu.one.core.auth.users.DefaultUserAuthAccount;
 import edu.one.core.auth.users.UserAuthAccount;
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.I18n;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.request.CookieHelper;
@@ -159,7 +160,8 @@ public class AuthController extends Controller {
 			}
 		}
 		if (error != null && !error.trim().isEmpty()) {
-			context.putObject("error", new JsonObject().putString("message", error));
+			context.putObject("error", new JsonObject()
+					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
 		}
 		renderView(request, context, "login.html", null);
 	}

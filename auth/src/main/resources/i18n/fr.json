@@ -24,5 +24,6 @@
 	"missing.password" : "Mot de passe oublié",
 	"auth.email" : "Identifiant",
 	"auth.password" : "Mot de passe",
-	"auth.activateAccount": "Activer mon compte"
+	"auth.activateAccount": "Activer mon compte",
+	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect"
 }
