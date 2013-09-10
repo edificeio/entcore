@@ -22,5 +22,6 @@
 	"reset.error" : "Reset error",
 	"missing.password" : "Missing password",
 	"auth.email" : "Login",
-	"auth.password" : "Password"
+	"auth.password" : "Password",
+	"auth.error.authenticationFailed": "Invalid login or password"
 }

@@ -54,7 +54,7 @@ var userbook = function(){
 			if (d.result[obj].userId !== d.result[obj].id && d.result[obj].relatedType === 'USERBOOK'){
 				jo['mood'] = 'default'; jo['health']=''; jo['photo']='';  jo['motto']='';
 			} else if (d.result[obj].userId === d.result[obj].id){
-				jo['mood'] = d.result[obj].mood; jo['health']=d.result[obj].health; 
+				jo['mood'] = d.result[obj].mood; jo['health']=d.result[obj].health;
 				jo['photo']=d.result[obj].photo;  jo['motto']=d.result[obj].motto;
 			}
 			if (d.result[obj].category !== ""){
@@ -162,7 +162,7 @@ var userbook = function(){
 						</div>\
 						<div class="row mini-box">\
 							<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
-							<em class="ten cell text-container mood">Je suis rêveuse</em>\
+							<em class="ten cell text-container mood"></em>\
 						</div>\
 					</article>\
 				</div>\

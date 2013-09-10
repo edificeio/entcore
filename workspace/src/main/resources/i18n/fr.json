@@ -1,8 +1,8 @@
 {
 	"workspace.title": "Espace documentaire",
 	"workspace.header": "Espace documentaire",
-	"workspace.documents" : "Documents",
-	"workspace.shared.documents": "Documents partagés",
+	"workspace.documents" : "Mes ocuments",
+	"workspace.shared.documents": "Documents partagés avec moi",
 	"workspace.rack" : "Mon casier",
 	"workspace.add.document" : "Créer",
 	"workspace.send.rack" : "Envoyer un document",
