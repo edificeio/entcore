@@ -235,9 +235,8 @@ var userbook = function(){
 					});
 			},
 			refreshClassList: function(){
-				if (location.search.substring(1,6) === 'query'){
-					var className = location.search.split('class=')[1];
-					userbook.action.searchClass("api/class?name=" + className);
+				if (location.search.substring(1,8) === 'myClass'){
+					userbook.action.searchClass("api/class");
 				}
 			},
 
