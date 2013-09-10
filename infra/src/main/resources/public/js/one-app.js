@@ -1,17 +1,20 @@
 humane.timeout = 0;
 humane.clickToClose = true;
 
-$(document).ready(function(){
-	$('a:not([call])').on('click', function(e){
-		if(!$(this).attr('target') && parent !== window){
-			messenger.sendMessage({
-				name: 'redirect',
-				data: $(this).attr('href')
-			});
-			e.preventDefault();
-		}
+if(parent !== window){
+	$(document).ready(function(){
+		$('a:not([call])').on('click', function(e){
+			if(!$(this).attr('target') && parent !== window){
+				messenger.sendMessage({
+					name: 'redirect',
+					data: $(this).attr('href')
+				});
+				e.preventDefault();
+			}
+		});
 	});
-});
+}
+
 
 var oneApp = {
 	scope : '#main',
