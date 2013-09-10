@@ -3,7 +3,7 @@ humane.clickToClose = true;
 
 if(parent !== window){
 	$(document).ready(function(){
-		$('a:not([call])').on('click', function(e){
+		$('body').on('click', 'a:not([call])', function(e){
 			if(!$(this).attr('target') && parent !== window){
 				messenger.sendMessage({
 					name: 'redirect',
@@ -26,6 +26,7 @@ var oneApp = {
 			event.preventDefault();
 			var call = event.target.getAttribute('call');
 			that.action[call]({url : event.target.getAttribute('href'), target: event.target});
+			event.stopPropagation();
 		});
 		// TODO : refactor web message dispatch policiy
 		window.addEventListener('message', that.message.css, false);
