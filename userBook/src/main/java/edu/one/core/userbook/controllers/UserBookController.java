@@ -51,12 +51,12 @@ public class UserBookController extends Controller {
 
 	@SecuredAction("userbook.authent")
 	public void monCompte(HttpServerRequest request) {
-		renderView(request, config);
+		renderView(request);
 	}
 
 	@SecuredAction("userbook.authent")
 	public void annuaire(HttpServerRequest request) {
-		renderView(request, config);
+		renderView(request);
 	}
 
 	@SecuredAction("userbook.authent")
@@ -226,16 +226,22 @@ public class UserBookController extends Controller {
 	}
 
 	public void initUserBookNode(final Message<JsonObject> message){
-		String  userId = message.body().getString("userId");
-		neo.send("START n=node:node_auto_index(id='"+ userId + "') "
-			+ "CREATE (m {type:'USERBOOK',picture:'" + userBookData.getString("picture") + "',"
-			+ "motto:'', health:'', mood:'default', userid:'" + userId + "'}), n-[:USERBOOK]->m ");
-		JsonArray hobbies = userBookData.getArray("hobbies");
-		for (Object hobby : hobbies) {
-			JsonObject jo = (JsonObject)hobby;
-			neo.send("START n=node:node_auto_index(id='"+ userId + "'),m=node(*) MATCH n-[r]->m WHERE "
-				+ "type(r)='USERBOOK' CREATE (p {type:'HOBBIES',category:'" + jo.getString("code")
-				+ "', values:''}), m-[:PUBLIC]->p");
+		Map<String, Object> params = new HashMap<>();
+		params.put("userId", message.body().getString("userId"));
+		params.put("avatar", userBookData.getString("avatar"));
+		neo.send("START n=node:node_auto_index(id={userId}) "
+				+ "CREATE (m {type:'USERBOOK', picture:{avatar},"
+					+ "motto:'', health:'', mood:'default', userid:{userId}}), n-[:USERBOOK]->m ",params);
+
+		for (Object hobby : userBookData.getArray("hobbies")) {
+			Map<String, Object> categry = new HashMap<>();
+			categry.put( "type", "HOBBIES" );
+			categry.put( "category", (String)hobby);
+			categry.put( "values", "" );
+			params.put("category", categry);
+			neo.send("START n=node:node_auto_index(id={userId}) "
+				+ "MATCH n-[:USERBOOK]->m "
+				+ "CREATE (c {category}), m-[:PUBLIC]->c", params);
 		}
 	}
 

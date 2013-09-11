@@ -9,27 +9,8 @@
 	"workspace-prefix" : "/workspace",
 	"host" : "http://localhost:8101",
 	"user-book-data":{
-		"picture": "no-avatar.jpg",
-		"hobbies":[
-			{"code":"sport","label":"Sports"},
-			{"code":"cinema","label":"Cinéma"},
-			{"code":"animals","label":"Animaux"},
-			{"code":"music","label":"Musique"},
-			{"code":"places","label":"Endroits"}
-		],
-		"moods":[
-			{"code":"default","label":"","image":"default.png"},
-			{"code":"happy","label":"Je suis content(e) !","image":"happy.png"},
-			{"code":"proud","label":"Je suis fier(e)","image":"proud.png"},
-			{"code":"dreamy","label":"Je suis rêveur(se)","image":"dreamy.png"},
-			{"code":"love","label":"Je suis amoureux(se)","image":"love.png"},
-			{"code":"tired","label":"Je suis fatigué(e)","image":"tired.png"},
-			{"code":"angry","label":"Je suis en colère","image":"angry.png"},
-			{"code":"worried","label":"Je suis embêté(e)","image":"worried.png"},
-			{"code":"sick","label":"Je suis malade","image":"sick.png"},
-			{"code":"joker","label":"Je suis farceur(se)","image":"joker.png"},
-			{"code":"sad","label":"Je suis triste","image":"sad.png"}
-		]
+		"avatar": "no-avatar.jpg",
+		"hobbies": ["sport","cinema", "animals", "music", "places"]
 	}
 	
 }
