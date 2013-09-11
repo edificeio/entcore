@@ -229,6 +229,9 @@ nav.vertical ul li.selected ul {
 .navbar {
   height: 40px;
 }
+.navbar .cell {
+  height: 100%;
+}
 .navbar img {
   float: left;
   display: block;
@@ -249,16 +252,8 @@ nav.vertical ul li.selected ul {
   margin-top: 8px;
 }
 .navbar .account {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  display: block;
+  height: 100%;
   float: right !important;
-}
-.navbar .account img {
-  max-width: 100%;
 }
 .navbar .account i {
   margin-top: 3px;
