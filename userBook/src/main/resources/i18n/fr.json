@@ -21,5 +21,21 @@
 	"e500": "Le serveur a rencontré une erreur",
 	"userBook.teachers": "Enseignants",
 	"userBook.parents": "Parents",
-	"userBook.students": "Élèves"
+	"userBook.students": "Élèves",
+	"userBook.hobby.sport" : "Sports",
+	"userBook.hobby.cinema":"Cinéma",
+	"userBook.hobby.animals":"Animaux",
+	"userBook.hobby.music":"Musique",
+	"userBook.hobby.places":"Endroits",
+	"userBook.mood.default": "Défaut",
+	"userBook.mood.happy":"Je suis content(e) !",
+	"userBook.mood.proud":"Je suis fier(e)",
+	"userBook.mood.dreamy":"Je suis rêveur(se)",
+	"userBook.mood.love":"Je suis amoureux(se)",
+	"userBook.mood.tired":"Je suis fatigué(e)",
+	"userBook.mood.angry":"Je suis en colère",
+	"userBook.mood.worried":"Je suis embêté(e)",
+	"userBook.mood.sick":"Je suis malade",
+	"userBook.mood.joker":"Je suis farceur(se)",
+	"userBook.mood.sad":"Je suis triste"
 }

@@ -162,7 +162,7 @@ var userbook = function(){
 						</div>\
 						<div class="row mini-box">\
 							<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
-							<em class="ten cell text-container mood"></em>\
+							<em class="ten cell text-container mood">{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</em>\
 						</div>\
 					</article>\
 				</div>\
@@ -252,7 +252,6 @@ var userbook = function(){
 					.done(function(data){
 						that.showPerson(data);
 						messenger.requireResize();
-						$('em.mood').html(moods[data.result[0].mood]);
 					});
 			},
 			refreshClassList: function(){

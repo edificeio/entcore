@@ -84,7 +84,10 @@ var oneApp = {
 		},
 		bundle : {},
 		i18n : function() {
-			return function(key) { return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; };
+			return function(key) { 
+				key = Mustache.render(key, this);
+				return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; 
+			};
 		}
 	},
 	message : {

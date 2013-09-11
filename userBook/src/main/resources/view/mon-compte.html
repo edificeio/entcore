@@ -12,10 +12,6 @@
 		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/account.js{{/static}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
-		<script type="text/javascript">
-			m = '{{#user-book-data}}{{#moods}}"{{code}}":"{{label}}",{{/moods}}{{/user-book-data}}';
-			moods = jQuery.parseJSON('{' + m.substr(0,m.length-1) + '}');
-		</script>
 	</head>
 	<body>
 		<h1><i role="orange-user"></i>{{#i18n}}userBook.header{{/i18n}}</h1>

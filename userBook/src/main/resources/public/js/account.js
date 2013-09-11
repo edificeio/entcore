@@ -18,6 +18,8 @@ var account = function(){
 			}
 		}
 		jo['list'] = hobbies;
+		// TODO : extract in conf system
+		jo['moods'] = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 		return jo;
 	};
 
@@ -56,58 +58,21 @@ var account = function(){
 				</div>\
 				<div class="text-container clear">\
 					<div class="enhanced-select" data-selected="{{mood}}">\
-						<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{mood}}</span></div>\
+						<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</span></div>\
 						<div class="options-list">\
-							<div class="option" data-value="default">\
-								<i role="default-panda" class="small-panda"></i>\
-								<span>Default</span>\
+							{{#moods}}\
+							<div class="option" data-value="{{.}}">\
+								<i role="{{.}}-panda" class="small-panda"></i>\
+								<span>{{#i18n}}userBook.mood.{{.}}{{/i18n}}</span>\
 							</div>\
-							<div class="option" data-value="love">\
-								<i role="love-panda" class="small-panda"></i>\
-								<span>Amoureux</span>\
-							</div>\
-							<div class="option" data-value="angry">\
-								<i role="angry-panda" class="small-panda"></i>\
-								<span>En colère</span>\
-							</div>\
-							<div class="option" data-value="happy">\
-								<i role="happy-panda" class="small-panda"></i>\
-								<span>Content</span>\
-							</div>\
-							<div class="option" data-value="worried">\
-								<i role="worried-panda" class="small-panda"></i>\
-								<span>Embêté</span>\
-							</div>\
-							<div class="option" data-value="tired">\
-								<i role="tired-panda" class="small-panda"></i> \
-								<span>Fatigué</span>\
-							</div>\
-							<div class="option" data-value="proud">\
-								<i role="proud-panda" class="small-panda"></i><span>Fier</span>\
-							</div>\
-							<div class="option" data-value="sick">\
-								<i role="sick-panda" class="small-panda"></i>\
-								<span>Malade</span>\
-							</div>\
-							<div class="option" data-value="dreamy">\
-								<i role="dreamy-panda" class="small-panda"></i>\
-								<span>Rêveur</span>\
-							</div>\
-							<div class="option" data-value="sad">\
-								<i role="sad-panda" class="small-panda"></i>\
-								<span>Triste</span>\
-							</div>\
-							<div class="option" data-value="joker">\
-								<i role="joker-panda" class="small-panda"></i>\
-								<span>Farceur</span>\
-							</div>\
+							{{/moods}}\
 						</div>\
 					</div>\
 					<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
 					<article class="text-container">\
 					{{#list}}\
 						<div class="row line" data-category="{{category}}">\
-							<div class="three cell"><span>{{category}}</span></div>\
+							<div class="three cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
 							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
 							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
