@@ -136,6 +136,14 @@ var navigationController = (function(){
 	return app;
 }());
 
+function setUserPhoto(){
+	"use strict";
+
+	$.get('/userbook/api/account').done(function(result){
+		var avatar = result.result['0'].photo;
+		$('#my-photo').attr('src', '/userbook/document/' + avatar + '?userbook-dimg=public%2Fimg%2Fno-avatar.jpg');
+	});
+}
 
 $(document).ready(function(){
 	"use strict";
@@ -143,6 +151,8 @@ $(document).ready(function(){
 	$('.search input[type=text]').on('focus', function(){
 		$(this).val(' ');
 	});
+
+	setUserPhoto();
 
 	navigationController.start();
 });

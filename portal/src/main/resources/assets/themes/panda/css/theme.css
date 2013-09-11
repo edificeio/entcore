@@ -233,7 +233,14 @@ nav.vertical ul li.selected ul {
   float: left;
   display: block;
   vertical-align: top;
-  margin: 6px;
+  margin: 0;
+  padding: 6px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  max-height: 100%;
+  width: auto;
 }
 .navbar .welcome-message {
   display: block;
