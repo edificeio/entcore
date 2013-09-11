@@ -223,23 +223,25 @@ public class UserBookController extends Controller {
 	}
 
 	public void initUserBookNode(final Message<JsonObject> message){
-		Map<String, Object> params = new HashMap<>();
-		params.put("userId", message.body().getString("userId"));
-		params.put("avatar", userBookData.getString("default-avatar"));
-		neo.send("START n=node:node_auto_index(id={userId}) "
-				+ "CREATE (m {type:'USERBOOK', picture:{avatar},"
-					+ "motto:'', health:'', mood:'default', userid:{userId}}), n-[:USERBOOK]->m ",params);
-
-		for (Object hobby : userBookData.getArray("hobbies")) {
-			Map<String, Object> categry = new HashMap<>();
-			categry.put( "type", "HOBBIES" );
-			categry.put( "category", (String)hobby);
-			categry.put( "values", "" );
-			params.put("category", categry);
-			neo.send("START n=node:node_auto_index(id={userId}) "
+		JsonObject params = new JsonObject();
+		params.putString("userId", message.body().getString("userId"));
+		params.putString("avatar", userBookData.getString("default-avatar"));
+		JsonArray queries = new JsonArray();
+		String query = "START n=node:node_auto_index(id={userId}) "
+				+ "CREATE n-[:USERBOOK]->(m {type:'USERBOOK', picture:{avatar}, "
+				+ "motto:'', health:'', mood:'default', userid:{userId}})";
+		queries.add(Neo.toJsonObject(query, params));
+		String query2 = "START n=node:node_auto_index(id={userId}) "
 				+ "MATCH n-[:USERBOOK]->m "
-				+ "CREATE (c {category}), m-[:PUBLIC]->c", params);
+				+ "CREATE m-[:PUBLIC]->(c {category: {category}, type: {type}, values: {values}})";
+		for (Object hobby : userBookData.getArray("hobbies")) {
+			JsonObject j = params.copy();
+			j.putString("type", "HOBBIES" );
+			j.putString("category", (String)hobby);
+			j.putString("values", "");
+			queries.add(Neo.toJsonObject(query2, j));
 		}
+		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
 	}
 
 	private void notifyTimeline(final HttpServerRequest request, final UserInfos user) {
