@@ -71,6 +71,14 @@ public class Neo  {
 		});
 	}
 
+	public void send(String query, Map<String,Object> params) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		jo.putObject("params", new JsonObject(params));
+		eb.send(address, jo);
+	}
+
 	public void send(String query, Map<String,Object> params, Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "execute");
