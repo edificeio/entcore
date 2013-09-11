@@ -78,7 +78,7 @@ var messenger = (function(){
 			$('body').addClass('lightbox-body');
 			$('section.main').addClass('lightbox-main');
 			var close = this.closeLightbox;
-			$('body').one('click', function(){
+			$('body').one('click.lightbox', function(){
 				close();
 				$('iframe').attr('src', $('iframe').attr('src'));
 			});
@@ -87,7 +87,7 @@ var messenger = (function(){
 			$('header').removeClass('lightbox-header');
 			$('body').removeClass('lightbox-body');
 			$('section.main').removeClass('lightbox-main');
-			$('body').unbind('click');
+			$('body').unbind('click.lightbox');
 		},
 		notify: function(message){
 			oneApp.notify[message.data.type](oneApp.i18n.i18n()(message.data.message));
