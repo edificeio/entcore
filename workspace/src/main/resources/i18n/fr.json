@@ -5,7 +5,7 @@
 	"workspace.shared.documents": "Documents partagés avec moi",
 	"workspace.rack" : "Mon casier",
 	"workspace.add.document" : "Créer",
-	"workspace.send.rack" : "Envoyer un document",
+	"workspace.send.rack" : "Envoyer",
 	"workspace.move.trash" : "Supprimer",
 	"workspace.move" : "Déplacer",
 	"workspace.copy" : "Copier",

@@ -33,10 +33,6 @@
 						<li>
 							<a call="trash" href="documents/trash">{{#i18n}}workspace.trash{{/i18n}}</a>
 						</li>
-						<li>
-							<a call="sendRack" href="rack">{{#i18n}}workspace.send.rack{{/i18n}}</a>
-						</li>
-
 					</ul>
 					<a>Créer un dossier</a>
 				</nav>
@@ -46,6 +42,9 @@
 					<div class="action-buttons">
 						<a call="addDocument" href="document" class="button">
 							<i role="add"></i>{{#i18n}}workspace.add.document{{/i18n}}
+						</a>
+						<a call="sendRack" href="rack" class="button">
+							{{#i18n}}workspace.send.rack{{/i18n}}
 						</a>
 						<a call="moveTrash" href="document/trash" disabled class="contextual button">
 							{{#i18n}}workspace.move.trash{{/i18n}}
