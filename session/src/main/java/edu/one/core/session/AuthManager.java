@@ -1,7 +1,9 @@
 package edu.one.core.session;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.vertx.java.busmods.BusModBase;
@@ -167,12 +169,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		String query =
 				"START n=node:node_auto_index(id={id}) " +
-				"MATCH n-[?:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
+				"MATCH n-[?:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"RETURN distinct a.name as name, a.displayName as displayName, " +
 				"a.type as type, n.ENTPersonClasses? as classe, " +
 				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
 				"n.ENTPersonNomAffichage as username, n.type as userType, " +
-				"n.ENTPersonLogin as login";
+				"n.ENTPersonLogin as login, app.name? as appName, app.address? as appAddress, " +
+				"app.icon? as appIcon, app.target? as appTarget ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
@@ -183,6 +186,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if ("ok".equals(message.body().getString("status")) && result != null &&
 						!result.getFieldNames().isEmpty()) {
 					JsonObject j = message.body().getObject("result").getObject("0");
+					JsonArray apps = new JsonArray();
+					Set<String> appsNames = new HashSet<>();
 					JsonObject infos = new JsonObject()
 						.putString("userId", userId)
 						.putString("firstName", j.getString("firstname"))
@@ -200,8 +205,25 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						json.removeField("classe");
 						json.removeField("login");
 						json.removeField("userType");
+						String appName = json.getString("appName");
+						String appAddress = json.getString("appAddress");
+						String appIcon = json.getString("appIcon");
+						String appTarget = json.getString("appTarget");
+						json.removeField("appName");
+						json.removeField("appAddress");
+						json.removeField("appIcon");
+						json.removeField("appTarget");
+						if (!appsNames.contains(appName)) {
+							appsNames.add(appName);
+							apps.addObject(new JsonObject()
+							.putString("name", appName)
+							.putString("address", appAddress)
+							.putString("icon", appIcon)
+							.putString("target", appTarget));
+						}
 						actions.add(json);
 					}
+					infos.putArray("apps", apps);
 					handler.handle(infos.putArray("authorizedActions", actions));
 				} else {
 					handler.handle(null);

@@ -52,10 +52,17 @@ public class PortalService extends Controller {
 	}
 
 	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
-	public void apps(HttpServerRequest request) {
-		JsonObject json = new JsonObject()
-		.putArray("apps", container.config().getArray("apps", new JsonArray()));
-		renderView(request, json);
+	public void apps(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject session) {
+				JsonObject json = new JsonObject()
+				.putArray("apps", session.getArray("apps", new JsonArray()));
+				renderView(request, json);
+			}
+		});
+
 	}
 
 	public void assets(HttpServerRequest request) {

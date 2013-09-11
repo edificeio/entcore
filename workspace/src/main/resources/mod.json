@@ -4,6 +4,9 @@
 	"port": 8011,
 	"mode": "dev",
 	"host" : "http://localhost:8011",
+	"app-name" : "Espace documentaire",
+	"app-address" : "http://localhost:8011/workspace/workspace",
+	"app-icon" : "workspace-large",
 	"mongo-address" : "wse.mongodb.persistor",
 	"gridfs-address" : "wse.gridfs.persistor"
 }

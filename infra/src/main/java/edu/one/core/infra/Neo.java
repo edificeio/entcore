@@ -111,4 +111,11 @@ public class Neo  {
 			}
 		});
 	}
+
+	public static JsonObject toJsonObject(String query, JsonObject params) {
+		return new JsonObject()
+		.putString("query", query)
+		.putObject("params", (params != null) ? params : new JsonObject());
+	}
+
 }

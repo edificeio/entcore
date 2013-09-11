@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.Server;
+import edu.one.core.infra.Utils;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
@@ -353,18 +354,40 @@ public class AppRegistryService extends Controller {
 				String secret = request.formAttributes().get("secret");
 				if (name != null && !name.trim().isEmpty() &&
 						grantType != null && !grantType.trim().isEmpty()) {
-					String query = "CREATE (c { id: {id}, type: 'APPLICATION', name: {name}, grantType: {grantType} ";
+					String address = request.formAttributes().get("address");
+					String icon = request.formAttributes().get("icon");
+					String target = request.formAttributes().get("target");
+					String query = "CREATE (c { id: {id}, type: 'APPLICATION', name: {name}, " +
+							"grantType: {grantType}, address: {address} , icon: {icon} , target: {target} ";
 					if (secret != null && !secret.trim().isEmpty()) {
 						query += ", secret: {secret} })";
 					} else {
 						query += "})";
 					}
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", UUID.randomUUID().toString());
-					params.put("name", name);
-					params.put("grantType", grantType);
-					params.put("secret", secret);
-					neo.send(query, params, request.response());
+					String appId = UUID.randomUUID().toString();
+					JsonArray queries = new JsonArray();
+					JsonObject params = new JsonObject();
+					params.putString("id", appId);
+					params.putString("name", name);
+					params.putString("grantType", grantType);
+					params.putString("secret", secret);
+					params.putString("address", Utils.getOrElse(address, ""));
+					params.putString("icon", Utils.getOrElse(icon, ""));
+					params.putString("target", Utils.getOrElse(target, ""));
+					queries.addObject(Neo.toJsonObject(query, params));
+					if (address != null && !address.trim().isEmpty()) {
+						String query2 =
+								"START n=node:node_auto_index(id={id}) " +
+								"CREATE UNIQUE n-[r:PROVIDE]->(a {type: {type}, " +
+								"name:{name}, displayName:{displayName}}) " +
+								"RETURN a.name as name";
+						queries.addObject(Neo.toJsonObject(query2, new JsonObject()
+						.putString("id", appId)
+						.putString("type", "SECURED_ACTION_WORKFLOW")
+						.putString("name", name + "|address")
+						.putString("displayName", name + ".address")));
+					}
+					neo.sendBatch(queries, request.response());
 				} else {
 					badRequest(request);
 				}
@@ -373,7 +396,8 @@ public class AppRegistryService extends Controller {
 	}
 
 	public void collectApps(final Message<JsonObject> message) {
-		final String application = message.body().getString("application");
+		final JsonObject app = message.body().getObject("application");
+		final String application = app.getString("name");
 		final JsonArray securedActions = message.body().getArray("actions");
 		if (application != null && securedActions != null && !application.trim().isEmpty()) {
 			neo.send(
@@ -382,6 +406,8 @@ public class AppRegistryService extends Controller {
 				"WHERE exists=0 " +
 				"CREATE (m {id:'" + UUID.randomUUID().toString() + "', " +
 				"type:'APPLICATION', " +
+				"address:'" + app.getString("address", "") + "', " +
+				"icon:'" + app.getString("icon", "") + "', " +
 				"name:'" + application +
 				"'}) " +
 				"RETURN m.id as id",

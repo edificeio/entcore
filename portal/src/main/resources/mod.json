@@ -12,8 +12,5 @@
 		"auth" : "http://localhost:8009/auth",
 		"portal" : "http://localhost:8017",
 		"logoutCallback" : "http://localhost:8017"
-	},
-	"apps" : [
-		{ "icon" : "workspace-large", "name" : "Espace documentaire", "uri" : "http://localhost:8011/workspace/workspace" }
-	]
+	}
 }

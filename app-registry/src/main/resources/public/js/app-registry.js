@@ -81,6 +81,12 @@ var appRegistry = function(){
 								<input type="text" name="name" /><br />\
 								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
 								<input type="text" name="secret" /><br />\
+								<label>{{#i18n}}app.registry.application.address{{/i18n}}</label>\
+								<input type="text" name="address" /><br />\
+								<label>{{#i18n}}app.registry.application.icon{{/i18n}}</label>\
+								<input type="text" name="icon" /><br />\
+								<label>{{#i18n}}app.registry.application.target{{/i18n}}</label>\
+								<input type="text" name="target" /><br />\
 								<input call="createExternalAppSubmit" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
 							</form>',
 

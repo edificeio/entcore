@@ -35,6 +35,46 @@ public class UserInfos {
 
 	}
 
+	public static class Application {
+		private String name;
+		private String address;
+		private String icon;
+		private String target;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getAddress() {
+			return address;
+		}
+
+		public void setAddress(String address) {
+			this.address = address;
+		}
+
+		public String getIcon() {
+			return icon;
+		}
+
+		public void setIcon(String icon) {
+			this.icon = icon;
+		}
+
+		public String getTarget() {
+			return target;
+		}
+
+		public void setTarget(String target) {
+			this.target = target;
+		}
+
+	}
+
 	private String userId;
 	private String firstName;
 	private String lastName;
@@ -43,6 +83,7 @@ public class UserInfos {
 	private String type;
 	private String login;
 	private List<Action> authorizedActions;
+	private List<Application> apps;
 
 	public String getUserId() {
 		return userId;
@@ -106,6 +147,14 @@ public class UserInfos {
 
 	public void setLogin(String login) {
 		this.login = login;
+	}
+
+	public List<Application> getApps() {
+		return apps;
+	}
+
+	public void setApps(List<Application> apps) {
+		this.apps = apps;
 	}
 
 }

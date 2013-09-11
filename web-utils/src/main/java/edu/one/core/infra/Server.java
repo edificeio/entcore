@@ -69,9 +69,13 @@ public abstract class Server extends Verticle {
 		});
 
 		try {
+			JsonObject application = new JsonObject()
+			.putString("name", config.getString("app-name", this.getClass().getSimpleName()))
+			.putString("icon", config.getString("app-icon", ""))
+			.putString("address", config.getString("app-address", ""));
 			JsonArray actions = StartupUtils.loadSecuredActions();
 			securedActions = StartupUtils.securedActionsToMap(actions);
-			StartupUtils.sendStartup(this.getClass().getSimpleName(), actions,
+			StartupUtils.sendStartup(application, actions,
 					Server.getEventBus(vertx), config.getString("app-registry.address", "wse.app.registry"));
 		} catch (IOException e) {
 			log.error("Error application not registred.", e);

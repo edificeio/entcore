@@ -19,28 +19,28 @@ import edu.one.core.infra.security.SecuredAction;
 
 public class StartupUtils {
 
-	public static void sendStartup(String appName, JsonArray actions, EventBus eb, String address,
+	public static void sendStartup(JsonObject app, JsonArray actions, EventBus eb, String address,
 			final Handler<Message<JsonObject>> handler) throws IOException {
 		if (actions == null || actions.size() == 0) {
 			actions = loadSecuredActions();
 		}
 		JsonObject jo = new JsonObject();
-		jo.putString("application", appName)
+		jo.putObject("application", app)
 		.putArray("actions", actions);
 		eb.send(address, jo, handler);
 	}
 
-	public static void sendStartup(String appName, JsonArray actions, EventBus eb, String address) throws IOException {
-		sendStartup(appName, actions, eb, address, null);
+	public static void sendStartup(JsonObject app, JsonArray actions, EventBus eb, String address) throws IOException {
+		sendStartup(app, actions, eb, address, null);
 	}
 
-	public static void sendStartup(String appName, EventBus eb, String address,
+	public static void sendStartup(JsonObject app, EventBus eb, String address,
 			final Handler<Message<JsonObject>> handler) throws IOException {
-		sendStartup(appName, null, eb, address, handler);
+		sendStartup(app, null, eb, address, handler);
 	}
 
-	public static void sendStartup(String appName, EventBus eb, String address) throws IOException {
-		sendStartup(appName, null, eb, address, null);
+	public static void sendStartup(JsonObject app, EventBus eb, String address) throws IOException {
+		sendStartup(app, null, eb, address, null);
 	}
 
 	public static JsonArray loadSecuredActions() throws IOException {
