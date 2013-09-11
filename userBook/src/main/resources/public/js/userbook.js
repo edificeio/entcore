@@ -46,27 +46,21 @@ var userbook = function(){
 			anyParent: listParents.length > 0
 		};
 	};
+
 	var personDataAdaptor = function(d) {
-		var jo = {"displayName":d.result[0]["displayName"],"address":d.result[0]["address"]};
-		var hobbies = [];
-		var related = [];
-		for (obj in d.result){
-			if (d.result[obj].userId !== d.result[obj].id && d.result[obj].relatedType === 'USERBOOK'){
-				jo['mood'] = 'default'; jo['health']=''; jo['photo']='';  jo['motto']='';
-			} else if (d.result[obj].userId === d.result[obj].id){
-				jo['mood'] = d.result[obj].mood; jo['health']=d.result[obj].health;
-				jo['photo']=d.result[obj].photo;  jo['motto']=d.result[obj].motto;
-			}
-			if (d.result[obj].category !== ""){
-				hobbies.push({"category":d.result[obj].category,"values":d.result[obj].values});
-			}
-			if (d.result[obj].relatedType !== "USERBOOK"){
-				related.push({"relatedName":d.result[obj].relatedName, "relatedId":d.result[obj].relatedId,"relatedType":d.result[obj].relatedType});
-			}
-		}
-		jo['list'] = hobbies;
-		jo['relations'] = related;
-		return jo;
+		var person = d.result[0];
+
+		person['hobbies'] = [];
+		d.result[0].category.forEach(function(c,index){
+			person['hobbies'].push({"category" : c, "values" : d.result[0].values[index]});
+		});
+
+		person['relations'] = [];
+		_.values(d.result).forEach(function(o){
+			person['relations'].push(_.pick(o, 'relatedId', 'relatedName','relatedType'));
+		});
+
+		return person;
 	};
 
 	var app = Object.create(oneApp);
@@ -191,14 +185,14 @@ var userbook = function(){
 				</article>\
 				<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
 				<article class="text-container">\
-					{{#list}}\
+					{{#hobbies}}\
 					<div class="row line">\
-						<div class="three cell">{{category}}</div>\
+						<div class="three cell">{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</div>\
 						<div class="eight cell"><em>{{values}}</em></div>\
 						<div class="one cell"></div>\
 						<div class="clear"></div>\
 					</div>\
-					{{/list}}\
+					{{/hobbies}}\
 					<div class="clear"></div>\
 				</article>\
 				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>\

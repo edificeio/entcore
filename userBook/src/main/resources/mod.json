@@ -9,7 +9,8 @@
 	"workspace-prefix" : "/workspace",
 	"host" : "http://localhost:8101",
 	"user-book-data":{
-		"avatar": "no-avatar.jpg",
+		"default-avatar": "no-avatar.jpg",
+		"default-mood" : "default",
 		"hobbies": ["sport","cinema", "animals", "music", "places"]
 	}
 	
