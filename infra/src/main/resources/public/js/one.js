@@ -16,6 +16,11 @@ var http = (function(){
 			}
 			return str.join("&");
 		},
+		filters: {
+		},
+		addFilter: function(filter, handler){
+			Http.prototype.filters[filter] = handler;
+		},
 		request: function(url, params){
 			var that = this;
 			params.url = url;
@@ -24,9 +29,12 @@ var http = (function(){
 			params.cache = false;
 
 			$.ajax(params)
-				.done(function(e){
+				.done(function(e, statusText, xhr){
 					if(typeof that.statusCallbacks.done === 'function'){
-						that.statusCallbacks.done(e);
+						if(document.cookie === '' && typeof Http.prototype.filters.disconnected === 'function'){
+							that.filters.disconnected(e, statusText, xhr);
+						}
+						that.statusCallbacks.done(e, statusText, xhr);
 					}
 				})
 				.fail(function(e){
@@ -98,8 +106,14 @@ One = {
 		return http().put(url, data, params);
 	},
 	postFile: function(url, data, params){
+		if(typeof params !== 'object'){
+			params = {};
+		}
 		params.contentType = false;
 		params.processData = false;
 		return http().post(url, data, params);
+	},
+	filter: function(filter, handler){
+		http().addFilter(filter, handler);
 	}
 };

@@ -91,6 +91,9 @@ var messenger = (function(){
 		},
 		notify: function(message){
 			oneApp.notify[message.data.type](oneApp.i18n.i18n()(message.data.message));
+		},
+		'redirect-parent': function(message){
+			window.location.href = message.data;
 		}
 	};
 

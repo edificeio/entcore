@@ -56,6 +56,12 @@ var messenger = (function(){
 		sendMessage: function(message){
 			send(message);
 		},
+		redirectParent: function(location){
+			send({
+				name: 'redirect-parent',
+				data: location
+			});
+		},
 		requireResize: function(){
 			var bodySize = $('body').outerHeight(true);
 			var windowSize = $('.lightbox-window').outerHeight(true);
@@ -106,6 +112,10 @@ var messenger = (function(){
 
 var navigationController = (function(){
 	"use strict";
+
+	One.filter('disconnected', function(event){
+		messenger.redirectParent('/');
+	})
 
 	var app = Object.create(oneApp);
 	app.scope = 'nav[role=apps-navigation]';
