@@ -1,7 +1,7 @@
 {
 	"workspace.title": "Espace documentaire",
 	"workspace.header": "Espace documentaire",
-	"workspace.documents" : "Mes ocuments",
+	"workspace.documents" : "Mes documents",
 	"workspace.shared.documents": "Documents partagés avec moi",
 	"workspace.rack" : "Mon casier",
 	"workspace.add.document" : "Créer",
