@@ -22,9 +22,11 @@ import edu.one.core.infra.Neo;
 import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
+import static edu.one.core.infra.http.Renders.unauthorized;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
+import java.util.Arrays;
 
 
 public class UserBookController extends Controller {
@@ -97,48 +99,43 @@ public class UserBookController extends Controller {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				String query = "START n=node:node_auto_index(id={userId}) "
-							+ "MATCH "
-								+ "(n)-[?:USERBOOK]->(u)-[PUBLIC]->(i), "
-								+ "(n)-[?:EN_RELATION_AVEC]-(n2)"
-							+ "RETURN DISTINCT "
-								+ "n.id as id,"
-								+ "n.ENTPersonNomAffichage as displayName,"
-								+ "n.ENTPersonAdresse as address,"
-								+ "n2.ENTPersonNomAffichage? as relatedName, "
-								+ "n2.id? as relatedId,"
-								+ "n2.type as relatedType,"
-								+ "u.userid? as userId,"
-								+ "u.motto? as motto,"
-								+ "COALESCE(u.picture?, {defaultAvatar}) as photo,"
-								+ "COALESCE(u.mood?, {defaultMood}) as mood,"
-								+ "u.health? as health,"
-								+ "COLLECT(i.category?) as category,"
-								+ "COLLECT(i.values?) as values";
+				if (user != null) {
+					String query = "START n=node:node_auto_index(id={userId}) "
+								+ "MATCH "
+									+ "(n)-[?:USERBOOK]->(u)-[v?]->(h), "
+									+ "(n)-[?:EN_RELATION_AVEC]-(n2) "
+								+ "WHERE (v IS NULL) OR (type(v) IN {hobbyVisibility}) "
+								+ "RETURN DISTINCT "
+									+ "n.id as id,"
+									+ "n.ENTPersonNomAffichage as displayName,"
+									+ "n.ENTPersonAdresse as address,"
+									+ "n2.ENTPersonNomAffichage? as relatedName, "
+									+ "n2.id? as relatedId,"
+									+ "n2.type as relatedType,"
+									+ "u.userid? as userId,"
+									+ "u.motto? as motto,"
+									+ "COALESCE(u.picture?, {defaultAvatar}) as photo,"
+									+ "COALESCE(u.mood?, {defaultMood}) as mood,"
+									+ "u.health? as health,"
+									+ "COLLECT(type(v)) as visibility,"
+									+ "COLLECT(h.category?) as category,"
+									+ "COLLECT(h.values?) as values";
 
-				Map<String, Object> params = new HashMap<>();
-				params.put("userId",request.params().get("id"));
-				params.put("defaultAvatar", userBookData.getString("default-avatar"));
-				params.put("defaultMood", userBookData.getString("default-mood"));
+					Map<String, Object> params = new HashMap<>();
+					if (request.params().get("id") == null) {
+						params.put("userId",user.getUserId());
+						params.put("hobbyVisibility", Arrays.asList("PUBLIC","PRIVE"));
+					} else {
+						params.put("userId",request.params().get("id"));
+						params.put("hobbyVisibility","PUBLIC");
+					}
+					params.put("defaultAvatar", userBookData.getString("default-avatar"));
+					params.put("defaultMood", userBookData.getString("default-mood"));
 
-				neo.send(query, params, request.response());
-			}
-		});
-
-	}
-
-	@SecuredAction("userbook.authent")
-	public void account(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				String personRequest  = "START n=node:node_auto_index(id='" + user.getUserId() + "'), "
-						+ "m=node:node_auto_index(type='USERBOOK'), p=node:node_auto_index(type='HOBBIES') "
-						+ "MATCH n-[USERBOOK]->m-[r]->p "
-						+ "RETURN n.ENTPersonNomAffichage as displayName, n.id as id, "
-						+ "m.motto as motto, m.health as health, m.picture as photo, m.userid as userId, m.mood as mood, "
-						+ "type(r) as visibility, p.category as category, p.values as values;";
-				neo.send(personRequest,request.response());
+					neo.send(query, params, request.response());
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}

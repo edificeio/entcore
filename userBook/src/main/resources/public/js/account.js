@@ -1,26 +1,26 @@
+// TODO : merge or mutualzie with userbook.js
 var account = function(){
 
 	var personDataExtractor = function(d) {
-		var jo = {"displayName":d.result[0]["displayName"],
-			"address":d.result[0]["address"],
-			"mood":d.result[0]["mood"],
-			"motto":d.result[0]["motto"],
-			"health":d.result[0]["health"],
-			"photo" : d.result[0]["photo"]};
-		var hobbies = [];
-		for (obj in d.result){
-			if (d.result[obj].category !== ""){
-				hobbies.push({
-					"category":d.result[obj].category,
-					"values":d.result[obj].values,
-					"visibility":d.result[obj].visibility.toLowerCase()
-				});
-			}
-		}
-		jo['list'] = hobbies;
+		var person = d.result[0];
+
+		person['hobbies'] = [];
+		d.result[0].category.forEach(function(c,index){
+			person['hobbies'].push({
+				"category" : c,
+				"values" : d.result[0].values[index],
+				"visibility" : d.result[0].visibility[index].toLowerCase(),
+			});
+		});
+
+		person['relations'] = [];
+		_.values(d.result).forEach(function(o){
+			person['relations'].push(_.pick(o, 'relatedId', 'relatedName','relatedType'));
+		});
+
 		// TODO : extract in conf system
-		jo['moods'] = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
-		return jo;
+		person['moods'] = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
+		return person;
 	};
 
 	var app = Object.create(oneApp);
@@ -70,14 +70,14 @@ var account = function(){
 					</div>\
 					<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
 					<article class="text-container">\
-					{{#list}}\
+					{{#hobbies}}\
 						<div class="row line" data-category="{{category}}">\
 							<div class="three cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
 							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
 							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
 						</div>\
-					{{/list}}\
+					{{/hobbies}}\
 					</article>\
 					<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h3>\
 					<article class="text-container">\
@@ -87,13 +87,13 @@ var account = function(){
 				'
 		},
 		action : {
-			profile : function(url) {
-				One.get(url)
+			profile : function() {
+				One.get("api/person")
 				.done(function(data){
 					$('#person').html(app.template.render('personne', personDataExtractor(data)));
 					manageEditable();
 					messenger.requireResize();
-				})
+				});
 			},
 			editUserBookInfo : function(url){
 				One.get(url)
@@ -155,5 +155,5 @@ function manageEditable(){
 
 $(document).ready(function(){
 	account.init();
-	account.action.profile("api/account");
+	account.action.profile();
 });
