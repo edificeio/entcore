@@ -1893,6 +1893,9 @@ body {
   background: #c2c2c2;
   font-family: Arial;
 }
+body .container {
+  width: 960px;
+}
 body section.main {
   background: #fff;
   border-radius: 10px;
