@@ -1,6 +1,6 @@
 @import "lib";
 
-@icon-size: 135px;
+@icon-size: 129px;
 
 nav.vertical{
 	padding-right: 10px;
@@ -151,6 +151,9 @@ i.liquid{
 }
 
 .icons-view{
+	ul{
+		padding-left: 0;
+	}
 	table{
 		display: none;
 	}
@@ -158,8 +161,7 @@ i.liquid{
 		.cell;
 		.three;
 
-		margin: 10px;
-		margin-left: 0;
+		margin: 0;
 		padding: 10px;
 
 		list-style-type: none;
@@ -169,8 +171,13 @@ i.liquid{
 			margin-left: auto;
 			margin-right: auto;
 			cursor: pointer;
-			max-width: @icon-size;
+			max-width: 100%;
 			height: @icon-size;
+		}
+		i{
+			width: @icon-size;
+			height: @icon-size;
+			background-size: auto 100%;
 		}
 
 		input[type=checkbox]{
@@ -186,13 +193,14 @@ i.liquid{
 		a{
 			display: block;
 			text-align: center;
-			margin: 10px;
+			margin: 0;
+			margin-top: 5px;
 			width: 100%;
 			position: relative;
 		}
 	}
 
-	li:nth-child(3n + 4){
+	li:nth-child(4n + 5){
 		clear: left;
 	}
 }
