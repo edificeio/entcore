@@ -56,6 +56,53 @@ var tools = (function(){
 				return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
 			}
 			return { name : dir, path : dir };
+		},
+		getFolderTree: function(currentTree, done){
+			workspace.action.getFolders(true, currentTree.path, function(data){
+				data.forEach(function(folder){
+					var folderData = tools.mapFolderName(folder);
+					if(folder === currentTree.path || folder === 'Trash'){
+						return;
+					}
+
+					currentTree.folders[folderData.name] = {
+						name: folderData.name,
+						path: folderData.path,
+						folders: {}
+					}
+				})
+
+				for(var subTree in currentTree.folders){
+					tools.getFolderTree(currentTree.folders[subTree], done);
+				}
+
+				if(Object.keys(currentTree.folders).length === 0){
+					done(currentTree)
+				}
+			});
+		},
+		displayFoldersTree: function(nodePattern, container){
+			var root = { folders: {} };
+			var treeView = function(node){
+				if(Object.keys(node.folders).length === 0){
+					return nodePattern(node, function(){ return ''; });
+				}
+
+				return nodePattern(node, function(){
+					var html = '';
+					for(var folder in node.folders){
+						html += treeView(node.folders[folder]);
+					}
+
+					return html;
+				});
+			}
+			tools.getFolderTree(root, function(){
+				container.html(treeView(root));
+				if($('.createFolder').length > 1){
+					$('.createFolder').hide();
+				}
+			});
 		}
 	}
 }());
@@ -64,22 +111,21 @@ var navigation = (function(){
 	var currentURL = '/documents';
 
 	var showFolders = function(path){
-		workspace.action.getFolders(true, path, function(data) {
-			var currentPath = path;
-			data.forEach(function(folder){
-				if(folder === currentPath || folder === 'Trash'){
-					return;
-				}
-				var folderData = tools.mapFolderName(folder);
-				var folderNode = '\
-				<li>\
-					<a call="documents" href="documents/' + folderData.path + '?hierarchical=true">' + folderData.name + '</a>\
-					<ul data-folder="' + folderData.path + '"></ul>\
+		var nodePattern = function(node, subNodes){
+			if(node.name){
+				return '<li>\
+					<a call="documents" href="documents/' + node.path + '?hierarchical=true">' + node.name + '</a>\
+					<ul data-folder="' + node.path + '">' + subNodes() + '</ul>\
 				</li>';
-				$('[data-folder="' + currentPath + '"]').append(folderNode);
-				showFolders(folderData.path);
-			})
-		});
+			}
+			else{
+				return subNodes();
+			}
+
+		};
+
+		var container = $('[data-folder="' + path + '"]');
+		tools.displayFoldersTree(nodePattern, container);
 	};
 
 	var updater = {
@@ -324,60 +370,16 @@ var workspace = function(){
 
 			moveDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
 								<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
-								<table class="monoline folders large-box">\
-									{{#folders}}\
-										<tr>\
-											<td class="icon">\
-												<input type="radio" name="folder" />\
-											</td>\
-											<td class="icon">\
-												<i role="folder"></i>\
-											</td>\
-											<td class="folderPath main-cell">\
-												<a href="{{path}}" call="move">{{name}}</a>\
-											</td>\
-										</tr>\
-									{{/folders}}\
-									<tr>\
-										<td class="icon">\
-											<input type="radio" name="folder" />\
-										</td>\
-										<td class="icon">\
-										</td>\
-										<td class="folderPath editable main-cell" contenteditable>Nouveau dossier</td>\
-									</tr>\
-								</table>\
+								<nav class="vertical">\
+									<ul id="foldersTree" class="folders"></ul>\
+								</nav>\
 								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
 							</form>',
 			copyDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
 								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
-								<table class="monoline folders large-box">\
-								{{#folders}}\
-									<tr>\
-										<td class="icon">\
-											<input type="checkbox" />\
-										</td>\
-										<td class="icon">\
-											<i role="folder"></i>\
-										</td>\
-										<td class="folderPath main-cell">\
-											<a call="copy" href="{{path}}">\
-												{{name}}\
-											</a>\
-										</td>\
-									</tr>\
-								{{/folders}}\
-									<tr>\
-										<td class="icon">\
-											<input type="checkbox" />\
-										</td>\
-										<td class="icon">\
-										</td>\
-										<td class="folderPath editable main-cell" contenteditable>\
-											Nouveau dossier\
-										</td>\
-									</tr>\
-								</table>\
+								<nav class="vertical">\
+									<ul id="foldersTree" class="folders"></ul>\
+								</nav>\
 								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
 							</form>'
 		},
@@ -570,15 +572,39 @@ var workspace = function(){
 			},
 
 			move : function(o) {
-				workspace.action.getFolders(true, o.url, function(data) {
-					var folders = _.reject(data, function(item){
-							return item === 'Trash' || item === o.url;
-						});
-					folders = _.map(folders, tools.mapFolderName);
+					$('#form-window').html(app.template.render("moveDocuments", { action : 'documents/move', currentPath: o.url }));
+					var showFolders = function(path){
+					var nodePattern = function(node, subNodes){
+						if(node.name){
+							return '<li class="row">\
+										<input type="radio" name="folder" />\
+										<span class="folderPath"><a class="showCreate"><strong>+</strong></a>' + node.name + '</span>\
+										<ul style="display:block" class="row">\
+											<li class="row createFolder">\
+												<input type="radio" name="folder" />\
+												<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+											</li>\
+											' + subNodes() + '\
+										</ul>\
+									</li>';
+						}
+						else{
+							return '\
+								<li class="row">\
+									<input type="radio" name="folder" />\
+									<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+								</li>\
+								' + subNodes();
+						}
 
-					$('#form-window').html(app.template.render("moveDocuments", { action : 'documents/move', folders: folders, currentPath: o.url }));
-					ui.showLightbox();
-				});
+					};
+
+					var container = $('#foldersTree');
+					tools.displayFoldersTree(nodePattern, container);
+				};
+				showFolders();
+
+				ui.showLightbox();
 
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
@@ -586,17 +612,41 @@ var workspace = function(){
 				})
 			},
 			copy : function(o) {
-				workspace.action.getFolders(true, o.url, function(data) {
-					var folders = _.reject(data, function(item){
-						return item === 'Trash' || item === o.url;
-					});
+				$('#form-window').html(app.template.render("copyDocuments", { action : 'documents/copy', currentPath: o.url }));
+				var showFolders = function(path){
+					var nodePattern = function(node, subNodes){
+						if(node.name){
+							return '<li class="row">\
+										<input type="checkbox" />\
+										<span class="folderPath">\
+										<a class="showCreate"><strong>+</strong></a>\
+										' + node.name + '</span>\
+										<ul style="display:block" class="row">\
+											<li class="row createFolder">\
+												<input type="checkbox" />\
+												<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+											</li>\
+											' + subNodes() + '\
+										</ul>\
+									</li>';
+						}
+						else{
+							return '\
+								<li class="row">\
+									<input type="checkbox" />\
+									<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+								</li>\
+								' + subNodes();
+						}
 
-					folders = _.map(folders, tools.mapFolderName);
+					};
 
-					$('#form-window').html(app.template.render("copyDocuments", { action : 'documents/copy', folders: folders, currentPath: o.url }));
+					var container = $('#foldersTree');
+					tools.displayFoldersTree(nodePattern, container);
+				};
+				showFolders();
 
-					ui.showLightbox();
-				});
+				ui.showLightbox();
 
 				messenger.requireResize();
 				$('.lightbox-backdrop').one('click', function(){
@@ -624,13 +674,20 @@ var workspace = function(){
 				}
 
 				$('.folders :checkbox:checked, .folders :radio:checked').each(function(){
-					var path = $(this).parents('form').data('current-path');
-					if(path){
-						path = path + '_' + $(this).parents('tr').find('.folderPath').text();
+					if(!$(this).parent('li').children('.folderPath').contents(':not(a)').text()){
+						return;
 					}
-					else{
-						path = $(this).parents('tr').find('.folderPath').text();
+
+					var parentPath = function(element){
+						var elementText = element.children('.folderPath').contents(':not(a)').text();
+						if(element.parent().closest('li').length === 0){
+							return  elementText;
+						}
+						return parentPath(element.parent().closest('li')) + '_' + elementText;
 					}
+
+					var path = parentPath($(this).parent('li'));
+
 					One[method](action + "/" + ids + "/" + path)
 						.done(function(){
 							location.reload(true);
@@ -664,9 +721,14 @@ $(document).ready(function(){
 		}
 	});
 
+	$('.workspace').on('click', '.showCreate', function(){
+		$(this).parent().parent().find('.createFolder').first().show();
+	})
+
 	$('.workspace').on('mousedown', '.editable', function(){
 		$(this).html(' ');
 		$(this).focus();
 		$(this).parent().find('input').prop('checked', true);
+		$(this).addClass('active');
 	});
 });

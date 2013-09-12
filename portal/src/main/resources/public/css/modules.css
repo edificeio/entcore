@@ -209,8 +209,13 @@ nav.vertical {
 nav.vertical h1 {
   margin-top: 0;
 }
+nav.vertical ul {
+  display: block;
+}
 nav.vertical ul li {
   display: block;
+  font-size: 14px;
+  font-weight: normal;
 }
 nav.vertical ul li a {
   display: block;
