@@ -538,17 +538,22 @@ header h2 {
 .text-container article {
   margin-bottom: 15px;
 }
-.box {
+.box,
+.text-container article.box {
   min-height: 100px;
+  margin-bottom: 0;
 }
-.box .bottom-locked {
+.box .bottom-locked,
+.text-container article.box .bottom-locked {
   position: absolute;
   bottom: 7px;
 }
-.box .avatar {
+.box .avatar,
+.text-container article.box .avatar {
   padding: 5px;
 }
-.box .avatar img {
+.box .avatar img,
+.text-container article.box .avatar img {
   margin-top: 5px;
 }
 .cell img {
