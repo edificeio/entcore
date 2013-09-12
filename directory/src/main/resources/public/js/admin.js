@@ -89,7 +89,7 @@ var admin = function(){
 						}
 						$("#classes-" + data.result[0]["schoolId"]).html(app.template.render('classes', dataExtractor(data)));
 					} else {
-						app.notify.info("no resulst");
+						app.notify.info("Aucun résultat");
 					}
 				})
 				.error(function(data){app.notify.error(data);})
@@ -121,7 +121,7 @@ var admin = function(){
 				.done(function(data){
 					document.location = 'data:Application/octet-stream,'
 					+ encodeURIComponent(app.template.render('exportAuth', dataExtractor(data)));
-					app.notify.info("{{#i18n}}directory.admin.ok{{/i18n}}");
+					app.notify.info("Ok");
 				})
 				.error(function(data){app.notify.error(data)})
 			},
@@ -149,5 +149,5 @@ var admin = function(){
 
 
 $(document).ready(function(){
-	admin.init(); 
+	admin.init();
 });

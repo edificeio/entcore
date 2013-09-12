@@ -207,7 +207,7 @@ var userbook = function(){
 					$("#people").removeClass('four').addClass('twelve');
 					$("#person").html('');
 					if (data.result[0] === undefined) {
-						app.notify.info("no results !");
+						app.notify.info("Aucun résultat");
 						$("#people").html('');
 						$("#person").html('');
 					} else {
@@ -261,7 +261,7 @@ var userbook = function(){
 					$("#people .selected").removeClass('selected');
 					$('#person').html('');
 					if (data.result[0] === undefined) {
-						app.notify.info("no results !");
+						app.notify.info("Aucun résultat");
 						$("#people").html('');
 						$("#person").html('');
 					} else {
