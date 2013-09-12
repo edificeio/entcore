@@ -1382,6 +1382,7 @@ input[type=button],
 input[type=submit],
 a.button,
 button {
+  background: #3789c3;
   background: -webkit-linear-gradient(#3789c3, #3ec0d0);
   background: -moz-linear-gradient(#3789c3, #3ec0d0);
   background: -o-linear-gradient(#3789c3, #3ec0d0);
@@ -1402,10 +1403,6 @@ button {
   font-size: 23px;
   border: 1px solid #eee;
   line-height: 40px;
-  -o-transition: height 150ms ease;
-  -moz-transition: height 150ms ease;
-  -webkit-transition: height 150ms ease;
-  transition: height 150ms ease;
 }
 input[type=button] i,
 input[type=submit] i,
@@ -1423,12 +1420,6 @@ input[type=submit]:hover,
 a.button:hover,
 button:hover {
   background: #3889c1;
-  height: 50px;
-  line-height: 50px;
-  -o-transition: height 150ms ease;
-  -moz-transition: height 150ms ease;
-  -webkit-transition: height 150ms ease;
-  transition: height 150ms ease;
 }
 input[type=button][disabled],
 input[type=submit][disabled],
@@ -1698,10 +1689,6 @@ nav.horizontal a {
   -moz-transition: background 150ms ease;
   -webkit-transition: background 150ms ease;
   transition: background 150ms ease;
-  -o-transition: padding 150ms ease;
-  -moz-transition: padding 150ms ease;
-  -webkit-transition: padding 150ms ease;
-  transition: padding 150ms ease;
 }
 nav.horizontal a:hover {
   background: #ea791c;
@@ -1709,12 +1696,6 @@ nav.horizontal a:hover {
   -moz-transition: background 150ms ease;
   -webkit-transition: background 150ms ease;
   transition: background 150ms ease;
-  -o-transition: padding 150ms ease;
-  -moz-transition: padding 150ms ease;
-  -webkit-transition: padding 150ms ease;
-  transition: padding 150ms ease;
-  padding-top: 10px;
-  padding-bottom: 10px;
 }
 .logo {
   background: url(../img/illustrations/logo.png);

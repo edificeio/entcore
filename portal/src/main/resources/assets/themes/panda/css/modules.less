@@ -234,6 +234,7 @@ label{
 }
 
 input[type=button], input[type=submit], a.button, button{
+	background: @blue-top-gradient;
 	.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
 	color: #fff;
 	font-family: KGJune;
@@ -246,7 +247,6 @@ input[type=button], input[type=submit], a.button, button{
 	font-size: 23px;
 	border: 1px solid #eee;
 	line-height: 40px;
-	.run-transition(height);
 	i{
 		margin-right: 5px;
 		margin-top: 5px;
@@ -260,9 +260,6 @@ textarea{
 
 input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
 	background: @solid-blue;
-	height: 50px;
-	line-height: 50px;
-	.run-transition(height);
 }
 
 input[type=button][disabled], input[type=submit][disabled], a.button[disabled], button[disabled]{
@@ -464,14 +461,10 @@ nav.horizontal{
 
     .rounded-corners(10px);
     .run-transition(background);
-    .run-transition(padding);
   }
   a:hover{
     background: @dark-orange;
     .run-transition(background);
-    .run-transition(padding);
-    padding-top: 10px;
-    padding-bottom: 10px;
   }
 }
 
