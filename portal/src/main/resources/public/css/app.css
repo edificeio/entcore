@@ -300,8 +300,9 @@ nav.horizontal a {
 .line span {
   display: block;
   width: 100%;
-  line-height: 35px;
-  height: 35px;
+  line-height: 30px;
+  height: 30px;
+  font-size: 14px;
   background: #fefefe;
 }
 .line em[contenteditable=true],
@@ -628,8 +629,9 @@ td.main-cell {
 em[contenteditable=true] {
   display: block;
   border-bottom: 1px dashed;
-  line-height: 35px;
-  height: 35px;
+  line-height: 30px;
+  height: 30px;
+  font-size: 14px;
 }
 .editable {
   height: 20px;

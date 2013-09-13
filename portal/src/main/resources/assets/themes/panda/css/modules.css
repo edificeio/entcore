@@ -300,8 +300,9 @@ nav.horizontal a {
 .line span {
   display: block;
   width: 100%;
-  line-height: 35px;
-  height: 35px;
+  line-height: 30px;
+  height: 30px;
+  font-size: 14px;
   background: #fefefe;
 }
 .line em[contenteditable=true],
@@ -628,8 +629,9 @@ td.main-cell {
 em[contenteditable=true] {
   display: block;
   border-bottom: 1px dashed;
-  line-height: 35px;
-  height: 35px;
+  line-height: 30px;
+  height: 30px;
+  font-size: 14px;
 }
 .editable {
   height: 20px;
@@ -1853,6 +1855,7 @@ article thead th {
 }
 article em {
   color: #666;
+  font-size: 14px;
 }
 article .line {
   border-bottom: 1px dashed #ccc;
@@ -1971,6 +1974,19 @@ table.monoline tbody tr:nth-child(even) {
 table.monoline tbody tr:nth-child(odd) {
   background: #f6f6f6;
 }
+em[contenteditable=true].multiline {
+  min-height: 35px;
+  height: auto;
+}
+textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed;
+  font-family: Arial;
+  overflow: visible;
+  color: #666;
+  font-size: 14px;
+}
 table {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -2041,7 +2057,7 @@ table tr td ul li {
   width: 100%;
 }
 dl dd {
-  line-height: 35px;
+  line-height: 30px;
 }
 img[src=""] {
   display: none;
