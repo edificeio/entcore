@@ -219,8 +219,8 @@ var workspace = function(){
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
-								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
+							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
 						{{/documents}}\
@@ -267,8 +267,8 @@ var workspace = function(){
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<img src="{{thumbnail}}" alt="thumbnail" />\
 								</i>\
-								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
+							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
 						{{/documents}}\

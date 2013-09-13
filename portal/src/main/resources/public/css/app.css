@@ -358,6 +358,7 @@ i.liquid {
   width: 1;
   margin: 0;
   padding: 10px;
+  position: relative;
   list-style-type: none;
 }
 .icons-view li img {
@@ -389,8 +390,8 @@ i.liquid {
 }
 .icons-view li input[type=checkbox] {
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 20px;
+  top: 20px;
 }
 .icons-view li em {
   display: none;
