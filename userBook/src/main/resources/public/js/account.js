@@ -9,7 +9,7 @@ var account = function(){
 			person['hobbies'].push({
 				"category" : c,
 				"values" : d.result[0].values[index],
-				"visibility" : d.result[0].visibility[index].toLowerCase(),
+				"visibility" : d.result[0].visibility[index].toLowerCase()
 			});
 		});
 
@@ -41,7 +41,7 @@ var account = function(){
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.motto{{/i18n}}</label></div>\
-								<em class="six cell" contenteditable="true" data-property="motto">{{motto}}</em>\
+								<em class="six cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
 							</div>\
 						</article>\
 						<article class="twelve cell text-container right-magnet">\
@@ -73,7 +73,7 @@ var account = function(){
 					{{#hobbies}}\
 						<div class="row line" data-category="{{category}}">\
 							<div class="three cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
-							<div class="eight cell"><em contenteditable="true">{{values}}</em></div>\
+							<div class="eight cell"><em contenteditable="true" class="monoline">{{values}}</em></div>\
 							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
 						</div>\
@@ -81,7 +81,7 @@ var account = function(){
 					</article>\
 					<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h3>\
 					<article class="text-container">\
-						<em contenteditable="true" data-property="health"> {{health}}</em>\
+						<textarea data-property="health">{{health}}</textarea>\
 					</article>\
 				</div>\
 				'
@@ -131,13 +131,17 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('em[contenteditable="true"]').blur(function(){
+	$('em[contenteditable="true"], textarea').blur(function(){
 		var parameters = "";
 		var parentLine = $(this).parent().parent();
 		if (parentLine.data('category')){
 			parameters += "?category=" + parentLine.data('category') + "&values=" + $(this).text();
 		} else {
-			parameters += "?prop=" + $(this).data('property') + "&value=" + $(this).text();
+			var value = $(this).text();
+			if($(this).prop('tagName').toLowerCase() === 'textarea'){
+				value = $(this).val();
+			}
+			parameters += "?prop=" + $(this).data('property') + "&value=" + value;
 		}
 		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
 	});
@@ -156,4 +160,13 @@ function manageEditable(){
 $(document).ready(function(){
 	account.init();
 	account.action.profile();
+
+	var enterKey = 13;
+	$(document).on('keypress', ".monoline", function(e){
+		return e.which != enterKey;
+	});
+
+	$(document).on('keypress', ".multiline", function(e){
+		messenger.requireResize();
+	});
 });
