@@ -25,5 +25,6 @@
 	"auth.email" : "Identifiant",
 	"auth.password" : "Mot de passe",
 	"auth.activateAccount": "Activer mon compte",
-	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect"
+	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect",
+	"forgot.error": "Utilisateur inconnu"
 }
