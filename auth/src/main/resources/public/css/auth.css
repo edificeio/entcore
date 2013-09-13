@@ -85,10 +85,6 @@ body {
   float: right;
   border: 1px solid #eee;
   line-height: 40px;
-  -o-transition: height 150ms ease;
-  -moz-transition: height 150ms ease;
-  -webkit-transition: height 150ms ease;
-  transition: height 150ms ease;
 }
 .panel input[type=text],
 .panel input[type=password] {
@@ -102,12 +98,6 @@ body {
 .panel a.button:hover,
 .panel button:hover {
   background: #3889c1;
-  height: 50px;
-  line-height: 50px;
-  -o-transition: height 150ms ease;
-  -moz-transition: height 150ms ease;
-  -webkit-transition: height 150ms ease;
-  transition: height 150ms ease;
 }
 .panel .border-box {
   box-sizing: -webkit-border-box;
