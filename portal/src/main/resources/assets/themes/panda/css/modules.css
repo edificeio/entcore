@@ -1574,10 +1574,6 @@ a.button {
   line-height: 30px;
   height: 30px;
 }
-.small.button:hover {
-  line-height: 40px;
-  height: 40px;
-}
 input[type=text] {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;

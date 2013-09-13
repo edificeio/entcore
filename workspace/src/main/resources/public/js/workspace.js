@@ -142,6 +142,9 @@ var navigation = (function(){
 		},
 		showFolders: function(path){
 			showFolders(path);
+		},
+		refresh: function(){
+			workspace.action.documents({url : this.currentUrl()});
 		}
 	};
 
@@ -480,10 +483,33 @@ var workspace = function(){
 				if ("rack" === action) {
 					action += '/' + form.find('input[name=to], select[name=to]').val();
 				}
+
 				ui.hideLightbox();
 				One.postFile(action + '?' + form.serialize(), fd, {})
-					.done(function(){
-						location.reload(true);
+					.done(function(e){
+						if(action !== 'rack'){
+							var path = '';
+							$('nav.vertical li.selected').each(function(index, item){
+								if(index === 0){return;}
+								if(path !== ''){
+									path += '_';
+								}
+								path += $(this).contents(':not(ul)').text().trim()
+							});
+
+							if(path === ''){
+								navigation.refresh();
+							}
+							else{
+								One.put("documents/move/" + e._id + "/" + path)
+									.done(function(){
+										navigation.refresh()
+									});
+							}
+						}
+						else{
+							navigation.refresh();
+						}
 					})
 			},
 
