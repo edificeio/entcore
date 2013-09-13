@@ -94,6 +94,12 @@ var messenger = (function(){
 		},
 		'redirect-parent': function(message){
 			window.location.href = message.data;
+		},
+		'update-avatar': function(){
+			$.get('/userbook/api/person').done(function(result){
+				var avatar = result.result['0'].photo;
+				$('#my-photo').attr('src', '/userbook/document/' + avatar + '?userbook-dimg=public%2Fimg%2Fno-avatar.jpg');
+			});
 		}
 	};
 
