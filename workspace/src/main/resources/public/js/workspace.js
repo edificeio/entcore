@@ -144,7 +144,9 @@ var navigation = (function(){
 			showFolders(path);
 		},
 		refresh: function(){
-			workspace.action.documents({url : this.currentUrl()});
+			workspace.action.documents({url : this.currentUrl()}, function(){
+				$('.selectAllCheckboxes').change()
+			});
 		}
 	};
 
@@ -527,7 +529,7 @@ var workspace = function(){
 			},
 			moveTrash : function(o) {
 				if(navigation.currentUrl().indexOf('trash') !== -1){
-					this.remove(o);
+					navigation.refresh();
 					return;
 				}
 				var files = [];
@@ -535,12 +537,7 @@ var workspace = function(){
 					var obj = $(this);
 					One.put(o.url + "/" + obj.val())
 						.done(function(data){
-							var parentLine = obj.parents("tr");
-							parentLine.next().remove();
-							parentLine.remove();
-
-							var parentCell = obj.parents("li");
-							parentCell.remove();
+							navigation.refresh();
 						});
 				});
 			},
