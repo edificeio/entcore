@@ -726,7 +726,7 @@ $(document).ready(function(){
 	})
 
 	$('.workspace').on('mousedown', '.editable', function(){
-		$(this).html(' ');
+		$(this).text('');
 		$(this).focus();
 		$(this).parent().find('input').prop('checked', true);
 		$(this).addClass('active');

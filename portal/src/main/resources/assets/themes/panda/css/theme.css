@@ -216,9 +216,12 @@ nav.vertical ul li {
   display: block;
   font-size: 14px;
   font-weight: normal;
+  width: 100%;
+  top: 0;
 }
 nav.vertical ul li a {
   display: block;
+  position: relative;
 }
 nav.vertical ul li a i {
   display: block;
@@ -626,6 +629,9 @@ em[contenteditable=true] {
   border-bottom: 1px dashed;
   line-height: 35px;
   height: 35px;
+}
+.editable {
+  height: 20px;
 }
 div.hidden-content {
   height: 0px;
