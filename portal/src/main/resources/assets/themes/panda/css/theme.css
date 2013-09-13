@@ -845,6 +845,7 @@ i[role=storage] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  margin-top: 1px;
 }
 i[role=orange-user] {
   height: 25px;
@@ -1641,7 +1642,7 @@ button[disabled] {
   background: linear-gradient(#9f9f9f, #eaeaea);
   -pie-background: linear-gradient(#9f9f9f, #eaeaea);
   behavior: url(/assets/themes/panda/css/PIE.htc);
-  cursor: not-allowed;
+  cursor: default;
 }
 input[type=button][disabled]:hover,
 input[type=submit][disabled]:hover,
