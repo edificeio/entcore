@@ -1373,10 +1373,164 @@ i[role=tired-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=worried-panda] {
-  height: 50px;
-  width: 50px;
-  background-image: url("../img/icons/worried-panda.png");
+i[role=worried-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/worried-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=angry-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/angry-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=default-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/default-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=dreamy-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/dreamy-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=happy-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/happy-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=joker-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/joker-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=love-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/love-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=proud-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/proud-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=sad-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/sad-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=sick-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/sick-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=tired-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/tired-panda-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=worried-panda].small-panda {
+  height: 26px;
+  width: 26px;
+  background-image: url("../img/icons/worried-panda-small.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -1400,11 +1554,6 @@ i[role=arrow-bottom] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-}
-.small-panda {
-  width: 25px !important;
-  height: 25px !important;
-  background-size: 100% auto;
 }
 a.button {
   padding-left: 7px;
