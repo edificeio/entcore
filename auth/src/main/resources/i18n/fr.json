@@ -13,8 +13,8 @@
 	"auth.reset.header" : "Réinitialisation du mot de passe",
 	"auth.reset.title" : "Réinitialisation du mot de passe",
 	"auth.activate" : "Activer",
-	"auth.forgot.header" : "Mot de passe oublié",
-	"auth.forgot.title" : "MOT DE PASSE OUBLIE",
+	"auth.forgot.header" : "MOT DE PASSE OUBLIE",
+	"auth.forgot.title" : "Mot de passe oublié",
 	"auth.forgot.send" : "Envoyer",
 	"auth.message.header" : "",
 	"auth.message.title" : "",
@@ -26,5 +26,6 @@
 	"auth.password" : "Mot de passe",
 	"auth.activateAccount": "Activer mon compte",
 	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect",
-	"forgot.error": "Utilisateur inconnu"
+	"forgot.error": "Utilisateur inconnu",
+	"auth.cancel": "Retour"
 }
