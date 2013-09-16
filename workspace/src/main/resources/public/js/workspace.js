@@ -196,7 +196,7 @@ var workspace = function(){
 								<tr class="overline">\
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-									<td><a href="document/{{_id}}">{{name}}</a></td>\
+									<td><a href="document/{{_id}}" call>{{name}}</a></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
