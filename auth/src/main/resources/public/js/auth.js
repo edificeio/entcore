@@ -9,3 +9,4 @@ window.addEventListener('load', function(e){
 		parent.location.href = base + 'callback=' + callback;
 	}
 })
+
