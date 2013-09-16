@@ -36,12 +36,17 @@ var tools = (function(){
 					response[i].sent = response[i].sent.split(' ')[0];
 				}
 
+				response[i].anyComment = function(){
+					return this.commentsCount !== 0;
+				};
+
 				if(!response[i].comments){
 					response[i].commentsCount = 0;
 					continue;
 				}
 
 				response[i].commentsCount = response[i].comments.length;
+
 				for(var j = 0; j < response[i].comments.length; j++){
 					response[i].comments[j].posted = response[i].comments[j].posted.split(' ')[0];
 					if(response[i].comments[j].author === '') {
@@ -198,7 +203,9 @@ var workspace = function(){
 									<td colspan="4" class="container-cell">\
 										<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
 										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
+										{{#anyComment}}\
 										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}} ({{commentsCount}})</a>\
+										{{/anyComment}}\
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" role="close" call="hideComment"></i></h2>\
 										<ul class="row">\
 										{{#comments}}\
