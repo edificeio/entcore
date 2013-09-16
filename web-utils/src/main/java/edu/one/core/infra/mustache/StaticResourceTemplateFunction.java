@@ -4,18 +4,25 @@ public class StaticResourceTemplateFunction extends VertxTemplateFunction {
 
 	private final String infraPort;
 
-	// TODO : make configurable
 	private final String publicDir;
-	private final static String protocol = "http://";
+	private final String protocol;
 
 	public StaticResourceTemplateFunction(String publicDir) {
 		this.publicDir = publicDir;
 		this.infraPort = null;
+		this.protocol = "http://";
 	}
 
 	public StaticResourceTemplateFunction(String publicDir, String infraPort) {
 		this.publicDir = publicDir;
 		this.infraPort = infraPort;
+		this.protocol = "http://";
+	}
+
+	public StaticResourceTemplateFunction(String publicDir, String infraPort, boolean https) {
+		this.publicDir = publicDir;
+		this.infraPort = infraPort;
+		this.protocol = https ? "https://" : "http://";
 	}
 
 	@Override

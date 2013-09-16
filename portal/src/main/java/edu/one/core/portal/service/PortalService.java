@@ -23,7 +23,9 @@ public class PortalService extends Controller {
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		try {
-			putTemplateFunction("asset", new AssetResourceTemplateFunction(container.config().getString("skin")));
+			putTemplateFunction("asset", new AssetResourceTemplateFunction(
+					container.config().getString("skin"),
+					container.config().getBoolean("ssl", false)));
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}

@@ -6,12 +6,17 @@ import java.nio.file.FileSystem;
 
 public class AssetResourceTemplateFunction extends VertxTemplateFunction {
 	private String host;
-	private final static String protocol = "http://";
+	private final String protocol;
 	private final static String assetDir = "assets/themes";
 	private  String themeName;
 
 	public AssetResourceTemplateFunction(String themeName) {
+		this(themeName, false);
+	}
+
+	public AssetResourceTemplateFunction(String themeName, boolean https) {
 		this.themeName = themeName;
+		this.protocol = https ? "https://" : "http://";
 	}
 
 	@Override

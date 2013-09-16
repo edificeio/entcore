@@ -43,8 +43,10 @@ public class Renders {
 				? new DevMustacheFactory("./view") : new DefaultMustacheFactory("./view");
 
 		templateFunctions = new HashMap<>();
-		templateFunctions.put("infra", new StaticResourceTemplateFunction("/infra/public", "8001")); // FIXME get port from infra module
-		templateFunctions.put("static", new StaticResourceTemplateFunction(pathPrefix + "/public"));
+		templateFunctions.put("infra", new StaticResourceTemplateFunction("/infra/public", "8001",
+				container.config().getBoolean("ssl", false))); // FIXME get port from infra module
+		templateFunctions.put("static", new StaticResourceTemplateFunction(pathPrefix + "/public",
+				null, container.config().getBoolean("ssl", false)));
 		templateFunctions.put("i18n", new I18nTemplateFunction(I18n.getInstance()));
 
 	}
