@@ -3,6 +3,7 @@ package edu.one.core.directory.controllers;
 import static edu.one.core.directory.be1d.BE1DConstants.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +16,8 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
+
+import com.google.common.base.Joiner;
 
 import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.datadictionary.dictionary.Dictionary;
@@ -94,11 +97,16 @@ public class DirectoryController extends Controller {
 
 	@SecuredAction("directory.authent")
 	public void people(HttpServerRequest request) {
+		List<String> expectedTypes = request.params().getAll("type");
 		Map<String, Object> params = new HashMap<>();
 		params.put("classId",request.params().get("id"));
+		String types = "'ELEVE','ENSEIGNANT','PERSRELELEVE'";
+		if (expectedTypes != null && !expectedTypes.isEmpty()) {
+			types = "'" + Joiner.on(',').join(expectedTypes) + "'";
+		}
 		neo.send("START n=node:node_auto_index(id={classId}) "
 				+ "MATCH n<-[:APPARTIENT]-m "
-				+ "WHERE m.type IN ['ELEVE','ENSEIGNANT','PERSRELELEVE'] "
+				+ "WHERE m.type IN [" + types + "] "
 				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode? as code, m.ENTPersonNom as firstName,"
 				+ "m.ENTPersonPrenom as lastName, n.id as classId", params, request.response());
 	}
@@ -124,6 +132,7 @@ public class DirectoryController extends Controller {
 				String firstname = request.formAttributes().get("firstname");
 				String lastname = request.formAttributes().get("lastname");
 				String type = request.formAttributes().get("type");
+				List<String> childrenIds =  request.formAttributes().getAll("childrenIds");
 				if (classId != null && !classId.trim().isEmpty() &&
 						firstname != null && !firstname.trim().isEmpty() &&
 						lastname != null && !lastname.trim().isEmpty() &&
@@ -152,8 +161,11 @@ public class DirectoryController extends Controller {
 					.putString("activationCode", activationGenerator.generate());
 					UserQueriesBuilder uqb = new UserQueriesBuilder();
 					uqb.createUser(user)
-					.linkClass(userId, classId)
-					.linkGroupProfils(userId, type)
+					.linkClass(userId, classId);
+					if ("PERSRELELEVE".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
+						uqb.linkChildrens(userId, childrenIds);
+					}
+					uqb.linkGroupProfils(userId, type)
 					.defaultCommunication(userId, type);
 					neo.sendBatch(uqb.build(), request.response());
 				} else {

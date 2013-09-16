@@ -68,6 +68,11 @@ var admin = function(){
 					<option value="ELEVE">{{#i18n}}directory.admin.student{{/i18n}}</option>\
 					<option value="PERSRELELEVE">{{#i18n}}directory.admin.parent{{/i18n}}</option>\
 				</select>\
+				<select name="childrenIds" multiple>\
+				{{#childrens}}\
+					<option value="{{userId}}">{{firstName}} {{lastName}}</option>\
+				{{/childrens}}\
+				</select>\
 				<input call="addUserSubmit" type="button" value="{{#i18n}}directory.admin.create{{/i18n}}" />\
 			</form>'
 		},
@@ -126,8 +131,17 @@ var admin = function(){
 				.error(function(data){app.notify.error(data)})
 			},
 			addUser : function(o) {
-				var json = { classId : o.url };
-				$("#people-" + o.url).html(app.template.render('addUser', json));
+				$.get("api/personnes?id=" + o.url + "&type=ELEVE")
+				.done(function(response) {
+					var childrens = [];
+					if (response.status === "ok") {
+						for (var key in response.result) {
+							childrens.push(response.result[key]);
+						}
+						$("#people-" + o.url).html(app.template.render('addUser',
+								{ classId : o.url, childrens : childrens }));
+					}
+				});
 			},
 			addUserSubmit : function(o) {
 				var form = $(o.target).parents("form");

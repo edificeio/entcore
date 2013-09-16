@@ -1,7 +1,11 @@
 package edu.one.core.directory.users;
 
+import java.util.List;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import com.google.common.base.Joiner;
 
 public class UserQueriesBuilder {
 
@@ -51,6 +55,18 @@ public class UserQueriesBuilder {
 		queries.add(toJsonObject(query, new JsonObject()
 		.putString("userId", userId)
 		.putString("classId", classId)));
+		return this;
+	}
+
+	public UserQueriesBuilder linkChildrens(String parentId, List<String> childrenIds) {
+		String query =
+				"START n=node:node_auto_index({childrenIds}), " +
+				"m=node:node_auto_index(id={parentId}) " +
+				"WHERE has(n.type) AND has(m.type) AND n.type = 'ELEVE' AND m.type = 'PERSRELELEVE' " +
+				"CREATE UNIQUE n-[:EN_RELATION_AVEC]->m ";
+		queries.add(toJsonObject(query, new JsonObject()
+		.putString("parentId", parentId)
+		.putString("childrenIds", "id:" + Joiner.on(" OR id:").join(childrenIds))));
 		return this;
 	}
 
