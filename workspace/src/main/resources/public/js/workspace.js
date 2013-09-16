@@ -303,7 +303,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="document/{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="document/{{_id}}">{{name}}</a></td>\
+								<td><a href="document/{{_id}}" call>{{name}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
 							{{/documents}}\
@@ -311,7 +311,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="rack/{{_id}}" /></td>\
 								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
-								<td><a href="rack/{{_id}}">{{name}}</a></td>\
+								<td><a href="rack/{{_id}}" call>{{name}}</a></td>\
 								<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 							</tr>\
 							{{/rack}}\
@@ -333,7 +333,7 @@ var workspace = function(){
 								</i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
-							<a href="document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}" call>{{name}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
