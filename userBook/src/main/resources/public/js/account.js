@@ -131,7 +131,7 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('em[contenteditable="true"], textarea').blur(function(){
+	$('em[contenteditable="true"], textarea').on('change', function(){
 		var parameters = "";
 		var parentLine = $(this).parent().parent();
 		if (parentLine.data('category')){
