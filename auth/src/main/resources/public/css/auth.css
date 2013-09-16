@@ -45,8 +45,12 @@ body {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   font-family: KGJune;
+  content: "";
   font-size: 23px;
   color: #fff;
+}
+.panel .remove-fout {
+  visibility: hidden;
 }
 .panel label {
   display: block;

@@ -1574,6 +1574,9 @@ a.button {
   line-height: 30px;
   height: 30px;
 }
+.remove-fout {
+  visibility: hidden;
+}
 input[type=text] {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;

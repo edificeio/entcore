@@ -168,3 +168,9 @@ $(window).on('hashchange', function() {
 
 	navigation.applyHash();
 });
+
+$(window).on('load', function(){
+	"use strict";
+
+	$('.remove-fout').removeClass('remove-fout');
+});

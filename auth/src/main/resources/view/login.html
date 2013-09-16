@@ -4,20 +4,11 @@
 		<title>{{#i18n}}auth.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<link rel="stylesheet" href="{{#static}}css/auth.css{{/static}}" type="text/css" />
-		<script type="text/javascript">
-			window.addEventListener('load', function(e){
-				if(parent !== window){
-					var url = window.location.href.split('callback=');
-					var callback = escape('/#app=' + url[1]);
-					var base = url[0];
-					parent.location.href = base + 'callback=' + callback;
-				}
-			})
-		</script>
+		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
 	</head>
 	<body>
 		<div class="panel">
-			<h1><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.header{{/i18n}}</h1>
+			<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.header{{/i18n}}</h1>
 			{{#error}}<p style="color:red">{{message}}</p>{{/error}}
 			<form method="post" action="/auth/login">
 				<input type="hidden" name="callBack" value="{{callBack}}"/>
@@ -30,7 +21,7 @@
 					<input type="password" name="password" />
 				</p>
 				<a href="/auth/forgot">{{#i18n}}missing.password{{/i18n}}</a>
-				<input type="submit" value="{{#i18n}}auth.login{{/i18n}}" />
+				<input type="submit" value="{{#i18n}}auth.login{{/i18n}}" class="remove-fout" />
 				<a href="/auth/activation" class="right cell">{{#i18n}}auth.activateAccount{{/i18n}}</a>
 			</form>
 			<div style="clear:both"></div>
