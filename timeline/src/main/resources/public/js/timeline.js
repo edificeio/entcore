@@ -22,6 +22,7 @@ var timeline = function(){
 				One.get(o.url).done(function(response){
 					response.empty = response.results.length === 0;
 					$('#list').html(app.template.render("lastNotifications", response));
+					messenger.requireResize();
 				});
 			}
 
