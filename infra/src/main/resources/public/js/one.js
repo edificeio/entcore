@@ -24,8 +24,6 @@ var http = (function(){
 		request: function(url, params){
 			var that = this;
 			params.url = url;
-			params.contentType=false;
-			params.processData = false;
 			params.cache = false;
 
 			$.ajax(params)
