@@ -66,11 +66,17 @@ var appRegistry = function(){
 						</form>',
 
 			application : '<span>{{name}}</span>\
-							<form action="/application/conf">\
+							<form action="application/conf">\
 								<input type="hidden" name="applicationId" value="{{id}}" />\
 								<input type="hidden" name="grantType" value="authorization_code" />\
 								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
-								<input type="text" name="secret" value="{{secret}}" />\
+								<input type="text" name="secret" value="{{secret}}" /><br />\
+								<label>{{#i18n}}app.registry.application.address{{/i18n}}</label>\
+								<input type="text" name="address" value="{{address}}" /><br />\
+								<label>{{#i18n}}app.registry.application.icon{{/i18n}}</label>\
+								<input type="text" name="icon" value="{{icon}}" /><br />\
+								<label>{{#i18n}}app.registry.application.target{{/i18n}}</label>\
+								<input type="text" name="target" value="{{target}}" /><br />\
 								<input call="applicationConf" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
 							</form>',
 
@@ -213,7 +219,6 @@ var appRegistry = function(){
 				$.get(o.url)
 				.done(function(response) {
 					if (response.status === "ok") {
-						console.log(response.result["0"]);
 						$('#list').html(app.template.render("application",
 								response.result["0"]));
 					} else {

@@ -305,7 +305,8 @@ public class AppRegistryService extends Controller {
 			neo.send(
 				"START n=node:node_auto_index(id={id}) " +
 				"RETURN n.id as id, n.name as name, " +
-					"n.grantType? as grantType, n.secret? as secret",
+				"n.grantType? as grantType, n.secret? as secret, n.address? as address, " +
+				"n.icon? as icon, n.target? as target",
 				params,
 				request.response()
 			);
@@ -324,16 +325,21 @@ public class AppRegistryService extends Controller {
 				String applicationId = request.formAttributes().get("applicationId");
 				String grantType = request.formAttributes().get("grantType");
 				String secret = request.formAttributes().get("secret");
-				if (applicationId != null && grantType != null && secret != null &&
-						!applicationId.trim().isEmpty() && !grantType.trim().isEmpty() &&
-						!secret.trim().isEmpty()) {
+				String address = request.formAttributes().get("address");
+				String icon = request.formAttributes().get("icon");
+				String target = request.formAttributes().get("target");
+				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					String query =
 							"START n=node:node_auto_index(id={applicationId}) " +
-							"SET n.grantType = {grantType}, n.secret = {secret} ";
+							"SET n.grantType = {grantType}, n.secret = {secret}, " +
+							"n.address = {address} , n.icon = {icon} , n.target = {target}";
 					Map<String, Object> params = new HashMap<>();
 					params.put("applicationId", applicationId);
-					params.put("grantType", grantType);
-					params.put("secret", secret);
+					params.put("grantType", Utils.getOrElse(grantType, ""));
+					params.put("secret", Utils.getOrElse(secret, ""));
+					params.put("address", Utils.getOrElse(address, ""));
+					params.put("icon", Utils.getOrElse(icon, ""));
+					params.put("target", Utils.getOrElse(target, ""));
 					neo.send(query, params, request.response());
 				} else {
 					badRequest(request);
