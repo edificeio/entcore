@@ -149,7 +149,7 @@ public class UserBookController extends Controller {
 				if (user != null) {
 					String query =
 							"START n=node:node_auto_index(id={id}) " +
-							"MATCH n-[:APPARTIENT]->c " +
+							"MATCH n-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->n " +
 							"WITH c " +
 							"MATCH c<-[:APPARTIENT]-m-[?:USERBOOK]->u " +
 							"WHERE has(c.type) AND c.type = 'CLASSE' AND has(m.ENTPersonLogin) " +
