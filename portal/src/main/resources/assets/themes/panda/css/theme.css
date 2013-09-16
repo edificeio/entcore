@@ -1758,10 +1758,10 @@ nav.vertical ul li a {
   margin: 5px;
   line-height: 20px;
   padding: 5px;
-  -o-transition: background 150ms ease;
-  -moz-transition: background 150ms ease;
-  -webkit-transition: background 150ms ease;
-  transition: background 150ms ease;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 nav.vertical ul li ul {
   margin-left: 0;
@@ -1781,10 +1781,10 @@ nav.vertical ul a:hover {
   color: #fff;
 }
 nav.vertical ul a:hover {
-  -o-transition: background 150ms ease;
-  -moz-transition: background 150ms ease;
-  -webkit-transition: background 150ms ease;
-  transition: background 150ms ease;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 article.box {
   border: 1px solid #ccc;
@@ -1916,17 +1916,17 @@ nav.horizontal a {
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
   border-radius: 10px;
-  -o-transition: background 150ms ease;
-  -moz-transition: background 150ms ease;
-  -webkit-transition: background 150ms ease;
-  transition: background 150ms ease;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 nav.horizontal a:hover {
   background: #ea791c;
-  -o-transition: background 150ms ease;
-  -moz-transition: background 150ms ease;
-  -webkit-transition: background 150ms ease;
-  transition: background 150ms ease;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 .logo {
   background: url(../img/illustrations/logo.png);
@@ -1970,6 +1970,22 @@ nav.horizontal a:hover {
   text-decoration: none;
   color: #888;
   font-size: 1em;
+}
+.icons-view li a i,
+.icons-view li a img {
+  opacity: 1;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.icons-view li a i:hover,
+.icons-view li a img:hover {
+  opacity: 0.8;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
 }
 .icons-view li a img {
   padding: 7px;

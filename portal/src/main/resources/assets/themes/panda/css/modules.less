@@ -549,6 +549,16 @@ nav.horizontal{
 		color: #888;
 		font-size: 1em;
 
+		i, img{
+			opacity: 1;
+			.run-transition(opacity);
+		}
+
+		i:hover, img:hover{
+			opacity: 0.8;
+			.run-transition(opacity)
+		}
+
 		img{
 			padding: 7px;
 			border: 1px solid #CCC;
