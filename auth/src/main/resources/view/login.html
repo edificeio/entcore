@@ -7,24 +7,46 @@
 		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
 	</head>
 	<body>
-		<div class="panel">
-			<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.header{{/i18n}}</h1>
-			{{#error}}<p style="color:red">{{message}}</p>{{/error}}
-			<form method="post" action="/auth/login">
-				<input type="hidden" name="callBack" value="{{callBack}}"/>
-				<p>
-					<label>{{#i18n}}auth.email{{/i18n}}</label>
-					<input type="text" name="email" />
-				</p>
-				<p>
-					<label>{{#i18n}}auth.password{{/i18n}}</label>
-					<input type="password" name="password" />
-				</p>
-				<a href="/auth/forgot">{{#i18n}}missing.password{{/i18n}}</a>
-				<input type="submit" value="{{#i18n}}auth.login{{/i18n}}" class="remove-fout" />
-				<a href="/auth/activation" class="right cell">{{#i18n}}auth.activateAccount{{/i18n}}</a>
-			</form>
-			<div style="clear:both"></div>
+
+		<div class="logo">
+
 		</div>
+		<div class="container">
+			<div class="main">
+				<div class="welcome">
+					<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
+					<h2>{{#i18n}}auth.summerbreak{{/i18n}}</h2>
+					<p>{{#i18n}}auth.opening.text{{/i18n}}</p>
+					<p>{{#i18n}}auth.closed.prefix{{/i18n}}<strong>{{#i18n}}auth.closed.date{{/i18n}}</strong></p>
+					<p>{{#i18n}}auth.opening.teachers.prefix{{/i18n}}
+						<strong>{{#i18n}}auth.opening.teachers.date{{/i18n}}</strong>
+						{{#i18n}}auth.opening.teachers.suffix{{/i18n}}
+						<strong>{{#i18n}}auth.opening.students.date{{/i18n}}</strong>
+						{{#i18n}}auth.opening.students.suffix{{/i18n}}</p>
+				</div>
+
+				<div class="panel">
+					<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.header{{/i18n}}</h1>
+					{{#error}}<p style="color:red">{{message}}</p>{{/error}}
+					<form method="post" action="/auth/login">
+						<input type="hidden" name="callBack" value="{{callBack}}"/>
+						<p>
+							<label>{{#i18n}}auth.email{{/i18n}}</label>
+							<input type="text" name="email" />
+						</p>
+						<p>
+							<label>{{#i18n}}auth.password{{/i18n}}</label>
+							<input type="password" name="password" />
+						</p>
+						<a href="/auth/forgot">{{#i18n}}missing.password{{/i18n}}</a>
+						<input type="submit" value="{{#i18n}}auth.login{{/i18n}}" class="remove-fout" />
+						<a href="/auth/activation" class="right cell">{{#i18n}}auth.activateAccount{{/i18n}}</a>
+					</form>
+					<div style="clear:both"></div>
+				</div>
+			</div>
+		</div>
+
+
 	</body>
 </html>

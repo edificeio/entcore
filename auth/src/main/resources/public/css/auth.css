@@ -1,5 +1,47 @@
+html,
+body,
+.container {
+  height: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+.container {
+  padding-top: 95px;
+  position: absolute;
+  top: 0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+}
+.logo {
+  background: url(../img/illustrations/logo.png) no-repeat left;
+  width: 960px;
+  height: 95px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.welcome {
+  width: 50%;
+  float: left;
+  color: #888;
+}
 body {
+  background: #c2c2c2;
+  font-family: Arial;
   font-size: 12px;
+  margin: 0;
+  padding: 2px;
+}
+body .main {
+  width: 960px;
+  background: #fff;
+  border-radius: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 15px;
+  height: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 @font-face {
   font-family: KGJune;
@@ -9,10 +51,20 @@ body {
   font-family: Satellite;
   src: url(../fonts/Satellite.otf);
 }
+h1 {
+  font-family: KGJune;
+  text-transform: uppercase;
+  color: #fd841c;
+  font-size: 27px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+p {
+  text-align: justify;
+}
 .panel {
   width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  float: right;
   border: 1px solid #ccc;
   background: #eee;
   border-radius: 10px;
@@ -54,7 +106,7 @@ body {
 }
 .panel label {
   display: block;
-  width: 150px;
+  width: 300px;
   color: #666;
 }
 .panel input {
