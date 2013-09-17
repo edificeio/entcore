@@ -1,6 +1,18 @@
 humane.timeout = 0;
 humane.clickToClose = true;
 
+if(!Date.prototype.toShortString){
+	Date.prototype.toShortString = function(){
+		var month = this.getMonth();
+		if(this.getMonth() > 9){
+			month = '0' + month;
+		}
+		return this.getDate() +
+			"/" + month  +
+			"/" +  this.getFullYear();
+	}
+}
+
 if(parent !== window){
 	$(document).ready(function(){
 		$('body').on('click', 'a:not([call])', function(e){
@@ -52,13 +64,13 @@ var oneApp = {
 				'i18n' : oneApp.i18n.i18n,
 				'formatDate' : function() {
 					return function(str) {
-						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toLocaleDateString();
+						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
 						return dt;
 					};
 				},
 				'formatDateTime' : function() {
 					return function(str) {
-						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toLocaleString();
+						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
 						return dt;
 					};
 				}
