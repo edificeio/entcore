@@ -38,9 +38,13 @@ public class UserAuthFilter implements Filter {
 	public void deny(HttpServerRequest request) {
 		String callBack = "";
 		String location = "";
+		String scheme = request.absoluteURI().getScheme();
+		if (scheme == null) {
+			scheme = "http";
+		}
 		try {
-			callBack = "http://" + URLEncoder.encode(request.headers().get("Host") + request.uri(), "UTF-8");
-			location = "http://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8");
+			callBack = scheme + "://" + URLEncoder.encode(request.headers().get("Host") + request.uri(), "UTF-8");
+			location = scheme + "://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8");
 			if (request.headers().get("X-Forwarded-For") == null) {
 				location += ":8009";
 			}
