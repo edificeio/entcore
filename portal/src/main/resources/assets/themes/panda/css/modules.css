@@ -1096,7 +1096,7 @@ i[role=workspace-large] {
 i[role=residence-artiste-large] {
   height: 135px;
   width: 135px;
-  background-image: url("../img/icons/residence-artiste.png");
+  background-image: url("../img/icons/residence-artiste-large.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
