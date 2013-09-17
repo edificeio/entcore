@@ -867,6 +867,21 @@ i[role=storage] {
   vertical-align: middle;
   margin-top: 1px;
 }
+i[role=blog] {
+  height: 33px;
+  width: 33px;
+  background-image: url("../img/icons/blog.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  margin-top: 1px;
+}
 i[role=orange-user] {
   height: 25px;
   width: 25px;
@@ -1969,7 +1984,7 @@ nav.horizontal a:hover {
 .icons-view li a {
   text-decoration: none;
   color: #888;
-  font-size: 1em;
+  font-size: 14px;
 }
 .icons-view li a i,
 .icons-view li a img {
