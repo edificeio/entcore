@@ -21,39 +21,40 @@ var tools = (function(){
 
 			return 'unknown';
 		},
-		formatResponse: function(response){
-			for(var i = 0; i < response.length; i++){
-				response[i].metadata['content-type'] = tools.roleFromFileType(response[i].metadata['content-type']);
-				if(response[i].metadata['content-type'] === 'img'){
-					response[i].thumbnail = 'document/' + response[i]._id;
+		formatResponse: function(response, callback){
+			response.forEach(function(item){
+				item.metadata['content-type'] = tools.roleFromFileType(item.metadata['content-type']);
+				if(item.metadata['content-type'] === 'img'){
+					item.thumbnail = 'document/' + item._id;
 				}
 
-				if(response[i].created){
-					response[i].created = response[i].created.split(' ')[0];
-					response[i].modified = response[i].modified.split(' ')[0];
+				if(item.created){
+					item.created = item.created.split(' ')[0];
+					item.modified = item.modified.split(' ')[0];
 				}
-				if(response[i].sent){
-					response[i].sent = response[i].sent.split(' ')[0];
+				if(item.sent){
+					item.sent = item.sent.split(' ')[0];
 				}
 
-				response[i].anyComment = function(){
+				item.anyComment = function(){
 					return this.commentsCount !== 0;
 				};
 
-				if(!response[i].comments){
-					response[i].commentsCount = 0;
-					continue;
+				if(!item.comments){
+					item.commentsCount = 0;
+					return;
 				}
 
-				response[i].commentsCount = response[i].comments.length;
+				item.commentsCount = item.comments.length;
 
-				for(var j = 0; j < response[i].comments.length; j++){
-					response[i].comments[j].posted = response[i].comments[j].posted.split(' ')[0];
-					if(response[i].comments[j].author === '') {
-						response[i].comments[j].author = ''
+				for(var j = 0; j < item.comments.length; j++){
+					item.comments[j].posted = item.comments[j].posted.split(' ')[0];
+					if(item.comments[j].author === '') {
+						item.comments[j].author = ''
 					}
 				}
-			}
+			})
+
 			return response;
 		},
 		mapFolderName: function(dir){
@@ -257,7 +258,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="rack/{{_id}}">{{name}}</a></td>\
+								<td><a href="rack/{{_id}}" call>{{name}}</a></td>\
 								<td>{{fromName}}</td>\
 								<td>{{toName}}</a></td>\
 								<td>{{sent}}</td>\
