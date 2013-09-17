@@ -1093,6 +1093,20 @@ i[role=workspace-large] {
   float: left;
   vertical-align: middle;
 }
+i[role=residence-artiste-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/residence-artiste-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=blog-large] {
   height: 135px;
   width: 135px;
@@ -1990,7 +2004,7 @@ nav.horizontal a:hover {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.icons-view li a img {
+.icons-view li a a.image-container {
   padding: 7px;
   border: 1px solid #CCC;
   -webkit-border-radius: 8px;
@@ -2002,6 +2016,7 @@ nav.horizontal a:hover {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+  overflow: hidden;
 }
 table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;

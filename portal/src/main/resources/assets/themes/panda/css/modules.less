@@ -124,6 +124,10 @@ i[role=workspace-large]{
 	.icon(workspace-large, 135px);
 }
 
+i[role=residence-artiste-large]{
+	.icon(residence-artiste-large, 135px);
+}
+
 i[role=blog-large]{
 	.icon(blog-large, 135px);
 }
@@ -569,11 +573,16 @@ nav.horizontal{
 			.run-transition(opacity)
 		}
 
-		img{
+		a.image-container{
 			padding: 7px;
 			border: 1px solid #CCC;
 			.rounded-corners(8px);
 			.border-box;
+			overflow: hidden;
+		}
+
+		img{
+
 		}
 	}
 }
