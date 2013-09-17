@@ -3,13 +3,25 @@ var tools = (function(){
 		roleFromFileType: function(fileType){
 			var types = {
 				'doc': function(type){
-					return type.indexOf('officedocument') !== -1 && type.indexOf('wordprocessing') !== -1;
+					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
 				},
 				'xls': function(type){
-					return type.indexOf('officedocument') !== -1 && type.indexOf('spreadsheet') !== -1;
+					return type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1;
 				},
 				'img': function(type){
 					return type.indexOf('image') !== -1;
+				},
+				'pdf': function(type){
+					return type.indexOf('pdf') !== -1;
+				},
+				'ppt': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1;
+				},
+				'video': function(type){
+					return type.indexOf('video') !== -1;
+				},
+				'audio': function(type){
+					return type.indexOf('audio') !== -1;
 				}
 			}
 
@@ -240,7 +252,7 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}" call class="image-container">\
+							<a href="document/{{_id}}" call class="{{#metadata}}{{content-type}}{{/metadata}}-container">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
 									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
 								</i>\

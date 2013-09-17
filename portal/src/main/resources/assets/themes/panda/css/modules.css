@@ -1177,6 +1177,62 @@ i[role=xls-large] {
   float: left;
   vertical-align: middle;
 }
+i[role=ppt-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/ppt-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=pdf-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/pdf-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=video-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/video-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=audio-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/audio-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=folder-large] {
   height: 135px;
   width: 135px;
@@ -1223,6 +1279,62 @@ i[role=xls] {
   height: 32px;
   width: 32px;
   background-image: url("../img/icons/xls.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=video] {
+  height: 32px;
+  width: 32px;
+  background-image: url("../img/icons/video.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=pdf] {
+  height: 32px;
+  width: 32px;
+  background-image: url("../img/icons/pdf.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=ppt] {
+  height: 32px;
+  width: 32px;
+  background-image: url("../img/icons/ppt.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=audio] {
+  height: 32px;
+  width: 32px;
+  background-image: url("../img/icons/audio.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -1983,7 +2095,7 @@ nav.horizontal a:hover {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
-.icons-view a.image-container {
+.icons-view a.img-container {
   padding: 7px;
   border: 1px solid #CCC;
   -webkit-border-radius: 8px;
@@ -1996,12 +2108,12 @@ nav.horizontal a:hover {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
-.icons-view a.image-container div {
+.icons-view a.img-container div {
   overflow: hidden;
   width: 100%;
   height: 100%;
 }
-.icons-view a.image-container div img {
+.icons-view a.img-container div img {
   max-width: none;
 }
 .icons-view li a {
