@@ -28,6 +28,18 @@ var tools = (function(){
 					item.thumbnail = 'document/' + item._id;
 				}
 
+				if(item.from){
+					One.get('/userbook/api/person?id=' + item.from)
+						.done(function(fromData){
+							One.get('/userbook/api/person?id=' + item.to)
+								.done(function(toData){
+									item.from = fromData.result[0].displayName;
+									item.to = toData.result[0].displayName;
+									callback(response);
+								});
+						});
+				}
+
 				if(item.created){
 					item.created = item.created.split(' ')[0];
 					item.modified = item.modified.split(' ')[0];
@@ -55,7 +67,7 @@ var tools = (function(){
 				}
 			})
 
-			return response;
+			callback(response);
 		},
 		mapFolderName: function(dir){
 			if (dir.indexOf("_") !== -1) {
@@ -411,14 +423,15 @@ var workspace = function(){
 						});
 						directories = _.map(directories, tools.mapFolderName);
 
-						response = tools.formatResponse(response);
-						$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
-						navigation.redirect(o.url);
-						messenger.requireResize();
+						tools.formatResponse(response, function(data){
+							$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
+							navigation.redirect(o.url);
+							messenger.requireResize();
 
-						if(typeof callback === 'function'){
-							callback();
-						}
+							if(typeof callback === 'function'){
+								callback();
+							}
+						});
 					});
 				});
 			},
@@ -432,9 +445,10 @@ var workspace = function(){
 			},
 			rack : function (o) {
 				One.get(o.url).done(function(response){
-					response = tools.formatResponse(response);
-					$('#list').html(app.template.render("rack", response));
-					messenger.requireResize();
+					tools.formatResponse(response, function(data){
+						$('#list').html(app.template.render("rack", response));
+						messenger.requireResize();
+					});
 				});
 			},
 			share: function(o){
@@ -451,10 +465,11 @@ var workspace = function(){
 			trash : function (o) {
 				One.get("documents/Trash").done(function(documents) {
 					One.get("rack/documents/Trash").done(function(rack) {
-						documents = tools.formatResponse(documents);
-						$('#list').html(app.template.render("trash",
+						tools.formatResponse(documents, function(data){
+							$('#list').html(app.template.render("trash",
 								{ documents : documents, rack : rack }));
-						messenger.requireResize();
+							messenger.requireResize();
+						});
 					});
 				});
 			},
