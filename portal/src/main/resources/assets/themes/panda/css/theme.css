@@ -2000,6 +2000,27 @@ nav.horizontal a:hover {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
 }
+.icons-view a.image-container {
+  padding: 7px;
+  border: 1px solid #CCC;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  -ms-border-radius: 8px;
+  -o-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.icons-view a.image-container div {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+.icons-view a.image-container div img {
+  max-width: none;
+}
 .icons-view li a {
   text-decoration: none;
   color: #888;
@@ -2020,20 +2041,6 @@ nav.horizontal a:hover {
   -moz-transition: opacity 250ms ease;
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
-}
-.icons-view li a a.image-container {
-  padding: 7px;
-  border: 1px solid #CCC;
-  -webkit-border-radius: 8px;
-  -moz-border-radius: 8px;
-  -ms-border-radius: 8px;
-  -o-border-radius: 8px;
-  border-radius: 8px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  overflow: hidden;
 }
 table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;

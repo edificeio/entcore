@@ -240,9 +240,9 @@ var workspace = function(){
 						{{/folders}}\
 						{{#documents}}\
 						<li>\
-							<a href="document/{{_id}}" call>\
+							<a href="document/{{_id}}" call class="image-container">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<img src="{{thumbnail}}" alt="thumbnail" />\
+									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
 								</i>\
 							</a>\
 							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
