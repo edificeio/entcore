@@ -36,10 +36,6 @@ var account = function(){
 						<article class="cell twelve text-container right-magnet">\
 							<h2>{{displayName}}</h2>\
 							<div class="row">\
-								<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>\
-								<em class="six cell">{{address}}</em>\
-							</div>\
-							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.login{{/i18n}}</label></div>\
 								<em class="six cell">{{login}}</em>\
 							</div>\
@@ -51,6 +47,22 @@ var account = function(){
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
 								<em class="six cell" contenteditable="true" data-property="email">{{email}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.telephone{{/i18n}}</label></div>\
+								<em class="six cell">{{tel}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>\
+								<em class="six cell">{{address}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.birthdate{{/i18n}}</label></div>\
+								<em class="six cell">{{birthdate}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.school{{/i18n}}</label></div>\
+								<em class="six cell">{{schoolName}}</em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.motto{{/i18n}}</label></div>\
