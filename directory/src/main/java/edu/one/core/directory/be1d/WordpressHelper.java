@@ -10,6 +10,7 @@ import java.util.Map;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -41,6 +42,8 @@ public class WordpressHelper {
 		// TODO : contrôles existence, not null, etc.
 		switch (entity.getString("type", "NOP")) {
 			case "ETABEDUCNAT" :
+				entity.putString("ENTStructureNomCourant",
+						school + entity.getString("ENTStructureNomCourant"));
 				schools.put(entity.getString("id"), entity);
 				break;
 			case "CLASSE" :
@@ -146,6 +149,41 @@ public class WordpressHelper {
 						System.out.println(e.encode());
 						sendWP(e);
 					}
+				}
+			}
+		});
+	}
+
+	public static void sendUser(final EventBus eb, final JsonObject user) {
+		String query =
+				"START n=node:node_auto_index(id={id}) " +
+				"MATCH n-[:APPARTIENT]->g-[:DEPENDS]->c " +
+				"WHERE has(c.type) AND c.type = 'CLASSE' " +
+				"RETURN c.wpId as wpId";
+		JsonObject params = new JsonObject()
+		.putString("id", user.getString("id"));
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "execute");
+		jo.putString("query", query);
+		jo.putObject("params", params);
+		eb.send("wse.neo4j.persistor", jo, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					JsonArray classes = new JsonArray();
+					for (String attr : res.body().getObject("result").getFieldNames()) {
+						JsonObject j = res.body().getObject("result").getObject(attr);
+						classes.add(j.getString("wpId"));
+					}
+					if ("ENSEIGNANT".equals(user.getString("type"))) {
+						user.putString("type", "PERSEDUCNAT");
+					}
+					JsonObject json = new JsonObject()
+					.putString("action", "MANUAL_USER")
+					.putArray("classes", classes)
+					.putObject("user", user);
+					eb.send("wpconnector.address", json);
 				}
 			}
 		});
