@@ -40,6 +40,19 @@ var account = function(){
 								<em class="six cell">{{address}}</em>\
 							</div>\
 							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.login{{/i18n}}</label></div>\
+								<em class="six cell">{{login}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.password{{/i18n}}</label></div>\
+								<em class="six cell">*****</em>\
+							<div class="one cell"><i role="configuration" href="" call="password" class="right-magnet"></i></div>\
+							</div>\
+							<div class="row">\
+								<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
+								<em class="six cell" contenteditable="true" data-property="email">{{email}}</em>\
+							</div>\
+							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.motto{{/i18n}}</label></div>\
 								<em class="six cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
 							</div>\
@@ -84,6 +97,20 @@ var account = function(){
 						<textarea data-property="health">{{health}}</textarea>\
 					</article>\
 				</div>\
+				',
+			changePasswordForm:'\
+				<form method="post" action="password" class="row adaptable-height">\
+					<div class="cell seven">{{#i18n}}userBook.password.old{{/i18n}}</div>\
+					<input class="cell four" type="password" name="oldPassword" value="{{oldPassword}}" />\
+					<div class="cell seven">{{#i18n}}userBook.password.new{{/i18n}}</div>\
+					<input class="cell four" type="password" name="password" />\
+					<div class="cell seven">{{#i18n}}userBook.password.confirm{{/i18n}}</div>\
+					<input class="cell four" type="password" name="confirmPassword" />\
+					<div class="bottom-buttons">\
+						<input type="submit" class="submit" value="{{#i18n}}userBook.password.change{{/i18n}}" />\
+						<input type="button" class="cancel" href="/userbook/mon-compte" value="{{#i18n}}userBook.profile.return{{/i18n}}" />\
+					</div>\
+				</form>\
 				'
 		},
 		action : {
@@ -99,6 +126,18 @@ var account = function(){
 				One.get(url)
 				.done(function(data){
 				})
+			},
+			editUserInfo : function(url){
+				One.get(url)
+				.done(function(data){
+				})
+			},
+			password : function(o){
+				$('#change-password').html(app.template.render('changePasswordForm', {}));
+				ui.showLightbox();
+			},
+			passwordBoxCancel : function(o){
+				ui.hideLightbox();
 			},
 			changeVisibility: function(o){
 				var newRole = 'PUBLIC';
@@ -143,7 +182,11 @@ function manageEditable(){
 			}
 			parameters += "?prop=" + $(this).data('property') + "&value=" + value;
 		}
-		account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
+		if ($(this).data('property') === 'email'){
+			account.action.editUserInfo("api/edit-user-info" + parameters);
+		} else {
+			account.action.editUserBookInfo("api/edit-userbook-info" + parameters);
+		}
 	});
 
 	$('.enhanced-select').on('change', function(){
@@ -160,7 +203,6 @@ function manageEditable(){
 $(document).ready(function(){
 	account.init();
 	account.action.profile();
-
 	var enterKey = 13;
 	$(document).on('keypress', ".monoline", function(e){
 		return e.which != enterKey;
@@ -169,4 +211,6 @@ $(document).ready(function(){
 	$(document).on('keypress', ".multiline", function(e){
 		messenger.requireResize();
 	});
+	$('body').on('click','input.cancel', function(){ui.hideLightbox();});
+	$('body').on('click','input.submit', function(){ui.hideLightbox();});
 });

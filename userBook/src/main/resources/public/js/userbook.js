@@ -147,6 +147,10 @@ var userbook = function(){
 					<article class="cell eight text-container right-magnet">\
 						<h2>{{displayName}}</h2>\
 						<div class="row">\
+							<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
+							<em class="six cell">{{email}}</em>\
+						</div>\
+						<div class="row">\
 							<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
 							<em class="six cell">{{address}}</em>\
 						</div>\

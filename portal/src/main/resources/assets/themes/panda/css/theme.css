@@ -343,6 +343,9 @@ i.liquid {
 .list-view table td img {
   vertical-align: middle;
 }
+.adaptable-height {
+  height: 100%;
+}
 .icons-view ul {
   padding-left: 0;
 }
@@ -533,6 +536,20 @@ header h2 {
 .lightbox-window form label {
   clear: left;
   width: 150px;
+}
+.lightbox-window form .bottom-buttons {
+  position: absolute;
+  bottom: 10px;
+  height: 60px;
+  width: 95%;
+}
+.lightbox-window form .bottom-buttons input.cancel {
+  position: relative;
+  float: left;
+}
+.lightbox-window form .bottom-buttons input.submit {
+  position: relative;
+  float: right;
 }
 .text-container {
   padding: 10px;

@@ -14,8 +14,16 @@
 		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
 	</head>
 	<body>
+		<section class="lightbox-backdrop"></section>
 		<h1><i role="orange-user"></i>{{#i18n}}userBook.header{{/i18n}}</h1>
 		<div id="person"></div>
 		<div class="clear"></div>
+		<section class="lightbox-window">
+			<div class="close-lightbox">
+				<i role="close-2x"></i>
+			</div>
+			<div id="change-password"></div>
+			<div class="clear"></div>
+		</section>
 	</body>
 </html>
