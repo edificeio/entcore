@@ -849,6 +849,7 @@ i[role=storage] {
   float: left;
   vertical-align: middle;
   margin-top: 1px;
+  margin-right: 7px;
 }
 i[role=blog] {
   height: 33px;
@@ -878,6 +879,7 @@ i[role=orange-user] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  margin-right: 7px;
 }
 i[role=add] {
   height: 27px;
@@ -1075,6 +1077,7 @@ i[role=apps] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  margin-right: 7px;
 }
 i[role=workspace-large] {
   height: 135px;
@@ -1257,6 +1260,8 @@ i[role=userbook] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  margin-top: 3px;
+  margin-right: 7px;
 }
 i[role=angry-panda] {
   height: 50px;
