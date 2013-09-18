@@ -209,7 +209,7 @@ var workspace = function(){
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" role="close" call="hideComment"></i></h2>\
 										<ul class="row">\
 										{{#comments}}\
-											<li class="twelve cell"><em>{{author}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
+											<li class="twelve cell"><em>{{authorName}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
 										{{/comments}}\
 										</ul>\
 									</td>\

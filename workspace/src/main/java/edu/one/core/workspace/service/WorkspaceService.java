@@ -688,28 +688,40 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction(value = "workspace.comment", type = ActionType.RESOURCE)
 	public void commentDocument(final HttpServerRequest request) {
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
 			@Override
-			protected void handle() {
-				String comment = request.formAttributes().get("comment");
-				if (comment != null && !comment.trim().isEmpty()) {
-					String query = "{ \"$push\" : { \"comments\":" + // TODO get author from session
-							" {\"author\" : \"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
-							"\", \"comment\": \"" + comment + "\" }}}";
-					documentDao.update(request.params().get("id"), new JsonObject(query),
-							new Handler<JsonObject>() {
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					request.expectMultiPart(true);
+					request.endHandler(new VoidHandler() {
 						@Override
-						public void handle(JsonObject res) {
-							if ("ok".equals(res.getString("status"))) {
-								renderJson(request, res);
+						protected void handle() {
+							String comment = request.formAttributes().get("comment");
+							if (comment != null && !comment.trim().isEmpty()) {
+								String query = "{ \"$push\" : { \"comments\":" +
+										" {\"author\" : \"" + user.getUserId() + "\", " +
+										"\"authorName\" : \"" + user.getUsername() +
+										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
+										"\", \"comment\": \"" + comment + "\" }}}";
+								documentDao.update(request.params().get("id"), new JsonObject(query),
+										new Handler<JsonObject>() {
+									@Override
+									public void handle(JsonObject res) {
+										if ("ok".equals(res.getString("status"))) {
+											renderJson(request, res);
+										} else {
+											renderError(request, res);
+										}
+									}
+								});
 							} else {
-								renderError(request, res);
+								badRequest(request);
 							}
 						}
 					});
 				} else {
-					badRequest(request);
+					unauthorized(request);
 				}
 			}
 		});
