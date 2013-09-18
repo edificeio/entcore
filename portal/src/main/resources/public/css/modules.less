@@ -334,7 +334,7 @@ header{
 }
 
 .box, .text-container article.box{
-	min-height: 100px;
+	height: 100px;
 	margin-bottom: 0;
 
 	.bottom-locked{
@@ -343,8 +343,16 @@ header{
 	}
 	.avatar{
 		padding: 5px;
+		height: 100%;
 		img{
 			margin-top: 5px;
+		}
+		.avatar-image{
+			background-size: 100% auto;
+			background-repeat: no-repeat;
+			background-position: center;
+			width: 100%;
+			height: 100%
 		}
 	}
 }

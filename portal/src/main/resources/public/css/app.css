@@ -545,7 +545,7 @@ header h2 {
 }
 .box,
 .text-container article.box {
-  min-height: 100px;
+  height: 100px;
   margin-bottom: 0;
 }
 .box .bottom-locked,
@@ -556,10 +556,19 @@ header h2 {
 .box .avatar,
 .text-container article.box .avatar {
   padding: 5px;
+  height: 100%;
 }
 .box .avatar img,
 .text-container article.box .avatar img {
   margin-top: 5px;
+}
+.box .avatar .avatar-image,
+.text-container article.box .avatar .avatar-image {
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 100%;
 }
 .cell img {
   max-width: 100%;
