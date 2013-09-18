@@ -30,13 +30,7 @@
 	"auth.old.password" : "Ancien mot de passe",
 	"auth.cancel": "Retour",
 	"auth.welcome": "Bienvenue !",
-	"auth.summerbreak": "Travaux d'été",
-	"auth.opening.text": "Afin de préparer la rentrée, des opérations de maintenance et de mise à jour de l'ENT sont réalisées durant l'été.",
-	"auth.closed.prefix": "Votre ENT sera ",
-	"auth.closed.date": "fermé à partir dur lundi 05 août à 8h00.",
-	"auth.opening.teachers.prefix": "Il réouvrira progressivement : le ",
-	"auth.opening.teachers.date": "lundi 26 août à 8h00",
-	"auth.opening.teachers.suffix": " pour le personnel enseignant et non enseignant des écoles, le ",
-	"auth.opening.students.date": "mardi 03 septembre à 8h00",
-	"auth.opening.students.suffix": "pour l'ensemble des utilisateurs (parents et élèves)."
+	"auth.welcome.p1": "Bienvenue sur ONE, l’Espace Numérique de Travail (ENT) du premier degré !",
+	"auth.welcome.p2": "Elèves, enseignants, personnel et parents, l’ENT s’adresse à chacun de vous et vous permet d’accéder facilement à des informations et des outils collaboratifs. Cette version est très simple et va évoluer au cours de l’année scolaire avec de nouveaux services et de nouvelles fonctionnalités.",
+	"auth.welcome.p3": "Pour vous connecter, munissez-vous de votre identifiant et de votre mot de passe distribués par votre école."
 }
