@@ -109,20 +109,6 @@ var account = function(){
 						<textarea data-property="health">{{health}}</textarea>\
 					</article>\
 				</div>\
-				',
-			changePasswordForm:'\
-				<form method="post" action="password" class="row adaptable-height">\
-					<div class="cell seven">{{#i18n}}userBook.password.old{{/i18n}}</div>\
-					<input class="cell four" type="password" name="oldPassword" value="{{oldPassword}}" />\
-					<div class="cell seven">{{#i18n}}userBook.password.new{{/i18n}}</div>\
-					<input class="cell four" type="password" name="password" />\
-					<div class="cell seven">{{#i18n}}userBook.password.confirm{{/i18n}}</div>\
-					<input class="cell four" type="password" name="confirmPassword" />\
-					<div class="bottom-buttons">\
-						<input type="submit" class="submit" value="{{#i18n}}userBook.password.change{{/i18n}}" />\
-						<input type="button" class="cancel" href="/userbook/mon-compte" value="{{#i18n}}userBook.profile.return{{/i18n}}" />\
-					</div>\
-				</form>\
 				'
 		},
 		action : {
@@ -145,11 +131,22 @@ var account = function(){
 				})
 			},
 			password : function(o){
-				$('#change-password').html(app.template.render('changePasswordForm', {}));
-				ui.showLightbox();
+				One.get("/auth/reset/password")
+				.done(function(response) {
+					$('#change-password').html(response);
+					ui.showLightbox();
+				});
 			},
 			passwordBoxCancel : function(o){
 				ui.hideLightbox();
+			},
+			passwordSubmit : function(o){
+				var form = $("#changePassword");
+				One.post(form.attr('action'), form.serialize())
+				.done(function(response) {
+					$('#change-password').html(response);
+					ui.showLightbox();
+				});
 			},
 			changeVisibility: function(o){
 				var newRole = 'PUBLIC';
@@ -225,4 +222,9 @@ $(document).ready(function(){
 	});
 	$('body').on('click','input.cancel', function(){ui.hideLightbox();});
 	$('body').on('click','input.submit', function(){ui.hideLightbox();});
+	$('body').on('submit', '#changePassword',function(event){
+		event.preventDefault();
+		account.action.passwordSubmit({});
+		return false;
+	});
 });

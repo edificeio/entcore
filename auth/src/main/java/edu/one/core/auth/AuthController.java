@@ -391,21 +391,28 @@ public class AuthController extends Controller {
 	}
 
 	public void resetPassword(final HttpServerRequest request) {
+		resetPasswordView(request, null);
+	}
+
+	private void resetPasswordView(final HttpServerRequest request, final JsonObject p) {
 		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
+				JsonObject params = p;
+				if (params == null) {
+					params = new JsonObject();
+				}
 				if (user != null) {
-					renderView(request, new JsonObject()
+					renderView(request, params
 					.putString("login", user.getLogin())
 					.putString("callback", "/userbook/mon-compte"),
 					"changePassword.html", null);
 				} else {
-					renderView(request, new JsonObject()
+					renderView(request, params
 					.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
 				}
 			}
 		});
-
 	}
 
 	public void resetPasswordSubmit(final HttpServerRequest request) {
@@ -431,7 +438,7 @@ public class AuthController extends Controller {
 					if (resetCode != null) {
 						error.putString("resetCode", resetCode);
 					}
-					renderView(request, error, null, null, 400);
+					resetPasswordView(request, error);
 				} else {
 					final org.vertx.java.core.Handler<Boolean> resultHandler =
 							new org.vertx.java.core.Handler<Boolean>() {
@@ -472,7 +479,7 @@ public class AuthController extends Controller {
 				if (resetCode != null) {
 					error.putString("resetCode", resetCode);
 				}
-				renderView(request, error, null, null, 400);
+				resetPasswordView(request, error);
 			}
 		});
 	}

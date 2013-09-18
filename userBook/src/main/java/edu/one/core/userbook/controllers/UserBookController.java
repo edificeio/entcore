@@ -18,19 +18,14 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.I18n;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
-import static edu.one.core.infra.http.Renders.unauthorized;
-import edu.one.core.infra.security.BCrypt;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
 import java.util.Arrays;
-import org.vertx.java.core.VoidHandler;
-
 
 public class UserBookController extends Controller {
 
@@ -62,107 +57,6 @@ public class UserBookController extends Controller {
 	@SecuredAction("userbook.authent")
 	public void annuaire(HttpServerRequest request) {
 		renderView(request);
-	}
-
-	@SecuredAction("userbook.authent")
-	public void password(HttpServerRequest request) {
-		renderView(request);
-	}
-
-	@SecuredAction("userbook.authent")
-	public void passwordSubmit(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(final UserInfos user) {
-				request.expectMultiPart(true);
-				request.endHandler(new VoidHandler() {
-
-					@Override
-					protected void handle() {
-						final String oldPassword = request.formAttributes().get("oldPassword");
-						String password = request.formAttributes().get("password");
-						String confirmPassword = request.formAttributes().get("confirmPassword");
-						if (oldPassword == null|| password == null || oldPassword.trim().isEmpty() ||
-								password.trim().isEmpty() || !password.equals(confirmPassword)) {
-							JsonObject error = new JsonObject()
-							.putObject("error", new JsonObject()
-							.putString("message", I18n.getInstance().translate("profile.password.invalid.argument", request.headers().get("Accept-Language"))));
-							if (oldPassword != null) {
-								error.putString("oldPassword", oldPassword);
-							}
-							renderView(request, error);
-						} else {
-							changePassword(user.getLogin(), oldPassword, password,
-									new org.vertx.java.core.Handler<Boolean>() {
-
-								@Override
-								public void handle(Boolean passwordChanged) {
-									if (Boolean.TRUE.equals(passwordChanged)) {
-										redirect(request, "/userbook/mon-compte");
-									} else {
-										JsonObject error = new JsonObject()
-										.putObject("error", new JsonObject()
-										.putString("message", "userBook.password.error"));
-										if (oldPassword != null) {
-											error.putString("oldPassword", oldPassword);
-										}
-										renderView(request, error);
-									}
-								}
-							});
-						}
-					}
-				});
-			}
-		});
-	}
-
-
-	public void changePassword(final String login, final String oldPassword, final String password,
-			final Handler<Boolean> handler) {
-		String query =
-					"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-					"WHERE has(n.ENTPersonMotDePasse) " +
-					"RETURN n.id as userId, n.ENTPersonMotDePasse as password";
-			Map<String, Object> params = new HashMap<>();
-			params.put("login", login);
-			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
-
-				@Override
-				public void handle(Message<JsonObject> res) {
-					JsonObject result = res.body().getObject("result");
-					if ("ok".equals(res.body().getString("status")) &&
-							result != null && result.size() == 1) {
-						JsonObject r = result.getObject("0");
-						if (r != null && BCrypt.checkpw(oldPassword, r.getString("password"))) {
-							String query =
-									"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-									"SET n.ENTPersonMotDePasse = {password} " +
-									"RETURN n.ENTPersonMotDePasse as password, n.id as id";
-							Map<String, Object> params = new HashMap<>();
-							params.put("login", login);
-							params.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
-							neo.send(query, params, new Handler<Message<JsonObject>>(){
-
-								@Override
-								public void handle(Message<JsonObject> res) {
-									if ("ok".equals(res.body().getString("status"))
-											&& res.body().getObject("result").getObject("0") != null) {
-										handler.handle(true);
-									} else {
-										handler.handle(false);
-									}
-								}
-							});
-						} else {
-							handler.handle(false);//mauvais mot de passe actuel
-						}
-					} else {
-						handler.handle(false); // ?
-					}
-				}
-			});
 	}
 
 	@SecuredAction("userbook.authent")

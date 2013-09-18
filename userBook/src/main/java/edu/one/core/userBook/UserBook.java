@@ -14,8 +14,6 @@ public class UserBook extends Server {
 
 		userBookController.get("/mon-compte", "monCompte")
 				.get("/annuaire", "annuaire")
-				.get("/password", "password")
-				.post("/password", "passwordSubmit")
 				.get("/api/search","search")
 				.get("/api/person", "person")
 				.get("/api/class", "myClass")
