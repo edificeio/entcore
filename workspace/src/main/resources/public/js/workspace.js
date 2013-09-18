@@ -1,5 +1,13 @@
 var tools = (function(){
+	var myId;
+
 	return {
+		myId: function(id){
+			if(!id){
+				return myId;
+			}
+			myId = id;
+		},
 		roleFromFileType: function(fileType){
 			var types = {
 				'doc': function(type){
@@ -32,6 +40,9 @@ var tools = (function(){
 			}
 
 			return 'unknown';
+		},
+		refresh: function(){
+			window.location.reload();
 		},
 		formatResponse: function(response, callback){
 			response.forEach(function(item){
@@ -751,12 +762,17 @@ var workspace = function(){
 
 $(document).ready(function(){
 	workspace.init();
-	workspace.action.documents({url : "documents?hierarchical=true&filter=owner"});
-	workspace.action.getFolders(true, undefined, function(data) {
-		navigation.redirect('documents?hierarchical=true&filter=owner');
-	});
 
-	navigation.showFolders(undefined);
+	One.get('/userbook/api/person').done(function(data){
+		tools.myId(data.result[0].id);
+
+		workspace.action.documents({url : "documents?hierarchical=true&filter=owner"});
+		workspace.action.getFolders(true, undefined, function(data) {
+			navigation.redirect('documents?hierarchical=true&filter=owner');
+		});
+
+		navigation.showFolders(undefined);
+	})
 
 	$('.workspace').on('change', '.select-file, .selectAllCheckboxes', function(){
 		if($(this).hasClass('selectAllCheckboxes')){
