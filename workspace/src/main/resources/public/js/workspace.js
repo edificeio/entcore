@@ -41,6 +41,9 @@ var tools = (function(){
 				}
 
 				if(item.from){
+					if(item.metadata['content-type'] === 'img'){
+						item.thumbnail = 'rack/' + item._id;
+					}
 					One.get('/userbook/api/person?id=' + item.from)
 						.done(function(fromData){
 							One.get('/userbook/api/person?id=' + item.to)
@@ -292,23 +295,17 @@ var workspace = function(){
 					</table>\
 					<header>&nbsp;</header>\
 						<ul>\
-						{{#folders}}\
+						{{#.}}\
 						<li>\
-							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
-						</li>\
-						{{/folders}}\
-						{{#documents}}\
-						<li>\
-							<a href="document/{{_id}}" call>\
+							<a href="rack/{{_id}}" call class="{{#metadata}}{{content-type}}{{/metadata}}-container">\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<img src="{{thumbnail}}" alt="thumbnail" />\
+									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
 								</i>\
 							</a>\
 							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							<a href="document/{{_id}}">{{name}}</a>\
 						</li>\
-						{{/documents}}\
+						{{/.}}\
 						<div class="clear"></div>\
 						</ul>',
 
@@ -354,7 +351,7 @@ var workspace = function(){
 						<li>\
 							<a href="document/{{_id}}" call>\
 								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<img src="{{thumbnail}}" alt="thumbnail" />\
+									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
 								</i>\
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
