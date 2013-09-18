@@ -2150,6 +2150,7 @@ h3 {
   background: url(../img/illustrations/logo.png);
   width: 245px;
   height: 85px;
+  cursor: pointer;
 }
 .search input[type=submit] {
   height: 28px;
