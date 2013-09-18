@@ -1,3 +1,12 @@
+var replaceAvatars = function(){
+	$('.avatar').each(function(index, item){
+		$('<div></div>').css({
+			'background-image': 'url(' + $(item).find('img').attr('src') + ')'
+		}).addClass('avatar-image').appendTo(item);
+		$(item).find('img').remove();
+	})
+}
+
 var userbook = function(){
 
 	var classDataAdaptor = function (d) {
@@ -73,7 +82,7 @@ var userbook = function(){
 				{{/anyTeacher}}\
 				{{#teachers}}\
 				<div class="cell four text-container" >\
-					<article class="box row person" id={{id}}>\
+					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
@@ -97,7 +106,7 @@ var userbook = function(){
 				{{/anyParent}}\
 				{{#parents}}\
 				<div class="cell four text-container" >\
-					<article class="box row person" id={{id}}>\
+					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
@@ -121,7 +130,7 @@ var userbook = function(){
 				{{/anyStudent}}\
 				{{#students}}\
 				<div class="cell four text-container" >\
-					<article class="box row person" id={{id}}>\
+					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
 							<div class="six cell">\
 								<div class="row">\
@@ -140,7 +149,7 @@ var userbook = function(){
 				</div>\
 				{{/students}}',
 			personne: '\
-				<div class="row box">\
+				<div class="row fixed-block height-four">\
 					<div class="avatar cell four">\
 						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
 					</div>\
@@ -225,6 +234,9 @@ var userbook = function(){
 			showList: function(){
 				this.refreshClassList();
 			},
+			refresh: function(){
+				window.location.reload();
+			},
 			showPerson: function(data){
 				$("#people .text-container.four").addClass('twelve').removeClass('four');
 				$("#people").addClass('four').removeClass('twelve');
@@ -271,6 +283,7 @@ var userbook = function(){
 					} else {
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
+						replaceAvatars();
 					messenger.requireResize();
 				});
 			}

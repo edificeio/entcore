@@ -28,12 +28,14 @@ var account = function(){
 	app.define ({
 		template : {
 			personne: '\
-				<div class="row box">\
-					<div class="avatar cell four">\
-						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>\
+				<div class="row fixed-block height-four">\
+					<div class="cell fixed four text-container">\
+						<div class="fluid twelve cell avatar">\
+							<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>\
+						</div>\
 					</div>\
-					<div class="eight cell text-container right-magnet">\
-						<article class="cell twelve text-container right-magnet">\
+					<div class="eight cell fixed right-magnet text-container">\
+						<article class="fluid cell twelve text-container">\
 							<h2>{{displayName}}</h2>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.login{{/i18n}}</label></div>\
@@ -69,30 +71,42 @@ var account = function(){
 								<em class="six cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
 							</div>\
 						</article>\
-						<article class="twelve cell text-container right-magnet">\
-							<h2>Ma photo</h2>\
-							<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
+					</div>\
+				</div>\
+				<div class="row fixed-block height-two">\
+					<div class="four cell fixed">\
+						<div class="cell fixed twelve bottom-magnet">\
+							<div class="twelve cell bottom-magnet text-container">\
+								<div class="enhanced-select twelve" data-selected="{{mood}}">\
+									<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</span></div>\
+									<div class="options-list">\
+										{{#moods}}\
+										<div class="option" data-value="{{.}}">\
+											<i role="{{.}}-panda" class="small-panda"></i>\
+											<span>{{#i18n}}userBook.mood.{{.}}{{/i18n}}</span>\
+										</div>\
+										{{/moods}}\
+									</div>\
+								</div>\
+							</div>\
+						</div>\
+						<div class="row text-container">\
+							<article class="twelve cell text-container centered">\
+								<form id="upload-form" method="post" action="document" enctype="multipart/form-data">\
 								<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->\
 								<div class="hidden-content">\
 									<input type="file" name="file" value="Changer l\'image" id="avatar"/>\
 								</div>\
 								<button class="file-button" data-linked="avatar">Changer ma photo</button>\
 							</form>\
-						</article>\
-					</div>\
-				</div>\
-				<div class="text-container clear">\
-					<div class="enhanced-select" data-selected="{{mood}}">\
-						<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</span></div>\
-						<div class="options-list">\
-							{{#moods}}\
-							<div class="option" data-value="{{.}}">\
-								<i role="{{.}}-panda" class="small-panda"></i>\
-								<span>{{#i18n}}userBook.mood.{{.}}{{/i18n}}</span>\
-							</div>\
-							{{/moods}}\
+							</article>\
 						</div>\
 					</div>\
+					<div class="eight cell right-magnet fixed text-container">\
+						<article class="fluid twelve cell"></article>\
+					</div>\
+				</div>\
+				<div class="clear"></div>\
 					<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>\
 					<article class="text-container">\
 					{{#hobbies}}\
@@ -149,6 +163,9 @@ var account = function(){
 						ui.showLightbox();
 					}
 				});
+			},
+			refresh: function(){
+				window.location.reload();
 			},
 			changeVisibility: function(o){
 				var newRole = 'PUBLIC';
