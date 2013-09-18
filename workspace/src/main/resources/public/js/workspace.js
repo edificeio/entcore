@@ -732,9 +732,9 @@ var workspace = function(){
 
 $(document).ready(function(){
 	workspace.init();
-	workspace.action.documents({url : "documents?hierarchical=true"});
+	workspace.action.documents({url : "documents?hierarchical=true&filter=owner"});
 	workspace.action.getFolders(true, undefined, function(data) {
-		navigation.redirect('documents?hierarchical=true');
+		navigation.redirect('documents?hierarchical=true&filter=owner');
 	});
 
 	navigation.showFolders(undefined);

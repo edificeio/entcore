@@ -627,9 +627,18 @@ public class WorkspaceService extends Controller {
 				if (user != null && user.getUserId() != null) {
 					final String hierarchical = request.params().get("hierarchical");
 					final String relativePath = request.params().get("relativePath");
-					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-							+ user.getUserId()+ "\"}}}]";
+					String filter = request.params().get("filter");
+					String query = "{ ";
+					if ("owner".equals(filter)) {
+						query += "\"owner\": \"" + user.getUserId() + "\"";
+					} else if ("shared".equals(filter)) {
+						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}";
+					} else {
+						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
+								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}}]";
+					}
 					if (relativePath != null) {
 						query += ", \"folder\" : { \"$regex\" : \"^" + relativePath + "(_|$)\" }}";
 					} else {
@@ -780,9 +789,18 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
-					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-							+ user.getUserId()+ "\"}}}]";
+					String filter = request.params().get("filter");
+					String query = "{ ";
+					if ("owner".equals(filter)) {
+						query += "\"owner\": \"" + user.getUserId() + "\"";
+					} else if ("shared".equals(filter)) {
+						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}";
+					} else {
+						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
+								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}}]";
+					}
 					String forApplication = getOrElse(request.params()
 							.get("application"), WorkspaceService.WORKSPACE_NAME);
 					if (request.params().get("hierarchical") != null) {
@@ -818,9 +836,18 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
-					String query = "{ \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-							"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-							+ user.getUserId()+ "\"}}}]";
+					String filter = request.params().get("filter");
+					String query = "{ ";
+					if ("owner".equals(filter)) {
+						query += "\"owner\": \"" + user.getUserId() + "\"";
+					} else if ("shared".equals(filter)) {
+						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}";
+					} else {
+						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
+								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
+								+ user.getUserId()+ "\"}}}]";
+					}
 					String expectedFolder = request.params().get("folder");
 					String forApplication = getOrElse(request.params()
 							.get("application"), WorkspaceService.WORKSPACE_NAME);
