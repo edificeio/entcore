@@ -27,5 +27,6 @@
 	"auth.activateAccount": "Activer mon compte",
 	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect",
 	"forgot.error": "Utilisateur inconnu",
+	"auth.old.password" : "Ancien mot de passe",
 	"auth.cancel": "Retour"
 }

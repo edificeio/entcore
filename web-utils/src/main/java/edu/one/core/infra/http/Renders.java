@@ -75,13 +75,18 @@ public class Renders {
 	 * TODO : isolate sscope management 
 	 */
 	public void renderView(HttpServerRequest request, JsonObject params) {
-		renderView(request, params, null, null);
+		renderView(request, params, null, null, 200);
 	}
 
 	public void renderView(HttpServerRequest request, JsonObject params, String resourceName, Reader r) {
+		renderView(request, params, resourceName, r, 200);
+	}
+
+	public void renderView(HttpServerRequest request, JsonObject params, String resourceName, Reader r, int status) {
 		try {
 			Writer writer = processTemplate(request, params, resourceName, r);
 			request.response().putHeader("content-type", "text/html");
+			request.response().setStatusCode(status);
 			request.response().end(writer.toString());
 		} catch (Exception e) {
 			e.printStackTrace();

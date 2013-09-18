@@ -139,10 +139,26 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE has(n.resetCode) AND n.resetCode = {resetCode} " +
 				"SET n.ENTPersonMotDePasse = {password}, n.resetCode = null " +
 				"RETURN n.ENTPersonMotDePasse as pw";
-		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
+		updatePassword(handler, query, password, params);
+	}
+
+	@Override
+	public void changePassword(String login, String password, final Handler<Boolean> handler) {
+		String query =
+				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
+				"WHERE has(n.ENTPersonMotDePasse) " +
+				"SET n.ENTPersonMotDePasse = {password} " +
+				"RETURN n.ENTPersonMotDePasse as pw";
+		Map<String, Object> params = new HashMap<>();
+		params.put("login", login);
+		updatePassword(handler, query, password, params);
+	}
+
+	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
+		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		params.put("password", pw);
 		neo.send(query, params, new Handler<Message<JsonObject>>(){
 

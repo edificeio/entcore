@@ -46,6 +46,7 @@ import edu.one.core.infra.Controller;
 import edu.one.core.infra.I18n;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.Utils;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
@@ -389,9 +390,22 @@ public class AuthController extends Controller {
 		});
 	}
 
-	public void resetPassword(HttpServerRequest request) {
-		renderView(request, new JsonObject()
-		.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
+	public void resetPassword(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					renderView(request, new JsonObject()
+					.putString("login", user.getLogin())
+					.putString("callback", "/userbook/mon-compte"),
+					"changePassword.html", null);
+				} else {
+					renderView(request, new JsonObject()
+					.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
+				}
+			}
+		});
+
 	}
 
 	public void resetPasswordSubmit(final HttpServerRequest request) {
@@ -400,12 +414,16 @@ public class AuthController extends Controller {
 
 			@Override
 			protected void handle() {
-				String login = request.formAttributes().get("login");
+				final String login = request.formAttributes().get("login");
 				final String resetCode = request.formAttributes().get("resetCode");
-				String password = request.formAttributes().get("password");
+				final String oldPassword = request.formAttributes().get("oldPassword");
+				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
-				if (login == null || resetCode == null|| password == null ||
-						login.trim().isEmpty() || resetCode.trim().isEmpty() ||
+				final String callback = Utils.getOrElse(
+						request.formAttributes().get("callback"), "/auth/login", false);
+				if (login == null || ((resetCode == null || resetCode.trim().isEmpty()) &&
+						(oldPassword == null || oldPassword.trim().isEmpty())) ||
+						password == null || login.trim().isEmpty() ||
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
@@ -413,27 +431,48 @@ public class AuthController extends Controller {
 					if (resetCode != null) {
 						error.putString("resetCode", resetCode);
 					}
-					renderView(request, error);
+					renderView(request, error, null, null, 400);
 				} else {
-					userAuthAccount.resetPassword(login, resetCode, password,
+					final org.vertx.java.core.Handler<Boolean> resultHandler =
 							new org.vertx.java.core.Handler<Boolean>() {
 
 						@Override
 						public void handle(Boolean reseted) {
 							if (Boolean.TRUE.equals(reseted)) {
-								redirect(request, "/auth/login");
+								redirect(request, callback);
 							} else {
-								JsonObject error = new JsonObject()
-								.putObject("error", new JsonObject()
-								.putString("message", I18n.getInstance().translate("reset.error", request.headers().get("Accept-Language"))));
-								if (resetCode != null) {
-									error.putString("resetCode", resetCode);
-								}
-								renderView(request, error);
+								error(request, resetCode);
 							}
 						}
-					});
+					};
+					if (resetCode != null && !resetCode.trim().isEmpty()) {
+						userAuthAccount.resetPassword(login, resetCode, password, resultHandler);
+					} else {
+						DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
+						data.getUserId(login, oldPassword, new Handler<String>() {
+
+							@Override
+							public void handle(String userId) {
+								if (userId != null && !userId.trim().isEmpty()) {
+									userAuthAccount.changePassword(login, password, resultHandler);
+								} else {
+									error(request, null);
+								}
+							}
+						});
+					}
 				}
+			}
+
+			private void error(final HttpServerRequest request,
+					final String resetCode) {
+				JsonObject error = new JsonObject()
+				.putObject("error", new JsonObject()
+				.putString("message", I18n.getInstance().translate("reset.error", request.headers().get("Accept-Language"))));
+				if (resetCode != null) {
+					error.putString("resetCode", resetCode);
+				}
+				renderView(request, error, null, null, 400);
 			}
 		});
 	}

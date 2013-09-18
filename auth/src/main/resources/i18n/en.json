@@ -23,5 +23,6 @@
 	"missing.password" : "Missing password",
 	"auth.email" : "Login",
 	"auth.password" : "Password",
+	"auth.old.password" : "Old password",
 	"auth.error.authenticationFailed": "Invalid login or password"
 }
