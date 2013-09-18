@@ -202,6 +202,7 @@ public class WorkspaceService extends Controller {
 					doc.putString("created", now);
 					doc.putString("modified", now);
 					doc.putString("owner", userInfos.getUserId());
+					doc.putString("ownerName", userInfos.getUsername());
 					String application = request.params().get("application");
 					String protectedContent = request.params().get("protected");
 					if (application != null && !application.trim().isEmpty() &&
@@ -227,7 +228,7 @@ public class WorkspaceService extends Controller {
 					if (to != null && !to.trim().isEmpty()) {
 						String query =
 								"START n=node:node_auto_index(id={id}) " +
-								"RETURN count(n) as nb";
+								"RETURN count(n) as nb, n.ENTPersonNomAffichage as username";
 						Map<String, Object> params = new HashMap<>();
 						params.put("id", to);
 						request.pause();
@@ -241,7 +242,10 @@ public class WorkspaceService extends Controller {
 												.getObject("0").getString("nb"))) {
 									JsonObject doc = new JsonObject();
 									doc.putString("to", to);
+									doc.putString("toName", res.body().getObject("result")
+											.getObject("0").getString("username"));
 									doc.putString("from", userInfos.getUserId());
+									doc.putString("fromName", userInfos.getUsername());
 									String now = MongoDb.formatDate(new Date());
 									doc.putString("sent", now);
 									add(request, RackDao.RACKS_COLLECTION, doc);

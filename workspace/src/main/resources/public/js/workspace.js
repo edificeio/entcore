@@ -258,8 +258,8 @@ var workspace = function(){
 								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 								<td><a href="rack/{{_id}}">{{name}}</a></td>\
-								<td>{{from}}</td>\
-								<td>{{to}}</a></td>\
+								<td>{{fromName}}</td>\
+								<td>{{toName}}</a></td>\
 								<td>{{sent}}</td>\
 							</tr>\
 							{{/.}}\
