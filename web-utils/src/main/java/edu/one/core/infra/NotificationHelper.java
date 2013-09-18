@@ -14,6 +14,7 @@ import edu.one.core.infra.security.resources.UserInfos;
 
 public class NotificationHelper {
 
+	private static final String TIMELINE_ADDRESS = "wse.timeline";
 	private final EventBus eb;
 	private final Renders render;
 
@@ -31,7 +32,14 @@ public class NotificationHelper {
 		.putString("sender", sender.getUserId())
 		.putString("message", render.processTemplate(request, template, params))
 		.putArray("recipients", new JsonArray(recipients.toArray()));
-		eb.send("wse.timeline", event);
+		eb.send(TIMELINE_ADDRESS, event);
+	}
+
+	public void deleteFromTimeline(String resource) {
+		JsonObject json = new JsonObject()
+		.putString("action", "delete")
+		.putString("resource", resource);
+		eb.send(TIMELINE_ADDRESS, json);
 	}
 
 }

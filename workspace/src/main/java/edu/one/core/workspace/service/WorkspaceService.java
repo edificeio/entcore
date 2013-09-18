@@ -2,6 +2,7 @@ package edu.one.core.workspace.service;
 
 import static edu.one.core.infra.Utils.getOrElse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.ETag;
 import edu.one.core.infra.security.UserUtils;
@@ -45,6 +47,7 @@ public class WorkspaceService extends Controller {
 	private final DocumentDao documentDao;
 	private final RackDao rackDao;
 	private final Neo neo;
+	private final NotificationHelper notification;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -55,6 +58,7 @@ public class WorkspaceService extends Controller {
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
+		notification = new NotificationHelper(eb, container);
 	}
 
 	@SecuredAction("workspace.view")
@@ -152,7 +156,7 @@ public class WorkspaceService extends Controller {
 											@Override
 											public void handle(Message<JsonObject> res) {
 												if ("ok".equals(res.body().getString("status"))) {
-													notifyShare(id, user, sharedArray);
+													notifyShare(request, id, user, sharedArray);
 													redirect(request, "/workspace/workspace");
 												} else {
 													renderError(request, res.body());
@@ -171,23 +175,24 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	// TODO extract in external helper class
-	private void notifyShare(String resource, UserInfos user, JsonArray sharedArray) {
-		JsonArray recipients = new JsonArray();
+	private void notifyShare(HttpServerRequest request, String resource, UserInfos user, JsonArray sharedArray) {
+		List<String> recipients = new ArrayList<>();
 		for (Object j : sharedArray) {
 			JsonObject json = (JsonObject) j;
-			recipients.addString(json.getString("userId"));
+			recipients.add(json.getString("userId"));
 		}
-		JsonObject event = new JsonObject()
-		.putString("action", "add")
-		.putString("resource", resource)
-		.putString("sender", user.getUserId())
-		.putString("message", user.getUsername() +
-				" a partagé avec vous <a href=\"" +
-				container.config().getString("host", "http://localhost:8011") +
-				pathPrefix + "/document/" + resource + "\">un document</a>.")
-		.putArray("recipients", recipients);
-		eb.send("wse.timeline", event);
+		JsonObject params = new JsonObject()
+		.putString("uri", container.config().getString("userbook-host") +
+				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+		.putString("username", user.getUsername())
+		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+				pathPrefix + "/document/" + resource);
+		try {
+			notification.notifyTimeline(request, user, recipients, resource,
+					"notify-share.html", params);
+		} catch (IOException e) {
+			log.error("Unable to send timeline notification", e);
+		}
 	}
 
 	@SecuredAction("workspace.document.add")
@@ -435,7 +440,7 @@ public class WorkspaceService extends Controller {
 									@Override
 									public void handle(JsonObject result) {
 										if ("ok".equals(result.getString("status"))) {
-											notifyDelete(id);
+											notification.deleteFromTimeline(id);
 											renderJson(request, result, 204);
 										} else {
 											renderError(request, result);
@@ -452,14 +457,6 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
-	}
-
-	// TODO extract in external helper class
-	private void notifyDelete(String resource) {
-		JsonObject json = new JsonObject()
-		.putString("action", "delete")
-		.putString("resource", resource);
-		eb.send("wse.timeline", json);
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
