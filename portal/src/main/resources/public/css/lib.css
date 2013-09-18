@@ -19,12 +19,62 @@
 .right-magnet {
   float: right !important;
 }
+@media screen and (min-width: 720px) {
+  .fixed-block.height-four {
+    padding-bottom: 33.333333333333336%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-four {
+    left: 33.333333333333336%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.height-three {
+    padding-bottom: 25%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-three {
+    left: 25%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.height-two {
+    padding-bottom: 16.666666666666668%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-two {
+    left: 16.666666666666668%;
+  }
+}
+.fixed-block {
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+}
+.fixed-block .cell.fixed {
+  position: absolute;
+  height: 100%;
+}
+.fixed-block .right-magnet.cell.fixed {
+  right: 0;
+}
+.fixed-block .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.fixed-block .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
 .one {
   width: 1;
 }
 @media screen and (min-width: 720px) {
   .one {
-    width: 8.166666666666666%;
+    width: 8.333333333333334%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -37,7 +87,7 @@
 }
 @media screen and (min-width: 720px) {
   .two {
-    width: 16.333333333333332%;
+    width: 16.666666666666668%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -50,7 +100,7 @@
 }
 @media screen and (min-width: 720px) {
   .three {
-    width: 24.5%;
+    width: 25%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -63,7 +113,7 @@
 }
 @media screen and (min-width: 720px) {
   .four {
-    width: 32.666666666666664%;
+    width: 33.333333333333336%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -76,7 +126,7 @@
 }
 @media screen and (min-width: 720px) {
   .five {
-    width: 40.83333333333333%;
+    width: 41.66666666666667%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -89,7 +139,7 @@
 }
 @media screen and (min-width: 720px) {
   .six {
-    width: 49%;
+    width: 50%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -102,7 +152,7 @@
 }
 @media screen and (min-width: 720px) {
   .seven {
-    width: 57.166666666666664%;
+    width: 58.333333333333336%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -115,7 +165,7 @@
 }
 @media screen and (min-width: 720px) {
   .eight {
-    width: 65.33333333333333%;
+    width: 66.66666666666667%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -128,7 +178,7 @@
 }
 @media screen and (min-width: 720px) {
   .nine {
-    width: 73.5%;
+    width: 75%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -141,7 +191,7 @@
 }
 @media screen and (min-width: 720px) {
   .ten {
-    width: 81.66666666666666%;
+    width: 83.33333333333334%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -154,7 +204,7 @@
 }
 @media screen and (min-width: 720px) {
   .eleven {
-    width: 89.83333333333333%;
+    width: 91.66666666666667%;
   }
 }
 @media screen and (max-width: 720px) {
@@ -167,7 +217,7 @@
 }
 @media screen and (min-width: 720px) {
   .twelve {
-    width: 98%;
+    width: 100%;
   }
 }
 @media screen and (max-width: 720px) {

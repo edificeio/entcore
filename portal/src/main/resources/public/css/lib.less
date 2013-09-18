@@ -22,12 +22,69 @@
 
 .grid-cell-width(@cell-size: 1){
   @media screen and (min-width: 720px){
-    width: (98% / 12 * @cell-size);
+    width: (100% / 12 * @cell-size);
   }
 
   @media screen and (max-width: 720px){
       width: 100%;
   }
+}
+
+.grid-cell-height(@cell-size: 1){
+	@media screen and (min-width: 720px){
+		padding-bottom: (100% / 12 * @cell-size);
+	}
+}
+
+.grid-cell-left(@cell-size: 1){
+	@media screen and (min-width: 720px){
+		left: (100% / 12 * @cell-size);
+	}
+}
+
+.fixed-block.height-four{
+	.grid-cell-height(4);
+}
+
+.fixed-block.left-four{
+	.grid-cell-left(4);
+}
+
+.fixed-block.height-three{
+	.grid-cell-height(3);
+}
+
+.fixed-block.left-three{
+	.grid-cell-left(3);
+}
+
+.fixed-block.height-two{
+	.grid-cell-height(2);
+}
+
+.fixed-block.left-two{
+	.grid-cell-left(2);
+}
+
+.fixed-block{
+	box-sizing: content-box;
+	position: relative;
+	height: 1px;
+	.cell.fixed{
+		position: absolute;
+		height: 100%;
+	}
+	.right-magnet.cell.fixed{
+		right: 0;
+	}
+	.cell.fluid{
+		position: relative;
+		height: 100%;
+	}
+	.bottom-magnet.cell{
+		bottom: 0;
+		position: absolute;
+	}
 }
 
 .one{
