@@ -1897,6 +1897,9 @@ nav.vertical ul {
   width: 99%;
   padding-left: 0;
 }
+nav.vertical ul li {
+  padding: 0;
+}
 nav.vertical ul li em {
   color: #cccccc;
 }
@@ -1932,6 +1935,7 @@ nav.vertical ul li span a {
 nav.vertical ul li input {
   margin-left: 15px;
   height: 27px;
+  position: relative !important;
 }
 nav.vertical ul li a {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
