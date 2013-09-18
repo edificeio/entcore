@@ -6,6 +6,7 @@
 	"url_infra":"http://localhost:8001",
 	"one-apps": [
 		{"name": "directory", "url": "http://localhost:8003/directory"},
+		{"name": "history", "url": "http://localhost:8006/history"},
         {"name": "appRegistry", "url": "http://localhost:8012/appregistry"},
         {"name": "communication", "url": "http://localhost:8015/communication"}
 	]
