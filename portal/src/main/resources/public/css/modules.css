@@ -469,36 +469,37 @@ section .contextual-buttons .action-buttons button,
 section .contextual-buttons .action-buttons a.button {
   vertical-align: top;
 }
-section .contextual-buttons .display-buttons {
+section .contextual-buttons article li {
+  list-style-type: none;
+}
+.display-buttons {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
   float: left;
   display: block;
-  width: 1;
   float: right;
   text-align: right;
 }
-section .contextual-buttons .display-buttons img {
+.display-buttons img {
   max-width: 100%;
 }
-@media screen and (min-width: 720px) {
-  section .contextual-buttons .display-buttons {
-    width: 16.333333333333332%;
-  }
-}
-@media screen and (max-width: 720px) {
-  section .contextual-buttons .display-buttons {
-    width: 100%;
-  }
-}
-section .contextual-buttons .display-buttons i {
+.display-buttons i {
   float: right;
   cursor: pointer;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+  opacity: 1;
 }
-section .contextual-buttons article li {
-  list-style-type: none;
+.display-buttons i:hover {
+  opacity: 0.8;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
 }
 .logo {
   margin-top: 10px;

@@ -260,17 +260,6 @@ section{
         vertical-align: top;
       }
     }
-    .display-buttons{
-      .cell;
-      .two;
-      float: right;
-      text-align: right;
-
-		i{
-			float: right;
-			cursor: pointer;
-		}
-    }
 
     article{
       li{
@@ -278,6 +267,23 @@ section{
       }
     }
   }
+}
+
+.display-buttons{
+	.cell;
+	float: right;
+	text-align: right;
+
+	i{
+		float: right;
+		cursor: pointer;
+		.run-transition(opacity);
+		opacity: 1;
+	}
+	i:hover{
+		opacity: 0.8;
+		.run-transition(opacity)
+	}
 }
 
 .logo{
