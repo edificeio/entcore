@@ -28,19 +28,19 @@ public class Starter extends Server {
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
 					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK") + Math.random());
-			deployModule(config.getObject("neo4j-persistor"), new Handler<AsyncResult<String>>() {
+			deployModule(config.getObject("neo4j-persistor"), true, new Handler<AsyncResult<String>>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
 						initAutoIndex(config.getObject("neo4j-persistor")
 								.getObject("config", new JsonObject()));
-						deployModule(config.getObject("app-registry"),
+						deployModule(config.getObject("app-registry"), true,
 								new Handler<AsyncResult<String>>() {
 							@Override
 							public void handle(AsyncResult<String> event) {
 								if (event.succeeded()) {
-									deployModules(config.getArray("external-modules"));
-									deployModules(config.getArray("one-modules"));
+									deployModules(config.getArray("external-modules"), false);
+									deployModules(config.getArray("one-modules"), true);
 								}
 							}
 						});
@@ -53,36 +53,40 @@ public class Starter extends Server {
 
 	}
 
-	private void deployModule(JsonObject module, Handler<AsyncResult<String>> handler) {
+	private void deployModule(JsonObject module, boolean internal, Handler<AsyncResult<String>> handler) {
 		if (module.getString("name") == null) {
 			return;
 		}
-		JsonObject conf = module.getObject("config");
-		if (conf == null) {
+		JsonObject conf = new JsonObject();
+		if (internal) {
 			try {
 				conf = getConfig("../" + module.getString("name") + "/", "mod.json");
 			} catch (Exception e) {
+				log.error("Invalid configuration for module " + module.getString("name"), e);
 				return;
 			}
 		}
+		conf = conf.mergeIn(module.getObject("config", new JsonObject()));
 		container.deployModule(module.getString("name"),
 				conf, module.getInteger("instances", 1), handler);
 	}
 
-	private void deployModules(JsonArray modules) {
+	private void deployModules(JsonArray modules, boolean internal) {
 		for (Object o : modules) {
 			JsonObject module = (JsonObject) o;
 			if (module.getString("name") == null) {
 				continue;
 			}
-			JsonObject conf = module.getObject("config");
-			if (conf == null) {
+			JsonObject conf = new JsonObject();
+			if (internal) {
 				try {
 					conf = getConfig("../" + module.getString("name") + "/", "mod.json");
 				} catch (Exception e) {
+					log.error("Invalid configuration for module " + module.getString("name"), e);
 					continue;
 				}
 			}
+			conf = conf.mergeIn(module.getObject("config", new JsonObject()));
 			container.deployModule(module.getString("name"),
 					conf, module.getInteger("instances", 1));
 		}
