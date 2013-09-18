@@ -1,34 +1,21 @@
 package edu.one.core.admin;
 
+import edu.one.core.admin.controllers.AdminController;
 import edu.one.core.infra.Server;
-import edu.one.core.infra.http.Renders;
-import edu.one.core.infra.request.CookieHelper;
+import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
-
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
 
 public class Admin extends Server {
 
 	@Override
 	public void start() {
 		super.start();
-		final Renders render = new Renders(container);
 
-		rm.get("/admin", new SecurityHandler(){
-			@Override
-			public void filter(HttpServerRequest request) {
-				render.renderView(request, config);
-			}
-		});
+		AdminController adminController = new AdminController(vertx, container, rm, securedActions);
 
-		rm.get("/logout", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				CookieHelper.set("oneSessionId", "", request.response());
-				Renders.redirect(request, "localhost:8009", "/login");
-			}
-		});
+		adminController.get("", "admin");
+
+		SecurityHandler.addFilter(new ActionFilter(adminController.securedUriBinding(), getEventBus(vertx)));
 
 	}
 
