@@ -2141,6 +2141,11 @@ nav.horizontal a:hover {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+h3 {
+  font-weight: normal;
+  font-size: 18px;
+  margin: 0;
+}
 .logo {
   background: url(../img/illustrations/logo.png);
   width: 245px;
