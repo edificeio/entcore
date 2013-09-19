@@ -17,6 +17,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.NotificationHelper;
@@ -25,6 +26,7 @@ import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
+
 import java.util.Arrays;
 
 public class UserBookController extends Controller {
@@ -203,13 +205,27 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-				String neoRequest = "START n=node:node_auto_index(id='" + user.getUserId() + "') ";
-				if (request.params().contains("prop") && "email".equals(request.params().get("prop"))){
-					neoRequest += "SET n.ENTPersonMail='" + request.params().get("value") + "'";
-				} else if (request.params().contains("password")) {
-					neoRequest += "";
-				}
-				neo.send(neoRequest, request.response());
+					if ("email".equals(request.params().get("prop"))) {
+						String email = request.params().get("value");
+						try {
+							if (RegExpValidator.instance("email").test(email)) {
+								String query =
+										"START n=node:node_auto_index(id={id}) " +
+										"SET n.ENTPersonMail={email} ";
+								Map<String, Object> params = new HashMap<>();
+								params.put("id", user.getUserId());
+								params.put("email", email);
+								neo.send(query, params, request.response());
+							} else {
+								badRequest(request);
+							}
+						} catch (Exception e) {
+							log.error("Save email", e);
+							renderError(request);
+						}
+					} else {
+						badRequest(request);
+					}
 				} else {
 					unauthorized(request);
 				}
