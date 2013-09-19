@@ -22,8 +22,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.google.common.base.Joiner;
-
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.FileUtils;
 import edu.one.core.infra.MongoDb;
@@ -380,7 +378,7 @@ public class WorkspaceService extends Controller {
 					} else {
 						FileUtils.gridfsSendFile(result.getString("file"),
 								result.getString("name"), eb, gridfsAddress, request.response(),
-								inline);
+								inline, result.getObject("metadata"));
 					}
 				} else {
 					request.response().setStatusCode(404).end();
