@@ -28,6 +28,7 @@ import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
 import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
+import edu.one.core.infra.TracerHelper;
 import edu.one.core.infra.http.ETag;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
@@ -46,8 +47,9 @@ public class WorkspaceService extends Controller {
 	private final RackDao rackDao;
 	private final Neo neo;
 	private final NotificationHelper notification;
+	private final TracerHelper trace;
 
-	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm,
+	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		mongo = new MongoDb(Server.getEventBus(vertx),
@@ -57,6 +59,7 @@ public class WorkspaceService extends Controller {
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
 		notification = new NotificationHelper(eb, container);
+		this.trace = trace;
 	}
 
 	@SecuredAction("workspace.view")
@@ -147,6 +150,7 @@ public class WorkspaceService extends Controller {
 								String criteria = "{\"_id\" : \"" + id + "\", "
 										+ "\"owner\" : \"" + user.getUserId() + "\"}";
 								String query = "{ \"$set\" : { \"shared\" : " + sharedArray.encode() + "}}";
+								trace.info(user.getLogin() + " a partagé un document (id=" + id + ").");
 								mongo.update(DocumentDao.DOCUMENTS_COLLECTION,
 										new JsonObject(criteria), new JsonObject(query),
 										new Handler<Message<JsonObject>>() {

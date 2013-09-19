@@ -46,6 +46,7 @@ import edu.one.core.infra.Controller;
 import edu.one.core.infra.I18n;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Neo;
+import edu.one.core.infra.TracerHelper;
 import edu.one.core.infra.Utils;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.UserUtils;
@@ -59,12 +60,14 @@ public class AuthController extends Controller {
 	private final Token token;
 	private final ProtectedResource protectedResource;
 	private final UserAuthAccount userAuthAccount;
+	private final TracerHelper trace;
 	private static final String USERINFO_SCOPE = "userinfo";
 
-	public AuthController(Vertx vertx, Container container, RouteMatcher rm,
+	public AuthController(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb, log);
+		this.trace = trace;
 		this.oauthDataFactory = new OAuthDataHandlerFactory(
 				neo,
 				new MongoDb(eb, container.config()
@@ -191,13 +194,14 @@ public class AuthController extends Controller {
 							.getObject("authenticationServer").getString("loginCallback"));
 				}
 				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-				String login = request.formAttributes().get("email");
+				final String login = request.formAttributes().get("email");
 				String password = request.formAttributes().get("password");
 				data.getUserId(login, password, new Handler<String>() {
 
 					@Override
 					public void handle(String userId) {
 						if (userId != null && !userId.trim().isEmpty()) {
+							trace.info("Connexion de l'utilisateur " + login);
 							UserUtils.createSession(eb, userId,
 									new org.vertx.java.core.Handler<String>() {
 
@@ -214,6 +218,7 @@ public class AuthController extends Controller {
 								}
 							});
 						} else {
+							trace.info("Erreur de connexion pour l'utilisateur " + login);
 							viewLogin(request, "auth.error.authenticationFailed", callBack.toString());
 						}
 					}
@@ -322,6 +327,7 @@ public class AuthController extends Controller {
 				if (login == null || activationCode == null|| password == null ||
 						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+					trace.info("Echec de l'activation du compte utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
 					.putString("message", I18n.getInstance().translate("auth.activation.invalid.argument", request.headers().get("Accept-Language"))));
@@ -330,6 +336,7 @@ public class AuthController extends Controller {
 					}
 					renderView(request, error);
 				} else {
+					trace.info("Activation du compte utilisateur " + login);
 					userAuthAccount.activateAccount(login, activationCode, password,
 							new org.vertx.java.core.Handler<Boolean>() {
 
@@ -439,6 +446,8 @@ public class AuthController extends Controller {
 						(oldPassword == null || oldPassword.trim().isEmpty())) ||
 						password == null || login.trim().isEmpty() ||
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+					trace.info("Erreur lors de la réinitialisation "
+							+ "du mot de passe de l'utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
 					.putString("message", I18n.getInstance().translate("auth.reset.invalid.argument", request.headers().get("Accept-Language"))));
@@ -453,8 +462,11 @@ public class AuthController extends Controller {
 						@Override
 						public void handle(Boolean reseted) {
 							if (Boolean.TRUE.equals(reseted)) {
+                trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
 								redirect(request, callback);
 							} else {
+                trace.info("Erreur lors de la réinitialisation "
+                    + "du mot de passe de l'utilisateur " + login);
 								error(request, resetCode);
 							}
 						}

@@ -12,7 +12,7 @@ public class Auth extends Server {
 	public void start() {
 		super.start();
 
-		Controller auth = new AuthController(vertx, container, rm, securedActions);
+		Controller auth = new AuthController(vertx, container, rm, trace, securedActions);
 
 		auth.get("/login", "login");
 

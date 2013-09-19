@@ -1,13 +1,12 @@
 package edu.one.core.workspace;
 
-import org.vertx.java.core.Future;
-
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.security.WorkspaceResourcesProvider;
 import edu.one.core.workspace.service.WorkspaceService;
+import org.vertx.java.core.Future;
 
 public class Workspace extends Server {
 
@@ -18,7 +17,7 @@ public class Workspace extends Server {
 		final MongoDb mongo = new MongoDb(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));
 
-		WorkspaceService service = new WorkspaceService(vertx, container, rm, securedActions);
+		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);
 
 		service.get("/workspace", "view");
 
