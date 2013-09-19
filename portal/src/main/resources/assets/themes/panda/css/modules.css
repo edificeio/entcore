@@ -1889,6 +1889,9 @@ a {
   color: #2f8cc9;
   text-decoration: none;
 }
+hr.solid {
+  border-bottom: 1px solid #cccccc;
+}
 nav.vertical i {
   margin-right: 5px;
 }
