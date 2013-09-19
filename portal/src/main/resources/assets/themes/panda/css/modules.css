@@ -1961,6 +1961,7 @@ nav.vertical ul li a {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+  color: #000;
 }
 nav.vertical ul li ul {
   margin-left: 0;
