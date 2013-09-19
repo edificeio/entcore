@@ -27,6 +27,7 @@ var messenger = (function(){
 					type: 'text/css'
 				})
 				.appendTo('head')
+				.data('portal-style', message.data)
 				.on('load', function(){
 					$('body').show();
 
@@ -146,7 +147,7 @@ var navigationController = (function(){
 $(document).ready(function(){
 	"use strict";
 
-	if(parent !== window){
+	if(parent !== window && $('link[data-portal-style]').length > 0){
 		$('body').hide();
 	}
 

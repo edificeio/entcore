@@ -140,12 +140,14 @@ var account = function(){
 			passwordBoxCancel : function(o){
 				ui.hideLightbox();
 			},
-			passwordSubmit : function(o){
+			passwordSubmit : function(event){
 				var form = $("#changePassword");
 				One.post(form.attr('action'), form.serialize())
 				.done(function(response) {
 					$('#change-password').html(response);
-					ui.showLightbox();
+					if(response.indexOf('html') === -1){
+						ui.showLightbox();
+					}
 				});
 			},
 			changeVisibility: function(o){
@@ -224,7 +226,9 @@ $(document).ready(function(){
 	$('body').on('click','input.submit', function(){ui.hideLightbox();});
 	$('body').on('submit', '#changePassword',function(event){
 		event.preventDefault();
-		account.action.passwordSubmit({});
+		account.action.passwordSubmit(event);
 		return false;
 	});
+
+	ui.hideLightbox();
 });
