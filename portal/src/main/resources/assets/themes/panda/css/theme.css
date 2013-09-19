@@ -637,6 +637,10 @@ header h2 {
   width: 100%;
   height: 100%;
 }
+hr {
+  border: none;
+  margin: 15px;
+}
 .cell img {
   max-width: 100%;
 }
