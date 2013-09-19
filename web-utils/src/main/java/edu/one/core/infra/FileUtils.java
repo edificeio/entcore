@@ -112,15 +112,36 @@ public class FileUtils {
 	}
 
 	public static void gridfsSendFile(final String id, final String downloadName, final EventBus eb,
-			final String gridfsAddress, final HttpServerResponse response, final boolean inline) {
+			final String gridfsAddress, final HttpServerResponse response, final boolean inline,
+			final JsonObject metadata) {
 		gridfsReadFile(id, eb, gridfsAddress, new Handler<Buffer>() {
 			@Override
 			public void handle(Buffer file) {
 				if (!inline) {
+					String name = downloadName;
+					if (metadata != null && metadata.getString("filename") != null) {
+						String filename = metadata.getString("filename");
+						int fIdx = filename.lastIndexOf('.');
+						String fExt = null;
+						if (fIdx >= 0) {
+							fExt = filename.substring(fIdx);
+						}
+						int dIdx = downloadName.lastIndexOf('.');
+						String dExt = null;
+						if (dIdx >= 0) {
+							dExt = downloadName.substring(dIdx);
+						}
+						if (fExt != null && !fExt.equals(dExt)) {
+							name += fExt;
+						}
+					}
 					response.putHeader("Content-Disposition",
-							"attachment; filename=" + downloadName);
+							"attachment; filename=" + name);
 				} else {
 					ETag.addHeader(response, id);
+				}
+				if (metadata != null && metadata.getString("content-type") != null) {
+					response.putHeader("Content-Type", metadata.getString("content-type"));
 				}
 				response.end(file);
 			}

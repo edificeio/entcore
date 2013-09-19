@@ -146,7 +146,6 @@ public class WordpressHelper {
 							e.putString("type", "PERSEDUCNAT");
 						}
 						addPersonClass(e);
-						System.out.println(e.encode());
 						sendWP(e);
 					}
 				}
