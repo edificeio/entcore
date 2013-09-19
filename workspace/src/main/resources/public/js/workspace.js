@@ -469,18 +469,12 @@ var workspace = function(){
 
 			sendRack : function(o){
 				One.get("users/available-rack").done(function(response) {
-					if (response.status === "ok") {
-						var users = [];
-						for (var key in response.result) {
-							users.push(response.result[key]);
-						}
-						$('#form-window').html(app.template.render("sendRack", { users : users }));
-						ui.showLightbox();
-						messenger.requireResize();
-						$('.lightbox-backdrop').one('click', function(){
-							ui.hideLightbox();
-						});
-					}
+					$('#form-window').html(app.template.render("sendRack", { users : response }));
+					ui.showLightbox();
+					messenger.requireResize();
+					$('.lightbox-backdrop').one('click', function(){
+						ui.hideLightbox();
+					});
 				});
 			},
 

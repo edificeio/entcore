@@ -951,32 +951,18 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction("workspace.rack.available.users")
 	public void rackAvailableUsers(final HttpServerRequest request) {
-		UserUtils.findVisibleUsers(eb, request, new Handler<JsonArray>() {
+		String customReturn =
+				"MATCH visibles-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
+				"WHERE has(a.name) AND a.name={action} " +
+				"RETURN distinct visibles.id as id, visibles.ENTPersonNomAffichage as username " +
+				"ORDER BY username ";
+		JsonObject params = new JsonObject()
+		.putString("action", "edu.one.core.workspace.service.WorkspaceService|listRackDocuments");
+		UserUtils.findVisibleUsers(eb, request, customReturn, params, new Handler<JsonArray>() {
 
 			@Override
 			public void handle(JsonArray users) {
-				List<String> ids = new ArrayList<>();
-				for (Object o: users) {
-					JsonObject user = (JsonObject) o;
-					String id = user.getString("id");
-					if (id != null && !id.trim().isEmpty()) {
-						ids.add(id);
-					}
-				}
-				if (ids.size() > 0) {
-					String query =
-							"START n=node:node_auto_index({ids}) " +
-							"MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
-							"WHERE has(a.name) AND a.name={action}" +
-							"RETURN distinct n.id as id, n.ENTPersonNomAffichage as username";
-					Map<String, Object> params = new HashMap<>();
-					params.put("ids", "id:" + Joiner.on(" OR id:").join(ids));
-					params.put("action", "edu.one.core.workspace.service.WorkspaceService|listRackDocuments");
-					neo.send(query, params, request.response());
-				} else {
-					renderJson(request, new JsonObject()
-					.putString("status", "ok").putObject("result", new JsonObject()));
-				}
+				renderJson(request, users);
 			}
 		});
 	}
