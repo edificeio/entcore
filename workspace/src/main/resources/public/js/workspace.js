@@ -381,7 +381,7 @@ var workspace = function(){
 									<input type="text" name="name" />\
 								</div>\
 							</div>\
-				            <div class="row">\
+							<div class="row">\
 								<div class="eight cell right-magnet">\
 									<div class="hidden-content">\
 										<input type="file" name="file" id="new-file" />\
@@ -390,7 +390,7 @@ var workspace = function(){
 									<em id="new-file-content">{{#i18n}}nofile{{/i18n}}</em>\
 								</div>\
 							</div>\
-							<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
+							<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
 							</form>',
 
 			sendRack : '<form id="upload-form" method="post" action="rack" enctype="multipart/form-data">\
@@ -523,9 +523,10 @@ var workspace = function(){
 					action += '/' + form.find('input[name=to], select[name=to]').val();
 				}
 
-				ui.hideLightbox();
+				$('.lightbox-window input[type=submit]').val('Chargement en cours').attr('disabled', true);
 				One.postFile(action + '?' + form.serialize(), fd, {})
 					.done(function(e){
+						ui.hideLightbox();
 						if(action !== 'rack'){
 							var path = '';
 							$('nav.vertical li.selected').each(function(index, item){
