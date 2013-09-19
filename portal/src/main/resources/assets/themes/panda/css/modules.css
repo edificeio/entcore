@@ -525,12 +525,6 @@ section .contextual-buttons article li {
 .fixed-block .avatar {
   overflow: hidden;
 }
-.fixed-block .avatar div {
-  width: 100%;
-}
-.fixed-block .avatar img {
-  max-width: none;
-}
 .display-buttons {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
