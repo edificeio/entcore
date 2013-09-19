@@ -15,7 +15,7 @@ public class RegExpValidator {
 
 	public static Map<String, String> types = new HashMap<>();
 	static {
-		types.put("email", "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$");
+		types.put("email", "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$");
 		types.put("zipCode", "^[0-9]{5}$");
 		types.put("phone", "^0[1-9][0-9]{8}$");
 		types.put("mobilePhone", "^0[67][0-9]{8}$");
