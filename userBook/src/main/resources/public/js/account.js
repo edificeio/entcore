@@ -66,10 +66,6 @@ var account = function(){
 								<div class="four cell"><label>{{#i18n}}userBook.profile.school{{/i18n}}</label></div>\
 								<em class="six cell">{{schoolName}}</em>\
 							</div>\
-							<div class="row">\
-								<div class="four cell"><label>{{#i18n}}userBook.profile.motto{{/i18n}}</label></div>\
-								<em class="six cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
-							</div>\
 						</article>\
 					</div>\
 				</div>\
@@ -103,7 +99,12 @@ var account = function(){
 						</div>\
 					</div>\
 					<div class="eight cell right-magnet fixed text-container">\
-						<article class="fluid twelve cell"></article>\
+						<article class="fluid twelve cell text-container">\
+							<div class="row">\
+								<h2>{{#i18n}}userBook.profile.motto{{/i18n}}</h2>\
+								<em class="twelve cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
+							</div>\
+						</article>\
 					</div>\
 				</div>\
 				<div class="clear"></div>\

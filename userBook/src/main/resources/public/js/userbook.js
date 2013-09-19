@@ -151,32 +151,17 @@ var userbook = function(){
 			personne: '\
 				<div class="row fixed-block height-four">\
 					<div class="text-container fixed cell four">\
-						<div class="avatar fluid cell">\
+						<div class="avatar twelve fluid cell">\
 							<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
-						</div>\
-					</div>\
-					<article class="cell eight text-container right-magnet">\
-						<h2>{{displayName}}</h2>\
-						<div class="row">\
-							<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
-							<em class="six cell">{{email}}</em>\
-						</div>\
-						<div class="row">\
-							<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
-							<em class="six cell">{{address}}</em>\
-						</div>\
-						<div class="row">\
-							<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
-							<em class="six cell">{{motto}}</em>\
-						</div>\
-						<div class="row mini-box">\
-							<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
-							<em class="ten cell text-container mood">{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</em>\
 						</div>\
 					</div>\
 					<div class="fixed cell eight text-container right-magnet">\
 						<article class="cell twelve text-container fluid">\
 							<h2>{{displayName}}</h2>\
+							<div class="row">\
+								<div class="four cell">{{#i18n}}userBook.profile.email{{/i18n}}</div>\
+								<em class="six cell">{{email}}</em>\
+							</div>\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
 								<em class="six cell">{{address}}</em>\

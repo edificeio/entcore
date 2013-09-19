@@ -393,9 +393,6 @@ i.liquid {
 .list-view table td img {
   vertical-align: middle;
 }
-.adaptable-height {
-  height: 100%;
-}
 .icons-view ul {
   padding-left: 0;
 }
@@ -528,6 +525,12 @@ section .contextual-buttons article li {
 .fixed-block .avatar {
   overflow: hidden;
 }
+.fixed-block .avatar div {
+  width: 100%;
+}
+.fixed-block .avatar img {
+  max-width: none;
+}
 .display-buttons {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -590,20 +593,6 @@ header h2 {
 .lightbox-window form label {
   clear: left;
   width: 150px;
-}
-.lightbox-window form .bottom-buttons {
-  position: absolute;
-  bottom: 10px;
-  height: 60px;
-  width: 95%;
-}
-.lightbox-window form .bottom-buttons input.cancel {
-  position: relative;
-  float: left;
-}
-.lightbox-window form .bottom-buttons input.submit {
-  position: relative;
-  float: right;
 }
 .text-container {
   padding: 10px;

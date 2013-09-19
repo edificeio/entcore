@@ -41,7 +41,7 @@ var messenger = (function(){
 					type: 'text/css'
 				})
 				.appendTo('head')
-				.data('portal-style', message.data)
+				.attr('data-portal-style', message.data)
 				.on('load', function(){
 					updateView();
 				});
@@ -158,7 +158,7 @@ var navigationController = (function(){
 $(document).ready(function(){
 	"use strict";
 
-	if(parent !== window && $('link[data-portal-style]').length > 0){
+	if(parent !== window && $('link[data-portal-style]').length === 0){
 		$('body').hide();
 	}
 
