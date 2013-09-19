@@ -609,12 +609,8 @@ header h2 {
 }
 .box .avatar,
 .text-container article.box .avatar {
-  padding: 5px;
+  padding-right: 5px;
   height: 100%;
-}
-.box .avatar img,
-.text-container article.box .avatar img {
-  margin-top: 5px;
 }
 .box .avatar .avatar-image,
 .text-container article.box .avatar .avatar-image {
