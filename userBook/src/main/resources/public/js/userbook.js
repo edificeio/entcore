@@ -150,8 +150,10 @@ var userbook = function(){
 				{{/students}}',
 			personne: '\
 				<div class="row fixed-block height-four">\
-					<div class="avatar cell four">\
-						<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
+					<div class="text-container fixed cell four">\
+						<div class="avatar fluid cell">\
+							<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
+						</div>\
 					</div>\
 					<article class="cell eight text-container right-magnet">\
 						<h2>{{displayName}}</h2>\
@@ -171,9 +173,27 @@ var userbook = function(){
 							<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
 							<em class="ten cell text-container mood">{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</em>\
 						</div>\
-					</article>\
+					</div>\
+					<div class="fixed cell eight text-container right-magnet">\
+						<article class="cell twelve text-container fluid">\
+							<h2>{{displayName}}</h2>\
+							<div class="row">\
+								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
+								<em class="six cell">{{address}}</em>\
+							</div>\
+							<div class="row">\
+								<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
+								<em class="six cell">{{motto}}</em>\
+							</div>\
+							<div class="row mini-box">\
+								<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
+								<em class="ten cell text-container mood">{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</em>\
+							</div>\
+						</article>\
+					</div>\
 				</div>\
-				<article id="actions" class="row text-container">\
+				<div class="row text-container">\
+					<article id="actions" class="row text-container">\
 					<div class="row mini-box">\
 						<div class="cell one"><i role="send-mail"></i></div>\
 						<a class="cell ten"><h3>{{#i18n}}userBook.class.write-message{{/i18n}}</h3></a>\
@@ -188,6 +208,7 @@ var userbook = function(){
 					</div>\
 					<div class="clear"></div>\
 				</article>\
+				</div>\
 				<h1 class="clear mini-box">{{#i18n}}userBook.profile.family{{/i18n}}</h1>\
 				<article class="text-container">\
 					{{#relations}}\
