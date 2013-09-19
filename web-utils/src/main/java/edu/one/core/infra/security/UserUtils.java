@@ -49,9 +49,20 @@ public class UserUtils {
 
 	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
 			final Handler<JsonArray> handler) {
+		findVisibleUsers(eb, request, null, null, handler);
+	}
+
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 		.putString("action", "visibleUsers")
 		.putArray("expectedTypes", usersTypes);
+		if (customReturn != null) {
+			m.putString("customReturn", customReturn);
+		}
+		if (additionnalParams != null) {
+			m.putObject("additionnalParams", additionnalParams);
+		}
 		findUsers(eb, request, m, handler);
 	}
 

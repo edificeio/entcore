@@ -329,7 +329,14 @@ public class CommunicationController extends Controller {
 			};
 			switch (action) {
 			case "visibleUsers":
-				visibleUsers(userId, schoolId, expectedTypes, responseHandler);
+				String customReturn = message.body().getString("customReturn");
+				JsonObject ap = message.body().getObject("additionnalParams");
+				Map<String, Object> additionnalParams = null;
+				if (ap != null) {
+					additionnalParams = ap.toMap();
+				}
+				visibleUsers(userId, schoolId, expectedTypes, customReturn,
+						additionnalParams, responseHandler);
 				break;
 			case "usersCanSeeMe":
 				usersCanSeeMe(userId, responseHandler);
@@ -343,7 +350,13 @@ public class CommunicationController extends Controller {
 		}
 	}
 
-	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, final Handler<JsonArray> handler) {
+	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
+			final Handler<JsonArray> handler) {
+		visibleUsers(userId, schoolId, expectedTypes, null, null, handler);
+	}
+
+	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
+			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
 		StringBuilder query = new StringBuilder()
 			.append("START n = node:node_auto_index(id={userId})");
 		Map<String, Object> params = new HashMap<>();
@@ -360,11 +373,19 @@ public class CommunicationController extends Controller {
 			.append(expectedTypes.encode().replaceAll("\"", "'"))
 			.append(" ");
 		}
-		query.append("RETURN distinct m.id as id, m.name? as name, "
+		if (customReturn != null && !customReturn.trim().isEmpty()) {
+			query.append("WITH m as visibles ");
+			query.append(customReturn);
+		} else {
+			query.append("RETURN distinct m.id as id, m.name? as name, "
 				+ "m.ENTPersonLogin? as login, m.ENTPersonNomAffichage? as username, m.type as type, "
 				+ "m.ENTPersonNom? as lastName, m.ENTPersonPrenom? as firstName "
 				+ "ORDER BY name, username ");
+		}
 		params.put("userId", userId);
+		if (additionnalParams != null) {
+			params.putAll(additionnalParams);
+		}
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 
 			@Override
