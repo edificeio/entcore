@@ -365,7 +365,8 @@ public class AuthController extends Controller {
 			protected void handle() {
 				String login = request.formAttributes().get("login");
 				if (login != null && !login.trim().isEmpty()) {
-					userAuthAccount.forgotPassword(login, new org.vertx.java.core.Handler<Boolean>() {
+					userAuthAccount.forgotPassword(request, login,
+							new org.vertx.java.core.Handler<Boolean>() {
 
 						@Override
 						public void handle(Boolean sent) {

@@ -24,5 +24,6 @@
 	"auth.email" : "Login",
 	"auth.password" : "Password",
 	"auth.old.password" : "Old password",
-	"auth.error.authenticationFailed": "Invalid login or password"
+	"auth.error.authenticationFailed": "Invalid login or password",
+	"mail.reset.pw.subject" : "Reset password"
 }
