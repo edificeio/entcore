@@ -21,6 +21,20 @@ var messenger = (function(){
 				return;
 			}
 
+			var updateView = function(){
+				$('body').show();
+
+				var appSizeMessage = {
+					name: 'resize',
+					data: {
+						height: $('body').height() + 1
+					}
+				};
+
+				send(appSizeMessage);
+			};
+
+			var nbStylesheets = document.styleSheets.length;
 			$('<link />', {
 					rel: 'stylesheet',
 					href: message.data,
@@ -29,19 +43,16 @@ var messenger = (function(){
 				.appendTo('head')
 				.data('portal-style', message.data)
 				.on('load', function(){
-					$('body').show();
-
-					var appSizeMessage = {
-						name: 'resize',
-						data: {
-							height: $('body').height() + 1
-						}
-					};
-
-					send(appSizeMessage);
+					updateView();
 				});
 
-
+			//we need to give back the main thread to the browser, so it can add the stylesheet to the document
+			setTimeout(function(){
+				if(document.styleSheets.length > nbStylesheets){
+					//loading is done from cache, which means "load" event won't be called at all
+					updateView();
+				}
+			}, 50);
 		}
 	};
 
