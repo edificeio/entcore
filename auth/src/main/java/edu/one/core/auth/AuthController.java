@@ -364,6 +364,8 @@ public class AuthController extends Controller {
 			@Override
 			protected void handle() {
 				String login = request.formAttributes().get("login");
+				final I18n i18n = I18n.getInstance();
+				final String language = request.headers().get("Accept-Language");
 				if (login != null && !login.trim().isEmpty()) {
 					userAuthAccount.forgotPassword(request, login,
 							new org.vertx.java.core.Handler<Boolean>() {
@@ -371,22 +373,26 @@ public class AuthController extends Controller {
 						@Override
 						public void handle(Boolean sent) {
 							if (Boolean.TRUE.equals(sent)) {
+								String message = i18n.translate("auth.resetCodeSent", language);
 								renderView(request, new JsonObject()
-								.putString("message", "auth.resetCodeSent"), "message.html", null);
+								.putString("message", message), "message.html", null);
 							} else {
-								JsonObject error = new JsonObject()
-								.putObject("error", new JsonObject()
-								.putString("message", "forgot.error"));
-								renderView(request, error);
+								error(request, i18n, language);
 							}
 						}
 					});
 				} else {
-					JsonObject error = new JsonObject()
-					.putObject("error", new JsonObject()
-					.putString("message", "forgot.error"));
-					renderView(request, error);
+					error(request, i18n, language);
 				}
+			}
+
+			private void error(final HttpServerRequest request,
+					final I18n i18n, final String language) {
+				String message = i18n.translate("forgot.error", language);
+				JsonObject error = new JsonObject()
+				.putObject("error", new JsonObject()
+				.putString("message", message));
+				renderView(request, error);
 			}
 		});
 	}
