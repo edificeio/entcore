@@ -1,6 +1,5 @@
 {
 	"main":"edu.one.core.admin.Admin",
-	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
 	"port": 8008,
 	"auto-redeploy": true,
 	"mode": "dev",

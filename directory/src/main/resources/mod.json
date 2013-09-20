@@ -1,6 +1,5 @@
 {
 	"main":"edu.one.core.directory.Directory",
-	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT,edu.one.core~dataDictionary~0.1.0-SNAPSHOT",
 	"auto-redeploy": true,
 	"port": 8003,
 	"mode": "dev",

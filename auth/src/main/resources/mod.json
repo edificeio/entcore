@@ -1,6 +1,5 @@
 {
 	"main":"edu.one.core.auth.Auth",
-	"includes": "edu.one.core~infra~0.1.0-SNAPSHOT",
 	"port": 8009,
 	"auto-redeploy": true,
 	"mode": "dev",
