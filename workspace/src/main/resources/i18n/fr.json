@@ -20,6 +20,7 @@
 	"workspace.document.comment" : "Commenter",
 	"workspace.leave.comment": "Laisser un commentaire",
 	"workspace.document.comment.show" : "Afficher les commentaires",
+	"workspace.document.comment.hide": "Masquer les commentaires",
 	"workspace.comments" : "Commentaires",
 	"workspace.delete" : "Supprimer",
 	"workspace.move.path" : "Destination",

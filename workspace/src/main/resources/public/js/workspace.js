@@ -243,9 +243,12 @@ var workspace = function(){
 										<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
 										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										{{#anyComment}}\
-										<a call="showComment" href=".comments{{_id}}" class="cell right-magnet action-cell">{{#i18n}}workspace.document.comment.show{{/i18n}} ({{commentsCount}})</a>\
+										<span class="cell right-magnet action-cell">\
+											<a class="show" call="showComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
+											<a class="hide" call="showComment" href=".comments{{_id}}" style="display:none">{{#i18n}}workspace.document.comment.hide{{/i18n}}</a> ({{commentsCount}})</a>\
+										</span>\
 										{{/anyComment}}\
-										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span><i class="right-magnet" role="close" call="hideComment"></i></h2>\
+										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span></h2>\
 										<ul class="row">\
 										{{#comments}}\
 											<li class="twelve cell"><em>{{authorName}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
@@ -612,7 +615,17 @@ var workspace = function(){
 			},
 
 			showComment : function(o) {
-				$(o.target).parent().find('ul, h2').slideDown('fast', function(){
+				var linksContainer = $(o.target).parent();
+				linksContainer.parent().find('ul, h2').slideToggle('fast', function(){
+					if($(this).css('display') === 'none'){
+						linksContainer.children('.show').show();
+						linksContainer.children('.hide').hide();
+					}
+					else{
+						linksContainer.children('.show').hide();
+						linksContainer.children('.hide').show();
+					}
+
 					messenger.requireResize();
 				});
 			},
