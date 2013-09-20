@@ -5,7 +5,7 @@ project.evaluationDependsOn(':dataDictionary')
 
 dependencies {
 	compile project(':web-utils')
-	provided project(':dataDictionary')
+	compile project(':dataDictionary')
 }
 
 test {

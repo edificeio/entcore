@@ -6,11 +6,11 @@ project.evaluationDependsOn(':dataDictionary')
 project.evaluationDependsOn(':processor')
 
 dependencies {
-	provided project(':infra')
+	compile project(':infra')
 	compile project(':web-utils')
   compile 'net.sf.opencsv:opencsv:2.4'
-	provided project(':dataDictionary')
-	compile project(':processor')
+	compile project(':dataDictionary')
+	provided project(':processor')
 }
 
 test {

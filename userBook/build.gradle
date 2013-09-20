@@ -6,10 +6,10 @@ project.evaluationDependsOn(':processor')
 project.evaluationDependsOn(':dataDictionary')
 
 dependencies {
-	provided project(':infra')
+	compile project(':infra')
 	compile project(':web-utils')
 	compile project(':dataDictionary')
-	compile project(':processor')
+	provided project(':processor')
 }
 
 test {

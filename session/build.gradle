@@ -8,7 +8,7 @@ test {
 
 def configurePom(def pom) {
 	pom.project {
-		description 'Mock User Session BusMod for Vert.x'
+		description 'User Session BusMod for Vert.x'
 		inceptionYear '2013'
 		packaging 'zip'
 		url 'http://code.web-education.net/projects/one-core'
