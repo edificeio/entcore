@@ -3,9 +3,29 @@
 	<head>
 		<title>{{#i18n}}auth.message.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="{{#static}}css/auth.css{{/static}}" type="text/css" />
+		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
 	</head>
 	<body>
-		<h1>{{#i18n}}auth.message.header{{/i18n}}</h1>
-		<p style="color:green">{{#i18n}}{{message}}{{/i18n}}</p>
+	<div class="logo">
+
+	</div>
+	<div class="container">
+		<div class="main">
+			<div class="welcome">
+				<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
+				<p>{{#i18n}}auth.welcome.p1{{/i18n}}</p>
+				<p>{{#i18n}}auth.welcome.p2{{/i18n}}</p>
+				<p>{{#i18n}}auth.welcome.p3{{/i18n}}</p>
+			</div>
+
+			<div class="panel">
+				<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.message.header{{/i18n}}</h1>
+				<form>
+				<p style="color:green">{{#i18n}}{{message}}{{/i18n}}</p>
+					</form>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

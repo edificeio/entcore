@@ -3,9 +3,23 @@
 	<head>
 		<title>{{#i18n}}auth.reset.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="{{#static}}css/auth.css{{/static}}" type="text/css" />
+		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
 	</head>
-	<body>
-		<h1>{{#i18n}}auth.reset.header{{/i18n}}</h1>
+	<div class="logo">
+
+	</div>
+	<div class="container">
+		<div class="main">
+			<div class="welcome">
+				<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
+				<p>{{#i18n}}auth.welcome.p1{{/i18n}}</p>
+				<p>{{#i18n}}auth.welcome.p2{{/i18n}}</p>
+				<p>{{#i18n}}auth.welcome.p3{{/i18n}}</p>
+			</div>
+
+			<div class="panel">
+				<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.reset.header{{/i18n}}</h1>
 		{{#error}}<p style="color:red">{{message}}</p>{{/error}}
 		<form method="post" action="/auth/reset">
 			<input type="hidden" name="resetCode" value="{{resetCode}}" />
@@ -22,6 +36,10 @@
 				<input type="password" name="confirmPassword" />
 			</p>
 			<input type="submit" value="{{#i18n}}auth.reset{{/i18n}}" />
+			<div class="clear"></div>
 		</form>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
