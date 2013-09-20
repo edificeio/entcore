@@ -250,8 +250,8 @@ i[role=tired-panda]{
 	.icon(tired-panda, 50px);
 }
 
-i[role=worried-panda].small-panda{
-	.icon(worried-panda-small, 26px);
+i[role=worried-panda]{
+	.icon(worried-panda, 50px);
 }
 
 i[role=angry-panda].small-panda{
@@ -352,6 +352,7 @@ input[type=button], input[type=submit], a.button, button{
 textarea{
 	width: 100%;
 	height: 130px;
+	border: 1px solid #333;
 }
 
 input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
@@ -766,13 +767,26 @@ img[src=""]{
 	.rounded-corners(10px);
 	border: 1px solid #ccc;
 
+	.option i{
+		float: none !important;
+		margin-left: auto;
+		margin-right: auto;
+		width: 60px;
+		height: 60px;
+		background-size: 100% auto;
+	}
+
 	.option, .current{
-		padding-left: 20px;
 		cursor: pointer;
-		font-size: 14px;
 	}
 	span{
 		color: #333;
+		font-family: KGJune;
+		font-size: 20px;
+		clear: left;
+		white-space: nowrap;
+		text-align: center;
+		width: 100%;
 	}
 	.current{
 		background-image: url(../img/icons/arrow-bottom.png);
@@ -785,6 +799,7 @@ img[src=""]{
 
 		border: 1px solid #ccc;
 		background: #fff;
+		box-shadow: @medium-blue 0px 0px 5px;
 	}
 
 	.editing{

@@ -463,33 +463,38 @@ i.liquid {
   margin-top: 15px;
   z-index: 5;
 }
-.enhanced-select .option {
-  width: 100%;
-  height: 30px;
-}
 .enhanced-select .options-list {
   display: none;
   position: absolute;
-  width: 100%;
+  width: 175%;
+  top: 49px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .enhanced-select .option,
 .enhanced-select .current {
-  clear: both;
   cursor: pointer;
 }
 .enhanced-select span {
   display: block;
   line-height: 26px;
   float: left;
-  padding-left: 15px;
 }
 .enhanced-select .current {
-  padding-top: 10px;
-  padding-bottom: 15px;
-  height: 26px;
+  padding: 5px;
+  padding-left: 20px;
 }
 .enhanced-select .current i {
   vertical-align: middle;
+  max-height: 100%;
+  background-size: auto 100%;
+}
+.enhanced-select .current span {
+  clear: none;
+  padding-top: 10px;
+  width: auto;
 }
 section .contextual-buttons .action-buttons {
   -webkit-box-sizing: border-box;
@@ -758,7 +763,6 @@ section.lightbox-window {
   position: fixed;
   z-index: 15;
   background: #fff;
-  height: 300px;
   top: 0;
   left: 50%;
   right: 15%;
@@ -1592,10 +1596,10 @@ i[role=tired-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=worried-panda].small-panda {
-  height: 26px;
-  width: 26px;
-  background-image: url("../img/icons/worried-panda-small.png");
+i[role=worried-panda] {
+  height: 50px;
+  width: 50px;
+  background-image: url("../img/icons/worried-panda.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -1836,6 +1840,7 @@ button i {
 textarea {
   width: 100%;
   height: 130px;
+  border: 1px solid #333;
 }
 input[type=button]:hover,
 input[type=submit]:hover,
@@ -2329,14 +2334,26 @@ img[src=""] {
   border-radius: 10px;
   border: 1px solid #ccc;
 }
+.enhanced-select .option i {
+  float: none !important;
+  margin-left: auto;
+  margin-right: auto;
+  width: 60px;
+  height: 60px;
+  background-size: 100% auto;
+}
 .enhanced-select .option,
 .enhanced-select .current {
-  padding-left: 20px;
   cursor: pointer;
-  font-size: 14px;
 }
 .enhanced-select span {
   color: #333;
+  font-family: KGJune;
+  font-size: 20px;
+  clear: left;
+  white-space: nowrap;
+  text-align: center;
+  width: 100%;
 }
 .enhanced-select .current {
   background-image: url(../img/icons/arrow-bottom.png);
@@ -2356,6 +2373,7 @@ img[src=""] {
 .enhanced-select .options-list {
   border: 1px solid #ccc;
   background: #fff;
+  box-shadow: #2f8cc9 0px 0px 5px;
 }
 .enhanced-select .editing {
   background-color: #3889c1;

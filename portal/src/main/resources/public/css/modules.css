@@ -463,33 +463,38 @@ i.liquid {
   margin-top: 15px;
   z-index: 5;
 }
-.enhanced-select .option {
-  width: 100%;
-  height: 30px;
-}
 .enhanced-select .options-list {
   display: none;
   position: absolute;
-  width: 100%;
+  width: 175%;
+  top: 49px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .enhanced-select .option,
 .enhanced-select .current {
-  clear: both;
   cursor: pointer;
 }
 .enhanced-select span {
   display: block;
   line-height: 26px;
   float: left;
-  padding-left: 15px;
 }
 .enhanced-select .current {
-  padding-top: 10px;
-  padding-bottom: 15px;
-  height: 26px;
+  padding: 5px;
+  padding-left: 20px;
 }
 .enhanced-select .current i {
   vertical-align: middle;
+  max-height: 100%;
+  background-size: auto 100%;
+}
+.enhanced-select .current span {
+  clear: none;
+  padding-top: 10px;
+  width: auto;
 }
 section .contextual-buttons .action-buttons {
   -webkit-box-sizing: border-box;
