@@ -281,7 +281,7 @@ var workspace = function(){
 						<div class="clear"></div>\
 						</ul>',
 
-			rack : '<table class="striped alternate" summary="">\
+			rack : '<table>\
 						<thead>\
 							<tr>\
 								<th scope="col">\
@@ -304,6 +304,7 @@ var workspace = function(){
 								<td>{{toName}}</a></td>\
 								<td>{{sent}}</td>\
 							</tr>\
+							<tr></tr>\
 							{{/.}}\
 						</tbody>\
 					</table>\
@@ -323,7 +324,7 @@ var workspace = function(){
 						<div class="clear"></div>\
 						</ul>',
 
-			trash :'<table class="striped alternate monoline" summary="">\
+			trash :'<table>\
 						<thead>\
 							<tr>\
 								<th scope="col">\
@@ -342,6 +343,7 @@ var workspace = function(){
 								<td><a href="document/{{_id}}" call>{{name}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
+							<tr></tr>\
 							{{/documents}}\
 							{{#rack}}\
 							<tr>\
@@ -350,6 +352,7 @@ var workspace = function(){
 								<td><a href="rack/{{_id}}" call>{{name}}</a></td>\
 								<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 							</tr>\
+							<tr></tr>\
 							{{/rack}}\
 						</tbody>\
 					</table>\
@@ -789,8 +792,28 @@ $(document).ready(function(){
 	})
 
 	$('.workspace').on('change', '.select-file, .selectAllCheckboxes', function(){
+		var applyCheckedClasses = function(node, check){
+			if(node.hasClass('checked')){
+				node.removeClass('checked');
+				node.next().removeClass('checked');
+			}
+			else{
+				node.addClass('checked');
+				node.next().addClass('checked');
+			}
+		}
+
 		if($(this).hasClass('selectAllCheckboxes')){
 			$('#list :checkbox').prop('checked', this.checked);
+			if(this.checked){
+				$('tr').addClass('checked')
+			}
+			else{
+				$('tr').removeClass('checked')
+			}
+		}
+		else{
+			applyCheckedClasses($(this).parent().parent());
 		}
 		if($('.select-file:checked').length > 0){
 			$('.contextual').removeAttr('disabled');

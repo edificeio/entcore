@@ -1,6 +1,10 @@
 body {
   background: #fff !important;
 }
+.main {
+  margin-left: auto;
+  margin-right: auto;
+}
 .grid-exemple {
   width: 100%;
 }

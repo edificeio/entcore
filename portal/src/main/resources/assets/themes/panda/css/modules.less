@@ -681,13 +681,15 @@ table{
 		}
 	}
 	tbody{
-		tr:nth-child(4n+1), tr:nth-child(4n+2){
+		.checked{
 			background: @light-blue;
+			.run-transition(background);
 		}
 	}
 	tr{
 		border-top: 1px solid @medium-grey;
 		background: transparent;
+		.run-transition(background);
 		td.container-cell{
 			padding: 0px;
 		}

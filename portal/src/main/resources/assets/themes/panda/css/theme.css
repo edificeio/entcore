@@ -2251,13 +2251,20 @@ table thead tr:first-child th:first-child {
 table thead tr:first-child th:last-child {
   border-top-right-radius: 10px;
 }
-table tbody tr:nth-child(4n+1),
-table tbody tr:nth-child(4n+2) {
+table tbody .checked {
   background: #ebf4f9;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 table tr {
   border-top: 1px solid #cccccc;
   background: transparent;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 table tr td.container-cell {
   padding: 0px;
