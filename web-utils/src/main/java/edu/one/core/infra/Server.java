@@ -2,13 +2,15 @@ package edu.one.core.infra;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.file.FileProps;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -16,6 +18,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
+import edu.one.core.infra.http.StaticResource;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecuredAction;
 
@@ -27,6 +30,8 @@ public abstract class Server extends Verticle {
 	public TracerHelper trace;
 	private I18n i18n;
 	protected Map<String, SecuredAction> securedActions;
+	private ConcurrentMap<String, String> staticRessources;
+	private boolean dev;
 
 	@Override
 	public void start() {
@@ -41,6 +46,8 @@ public abstract class Server extends Verticle {
 		i18n.init(container, vertx);
 		CookieHelper.getInstance().init((String) vertx
 				.sharedData().getMap("server").get("signKey"), log);
+		staticRessources = vertx.sharedData().getMap("staticRessources");
+		dev = "dev".equals(config.getString("mode"));
 
 		log.info("Verticle: " + this.getClass().getSimpleName() + " starts on port: " + config.getInteger("port"));
 
@@ -49,8 +56,32 @@ public abstract class Server extends Verticle {
 		// Dummy impl
 		rm.getWithRegEx(prefix.replaceAll("\\/", "\\/") + "\\/public\\/.+",
 				new Handler<HttpServerRequest>() {
-			public void handle(HttpServerRequest request) {
-				request.response().sendFile("." + request.path().substring(prefix.length()));
+			public void handle(final HttpServerRequest request) {
+				if (dev) {
+					request.response().sendFile("." + request.path().substring(prefix.length()));
+				} else {
+					if (staticRessources.containsKey(request.uri())) {
+						StaticResource.serveRessource(request,
+								"." + request.path().substring(prefix.length()),
+								staticRessources.get(request.uri()));
+					} else {
+						vertx.fileSystem().props("." + request.path().substring(prefix.length()),
+								new Handler<AsyncResult<FileProps>>(){
+							@Override
+							public void handle(AsyncResult<FileProps> af) {
+								if (af.succeeded()) {
+									String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
+									staticRessources.put(request.uri(), lastModified);
+									StaticResource.serveRessource(request,
+											"." + request.path().substring(prefix.length()),
+											lastModified);
+								} else {
+									request.response().sendFile("." + request.path().substring(prefix.length()));
+								}
+							}
+						});
+					}
+				}
 			}
 		});
 

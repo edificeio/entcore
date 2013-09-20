@@ -1,6 +1,7 @@
 package edu.one.core.portal.service;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.http.StaticResource;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.portal.mustache.AssetResourceTemplateFunction;
@@ -8,9 +9,12 @@ import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.file.FileProps;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -18,6 +22,9 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 public class PortalService extends Controller {
+
+	private final ConcurrentMap<String, String> staticRessources;
+	private final boolean dev;
 
 	public PortalService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -29,6 +36,8 @@ public class PortalService extends Controller {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
+		this.staticRessources = vertx.sharedData().getMap("staticRessources");
+		dev = "dev".equals(container.config().getString("mode"));
 	}
 
 	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
@@ -67,7 +76,32 @@ public class PortalService extends Controller {
 
 	}
 
-	public void assets(HttpServerRequest request) {
-		request.response().sendFile("." + request.path());
+	public void assets(final HttpServerRequest request) {
+		if (dev) {
+			request.response().sendFile("." + request.path());
+		} else {
+			if (staticRessources.containsKey(request.uri())) {
+				StaticResource.serveRessource(request,
+						"." + request.path(),
+						staticRessources.get(request.uri()));
+			} else {
+				vertx.fileSystem().props("." + request.path(),
+						new Handler<AsyncResult<FileProps>>(){
+					@Override
+					public void handle(AsyncResult<FileProps> af) {
+						if (af.succeeded()) {
+							String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
+							staticRessources.put(request.uri(), lastModified);
+							StaticResource.serveRessource(request,
+									"." + request.path(),
+									lastModified);
+						} else {
+							request.response().sendFile("." + request.path());
+						}
+					}
+				});
+			}
+		}
 	}
+
 }
