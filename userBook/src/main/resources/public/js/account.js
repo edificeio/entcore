@@ -190,6 +190,7 @@ var account = function(){
 						if (data.status == "ok") {
 							account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
 							$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
+							messenger.updateAvatar();
 						}
 					});
 			}

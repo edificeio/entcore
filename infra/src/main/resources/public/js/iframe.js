@@ -118,6 +118,12 @@ var messenger = (function(){
 			};
 
 			send(appSizeMessage);
+		},
+		updateAvatar: function(){
+			messenger.sendMessage({
+				name: 'update-avatar',
+				data: {}
+			})
 		}
 	};
 }());
