@@ -102,9 +102,9 @@ public class UserBookController extends Controller {
 				if (user != null) {
 					String query = "START n=node:node_auto_index(id={userId}) "
 								+ "MATCH "
-									+ "(n)-[?:USERBOOK]->(u)-[v?]->(h), "
-									+ "(n)-[?:EN_RELATION_AVEC]-(n2), "
-									+ "(n)-[?:APPARTIENT]-(c) "
+									+ "n-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->n WITH n, c "
+									+ " MATCH (n)-[?:USERBOOK]->(u)-[v?]->(h), "
+									+ "(n)-[?:EN_RELATION_AVEC]-(n2) "
 								+ "WHERE (v IS NULL) OR (type(v) IN {hobbyVisibility}) "
 								+ "AND (c IS NULL) OR c.type='ETABEDUCNAT' "
 								+ "RETURN DISTINCT "
