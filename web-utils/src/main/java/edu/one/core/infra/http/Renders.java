@@ -193,7 +193,11 @@ public class Renders {
 		request.response().end();
 	}
 
-	private static String getScheme(HttpServerRequest request) {
+	public static String getScheme(HttpServerRequest request) {
+		String proto = request.headers().get("X-Forwarded-Proto");
+		if (proto != null && !proto.trim().isEmpty()) {
+			return proto;
+		}
 		String scheme = request.absoluteURI().getScheme();
 		if (scheme == null) {
 			scheme = "http";

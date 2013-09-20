@@ -1,5 +1,6 @@
 package edu.one.core.infra.request.filter;
 
+import edu.one.core.infra.http.Renders;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
 import edu.one.core.infra.security.oauth.OAuthResourceProvider;
@@ -38,10 +39,7 @@ public class UserAuthFilter implements Filter {
 	public void deny(HttpServerRequest request) {
 		String callBack = "";
 		String location = "";
-		String scheme = request.absoluteURI().getScheme();
-		if (scheme == null) {
-			scheme = "http";
-		}
+		String scheme = Renders.getScheme(request);
 		try {
 			callBack = scheme + "://" + URLEncoder.encode(request.headers().get("Host") + request.uri(), "UTF-8");
 			location = scheme + "://" + URLEncoder.encode(request.headers().get("Host").split(":")[0], "UTF-8");
