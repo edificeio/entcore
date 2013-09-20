@@ -49,7 +49,7 @@ public class WorkspaceTest extends TestVerticle {
 		config.putObject("mongodb-config", mongoConfig);
 		config.putString("files-repository", "/tmp");
 
-		container.deployModule("edu.one.core~workspace~0.1.0-SNAPSHOT", config, 1, new AsyncResultHandler<String>() {
+		container.deployModule("edu.one.core~workspace~1.0.0", config, 1, new AsyncResultHandler<String>() {
 			public void handle(AsyncResult<String> ar) {
 				if (ar.succeeded()) {
 					WorkspaceTest.super.start();

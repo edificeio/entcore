@@ -28,7 +28,7 @@ public class UserUtilsTest extends TestVerticle {
 		.putNumber("poolsize", 1)
 		.putString("address", "wse.neo4j.persistor");
 
-		container.deployModule("com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT", config, 1, new AsyncResultHandler<String>() {
+		container.deployModule("com.wse.neo4j~neo4jPersistor~1.0.0", config, 1, new AsyncResultHandler<String>() {
 			public void handle(AsyncResult<String> ar) {
 				if (ar.succeeded()) {
 					UserUtilsTest.super.start();

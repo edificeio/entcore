@@ -53,7 +53,7 @@ public class DirectoryController extends Controller {
 			super(vertx, container, rm, securedActions);
 			this.neo = new Neo(eb,log);
 			this.config = config;
-			this.d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~0.1.0-SNAPSHOT/aaf-dictionary.json");
+			this.d = new DefaultDictionary(vertx, container, "../edu.one.core~dataDictionary~1.0.0/aaf-dictionary.json");
 			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 			this.p = new DefaultProfils(neo);
 			loginGenerator = new LoginGenerator();

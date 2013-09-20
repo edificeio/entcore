@@ -4,22 +4,22 @@
 	"mode": "dev",
 	"auto-redeploy": true,
 	"path-prefix" : "infra",
-	"app-registry" : { "name" : "edu.one.core~app-registry~0.1.0-SNAPSHOT" },
-	"neo4j-persistor" : { "name" : "com.wse.neo4j~neo4jPersistor~0.1.0-SNAPSHOT" },
+	"app-registry" : { "name" : "edu.one.core~app-registry~1.0.0" },
+	"neo4j-persistor" : { "name" : "com.wse.neo4j~neo4jPersistor~1.0.0" },
 	"one-modules": [
-		{ "name" : "com.wse.tracer~tracer~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~auth~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~admin~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~dataDictionary~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~directory~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~history~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~sync~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~userBook~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~workspace~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~session~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~communication~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~timeline~0.1.0-SNAPSHOT" },
-		{ "name" : "edu.one.core~portal~0.1.0-SNAPSHOT" }
+		{ "name" : "com.wse.tracer~tracer~1.0.0" },
+		{ "name" : "edu.one.core~auth~1.0.0" },
+		{ "name" : "edu.one.core~admin~1.0.0" },
+		{ "name" : "edu.one.core~dataDictionary~1.0.0" },
+		{ "name" : "edu.one.core~directory~1.0.0" },
+		{ "name" : "edu.one.core~history~1.0.0" },
+		{ "name" : "edu.one.core~sync~1.0.0" },
+		{ "name" : "edu.one.core~userBook~1.0.0" },
+		{ "name" : "edu.one.core~workspace~1.0.0" },
+		{ "name" : "edu.one.core~session~1.0.0" },
+		{ "name" : "edu.one.core~communication~1.0.0" },
+		{ "name" : "edu.one.core~timeline~1.0.0" },
+		{ "name" : "edu.one.core~portal~1.0.0" }
 	],
 	"external-modules" : [
 		{
@@ -32,7 +32,7 @@
 				"pool_size": 10
 			}
 		},{
-			"name" : "com.wse~gridfs-persistor~0.1.0-SNAPSHOT",
+			"name" : "com.wse~gridfs-persistor~1.0.0",
 			"config" : {
 				"address": "wse.gridfs.persistor",
 				"host": "localhost",
@@ -46,7 +46,7 @@
 				"address" : "wse.email"
 			}
 		},{
-			"name" : "edu.one~wordpress~1.0.0-SNAPSHOT",
+			"name" : "edu.one~wordpress~1.0.0",
 			"config" : {
 				"bus-address":"wpconnector.address",
 				"host":"localhost",
