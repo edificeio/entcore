@@ -160,15 +160,15 @@ var userbook = function(){
 							<h2>{{displayName}}</h2>\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.email{{/i18n}}</div>\
-								<em class="six cell">{{email}}</em>\
+								<em class="eight cell">{{email}}</em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
-								<em class="six cell">{{address}}</em>\
+								<em class="eight cell">{{address}}</em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
-								<em class="six cell">{{motto}}</em>\
+								<em class="eight cell">{{motto}}</em>\
 							</div>\
 							<div class="row mini-box">\
 								<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
