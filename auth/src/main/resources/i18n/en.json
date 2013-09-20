@@ -25,5 +25,9 @@
 	"auth.password" : "Password",
 	"auth.old.password" : "Old password",
 	"auth.error.authenticationFailed": "Invalid login or password",
+	"email.hi" : "Hello,",
+	"email.click.to.reset" : "\nYou asked for resetting a password. \nTo perform the reset, click on the link below.\n",
+	"email.reset.infos" : "\nIf you aren't at the origin of this request, you can ignore this email.\n",
+	"email.regards" : "Best regards.",
 	"mail.reset.pw.subject" : "Reset password"
 }
