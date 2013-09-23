@@ -203,7 +203,7 @@ var ui = (function(){
 			$(this).addClass('selected');
 		});
 
-		$('.close-lightbox i').on('click', function(){
+		$('.lightbox-window').on('click', '.close-lightbox i, .lightbox-buttons .cancel', function(){
 			ui.hideLightbox();
 		});
 

@@ -328,10 +328,6 @@ header{
 		float: left;
 
 	}
-	label{
-		clear: left;
-		width: 150px;
-	}
 }
 
 .text-container{
@@ -378,8 +374,16 @@ hr{
 	}
 }
 
-section.selection{
-
+section.lightbox-window{
+	.lightbox-buttons{
+		position: absolute;
+		right: -50px;
+		bottom: 10px;
+		width: 100%;
+		input[type=submit], input[type=button]{
+			float: right;
+		}
+	}
 }
 
 dl{
@@ -402,6 +406,11 @@ dl{
 			vertical-align: middle;
 		}
 	}
+}
+
+.lightbox-buttons{
+	position: absolute;
+	bottom: 10px;
 }
 
 .large-box{

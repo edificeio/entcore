@@ -589,10 +589,6 @@ header h2 {
   display: block;
   float: left;
 }
-.lightbox-window form label {
-  clear: left;
-  width: 150px;
-}
 .text-container {
   padding: 10px;
 }
@@ -632,6 +628,16 @@ hr {
 .cell img {
   max-width: 100%;
 }
+section.lightbox-window .lightbox-buttons {
+  position: absolute;
+  right: -50px;
+  bottom: 10px;
+  width: 100%;
+}
+section.lightbox-window .lightbox-buttons input[type=submit],
+section.lightbox-window .lightbox-buttons input[type=button] {
+  float: right;
+}
 dl dd {
   margin-left: 0;
 }
@@ -647,6 +653,10 @@ dl dt {
 }
 .mini-box .cell img {
   vertical-align: middle;
+}
+.lightbox-buttons {
+  position: absolute;
+  bottom: 10px;
 }
 .large-box {
   min-width: 300px;

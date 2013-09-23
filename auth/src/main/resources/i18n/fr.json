@@ -37,5 +37,6 @@
 	"email.regards" : "Cordialement.",
 	"auth.welcome.p1": "Bienvenue sur ONE, l’Espace Numérique de Travail (ENT) du premier degré !",
 	"auth.welcome.p2": "Elèves, enseignants, personnel et parents, l’ENT s’adresse à chacun de vous et vous permet d’accéder facilement à des informations et des outils collaboratifs. Cette version est très simple et va évoluer au cours de l’année scolaire avec de nouveaux services et de nouvelles fonctionnalités.",
-	"auth.welcome.p3": "Pour vous connecter, munissez-vous de votre identifiant et de votre mot de passe distribués par votre école."
+	"auth.welcome.p3": "Pour vous connecter, munissez-vous de votre identifiant et de votre mot de passe distribués par votre école.",
+	"cancel": "Annuler"
 }

@@ -589,10 +589,6 @@ header h2 {
   display: block;
   float: left;
 }
-.lightbox-window form label {
-  clear: left;
-  width: 150px;
-}
 .text-container {
   padding: 10px;
 }
@@ -632,6 +628,16 @@ hr {
 .cell img {
   max-width: 100%;
 }
+section.lightbox-window .lightbox-buttons {
+  position: absolute;
+  right: -50px;
+  bottom: 10px;
+  width: 100%;
+}
+section.lightbox-window .lightbox-buttons input[type=submit],
+section.lightbox-window .lightbox-buttons input[type=button] {
+  float: right;
+}
 dl dd {
   margin-left: 0;
 }
@@ -647,6 +653,10 @@ dl dt {
 }
 .mini-box .cell img {
   vertical-align: middle;
+}
+.lightbox-buttons {
+  position: absolute;
+  bottom: 10px;
 }
 .large-box {
   min-width: 300px;
@@ -769,12 +779,6 @@ section.lightbox-window {
   display: none;
   border-radius: 5px;
   padding-bottom: 40px;
-}
-section.lightbox-window input[type=submit],
-section.lightbox-window input[type=button] {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
 }
 .close-lightbox {
   float: right;
@@ -1791,7 +1795,8 @@ a.button {
 .remove-fout {
   visibility: hidden;
 }
-input[type=text] {
+input[type=text],
+input[type=password] {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -ms-border-radius: 5px;
@@ -1801,9 +1806,9 @@ input[type=text] {
   line-height: 25px;
 }
 label {
-  font-size: 16px;
+  font-size: 14px;
   color: #333333;
-  line-height: 30px;
+  line-height: 25px;
 }
 input[type=button],
 input[type=submit],
@@ -1991,6 +1996,14 @@ nav.vertical ul a:hover {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+}
+section.lightbox-window .lightbox-buttons .cancel {
+  background: -webkit-linear-gradient(#666666, #888888);
+  background: -moz-linear-gradient(#666666, #888888);
+  background: -o-linear-gradient(#666666, #888888);
+  background: linear-gradient(#666666, #888888);
+  -pie-background: linear-gradient(#666666, #888888);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
 }
 article.box {
   border: 1px solid #ccc;

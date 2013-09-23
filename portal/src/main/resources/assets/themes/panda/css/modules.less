@@ -318,16 +318,16 @@ a.button{
 	visibility: hidden
 }
 
-input[type=text]{
+input[type=text], input[type=password]{
 	.rounded-corners(5px);
 	border: 1px solid #ccc;
 	line-height: 25px;
 }
 
 label{
-	font-size: 16px;
+	font-size: 14px;
 	color: @ultra-dark-grey;
-	line-height: 30px;
+	line-height: 25px;
 }
 
 input[type=button], input[type=submit], a.button, button{
@@ -482,6 +482,14 @@ nav.vertical{
     }
   }
 
+}
+
+section.lightbox-window{
+	.lightbox-buttons{
+		.cancel{
+			.vertical-gradient(#666, #888)
+		}
+	}
 }
 
 article.box{
