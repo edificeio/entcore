@@ -207,16 +207,34 @@ var ui = (function(){
 			ui.hideLightbox();
 		});
 
-		$('body').on('click', '.file-button', function(e){
-			var linkedId = $(this).data('linked');
-			$('#' + linkedId).click();
-			$('#' + linkedId).on('change', function(e){
+		$('body').on('click', '.select-file input[type!="file"], button', function(e){
+			var inputFile = $(this).parent().find('input[type=file]');
+			if($(this).attr('type') === 'text'){
+				if(!$(this).data('changed')){
+					inputFile.click();
+				}
+			}
+			else{
+				inputFile.click();
+			}
+			$('[data-display-file]').data('changed', true);
+
+			inputFile.on('change', function(){
+				var displayElement = inputFile.parent().parent().find('[data-display-file]');
 				var fileUrl = $(this).val();
 				if(fileUrl.indexOf('fakepath') !== -1){
 					fileUrl = fileUrl.split('fakepath')[1];
+					fileUrl = fileUrl.substr(1);
+					fileUrl = fileUrl.split('.')[0];
 				}
-				$('#' + linkedId + '-content').text(fileUrl);
-			})
+				if(displayElement[0].tagName === 'INPUT'){
+					displayElement.val(fileUrl);
+				}
+				else{
+					displayElement.text(fileUrl);
+				}
+				$(this).unbind('change');
+			});
 
 			e.preventDefault();
 		});

@@ -20,6 +20,16 @@
   float: right !important;
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-five {
+    padding-bottom: 41.66666666666667%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-five {
+    left: 41.66666666666667%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.height-four {
     padding-bottom: 33.333333333333336%;
   }

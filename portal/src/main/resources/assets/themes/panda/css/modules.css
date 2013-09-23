@@ -20,6 +20,16 @@
   float: right !important;
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-five {
+    padding-bottom: 41.66666666666667%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-five {
+    left: 41.66666666666667%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.height-four {
     padding-bottom: 33.333333333333336%;
   }
@@ -336,16 +346,6 @@ nav.horizontal a {
   margin: 0;
   float: left;
 }
-.search input[type=text] {
-  border: 1px solid #eee;
-  border-right: 0;
-}
-.search input[type=submit] {
-  border: 1px solid #eee;
-  border-left: 0;
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-}
 .line em,
 .line span {
   display: block;
@@ -633,8 +633,7 @@ hr {
 }
 section.lightbox-window .lightbox-buttons {
   position: absolute;
-  right: -50px;
-  bottom: 10px;
+  bottom: 0px;
   width: 100%;
 }
 section.lightbox-window .lightbox-buttons input[type=submit],
@@ -659,7 +658,8 @@ dl dt {
 }
 .lightbox-buttons {
   position: absolute;
-  bottom: 10px;
+  bottom: 0px;
+  right: 0px;
 }
 .large-box {
   min-width: 300px;
@@ -781,10 +781,11 @@ section.lightbox-window {
   right: 15%;
   display: none;
   border-radius: 5px;
-  padding-bottom: 40px;
 }
 .close-lightbox {
-  float: right;
+  position: absolute;
+  right: 0;
+  top: 0;
   margin: 10px;
   cursor: pointer;
 }
@@ -1999,6 +2000,39 @@ nav.vertical ul a:hover {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+}
+.select-file input[type=text] {
+  border: 1px solid #eee;
+  border-right: 0;
+}
+.select-file button,
+.select-file input[type=button] {
+  border: 1px solid #eee;
+  border-left: 0;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  -webkit-border-top-right-radius: 3px;
+  -webkit-border-bottom-right-radius: 3px;
+  -moz-border-top-right-radius: 3px;
+  -moz-border-bottom-right-radius: 3px;
+  -ms-border-top-right-radius: 3px;
+  -ms-border-bottom-right-radius: 3px;
+  -o-border-top-right-radius: 3px;
+  -o-border-bottom-right-radius: 3px;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  line-height: 30px;
+  height: 30px;
+}
+.search input[type=text] {
+  border: 1px solid #eee;
+  border-right: 0;
+}
+.search input[type=submit] {
+  border: 1px solid #eee;
+  border-left: 0;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
 }
 section.lightbox-window .lightbox-buttons .cancel {
   background: -webkit-linear-gradient(#666666, #888888);

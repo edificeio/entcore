@@ -377,27 +377,26 @@ var workspace = function(){
 						{{/documents}}\
 						<div class="clear"></div>\
 						</ul>',
-			addDocument : '	<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cancel-flow">\
-							<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
-							<div class="row">\
-								<div class="four cell">\
-									<label>{{#i18n}}workspace.document.name{{/i18n}}</label>\
-								</div>\
-								<div class="eight cell">\
-									<input type="text" name="name" />\
-								</div>\
-							</div>\
-							<div class="row">\
-								<div class="eight cell right-magnet">\
-									<div class="hidden-content">\
-										<input type="file" name="file" id="new-file" />\
+			addDocument : ' <div class="fixed-block height-four">\
+								<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="fixed twelve cell">\
+									<div class="twelve fluid cell">\
+									<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
+									<div class="row">\
+										<div class="twelve cell right-magnet select-file">\
+											<div class="hidden-content">\
+												<input type="file" name="file" id="new-file" />\
+											</div>\
+											<button class="file-button">{{#i18n}}choose{{/i18n}}</button>\
+											<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
+										</div>\
 									</div>\
-									<button class="file-button" data-linked="new-file">{{#i18n}}choose{{/i18n}}</button>\
-									<em id="new-file-content">{{#i18n}}nofile{{/i18n}}</em>\
-								</div>\
-							</div>\
-							<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
-							</form>',
+										<div class="lightbox-buttons">\
+										<input class="cancel" type="button" value="{{#i18n}}cancel{{/i18n}}" />\
+										<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
+										</div>\
+									</div>\
+								</form>\
+							</div>',
 
 			sendRack : '<form id="upload-form" method="post" action="rack" enctype="multipart/form-data">\
 						<label>{{#i18n}}workspace.rack.name{{/i18n}}</label>\
@@ -479,7 +478,7 @@ var workspace = function(){
 			},
 			share: function(o){
 				One.get(o.url).done(function(data){
-					$('#form-window').html(data);
+					$('#form-window').html('<div class="twelve cell flowing">' + data + '</div>');
 					ui.showLightbox();
 
 					$('#form-window table').addClass('monoline');
