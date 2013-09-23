@@ -589,6 +589,9 @@ header h2 {
   display: block;
   float: left;
 }
+article h2:first-child {
+  margin-top: 0px;
+}
 .text-container {
   padding: 10px;
 }
