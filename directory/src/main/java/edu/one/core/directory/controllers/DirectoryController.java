@@ -162,7 +162,8 @@ public class DirectoryController extends Controller {
 					.putString("activationCode", activationGenerator.generate());
 					UserQueriesBuilder uqb = new UserQueriesBuilder();
 					uqb.createUser(user)
-					.linkClass(userId, classId);
+					.linkClass(userId, classId)
+					.linkSchool(userId, classId);
 					if ("PERSRELELEVE".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
 						uqb.linkChildrens(userId, childrenIds);
 					}

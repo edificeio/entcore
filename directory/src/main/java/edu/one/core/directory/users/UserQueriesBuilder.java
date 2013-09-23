@@ -58,6 +58,19 @@ public class UserQueriesBuilder {
 		return this;
 	}
 
+	public UserQueriesBuilder linkSchool(String userId, String classId) {
+		String query =
+				"START n=node:node_auto_index(id={userId}), m=node:node_auto_index(id={classId}) " +
+				"MATCH m-[:APPARTIENT]->s " +
+				"WHERE has(n.type) AND has(s.type) AND " +
+				"s.type = 'ETABEDUCNAT' AND n.type IN ['ENSEIGNANT', 'ELEVE'] " +
+				"CREATE UNIQUE n-[:APPARTIENT]->s ";
+		queries.add(toJsonObject(query, new JsonObject()
+		.putString("userId", userId)
+		.putString("classId", classId)));
+		return this;
+	}
+
 	public UserQueriesBuilder linkChildrens(String parentId, List<String> childrenIds) {
 		String query =
 				"START n=node:node_auto_index({childrenIds}), " +
