@@ -44,6 +44,27 @@ var tools = (function(){
 		refresh: function(){
 			window.location.reload();
 		},
+		contextualButtons: function(contextName){
+			var contextsButtons = {
+				documents: [
+					{ text: 'workspace.add.document', call: 'addDocument', icon: true },
+					{ text: 'workspace.send.rack', call: 'sendRack' },
+					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
+					{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
+					{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+				],
+				rack: [
+					{ text: 'workspace.send.rack', call: 'sendRack' },
+					{ text: 'workspace.move.racktodocs', call: 'copy', url: 'rack/documents/copy', contextual: true },
+					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
+				],
+				trash: [
+					{ text: 'workspace.move.trash', call: 'remove', contextual: true }
+				]
+			}
+
+			return contextsButtons[contextName];
+		},
 		formatResponse: function(response, callback){
 			response.forEach(function(item){
 				item.metadata['content-type'] = tools.roleFromFileType(item.metadata['content-type']);
@@ -382,7 +403,7 @@ var workspace = function(){
 									<div class="twelve fluid cell">\
 									<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
 									<div class="row">\
-										<div class="twelve cell right-magnet select-file">\
+										<div class="eight cell select-file">\
 											<div class="hidden-content">\
 												<input type="file" name="file" id="new-file" />\
 											</div>\
@@ -390,27 +411,43 @@ var workspace = function(){
 											<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
 										</div>\
 									</div>\
-										<div class="lightbox-buttons">\
+									<div class="lightbox-buttons">\
 										<input class="cancel" type="button" value="{{#i18n}}cancel{{/i18n}}" />\
 										<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
-										</div>\
+									</div>\
 									</div>\
 								</form>\
 							</div>',
 
-			sendRack : '<form id="upload-form" method="post" action="rack" enctype="multipart/form-data">\
-						<label>{{#i18n}}workspace.rack.name{{/i18n}}</label>\
-						<input type="text" name="name" />\
-						<label>{{#i18n}}workspace.rack.to{{/i18n}}</label>\
-						<select name="to">\
-						{{#users}}\
-							<option value="{{id}}">{{username}}</option>\
-						{{/users}}\
-						</select>\
-						<label>{{#i18n}}workspace.rack.file{{/i18n}}</label>\
-						<input type="file" name="file" />\
-						<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
-						</form>',
+			sendRack : '<div class="fixed-block height-four">\
+							<form id="upload-form" method="post" action="rack" enctype="multipart/form-data" class="fixed twelve cell">\
+								<div class="twelve cell fluid">\
+									<h1>{{#i18n}}workspace.send.rack{{/i18n}}</h1>\
+									<div class="row">\
+										<label class="four cell">{{#i18n}}workspace.rack.file{{/i18n}}</label>\
+										<div class="eight cell right-magnet select-file">\
+											<div class="hidden-content">\
+												<input type="file" name="file" id="new-file" />\
+											</div>\
+											<button class="file-button">{{#i18n}}choose{{/i18n}}</button>\
+											<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
+										</div>\
+									</div>\
+									<div class="row">\
+										<label class="four cell">{{#i18n}}workspace.rack.to{{/i18n}}</label>\
+										<select class="eight cell" name="to" data-autocomplete>\
+										{{#users}}\
+											<option value="{{id}}">{{username}}</option>\
+										{{/users}}\
+										</select>\
+									</div>\
+									<div class="lightbox-buttons">\
+										<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
+										<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
+									</div>\
+								</div>\
+							</form>\
+						</div>',
 
 			comment : '<form method="post" action="document/{{id}}/comment">\
 							<h1>{{#i18n}}workspace.comment{{/i18n}}</h1>\
@@ -431,13 +468,20 @@ var workspace = function(){
 									<ul id="foldersTree" class="folders"></ul>\
 								</nav>\
 								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
-							</form>'
+							</form>',
+			contextualButtons: '\
+							{{#.}}\
+							<a call="{{call}}" href="{{url}}" class="button {{#contextual}}contextual{{/contextual}}" {{#contextual}}disabled{{/contextual}}>\
+									{{#icon}}<i role="add"></i>{{/icon}}{{#i18n}}{{text}}{{/i18n}}\
+								</a>\
+							{{/.}}'
 		},
 		action : {
 			documents : function (o, callback) {
 				var relativePath = undefined,
 					that = this,
 					directories;
+				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('documents')))
 				One.get(o.url).done(function(response){
 					if (o.url.match(/^documents\/.*?/g)) {
 						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
@@ -469,6 +513,7 @@ var workspace = function(){
 				messenger.requireResize();
 			},
 			rack : function (o) {
+				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('rack')))
 				One.get(o.url).done(function(response){
 					tools.formatResponse(response, function(data){
 						$('#list').html(app.template.render("rack", response));
@@ -488,6 +533,7 @@ var workspace = function(){
 				})
 			},
 			trash : function (o) {
+				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('trash')))
 				One.get("documents/Trash").done(function(documents) {
 					One.get("rack/documents/Trash").done(function(rack) {
 						tools.formatResponse(documents, function(data){
@@ -647,8 +693,8 @@ var workspace = function(){
 				});
 			},
 
-			move : function(o) {
-					$('#form-window').html(app.template.render("moveDocuments", { action : 'documents/move', currentPath: o.url }));
+			move: function(o) {
+					$('#form-window').html(app.template.render("moveDocuments", { action : o.url, currentPath: o.url }));
 					var showFolders = function(path){
 					var nodePattern = function(node, subNodes){
 						if(node.name){
@@ -688,7 +734,7 @@ var workspace = function(){
 				})
 			},
 			copy : function(o) {
-				$('#form-window').html(app.template.render("copyDocuments", { action : 'documents/copy', currentPath: o.url }));
+				$('#form-window').html(app.template.render("copyDocuments", { action : o.url, currentPath: o.url }));
 				var showFolders = function(path){
 					var nodePattern = function(node, subNodes){
 						if(node.name){
