@@ -1102,6 +1102,7 @@ i[role=configuration] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  cursor: pointer;
 }
 i[role=user] {
   height: 30px;
