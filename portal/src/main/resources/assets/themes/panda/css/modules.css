@@ -2081,6 +2081,16 @@ article em {
 article .line {
   border-bottom: 1px dashed #ccc;
 }
+input[type=text],
+input[type=password] {
+  border: none;
+  border-bottom: 1px dashed #333333;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  -ms-border-radius: 0px;
+  -o-border-radius: 0px;
+  border-radius: 0px;
+}
 .navbar {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
   background: -moz-linear-gradient(#ffffff, #eeeeee);

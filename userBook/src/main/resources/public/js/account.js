@@ -48,7 +48,7 @@ var account = function(){
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
-								<em class="six cell" contenteditable="true" data-property="email">{{email}}</em>\
+								<input type="text" class="six cell" data-property="email" value="{{email}}" />\
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.telephone{{/i18n}}</label></div>\
@@ -73,12 +73,12 @@ var account = function(){
 					<div class="four cell fixed">\
 						<div class="cell fixed twelve bottom-magnet">\
 							<div class="twelve cell bottom-magnet text-container">\
-								<div class="enhanced-select twelve" data-selected="{{mood}}">\
-									<div class="current"><i role="{{mood}}-panda" class="small-panda"></i><span>{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</span></div>\
-									<div class="options-list">\
+								<div class="enhanced-select twelve fixed-block height-two" data-selected="{{mood}}">\
+									<div class="current fixed cell twelve"><i role="{{mood}}-panda"></i><span>{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</span></div>\
+									<div class="options-list icons-view">\
 										{{#moods}}\
-										<div class="option" data-value="{{.}}">\
-											<i role="{{.}}-panda" class="small-panda"></i>\
+										<div class="cell three option" data-value="{{.}}">\
+											<i role="{{.}}-panda"></i>\
 											<span>{{#i18n}}userBook.mood.{{.}}{{/i18n}}</span>\
 										</div>\
 										{{/moods}}\
@@ -102,7 +102,7 @@ var account = function(){
 						<article class="fluid twelve cell text-container">\
 							<div class="row">\
 								<h2>{{#i18n}}userBook.profile.motto{{/i18n}}</h2>\
-								<em class="twelve cell monoline" contenteditable="true" data-property="motto">{{motto}}</em>\
+								<input type="text" class="twelve cell monoline" data-property="motto" maxlength="185" value="{{motto}}" />\
 							</div>\
 						</article>\
 					</div>\
@@ -113,7 +113,8 @@ var account = function(){
 					{{#hobbies}}\
 						<div class="row line" data-category="{{category}}">\
 							<div class="three cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
-							<div class="eight cell"><em contenteditable="true" class="monoline">{{values}}</em></div>\
+							<div class="eight cell">\
+								<input type="text" class="twelve cell" value="{{values}}" /></div>\
 							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
 						</div>\
@@ -200,18 +201,17 @@ var account = function(){
 }();
 
 function manageEditable(){
-	$('em[contenteditable="true"], textarea').on('change', function(){
+	$('textarea, input').on('change', function(){
 		var parameters = "";
 		var parentLine = $(this).parent().parent();
-		if (parentLine.data('category')){
-			parameters += "?category=" + parentLine.data('category') + "&values=" + $(this).text();
-		} else {
-			var value = $(this).text();
-			if($(this).prop('tagName').toLowerCase() === 'textarea'){
-				value = $(this).val();
-			}
+		var value = $(this).val();
+		if(parentLine.data('category')){
+			parameters += "?category=" + parentLine.data('category') + "&values=" + value;
+		}
+		else{
 			parameters += "?prop=" + $(this).data('property') + "&value=" + value;
 		}
+
 		if ($(this).data('property') === 'email'){
 			account.action.editUserInfo("api/edit-user-info" + parameters);
 		} else {
