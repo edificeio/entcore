@@ -40,7 +40,12 @@ public class GenericDao {
 	}
 
 	protected JsonObject idMatcher(String id, String owner) {
-		String query = "{ \"_id\": \"" + id + "\"}";
+		String query;
+		if (owner != null && !owner.trim().isEmpty()) {
+			query = "{ \"_id\": \"" + id + "\", \"owner\" : \"" + owner + "\"}";
+		} else {
+			query = "{ \"_id\": \"" + id + "\"}";
+		}
 		return new JsonObject(query);
 	}
 

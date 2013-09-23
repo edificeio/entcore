@@ -481,7 +481,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void copyFiles(final HttpServerRequest request, final String collection, String owner) {
+	private void copyFiles(final HttpServerRequest request, final String collection, final String owner) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
 		String folder = request.params().get("folder");
 		if (ids != null && folder != null &&
@@ -505,6 +505,14 @@ public class WorkspaceService extends Controller {
 							final JsonObject dest = orig.copy();
 							String now = MongoDb.formatDate(new Date());
 							dest.removeField("_id");
+							if (owner != null) {
+								dest.putString("owner", owner);
+								dest.putString("ownerName", dest.getString("toName"));
+								dest.removeField("to");
+								dest.removeField("from");
+								dest.removeField("toName");
+								dest.removeField("fromName");
+							}
 							dest.putString("created", now);
 							dest.putString("modified", now);
 							dest.putString("folder", request.params().get("folder"));
@@ -553,7 +561,7 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void copyDocument(HttpServerRequest request) {
-		copyFile(request, documentDao);
+		copyFile(request, documentDao, null);
 	}
 
 	@SecuredAction("workspace.document.copy")
@@ -563,7 +571,7 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
-					copyFile(request, rackDao);
+					copyFile(request, rackDao, user.getUserId());
 				} else {
 					unauthorized(request);
 				}
@@ -571,8 +579,9 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void copyFile(final HttpServerRequest request, final GenericDao dao) {
-		dao.findById(request.params().get("id"), new Handler<JsonObject>() {
+	private void copyFile(final HttpServerRequest request, final GenericDao dao, final String owner) {
+		dao.findById(request.params().get("id"), owner, new Handler<JsonObject>() {
+
 			@Override
 			public void handle(JsonObject src) {
 				if ("ok".equals(src.getString("status")) && src.getObject("result") != null) {
@@ -580,8 +589,14 @@ public class WorkspaceService extends Controller {
 					final JsonObject dest = orig.copy();
 					String now = MongoDb.formatDate(new Date());
 					dest.removeField("_id");
-					dest.removeField("to"); // TODO add owner
-					dest.removeField("from");
+					if (owner != null) {
+						dest.putString("owner", owner);
+						dest.putString("ownerName", dest.getString("toName"));
+						dest.removeField("to");
+						dest.removeField("from");
+						dest.removeField("toName");
+						dest.removeField("fromName");
+					}
 					dest.putString("created", now);
 					dest.putString("modified", now);
 					dest.putString("folder", request.params().get("folder"));
