@@ -296,7 +296,7 @@ var workspace = function(){
 								</i>\
 							</a>\
 							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-							<a href="document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}" call>{{name}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
@@ -339,7 +339,7 @@ var workspace = function(){
 								</i>\
 							</a>\
 							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-							<a href="document/{{_id}}">{{name}}</a>\
+							<a href="document/{{_id}}" call>{{name}}</a>\
 						</li>\
 						{{/.}}\
 						<div class="clear"></div>\
