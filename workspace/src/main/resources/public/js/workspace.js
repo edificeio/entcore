@@ -297,8 +297,8 @@ var workspace = function(){
 										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										{{#anyComment}}\
 										<span class="cell right-magnet action-cell">\
-											<a class="show" call="showComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.show{{/i18n}}</a>\
-											<a class="hide" call="showComment" href=".comments{{_id}}" style="display:none">{{#i18n}}workspace.document.comment.hide{{/i18n}}</a> ({{commentsCount}})</a>\
+											<a class="show" call="showComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.show{{/i18n}} ({{commentsCount}})</a>\
+											<a class="hide" call="showComment" href=".comments{{_id}}" style="display:none">{{#i18n}}workspace.document.comment.hide{{/i18n}}</a>\
 										</span>\
 										{{/anyComment}}\
 										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span></h2>\
