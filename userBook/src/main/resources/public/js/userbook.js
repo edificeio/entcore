@@ -171,7 +171,7 @@ var userbook = function(){
 								<em class="eight cell">{{motto}}</em>\
 							</div>\
 							<div class="row mini-box">\
-								<div class="two cell avatar"><i role="{{mood}}-panda"></i></div>\
+								<div class="two cell avatar"><i role="{{mood}}-panda" class="liquid"></i></div>\
 								<em class="ten cell text-container mood">{{#i18n}}userBook.mood.{{mood}}{{/i18n}}</em>\
 							</div>\
 						</article>\
