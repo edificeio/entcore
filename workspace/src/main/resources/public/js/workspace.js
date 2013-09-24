@@ -59,8 +59,7 @@ var tools = (function(){
 					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
 				],
 				trash: [
-					{ text: 'workspace.move.trash', call: 'remove', contextual: true },
-					{ text: 'workspace.restore', call: 'copy', url: 'documents/copy', contextual: true }
+					{ text: 'workspace.move.trash', call: 'remove', contextual: true }
 				]
 			}
 
