@@ -100,15 +100,23 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
+					String hobbyVisibility;
+					Map<String, Object> params = new HashMap<>();
+					if (request.params().get("id") == null) {
+						params.put("userId",user.getUserId());
+						hobbyVisibility = "PUBLIC|PRIVE";
+					} else {
+						params.put("userId",request.params().get("id"));
+						hobbyVisibility = "PUBLIC";
+					}
 					String query = "START n=node:node_auto_index(id={userId}) "
 								+ "MATCH "
 									+ "n-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->n "
 									+ "WHERE (c IS NULL) OR c.type='ETABEDUCNAT' WITH n, c "
 								+ "MATCH "
-									+ "(n)-[?:USERBOOK]->(u)-[v?]->(h1), "
+									+ "(n)-[?:USERBOOK]->(u)-[v?:" + hobbyVisibility + "]->(h1), "
 									+ "(n)-[?:EN_RELATION_AVEC]-(n2) "
 								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
-								+ "WHERE (v IS NULL) OR (type(v) IN {hobbyVisibility}) "
 								+ "RETURN DISTINCT "
 									+ "n.id as id,"
 									+ "n.ENTPersonLogin as login, "
@@ -129,15 +137,6 @@ public class UserBookController extends Controller {
 									+ "COLLECT(type(v)) as visibility,"
 									+ "COLLECT(h.category?) as category,"
 									+ "COLLECT(h.values?) as values";
-
-					Map<String, Object> params = new HashMap<>();
-					if (request.params().get("id") == null) {
-						params.put("userId",user.getUserId());
-						params.put("hobbyVisibility", Arrays.asList("PUBLIC","PRIVE"));
-					} else {
-						params.put("userId",request.params().get("id"));
-						params.put("hobbyVisibility","PUBLIC");
-					}
 					params.put("defaultAvatar", userBookData.getString("default-avatar"));
 					params.put("defaultMood", userBookData.getString("default-mood"));
 
