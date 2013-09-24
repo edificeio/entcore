@@ -215,7 +215,7 @@ var userbook = function(){
 					<div class="clear"></div>\
 				</article>\
 				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>\
-				<article class="text-container">{{health}}</article>\
+				<article class="text-container user-content">{{health}}</article>\
 	'
 		},
 		action : {
