@@ -25,6 +25,11 @@
   }
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-six {
+    padding-bottom: 50%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.left-five {
     left: 41.66666666666667%;
   }
@@ -58,6 +63,9 @@
   .fixed-block.left-two {
     left: 16.666666666666668%;
   }
+}
+.fluid {
+  position: relative !important;
 }
 .fixed-block {
   box-sizing: content-box;
@@ -2004,9 +2012,19 @@ nav.vertical ul a:hover {
 .select-file input[type=text] {
   border: 1px solid #eee;
   border-right: 0;
+  margin: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .select-file button,
 .select-file input[type=button] {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
   border: 1px solid #eee;
   border-left: 0;
   border-bottom-left-radius: 0;

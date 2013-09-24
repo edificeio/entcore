@@ -452,22 +452,36 @@ var workspace = function(){
 			comment : '<form method="post" action="document/{{id}}/comment">\
 							<h1>{{#i18n}}workspace.comment{{/i18n}}</h1>\
 							<textarea name="comment"></textarea>\
-							<input call="sendComment" type="button" value="{{#i18n}}send{{/i18n}}" />\
+							<div class="lightbox-buttons fluid">\
+								<input class="cancel" type="button" value="{{#i18n}}cancel{{/i18n}}" />\
+								<input call="sendComment" type="submit" value="{{#i18n}}send{{/i18n}}" />\
+								<div class="clear"></div>\
+							</div>\
 						</form>',
 
-			moveDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
-								<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
-								<nav class="vertical">\
-									<ul id="foldersTree" class="folders"></ul>\
-								</nav>\
-								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
+			moveDocuments : '<form action="{{action}}" data-current-path="{{currentPath}}">\
+								<div class="row">\
+									<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
+									<nav class="vertical">\
+										<ul id="foldersTree" class="folders"></ul>\
+									</nav>\
+									<div class="lightbox-buttons fluid">\
+										<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
+										<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
+										<div class="clear"></div>\
+									</div>\
+								</div>\
 							</form>',
 			copyDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
 								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
 								<nav class="vertical">\
 									<ul id="foldersTree" class="folders"></ul>\
 								</nav>\
-								<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
+								<div class="lightbox-buttons fluid">\
+									<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
+									<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
+									<div class="clear"></div>\
+								</div>\
 							</form>',
 			contextualButtons: '\
 							{{#.}}\
@@ -523,7 +537,7 @@ var workspace = function(){
 			},
 			share: function(o){
 				One.get(o.url).done(function(data){
-					$('#form-window').html('<div class="twelve cell flowing">' + data + '</div>');
+					$('#form-window').html('<div class="twelve cell flowing"><h1>Partager</h1>' + data + '</div>');
 					ui.showLightbox();
 
 					$('#form-window table').addClass('monoline');
@@ -870,6 +884,7 @@ $(document).ready(function(){
 
 	$('.workspace').on('click', '.showCreate', function(){
 		$(this).parent().parent().find('.createFolder').first().show();
+		messenger.requireResize();
 	})
 
 	$('.workspace').on('mousedown', '.editable', function(){

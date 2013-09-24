@@ -25,6 +25,11 @@
   }
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-six {
+    padding-bottom: 50%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.left-five {
     left: 41.66666666666667%;
   }
@@ -58,6 +63,9 @@
   .fixed-block.left-two {
     left: 16.666666666666668%;
   }
+}
+.fluid {
+  position: relative !important;
 }
 .fixed-block {
   box-sizing: content-box;
