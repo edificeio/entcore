@@ -36,6 +36,9 @@ var oneApp = {
 		$('body').delegate(that.scope, 'click',function(event) {
 			if (!event.target.getAttribute('call')) return;
 			event.preventDefault();
+			if(event.target.getAttribute('disabled') !== null){
+				return;
+			}
 			var call = event.target.getAttribute('call');
 			that.action[call]({url : event.target.getAttribute('href'), target: event.target});
 			event.stopPropagation();
