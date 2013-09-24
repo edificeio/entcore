@@ -100,6 +100,9 @@ var oneApp = {
 				key = Mustache.render(key, this);
 				return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; 
 			};
+		},
+		translate: function(key){
+			return this.i18n()(key);
 		}
 	},
 	message : {

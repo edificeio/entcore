@@ -28,6 +28,7 @@
 	"workspace.document.delete" : "Supprimer un document",
 	"workspace.document.get" : "Lire un document",
 	"workspace.share" : "Partager",
+	"workspace.removed.message": "Document supprimé",
 	"upload": "Envoyer",
 	"workspace.comment": "Commenter",
 	"workspace.contrib": "Contribuer",

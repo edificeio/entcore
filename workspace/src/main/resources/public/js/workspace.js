@@ -59,7 +59,8 @@ var tools = (function(){
 					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
 				],
 				trash: [
-					{ text: 'workspace.move.trash', call: 'remove', contextual: true }
+					{ text: 'workspace.move.trash', call: 'remove', contextual: true },
+					{ text: 'workspace.restore', call: 'copy', url: 'documents/copy', contextual: true }
 				]
 			}
 
@@ -641,6 +642,7 @@ var workspace = function(){
 					One.put(o.url + "/" + obj.val())
 						.done(function(data){
 							navigation.refresh();
+							app.notify.info(app.i18n.translate('workspace.removed.message'));
 						});
 				});
 			},
