@@ -178,6 +178,9 @@ var ui = (function(){
 			$('.lightbox-backdrop').fadeIn();
 			$('.lightbox-window').fadeIn();
 			$('.lightbox-window').css({ 'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px'});
+
+			//For now, we ignore parent size and base ourselves on iframe size only.
+			$('.lightbox-window').offset({top: ($('body').height() - $('.lightbox-window').height()) / 2})
 			messenger.requireLightbox();
 		},
 		hideLightbox: function(){
