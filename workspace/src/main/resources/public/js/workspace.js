@@ -237,8 +237,9 @@ var workspace = function(){
 										<input type="checkbox" class="selectAllCheckboxes" />\
 									</th>\
 									<th scope="col"></th>\
-									<th scope="col" class="nine">{{#i18n}}name{{/i18n}}</th>\
-									<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
+									<th scope="col" class="five">{{#i18n}}name{{/i18n}}</th>\
+									<th scope="col" class="four">{{#i18n}}owner{{/i18n}}</th>\
+									<th scope="col" class="two">{{#i18n}}modified{{/i18n}}</th>\
 								</tr>\
 							</thead>\
 							<tbody>\
@@ -246,7 +247,7 @@ var workspace = function(){
 								<tr class="overline">\
 									<td></td>\
 									<td><i role="folder"></i></td>\
-									<td><strong><a call="documents" href="documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
+									<td colspan="2"><strong><a call="documents" href="documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
 									<td></td>\
 								</tr>\
 								<tr class="underline">\
@@ -258,6 +259,7 @@ var workspace = function(){
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 									<td><a href="document/{{_id}}" call>{{name}}</a></td>\
+									<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
@@ -298,6 +300,7 @@ var workspace = function(){
 							</a>\
 							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							<a href="document/{{_id}}" call>{{name}}</a>\
+							<a href="/userbook/annuaire#{{owner}}"><strong>{{ownerName}}</strong></a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\
@@ -353,8 +356,9 @@ var workspace = function(){
 									<input type="checkbox" class="selectAllCheckboxes" />\
 								</th>\
 								<th></th>\
-								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
-								<th scope="col">{{#i18n}}modified{{/i18n}}</th>\
+								<th scope="col" class="five">{{#i18n}}name{{/i18n}}</th>\
+								<th scope="col" class="four">{{#i18n}}owner{{/i18n}}</th>\
+								<th scope="col" class="two">{{#i18n}}modified{{/i18n}}</th>\
 							</tr>\
 						</thead>\
 						<tbody>\
@@ -363,6 +367,7 @@ var workspace = function(){
 								<td><input class="select-file" type="checkbox" name="files[]" value="document/{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
 								<td><a href="document/{{_id}}" call>{{name}}</a></td>\
+								<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
 							<tr></tr>\
@@ -395,6 +400,7 @@ var workspace = function(){
 								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
 							</a>\
 							<a href="document/{{_id}}" call>{{name}}</a>\
+							<br /><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a>\
 						</li>\
 						{{/documents}}\
 						<div class="clear"></div>\

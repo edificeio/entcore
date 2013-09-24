@@ -2297,6 +2297,10 @@ h3 {
   color: #888;
   font-size: 14px;
 }
+.icons-view li a strong {
+  color: #2f8cc9;
+  font-weight: normal;
+}
 .icons-view li a i,
 .icons-view li a img {
   opacity: 1;

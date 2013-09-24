@@ -49,5 +49,6 @@
 	"e404": "Adresse introuvable",
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
 	"e500": "Le serveur a rencontré une erreur",
-	"workspace.move.racktodocs": "Copier dans mes documents"
+	"workspace.move.racktodocs": "Copier dans mes documents",
+	"owner": "Propriétaire"
 }
