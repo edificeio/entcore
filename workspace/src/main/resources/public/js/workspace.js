@@ -69,6 +69,8 @@ var tools = (function(){
 		formatResponse: function(response, callback){
 			response.forEach(function(item){
 				item.metadata['content-type'] = tools.roleFromFileType(item.metadata['content-type']);
+				var fileNameSplit = item.metadata.filename.split('.');
+				item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
 				if(item.metadata['content-type'] === 'img'){
 					item.thumbnail = 'document/' + item._id;
 				}
@@ -258,7 +260,7 @@ var workspace = function(){
 								<tr class="overline">\
 									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-									<td><a href="document/{{_id}}" call>{{name}}</a></td>\
+									<td><a href="document/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
 									<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
@@ -324,7 +326,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="rack/{{_id}}" call>{{name}}</a></td>\
+								<td><a href="rack/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
 								<td>{{fromName}}</td>\
 								<td>{{toName}}</a></td>\
 								<td>{{sent}}</td>\
@@ -366,7 +368,7 @@ var workspace = function(){
 							<tr>\
 								<td><input class="select-file" type="checkbox" name="files[]" value="document/{{_id}}" /></td>\
 								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="document/{{_id}}" call>{{name}}</a></td>\
+								<td><a href="document/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
 								<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
 								<td>{{modified}}</td>\
 							</tr>\
