@@ -1,6 +1,32 @@
 var tools = (function(){
 	var myId;
 
+	var findAuthorizations = function(authorizations, owner){
+		if(!(authorizations instanceof Array) || owner === myId){
+			return {
+				comment: true
+			}
+		}
+
+		var myRights = {
+			comment: false
+		}
+
+		authorizations.forEach(function(auth){
+			if(auth.userId !== myId){
+				return;
+			}
+
+			for(var property in auth){
+				if(property.indexOf('comment') !== -1){
+					myRights.comment = true;
+				}
+			}
+		})
+
+		return myRights;
+	}
+
 	return {
 		myId: function(id){
 			if(!id){
@@ -100,6 +126,8 @@ var tools = (function(){
 				item.anyComment = function(){
 					return this.commentsCount !== 0;
 				};
+
+				item.myRights = findAuthorizations(item.shared, item.owner);
 
 				if(!item.comments){
 					item.commentsCount = 0;
@@ -264,8 +292,8 @@ var workspace = function(){
 									<td>{{#formatDate}}{{modified}}{{/formatDate}}</td>\
 								</tr>\
 								<tr class="comments{{_id}} underline">\
-									<td colspan="4" class="container-cell">\
-										<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>\
+									<td colspan="5" class="container-cell">\
+										{{#myRights}}{{#comment}}<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>{{/comment}}{{/myRights}}\
 										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
 										{{#anyComment}}\
 										<span class="cell right-magnet action-cell">\
