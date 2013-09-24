@@ -371,7 +371,7 @@ nav.horizontal a {
   font-size: 16px;
 }
 i.liquid {
-  width: 100% !important;
+  max-width: 100% !important;
   height: auto;
   background-size: 100% auto;
 }

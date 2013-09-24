@@ -371,7 +371,7 @@ nav.horizontal a {
   font-size: 16px;
 }
 i.liquid {
-  width: 100% !important;
+  max-width: 100% !important;
   height: auto;
   background-size: 100% auto;
 }
@@ -1504,7 +1504,7 @@ i[role=angry-panda] {
 i[role=default-panda] {
   height: 50px;
   width: 50px;
-  background-image: url("../img/icons/default-panda.png");
+  background-image: url("../img/icons/default-panda-60px.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
