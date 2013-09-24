@@ -16,6 +16,15 @@ var messenger = (function(){
 				window.history.pushState({ link: message.data[i] }, null, '/?app=' + message.data[i]);
 			}
 		},
+		'lightbox-position': function(message){
+			if(message.data.posY < 0){
+				message.data.posY = 0;
+			}
+			var top = message.data.posY + (message.data.viewportHeight - $('.lightbox-window').height()) / 2;
+			$('.lightbox-window').offset({
+				top: top
+			});
+		},
 		'set-style': function(message){
 			if($('link[href="' + message.data + '"]').length > 0){
 				return;
@@ -180,7 +189,11 @@ var ui = (function(){
 			$('.lightbox-window').css({ 'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px'});
 
 			//For now, we ignore parent size and base ourselves on iframe size only.
-			$('.lightbox-window').offset({top: ($('body').height() - $('.lightbox-window').height()) / 2})
+			//$('.lightbox-window').offset({top: ($('body').height() - $('.lightbox-window').height()) / 2})
+			messenger.sendMessage({
+				name: 'where-lightbox',
+				data: {}
+			});
 			messenger.requireLightbox();
 		},
 		hideLightbox: function(){

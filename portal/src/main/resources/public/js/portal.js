@@ -63,12 +63,34 @@ var navigation = (function(){
 var messenger = (function(){
 	"use strict";
 
+	var send = function(frame, message){
+		var origin = window.location.href;
+		if($(frame).attr('src').indexOf('http') !== -1){
+			origin = $(frame).attr('src');
+		}
+		$(frame)[0].contentWindow.postMessage(JSON.stringify(message), origin);
+	};
+
 	var messagesHandlers = {
 		redirect: function(message){
 			navigation.redirect(message.data);
 		},
 		resize: function(message){
 			$('#applications').height(message.data.height);
+		},
+		'where-lightbox': function(message){
+			if($('#lightbox-marker').length > 0){
+				var fixedPosition = $('#lightbox-marker').offset().top;
+				var iframePosition = $('#applications').offset().top;
+
+				send('#applications', {
+					name: 'lightbox-position',
+					data: {
+						posY: fixedPosition - iframePosition,
+						viewportHeight: $(window).height()
+					}
+				});
+			}
 		},
 		lightbox: function(message){
 			//We can't put a black background on the whole view (iframe + container) without killing the positioning,
@@ -77,6 +99,13 @@ var messenger = (function(){
 			$('header').addClass('lightbox-header');
 			$('body').addClass('lightbox-body');
 			$('section.main').addClass('lightbox-main');
+			$('<div></div>')
+				.attr('id', 'lightbox-marker')
+				.css({
+					position: 'fixed',
+					top: '0px'
+				})
+				.appendTo('body');
 			var close = this.closeLightbox;
 			$('body').one('click.lightbox', function(){
 				close();
@@ -111,13 +140,7 @@ var messenger = (function(){
 	}
 
 	return {
-		sendMessage: function(frame, message){
-			var origin = window.location.href;
-			if($(frame).attr('src').indexOf('http') !== -1){
-				origin = $(frame).attr('src');
-			}
-			$(frame)[0].contentWindow.postMessage(JSON.stringify(message), origin);
-		}
+		sendMessage: send
 	};
 }());
 
