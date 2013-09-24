@@ -1994,6 +1994,7 @@ nav.vertical ul li a {
   margin: 5px;
   line-height: 20px;
   padding: 5px;
+  padding-left: 10px;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
