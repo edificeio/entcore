@@ -3,13 +3,19 @@ package edu.one.core.infra.http;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 
 public class StaticResource {
 
-	private static final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+	private static final SimpleDateFormat format =
+			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.UK);
+	static {
+		format.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 
 	public static void addLastModifiedHeader(HttpServerResponse response, Date resourceLastModified) {
 		response.headers().add("Last-Modified", format.format(resourceLastModified));
