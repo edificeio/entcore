@@ -4,12 +4,14 @@ var tools = (function(){
 	var findAuthorizations = function(authorizations, owner){
 		if(!(authorizations instanceof Array) || owner === myId){
 			return {
-				comment: true
+				comment: true,
+				share: true
 			}
 		}
 
 		var myRights = {
-			comment: false
+			comment: false,
+			share: false
 		}
 
 		authorizations.forEach(function(auth){
@@ -294,7 +296,7 @@ var workspace = function(){
 								<tr class="comments{{_id}} underline">\
 									<td colspan="5" class="container-cell">\
 										{{#myRights}}{{#comment}}<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>{{/comment}}{{/myRights}}\
-										<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}</a>\
+										{{#myRights}}{{#share}}<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}{{/share}}{{/myRights}}</a>\
 										{{#anyComment}}\
 										<span class="cell right-magnet action-cell">\
 											<a class="show" call="showComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.show{{/i18n}} ({{commentsCount}})</a>\
