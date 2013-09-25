@@ -910,7 +910,8 @@ var workspace = function(){
 
 					One[method](action + "/" + ids + "/" + path)
 						.done(function(){
-							location.reload(true);
+							navigation.refresh();
+							navigation.showFolders();
 						});
 				})
 			}
