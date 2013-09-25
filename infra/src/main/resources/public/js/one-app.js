@@ -4,7 +4,7 @@ humane.clickToClose = true;
 if(!Date.prototype.toShortString){
 	Date.prototype.toShortString = function(){
 		var month = this.getMonth();
-		if(this.getMonth() > 9){
+		if(parseInt(this.getMonth()) < 10){
 			month = '0' + month;
 		}
 		return this.getDate() +
