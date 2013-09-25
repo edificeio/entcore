@@ -2359,6 +2359,14 @@ table tbody .checked {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+  overflow: hidden;
+}
+table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+}
 table tr {
   border-top: 1px solid #cccccc;
   background: transparent;

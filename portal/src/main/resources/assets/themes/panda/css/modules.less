@@ -744,6 +744,14 @@ table{
 			background: @light-blue;
 			.run-transition(background);
 		}
+		tr:last-child td:first-child{
+			border-bottom-left-radius: 10px;
+			overflow: hidden;
+		}
+		tr:last-child td:last-child{
+			border-bottom-right-radius: 10px;
+			overflow: hidden
+		}
 	}
 	tr{
 		border-top: 1px solid @medium-grey;
