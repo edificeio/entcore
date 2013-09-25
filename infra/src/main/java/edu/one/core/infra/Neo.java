@@ -118,4 +118,14 @@ public class Neo  {
 		.putObject("params", (params != null) ? params : new JsonObject());
 	}
 
+	public static JsonArray resultToJsonArray(JsonObject j) {
+		JsonArray r = new JsonArray();
+		if (j != null) {
+			for (String idx : j.getFieldNames()) {
+				r.addObject(j.getObject(idx));
+			}
+		}
+		return r;
+	}
+
 }
