@@ -17,10 +17,11 @@ var messenger = (function(){
 			}
 		},
 		'lightbox-position': function(message){
-			if(message.data.posY < 0){
-				message.data.posY = 0;
-			}
 			var top = message.data.posY + (message.data.viewportHeight - $('.lightbox-window').height()) / 2;
+			if(top < 0){
+				top = 0;
+			}
+
 			$('.lightbox-window').offset({
 				top: top
 			});
