@@ -88,7 +88,7 @@ var tools = (function(){
 				],
 				trash: [
 					{ text: 'workspace.move.trash', call: 'remove', contextual: true },
-					{ text: 'workspace.trash.restore', call: 'move', url: 'documents/move', contextual: true }
+					{ text: 'workspace.trash.restore', call: 'restore', contextual: true }
 				]
 			}
 
@@ -757,6 +757,18 @@ var workspace = function(){
 						.done(function(){
 							obj.parents("tr").remove();
 						});
+				});
+			},
+
+			restore : function (o) {
+				var files = [];
+
+				$("#list :checkbox:checked").each(function(i) {
+					var obj = $(this);
+					One.put("restore/" + obj.val())
+						.done(function(){
+							obj.parents("tr").remove();
+					});
 				});
 			},
 

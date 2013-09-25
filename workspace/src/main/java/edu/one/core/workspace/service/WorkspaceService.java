@@ -995,4 +995,59 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	public void restoreTrash(HttpServerRequest request) {
+		restore(request, documentDao, null);
+	}
+
+	@SecuredAction("workspace.rack.restore")
+	public void restoreTrashRack(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					restore(request, rackDao, user.getUserId());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	private void restore(final HttpServerRequest request, final GenericDao dao, final String to) {
+		final String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			dao.findById(id, to, new Handler<JsonObject>() {
+
+				@Override
+				public void handle(JsonObject res) {
+					if ("ok".equals(res.getString("status"))) {
+						JsonObject doc = res.getObject("result");
+						if (doc.getString("old-folder") != null) {
+							doc.putString("folder", doc.getString("old-folder"));
+						} else {
+							doc.removeField("folder");
+						}
+						doc.removeField("old-folder");
+						dao.update(id, doc, to, new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject res) {
+								if ("ok".equals(res.getString("status"))) {
+									renderJson(request, res);
+								} else {
+									renderJson(request, res, 404);
+								}
+							}
+						});
+					} else {
+						renderJson(request, res, 404);
+					}
+				}
+			});
+		} else {
+			badRequest(request);
+		}
+	}
+
 }

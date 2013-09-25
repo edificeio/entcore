@@ -36,6 +36,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		case "moveTrash":
 		case "copyDocument":
 		case "deleteDocument":
+		case "restoreTrash":
 			authorizeDocument(request, user, binding.getServiceMethod(), handler);
 			break;
 		case "moveDocuments":

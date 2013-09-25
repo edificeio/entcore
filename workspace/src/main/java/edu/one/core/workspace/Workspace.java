@@ -43,6 +43,8 @@ public class Workspace extends Server {
 
 		service.put("/document/trash/:id", "moveTrash");
 
+		service.put("/restore/document/:id", "restoreTrash");
+
 		service.post("/documents/copy/:ids/:folder", "copyDocuments");
 
 		service.post("/document/copy/:id/:folder", "copyDocument");
@@ -64,6 +66,8 @@ public class Workspace extends Server {
 		service.post("/rack/document/copy/:id/:folder", "copyRackDocument");
 
 		service.put("/rack/trash/:id", "moveTrashRack");
+
+		service.put("/restore/rack/:id", "restoreTrashRack");
 
 		service.get("/rack/documents/Trash", "listRackTrashDocuments");
 
