@@ -247,7 +247,11 @@ var navigation = (function(){
 			workspace.action.documents({url : this.currentUrl()}, function(){
 				$('.selectAllCheckboxes').change();
 				if($('tbody tr').length === 0){
-					console.log(that.currentUrl());
+					var arguments = that.currentUrl().split('?');
+					var urlParams = arguments[arguments.length - 1];
+					that.redirect('documents?' + urlParams);
+					that.showFolders();
+					workspace.action.documents({url : that.currentUrl()}, function(){});
 				}
 			});
 		}
