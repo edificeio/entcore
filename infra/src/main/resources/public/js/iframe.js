@@ -9,6 +9,25 @@ var messenger = (function(){
 		}
 	};
 
+	var requireResize = function(){
+		var bodySize = $('body').outerHeight(true);
+		var windowSize = $('.lightbox-window').outerHeight(true) + $('.lightbox-window').offset().top;
+
+		var newSize = bodySize;
+		if(windowSize > bodySize){
+			newSize = windowSize;
+		}
+
+		var appSizeMessage = {
+			name: 'resize',
+			data: {
+				height: newSize + 1
+			}
+		};
+
+		send(appSizeMessage);
+	};
+
 	var messagesHandlers = {
 		'set-history': function(message){
 			var history = message.data;
@@ -25,6 +44,8 @@ var messenger = (function(){
 			$('.lightbox-window').offset({
 				top: top
 			});
+
+			requireResize();
 		},
 		'set-style': function(message){
 			if($('link[href="' + message.data + '"]').length > 0){
@@ -84,24 +105,7 @@ var messenger = (function(){
 				data: location
 			});
 		},
-		requireResize: function(){
-			var bodySize = $('body').outerHeight(true);
-			var windowSize = $('.lightbox-window').outerHeight(true);
-
-			var newSize = bodySize;
-			if(windowSize > bodySize){
-				newSize = windowSize;
-			}
-
-			var appSizeMessage = {
-				name: 'resize',
-				data: {
-					height: newSize + 1
-				}
-			};
-
-			send(appSizeMessage);
-		},
+		requireResize: requireResize,
 		requireLightbox: function(){
 			var appSizeMessage = {
 				name: 'lightbox',
@@ -185,8 +189,10 @@ var ui = (function(){
 
 	var ui = {
 		showLightbox: function(){
-			$('.lightbox-backdrop').fadeIn();
-			$('.lightbox-window').fadeIn();
+			$('.lightbox-backdrop').fadeIn('normal', function(){
+				messenger.requireResize();
+			});
+			$('.lightbox-window').fadeIn()
 			$('.lightbox-window').css({ 'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px'});
 
 			messenger.requireLightbox();
