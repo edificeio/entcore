@@ -59,7 +59,8 @@ public class NotificationHelper {
 		} else {
 			json.putString("subject", subject);
 		}
-		json.putString("body", render.processTemplate(request, templateBody, templateParams));
+		String body = render.processTemplate(request, templateBody, templateParams);
+		json.putString("body", new String(body.getBytes("UTF-8"), "ISO-8859-1"));
 		eb.send(EMAIL_ADDRESS, json, handler);
 	}
 
