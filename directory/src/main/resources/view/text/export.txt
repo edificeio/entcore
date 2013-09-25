@@ -1,0 +1,4 @@
+"Type";"Nom";"Prénom";"Login";"Code d'activation"
+{{#list}}
+"{{type}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{activationCode}}"
+{{/list}}

@@ -2,6 +2,7 @@ package edu.one.core.directory.controllers;
 
 import static edu.one.core.directory.be1d.BE1DConstants.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,23 +190,51 @@ public class DirectoryController extends Controller {
 	}
 
 	@SecuredAction("directory.export")
-	public void export(HttpServerRequest request) {
+	public void export(final HttpServerRequest request) {
 		String neoRequest = "";
-		if (request.params().get("id").equals("all")){ // TODO filter by school
+		Map<String, Object> params = new HashMap<>();
+		if (request.params().get("id").equals("all")){
 			neoRequest = "START m=node:node_auto_index(" +
 					"'type:ELEVE OR type:PERSEDUCNAT OR type:PERSRELELEVE OR type:ENSEIGNANT') " +
 					"WHERE has(m.activationCode) "
-					+ "RETURN distinct m.id,m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, "
-					+ "m.ENTPersonLogin as login, m.activationCode as activationCode";
+					+ "RETURN distinct m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, "
+					+ "m.ENTPersonLogin as login, m.activationCode as activationCode, m.type as type "
+					+ "ORDER BY type, login ";
+		} else if (request.params().get("id") != null) {
+			neoRequest =
+					"START n=node:node_auto_index(id={id}), m=node:node_auto_index(" +
+					"'type:ELEVE OR type:PERSEDUCNAT OR type:PERSRELELEVE OR type:ENSEIGNANT') " +
+					"MATCH m-[:APPARTIENT]->g-[:DEPENDS]->n " +
+					"WHERE has(m.activationCode) " +
+					"RETURN distinct m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, " +
+					"m.ENTPersonLogin as login, m.activationCode as activationCode, m.type as type " +
+					"ORDER BY type, login ";
+			params.put("id", request.params().get("id"));
 		} else {
-			neoRequest = "START m=node:node_auto_index(id='" + request.params().get("id") + "') "
-					+ "WHERE has(m.activationCode) AND has(m.type) AND (m.type='ELEVE' "
-					+ "OR m.type='PERSEDUCNAT' OR m.type='PERSRELELEVE' OR m.type='ENSEIGNANT') "
-					+ "RETURN distinct m.id,m.ENTPersonNom as lastName,"
-					+ "m.ENTPersonPrenom as firstName, m.ENTPersonLogin as login, "
-					+ "m.activationCode as activationCode";
+			notFound(request);
 		}
-		neo.send(neoRequest, request.response());
+		neo.send(neoRequest, params, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					JsonArray r = Neo.resultToJsonArray(res.body().getObject("result"));
+					String export;
+					try {
+						export = processTemplate(request, "text/export.txt",
+								new JsonObject().putArray("list", r));
+						request.response().putHeader("Content-Type", "application/csv");
+						request.response().putHeader("Content-Disposition",
+								"attachment; filename=activation_de_comptes.csv");
+						request.response().end(export);
+					} catch (IOException e) {
+						renderError(request);
+					}
+				} else {
+					renderError(request);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("directory.authent")

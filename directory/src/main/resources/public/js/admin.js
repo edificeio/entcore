@@ -17,7 +17,7 @@ var admin = function(){
 				{{#list}}<h3>{{name}}</h3>\
 				<a call='classes' href='api/classes?id={{id}}'>\
 				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
-				<a href='api/export?id={{id}}' call='exportAuth'>\
+				<a href='api/export?id={{id}}'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
 				<div id='classes-{{id}}'></div>{{/list}}"
 			,
@@ -27,7 +27,7 @@ var admin = function(){
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
 				 - <a href=\"{{classId}}\" call=\"addUser\">\
 				{{#i18n}}directory.admin.create-user{{/i18n}}</a>\
-				 - <a href='api/export?id={{classId}}' call='exportAuth'>\
+				 - <a href='api/export?id={{classId}}'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
 				<div id='people-{{classId}}'></div>{{/list}}"
 			,
@@ -47,10 +47,6 @@ var admin = function(){
 			personne : '\
 				{{#list}}{{#i18n}}directory.admin.login{{/i18n}} : {{login}} / {{code}} - \
 				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
-			,
-			exportAuth : 'Nom,Prénom,Login,Mot de passe\n'
-				+ '{{#list}}{{lastName}},{{firstName}},{{login}},{{activationCode}}\n'
-				+ '{{/list}}'
 			,
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
@@ -120,15 +116,6 @@ var admin = function(){
 					return;
 				}
 				app.template.getAndRender(o.url, 'personne', '#details', dataExtractor);
-			},
-			exportAuth : function(o) {
-				$.get(o.url)
-				.done(function(data){
-					document.location = 'data:Application/octet-stream,'
-					+ encodeURIComponent(app.template.render('exportAuth', dataExtractor(data)));
-					app.notify.info("Ok");
-				})
-				.error(function(data){app.notify.error(data)})
 			},
 			addUser : function(o) {
 				$.get("api/personnes?id=" + o.url + "&type=ELEVE")
