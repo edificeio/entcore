@@ -755,14 +755,25 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void moveOne(final HttpServerRequest request, String folder, GenericDao dao, String owner) {
-		String obj = "{ \"$set\" : { \"folder\": \"" + folder +
-				"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+	private void moveOne(final HttpServerRequest request, final String folder,
+			final GenericDao dao, final String owner) {
+		String obj = "{ \"$rename\" : { \"folder\" : \"old-folder\"}}";
 		dao.update(request.params().get("id"), new JsonObject(obj), owner, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				if ("ok".equals(res.getString("status"))) {
-					renderJson(request, res);
+					String obj2 = "{ \"$set\" : { \"folder\": \"" + folder +
+							"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+					dao.update(request.params().get("id"), new JsonObject(obj2), owner, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject res) {
+							if ("ok".equals(res.getString("status"))) {
+								renderJson(request, res);
+							} else {
+								renderJson(request, res, 404);
+							}
+						}
+					});
 				} else {
 					renderJson(request, res, 404);
 				}
