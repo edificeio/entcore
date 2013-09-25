@@ -580,8 +580,15 @@ var workspace = function(){
 					ui.showLightbox();
 
 					$('#form-window table').addClass('monoline');
-					$('.lightbox-backdrop, input[type=submit]').one('click', function(){
+					$('.lightbox-backdrop, input[type=submit]').one('click', function(e){
 						ui.hideLightbox();
+						var form = $('.lightbox-window form');
+						var url = form.attr('action');
+						$.post(url, form.serialize(), function(){
+							app.notify.info(app.i18n.translate('workspace.shared.message'));
+						})
+
+						e.preventDefault();
 					})
 				})
 			},

@@ -51,5 +51,6 @@
 	"e500": "Le serveur a rencontré une erreur",
 	"workspace.move.racktodocs": "Copier dans mes documents",
 	"owner": "Propriétaire",
-	"workspace.trash.restore": "Restaurer"
+	"workspace.trash.restore": "Restaurer",
+	"workspace.shared.message": "L'attribution des droits a bien été prise en compte"
 }
