@@ -243,8 +243,12 @@ var navigation = (function(){
 			showFolders(path, 'shared');
 		},
 		refresh: function(){
+			var that = this;
 			workspace.action.documents({url : this.currentUrl()}, function(){
-				$('.selectAllCheckboxes').change()
+				$('.selectAllCheckboxes').change();
+				if($('tbody tr').length === 0){
+					console.log(that.currentUrl());
+				}
 			});
 		}
 	};
@@ -801,7 +805,11 @@ var workspace = function(){
 					};
 
 					var container = $('#foldersTree');
-					tools.displayFoldersTree(nodePattern, container);
+					var filter = "owner";
+					if(navigation.currentUrl().indexOf('shared') !== -1){
+						filter = 'shared';
+					}
+					tools.displayFoldersTree(nodePattern, filter, container);
 				};
 				showFolders();
 
@@ -843,7 +851,12 @@ var workspace = function(){
 					};
 
 					var container = $('#foldersTree');
-					tools.displayFoldersTree(nodePattern, container);
+
+					var filter = 'owner';
+					if(navigation.currentUrl().indexOf('shared') !== -1){
+						filter = 'shared';
+					}
+					tools.displayFoldersTree(nodePattern, filter, container);
 				};
 				showFolders();
 
