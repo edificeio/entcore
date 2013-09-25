@@ -102,7 +102,7 @@ var account = function(){
 						<article class="fluid twelve cell text-container">\
 							<div class="row">\
 								<h2>{{#i18n}}userBook.profile.motto{{/i18n}}</h2>\
-								<input type="text" class="twelve cell monoline" data-property="motto" maxlength="185" value="{{motto}}" />\
+								<input type="text" class="twelve cell monoline" data-property="motto" maxlength="75" value="{{motto}}" />\
 							</div>\
 						</article>\
 					</div>\
