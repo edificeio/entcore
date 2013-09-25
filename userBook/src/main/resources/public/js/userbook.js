@@ -179,17 +179,14 @@ var userbook = function(){
 				</div>\
 				<div class="row text-container">\
 					<article id="actions" class="row text-container">\
-					<div class="row mini-box">\
-						<div class="cell one"><i role="send-mail"></i></div>\
-						<a class="cell ten"><h3>{{#i18n}}userBook.class.write-message{{/i18n}}</h3></a>\
+					<div class="row">\
+						<a><h3><i role="send-mail" class="text-flow"></i> {{#i18n}}userBook.class.write-message{{/i18n}}</h3></a>\
 					</div>\
-					<div class="row mini-box">\
-						<div class="cell one"><i role="view-book"></i></div>\
-						<a class="cell ten"><h3>{{#i18n}}userBook.class.edit-notebook{{/i18n}}</h3></a>\
+					<div class="row">\
+						<a><h3><i role="view-book" class="text-flow"></i> {{#i18n}}userBook.class.edit-notebook{{/i18n}}</h3></a>\
 					</div>\
-					<div class="row mini-box">\
-						<div class="cell one"><i role="view-folder"></i></div>\
-						<a class="cell ten"><h3>{{#i18n}}userBook.class.see-portfolio{{/i18n}}</h3></a>\
+					<div class="row">\
+						<a><h3><i role="view-folder" class="text-flow"></i> {{#i18n}}userBook.class.see-portfolio{{/i18n}}</h3></a>\
 					</div>\
 					<div class="clear"></div>\
 				</article>\

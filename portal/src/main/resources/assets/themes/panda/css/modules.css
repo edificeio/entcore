@@ -375,6 +375,11 @@ i.liquid {
   height: auto;
   background-size: 100% auto;
 }
+.text-flow {
+  display: inline-block !important;
+  float: none !important;
+  vertical-align: middle;
+}
 .list-view ul,
 .list-view header,
 .list-view h2 {
