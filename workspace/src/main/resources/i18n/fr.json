@@ -50,5 +50,6 @@
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
 	"e500": "Le serveur a rencontré une erreur",
 	"workspace.move.racktodocs": "Copier dans mes documents",
-	"owner": "Propriétaire"
+	"owner": "Propriétaire",
+	"workspace.trash.restore": "Restaurer"
 }

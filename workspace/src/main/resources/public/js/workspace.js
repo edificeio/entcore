@@ -87,7 +87,8 @@ var tools = (function(){
 					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
 				],
 				trash: [
-					{ text: 'workspace.move.trash', call: 'remove', contextual: true }
+					{ text: 'workspace.move.trash', call: 'remove', contextual: true },
+					{ text: 'workspace.trash.restore', call: 'move', url: 'documents/move', contextual: true }
 				]
 			}
 
@@ -842,7 +843,9 @@ var workspace = function(){
 				}
 
 				$("#list :checkbox:checked").each(function(i) {
-					ids += "," + $(this).val();
+					var id = $(this).val().split('/');
+					id = id[id.length - 1];
+					ids += "," + id;
 				});
 				if (ids != "") {
 					ids = ids.substring(1);
