@@ -155,8 +155,8 @@ var tools = (function(){
 			}
 			return { name : dir, path : dir };
 		},
-		getFolderTree: function(currentTree, done){
-			workspace.action.getFolders(true, currentTree.path, function(data){
+		getFolderTree: function(currentTree, filter, done){
+			workspace.action.getFolders({ hierarchical: true, filter: filter }, currentTree.path, function(data){
 				data.forEach(function(folder){
 					var folderData = tools.mapFolderName(folder);
 					if(folder === currentTree.path || folder === 'Trash'){
@@ -171,7 +171,7 @@ var tools = (function(){
 				})
 
 				for(var subTree in currentTree.folders){
-					tools.getFolderTree(currentTree.folders[subTree], done);
+					tools.getFolderTree(currentTree.folders[subTree], filter, done);
 				}
 
 				if(Object.keys(currentTree.folders).length === 0){
@@ -179,7 +179,7 @@ var tools = (function(){
 				}
 			});
 		},
-		displayFoldersTree: function(nodePattern, container){
+		displayFoldersTree: function(nodePattern, filter, container){
 			var root = { folders: {} };
 			var treeView = function(node){
 				if(Object.keys(node.folders).length === 0){
@@ -195,7 +195,7 @@ var tools = (function(){
 					return html;
 				});
 			}
-			tools.getFolderTree(root, function(){
+			tools.getFolderTree(root, filter, function(){
 				container.html(treeView(root));
 				if($('.createFolder').length > 1){
 					$('.createFolder').hide();
@@ -208,12 +208,12 @@ var tools = (function(){
 var navigation = (function(){
 	var currentURL = '/documents';
 
-	var showFolders = function(path){
+	var showFolders = function(path, filter){
 		var nodePattern = function(node, subNodes){
 			if(node.name){
 				return '<li>\
-					<a call="documents" href="documents/' + node.path + '?hierarchical=true">' + node.name + '</a>\
-					<ul data-folder="' + node.path + '">' + subNodes() + '</ul>\
+					<a call="documents" href="documents/' + node.path + '?hierarchical=true&filter=' + filter + '">' + node.name + '</a>\
+					<ul data-folder="' + node.path + '" data-filter="' + filter + '">' + subNodes() + '</ul>\
 				</li>';
 			}
 			else{
@@ -222,8 +222,8 @@ var navigation = (function(){
 
 		};
 
-		var container = $('[data-folder="' + path + '"]');
-		tools.displayFoldersTree(nodePattern, container);
+		var container = $('[data-folder="' + path + '"][data-filter="' + filter + '"]');
+		tools.displayFoldersTree(nodePattern, filter, container);
 	};
 
 	var updater = {
@@ -239,7 +239,8 @@ var navigation = (function(){
 			return currentURL;
 		},
 		showFolders: function(path){
-			showFolders(path);
+			showFolders(path, 'owner');
+			showFolders(path, 'shared');
 		},
 		refresh: function(){
 			workspace.action.documents({url : this.currentUrl()}, function(){
@@ -279,7 +280,7 @@ var workspace = function(){
 								<tr class="overline">\
 									<td></td>\
 									<td><i role="folder"></i></td>\
-									<td colspan="2"><strong><a call="documents" href="documents/{{path}}?hierarchical=true">{{name}}</a></strong></td>\
+									<td colspan="2"><strong><a call="documents" href="documents/{{path}}?hierarchical=true&filter={{filter}}">{{name}}</a></strong></td>\
 									<td></td>\
 								</tr>\
 								<tr class="underline">\
@@ -530,7 +531,7 @@ var workspace = function(){
 							{{/.}}'
 		},
 		action : {
-			documents : function (o, callback) {
+			documents: function (o, callback) {
 				var relativePath = undefined,
 					that = this,
 					directories;
@@ -539,14 +540,22 @@ var workspace = function(){
 					if (o.url.match(/^documents\/.*?/g)) {
 						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
 					}
-					that.getFolders(o.url.indexOf("hierarchical=true") != -1, relativePath, function(data) {
+					var filter = "owner";
+					if(o.url.indexOf("shared") !== -1){
+						filter = 'shared';
+					}
+
+					that.getFolders({
+						hierarchical: o.url.indexOf("hierarchical=true") != -1,
+						filter: filter
+					}, relativePath, function(data) {
 						directories = _.filter(data, function(dir) {
 							return dir !== relativePath && dir !== "Trash";
 						});
 						directories = _.map(directories, tools.mapFolderName);
 
 						tools.formatResponse(response, function(data){
-							$('#list').html(app.template.render("documents", { documents : response, folders : directories }));
+							$('#list').html(app.template.render("documents", { documents : response, folders : directories, filter: filter }));
 							navigation.redirect(o.url);
 							messenger.requireResize();
 
@@ -664,10 +673,7 @@ var workspace = function(){
 					})
 			},
 
-			getFolders : function(hierarchical, relativePath, action) {
-				var params = {
-					hierarchical: hierarchical
-				};
+			getFolders : function(params, relativePath, action) {
 				if(relativePath){
 					params.relativePath = relativePath;
 				}
@@ -892,7 +898,7 @@ $(document).ready(function(){
 		tools.myId(data.result[0].id);
 
 		workspace.action.documents({url : "documents?hierarchical=true&filter=owner"});
-		workspace.action.getFolders(true, undefined, function(data) {
+		workspace.action.getFolders({ hierarchical: true }, undefined, function(data) {
 			navigation.redirect('documents?hierarchical=true&filter=owner');
 		});
 

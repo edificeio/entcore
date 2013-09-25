@@ -23,9 +23,12 @@
 					<ul>
 						<li>
 							<a call="documents" href="documents?hierarchical=true&filter=owner">{{#i18n}}workspace.documents{{/i18n}}</a>
-							<ul data-folder="undefined">
+							<ul data-folder="undefined" data-filter="owner">
 							</ul>
-						</li><li><a href="documents?filter=shared" call="documents">{{#i18n}}workspace.shared.documents{{/i18n}}</a>
+						</li><li>
+							<a href="documents?filter=shared" call="documents">{{#i18n}}workspace.shared.documents{{/i18n}}</a>
+							<ul data-folder="undefined" data-filter="shared">
+							</ul>
 						</li><li>
 							<a call="rack" href="rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a></li><li>
 							<a call="trash" href="documents/trash">{{#i18n}}workspace.trash{{/i18n}}</a>
