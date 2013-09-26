@@ -42,6 +42,7 @@ public class StaticResource {
 
 	public static void serveRessource(HttpServerRequest request, String ressourcePath,
 			String resourceLastModified) {
+		request.response().headers().add("Cache-Control", "max-age=0, no-cache, must-revalidate");
 		addLastModifiedHeader(request.response(), resourceLastModified);
 		if (checkLastModified(request, resourceLastModified)) {
 			request.response().setStatusCode(304).end();
