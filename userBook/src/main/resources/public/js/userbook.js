@@ -230,6 +230,7 @@ var userbook = function(){
 						$("#people").html(app.template.render('searchResults', searchDataAdaptor(data)));
 					}
 
+					replaceAvatars();
 					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data.status);});
