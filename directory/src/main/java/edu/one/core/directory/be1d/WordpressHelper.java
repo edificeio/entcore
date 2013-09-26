@@ -77,7 +77,9 @@ public class WordpressHelper {
 			for (int i = 0; i < classes.length; i++) {
 				sb.append("|" + school + classes[i]);
 			}
-			json.putString(CLASS_ATTR, sb.substring(1).toString());
+			if (sb.length() > 0) {
+				json.putString(CLASS_ATTR, sb.substring(1).toString());
+			}
 		}
 	}
 

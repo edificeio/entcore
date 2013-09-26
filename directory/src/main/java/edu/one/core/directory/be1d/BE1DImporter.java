@@ -84,6 +84,10 @@ public class BE1DImporter {
 			"START n=node:node_auto_index({groupsIds}), " +
 			"m=node:node_auto_index(id={groupId}) " +
 			"CREATE UNIQUE n-[:DEPENDS]->m";
+	private static final String createRelsAppartientGroup =
+			"START n=node:node_auto_index(id={classId}), " +
+			"m=node:node_auto_index({nodeIds}) " +
+			"CREATE UNIQUE m-[:APPARTIENT]->n";
 	private static String createRelsAppartient(List<String> userIds) {
 		return  "START n=node:node_auto_index('id:"+ Joiner.on(" OR id:").join(userIds) + "'), " +
 				"m=node:node_auto_index(id={groupId}) " +
@@ -228,23 +232,26 @@ public class BE1DImporter {
 
 			@Override
 			public void handle(final Message<JsonObject> m) {
-				neo.sendBatch(queriesCom, new Handler<Message<JsonObject>>() {
+				if ("ok".equals(m.body().getString("status"))) {
+					neo.sendBatch(queriesCom, new Handler<Message<JsonObject>>() {
 
-					@Override
-					public void handle(Message<JsonObject> message) {
-						handler.handle(new JsonObject().putObject(schoolName, m.body()));
-						WordpressHelper wp = new WordpressHelper(Server.getEventBus(vertx), schoolId);
-						for (Object o: queries) {
-							wp.queryToEntity((JsonObject) o);
+						@Override
+						public void handle(Message<JsonObject> message) {
+							handler.handle(new JsonObject().putObject(schoolName, m.body()));
+							WordpressHelper wp = new WordpressHelper(Server.getEventBus(vertx), schoolId);
+							for (Object o: queries) {
+								wp.queryToEntity((JsonObject) o);
+							}
+							try {
+								wp.send();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
 						}
-						try {
-							wp.send();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				});
+					});
+				} else {
+					handler.handle(new JsonObject().putObject(schoolName, m.body()));
+				}
 			}
 		});
 	}
@@ -335,18 +342,31 @@ public class BE1DImporter {
 					}
 					l.add(id);
 				}
-				row.putString(ENTPersonClasses, sb.substring(1).toString());
-				createUser(row);
+				if (sb.length() > 0) {
+					row.putString(ENTPersonClasses, sb.substring(1).toString());
+					createUser(row);
+				} else {
+					row.putString(ENTPersonClasses, "");
+					createUser(row);
+					relationshipTeachersWithoutClass(id);
+				}
 			}
 		});
 		relationshipTeachers(classesTeachers, directors);
 	}
 
+	private void relationshipTeachersWithoutClass(String teacherId) {
+		String schoolId = ((JsonObject) queries.get(0)).getObject("params").getString("id");
+		String gId = ((JsonObject) queries.get(3)).getObject("params").getString("id");
+		queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+		.putString("classId", schoolId)
+		.putString("nodeIds", "id:" + teacherId)));
+		queries.add(toJsonObject(createRelsAppartientGroup, new JsonObject()
+		.putString("classId", gId)
+		.putString("nodeIds", "id:" + teacherId)));
+	}
+
 	private void relationshipTeachers(Map<String, List<String>> classesTeachers, List<String> directors) {
-		String createRelsAppartientGroup =
-				"START n=node:node_auto_index(id={classId}), " +
-				"m=node:node_auto_index({nodeIds}) " +
-				"CREATE UNIQUE m-[:APPARTIENT]->n";
 		StringBuilder sb = new StringBuilder();
 		List<String> gcId = new ArrayList<>();
 		for (Entry<String, List<String>> e: classesTeachers.entrySet()) {
