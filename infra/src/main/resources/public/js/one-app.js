@@ -93,15 +93,16 @@ var oneApp = {
 	i18n : {
 		load : function () {
 			var that = this;
-			$.get('i18n').done(function(data) { // TODO improve i18n get
-				that.bundle = data;
-			});
+			$.ajax({url: 'i18n', async: false})
+				.done(function(data){
+					that.bundle = data;
+				})
 		},
 		bundle : {},
 		i18n : function() {
-			return function(key) { 
+			return function(key) {
 				key = Mustache.render(key, this);
-				return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key]; 
+				return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key];
 			};
 		},
 		translate: function(key){
