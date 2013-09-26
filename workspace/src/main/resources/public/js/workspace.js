@@ -74,8 +74,14 @@ var tools = (function(){
 		},
 		contextualButtons: function(contextName){
 			var contextsButtons = {
-				documents: [
+				ownerDocuments: [
 					{ text: 'workspace.add.document', call: 'addDocument', icon: true },
+					{ text: 'workspace.send.rack', call: 'sendRack' },
+					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
+					{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
+					{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+				],
+				sharedDocuments: [
 					{ text: 'workspace.send.rack', call: 'sendRack' },
 					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
 					{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
@@ -556,7 +562,7 @@ var workspace = function(){
 				var relativePath = undefined,
 					that = this,
 					directories;
-				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('documents')))
+
 				One.get(o.url).done(function(response){
 					if (o.url.match(/^documents\/.*?/g)) {
 						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
@@ -565,6 +571,7 @@ var workspace = function(){
 					if(o.url.indexOf("shared") !== -1){
 						filter = 'shared';
 					}
+					$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons(filter + 'Documents')))
 
 					that.getFolders({
 						hierarchical: o.url.indexOf("hierarchical=true") != -1,
