@@ -197,6 +197,7 @@ var tools = (function(){
 			}
 			tools.getFolderTree(root, filter, function(){
 				container.html(treeView(root));
+				navigation.redirect(navigation.currentUrl());
 				if($('.createFolder').length > 1){
 					$('.createFolder').hide();
 				}
@@ -242,14 +243,26 @@ var navigation = (function(){
 			showFolders(path, 'owner');
 			showFolders(path, 'shared');
 		},
+		currentAction: function(){
+			if(this.currentUrl().indexOf('rack') !== -1){
+				return 'rack';
+			}
+
+			return 'documents';
+		},
+		pathArguments: function(){
+			var arguments = this.currentUrl().split('?');
+			if(arguments.length > 1){
+				return arguments[arguments.length - 1];
+			}
+			return ''
+		},
 		refresh: function(){
 			var that = this;
-			workspace.action.documents({url : this.currentUrl()}, function(){
+			workspace.action[this.currentAction()]({url : this.currentUrl()}, function(){
 				$('.selectAllCheckboxes').change();
 				if($('tbody tr').length === 0){
-					var arguments = that.currentUrl().split('?');
-					var urlParams = arguments[arguments.length - 1];
-					that.redirect('documents?' + urlParams);
+					that.redirect('documents?' + that.pathArguments());
 					that.showFolders();
 					workspace.action.documents({url : that.currentUrl()}, function(){});
 				}
@@ -899,7 +912,7 @@ var workspace = function(){
 					}
 
 					var parentPath = function(element){
-						var elementText = element.children('.folderPath').contents(':not(a)').text();
+						var elementText = element.children('.folderPath').contents(':not(a)').text().trim();
 						if(element.parent().closest('li').length === 0){
 							return  elementText;
 						}
@@ -910,6 +923,11 @@ var workspace = function(){
 
 					One[method](action + "/" + ids + "/" + path)
 						.done(function(){
+							var args = navigation.pathArguments();
+							if(!args){
+								args = 'hierarchical=true&filter=owner'
+							}
+							navigation.redirect('documents/' + path + '?' + args)
 							navigation.refresh();
 							navigation.showFolders();
 						});
