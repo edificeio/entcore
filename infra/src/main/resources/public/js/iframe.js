@@ -11,7 +11,11 @@ var messenger = (function(){
 
 	var requireResize = function(){
 		var bodySize = $('body').outerHeight(true);
-		var windowSize = $('.lightbox-window').outerHeight(true) + $('.lightbox-window').offset().top;
+
+		var windowSize = 0;
+		if($('.lightbox-window').length > 0){
+			windowSize = $('.lightbox-window').outerHeight(true) + $('.lightbox-window').offset().top;
+		}
 
 		var newSize = bodySize;
 		if(windowSize > bodySize){
@@ -197,7 +201,6 @@ var ui = (function(){
 
 			messenger.requireLightbox();
 			//For now, we ignore parent size and base ourselves on iframe size only.
-			//$('.lightbox-window').offset({top: ($('body').height() - $('.lightbox-window').height()) / 2})
 			messenger.sendMessage({
 				name: 'where-lightbox',
 				data: {}
