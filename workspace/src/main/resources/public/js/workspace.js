@@ -624,7 +624,7 @@ var workspace = function(){
 			},
 			trash : function (o) {
 				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('trash')))
-				One.get("documents/Trash").done(function(documents) {
+				One.get(navigation.currentUrl()).done(function(documents) {
 					One.get("rack/documents/Trash").done(function(rack) {
 						tools.formatResponse(documents, function(data){
 							$('#list').html(app.template.render("trash",
