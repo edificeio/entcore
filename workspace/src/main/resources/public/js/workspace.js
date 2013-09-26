@@ -709,7 +709,10 @@ var workspace = function(){
 					return;
 				}
 				var files = [];
-				$("#list :checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked:visible").each(function(i, item) {
+					if($(item).hasClass('selectAllCheckboxes')){
+						return;
+					}
 					var obj = $(this);
 					One.put(o.url + "/" + obj.val())
 						.done(function(data){
@@ -772,7 +775,10 @@ var workspace = function(){
 			remove : function (o) {
 				var files = [];
 
-				$("#list :checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked:visible").each(function(i, item) {
+					if($(item).hasClass('selectAllCheckboxes')){
+						return;
+					}
 					var obj = $(this);
 					One.delete(obj.val())
 						.done(function(){
@@ -784,7 +790,7 @@ var workspace = function(){
 			restore : function (o) {
 				var files = [];
 
-				$("#list :checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked:visible").each(function(i) {
 					var obj = $(this);
 					One.put("restore/" + obj.val())
 						.done(function(){
@@ -897,7 +903,7 @@ var workspace = function(){
 					method = "put";
 				}
 
-				$("#list :checkbox:checked").each(function(i) {
+				$("#list :checkbox:checked:visible").each(function(i) {
 					var id = $(this).val().split('/');
 					id = id[id.length - 1];
 					ids += "," + id;
@@ -906,7 +912,7 @@ var workspace = function(){
 					ids = ids.substring(1);
 				}
 
-				$('.folders :checkbox:checked, .folders :radio:checked').each(function(){
+				$('.folders :checkbox:checked:visible, .folders :radio:checked:visible').each(function(){
 					if(!$(this).parent('li').children('.folderPath').contents(':not(a)').text()){
 						return;
 					}
