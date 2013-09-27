@@ -357,7 +357,7 @@ input[type=button], input[type=submit], a.button, button{
 textarea{
 	width: 100%;
 	height: 130px;
-	border: 1px dashed #333;
+	border: 1px solid #CCC;
 }
 
 input[type=button]:hover, input[type=submit]:hover, a.button:hover, button:hover{
@@ -489,6 +489,12 @@ nav.vertical{
 
 }
 
+.inline-editing{
+	border: none !important;
+	border-bottom: 1px solid #ccc !important;
+	border-radius: 0 !important;
+}
+
 .select-file{
 	input[type=text]{
 		border: 1px solid #eee;
@@ -584,12 +590,6 @@ article{
 	.line{
 		border-bottom: 1px dashed #ccc;
 	}
-}
-
-input[type=text], input[type=password]{
-	border: none;
-	border-bottom: 1px dashed @ultra-dark-grey;
-	.rounded-corners(0px);
 }
 
 .navbar{
@@ -715,8 +715,6 @@ em[contenteditable=true].multiline{
 }
 
 textarea{
-	background: transparent;
-	border-bottom: 1px dashed;
 	font-family: Arial;
 	font-size: 14px;
 	overflow: visible;

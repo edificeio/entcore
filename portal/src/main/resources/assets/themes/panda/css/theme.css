@@ -1877,7 +1877,7 @@ button i {
 textarea {
   width: 100%;
   height: 130px;
-  border: 1px dashed #333;
+  border: 1px solid #CCC;
 }
 input[type=button]:hover,
 input[type=submit]:hover,
@@ -2029,6 +2029,11 @@ nav.vertical ul a:hover {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+.inline-editing {
+  border: none !important;
+  border-bottom: 1px solid #ccc !important;
+  border-radius: 0 !important;
+}
 .select-file input[type=text] {
   border: 1px solid #eee;
   border-right: 0;
@@ -2169,16 +2174,6 @@ article em {
 }
 article .line {
   border-bottom: 1px dashed #ccc;
-}
-input[type=text],
-input[type=password] {
-  border: none;
-  border-bottom: 1px dashed #333333;
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  -ms-border-radius: 0px;
-  -o-border-radius: 0px;
-  border-radius: 0px;
 }
 .navbar {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
@@ -2334,8 +2329,6 @@ em[contenteditable=true].multiline {
   height: auto;
 }
 textarea {
-  background: transparent;
-  border-bottom: 1px dashed;
   font-family: Arial;
   overflow: visible;
   color: #666;
