@@ -10,6 +10,7 @@ nav.vertical{
 	ul{
 		display: block;
 		li{
+			float: none;
 			display: block;
 			font-size: 14px;
 			font-weight: normal;
@@ -19,16 +20,21 @@ nav.vertical{
 				display: block;
 				position: relative;
 
-			i{
-				display: block;
-				float: right;
-				margin-top: 2px;
+				i{
+					display: block;
+					float: right;
+					margin-top: 2px;
+				}
 			}
-		}
-		ul{
-			display: none;
-		}
-    }
+			ul{
+				display: none;
+			}
+			input{
+				position: relative !important;
+				top: 0px !important;
+				left: 0px !important;
+			}
+	}
 	li.selected{
 		ul{
 			display: block;

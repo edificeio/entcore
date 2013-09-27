@@ -281,6 +281,7 @@ nav.vertical ul {
   display: block;
 }
 nav.vertical ul li {
+  float: none;
   display: block;
   font-size: 14px;
   font-weight: normal;
@@ -298,6 +299,11 @@ nav.vertical ul li a i {
 }
 nav.vertical ul li ul {
   display: none;
+}
+nav.vertical ul li input {
+  position: relative !important;
+  top: 0px !important;
+  left: 0px !important;
 }
 nav.vertical ul li.selected ul {
   display: block;
@@ -1978,10 +1984,13 @@ nav.vertical ul li span a {
   color: white;
   margin-right: 5px;
 }
+nav.vertical ul li em a strong,
+nav.vertical ul li span a strong {
+  color: #fff;
+}
 nav.vertical ul li input {
   margin-left: 15px;
   height: 27px;
-  position: relative !important;
 }
 nav.vertical ul li input[type=text] {
   margin-top: -5px;
