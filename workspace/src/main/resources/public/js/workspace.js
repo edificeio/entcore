@@ -347,8 +347,8 @@ var workspace = function(){
 						<ul>\
 						{{#folders}}\
 						<li>\
-							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
+							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true&filter={{filter}}" call="documents"></i></a>\
+							<a href="documents/{{path}}?hierarchical=true&filter={{filter}}" call="documents">{{name}}</a>\
 						</li>\
 						{{/folders}}\
 						{{#documents}}\
