@@ -111,8 +111,8 @@ var account = function(){
 					<article class="text-container">\
 					{{#hobbies}}\
 						<div class="row line" data-category="{{category}}">\
-							<div class="three cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
-							<div class="eight cell">\
+							<div class="two cell"><span>{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</span></div>\
+							<div class="nine cell">\
 								<input type="text" class="twelve cell" value="{{values}}" /></div>\
 							<div class="one cell"><i role="{{visibility}}" href="api/set-visibility?category={{category}}" call="changeVisibility" class="right-magnet"></i></div>\
 							<div class="clear"></div>\
