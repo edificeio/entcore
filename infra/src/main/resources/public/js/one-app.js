@@ -1,9 +1,24 @@
+var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+
+if(window.moment){
+	moment.lang(currentLanguage, {
+		calendar : {
+			lastDay : '[Hier à] HH[h]mm',
+			sameDay : '[Aujourd\'hui à] HH[h]mm',
+			nextDay : '[Demain à] HH[h]mm',
+			lastWeek : 'dddd [dernier à] HH[h]mm',
+			nextWeek : 'dddd [prochain à] HH[h]mm',
+			sameElse : 'dddd LL'
+		}
+	});
+}
+
 humane.timeout = 0;
 humane.clickToClose = true;
 
 if(!Date.prototype.toShortString){
 	Date.prototype.toShortString = function(){
-		var month = this.getMonth();
+		var month = this.getMonth() + 1;
 		if(parseInt(this.getMonth()) < 10){
 			month = '0' + month;
 		}
@@ -75,6 +90,30 @@ var oneApp = {
 					return function(str) {
 						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
 						return dt;
+					};
+				},
+				//today, yesterday...
+				calendar: function(){
+					return function(date) {
+						return moment(Mustache.render(date, this).replace('CEST', 'EST')).calendar();
+					};
+				},
+				//0 month 0000
+				longDate: function(){
+					return function(date) {
+						var momentDate = moment(Mustache.render(date, this).replace('CEST', 'EST'));
+						if(momentDate !== null){
+							return momentDate.format('D MMMM YYYY');
+						}
+					};
+				},
+				//0 month
+				longDay: function(){
+					return function(date) {
+						var momentDate = moment(Mustache.render(date, this).replace('CEST', 'EST'));
+						if(momentDate !== null){
+							return momentDate.format('D MMMM');
+						}
 					};
 				}
 			});
