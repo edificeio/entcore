@@ -33,6 +33,7 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -49,6 +50,7 @@ import edu.one.core.infra.Neo;
 import edu.one.core.infra.TracerHelper;
 import edu.one.core.infra.Utils;
 import edu.one.core.infra.request.CookieHelper;
+import edu.one.core.infra.security.SecureHttpServerRequest;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -268,12 +270,41 @@ public class AuthController extends Controller {
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
-					renderJson(request, infos);
+					if (request instanceof SecureHttpServerRequest) {
+						SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
+						String clientId = sr.getAttribute("client_id");
+						if (clientId != null && !clientId.trim().isEmpty()) {
+							JsonObject filteredInfos = filterSessionByClientId(infos, clientId);
+							renderJson(request, filteredInfos);
+						} else {
+							renderJson(request, infos);
+						}
+					} else {
+						renderJson(request, infos);
+					}
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	private JsonObject filterSessionByClientId(JsonObject infos, String clientId) {
+		JsonObject filteredInfos = infos.copy();
+		filteredInfos.removeField("apps");
+		filteredInfos.removeField("authorizedActions");
+		JsonArray authorizedActions = new JsonArray();
+		for (Object o: infos.getArray("authorizedActions")) {
+			JsonObject j = (JsonObject) o;
+			String name = j.getString("name");
+			if (name != null && name.startsWith(clientId + "|")) {
+				authorizedActions.addObject(j);
+			}
+		}
+		if (authorizedActions.size() > 0) {
+			filteredInfos.putArray("authorizedActions", authorizedActions);
+		}
+		return filteredInfos;
 	}
 
 	public void oauthResourceServer(final Message<JsonObject> message) {
