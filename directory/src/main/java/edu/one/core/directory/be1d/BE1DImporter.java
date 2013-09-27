@@ -122,12 +122,12 @@ public class BE1DImporter {
 	}
 
 
-	public void importSchool(final String schoolName, final Handler<JsonObject> handler) {
+	public void importSchool(final String schoolName, String UAI, final Handler<JsonObject> handler) {
 		String fileEleves = schoolFolder + File.separator + "CSVExtraction-eleves.csv";
 		String fileParents = schoolFolder + File.separator + "CSVExtraction-responsables.csv";
 		String fileTeachers = schoolFolder + File.separator + "CSVExtraction-enseignants.csv";
 
-		createSchool(schoolName);
+		createSchool(schoolName, UAI);
 
 		extractEleves(fileEleves);
 
@@ -256,10 +256,11 @@ public class BE1DImporter {
 		});
 	}
 
-	private void createSchool(final String schoolName) {
+	private void createSchool(final String schoolName, String UAI) {
 		JsonObject school = new JsonObject()
 		.putString("id", UUID.randomUUID().toString())
 		.putString("ENTStructureNomCourant", schoolName)
+		.putString("UAI", UAI)
 		.putString("type", "ETABEDUCNAT");
 		queries.add(new JsonObject()
 		.putString("query", createEntity(school))

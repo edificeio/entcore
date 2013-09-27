@@ -70,8 +70,18 @@ public class BE1D {
 										imports.addObject(event);
 									}
 									String schoolFolder = porteurFolder + File.separator + f.getName();
+									String schoolName = f.getName();
+									String UAI = "";
+									if (f.getName().contains("|")) {
+										int idx = f.getName().lastIndexOf("|");
+										String tUAI = f.getName().substring(idx + 1);
+										if (tUAI != null && tUAI.matches("[0-9]{7}[A-Z]")) {
+											UAI = tUAI;
+											schoolName = schoolName.substring(0, idx);
+										}
+									}
 									new BE1DImporter(vertx, container, schoolFolder)
-									.importSchool(f.getName(), handlers.get(handlers.size() - 1));
+									.importSchool(schoolName, UAI, handlers.get(handlers.size() - 1));
 								}
 							});
 						}
