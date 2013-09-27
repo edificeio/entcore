@@ -7,7 +7,7 @@ var timeline = function(){
 			lastNotifications : '{{#results}}\
 									<div class="row line text-container">\
 										<div class="cell nine">{{{message}}}</div>\
-										<div class="cell right-magnet"><em>{{#formatDateTime}}{{#date}}{{$date}}{{/date}}{{/formatDateTime}}</em></div>\
+										<div class="cell right-magnet"><em class="low-importance">{{#calendar}}{{#date}}{{$date}}{{/date}}{{/calendar}}</em></div>\
 										<div class="clear"></div>\
 									</div>\
 								{{/results}}\
