@@ -1,5 +1,5 @@
 var http = (function(){
-	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500'];
+	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400'];
 
 
 	function Http(){
@@ -21,6 +21,15 @@ var http = (function(){
 		addFilter: function(filter, handler){
 			Http.prototype.filters[filter] = handler;
 		},
+		notify: function(type, message){
+			message = oneApp.i18n.translate(message);
+			if(parent !== window){
+				messenger.notify(type, message);
+			}
+			else{
+				oneApp.notify[type](message);
+			}
+		},
 		request: function(url, params){
 			var that = this;
 			params.url = url;
@@ -37,14 +46,15 @@ var http = (function(){
 				})
 				.fail(function(e){
 					if(typeof that.statusCallbacks['e' + e.status] === 'function'){
-						that.statusCallbacks['e' + e.status](e);
-					}
-
-					if(parent !== window){
-						messenger.notify('error', 'e' + e.status);
+						that.statusCallbacks['e' + e.status].call(that, e);
 					}
 					else{
-						oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
+						if(parent !== window){
+							messenger.notify('error', 'e' + e.status);
+						}
+						else{
+							oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
+						}
 					}
 
 					console.log('HTTP error:' + e.status);

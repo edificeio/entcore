@@ -50,5 +50,6 @@
 	"userBook.mood.sick":"Je suis malade",
 	"userBook.mood.joker":"Je suis farceur(se)",
 	"userBook.mood.sad":"Je suis triste",
-	"change.password": "Modifier mon mot de passe"
+	"change.password": "Modifier mon mot de passe",
+	"mail.invalid": "Adresse e-mail invalide"
 }

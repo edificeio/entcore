@@ -144,6 +144,9 @@ var account = function(){
 				One.get(url)
 				.done(function(data){
 				})
+				.e400(function(data){
+					this.notify('error', 'mail.invalid');
+				})
 			},
 			password : function(o){
 				One.get("/auth/reset/password")
