@@ -2425,6 +2425,9 @@ table tr td ul li {
   background: #fafafa;
   width: 100%;
 }
+em.low-importance {
+  font-size: 12px;
+}
 dl dd {
   line-height: 30px;
 }

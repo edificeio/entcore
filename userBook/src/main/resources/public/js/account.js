@@ -43,7 +43,7 @@ var account = function(){
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.password{{/i18n}}</label></div>\
-								<em class="eight cell"><a call="password" href="">{{#i18n}}change.password{{/i18n}}</em>\
+								<em class="eight cell"><a call="password" href="">{{#i18n}}change.password{{/i18n}}</a></em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
@@ -59,7 +59,7 @@ var account = function(){
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.birthdate{{/i18n}}</label></div>\
-								<em class="six cell">{{birthdate}}</em>\
+								<em class="six cell">{{#longDate}}{{birthdate}}{{/longDate}}</em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.school{{/i18n}}</label></div>\
