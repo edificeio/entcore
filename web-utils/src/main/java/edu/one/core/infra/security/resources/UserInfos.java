@@ -80,6 +80,9 @@ public class UserInfos {
 	private String lastName;
 	private String username;
 	private String classId;
+	private String schoolName;
+	private String uai;
+	private String level;
 	private String type;
 	private String login;
 	private List<Action> authorizedActions;
@@ -147,6 +150,30 @@ public class UserInfos {
 
 	public void setLogin(String login) {
 		this.login = login;
+	}
+
+	public String getSchoolName() {
+		return schoolName;
+	}
+
+	public void setSchoolName(String schoolName) {
+		this.schoolName = schoolName;
+	}
+
+	public String getUai() {
+		return uai;
+	}
+
+	public void setUai(String uai) {
+		this.uai = uai;
+	}
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
 	}
 
 	public List<Application> getApps() {

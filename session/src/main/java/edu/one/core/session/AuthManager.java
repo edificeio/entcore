@@ -170,12 +170,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String query =
 				"START n=node:node_auto_index(id={id}) " +
 				"MATCH n-[?:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
+				"WITH app, a, n " +
+				"MATCH n-[?:APPARTIENT]->gp-[:DEPENDS]->s " +
+				"WHERE s IS NULL OR (has(s.type) AND s.type = 'ETABEDUCNAT') " +
 				"RETURN distinct a.name as name, a.displayName as displayName, " +
 				"a.type as type, n.ENTPersonClasses? as classe, " +
 				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
-				"n.ENTPersonNomAffichage as username, n.type as userType, " +
+				"n.ENTPersonNomAffichage as username, n.type as userType, n.ENTEleveNiveau? as level, " +
 				"n.ENTPersonLogin as login, app.name? as appName, app.address? as appAddress, " +
-				"app.icon? as appIcon, app.target? as appTarget ";
+				"app.icon? as appIcon, app.target? as appTarget, " +
+				"s.ENTStructureNomCourant? as schoolName, s.UAI? as uai ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
@@ -195,6 +199,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						.putString("username", j.getString("username"))
 						.putString("classId", j.getString("classe"))
 						.putString("login", j.getString("login"))
+						.putString("level", j.getString("level"))
+						.putString("schoolName", j.getString("schoolName"))
+						.putString("uai", j.getString("uai"))
 						.putString("type", j.getString("userType"));
 					JsonArray actions = new JsonArray();
 					for (String attr : result.getFieldNames()) {
@@ -204,6 +211,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						json.removeField("username");
 						json.removeField("classe");
 						json.removeField("login");
+						json.removeField("level");
+						json.removeField("schoolName");
+						json.removeField("uai");
 						json.removeField("userType");
 						String appName = json.getString("appName");
 						String appAddress = json.getString("appAddress");
