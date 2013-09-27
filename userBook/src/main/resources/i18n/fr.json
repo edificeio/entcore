@@ -49,5 +49,6 @@
 	"userBook.mood.worried":"Je suis embêté(e)",
 	"userBook.mood.sick":"Je suis malade",
 	"userBook.mood.joker":"Je suis farceur(se)",
-	"userBook.mood.sad":"Je suis triste"
+	"userBook.mood.sad":"Je suis triste",
+	"change.password": "Modifier mon mot de passe"
 }

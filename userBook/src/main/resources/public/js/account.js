@@ -43,8 +43,7 @@ var account = function(){
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.password{{/i18n}}</label></div>\
-								<em class="six cell">*****</em>\
-							<div class="one cell"><i role="configuration" href="" call="password" class="right-magnet"></i></div>\
+								<em class="eight cell"><a call="password" href="">{{#i18n}}change.password{{/i18n}}</em>\
 							</div>\
 							<div class="row">\
 								<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>\
