@@ -1835,6 +1835,7 @@ input[type=password] {
   border-radius: 5px;
   border: 1px solid #ccc;
   line-height: 25px;
+  padding-left: 3px;
 }
 label {
   font-size: 14px;
@@ -1981,6 +1982,10 @@ nav.vertical ul li input {
   margin-left: 15px;
   height: 27px;
   position: relative !important;
+}
+nav.vertical ul li input[type=text] {
+  margin-top: -5px;
+  width: 90%;
 }
 nav.vertical ul li a {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);

@@ -817,7 +817,7 @@ var workspace = function(){
 										<ul style="display:block" class="row">\
 											<li class="row createFolder">\
 												<input type="radio" name="folder" />\
-												<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+												<em class="folderPath editable">Nouveau dossier</em>\
 											</li>\
 											' + subNodes() + '\
 										</ul>\
@@ -827,7 +827,7 @@ var workspace = function(){
 							return '\
 								<li class="row">\
 									<input type="radio" name="folder" />\
-									<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+									<em class="folderPath editable">Nouveau dossier</em>\
 								</li>\
 								' + subNodes();
 						}
@@ -863,7 +863,7 @@ var workspace = function(){
 										<ul style="display:block" class="row">\
 											<li class="row createFolder">\
 												<input type="checkbox" />\
-												<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
+												<em class="folderPath editable">Nouveau dossier</em>\
 											</li>\
 											' + subNodes() + '\
 										</ul>\
@@ -1003,10 +1003,19 @@ $(document).ready(function(){
 		messenger.requireResize();
 	})
 
-	$('.workspace').on('mousedown', '.editable', function(){
-		$(this).text('');
-		$(this).focus();
-		$(this).parent().find('input').prop('checked', true);
-		$(this).addClass('active');
-	});
+	$('.lightbox-window').on('change', '[type=radio], [type=checkbox]', function(){
+		var editContainer = $(this).next('em');
+		if(editContainer.hasClass('editable') && this.checked){
+			editContainer.html(' ');
+			var input = $('<input />')
+				.attr('type', 'text')
+				.addClass('inline-editing')
+				.appendTo(editContainer);
+			input.focus();
+			editContainer.addClass('active');
+			input.on('change', function(){
+				editContainer.html(input.val());
+			})
+		}
+	})
 });
