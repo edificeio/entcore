@@ -206,7 +206,7 @@ function manageEditable(){
 	$('textarea, input').on('change', function(){
 		var parameters = "";
 		var parentLine = $(this).parent().parent();
-		var value = $(this).val().replace(/[\n]/g, '%0a');
+		var value = encodeURIComponent($(this).val()).replace(/[\n]/g, '%0a');
 		if(parentLine.data('category')){
 			parameters += "?category=" + parentLine.data('category') + "&values=" + value;
 		}

@@ -181,18 +181,40 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-				String neoRequest = "START n=node:node_auto_index(id='" + user.getUserId() + "') MATCH (n)-[USERBOOK]->(m)";
-				if (request.params().contains("category")){
-					neoRequest += ", (m)-->(p) WHERE has(p.category) "
-					+ "AND p.category='" + request.params().get("category") + "' "
-					+ "SET p.values='" + request.params().get("values") + "'";
-				} else {
-					neoRequest += " SET m." + request.params().get("prop") + "='" + request.params().get("value") + "'";
-					if ("mood".equals(request.params().get("prop")) || "motto".equals(request.params().get("prop"))){
-						notifyTimeline(request, user);
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", user.getUserId());
+					String neoRequest =
+							"START n=node:node_auto_index(id={id}) " +
+							"MATCH (n)-[USERBOOK]->(m)";
+					String category = request.params().get("category");
+					String prop = request.params().get("prop");
+					if (category != null && !category.trim().isEmpty()){
+						neoRequest += ", (m)-->(p) WHERE has(p.category) "
+								+ "AND p.category={category} "
+								+ "SET p.values={values} ";
+						params.put("category", request.params().get("category"));
+						params.put("values", request.params().get("values"));
+					} else if (prop != null && !prop.trim().isEmpty()) {
+						String attr = prop.replaceAll("\\W+", "");
+						neoRequest += " SET m." + attr + "={value}";
+						params.put("value", request.params().get("value"));
+					} else {
+						badRequest(request);
+						return;
 					}
-				}
-				neo.send(neoRequest, request.response());
+					neo.send(neoRequest, params, new Handler<Message<JsonObject>>() {
+
+						@Override
+						public void handle(Message<JsonObject> res) {
+							if ("ok".equals(res.body().getString("status"))) {
+								if ("mood".equals(request.params().get("prop")) ||
+										"motto".equals(request.params().get("prop"))){
+									notifyTimeline(request, user);
+								}
+							}
+							renderJson(request, res.body());
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
@@ -239,10 +261,15 @@ public class UserBookController extends Controller {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				neo.send("START n=node:node_auto_index(id='" + user.getUserId() + "') MATCH (n)-[USERBOOK]->(m)-[s]->(p) "
-					+ "WHERE has(p.category) AND p.category='"+ request.params().get("category")
-					+ "' DELETE s CREATE (m)-[j:"+ request.params().get("value") +"]->(p) "
-					+ "RETURN n,m,j,p", request.response());
+				Map<String, Object> params = new HashMap<>();
+				params.put("id", user.getUserId());
+				params.put("category", request.params().get("category"));
+				String visibility = "PUBLIC".equals(request.params().get("value")) ? "PUBLIC" : "PRIVE";
+				neo.send("START n=node:node_auto_index(id={id}) "
+					+ "MATCH (n)-[USERBOOK]->(m)-[s]->(p) "
+					+ "WHERE has(p.category) AND p.category={category} "
+					+ "DELETE s CREATE (m)-[j:"+ visibility +"]->(p) "
+					+ "RETURN n,m,j,p", params, request.response());
 			}
 		});
 	}
