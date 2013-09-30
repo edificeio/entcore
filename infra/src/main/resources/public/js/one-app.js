@@ -1,32 +1,58 @@
-var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
-
-if(window.moment){
-	moment.lang(currentLanguage, {
-		calendar : {
-			lastDay : '[Hier à] HH[h]mm',
-			sameDay : '[Aujourd\'hui à] HH[h]mm',
-			nextDay : '[Demain à] HH[h]mm',
-			lastWeek : 'dddd [dernier à] HH[h]mm',
-			nextWeek : 'dddd [prochain à] HH[h]mm',
-			sameElse : 'dddd LL'
+var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvider) {
+		$interpolateProvider.startSymbol('[[');
+		$interpolateProvider.endSymbol(']]');
+	})
+	.factory('notify', function(){
+		if(!window.humane){
+			One.load('humane', function(){
+				humane.timeout = 0;
+				humane.clickToClose = true;
+			});
 		}
+
+		return {
+			message: function(type, message){
+				message = One.translate(message);
+				if(parent !== window){
+					messenger.notify(type, message);
+				}
+				else{
+					humane.spawn({ addnCls: 'humane-original-' + type })(message);
+				}
+			},
+			error: function(message){
+				this.message('error', message);
+			},
+			info: function(message){
+				this.message('info', message)
+			}
+		}
+	})
+	.factory('date', function() {
+		if(!window.moment){
+			One.load('moment', function(){
+				var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+				moment.lang(currentLanguage, {
+					calendar : {
+						lastDay : '[Hier à] HH[h]mm',
+						sameDay : '[Aujourd\'hui à] HH[h]mm',
+						nextDay : '[Demain à] HH[h]mm',
+						lastWeek : 'dddd [dernier à] HH[h]mm',
+						nextWeek : 'dddd [prochain à] HH[h]mm',
+						sameElse : 'dddd LL'
+					}
+				});
+			});
+		}
+		return {
+			format: function(date, format) {
+				return moment(date).formatDate(format);
+			},
+			calendar: function(date){
+				return moment(date).calendar();
+			}
+		};
 	});
-}
-
-humane.timeout = 0;
-humane.clickToClose = true;
-
-if(!Date.prototype.toShortString){
-	Date.prototype.toShortString = function(){
-		var month = this.getMonth() + 1;
-		if(parseInt(this.getMonth()) < 10){
-			month = '0' + month;
-		}
-		return this.getDate() +
-			"/" + month  +
-			"/" +  this.getFullYear();
-	}
-}
 
 if(parent !== window){
 	$(document).ready(function(){

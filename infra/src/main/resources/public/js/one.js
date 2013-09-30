@@ -1,3 +1,17 @@
+var lang = (function(){
+	var bundle = {};
+	$.ajax({url: 'i18n', async: false})
+		.done(function(data){
+			bundle = data;
+		})
+
+	return {
+		translate: function(key){
+			return bundle[key] === undefined ? key : bundle[key];
+		}
+	}
+}());
+
 var http = (function(){
 	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400'];
 
@@ -20,15 +34,6 @@ var http = (function(){
 		},
 		addFilter: function(filter, handler){
 			Http.prototype.filters[filter] = handler;
-		},
-		notify: function(type, message){
-			message = oneApp.i18n.translate(message);
-			if(parent !== window){
-				messenger.notify(type, message);
-			}
-			else{
-				oneApp.notify[type](message);
-			}
 		},
 		request: function(url, params){
 			var that = this;
@@ -100,6 +105,34 @@ var http = (function(){
 	}
 }());
 
+var loader = (function(){
+	var loadedScripts = {};
+	var scriptsFiles = {
+		moment: 'moment+langs.js',
+		humane: 'humane.min.js'
+	}
+	var basePath = document.getElementById('context').getAttribute('src').split('/');
+	basePath.length = basePath.length - 1;
+	basePath = basePath.join('/');
+
+	return {
+		load: function(library, callback){
+			if(!loadedScripts[library]){
+				var script = document.createElement('script');
+				script.type = 'text/javascript';
+				script.src = basePath + '/' + scriptsFiles[library];
+				script.async = false;
+				script.onload = function(data){
+					if(callback){
+						callback();
+					}
+				};
+				document.getElementsByTagName('head')[0].appendChild(script);
+			}
+		}
+	}
+}())
+
 One = {
 	get: function(url, data, params){
 		return http().get(url, data, params);
@@ -123,5 +156,11 @@ One = {
 	},
 	filter: function(filter, handler){
 		http().addFilter(filter, handler);
+	},
+	load: function(libName, callback){
+		return loader.load(libName, callback);
+	},
+	translate: function(key){
+		return lang.translate(key);
 	}
 };
