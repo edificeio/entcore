@@ -1,5 +1,10 @@
+apply from: "gradle/setup.gradle"
 
 subprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'java'
+
+  apply from: "$rootDir/gradle/vertx.gradle"
 
 	repositories {
 		maven {
@@ -11,7 +16,28 @@ subprojects {
 		}
 	}
 
-	afterEvaluate { project -> 
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
+
+  compileJava {
+    sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+  }
+
+  compileTestJava {
+    sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+  }
+
+  dependencies {
+    provided "io.vertx:vertx-core:$vertxVersion"
+    provided "io.vertx:vertx-platform:$vertxVersion"
+
+    testCompile "junit:junit:$junitVersion"
+    testCompile "io.vertx:testtools:$toolsVersion"
+  }
+
+	afterEvaluate { project ->
 		project.tasks['copyMod'].doLast {
 			copy {
 				into 'mods'
@@ -23,3 +49,114 @@ subprojects {
 		}
 	}
 }
+
+project(':admin') {
+  dependencies {
+    provided project(':processor')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':app-registry') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':auth') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "jp.eisbahn:oauth2-server:1.1-SNAPSHOT"
+  }
+}
+
+project(':communication') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':dataDictionary') {
+  dependencies {
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':directory') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile project(':dataDictionary')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile 'net.sf.opencsv:opencsv:2.4'
+  }
+}
+
+project(':history') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':infra') {
+  dependencies {
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':portal') {
+  dependencies {
+    provided project(':processor')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':sync') {
+  dependencies {
+    compile project(':dataDictionary')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':timeline') {
+  dependencies {
+    provided project(':processor')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':userBook') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile project(':dataDictionary')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
+project(':workspace') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+    testCompile 'com.ning:async-http-client:1.7.17'
+    testCompile 'commons-codec:commons-codec:1.8'
+  }
+}
+
+project(':history') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+

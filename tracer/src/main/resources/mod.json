@@ -1,7 +1,0 @@
-{
-	"main" : "com.wse.tracer.Tracer",
-	"preserve-cwd" : true,
-	"logger-name": "one.tracer",
-	"log-path": "./data/dev/",
-	"address": "log.address"
-}

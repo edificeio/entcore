@@ -32,7 +32,7 @@ public class SyncManager {
 	public SyncManager (TracerHelper trace, Vertx vertx, Container container) {
 		this.vertx = vertx;
 		aafSaxHandler = new AafSaxContentHandler(trace, new DefaultDictionary(
-				vertx, container, "../edu.one.core~dataDictionary~1.0.0/aaf-dictionary.json"));
+				vertx, container, "../edu.one.core~dataDictionary~1.1-SNAPSHOT/aaf-dictionary.json"));
 		wordpressHelper = new WordpressHelper(trace, Server.getEventBus(vertx));
 		aafGeoffHelper = new AafGeoffHelper(trace, Server.getEventBus(vertx), wordpressHelper);
 		try {

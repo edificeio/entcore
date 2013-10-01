@@ -1,1 +1,1 @@
-include 'infra', 'admin', 'auth', 'dataDictionary', 'sync', 'directory', 'history', 'tracer', 'neo4j-persistor', 'userBook', 'web-utils', 'workspace', 'processor', 'app-registry', 'session', 'gridfs-persistor', 'communication', 'timeline', 'portal'
+include 'infra', 'admin', 'auth', 'dataDictionary', 'sync', 'directory', 'history', 'userBook', 'workspace', 'processor', 'app-registry', 'session', 'communication', 'timeline', 'portal'
