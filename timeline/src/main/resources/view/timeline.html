@@ -3,6 +3,7 @@
 	<head>
 		<title>{{#i18n}}timeline.title{{/i18n}}</title>
 		<meta charset="utf-8" />
+		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
@@ -17,8 +18,8 @@
 		<div class="timeline row">
 			<div class="mod">
 				<div id="form-window"></div>
-				<article ng-controller="Timeline" class="text-container">
-					<div ng-repeat="notification in notifications" class="row line text-container">
+				<article data-ng-controller="Timeline" class="text-container">
+					<div data-ng-repeat="notification in notifications" class="row line text-container">
 						<div class="cell nine" data-ng-bind-html="notification.message"></div>
 						<div class="cell right-magnet">
 							<em class="low-importance">[[formatDate(notification.date.$date)]]</em>

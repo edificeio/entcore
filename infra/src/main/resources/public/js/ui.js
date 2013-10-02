@@ -62,7 +62,7 @@ var ui = (function(){
 					fileUrl = fileUrl.substr(1);
 					fileUrl = fileUrl.split('.')[0];
 				}
-				if(displayElement[0].tagName === 'INPUT'){
+				if(displayElement.length > 0 && displayElement[0].tagName === 'INPUT'){
 					displayElement.val(fileUrl);
 				}
 				else{

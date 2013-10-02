@@ -1,7 +1,6 @@
-function Timeline($scope, date, notify){
+function Timeline($scope, date, http){
 	$scope.notifications = [];
-	notify.info('test!');
-	One.get('lastNotifications').done(function(response){
+	http.get('lastNotifications').done(function(response){
 		$scope.notifications = response.results;
 		$scope.$apply();
 	});

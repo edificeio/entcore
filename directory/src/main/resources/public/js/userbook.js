@@ -1,3 +1,8 @@
+function UserBook($scope){
+	$scope.book = {};
+	$scope.currentPerson = {};
+}
+
 var replaceAvatars = function(){
 	$('.avatar').each(function(index, item){
 		$('<div></div>').css({

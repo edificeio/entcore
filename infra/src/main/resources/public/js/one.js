@@ -85,7 +85,6 @@ var http = (function(){
 				params = {};
 			}
 			if(typeof data === 'object' || typeof  data === 'string'){
-				params.data = data;
 				if(type === 'get' || type === 'delete'){
 					if(url.indexOf('?') !== -1){
 						url += '&' + that.serialize(data);
@@ -93,6 +92,9 @@ var http = (function(){
 					else{
 						url += '?' + that.serialize(data);
 					}
+				}
+				else{
+					params.data = data;
 				}
 			}
 			params.type = type.toUpperCase();

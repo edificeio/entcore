@@ -29,30 +29,76 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 	})
 	.factory('date', function() {
-		if(!window.moment){
-			One.load('moment', function(){
-				var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
-				moment.lang(currentLanguage, {
-					calendar : {
-						lastDay : '[Hier à] HH[h]mm',
-						sameDay : '[Aujourd\'hui à] HH[h]mm',
-						nextDay : '[Demain à] HH[h]mm',
-						lastWeek : 'dddd [dernier à] HH[h]mm',
-						nextWeek : 'dddd [prochain à] HH[h]mm',
-						sameElse : 'dddd LL'
-					}
-				});
-			});
-		}
+		var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+		moment.lang(currentLanguage, {
+			calendar : {
+				lastDay : '[Hier à] HH[h]mm',
+				sameDay : '[Aujourd\'hui à] HH[h]mm',
+				nextDay : '[Demain à] HH[h]mm',
+				lastWeek : 'dddd [dernier à] HH[h]mm',
+				nextWeek : 'dddd [prochain à] HH[h]mm',
+				sameElse : 'dddd LL'
+			}
+		});
+
 		return {
 			format: function(date, format) {
-				return moment(date).formatDate(format);
+				if(!moment){
+					return '';
+				}
+				return moment(date).format(format);
 			},
 			calendar: function(date){
+				if(!moment){
+					return '';
+				}
 				return moment(date).calendar();
 			}
 		};
+	})
+	.factory('http', function(){
+		return {
+			get: One.get,
+			post: One.post,
+			put: One.put,
+			delete: One.delete
+		}
+	})
+	.factory('lang', function(){
+		return {
+			translate: One.translate
+		}
 	});
+
+//directives
+
+oneModule.directive('completeChange', function() {
+	return {
+		restrict: 'A',
+		scope:{
+			exec: '&completeChange'
+		},
+		link: function($scope, $linkElement, $attributes) {
+			$scope.$watch($attributes.ngModel, function(newVal) {
+				console.log($attributes.ngModel.$modelValue)
+				console.log($scope.$modelValue)
+				console.log($scope);
+				console.log($scope.email);
+				console.log($scope.exec)
+				console.log($attributes.ngModel);
+				console.log(newVal)
+				//$linkElement.val(newVal);
+				console.log($scope.value);
+			});
+
+			$linkElement.bind('change', function() {
+				$scope.value = $linkElement.val();
+				$scope.$eval($scope.exec);
+			});
+		}
+	};
+});
+
 
 if(parent !== window){
 	$(document).ready(function(){
