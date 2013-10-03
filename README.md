@@ -83,9 +83,51 @@ __Commandes__ (depuis le projet racine) :
 Le fichier de configuration des application est `mod.json`. Pour définir un configuration personnalisée procéder de la manière suivante :
 
 * à la racine du projet créer un fichier `developer.id` avec votre identifiant de développeur. Cette identifiant ne doit contenir que des lettre [a-z]. 
-* copier le fichiers de configuration `mod.json` dans le fichier `mod.json.{developer.id}`
+* copier le fichiers de configuration `mod.json` dans le fichier `{developer.id}.mod.json`
 
 One-Core utilisera prioritairement votre fichier de configuration développeur.
+
+## Paramètres de configuration à personnaliser ##
+
+Paramètres à personnaliser dans les fichier de configuration `{developer.id}.mod.json` des différents modules :
+
+* Dans le module infra
+
+Configuration neo4j :
+Le paramètre "server-uri" doit être une chaîne vide si Neo embarqué est utilisé ; pour Neo en mode serveur indiquer l'adresse du serveur. Le "datastore-path" est le chemin des données Neo en local.
+<pre>
+"server-uri" : "",
+"datastore-path" : "/path/to/local/neo/data"
+</pre>
+Configuration du Tracer :
+<pre>"log-path": "/path/to/logs/folder"</pre>
+Configuration Wordpress :
+
+    - Changer le "host" si nécessaire, et dans le paramètre "wp-plugin-url" remplacer {wp-site-name} par le nom du dossier du site wordpress
+<pre>
+"host":"localhost",
+"wp-plugin-url":"/{wp-site-name}/?api=1&method=one_",
+</pre>
+    - Au premier lancement :
+<pre>"profile-groups" : {}</pre>
+    - Après le premier lancement :
+<pre>"profile-groups" : { "PERSEDUCNAT" : "4", "PERSRELELEVE" : "5", "ELEVE" : "6" } //remplacer les 3 ids par les ids des groupes créés automatiquement dans Wordpress</pre>
+
+* Dans le module history
+
+Le chemin du dossier contenant les fichiers de log, le même que le "log-path" du module Tracer :
+<pre>"log-path": "/path/to/logs/folder/"</pre>
+
+* Dans le module directory
+
+Le chemin du dossier contenant les fichiers csv pour l'import BE1D :
+<pre>"test-be1d-folder" : "/path/to/be1d/folder/"</pre>
+
+* Dans le module sync
+
+Le chemin du dossier contenant les fichiers XML pour l'import AAF :
+<pre>"input-files-folder" : "/path/to/aaf/folder/"</pre>
+
 
 # Convention de codage
 
