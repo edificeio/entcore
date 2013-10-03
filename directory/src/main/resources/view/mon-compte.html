@@ -67,18 +67,8 @@
 			<div class="four cell fixed">
 				<div class="cell fixed twelve bottom-magnet">
 					<div class="twelve cell bottom-magnet text-container">
-						<div class="enhanced-select twelve fixed-block height-two" data-selected="[[account.mood]]">
-							<div class="current fixed cell twelve">
-								<i role="[[account.mood]]-panda"></i>
-								<span>[[pandaStatus(account.mood)]]</span>
-							</div>
-							<div class="options-list icons-view">
-								<div class="cell three option" data-value="[[mood]]" data-ng-repeat="mood in moods">
-									<i role="[[mood]]-panda"></i>
-									<span>[[pandaStatus(mood)]]</span>
-								</div>
-							</div>
-						</div>
+						<enhanced-select class="enhanced-select cell twelve fixed-block height-two" current="account.mood" options="moods" change="updateMood()">
+						</enhanced-select>
 					</div>
 				</div>
 				<div class="row text-container">
@@ -86,7 +76,7 @@
 						<form id="upload-form" method="post" action="document" enctype="multipart/form-data">
 							<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
 							<div class="hidden-content">
-								<input type="file" name="file"  id="avatar"/>
+								<input type="file" name="file"  id="avatar" data-ng-change="updateAvatar()"/>
 							</div>
 							<button class="file-button" data-linked="avatar">{{#i18n}}userBook.profile.changeavatar{{/i18n}}</button>
 						</form>
@@ -97,7 +87,7 @@
 				<article class="fluid twelve cell text-container">
 					<div class="row">
 						<h2>{{#i18n}}userBook.profile.motto{{/i18n}}</h2>
-						<input type="text" class="twelve cell monoline" maxlength="75" data-ng-change="saveProperty('motto', account.motto)" data-ng-model="account.motto" />
+						<input type="text" class="twelve cell monoline" maxlength="75" data-ng-change="saveProperty('motto')" data-ng-model="account.motto" />
 					</div>
 				</article>
 			</div>
@@ -116,7 +106,7 @@
 		</article>
 		<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>
 			<article class="text-container">
-				<textarea data-ng-model="account.health" data-ng-change="saveProperty('health', account.health)"></textarea>
+				<textarea data-ng-model="account.health" data-ng-change="saveProperty('health')"></textarea>
 			</article>
 			</div>
 		<div class="clear"></div>

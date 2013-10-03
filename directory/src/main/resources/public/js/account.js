@@ -21,11 +21,21 @@ var personDataExtractor = function(d) {
 
 function Account($scope, http, lang, date, notify){
 	$scope.account = {};
-	$scope.moods = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
+	var moods = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
+	$scope.moods = [];
+
+	moods.forEach(function(mood){
+		$scope.moods.push({
+			icon: mood + '-panda',
+			text: lang.translate('userBook.mood.' + mood),
+			id: mood
+		})
+	});
 
 	http.get('api/person')
 		.done(function(data){
 			$scope.account = personDataExtractor(data);
+			$scope.account.mood = _($scope.moods).where({id: $scope.account.mood})[0];
 			$scope.$apply();
 			messenger.requireResize();
 		});
@@ -41,16 +51,18 @@ function Account($scope, http, lang, date, notify){
 		return lang.translate(label);
 	};
 
-	$scope.pandaStatus = function(mood){
-		return lang.translate('userBook.mood.' + mood);
-	};
+	$scope.updateMood = function(){
+		http.get('api/edit-userbook-info?prop=mood&value=' + $scope.account.mood.id);
+	}
 
 	$scope.saveHobby = function(hobby){
-		http.get('api/edit-userbook-info?category=' + hobby.category + '&value=' + hobby.values);
+		http.get('api/edit-userbook-info', hobby);
 	};
 
-	$scope.saveProperty = function(property, value){
-		http.get('api/edit-userbook-info?prop=' + property + '&value=' + value);
+	$scope.saveProperty = function(property){
+		//new lines formatting
+		var savedValue = $scope.account[property].replace(/[\n]/g, '%0a');
+		http.get('api/edit-userbook-info?prop=' + property + '&value=' + savedValue);
 	};
 
 	$scope.saveMail = function(value){
@@ -92,6 +104,10 @@ function Account($scope, http, lang, date, notify){
 		}
 
 		One.get('api/set-visibility', { value: hobby.visibility, category: hobby.category });
+	};
+
+	$scope.updateAvatar = function(){
+
 	}
 }
 

@@ -76,26 +76,51 @@ oneModule.directive('completeChange', function() {
 	return {
 		restrict: 'A',
 		scope:{
-			exec: '&completeChange'
+			exec: '&completeChange',
+			field: '=ngModel'
 		},
 		link: function($scope, $linkElement, $attributes) {
-			$scope.$watch($attributes.ngModel, function(newVal) {
-				console.log($attributes.ngModel.$modelValue)
-				console.log($scope.$modelValue)
-				console.log($scope);
-				console.log($scope.email);
-				console.log($scope.exec)
-				console.log($attributes.ngModel);
-				console.log(newVal)
-				//$linkElement.val(newVal);
-				console.log($scope.value);
+			$scope.$watch('field', function(newVal) {
+				$linkElement.val(newVal);
 			});
 
 			$linkElement.bind('change', function() {
-				$scope.value = $linkElement.val();
+				$scope.field = $linkElement.val();
 				$scope.$eval($scope.exec);
 			});
 		}
+	};
+});
+
+oneModule.directive('enhancedSelect', function($compile) {
+	return {
+		restrict: 'E',
+		scope:{
+			options: '=',
+			class: '@',
+			current: '=',
+			change: '&'
+		},
+		link: function($scope, $element, $attributes){
+			$element.bind('change', function(){
+				$scope.current.id = $element.find('.current').data('selected');
+				$scope.$eval($scope.change);
+			})
+
+		},
+		template: '\
+			<div>\
+				<div class="current fixed cell twelve" data-selected="[[current.id]]">\
+					<i role="[[current.icon]]"></i>\
+					<span>[[current.text]]</span>\
+				</div>\
+				<div class="options-list icons-view">\
+				<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">\
+					<i role="[[option.icon]]"></i>\
+					<span>[[option.text]]</span>\
+				</div>\
+				</div>\
+			</div>'
 	};
 });
 

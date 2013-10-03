@@ -94,7 +94,7 @@ var ui = (function(){
 			optionsList.slideDown();
 			optionsList.children('.option').on('mousedown', function(){
 				$(that).removeClass('editing');
-				select.data('selected', $(this).data('value'));
+				$(that).data('selected', $(this).data('value'));
 				$(that).html($(this).html());
 				optionsList.slideUp();
 				select.change();
