@@ -1,0 +1,6 @@
+{
+	"main":"edu.one.core.blog.Blog",
+	"port": 8018,
+	"mode": "dev",
+	"auto-redeploy": true
+}

@@ -139,6 +139,14 @@ project(':timeline') {
   }
 }
 
+project(':blog') {
+  dependencies {
+    provided project(':processor')
+    compile project(':infra')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+  }
+}
+
 project(':workspace') {
   dependencies {
     provided project(':processor')

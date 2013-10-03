@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html  class="app" data-ng-app="one">
+	<head>
+		<title>{{#i18n}}blog.title{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
+		<link href="{{#infra}}css/original.css{{/infra}}" rel='stylesheet' type='text/css'>
+		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
+		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#static}}js/blog.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
+	</head>
+	<body data-ng-controller="Blog">
+		<h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1>
+	</body>
+</html>
