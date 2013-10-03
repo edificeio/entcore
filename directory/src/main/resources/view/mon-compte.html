@@ -111,8 +111,10 @@
 			</article>
 			</div>
 		<div class="clear"></div>
-		<section class="lightbox-window fixed-block height-three">
-			<div ng-include="resetPasswordPath" class="fixed twelve cell"></div>
+		<section class="lightbox-window fixed-block height-four">
+			<div data-ng-bind-html-unsafe="resetPasswordContent" class="fixed twelve cell" ng-if="resetPasswordContent!==''"></div>
+			<div ng-include="resetPasswordPath" class="fixed twelve cell" ng-if="resetPasswordPath!==''"></div>
+
 			<div class="clear"></div>
 			<div class="close-lightbox">
 				<i role="close-2x"></i>

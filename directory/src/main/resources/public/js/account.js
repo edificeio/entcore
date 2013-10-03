@@ -83,15 +83,20 @@ function Account($scope, http, lang, date, notify){
 		ui.hideLightbox();
 	};
 
-	$scope.submitPassword = function(){
-		var form = $("#changePassword");
-		One.post(form.attr('action'), form.serialize())
-			.done(function(response) {
-				$('#change-password').html(response);
+	$scope.resetPassword = function(url){
+		http.post(url, {
+				oldPassword: $scope.account.oldPassword,
+				password: $scope.account.password,
+				newPassword: $scope.account.password
+			})
+			.done(function(response){
+				$scope.resetPasswordPath = '';
+				$scope.resetPasswordContent = response;
+				$scope.$apply();
 				if(response.indexOf('html') === -1){
 					ui.showLightbox();
 				}
-			});
+			})
 	};
 
 	$scope.changeVisibility = function(hobby){
