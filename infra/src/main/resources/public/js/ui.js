@@ -54,7 +54,7 @@ var ui = (function(){
 			}
 			$('[data-display-file]').data('changed', true);
 
-			inputFile.on('change', function(){
+			inputFile.on('prettyinput.change', function(){
 				var displayElement = inputFile.parent().parent().find('[data-display-file]');
 				var fileUrl = $(this).val();
 				if(fileUrl.indexOf('fakepath') !== -1){
@@ -68,7 +68,7 @@ var ui = (function(){
 				else{
 					displayElement.text(fileUrl);
 				}
-				$(this).unbind('change');
+				$(this).unbind('prettyinput.change');
 			});
 
 			e.preventDefault();

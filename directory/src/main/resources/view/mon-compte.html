@@ -24,7 +24,7 @@
 		<div class="row fixed-block height-four">
 			<div class="cell fixed four text-container">
 				<div class="fluid twelve cell avatar">
-					<img data-ng-src="document/[[account.photo]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>
+					<img data-ng-src="document/[[account.picture]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" class="avatar"/>
 				</div>
 			</div>
 			<div class="eight cell fixed right-magnet text-container">
@@ -37,7 +37,7 @@
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.password{{/i18n}}</label></div>
 						<em class="eight cell">
-							<a call="password" href="">{{#i18n}}change.password{{/i18n}}</a>
+							<a data-ng-click="openPasswordDialog()">{{#i18n}}change.password{{/i18n}}</a>
 						</em>
 					</div>
 					<div class="row">
@@ -68,6 +68,7 @@
 				<div class="cell fixed twelve bottom-magnet">
 					<div class="twelve cell bottom-magnet text-container">
 						<enhanced-select class="enhanced-select cell twelve fixed-block height-two" current="account.mood" options="moods" change="updateMood()">
+							<div>[[mon-binding]]</div>
 						</enhanced-select>
 					</div>
 				</div>
@@ -76,7 +77,7 @@
 						<form id="upload-form" method="post" action="document" enctype="multipart/form-data">
 							<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
 							<div class="hidden-content">
-								<input type="file" name="file"  id="avatar" data-ng-change="updateAvatar()"/>
+								<input type="file" name="file"  id="avatar" file-input-change="updateAvatar(file)" data-ng-model="photo"/>
 							</div>
 							<button class="file-button" data-linked="avatar">{{#i18n}}userBook.profile.changeavatar{{/i18n}}</button>
 						</form>
@@ -100,7 +101,7 @@
 				<div class="nine cell">
 					<input type="text" class="twelve cell inline-editing" data-ng-change="saveHobby(hobby)" data-ng-model="hobby.values" />
 				</div>
-				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]"data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
+				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
 				<div class="clear"></div>
 			</div>
 		</article>
@@ -111,7 +112,7 @@
 			</div>
 		<div class="clear"></div>
 		<section class="lightbox-window fixed-block height-three">
-			<div id="change-password" class="fixed twelve cell"></div>
+			<div ng-include="resetPasswordPath" class="fixed twelve cell"></div>
 			<div class="clear"></div>
 			<div class="close-lightbox">
 				<i role="close-2x"></i>

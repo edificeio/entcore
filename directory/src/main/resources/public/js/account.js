@@ -15,6 +15,7 @@ var personDataExtractor = function(d) {
 		person['relations'].push(_.pick(o, 'relatedId', 'relatedName','relatedType'));
 	});
 
+	person.picture = person.photo;
 	// TODO : extract in conf system
 	return person;
 };
@@ -31,6 +32,8 @@ function Account($scope, http, lang, date, notify){
 			id: mood
 		})
 	});
+
+	$scope.resetPasswordPath = '/auth/reset/password';
 
 	http.get('api/person')
 		.done(function(data){
@@ -72,12 +75,8 @@ function Account($scope, http, lang, date, notify){
 			});
 	};
 
-	$scope.password = function(){
-		One.get("/auth/reset/password")
-			.done(function(response) {
-				$('#change-password').html(response);
-				ui.showLightbox();
-			});
+	$scope.openPasswordDialog = function(){
+		ui.showLightbox();
 	};
 
 	$scope.closePassword = function(){
@@ -107,40 +106,19 @@ function Account($scope, http, lang, date, notify){
 	};
 
 	$scope.updateAvatar = function(){
-
-	}
-}
-
-function manageEditable(){
-	var sendPhoto =  function(elem, files) {
 		var form = new FormData();
-		form.append("image", $('#upload-form').find('input[type="file"]')[0].files[0]);
+		form.append("image", $scope.photo);
 		form.append("name","blablabla");
 
 
-		One.postFile("document?application=userbook&protected=true", form, {})
+		http.postFile("document?application=userbook&protected=true", form, {})
 			.done(function (data) {
 				if (data.status == "ok") {
-					account.action.editUserBookInfo("api/edit-userbook-info?prop=picture&value=" + data._id);
-					$('img[class="avatar"]')[0].setAttribute("src", "document/" + data._id);
+					$scope.account.picture = data._id;
+					$scope.saveProperty('picture');
+					$scope.$apply();
 					messenger.updateAvatar();
 				}
 			});
 	}
-	$('#avatar').on('change', function(){
-		sendPhoto(this);
-	})
 }
-
-$(document).ready(function(){
-
-	$('body').on('click','input.cancel', function(){ui.hideLightbox();});
-	$('body').on('click','input.submit', function(){ui.hideLightbox();});
-	$('body').on('submit', '#changePassword',function(event){
-		event.preventDefault();
-		account.action.passwordSubmit(event);
-		return false;
-	});
-
-	ui.hideLightbox();
-});

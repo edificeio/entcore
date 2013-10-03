@@ -61,7 +61,8 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			get: One.get,
 			post: One.post,
 			put: One.put,
-			delete: One.delete
+			delete: One.delete,
+			postFile: One.postFile
 		}
 	})
 	.factory('lang', function(){
@@ -91,6 +92,24 @@ oneModule.directive('completeChange', function() {
 		}
 	};
 });
+
+oneModule.directive('fileInputChange', function($compile){
+	return {
+		restrict: 'A',
+		scope: {
+			fileInputChange: '&',
+			file: '=ngModel'
+		},
+		link: function($scope, $element){
+			$element.bind('change', function(){
+				$scope.file = $element[0].files[0];
+				$scope.$apply();
+				$scope.fileInputChange();
+
+			})
+		}
+	}
+})
 
 oneModule.directive('enhancedSelect', function($compile) {
 	return {
