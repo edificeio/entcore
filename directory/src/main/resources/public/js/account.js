@@ -20,7 +20,7 @@ var personDataExtractor = function(d) {
 	return person;
 };
 
-function Account($scope, http, lang, date, notify){
+function Account($scope, http, lang, date, notify, _){
 	$scope.account = {};
 	var moods = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	$scope.moods = [];

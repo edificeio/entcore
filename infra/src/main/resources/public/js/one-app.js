@@ -29,6 +29,9 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 	})
 	.factory('date', function() {
+		if(window.moment === undefined){
+			loader.syncLoad('moment');
+		}
 		var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
 		moment.lang(currentLanguage, {
 			calendar : {
@@ -69,6 +72,12 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		return {
 			translate: One.translate
 		}
+	})
+	.factory('_', function(){
+		if(window._ === undefined){
+			loader.syncLoad('underscore');
+		}
+		return _;
 	});
 
 //directives

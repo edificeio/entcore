@@ -1,3 +1,5 @@
+
+
 var lang = (function(){
 	var bundle = {};
 	$.ajax({url: 'i18n', async: false})
@@ -107,33 +109,7 @@ var http = (function(){
 	}
 }());
 
-var loader = (function(){
-	var loadedScripts = {};
-	var scriptsFiles = {
-		moment: 'moment+langs.js',
-		humane: 'humane.min.js'
-	}
-	var basePath = document.getElementById('context').getAttribute('src').split('/');
-	basePath.length = basePath.length - 1;
-	basePath = basePath.join('/');
 
-	return {
-		load: function(library, callback){
-			if(!loadedScripts[library]){
-				var script = document.createElement('script');
-				script.type = 'text/javascript';
-				script.src = basePath + '/' + scriptsFiles[library];
-				script.async = false;
-				script.onload = function(data){
-					if(callback){
-						callback();
-					}
-				};
-				document.getElementsByTagName('head')[0].appendChild(script);
-			}
-		}
-	}
-}())
 
 One = {
 	get: function(url, data, params){
