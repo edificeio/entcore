@@ -2099,11 +2099,18 @@ section.lightbox-window .lightbox-buttons .cancel {
   -pie-background: linear-gradient(#666666, #888888);
   behavior: url(/assets/themes/panda/css/PIE.htc);
 }
+.box h4 {
+  color: #2f8cc9;
+}
 article.box {
   border: 1px solid #ccc;
 }
-article.box.selected {
+.box.selected {
   background: #2f8cc9;
+  color: #fff;
+}
+.box.selected h4 {
+  color: #fff;
 }
 article.box.selected h4 {
   color: #fff;
