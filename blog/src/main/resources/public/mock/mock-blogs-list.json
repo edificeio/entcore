@@ -1,0 +1,14 @@
+[
+	{
+		"id": "123",
+		"title":"Mon premier blog",
+		"author":"Diane Wakim",
+		"avatar":"blog"
+	},
+	{
+		"id": "234",
+		"title":"Mon autre blog",
+		"author":"Alexandra Achelous",
+		"avatar":"blog"
+	}
+]

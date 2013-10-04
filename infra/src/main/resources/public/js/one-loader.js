@@ -13,6 +13,7 @@ var loader = (function(){
 			{ path: 'iframe.js', async: true},
 			{ path: 'angular.min.js', async: true },
 			{ path: 'angular-sanitize.min.js', async: true },
+			{ path: 'mustache.js', async: true},
 			{ path: 'one-app.js', async: true },
 			{ path: 'one.js', async: true },
 			{ path: 'ui.js', async: true }]

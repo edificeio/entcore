@@ -1,23 +1,51 @@
 <!DOCTYPE html>
-<html  class="app" data-ng-app="one">
+<html class="app" data-ng-app="one">
 	<head>
 		<title>{{#i18n}}blog.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
-		<link href="{{#infra}}css/original.css{{/infra}}" rel='stylesheet' type='text/css'>
-		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/blog.js{{/static}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
 	</head>
 	<body data-ng-controller="Blog">
-		<h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1>
+		<div class="four cell">
+			<h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1>
+			<hr>
+			<nav class="vertical">
+				<section data-ng-class="{'fixed-block':true, 'height-one':true, 'box':true, 'row':true, 'selected':isSelected([[blog.id]])}" data-ng-repeat="blog in blogs">
+					<div class="four cell fixed">
+						<div class="fluid twelve cell avatar">
+							<img src="{{#static}}img/blog.png{{/static}}"/>
+						</div>
+					</div>
+					<div class="eight cell fixed right-magnet">
+						<div class="row">
+							<a><h3 data-ng-click="displayBlog([[blog.id]])">[[blog.title]]</h3></a>
+						</div>
+						<div class="row">
+							<h4 data-ng-click="displayBlog([[blog.id]])">{{#i18n}}blog.by{{/i18n}} [[blog.author]]</h4>
+						</div>
+					</div>
+				</section>
+				<h5><a data-ng-click="createBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+			</nav>
+		</div>
+		<div class="eight cell">
+			<nav class="contextual-buttons row">
+				<div class="action-buttons">
+					<a data-ng-click="showCreatePost()" class="button"><i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}</a>
+				</div>
+			</nav>
+			<hr>
+			<article class="text-container row">
+				<section data-ng-include="createPostPath" class="text-container"></section>
+				<section data-ng-repeat="post in currentBlog.posts">
+					<h2>[[post.title]]</h2>
+					<h5>{{#i18n}}blog.by{{/i18n}} [[post.author]]</h5>
+					<p>[[post.content]]</p>
+					<hr class="solid">
+				</section>
+			</article>
+		</div>
+		<div class="clear"></div>
 	</body>
 </html>

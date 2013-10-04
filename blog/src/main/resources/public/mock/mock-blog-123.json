@@ -1,0 +1,10 @@
+[
+	"id": "123",
+	"title":"Mon premier blog",
+	"author":"Diane Wakim",
+	"avatar":"blog",
+	"posts":[
+		{"id": "1231","title":"Premier billet", "author":"Alexandra Achelous", "content":"blabla"},
+		{"id": "1232","title":"Deuxieme billet", "author":"Alexandra Achelous", "content":"blablabli"}
+	]
+]
