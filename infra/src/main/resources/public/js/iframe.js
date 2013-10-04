@@ -186,5 +186,10 @@ $(document).ready(function(){
 		$('body').hide();
 	}
 
+	//automated require resize
+	$("body").bind("DOMSubtreeModified", function() {
+		messenger.requireResize();
+	});
+
 	navigationController.start();
 });
