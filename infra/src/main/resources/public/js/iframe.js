@@ -52,10 +52,6 @@ var messenger = (function(){
 			requireResize();
 		},
 		'set-style': function(message){
-			if($('link[href="' + message.data + '"]').length > 0){
-				return;
-			}
-
 			var updateView = function(){
 				$('body').show();
 
@@ -69,7 +65,6 @@ var messenger = (function(){
 				send(appSizeMessage);
 			};
 
-			var nbStylesheets = document.styleSheets.length;
 			$('<link />', {
 					rel: 'stylesheet',
 					href: message.data,
@@ -80,14 +75,6 @@ var messenger = (function(){
 				.on('load', function(){
 					updateView();
 				});
-
-			//we need to give back the main thread to the browser, so it can add the stylesheet to the document
-			setTimeout(function(){
-				if(document.styleSheets.length > nbStylesheets){
-					//loading is done from cache, which means "load" event won't be called at all
-					updateView();
-				}
-			}, 50);
 		}
 	};
 
@@ -146,38 +133,25 @@ var messenger = (function(){
 	};
 }());
 
-var navigationController = (function(){
-	"use strict";
-
-	One.filter('disconnected', function(event){
+function Navigation($scope, http){
+	http.bind('disconnected', function(event){
 		messenger.redirectParent('/');
-	})
-
-	var app = Object.create(oneApp);
-	app.scope = 'nav[role=apps-navigation]';
-	app.start = function(){
-		this.init();
-	};
-
-	app.define({
-		action: {
-			redirect: function(data){
-				messenger.sendMessage({
-					name: 'redirect',
-					data: data.url
-				});
-			},
-			moveHistory: function(data){
-				messenger.sendMessage({
-					name: 'move-history',
-					data: data
-				})
-			}
-		}
 	});
 
-	return app;
-}());
+	$scope.redirect = function(url){
+		messenger.sendMessage({
+			name: 'redirect',
+			data: url
+		});
+	};
+
+	$scope.moveHistory = function(data){
+		messenger.sendMessage({
+			name: 'move-history',
+			data: data
+		})
+	}
+}
 
 $(document).ready(function(){
 	"use strict";
@@ -185,11 +159,21 @@ $(document).ready(function(){
 	if(parent !== window && $('link[data-portal-style]').length === 0){
 		$('body').hide();
 	}
+	if(parent !== window){
+		$('body').on('click', 'a[href]', function(e){
+			if($(this).attr('call')){
+				return;
+			}
+			messenger.sendMessage({
+				name: 'redirect',
+				data: $(this).attr('href')
+			});
+			e.preventDefault();
+		})
+	}
 
 	//automated require resize
 	$("body").bind("DOMSubtreeModified", function() {
 		messenger.requireResize();
 	});
-
-	navigationController.start();
 });

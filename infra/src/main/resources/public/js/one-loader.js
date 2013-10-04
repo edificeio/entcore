@@ -1,8 +1,24 @@
 var loader = (function(){
+	var configurations = {
+		'portal': [
+			{ path: 'jquery-1.9.1.js', async: true },
+			{ path: 'angular.min.js', async: true },
+			{ path: 'angular-sanitize-1.0.1.js', async: true },
+			{ path: 'one-app.js', async: true },
+			{ path: 'one.js', async: true },
+			{ path: 'ui.js', async: true }],
+		'app': [
+			{ path: 'jquery-1.9.1.js', async: true },
+			{ path: 'iframe.js', async: true},
+			{ path: 'angular.min.js', async: true },
+			{ path: 'angular-sanitize-1.0.1.js', async: true },
+			{ path: 'one-app.js', async: true },
+			{ path: 'one.js', async: true },
+			{ path: 'ui.js', async: true }]
+	};
+
 	var loadedScripts = {};
-	var coreScripts = [
-		'jquery-1.9.1.js', 'angular.min.js', 'angular-sanitize-1.0.1.js', 'one-app.js', 'one.js', 'ui.js'
-	]
+
 	var libraries = {
 		moment: 'moment+langs.js',
 		humane: 'humane.min.js',
@@ -28,15 +44,28 @@ var loader = (function(){
 		request.onreadystatechange = function(){
 			if(request.readyState === 4 && request.status === 200){
 				var lib = new Function(request.responseText);
+				lib.name = script.path;
 				lib();
 			}
 		};
 		request.send(null);
 	}
 
-	coreScripts.forEach(function(script){
-		loadScript(script);
-	});
+	var load = function(script){
+		if(script.async){
+			loadScript(script.path);
+		}
+		else{
+			syncLoadScript(script.path);
+		}
+	}
+
+	if(parent !== window){
+		configurations.app.forEach(load);
+	}
+	else{
+		configurations.portal.forEach(load);
+	}
 
 	return {
 		load: function(library){
@@ -52,6 +81,3 @@ var loader = (function(){
 	}
 }())
 
-if(window !== parent){
-	loader.load('iframe');
-}

@@ -43,9 +43,8 @@ var navigation = (function(){
 		},
 		applyHash: function(){
 			var redirect = window.location.href.split('#app=');
-			var appUrl = $('.horizontal[role=apps-navigation] a')
-				.first()
-				.attr('href');
+			var appUrl = $('.logo')
+				.attr('data-link');
 
 			if(redirect.length > 1){
 				appUrl = redirect[1].split('&')[0];
@@ -125,10 +124,8 @@ var messenger = (function(){
 			window.location.href = message.data;
 		},
 		'update-avatar': function(){
-			$.get('/userbook/api/person').done(function(result){
-				var avatar = result.result['0'].photo;
-				$('#my-photo').attr('src', '/userbook/document/' + avatar + '?userbook-dimg=public%2Fimg%2Fno-avatar.jpg');
-			});
+			var scope = angular.element(document.getElementById('my-photo')).scope();
+			scope.refreshAvatar();
 		}
 	};
 
@@ -144,56 +141,34 @@ var messenger = (function(){
 	};
 }());
 
-var navigationController = (function(){
-	"use strict";
-
-	var app = Object.create(oneApp);
-	app.scope = 'nav[role=apps-navigation]';
-	app.start = function(){
-		this.init();
-		navigation.applyHash();
-	};
-
-	app.define({
-		action: {
-			redirect: function(data){
-				navigation.redirect(data.url);
-			}
-		}
-	});
-
-	return app;
-}());
-
-function setUserPhoto(){
-	"use strict";
-
-	$.get('/userbook/api/person').done(function(result){
-		var avatar = result.result['0'].photo;
-		$('#my-photo').attr('src', '/userbook/document/' + avatar + '?userbook-dimg=public%2Fimg%2Fno-avatar.jpg');
-	});
-}
-
-$(document).ready(function(){
-	"use strict";
-
-	$('.search input[type=text]').on('focus', function(){
-		$(this).val(' ');
-	});
-
-	setUserPhoto();
-
-	navigationController.start();
-});
-
-$(window).on('hashchange', function() {
+function Navigation($scope){
 	"use strict";
 
 	navigation.applyHash();
-});
+	$scope.redirect = function(url){
+		navigation.redirect(url);
+	};
+}
 
-$(window).on('load', function(){
+function Account($scope, http){
 	"use strict";
 
+	$scope.refreshAvatar = function(){
+		http.get('/userbook/api/person').done(function(result){
+			$scope.avatar = result.result['0'].photo;
+			$scope.$apply();
+		});
+	};
+
+	$scope.refreshAvatar();
+}
+
+window.addEventListener('hashchange', function(){
+	"use strict";
+	navigation.applyHash();
+});
+
+window.addEventListener('load', function(){
+	"use strict";
 	$('.remove-fout').removeClass('remove-fout');
 });

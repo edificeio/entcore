@@ -40,7 +40,6 @@ function Account($scope, http, lang, date, notify, _){
 			$scope.account = personDataExtractor(data);
 			$scope.account.mood = _($scope.moods).where({id: $scope.account.mood})[0];
 			$scope.$apply();
-			messenger.requireResize();
 		});
 
 	$scope.birthDate = function(birthDate){

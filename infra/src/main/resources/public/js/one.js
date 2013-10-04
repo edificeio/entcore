@@ -32,10 +32,10 @@ var http = (function(){
 			}
 			return str.join("&");
 		},
-		filters: {
+		events: {
 		},
-		addFilter: function(filter, handler){
-			Http.prototype.filters[filter] = handler;
+		bind: function(eventName, handler){
+			Http.prototype.events[eventName] = handler;
 		},
 		request: function(url, params){
 			var that = this;
@@ -45,8 +45,8 @@ var http = (function(){
 			$.ajax(params)
 				.done(function(e, statusText, xhr){
 					if(typeof that.statusCallbacks.done === 'function'){
-						if(document.cookie === '' && typeof Http.prototype.filters.disconnected === 'function'){
-							that.filters.disconnected(e, statusText, xhr);
+						if(document.cookie === '' && typeof Http.prototype.events.disconnected === 'function'){
+							that.events.disconnected(e, statusText, xhr);
 						}
 						that.statusCallbacks.done(e, statusText, xhr);
 					}
@@ -132,8 +132,8 @@ One = {
 		params.processData = false;
 		return http().post(url, data, params);
 	},
-	filter: function(filter, handler){
-		http().addFilter(filter, handler);
+	bind: function(eventName, handler){
+		http().bind(eventName, handler);
 	},
 	load: function(libName, callback){
 		return loader.load(libName, callback);

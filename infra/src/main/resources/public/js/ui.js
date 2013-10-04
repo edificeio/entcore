@@ -23,16 +23,6 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
-		$('body').on('focus', '[contenteditable]', function(){
-			$(this).attr('data-origin', this.innerHTML);
-			$(this).on('blur', function(){
-				if($(this).attr('data-origin') !== $(this).html()){
-					$(this).trigger('change');
-					$(this).attr('data-origin', this.innerHTML);
-				}
-			})
-		})
-
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');
 			$(this).addClass('selected');

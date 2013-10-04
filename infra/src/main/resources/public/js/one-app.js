@@ -65,7 +65,8 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			post: One.post,
 			put: One.put,
 			delete: One.delete,
-			postFile: One.postFile
+			postFile: One.postFile,
+			bind: One.bind
 		}
 	})
 	.factory('lang', function(){
@@ -151,21 +152,6 @@ oneModule.directive('enhancedSelect', function($compile) {
 			</div>'
 	};
 });
-
-
-if(parent !== window){
-	$(document).ready(function(){
-		$('body').on('click', 'a:not([call])', function(e){
-			if(!$(this).attr('target') && parent !== window){
-				messenger.sendMessage({
-					name: 'redirect',
-					data: $(this).attr('href')
-				});
-				e.preventDefault();
-			}
-		});
-	});
-}
 
 
 var oneApp = {
@@ -291,3 +277,7 @@ var oneApp = {
 		}
 	}
 };
+
+var event = document.createEvent("Event");
+event.initEvent("oneLoaded", true, true);
+window.dispatchEvent(event);
