@@ -6,10 +6,10 @@
 	"skin": "panda",
 	"path-prefix" : "",
 	"urls" : {
-		"timeline" : "http://localhost:8016/timeline",
-		"userbook" : "http://localhost:8101/userbook",
-		"auth" : "http://localhost:8009/auth",
-		"portal" : "http://localhost:8017",
-		"logoutCallback" : "http://localhost:8017"
+		"timeline" : "http://localhost/timeline",
+		"userbook" : "http://localhost/userbook",
+		"auth" : "http://localhost/auth",
+		"portal" : "http://localhost",
+		"logoutCallback" : "http://localhost"
 	}
 }
