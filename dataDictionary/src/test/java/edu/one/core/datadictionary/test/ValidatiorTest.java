@@ -19,14 +19,14 @@ public class ValidatiorTest extends TestVerticle {
 
 	@Test
 	public void constructDictionary() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 		assertEquals("ENTPersonCodePostal", d.getField("ENTPersonCodePostal").getId());
 		testComplete();
 	}
 
 	@Test
 	public void simpleValue() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 		assertEquals(true, d.validateField("ENTPersonCodePostal", "75018"));
 		assertEquals(false, d.validateField("ENTPersonCodePostal", "12AAA"));
 		assertEquals(true, d.validateField("ENTPersonTelPerso", "0100000000"));
@@ -36,7 +36,7 @@ public class ValidatiorTest extends TestVerticle {
 
 	@Test
 	public void multipleFieldSimpleValue() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 
 		Map<String,String> map = new HashMap<>();
 		map.put("ENTPersonCodePostal", "75018");
@@ -53,7 +53,7 @@ public class ValidatiorTest extends TestVerticle {
 
 	@Test
 	public void multipleValue() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 		assertEquals(true, d.validateField("ENTPersonTelPerso", Arrays.asList(new String[]{"0100000000", "0100000002"})));
 		assertEquals(false, d.validateField("ENTPersonTelPerso", Arrays.asList(new String[]{"a", "0100000002"})));
 		testComplete();
@@ -61,7 +61,7 @@ public class ValidatiorTest extends TestVerticle {
 
 	@Test
 	public void multipleFieldMultipleValue() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 		Map<String,List<String>> map = new HashMap<>();
 		map.put("ENTPersonCodePostal", Arrays.asList(new String[]{"34000", "75000"}));
 		map.put("ENTPersonTelPerso", Arrays.asList(new String[]{"0100000000", "0100000002"}));

@@ -37,7 +37,7 @@ public class GeneratorTest extends TestVerticle {
 
 	@Test
 	public void batchGeneration() throws Exception {
-		d = new DefaultDictionary(vertx, container, "./src/main/resources/aaf-dictionary.json");
+		d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 		Map<String,List<String>> attrs = new HashMap<>();
 
 		attrs.put("ENTPersonCivilite", Arrays.asList("M"));

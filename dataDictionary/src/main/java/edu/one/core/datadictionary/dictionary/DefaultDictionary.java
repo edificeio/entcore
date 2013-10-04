@@ -4,11 +4,12 @@ import edu.one.core.datadictionary.dictionary.aaf.AAFField;
 import edu.one.core.datadictionary.validation.NoValidator;
 import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.datadictionary.validation.Validator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.*;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -24,12 +25,25 @@ public class DefaultDictionary implements Dictionary {
 	protected Map<String, Validator> validators;
 
 	public DefaultDictionary(Vertx vertx, Container container, String file) {
+		this(vertx, container, file, true);
+	}
+
+	public DefaultDictionary(Vertx vertx, Container container, String file, boolean internalResource) {
 		logger = container.logger();
 		try {
 			validators = RegExpValidator.all();
 			validators.put(null, new NoValidator(true)); // If no validator return true
 			generatedFields = new ArrayList<>();
-			JsonObject d = new JsonObject(vertx.fileSystem().readFileSync(file).toString());
+			JsonObject d = new JsonObject();
+			if (internalResource) {
+				InputStream resource = this.getClass().getClassLoader().getResourceAsStream(file);
+				if (resource != null) {
+					d = new JsonObject(inputStreamToString(resource));
+					resource.close();
+				}
+			} else {
+				d = new JsonObject(vertx.fileSystem().readFileSync(file).toString());
+			}
 			fields = new HashMap<>();
 			categories = new HashMap<>();
 
@@ -48,6 +62,13 @@ public class DefaultDictionary implements Dictionary {
 			ex.printStackTrace();
 			logger.error(ex.getMessage());
 		}
+	}
+
+	private static String inputStreamToString(InputStream in) {
+		Scanner scanner = new Scanner(in, "UTF-8");
+		String content = scanner.useDelimiter("\\A").next();
+		scanner.close();
+		return content;
 	}
 
 	@Override
