@@ -2119,6 +2119,7 @@ article.box {
   background: #2f8cc9;
   color: #fff;
 }
+.box.selected h3,
 .box.selected h4 {
   color: #fff;
 }
