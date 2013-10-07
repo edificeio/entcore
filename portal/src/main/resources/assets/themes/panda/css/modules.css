@@ -2091,7 +2091,9 @@ nav.vertical ul a:hover {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
 }
-section.lightbox-window .lightbox-buttons .cancel {
+button.cancel,
+input[type=button].cancel,
+a.cancel {
   background: -webkit-linear-gradient(#666666, #888888);
   background: -moz-linear-gradient(#666666, #888888);
   background: -o-linear-gradient(#666666, #888888);
@@ -2099,7 +2101,15 @@ section.lightbox-window .lightbox-buttons .cancel {
   -pie-background: linear-gradient(#666666, #888888);
   behavior: url(/assets/themes/panda/css/PIE.htc);
 }
-.box h4 {
+.box {
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+.box h4,
+.box h3 {
   color: #2f8cc9;
 }
 article.box {
