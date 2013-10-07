@@ -9,9 +9,7 @@
     "config" : {
       "worker": true,
       "address" : "wse.neo4j.persistor",
-      "server-uri" : "http://localhost:7474/db/data/",
-      "poolsize" : 32,
-      "datastore-path" : "./data/dev/neo4j",
+      "datastore-path" : "./data/tests/neo4j",
       "neo4j" : {
         "node_keys_indexable":"id,name,type,ENTPersonLogin",
         "node_auto_indexing":"true"
@@ -78,7 +76,7 @@
         "address": "wse.mongodb.persistor",
         "host": "localhost",
         "port": 27017,
-        "db_name": "one_gridfs",
+        "db_name": "one_tests",
         "pool_size": 10
       }
     },{
@@ -87,7 +85,7 @@
         "address": "wse.gridfs.persistor",
         "host": "localhost",
         "port": 27017,
-        "db_name": "one_gridfs",
+        "db_name": "one_tests",
         "pool_size": 10
       }
     },{

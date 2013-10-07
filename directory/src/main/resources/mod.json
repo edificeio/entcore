@@ -4,7 +4,7 @@
 	"port": 8003,
 	"mode": "dev",
 	"wp-connector.address":"wpconnector.address",
-	"test-be1d-folder" : "/opt/one/be1d",
+	"test-be1d-folder" : "sample-be1d",
     "workspace-url": "localhost",
     "workspace-port":8011,
     "workspace-prefix" : "/workspace",

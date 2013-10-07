@@ -37,11 +37,17 @@ subprojects {
     testCompile "io.vertx:testtools:$toolsVersion"
   }
 
+  javadoc {
+    options.encoding = 'UTF-8'
+    classpath = configurations.provided
+    classpath += configurations.compile
+  }
+
 	afterEvaluate { project ->
 		project.tasks['copyMod'].doLast {
 			copy {
 				into 'mods'
-				from "${project.name}/mods"
+				from "${project.name}/build/mods"
 			}
 		}
 		project.tasks['clean'].doLast {
@@ -151,3 +157,88 @@ project(':history') {
   }
 }
 
+project(':tests') {
+  apply plugin: 'scala'
+
+  dependencies {
+    testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.0-M3a'
+  }
+
+  task gatling(dependsOn: 'compileTestScala') << {
+    def simulations =  new java.io.File(sourceSets.test.output.classesDir.getPath() + File.separator + 'edu' + File.separator + 'one' + File.separator + 'core' + File.separator + 'test' + File.separator + 'simulations')
+
+    logger.lifecycle(" ---- Executing all Gatling scenarios from: ${simulations} ----")
+    simulations.eachFileRecurse { file ->
+      if (file.isFile()) {
+        //Remove the full path, .class and replace / with a .
+        logger.debug("Tranformed file ${file} into")
+          def gatlingScenarioClass = (file.getPath() - (sourceSets.test.output.classesDir.getPath() + File.separator) - '.class')
+          .replace(File.separator, '.')
+
+          logger.debug("Tranformed file ${file} into scenario class ${gatlingScenarioClass}")
+          System.setProperty("gatling.http.connectionTimeout", "300000")
+          javaexec {
+            main = 'io.gatling.app.Gatling'
+              classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
+              args  '-sbf',
+            sourceSets.test.output.classesDir,
+            '-s',
+            gatlingScenarioClass,
+            '-rf',
+            'build/reports/gatling'
+          }
+      }
+    }
+
+    logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
+  }
+
+}
+
+task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
+  workingDir '.'
+
+  //on windows:
+  commandLine 'cmd', '/c', 'run.bat'
+
+  //on linux
+  commandLine './run.sh'
+
+  standardOutput = new ByteArrayOutputStream()
+
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task stopEnt(type:Exec) {
+  workingDir '.'
+
+  //on windows:
+  commandLine 'cmd', '/c', 'stop.bat'
+
+  //on linux
+  commandLine './stop.sh'
+
+  standardOutput = new ByteArrayOutputStream()
+
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task integrationTest(dependsOn: [subprojects.copyMod, project(':tests').compileTestScala]) << {
+    project(':tests').tasks.gatling.execute()
+}
+
+
+integrationTest.doFirst {
+    tasks.runEnt.execute()
+
+}
+
+gradle.taskGraph.afterTask { task, TaskState state ->
+    if (task == integrationTest) {
+        tasks.stopEnt.execute()
+    }
+}
