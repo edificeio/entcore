@@ -1,6 +1,7 @@
 {
 	"blog.title": "Blog",
 	"blog.create.blog": "Créer un blog",
+	"blog.edit.blog": "Modifier le blog",
 	"blog.create.post": "CRÉER",
 	"blog.by": "Par",
 	"blog.post.title-helper": "Entrez le titre de votre billet",

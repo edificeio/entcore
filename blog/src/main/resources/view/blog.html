@@ -11,37 +11,49 @@
 			<h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1>
 			<hr>
 			<nav class="vertical">
-				<section data-ng-class="{'fixed-block':true, 'height-one':true, 'box':true, 'row':true, 'selected':isSelected([[blog.id]])}" data-ng-repeat="blog in blogs">
-					<div class="four cell fixed">
-						<div class="fluid twelve cell avatar">
-							<img src="{{#static}}img/blog.png{{/static}}"/>
+				<div data-ng-repeat="blog in blogs">
+					<section data-ng-class="{'fixed-block':true, 'cell':true,
+							 'height-one':true, 'box':true, 'row':true, 
+							 'selected':isSelected([[blog.id]])}">
+						<div class="four cell fixed">
+							<div class="fluid twelve cell avatar">
+								<img src="{{#static}}img/blog.png{{/static}}"/>
+							</div>
 						</div>
-					</div>
-					<div class="eight cell fixed right-magnet">
-						<div class="row">
-							<a><h3 data-ng-click="displayBlog([[blog.id]])">[[blog.title]]</h3></a>
+						<div class="eight cell fixed right-magnet text-container">
+							<div class="row">
+								<h3 data-ng-click="displayBlog([[blog.id]])">[[blog.title]]</h3>
+							</div>
+							<div class="row">
+								<h4 data-ng-click="displayBlog([[blog.id]])">{{#i18n}}blog.by{{/i18n}} [[blog.author]]</h4>
+							</div>
 						</div>
-						<div class="row">
-							<h4 data-ng-click="displayBlog([[blog.id]])">{{#i18n}}blog.by{{/i18n}} [[blog.author]]</h4>
-						</div>
-					</div>
-				</section>
-				<h5><a data-ng-click="createBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+					</section>
+					<a data-ng-click="showEditBlog()">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
+				</div>
+				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
 		</div>
 		<div class="eight cell">
 			<nav class="contextual-buttons row">
 				<div class="action-buttons">
-					<a data-ng-click="showCreatePost()" class="button"><i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}</a>
+					<a data-ng-click="showCreatePost()" class="button" data-ng-disabled="isDisabled()">
+						<i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}
+					</a>
 				</div>
 			</nav>
 			<hr>
 			<article class="text-container row">
-				<section data-ng-include="createPostPath" class="text-container"></section>
-				<section data-ng-repeat="post in currentBlog.posts">
-					<h2>[[post.title]]</h2>
-					<h5>{{#i18n}}blog.by{{/i18n}} [[post.author]]</h5>
-					<p>[[post.content]]</p>
+				<section data-ng-include="creationFormPath" class="text-container"></section>
+				<section data-ng-repeat="post in currentBlog.posts" class="row">
+					<div class="row">
+						<h2 class="seven cell">[[post.title]]</h2>
+						<a class="button right-magnet" data-ng-click="showEditPost([[post.id]])">MODIFIER</a>
+						<a class="button right-magnet" data-ng-click="deletePost([[post.id]])">SUPPRIMER</a>
+					</div>
+					<h5 class="row">{{#i18n}}blog.by{{/i18n}} [[post.author]]</h5>
+					<p class="row">[[post.content]]</p>
+					<div class="row"><a class="button" data-ng-click="commentPost([[post.id]])">COMMENTER</a></div>
 					<hr class="solid">
 				</section>
 			</article>

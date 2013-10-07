@@ -1,4 +1,4 @@
-[
+{
 	"id": "234",
 	"title":"Mon autre blog",
 	"author":"Alexandra Achelous",
@@ -7,4 +7,4 @@
 		{"id": "2341","title":"Super billet", "author":"Alexandra Achelous", "content":"blabla"},
 		{"id": "2342","title":"Autre billet", "author":"Alexandra Achelous", "content":"blablabli"}
 	]
-]
+}
