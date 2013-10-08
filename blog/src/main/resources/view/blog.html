@@ -29,9 +29,9 @@
 							</div>
 						</div>
 					</section>
-					<a data-ng-click="showCreateEditBlog()">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
+					<a data-ng-click="showEditBlog([[blog.id]])">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
 				</div>
-				<h5><a data-ng-click="showCreateEditBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
 		</div>
 		<div class="eight cell">
@@ -43,13 +43,14 @@
 				</div>
 			</nav>
 			<hr>
-			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.new.blog{{/i18n}}</h3>
+			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
+			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
 			<article class="text-container row">
 				<section data-ng-include="currentView.path" class="text-container"></section>
 				<section data-ng-repeat="post in currentBlog.posts" class="row">
 					<div class="row">
 						<h2 class="seven cell">[[post.title]]</h2>
-						<a class="button right-magnet" data-ng-click="showEditPost([[post.id]])">{{#i18n}}blog.edit.post{{/i18n}}</a>
+						<a class="button right-magnet" data-ng-click="showEditPost([[post.id]])" data-ng-disabled="isCurrentView('editPost')">{{#i18n}}blog.edit.post{{/i18n}}</a>
 						<a class="button right-magnet" data-ng-click="deletePost([[post.id]])">{{#i18n}}blog.delete.post{{/i18n}}</a>
 					</div>
 					<div class="row"><hr></div>

@@ -1,0 +1,11 @@
+<form data-ng-submit="createBlog()" class="row">
+	<div class="row">
+		<img src="public/img/blog.png" class="two cell"/>
+		<input type="text" class="nine cell right-magnet" data-ng-model="dataToEdit.title" value=""/>
+	</div>
+	<div class="row">
+		<input type="submit" class="button right-magnet" value="Valider">
+		<input type="submit" class="button right-magnet cancel" data-ng-click="displayBlog([[dataToEdit.id]])" value="Annuler">
+		<div class="clear"></div>
+	</div>
+</form>
