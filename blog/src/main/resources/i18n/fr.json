@@ -3,7 +3,13 @@
 	"blog.create.blog": "Créer un blog",
 	"blog.edit.blog": "Modifier le blog",
 	"blog.create.post": "CRÉER",
+	"blog.new.blog": "NOUVEAU BLOG",
+	"blog.edit.post": "MODIFIER",
+	"blog.delete.post": "SUPPRIMER",
+	"blog.comment.post": "COMMENTER",
 	"blog.by": "Par",
+	"blog.on.date": "le",
+	"blog.on.blog": "sur le blog",
 	"blog.post.title-helper": "Entrez le titre de votre billet",
 	"blog.post.content-helper": "Entrez le contenu de votre billet",
 	"blog.submit": "Valider"
