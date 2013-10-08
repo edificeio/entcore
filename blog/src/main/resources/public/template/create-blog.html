@@ -1,11 +1,11 @@
 <form data-ng-submit="createBlog()" class="row">
 	<div class="row">
 		<img src="public/img/blog.png" class="two cell"/>
-		<input type="text" class="eight cell right-magnet" data-ng-model="newPostTitle" placeholder="Entrez le titre de votre blog"/>
+		<input type="text" class="nine cell right-magnet" data-ng-model="newPostTitle" placeholder="Entrez le titre de votre blog"/>
 	</div>
 	<div class="row">
 		<input type="submit" class="button right-magnet" value="Valider">
-		<input type="submit" class="button right-magnet cancel" value="Annuler">
+		<input type="submit" class="button right-magnet cancel" data-ng-click="displayLastPosts()" value="Annuler">
 		<div class="clear"></div>
 	</div>
 </form>

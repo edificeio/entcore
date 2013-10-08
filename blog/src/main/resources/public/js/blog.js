@@ -18,14 +18,15 @@ var views = {
 	"commentBlog":{
 		"path":"public/template/comment-post.html",
 		"allow":true
-	}
+	},
+	"lastPosts":{},
+	"displayBlog":{}
 }
 
 function Blog($scope, http, lang, date, notify){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
 
-	$scope.creationFormPath = '';
 	$scope.mainContentPath = '';
 	$scope.currentView = '';
 
@@ -35,19 +36,21 @@ function Blog($scope, http, lang, date, notify){
 			$scope.$apply();
 		});
 
-	http.get('public/mock/mock-last-posts.json')
+	$scope.displayLastPosts = function(){
+		http.get('public/mock/mock-last-posts.json')
 		.done(function(data){
 			$scope.currentBlog = data;
-			$scope.currentView= views.createPost;
+			$scope.currentView= views.lastPosts;
 			$scope.$apply();
 		});
-
+	}
+	$scope.displayLastPosts();
+	
 	$scope.displayBlog = function(id){
 		http.get('public/mock/mock-blog-' + id + '.json')
 			.done(function(data){
 				$scope.currentBlog = data;
-				$scope.creationFormPath = '';
-				$scope.currentView= '';
+				$scope.currentView= views.displayBlog;
 				$scope.$apply();
 			});
 	};
@@ -55,18 +58,19 @@ function Blog($scope, http, lang, date, notify){
 	$scope.isSelected = function(id){
 		return (id == $scope.currentBlog.id);
 	}
-	$scope.isDisabled = function(){
-		return ($scope.currentView === views.createPost);
+	$scope.isVisible = function(){
+		return ($scope.currentView !== views.createBlog && $scope.currentView !== views.lastPosts);
+	}
+	$scope.isCurrentView = function(name){
+		return ($scope.currentView == views[name]);
 	}
 
 	$scope.showCreatePost = function(){
 		$scope.currentView = views.createPost;
-		$scope.creationFormPath = $scope.currentView.path;
 	}
-	$scope.showCreateBlog= function(){
+	$scope.showCreateEditBlog= function(){
 		$scope.currentBlog = '';
-		$scope.currentView = views.createBlog,
-		$scope.creationFormPath = $scope.currentView.path;
+		$scope.currentView = views.createBlog;
 	}
 
 	$scope.createPost = function(){};

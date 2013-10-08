@@ -4,7 +4,11 @@
 	"author":"Diane Wakim",
 	"avatar":"blog",
 	"posts":[
-		{"id": "1231","title":"Premier billet", "author":"Alexandra Achelous", "content":"blabla"},
-		{"id": "1232","title":"Deuxieme billet", "author":"Alexandra Achelous", "content":"blablabli"}
+		{"id": "1231","title":"Premier billet", 
+			"author":"Alexandra Achelous", "content":"blabla", 
+			"commentable":true, "date":"Jeudi 29 Mars, 22h01"},
+		{"id": "1232","title":"Deuxieme billet", 
+			"author":"Alexandra Achelous", "content":"blablabli", 
+			"commentable":true, "date":"Jeudi 29 Mars, 22h01"}
 	]
 }

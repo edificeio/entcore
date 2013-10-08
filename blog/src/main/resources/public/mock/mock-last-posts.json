@@ -1,9 +1,17 @@
 {
 	"posts": 
-		[
-		{"id": "1231","title":"Premier billet", "author":"Alexandra Achelous", "content":"blabla"},
-		{"id": "1232","title":"Deuxieme billet", "author":"Alexandra Achelous", "content":"blablabli"},
-		{"id": "2341","title":"Super billet", "author":"Alexandra Achelous", "content":"blabla"},
-		{"id": "2342","title":"Autre billet", "author":"Alexandra Achelous", "content":"blablabli"}
+	[
+		{"id": "1231","title":"Premier billet", "author":"Alexandra Achelous", 
+			"content":"blabla", "commentable":true, "blogid":"123", 
+			"blogname":"Mon premier blog", "date":"Jeudi 29 Mars, 22h01"},
+		{"id": "2341","title":"Super billet", "author":"Alexandra Achelous", 
+			"content":"blabla", "commentable":false, "blogid":"234", 
+			"blogname":"Mon autre blog", "date":"Jeudi 29 Mars, 22h01"},
+		{"id": "1232","title":"Deuxieme billet", "author":"Alexandra Achelous", 
+			"content":"blablabli", "commentable":true, "blogid":"123", 
+			"blogname":"Mon premier blog", "date":"Jeudi 29 Mars, 22h01"},
+		{"id": "2342","title":"Autre billet avec un titre très très long pour tester la longueur des titres", "author":"Alexandra Achelous", 
+			"content":"blablabli", "commentable":false, "blogid":"234", 
+			"blogname":"Mon autre blog", "date":"Jeudi 29 Mars, 22h01"}
 	]
 }

@@ -8,7 +8,7 @@
 	</head>
 	<body data-ng-controller="Blog">
 		<div class="four cell">
-			<h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1>
+			<a data-ng-click="displayLastPosts()"><h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1></a>
 			<hr>
 			<nav class="vertical">
 				<div data-ng-repeat="blog in blogs">
@@ -16,8 +16,8 @@
 							 'height-one':true, 'box':true, 'row':true, 
 							 'selected':isSelected([[blog.id]])}">
 						<div class="four cell fixed">
-							<div class="fluid twelve cell avatar">
-								<img src="{{#static}}img/blog.png{{/static}}"/>
+							<div class="fluid twelve cell">
+								<img src="{{#static}}img/blog.png{{/static}}">
 							</div>
 						</div>
 						<div class="eight cell fixed right-magnet text-container">
@@ -29,31 +29,38 @@
 							</div>
 						</div>
 					</section>
-					<a data-ng-click="showEditBlog()">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
+					<a data-ng-click="showCreateEditBlog()">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
 				</div>
-				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+				<h5><a data-ng-click="showCreateEditBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
 		</div>
 		<div class="eight cell">
 			<nav class="contextual-buttons row">
 				<div class="action-buttons">
-					<a data-ng-click="showCreatePost()" class="button" data-ng-disabled="isDisabled()">
+					<a data-ng-click="showCreatePost()" class="button" data-ng-disabled="isCurrentView('createPost')" data-ng-if="isVisible()">
 						<i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}
 					</a>
 				</div>
 			</nav>
 			<hr>
+			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.new.blog{{/i18n}}</h3>
 			<article class="text-container row">
-				<section data-ng-include="creationFormPath" class="text-container"></section>
+				<section data-ng-include="currentView.path" class="text-container"></section>
 				<section data-ng-repeat="post in currentBlog.posts" class="row">
 					<div class="row">
 						<h2 class="seven cell">[[post.title]]</h2>
-						<a class="button right-magnet" data-ng-click="showEditPost([[post.id]])">MODIFIER</a>
-						<a class="button right-magnet" data-ng-click="deletePost([[post.id]])">SUPPRIMER</a>
+						<a class="button right-magnet" data-ng-click="showEditPost([[post.id]])">{{#i18n}}blog.edit.post{{/i18n}}</a>
+						<a class="button right-magnet" data-ng-click="deletePost([[post.id]])">{{#i18n}}blog.delete.post{{/i18n}}</a>
 					</div>
-					<h5 class="row">{{#i18n}}blog.by{{/i18n}} [[post.author]]</h5>
+					<div class="row"><hr></div>
+					<h5 class="row">
+						{{#i18n}}blog.by{{/i18n}} [[post.author]] {{#i18n}}blog.on.date{{/i18n}} [[post.date]]
+						<span data-ng-if="isCurrentView('lastPosts')">
+							{{#i18n}}blog.on.blog{{/i18n}} <a data-ng-click="displayBlog([[post.blogid]])">[[post.blogname]]</a>
+						</span>
+					</h5>
 					<p class="row">[[post.content]]</p>
-					<div class="row"><a class="button" data-ng-click="commentPost([[post.id]])">COMMENTER</a></div>
+					<div class="row" data-ng-if="true"><a class="button" data-ng-click="commentPost([[post.id]])">{{#i18n}}blog.comment.post{{/i18n}}</a></div>
 					<hr class="solid">
 				</section>
 			</article>
