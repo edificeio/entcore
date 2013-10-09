@@ -3,7 +3,7 @@ var loader = (function(){
 		'portal': [
 			{ path: 'jquery-1.9.1.js', async: true },
 			{ path: 'angular.min.js', async: true },
-			{ path: 'angular-sanitize-1.0.1.js', async: true },
+			{ path: 'angular-sanitize.min.js', async: true },
 			{ path: 'one-app.js', async: true },
 			{ path: 'one.js', async: true },
 			{ path: 'ui.js', async: true }],
@@ -11,7 +11,7 @@ var loader = (function(){
 			{ path: 'jquery-1.9.1.js', async: true },
 			{ path: 'iframe.js', async: true},
 			{ path: 'angular.min.js', async: true },
-			{ path: 'angular-sanitize-1.0.1.js', async: true },
+			{ path: 'angular-sanitize.min.js', async: true },
 			{ path: 'one-app.js', async: true },
 			{ path: 'one.js', async: true },
 			{ path: 'ui.js', async: true }]
