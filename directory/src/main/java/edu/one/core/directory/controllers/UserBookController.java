@@ -1,4 +1,4 @@
-package edu.one.core.userbook.controllers;
+package edu.one.core.directory.controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import edu.one.core.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -40,6 +41,7 @@ public class UserBookController extends Controller {
 	public UserBookController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
+			pathPrefix = "/userbook";
 			this.neo = new Neo(Server.getEventBus(vertx),log);
 			this.config = config;
 			userBookData= config.getObject("user-book-data");
@@ -51,17 +53,17 @@ public class UserBookController extends Controller {
 			notification = new NotificationHelper(eb, container);
 		}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void monCompte(HttpServerRequest request) {
 		renderView(request);
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request);
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -94,7 +96,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void person(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
@@ -148,7 +150,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -175,7 +177,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void editUserBookInfo(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
@@ -222,7 +224,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void editUserInfo(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
@@ -256,7 +258,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void setVisibility(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
@@ -274,7 +276,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
-	@SecuredAction("userbook.authent")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void proxyDocument(final HttpServerRequest request) {
 		String defaultImg = request.params().get("userbook-dimg");
 		JsonObject defaultContent = null;

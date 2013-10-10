@@ -41,14 +41,13 @@
       }
     },
 		{ "name" : "edu.one.core~dataDictionary~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~directory~1.1-SNAPSHOT" },
+		{ "name" : "edu.one.core~directory~1.1-SNAPSHOT",
+          "config" : {
+			"host" : "http://localhost:8080"
+          }
+        },
 		{ "name" : "edu.one.core~history~1.1-SNAPSHOT" },
 		{ "name" : "edu.one.core~sync~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~userBook~1.1-SNAPSHOT",
-      "config" : {
-        "host" : "http://localhost:8080"
-      }
-    },
     { "name" : "edu.one.core~workspace~1.1-SNAPSHOT",
       "config" : {
         "host" : "http://localhost:8080",

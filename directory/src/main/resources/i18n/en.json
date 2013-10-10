@@ -2,5 +2,10 @@
 	"directory.admin.title": "Directory",
 	"directory.admin.teacher":"Teacher",
 	"directory.admin.student":"Student",
-	"directory.admin.user.created" : "User created"
+	"directory.admin.user.created" : "User created",
+    "userBook.title": "My account",
+    "userBook.header": "My account",
+    "userBook.interests": "My interests",
+    "userBook.health": "Health",
+    "userBook.search" : "Search"
 }

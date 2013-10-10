@@ -133,15 +133,6 @@ project(':timeline') {
   }
 }
 
-project(':userBook') {
-  dependencies {
-    provided project(':processor')
-    compile project(':infra')
-    compile project(':dataDictionary')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
-  }
-}
-
 project(':workspace') {
   dependencies {
     provided project(':processor')

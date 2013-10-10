@@ -1,1 +1,1 @@
-include 'infra', 'admin', 'auth', 'dataDictionary', 'sync', 'directory', 'history', 'userBook', 'workspace', 'processor', 'app-registry', 'session', 'communication', 'timeline', 'portal'
+include 'infra', 'admin', 'auth', 'dataDictionary', 'sync', 'directory', 'history', 'workspace', 'processor', 'app-registry', 'session', 'communication', 'timeline', 'portal'
