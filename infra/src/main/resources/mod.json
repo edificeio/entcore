@@ -19,61 +19,120 @@
     }
   },
 	"one-modules": [
-		{ "name" : "edu.one.core~auth~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~admin~1.1-SNAPSHOT" },
+		{ "name" : "edu.one.core~auth~1.1-SNAPSHOT",
+      "config" : {
+        "authenticationServer" : {
+          "loginURL" : "http://localhost:8080/auth/login",
+          "logoutURL" : "http://localhost:8080/auth/logout",
+          "loginCallback" : "http://localhost:8080",
+          "logoutCallback" : "http://localhost:8080"
+        },
+        "host" : "http://localhost:8080"
+      }
+    },
+		{ "name" : "edu.one.core~admin~1.1-SNAPSHOT",
+      "config" : {
+        "one-apps": [
+                {"name" : "directory","url":"http://localhost:8080/directory"},
+                {"name" : "history","url":"http://localhost:8080/history"},
+                {"name" : "appRegistry","url":"http://localhost:8080/appregistry"},
+                {"name" : "communication","url":"http://localhost:8080/communication"}
+        ]
+      }
+    },
 		{ "name" : "edu.one.core~dataDictionary~1.1-SNAPSHOT" },
 		{ "name" : "edu.one.core~directory~1.1-SNAPSHOT" },
 		{ "name" : "edu.one.core~history~1.1-SNAPSHOT" },
 		{ "name" : "edu.one.core~sync~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~userBook~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~workspace~1.1-SNAPSHOT" },
+		{ "name" : "edu.one.core~userBook~1.1-SNAPSHOT",
+      "config" : {
+        "host" : "http://localhost:8080"
+      }
+    },
+    { "name" : "edu.one.core~workspace~1.1-SNAPSHOT",
+      "config" : {
+        "host" : "http://localhost:8080",
+        "userbook-host" : "http://localhost:8080",
+        "app-name" : "Espace documentaire",
+        "app-address" : "http://localhost:8080/workspace/workspace"
+      }
+    },
 		{ "name" : "edu.one.core~session~1.1-SNAPSHOT" },
 		{ "name" : "edu.one.core~communication~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~timeline~1.1-SNAPSHOT" },
-		{ "name" : "edu.one.core~portal~1.1-SNAPSHOT" }
-	],
-	"external-modules" : [
-		{
-			"name" : "io.vertx~mod-mongo-persistor~2.0.0-final-WSE",
-			"config" : {
-				"address": "wse.mongodb.persistor",
-				"host": "localhost",
-				"port": 27017,
-				"db_name": "one_gridfs",
-				"pool_size": 10
-			}
-		},{
-			"name" : "com.wse~gridfs-persistor~1.0.0",
-			"config" : {
-				"address": "wse.gridfs.persistor",
-				"host": "localhost",
-				"port": 27017,
-				"db_name": "one_gridfs",
-				"pool_size": 10
-			}
-		},{
-			"name" : "io.vertx~mod-mailer~2.0.0-final",
-			"config" : {
-				"address" : "wse.email"
-			}
-		},{
+    { "name" : "edu.one.core~timeline~1.1-SNAPSHOT" },
+    { "name" : "edu.one.core~portal~1.1-SNAPSHOT",
+      "config" : {
+        "urls" : {
+          "timeline" : "http://localhost:8080/timeline",
+          "userbook" : "http://localhost:8080/userbook",
+          "auth" : "http://localhost:8080/auth",
+          "portal" : "http://localhost:8080",
+          "logoutCallback" : "http%3A%2F%2Flocalhost%3A8080"
+        }
+      }
+    }
+  ],
+  "external-modules" : [
+    {
+      "name" : "io.vertx~mod-mongo-persistor~2.0.0-final-WSE",
+      "config" : {
+        "address": "wse.mongodb.persistor",
+        "host": "localhost",
+        "port": 27017,
+        "db_name": "one_gridfs",
+        "pool_size": 10
+      }
+    },{
+      "name" : "com.wse~gridfs-persistor~1.0.0",
+      "config" : {
+        "address": "wse.gridfs.persistor",
+        "host": "localhost",
+        "port": 27017,
+        "db_name": "one_gridfs",
+        "pool_size": 10
+      }
+    },{
+      "name" : "io.vertx~mod-mailer~2.0.0-final",
+      "config" : {
+        "address" : "wse.email"
+      }
+    },{
+      "name" : "com.wse~http-proxy~1.0-SNAPSHOT",
+      "config" : {
+        "port" : 8080,
+        "proxies" : [
+          { "location" : "/", "proxy_pass": "http://localhost:8017" },
+          { "location" : "/infra", "proxy_pass": "http://localhost:8001" },
+          { "location" : "/directory", "proxy_pass": "http://localhost:8003" },
+          { "location" : "/history", "proxy_pass": "http://localhost:8006" },
+          { "location" : "/admin", "proxy_pass": "http://localhost:8008" },
+          { "location" : "/auth", "proxy_pass": "http://localhost:8009" },
+          { "location" : "/workspace", "proxy_pass": "http://localhost:8011" },
+          { "location" : "/appregistry", "proxy_pass": "http://localhost:8012" },
+          { "location" : "/communication", "proxy_pass": "http://localhost:8015" },
+          { "location" : "/timeline", "proxy_pass": "http://localhost:8016" },
+          { "location" : "/blog", "proxy_pass": "http://localhost:8018" },
+          { "location" : "/userbook", "proxy_pass": "http://localhost:8101" }
+        ]
+      }
+    },{
       "name" : "com.wse.tracer~tracer~1.0.0",
       "config" : {
         "logger-name": "one.tracer",
-        "log-path": "./data/dev/",
+        "log-path" : "/opt/one/history/",
         "address": "log.address"
       }
     },{
-			"name" : "edu.one~wordpress~1.0.0",
-			"config" : {
-				"bus-address":"wpconnector.address",
-				"host":"localhost",
-				"wp-plugin-url":"/wp_one/?api=1&method=one_",
-				"table-path":"table.json",
-				"log-file":"connector.log",
-				"token":"blabla",
-				"profile-groups" : { "PERSEDUCNAT" : "730", "PERSRELELEVE" : "729", "ELEVE" : "728" }
-			}
-		}
-	]
+      "name" : "edu.one~wordpress~1.0.0",
+      "config" : {
+        "bus-address":"wpconnector.address",
+        "host":"one",
+        "wp-plugin-url":"/wp_one/?api=1&method=one_",
+        "table-path":"table.json",
+        "log-file":"connector.log",
+        "token":"blabla",
+        "profile-groups" : { "PERSEDUCNAT" : "730", "PERSRELELEVE" : "729", "ELEVE" : "728" }
+      }
+    }
+  ]
 }
