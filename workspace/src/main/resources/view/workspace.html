@@ -13,11 +13,56 @@
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
 
+
 		<script type="text/javascript" src="{{#infra}}js/iframe.js{{/infra}}"></script>
+		<script type="text/ng-template" id="folder-content">
+			<a data-ng-class="{ selected: openedFolder === value }" data-ng-click="openFolder(value)">[[key]]</a>
+			<ul>
+				<li data-ng-repeat="(key, value) in value"
+					data-ng-include="'folder-content'"
+					data-ng-class="{ selected: containsCurrentFolder(value) }"
+				></li>
+			</ul>
+		</script>
 	</head>
-	<body>
+	<body data-ng-controller="Workspace">
+		<div class="row">
+			<section class="four cell">
+				<h1><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</h1>
+				<nav class="vertical">
+					<ul>
+						<li data-ng-class="{ selected: containsCurrentFolder(folders.myDocuments) }">
+							<a data-ng-class="{ selected: openedFolder === folders.myDocuments }" data-ng-click="openFolder(folders.myDocuments)">
+								{{#i18n}}workspace.documents{{/i18n}}
+							</a>
+							<ul>
+								<li
+									data-ng-include="'folder-content'"
+									data-ng-repeat="(key, value) in folders.myDocuments"
+									data-ng-class="{ selected: containsCurrentFolder(value) }"
+									></li>
+							</ul>
+						</li>
+						<li>
+							<a>
+								{{#i18n}}workspace.shared.documents{{/i18n}}
+							</a>
+						</li>
+						<li>
+							<a>
+								{{#i18n}}workspace.rack{{/i18n}}
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</section>
+			<section class="eight cell">
+
+			</section>
+		</div>
 		<section class="lightbox-backdrop"></section>
 		<div class="row" id="main">
 			<section class="four cell">

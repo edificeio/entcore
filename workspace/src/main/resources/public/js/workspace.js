@@ -1,3 +1,52 @@
+function Workspace($scope, http){
+	$scope.folders = {
+		myDocuments: {},
+		rack: {},
+		trash: {},
+		shared: {}
+	};
+	$scope.openedFolder = $scope.folders.myDocuments;
+	$scope.openFolder = function(folder){
+		$scope.openedFolder = folder;
+	}
+
+	$scope.containsCurrentFolder = function(folder){
+		var checkSubFolders = function(currentFolder){
+			if($scope.openedFolder === currentFolder){
+				return true;
+			}
+
+			for(var subFolder in currentFolder){
+				if(checkSubFolders(currentFolder[subFolder])){
+					return true;
+				}
+			}
+		}
+
+		return checkSubFolders(folder);
+	}
+
+	var getFolders = function(tree, params){
+		http.get('folders', params).done(function(folders){
+			folders.forEach(function(folder){
+				var subFolders = folder.split('_');
+				var cursor = tree;
+				subFolders.forEach(function(subFolder){
+					if(cursor[subFolder] === undefined){
+						cursor[subFolder] = {};
+					}
+					cursor = cursor[subFolder];
+				})
+			});
+			$scope.$apply()
+		});
+	};
+
+	getFolders($scope.folders.myDocuments, { filter: 'owned' });
+	getFolders($scope.folders.shared, { filter: 'shared' });
+}
+
+
 var tools = (function(){
 	var myId;
 
@@ -235,7 +284,6 @@ var navigation = (function(){
 
 	var updater = {
 		redirect: function(action){
-			$('nav.vertical a, nav.vertical li').removeClass('selected');
 			var current = $('nav.vertical a[href="' + action + '"]');
 			current.addClass('selected');
 			current.parent().addClass('selected');
