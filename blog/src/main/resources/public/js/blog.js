@@ -15,10 +15,6 @@ var views = {
 		"path":"public/template/edit-post.html",
 		"allow":true
 	},
-	"commentBlog":{
-		"path":"public/template/comment-post.html",
-		"allow":true
-	},
 	"lastPosts":{},
 	"displayBlog":{}
 }
@@ -26,10 +22,11 @@ var views = {
 function Blog($scope, http, lang, date, notify){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
+	$scope.currentPostId = '';
 	$scope.dataToEdit = {};
 
-	$scope.mainContentPath = '';
 	$scope.currentView = '';
+	$scope.commentFormPath = '';
 
 	http.get('public/mock/mock-blogs-list.json')
 		.done(function(data){
@@ -99,6 +96,13 @@ function Blog($scope, http, lang, date, notify){
 				$scope.currentView= views.editPost;
 				$scope.$apply();
 			});
+	}
+	$scope.showCommentPost = function(id){
+		$scope.commentFormPath = "public/template/comment-post.html";
+		$scope.currentPostId = id;
+	}
+	$scope.hideCommentForm = function(){
+		$scope.commentFormPath = "";
 	}
 
 	$scope.createPost = function(){};

@@ -61,7 +61,13 @@
 						</span>
 					</h5>
 					<p class="row">[[post.content]]</p>
-					<div class="row" data-ng-if="true"><a class="button" data-ng-click="commentPost([[post.id]])">{{#i18n}}blog.comment.post{{/i18n}}</a></div>
+					<div class="row" data-ng-if="post.commentable">
+						<a class="button" data-ng-click="showCommentPost([[post.id]])" 
+						   data-ng-disabled="(commentFormPath !== '') && (currentPostId == [[post.id]])">
+							{{#i18n}}blog.comment.post{{/i18n}}
+						</a>
+						<div data-ng-include="commentFormPath" data-ng-if="currentPostId == [[post.id]]"></div>
+					</div>
 					<hr class="solid">
 				</section>
 			</article>
