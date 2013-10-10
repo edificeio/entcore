@@ -415,16 +415,21 @@ hr.solid{
 }
 
 nav.vertical{
-  i{
-    margin-right: 5px;
-  }
-  ul{
+	h2{
+		color: #000;
+		text-transform: uppercase;
+		font-size: 18px;
+	}
+	i{
+		margin-right: 5px;
+	}
+	ul{
 		margin-top: 0;
 		width: 99%;
 		padding-left: 0;
 
 
-    li{
+	li{
 		padding: 0;
 		em{
 			color: @medium-grey;
@@ -773,7 +778,25 @@ table{
 			overflow: hidden
 		}
 	}
+	tr.new-element{
+		font-weight: bold;
+		background: @ultra-light-grey;
+	}
+	tr.new-element.checked{
+		background: @light-blue;
+	}
+	.close-slide{
+		max-height: 1px;
+	}
+	.open-slide{
+		max-height: 500px; /* approximate max height */
+
+		transition-property: all;
+		transition-duration: .5s;
+		transition-timing-function: cubic-bezier(0, 1, 0.3, 1);
+	}
 	tr{
+
 		border-top: 1px solid @medium-grey;
 		background: transparent;
 		.run-transition(background);
