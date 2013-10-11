@@ -1,5 +1,3 @@
-
-
 var lang = (function(){
 	var bundle = {};
 	$.ajax({url: 'i18n', async: false})

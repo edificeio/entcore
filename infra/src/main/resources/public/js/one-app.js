@@ -203,6 +203,9 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			loader.syncLoad('underscore');
 		}
 		return _;
+	})
+	.factory('ui', function(){
+		return ui;
 	});
 
 //directives
@@ -274,5 +277,37 @@ oneModule.directive('enhancedSelect', function($compile) {
 				</div>\
 				</div>\
 			</div>'
+	};
+});
+
+oneModule.directive('translate', function($compile) {
+	return {
+		restrict: 'A',
+		scope:{
+			key: '&'
+		},
+		compile: function compile($element, $attributes, transclude) {
+			$element.text(lang.translate($attributes.key));
+			return {
+				pre: function preLink(scope, $element, $attributes, controller) {},
+				post: function postLink(scope, $element, $attributes, controller) {}
+			};
+		}
+	};
+});
+
+oneModule.directive('translateAttr', function($compile) {
+	return {
+		restrict: 'A',
+		scope:{
+			translateAttr: '&'
+		},
+		compile: function compile($element, $attributes, transclude) {
+			$element.attr($attributes.translateAttr, lang.translate($attributes[$attributes.translateAttr]));
+			return {
+				pre: function preLink(scope, $element, $attributes, controller) {},
+				post: function postLink(scope, $element, $attributes, controller) {}
+			};
+		}
 	};
 });
