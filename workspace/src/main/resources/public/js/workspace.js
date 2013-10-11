@@ -1,18 +1,203 @@
-function Workspace($scope, http){
-	$scope.folders = {
-		myDocuments: {},
-		rack: {},
-		trash: {},
-		shared: {}
+function Workspace($scope, http, lang, date, ui){
+	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
+	$scope.myId = '';
+
+	http.get('/userbook/api/person').done(function(data){
+		$scope.myId = data.result[0].id;
+	});
+
+	$scope.documentPath = function(document){
+		if($scope.currentTree.name === 'rack'){
+			return '/workspace/rack/' + document._id;
+		}
+		else{
+			return '/workspace/document/' + document._id;
+		}
+	}
+
+	function formatDocuments(documents, callback){
+		var findAuthorizations = function(authorizations, owner){
+			if(!(authorizations instanceof Array) || owner === $scope.myId){
+				return {
+					comment: true,
+					share: true
+				}
+			}
+
+			var myRights = {
+				comment: false,
+				share: false
+			}
+
+			authorizations.forEach(function(auth){
+				if(auth.userId !== $scope.myId){
+					return;
+				}
+
+				for(var property in auth){
+					if(property.indexOf('comment') !== -1){
+						myRights.comment = true;
+					}
+				}
+			})
+
+			return myRights;
+		}
+
+		documents.forEach(function(item){
+			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
+			var fileNameSplit = item.metadata.filename.split('.');
+			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
+
+			if(item.from){
+				One.get('/userbook/api/person?id=' + item.from)
+					.done(function(fromData){
+						item.ownerName = fromData.result[0].displayName;
+						callback(documents);
+					});
+			}
+
+			item.myRights = findAuthorizations(item.shared, item.owner);
+		})
+
+		callback(documents);
+	}
+
+	function folderToString(tree, folder, key){
+		var folderString = function(cursor, key){
+			if(folder === cursor){
+				return key;
+			}
+
+			for(var subFolder in  cursor){
+				var folderPath = folderString(cursor[subFolder], subFolder);
+				if(folderPath && key !== tree){
+					return key + '_' + folderPath;
+				}
+				else if(folderPath && key === tree){
+					return folderPath;
+				}
+			}
+		};
+		if(tree === key){
+			return '';
+		}
+		return '/' + folderString($scope.folders[tree], tree)
+	}
+
+	$scope.openNewDocumentView = function(){
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
 	};
-	$scope.openedFolder = $scope.folders.myDocuments;
-	$scope.openFolder = function(folder){
-		$scope.openedFolder = folder;
+
+	function currentTree(){
+		var trees = [{
+			name: 'documents',
+			path: 'documents',
+			filter: 'owner',
+			buttons: [
+				{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true },
+				{ text: 'workspace.send.rack', call: 'sendRack' },
+				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
+				{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
+				{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+			]
+		}, {
+			name: 'rack',
+			path: 'rack/documents',
+			buttons: [
+				{ text: 'workspace.send.rack', call: 'sendRack' },
+				{ text: 'workspace.move.racktodocs', call: 'copy', url: 'rack/documents/copy', contextual: true },
+				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
+			]
+		}, {
+			name: 'trash',
+			path: 'documents/Trash',
+			buttons: [
+			{ text: 'workspace.move.trash', call: 'remove', contextual: true },
+			{ text: 'workspace.trash.restore', call: 'restore', contextual: true }
+			]
+		}, {
+			name: 'shared',
+			filter: 'shared',
+			path: 'documents',
+			buttons: [
+				{ text: 'workspace.send.rack', call: 'sendRack' },
+				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
+				{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
+				{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+			]
+		}];
+
+		var currentTree = '';
+		trees.forEach(function(tree){
+			if($scope.containsCurrentFolder($scope.folders[tree.name])){
+				currentTree = tree;
+			}
+		});
+		$scope.currentTree = currentTree;
+		return currentTree;
+	};
+	$scope.currentTree = currentTree;
+
+	$scope.selectedDocuments = function(){
+		return _.where($scope.openedFolder.content, {selected: true});
+	}
+
+	$scope.views = {
+		lightbox: {
+			createFile: 'public/template/create-file.html'
+		},
+		documents: {
+			list: 'public/template/list-view.html',
+			icons: 'public/template/icons-view.html'
+		}
+	};
+
+	$scope.currentViews = {
+		lightbox: '',
+		documents: $scope.views.documents.list
+	};
+
+	$scope.switchView = function(view, value){
+		$scope.currentViews[view] = $scope.views[view][value];
+	}
+
+	$scope.openedFolder = {
+		folder: $scope.folders.documents,
+		content: {}
+	};
+
+	$scope.openFolder = function(folder, folderName){
+		$scope.openedFolder.folder = folder;
+		$scope.openedFolder.name = folderName;
+		var tree = currentTree();
+		http.get(tree.path +  folderToString(tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
+			formatDocuments(documents, function(result){
+				 $scope.openedFolder.content = result;
+				$scope.$apply();
+			});
+		})
+	}
+
+	$scope.translate = function(key){
+		return lang.translate(key);
+	};
+
+	$scope.longDate = function(dateString){
+		if(!dateString){
+			return '';
+		}
+		return date.format(dateString, 'D MMMM')
+	}
+
+	$scope.toggleComments = function(document){
+		document.showComments = !document.showComments;
 	}
 
 	$scope.containsCurrentFolder = function(folder){
 		var checkSubFolders = function(currentFolder){
-			if($scope.openedFolder === currentFolder){
+			if($scope.openedFolder.folder === currentFolder){
 				return true;
 			}
 
@@ -24,11 +209,14 @@ function Workspace($scope, http){
 		}
 
 		return checkSubFolders(folder);
-	}
+	};
 
 	var getFolders = function(tree, params){
 		http.get('folders', params).done(function(folders){
 			folders.forEach(function(folder){
+				if(folder === 'Trash'){
+					return;
+				}
 				var subFolders = folder.split('_');
 				var cursor = tree;
 				subFolders.forEach(function(subFolder){
@@ -42,7 +230,7 @@ function Workspace($scope, http){
 		});
 	};
 
-	getFolders($scope.folders.myDocuments, { filter: 'owned' });
+	getFolders($scope.folders.documents, { filter: 'owner' });
 	getFolders($scope.folders.shared, { filter: 'shared' });
 }
 
@@ -151,15 +339,15 @@ var tools = (function(){
 		},
 		formatResponse: function(response, callback){
 			response.forEach(function(item){
-				item.metadata['content-type'] = tools.roleFromFileType(item.metadata['content-type']);
+				item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 				var fileNameSplit = item.metadata.filename.split('.');
 				item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
-				if(item.metadata['content-type'] === 'img'){
+				if(item.metadata.contentType === 'img'){
 					item.thumbnail = 'document/' + item._id;
 				}
 
 				if(item.from){
-					if(item.metadata['content-type'] === 'img'){
+					if(item.metadata.contentType === 'img'){
 						item.thumbnail = 'rack/' + item._id;
 					}
 					One.get('/userbook/api/person?id=' + item.from)
@@ -619,7 +807,6 @@ var workspace = function(){
 					if(o.url.indexOf("shared") !== -1){
 						filter = 'shared';
 					}
-					$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons(filter + 'Documents')))
 
 					that.getFolders({
 						hierarchical: o.url.indexOf("hierarchical=true") != -1,

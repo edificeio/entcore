@@ -1,0 +1,22 @@
+<header>&nbsp;</header>
+<ul class="icons-view">
+	<li data-ng-repeat="(key, value) in openedFolder.folder">
+		<a>
+			<i role="folder-large" data-ng-click="openFolder(value)"></i>
+		</a>
+		<a data-ng-click="openFolder(value)">[[key]]</a>
+	</li>
+	<li data-ng-repeat="document in openedFolder.content">
+		<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]]-container">
+			<i role="[[document.metadata.contentType]]-large"  ng-if="document.metadata.contentType !== 'img'">
+			</i>
+			<div ng-if="document.metadata.contentType === 'img'">
+				<img ng-src="[[documentPath(document)]]" alt="thumbnail" />
+			</div>
+		</a>
+		<input type="checkbox" data-ng-model="document.selected" />
+		<a ng-href="[[documentPath(document)]]">[[document.name]]</a>
+		<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
+	</li>
+	<div class="clear"></div>
+</ul>

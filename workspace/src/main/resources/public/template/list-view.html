@@ -1,0 +1,50 @@
+<table class="list-view">
+	<thead>
+		<tr>
+			<th scope="col">
+				<input type="checkbox" class="selectAllCheckboxes" />
+			</th>
+			<th scope="col"></th>
+			<th scope="col" class="five" translate key="name"></th>
+			<th scope="col" class="four" translate key="owner"></th>
+			<th scope="col" class="two" translate key="modified"></th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr data-ng-repeat="(key, value) in openedFolder.folder">
+		<td></td>
+		<td><i role="folder"></i></td>
+		<td colspan="2"><strong><a data-ng-click="openFolder(value, key)">[[key]]</a></strong></td>
+		<td></td>
+	</tr>
+	<tr data-ng-repeat-start="document in openedFolder.content" ng-class="{ overline: true, checked: document.selected }">
+		<td><input type="checkbox" data-ng-model="document.selected" /></td>
+		<td><i role="[[document.metadata.contentType]]"></i></td>
+		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em>[[document.metadata.extension]]</em></td>
+		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
+		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
+	</tr>
+	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
+		<td colspan="5" class="container-cell">
+			<a call="comment" href="{{_id}}" ng-if="document.myRights.comment" class="small button cell" translate key="workspace.document.comment"></a>
+			<a href="share?id={{_id}}" ng-if="document.myRights.share" call="share" class="small button cell" translate key="workspace.share"></a>
+				<span class="cell right-magnet action-cell" ng-if="document.comments.length > 0">
+					<a ng-if="!document.showComments" data-ng-click="toggleComments(document)">
+						[[translate('workspace.document.comment.show')]] ([[document.comments.length]])
+					</a>
+					<a ng-if="document.showComments" data-ng-click="toggleComments(document)">
+						[[translate('workspace.document.comment.hide')]]
+					</a>
+				</span>
+			<h2 ng-if="document.showComments"><span translate key="workspace.comments"></span></h2>
+			<ul class="row" ng-if="document.showComments">
+				<li class="twelve cell" data-ng-repeat="comment in document.comments">
+					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+					- <em>[[longDate(comment.posted)]]</em>
+					- <span>[[comment.comment]]</span>
+				</li>
+			</ul>
+		</td>
+	</tr>
+	</tbody>
+</table>
