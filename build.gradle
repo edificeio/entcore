@@ -44,7 +44,7 @@ subprojects {
 				from "${project.name}/mods"
 			}
 		}
-		project.tasks['cleanModsDir'].doLast {
+		project.tasks['clean'].doLast {
 			rootProject.delete "mods/${project.ext.moduleName}"
 		}
 	}
