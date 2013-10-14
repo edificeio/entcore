@@ -10,7 +10,7 @@
 		<script type="text/javascript" src="{{#infra}}js/iframe.js{{/infra}}"></script>
 		<script type="text/ng-template" id="folder-content">
 			<a data-ng-class="{ selected: openedFolder.folder === value }" data-ng-click="openFolder(value, key)">[[translate(key)]]</a>
-			<ul data-ng-class="{ selected: containsCurrentFolder(value), closed: !containsCurrentFolder(value) }">
+			<ul data-ng-class="{ selected: containsCurrentFolder(value), closed: !containsCurrentFolder(value) }" ng-if="containsCurrentFolder(value)">
 				<li data-ng-repeat="(key, value) in value"
 					data-ng-include="'folder-content'"
 				></li>

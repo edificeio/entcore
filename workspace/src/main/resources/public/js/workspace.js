@@ -41,15 +41,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	$scope.myId = '';
 	$scope.users = [];
 
-	http.get("users/available-rack").done(function(response){
-		$scope.users = response;
-	});
-
-	http.get('/userbook/api/person').done(function(data){
-		$scope.myId = data.result[0].id;
-		$scope.myName = data.result[0].displayName;
-	});
-
 	$scope.documentPath = function(document){
 		if($scope.currentTree.name === 'rack'){
 			return '/workspace/rack/' + document._id;
@@ -197,45 +188,45 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		});
 	}
 
-	function currentTree(){
-		var trees = [{
-			name: 'documents',
-			path: 'documents',
-			filter: 'owner',
-			buttons: [
-				{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true },
-				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
-				{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
-				{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
-			]
-		}, {
-			name: 'rack',
-			path: 'rack/documents',
-			buttons: [
-				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-				{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true },
-				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true }
-			]
-		}, {
-			name: 'trash',
-			path: 'documents/Trash',
-			buttons: [
+	var trees = [{
+		name: 'documents',
+		path: 'documents',
+		filter: 'owner',
+		buttons: [
+			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true },
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
+			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
+		]
+	}, {
+		name: 'rack',
+		path: 'rack/documents',
+		buttons: [
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true }
+		]
+	}, {
+		name: 'trash',
+		path: 'documents/Trash',
+		buttons: [
 			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true },
 			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true }
-			]
-		}, {
-			name: 'shared',
-			filter: 'shared',
-			path: 'documents',
-			buttons: [
-				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
-				{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
-				{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
-			]
-		}];
+		]
+	}, {
+		name: 'shared',
+		filter: 'shared',
+		path: 'documents',
+		buttons: [
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
+			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
+		]
+	}];
 
+	function currentTree(){
 		var currentTree = '';
 		trees.forEach(function(tree){
 			if($scope.containsCurrentFolder($scope.folders[tree.name])){
@@ -279,10 +270,13 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		content: {}
 	};
 
-	$scope.openFolder = function(folder, folderName){
+	$scope.openFolder = function(folder, folderName, tree){
 		$scope.openedFolder.folder = folder;
 		$scope.openedFolder.name = folderName;
-		var tree = currentTree();
+		if(!tree){
+			var tree = currentTree();
+		}
+
 		http.get(tree.path +  folderToString($scope.folders[tree.name], tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
 			formatDocuments(documents, function(result){
 				 $scope.openedFolder.content = result;
@@ -429,7 +423,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	};
 
 	updateFolders();
-	$scope.openFolder($scope.folders.documents, 'documents');
+	$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
 
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
@@ -548,5 +542,14 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 				$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
 			}
 		});
-	}
+	};
+
+	http.get("users/available-rack").done(function(response){
+		$scope.users = response;
+	});
+
+	http.get('/userbook/api/person').done(function(data){
+		$scope.myId = data.result[0].id;
+		$scope.myName = data.result[0].displayName;
+	});
 };

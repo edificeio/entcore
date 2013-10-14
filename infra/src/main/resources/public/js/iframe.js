@@ -70,7 +70,7 @@ var messenger = (function(){
 					href: message.data,
 					type: 'text/css'
 				})
-				.appendTo('head')
+				.prependTo('head')
 				.attr('data-portal-style', message.data)
 				.on('load', function(){
 					updateView();
