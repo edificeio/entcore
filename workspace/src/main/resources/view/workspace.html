@@ -3,16 +3,7 @@
 	<head>
 		<title>{{#i18n}}workspace.title{{/i18n}}</title>
 		<meta charset="utf-8" />
-		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
 
 
@@ -22,6 +13,25 @@
 			<ul data-ng-class="{ selected: containsCurrentFolder(value), closed: !containsCurrentFolder(value) }">
 				<li data-ng-repeat="(key, value) in value"
 					data-ng-include="'folder-content'"
+				></li>
+			</ul>
+		</script>
+		<script type="text/ng-template" id="folder-management">
+			<input type="radio" name="folder" ng-if="key !== undefined && editMode === 'single'" ng-model="selectedFolder.name" ng-value="key" ng-change="setFolder(key, value)" />
+			<input type="checkbox" ng-if="key !== undefined && editMode === 'multiple'" ng-checked="isTargetFolder(key, value)" ng-value="key" ng-click="switchTargetFolder(key, value)" />
+			<span ng-if="key !== undefined">
+				<a ng-click="openEditView(value)"><strong>+</strong></a>[[translate(key)]]</span>
+			<ul class="row">
+				<li class="row" ng-if="isEditViewOpened(value)">
+					<input type="radio" name="folder" ng-click="startEditing(value)" ng-if="editMode === 'single'" />
+					<input type="checkbox" ng-click="startEditing(value)" ng-if="editMode === 'multiple'" />
+					<em ng-if="!editStarted(value)">Nouveau dossier</em>
+					<em class="editable" ng-if="editStarted(value)">
+						<input type="text" class="inline-editing" ng-model="temp" complete-change="addFolder(value, temp)" />
+					</em>
+				</li>
+				<li data-ng-repeat="(key, value) in value"
+					data-ng-include="'folder-management'"
 				></li>
 			</ul>
 		</script>
@@ -40,7 +50,7 @@
 						<button
 								ng-repeat="button in currentTree.buttons"
 								ng-disabled="button.contextual && selectedDocuments().length === 0"
-								ng-click="button.action()">
+								ng-click="button.action(button.url)">
 							<i role="add" ng-if="button.icon"></i> [[translate(button.text)]]
 						</button>
 					</div>
@@ -64,44 +74,6 @@
 			</section>
 		</div>
 		<section class="lightbox-backdrop"></section>
-		<div class="row" id="main">
-			<section class="four cell">
-				<a href="" call="refresh"><h1><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</h1></a>
-				<nav class="vertical">
-					<ul>
-						<li>
-							<a call="documents" href="documents?hierarchical=true&filter=owner">{{#i18n}}workspace.documents{{/i18n}}</a>
-							<ul data-folder="undefined" data-filter="owner">
-							</ul>
-						</li><li>
-							<a href="documents?hierarchical=true&filter=shared" call="documents">{{#i18n}}workspace.shared.documents{{/i18n}}</a>
-							<ul data-folder="undefined" data-filter="shared">
-							</ul>
-						</li><li>
-							<a call="rack" href="rack/documents">{{#i18n}}workspace.rack{{/i18n}}</a></li><li>
-							<a call="trash" href="documents/Trash?hierarchical=true&filter=owner">{{#i18n}}workspace.trash{{/i18n}}</a>
-						</li>
-					</ul>
-				</nav>
-			</section>
-			<section class="eight cell list-view list">
-				<nav class="contextual-buttons row">
-					<div class="action-buttons">
-					</div>
-					<div class="display-buttons">
-						<i call="listView" role="show-list" class="selected"></i>
-						<i call="iconsView" role="show-icons"></i>
-					</div>
-				</nav>
-				<div class="workspace row">
-					<div class="mod">
-						<article id="list">
-
-						</article>
-					</div>
-				</div>
-			</section>
-		</div>
 		<div class="clear"></div>
 	</body>
 </html>

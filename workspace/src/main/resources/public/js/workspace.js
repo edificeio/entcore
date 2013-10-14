@@ -1,6 +1,11 @@
-function Workspace($scope, http, lang, date, ui){
+function Workspace($scope, http, lang, date, ui, notify, _, textEditor){
 	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
 	$scope.myId = '';
+	$scope.users = [];
+
+	http.get("users/available-rack").done(function(response){
+		$scope.users = response;
+	});
 
 	http.get('/userbook/api/person').done(function(data){
 		$scope.myId = data.result[0].id;
@@ -39,8 +44,7 @@ function Workspace($scope, http, lang, date, ui){
 						myRights.comment = true;
 					}
 				}
-			})
-
+			});
 			return myRights;
 		}
 
@@ -63,7 +67,7 @@ function Workspace($scope, http, lang, date, ui){
 		callback(documents);
 	}
 
-	function folderToString(tree, folder, key){
+	function folderToString(tree, treeName, folder, key){
 		var folderString = function(cursor, key){
 			if(folder === cursor){
 				return key;
@@ -71,23 +75,70 @@ function Workspace($scope, http, lang, date, ui){
 
 			for(var subFolder in  cursor){
 				var folderPath = folderString(cursor[subFolder], subFolder);
-				if(folderPath && key !== tree){
+				if(folderPath && key !== treeName){
 					return key + '_' + folderPath;
 				}
-				else if(folderPath && key === tree){
+				else if(folderPath && key === treeName){
 					return folderPath;
 				}
 			}
 		};
-		if(tree === key){
+		if(treeName === key){
 			return '';
 		}
-		return '/' + folderString($scope.folders[tree], tree)
+		return '/' + folderString(tree, treeName)
 	}
 
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
+	};
+
+	$scope.targetDocument = {};
+	$scope.openCommentView = function(document){
+		$scope.targetDocument = document;
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
+	}
+
+	$scope.toTrash = function(url){
+		$scope.selectedDocuments().forEach(function(document){
+			One.put(url + "/" + document._id);
+		});
+		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
+		notify.info('workspace.removed.message');
+	};
+
+	$scope.openSendRackView = function(){
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.sendRack;
+	};
+
+	$scope.openMoveFileView = function(action){
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox[action];
+	};
+
+	$scope.remove = function(){
+		$scope.selectedDocuments().forEach(function(document){
+			http.delete('document/' + document._id).done(function(){
+				$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(item){
+					return item === document;
+				});
+				$scope.$apply();
+			});
+		});
+	};
+
+	$scope.restore = function(){
+		$scope.selectedDocuments().forEach(function(document){
+			http.put('restore/document/' + document._id).done(function(){
+				$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(item){
+					return item === document;
+				});
+				$scope.$apply();
+			});
+		});
 	};
 
 	function currentTree(){
@@ -97,35 +148,35 @@ function Workspace($scope, http, lang, date, ui){
 			filter: 'owner',
 			buttons: [
 				{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true },
-				{ text: 'workspace.send.rack', call: 'sendRack' },
-				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
-				{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
-				{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
+				{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
+				{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
 			]
 		}, {
 			name: 'rack',
 			path: 'rack/documents',
 			buttons: [
-				{ text: 'workspace.send.rack', call: 'sendRack' },
-				{ text: 'workspace.move.racktodocs', call: 'copy', url: 'rack/documents/copy', contextual: true },
-				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
+				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+				{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true },
+				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true }
 			]
 		}, {
 			name: 'trash',
 			path: 'documents/Trash',
 			buttons: [
-			{ text: 'workspace.move.trash', call: 'remove', contextual: true },
-			{ text: 'workspace.trash.restore', call: 'restore', contextual: true }
+			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true },
+			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true }
 			]
 		}, {
 			name: 'shared',
 			filter: 'shared',
 			path: 'documents',
 			buttons: [
-				{ text: 'workspace.send.rack', call: 'sendRack' },
-				{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
-				{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
-				{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
+				{ text: 'workspace.send.rack', action: $scope.openSendRackView },
+				{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
+				{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
+				{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
 			]
 		}];
 
@@ -146,7 +197,11 @@ function Workspace($scope, http, lang, date, ui){
 
 	$scope.views = {
 		lightbox: {
-			createFile: 'public/template/create-file.html'
+			createFile: 'public/template/create-file.html',
+			sendRack: 'public/template/send-rack.html',
+			moveFile: 'public/template/move-files.html',
+			copyFile: 'public/template/copy-files.html',
+			comment: 'public/template/comment.html'
 		},
 		documents: {
 			list: 'public/template/list-view.html',
@@ -172,7 +227,7 @@ function Workspace($scope, http, lang, date, ui){
 		$scope.openedFolder.folder = folder;
 		$scope.openedFolder.name = folderName;
 		var tree = currentTree();
-		http.get(tree.path +  folderToString(tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
+		http.get(tree.path +  folderToString($scope.folders[tree.name], tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
 			formatDocuments(documents, function(result){
 				 $scope.openedFolder.content = result;
 				$scope.$apply();
@@ -226,12 +281,130 @@ function Workspace($scope, http, lang, date, ui){
 					cursor = cursor[subFolder];
 				})
 			});
+
 			$scope.$apply()
 		});
 	};
 
-	getFolders($scope.folders.documents, { filter: 'owner' });
-	getFolders($scope.folders.shared, { filter: 'shared' });
+	var editViews = [];
+	var editStarted = null;
+	$scope.openEditView = function(value){
+		editViews.push(value);
+	};
+
+	$scope.isEditViewOpened = function(value){
+		return editViews.indexOf(value) !== -1;
+	};
+
+	$scope.startEditing = function(value){
+		editStarted = value;
+	};
+
+	$scope.editStarted = function(value){
+		return editStarted === value;
+	};
+
+	$scope.addFolder = function(node, subNodeName){
+		node[subNodeName] = {};
+		editViews = _.reject(editViews, function(openedNode){
+			return openedNode === node;
+		});
+		if($scope.editMode === 'single'){
+			$scope.setFolder(subNodeName, node[subNodeName]);
+		}
+		else{
+			$scope.switchTargetFolder(subNodeName, node[subNodeName]);
+		}
+		$scope.$apply();
+	};
+
+	var targetFolders = [];
+	$scope.switchTargetFolder = function(key, value){
+		var stringFolder = folderToString($scope.editTree, 'documents', value, key);
+		if($scope.isTargetFolder(key, value)){
+			targetFolders = _.reject(targetFolders, function(item){
+				item === stringFolder;
+			})
+		}
+		else{
+			targetFolders.push(stringFolder);
+		}
+	};
+
+	$scope.isTargetFolder = function(key, value){
+		return targetFolders.indexOf(folderToString($scope.editTree, 'documents', value, key)) !== -1;
+	}
+
+	$scope.selectedFolder = { folder: {}, name: '' };
+	$scope.setFolder = function(key, value){
+		$scope.selectedFolder.name = key;
+		$scope.selectedFolder.folder = value;
+	}
+
+	$scope.editTree = {};
+	$scope.openEditView($scope.editTree);
+	function updateFolders(){
+		getFolders($scope.folders.documents, { filter: 'owner' });
+		getFolders($scope.editTree, { filter: 'owner' });
+		getFolders($scope.folders.shared, { filter: 'shared' });
+	}
+
+	$scope.move = function(){
+		ui.hideLightbox();
+		var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
+		var folderString = folderToString($scope.editTree, 'documents', $scope.selectedFolder.folder, $scope.selectedFolder.name);
+		http.put('documents/move/' + selectedDocumentsIds + folderString).done(function(){
+			updateFolders();
+		});
+	};
+
+	$scope.copy = function(){
+		ui.hideLightbox();
+		var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
+		targetFolders.forEach(function(folder){
+			var basePath = 'documents';
+			if($scope.currentTree.name === 'rack'){
+				basePath = 'rack/' + basePath;
+			}
+			http.post(basePath + '/copy/' + selectedDocumentsIds + folder).done(function(){
+				updateFolders();
+			});
+		})
+	};
+
+	updateFolders();
+	$scope.openFolder($scope.folders.documents, 'documents');
+
+	$scope.newFile = { name: $scope.translate('nofile'), file: null };
+	$scope.setFileName = function(){
+		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
+	};
+
+	$scope.sendNewFile = function(context){
+		var formData = new FormData();
+		formData.append('file', $scope.newFile.file);
+		var url = '';
+		if (context === 'rack') {
+			url = 'rack/' + $scope.toName;
+		}
+		else{
+			url = 'document'
+		}
+		$scope.loading = $scope.translate('loading');
+		http.postFile(url + '?name=' + $scope.newFile.name,  formData).done(function(e){
+			ui.hideLightbox();
+			$scope.loading = '';
+			var path = folderToString($scope.folders[$scope.currentTree.name], $scope.openedFolder.folder, $scope.openedFolder.name);
+			if(context !== 'rack' && path !== ''){
+				http.put("documents/move/" + e._id + path).done(function(){
+					$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
+				});
+			}
+			else{
+				$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
+			}
+		});
+	}
 }
 
 
@@ -368,26 +541,6 @@ var tools = (function(){
 				if(item.sent){
 					item.sent = item.sent.split(' ')[0];
 				}
-
-				item.anyComment = function(){
-					return this.commentsCount !== 0;
-				};
-
-				item.myRights = findAuthorizations(item.shared, item.owner);
-
-				if(!item.comments){
-					item.commentsCount = 0;
-					return;
-				}
-
-				item.commentsCount = item.comments.length;
-
-				for(var j = 0; j < item.comments.length; j++){
-					item.comments[j].posted = item.comments[j].posted.split(' ')[0];
-					if(item.comments[j].author === '') {
-						item.comments[j].author = ''
-					}
-				}
 			})
 
 			callback(response);
@@ -397,860 +550,6 @@ var tools = (function(){
 				return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
 			}
 			return { name : dir, path : dir };
-		},
-		getFolderTree: function(currentTree, filter, done){
-			workspace.action.getFolders({ hierarchical: true, filter: filter }, currentTree.path, function(data){
-				data.forEach(function(folder){
-					var folderData = tools.mapFolderName(folder);
-					if(folder === currentTree.path || folder === 'Trash'){
-						return;
-					}
-
-					currentTree.folders[folderData.name] = {
-						name: folderData.name,
-						path: folderData.path,
-						folders: {}
-					}
-				})
-
-				for(var subTree in currentTree.folders){
-					tools.getFolderTree(currentTree.folders[subTree], filter, done);
-				}
-
-				if(Object.keys(currentTree.folders).length === 0){
-					done(currentTree)
-				}
-			});
-		},
-		displayFoldersTree: function(nodePattern, filter, container){
-			var root = { folders: {} };
-			var treeView = function(node){
-				if(Object.keys(node.folders).length === 0){
-					return nodePattern(node, function(){ return ''; });
-				}
-
-				return nodePattern(node, function(){
-					var html = '';
-					for(var folder in node.folders){
-						html += treeView(node.folders[folder]);
-					}
-
-					return html;
-				});
-			}
-			tools.getFolderTree(root, filter, function(){
-				container.html(treeView(root));
-				navigation.redirect(navigation.currentUrl());
-				if($('.createFolder').length > 1){
-					$('.createFolder').hide();
-				}
-			});
 		}
 	}
 }());
-
-var navigation = (function(){
-	var currentURL = '/documents';
-
-	var showFolders = function(path, filter){
-		var nodePattern = function(node, subNodes){
-			if(node.name){
-				return '<li>\
-					<a call="documents" href="documents/' + node.path + '?hierarchical=true&filter=' + filter + '">' + node.name + '</a>\
-					<ul data-folder="' + node.path + '" data-filter="' + filter + '">' + subNodes() + '</ul>\
-				</li>';
-			}
-			else{
-				return subNodes();
-			}
-
-		};
-
-		var container = $('[data-folder="' + path + '"][data-filter="' + filter + '"]');
-		tools.displayFoldersTree(nodePattern, filter, container);
-	};
-
-	var updater = {
-		redirect: function(action){
-			var current = $('nav.vertical a[href="' + action + '"]');
-			current.addClass('selected');
-			current.parent().addClass('selected');
-			current.parents('li').addClass('selected');
-			currentURL = action;
-		},
-		currentUrl: function(){
-			return currentURL;
-		},
-		showFolders: function(path){
-			showFolders(path, 'owner');
-			showFolders(path, 'shared');
-		},
-		currentAction: function(){
-			if(this.currentUrl().indexOf('rack') !== -1){
-				return 'rack';
-			}
-
-			return 'documents';
-		},
-		pathArguments: function(){
-			var arguments = this.currentUrl().split('?');
-			if(arguments.length > 1){
-				return arguments[arguments.length - 1];
-			}
-			return ''
-		},
-		refresh: function(){
-			var that = this;
-			workspace.action[this.currentAction()]({url : this.currentUrl()}, function(){
-				$('.selectAllCheckboxes').change();
-				if($('tbody tr').length === 0){
-					that.redirect('documents?' + that.pathArguments());
-					that.showFolders();
-					workspace.action.documents({url : that.currentUrl()}, function(){});
-				}
-			});
-		}
-	};
-
-	$(document).ready(function(){
-		$('nav.vertical').on('click', 'a', function(){
-			updater.redirect($(this).attr('href'));
-		})
-	});
-
-	return updater;
-}());
-
-var workspace = function(){
-	var app = Object.create(oneApp);
-	app.scope = "#main";
-	app.define ({
-		template : {
-			documents : '<table summary="">\
-							<thead>\
-								<tr>\
-									<th scope="col">\
-										<input type="checkbox" class="selectAllCheckboxes" />\
-									</th>\
-									<th scope="col"></th>\
-									<th scope="col" class="five">{{#i18n}}name{{/i18n}}</th>\
-									<th scope="col" class="four">{{#i18n}}owner{{/i18n}}</th>\
-									<th scope="col" class="two">{{#i18n}}modified{{/i18n}}</th>\
-								</tr>\
-							</thead>\
-							<tbody>\
-								{{#folders}}\
-								<tr class="overline">\
-									<td></td>\
-									<td><i role="folder"></i></td>\
-									<td colspan="2"><strong><a call="documents" href="documents/{{path}}?hierarchical=true&filter={{filter}}">{{name}}</a></strong></td>\
-									<td></td>\
-								</tr>\
-								<tr class="underline">\
-									<td colspan="5"></td>\
-								</tr>\
-								{{/folders}}\
-								{{#documents}}\
-								<tr class="overline">\
-									<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
-									<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-									<td><a href="document/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
-									<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
-									<td>{{#longDay}}{{modified}}{{/longDay}}</td>\
-								</tr>\
-								<tr class="comments{{_id}} underline">\
-									<td colspan="5" class="container-cell">\
-										{{#myRights}}{{#comment}}<a call="comment" href="{{_id}}" class="small button cell">{{#i18n}}workspace.document.comment{{/i18n}}</a>{{/comment}}{{/myRights}}\
-										{{#myRights}}{{#share}}<a href="share?id={{_id}}" call="share" class="small button cell">{{#i18n}}workspace.share{{/i18n}}{{/share}}{{/myRights}}</a>\
-										{{#anyComment}}\
-										<span class="cell right-magnet action-cell">\
-											<a class="show" call="showComment" href=".comments{{_id}}">{{#i18n}}workspace.document.comment.show{{/i18n}} ({{commentsCount}})</a>\
-											<a class="hide" call="showComment" href=".comments{{_id}}" style="display:none">{{#i18n}}workspace.document.comment.hide{{/i18n}}</a>\
-										</span>\
-										{{/anyComment}}\
-										<h2><span>{{#i18n}}workspace.comments{{/i18n}}</span></h2>\
-										<ul class="row">\
-										{{#comments}}\
-											<li class="twelve cell"><em>{{authorName}} - {{#formatDate}}{{posted}}{{/formatDate}} - </em><span>{{{comment}}}</span></li>\
-										{{/comments}}\
-										</ul>\
-									</td>\
-								</tr>\
-								{{/documents}}\
-							</tbody>\
-						</table>\
-						<header>&nbsp;</header>\
-						<ul>\
-						{{#folders}}\
-						<li>\
-							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true&filter={{filter}}" call="documents"></i></a>\
-							<a href="documents/{{path}}?hierarchical=true&filter={{filter}}" call="documents">{{name}}</a>\
-						</li>\
-						{{/folders}}\
-						{{#documents}}\
-						<li>\
-							<a href="document/{{_id}}" call class="{{#metadata}}{{content-type}}{{/metadata}}-container">\
-								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
-								</i>\
-							</a>\
-							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-							<a href="document/{{_id}}" call>{{name}}</a>\
-							<a href="/userbook/annuaire#{{owner}}"><strong>{{ownerName}}</strong></a>\
-						</li>\
-						{{/documents}}\
-						<div class="clear"></div>\
-						</ul>',
-
-			rack : '<table>\
-						<thead>\
-							<tr>\
-								<th scope="col">\
-									<input type="checkbox" class="selectAllCheckboxes" />\
-								</th>\
-								<th scope="col"></th>\
-								<th scope="col">{{#i18n}}name{{/i18n}}</th>\
-								<th scope="col">{{#i18n}}from{{/i18n}}</th>\
-								<th scope="col">{{#i18n}}to{{/i18n}}</th>\
-								<th scope="col">{{#i18n}}sent{{/i18n}}</th>\
-							</tr>\
-						</thead>\
-						<tbody>\
-							{{#.}}\
-							<tr>\
-								<td><input class="select-file" type="checkbox" name="files[]" value="{{_id}}" /></td>\
-								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="rack/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
-								<td>{{fromName}}</td>\
-								<td>{{toName}}</a></td>\
-								<td>{{#longDay}}{{sent}}{{/longDay}}</td>\
-							</tr>\
-							<tr></tr>\
-							{{/.}}\
-						</tbody>\
-					</table>\
-					<header>&nbsp;</header>\
-						<ul>\
-						{{#.}}\
-						<li>\
-							<a href="rack/{{_id}}" call class="{{#metadata}}{{content-type}}{{/metadata}}-container">\
-								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
-								</i>\
-							</a>\
-							<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-							<a href="document/{{_id}}" call>{{name}}</a>\
-						</li>\
-						{{/.}}\
-						<div class="clear"></div>\
-						</ul>',
-
-			trash :'<table>\
-						<thead>\
-							<tr>\
-								<th scope="col">\
-									<input type="checkbox" class="selectAllCheckboxes" />\
-								</th>\
-								<th></th>\
-								<th scope="col" class="five">{{#i18n}}name{{/i18n}}</th>\
-								<th scope="col" class="four">{{#i18n}}owner{{/i18n}}</th>\
-								<th scope="col" class="two">{{#i18n}}modified{{/i18n}}</th>\
-							</tr>\
-						</thead>\
-						<tbody>\
-							{{#documents}}\
-							<tr>\
-								<td><input class="select-file" type="checkbox" name="files[]" value="document/{{_id}}" /></td>\
-								<td><i role="{{#metadata}}{{content-type}}{{/metadata}}"></i></td>\
-								<td><a href="document/{{_id}}" call>{{name}}</a><em>{{#metadata}}{{extension}}{{/metadata}}</em></td>\
-								<td><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a></td>\
-								<td>{{#longDay}}{{modified}}{{/longDay}}</td>\
-							</tr>\
-							<tr></tr>\
-							{{/documents}}\
-							{{#rack}}\
-							<tr>\
-								<td><input class="select-file" type="checkbox" name="files[]" value="rack/{{_id}}" /></td>\
-								<td>{{#metadata}}{{content-type}}{{/metadata}}</td>\
-								<td><a href="rack/{{_id}}" call>{{name}}</a></td>\
-								<td>{{#longDay}}{{modified}}{{/longDay}}</td>\
-							</tr>\
-							<tr></tr>\
-							{{/rack}}\
-						</tbody>\
-					</table>\
-					<header>&nbsp;</header>\
-						<ul>\
-						{{#folders}}\
-						<li>\
-							<a><i role="folder-large" href="documents/{{path}}?hierarchical=true" call="documents"></i></a>\
-							<a href="documents/{{path}}?hierarchical=true" call="documents">{{name}}</a>\
-						</li>\
-						{{/folders}}\
-						{{#documents}}\
-						<li>\
-							<a href="document/{{_id}}" call>\
-								<i role="{{#metadata}}{{content-type}}{{/metadata}}-large">\
-									<div><img src="{{thumbnail}}" alt="thumbnail" /></div>\
-								</i>\
-								<input class="select-file" type="checkbox" name="files[]" value="{{_id}}" />\
-							</a>\
-							<a href="document/{{_id}}" call>{{name}}</a>\
-							<br /><a href="/userbook/annuaire#{{owner}}">{{ownerName}}</a>\
-						</li>\
-						{{/documents}}\
-						<div class="clear"></div>\
-						</ul>',
-			addDocument : ' <div class="fixed-block height-four">\
-								<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="fixed twelve cell">\
-									<div class="twelve fluid cell">\
-									<h1>{{#i18n}}workspace.add.document{{/i18n}}</h1>\
-									<div class="row">\
-										<div class="eight cell select-file">\
-											<div class="hidden-content">\
-												<input type="file" name="file" id="new-file" />\
-											</div>\
-											<button class="file-button">{{#i18n}}choose{{/i18n}}</button>\
-											<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
-										</div>\
-									</div>\
-									<div class="lightbox-buttons">\
-										<input class="cancel" type="button" value="{{#i18n}}cancel{{/i18n}}" />\
-										<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
-									</div>\
-									</div>\
-								</form>\
-							</div>',
-
-			sendRack : '<div class="fixed-block height-four">\
-							<form id="upload-form" method="post" action="rack" enctype="multipart/form-data" class="fixed twelve cell">\
-								<div class="twelve cell fluid">\
-									<h1>{{#i18n}}workspace.send.rack{{/i18n}}</h1>\
-									<div class="row">\
-										<label class="four cell">{{#i18n}}workspace.rack.file{{/i18n}}</label>\
-										<div class="eight cell right-magnet select-file">\
-											<div class="hidden-content">\
-												<input type="file" name="file" id="new-file" />\
-											</div>\
-											<button class="file-button">{{#i18n}}choose{{/i18n}}</button>\
-											<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
-										</div>\
-									</div>\
-									<div class="row">\
-										<label class="four cell">{{#i18n}}workspace.rack.to{{/i18n}}</label>\
-										<select class="eight cell" name="to" data-autocomplete>\
-										{{#users}}\
-											<option value="{{id}}">{{username}}</option>\
-										{{/users}}\
-										</select>\
-									</div>\
-									<div class="lightbox-buttons">\
-										<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
-										<input call="sendFile" type="button" value="{{#i18n}}upload{{/i18n}}" />\
-									</div>\
-								</div>\
-							</form>\
-						</div>',
-
-			comment : '<form method="post" action="document/{{id}}/comment">\
-							<h1>{{#i18n}}workspace.comment{{/i18n}}</h1>\
-							<textarea name="comment"></textarea>\
-							<div class="lightbox-buttons fluid">\
-								<input class="cancel" type="button" value="{{#i18n}}cancel{{/i18n}}" />\
-								<input call="sendComment" type="submit" value="{{#i18n}}send{{/i18n}}" />\
-								<div class="clear"></div>\
-							</div>\
-						</form>',
-
-			moveDocuments : '<form action="{{action}}" data-current-path="{{currentPath}}">\
-								<div class="row">\
-									<h1>{{#i18n}}workspace.move{{/i18n}}</h1>\
-									<nav class="vertical">\
-										<ul id="foldersTree" class="folders"></ul>\
-									</nav>\
-									<div class="lightbox-buttons fluid">\
-										<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
-										<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.move{{/i18n}}" />\
-										<div class="clear"></div>\
-									</div>\
-								</div>\
-							</form>',
-			copyDocuments : '<form action="{{action}}" class="cancel-flow" data-current-path="{{currentPath}}">\
-								<h1>{{#i18n}}workspace.copy{{/i18n}}</h1>\
-								<nav class="vertical">\
-									<ul id="foldersTree" class="folders"></ul>\
-								</nav>\
-								<div class="lightbox-buttons fluid">\
-									<input type="button" class="cancel" value="{{#i18n}}cancel{{/i18n}}" />\
-									<input call="moveOrCopyDocuments" type="button" value="{{#i18n}}workspace.copy{{/i18n}}" />\
-									<div class="clear"></div>\
-								</div>\
-							</form>',
-			contextualButtons: '\
-							{{#.}}\
-							<a call="{{call}}" href="{{url}}" class="button {{#contextual}}contextual{{/contextual}}" {{#contextual}}disabled{{/contextual}}>\
-									{{#icon}}<i role="add"></i>{{/icon}}{{#i18n}}{{text}}{{/i18n}}\
-								</a>\
-							{{/.}}'
-		},
-		action : {
-			documents: function (o, callback) {
-				var relativePath = undefined,
-					that = this,
-					directories;
-
-				One.get(o.url).done(function(response){
-					if (o.url.match(/^documents\/.*?/g)) {
-						relativePath = o.url.substring(o.url.indexOf("/", 9) + 1, o.url.lastIndexOf("?"));
-					}
-					var filter = "owner";
-					if(o.url.indexOf("shared") !== -1){
-						filter = 'shared';
-					}
-
-					that.getFolders({
-						hierarchical: o.url.indexOf("hierarchical=true") != -1,
-						filter: filter
-					}, relativePath, function(data) {
-						directories = _.filter(data, function(dir) {
-							return dir !== relativePath && dir !== "Trash";
-						});
-						directories = _.map(directories, tools.mapFolderName);
-
-						tools.formatResponse(response, function(data){
-							$('#list').html(app.template.render("documents", { documents : response, folders : directories, filter: filter }));
-							navigation.redirect(o.url);
-							messenger.requireResize();
-
-							if(typeof callback === 'function'){
-								callback();
-							}
-						});
-					});
-				});
-			},
-			iconsView: function(o){
-				$('.list').removeClass('list-view').addClass('icons-view');
-				messenger.requireResize();
-			},
-			listView: function(o){
-				$('.list').removeClass('icons-view').addClass('list-view');
-				messenger.requireResize();
-			},
-			rack : function (o) {
-				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('rack')))
-				One.get(o.url).done(function(response){
-					tools.formatResponse(response, function(data){
-						$('#list').html(app.template.render("rack", response));
-						messenger.requireResize();
-					});
-				});
-			},
-			share: function(o){
-				One.get(o.url).done(function(data){
-					$('#form-window').html('<div class="twelve cell flowing"><h1>Partager</h1>' + data + '</div>');
-					ui.showLightbox();
-
-					$('#form-window table').addClass('monoline');
-					$('.lightbox-backdrop, input[type=submit]').one('click', function(e){
-						ui.hideLightbox();
-						var form = $('.lightbox-window form');
-						var url = form.attr('action');
-						$.post(url, form.serialize(), function(){
-							app.notify.info(app.i18n.translate('workspace.shared.message'));
-						})
-
-						e.preventDefault();
-					})
-				})
-			},
-			trash : function (o) {
-				$('.action-buttons').html(app.template.render('contextualButtons', tools.contextualButtons('trash')))
-				One.get(navigation.currentUrl()).done(function(documents) {
-					One.get("rack/documents/Trash").done(function(rack) {
-						tools.formatResponse(documents, function(data){
-							$('#list').html(app.template.render("trash",
-								{ documents : documents, rack : rack }));
-							messenger.requireResize();
-						});
-					});
-				});
-			},
-
-			addDocument : function (o) {
-				$('#form-window').html(app.template.render("addDocument", {}));
-				ui.showLightbox();
-				messenger.requireResize();
-				$('.lightbox-backdrop').one('click', function(){
-					ui.hideLightbox();
-				})
-			},
-
-			sendRack : function(o){
-				One.get("users/available-rack").done(function(response) {
-					$('#form-window').html(app.template.render("sendRack", { users : response }));
-					ui.showLightbox();
-					messenger.requireResize();
-					$('.lightbox-backdrop').one('click', function(){
-						ui.hideLightbox();
-					});
-				});
-			},
-
-			sendFile : function(o) {
-				var form = $('#upload-form'),
-					fd = new FormData(),
-					action = form.attr('action');
-				fd.append('file', form.find('input[type=file]')[0].files[0]);
-				if ("rack" === action) {
-					action += '/' + form.find('input[name=to], select[name=to]').val();
-				}
-
-				$('.lightbox-window input[type=submit]').val('Chargement en cours').attr('disabled', true);
-				One.postFile(action + '?' + form.serialize(), fd, {})
-					.done(function(e){
-						ui.hideLightbox();
-						if(action !== 'rack'){
-							var path = '';
-							$('nav.vertical li.selected').each(function(index, item){
-								if(index === 0){return;}
-								if(path !== ''){
-									path += '_';
-								}
-								path += $(this).contents(':not(ul)').text().trim()
-							});
-
-							if(path === ''){
-								navigation.refresh();
-							}
-							else{
-								One.put("documents/move/" + e._id + "/" + path)
-									.done(function(){
-										navigation.refresh()
-									});
-							}
-						}
-						else{
-							navigation.refresh();
-						}
-					})
-			},
-
-			getFolders : function(params, relativePath, action) {
-				if(relativePath){
-					params.relativePath = relativePath;
-				}
-
-				One.get('folders', params)
-					.done(action)
-					.error(function(data) {app.notify.error(data)});
-			},
-			moveTrash : function(o) {
-				if(navigation.currentUrl().indexOf('trash') !== -1){
-					navigation.refresh();
-					return;
-				}
-				var files = [];
-				$("#list :checkbox:checked:visible").each(function(i, item) {
-					if($(item).hasClass('selectAllCheckboxes')){
-						return;
-					}
-					var obj = $(this);
-					One.put(o.url + "/" + obj.val())
-						.done(function(data){
-							navigation.refresh();
-							app.notify.info(app.i18n.translate('workspace.removed.message'));
-						});
-				});
-			},
-
-			comment : function(o) {
-				$('#form-window').html(app.template.render("comment", { id : o.url }));
-				ui.showLightbox();
-				messenger.requireResize();
-				$('.lightbox-backdrop').one('click', function(){
-					ui.hideLightbox();
-				})
-			},
-
-			sendComment : function(o) {
-				ui.hideLightbox();
-				var form = $(o.target).parents("form"),
-					url = form.attr('action'),
-					data = encodeURI(form.serialize()).replace(/(%0D%0A|%250D%250A)/gi, "<br />");
-
-				var that = this;
-
-				One.post(url, data)
-				.done(function (data) {
-					that.documents({url: navigation.currentUrl()}, function(){
-						var targetFile = url.split('/')[1];
-						var commentsLine = $('.comments' + targetFile);
-						commentsLine.find('h2').show();
-						commentsLine.find('ul').show();
-					});
-				})
-				.error(function (data) {
-					app.notify.error(data);
-				});
-			},
-
-			showComment : function(o) {
-				var linksContainer = $(o.target).parent();
-				linksContainer.parent().find('ul, h2').slideToggle('fast', function(){
-					if($(this).css('display') === 'none'){
-						linksContainer.children('.show').show();
-						linksContainer.children('.hide').hide();
-					}
-					else{
-						linksContainer.children('.show').hide();
-						linksContainer.children('.hide').show();
-					}
-
-					messenger.requireResize();
-				});
-			},
-			hideComment: function(o){
-				$(o.target).parent().parent().find('ul, h2').slideUp();
-				messenger.requireResize();
-			},
-			remove : function (o) {
-				var files = [];
-
-				$("#list :checkbox:checked:visible").each(function(i, item) {
-					if($(item).hasClass('selectAllCheckboxes')){
-						return;
-					}
-					var obj = $(this);
-					One.delete(obj.val())
-						.done(function(){
-							obj.parents("tr").remove();
-						});
-				});
-			},
-
-			restore : function (o) {
-				var files = [];
-
-				$("#list :checkbox:checked:visible").each(function(i) {
-					var obj = $(this);
-					One.put("restore/" + obj.val())
-						.done(function(){
-							obj.parents("tr").remove();
-					});
-				});
-			},
-
-			move: function(o) {
-					$('#form-window').html(app.template.render("moveDocuments", { action : o.url, currentPath: o.url }));
-					var showFolders = function(path){
-					var nodePattern = function(node, subNodes){
-						if(node.name){
-							return '<li class="row">\
-										<input type="radio" name="folder" />\
-										<span class="folderPath"><a class="showCreate"><strong>+</strong></a>' + node.name + '</span>\
-										<ul style="display:block" class="row">\
-											<li class="row createFolder">\
-												<input type="radio" name="folder" />\
-												<em class="folderPath editable">Nouveau dossier</em>\
-											</li>\
-											' + subNodes() + '\
-										</ul>\
-									</li>';
-						}
-						else{
-							return '\
-								<li class="row">\
-									<input type="radio" name="folder" />\
-									<em class="folderPath editable">Nouveau dossier</em>\
-								</li>\
-								' + subNodes();
-						}
-
-					};
-
-					var container = $('#foldersTree');
-					var filter = "owner";
-					if(navigation.currentUrl().indexOf('shared') !== -1){
-						filter = 'shared';
-					}
-					tools.displayFoldersTree(nodePattern, filter, container);
-				};
-				showFolders();
-
-				ui.showLightbox();
-
-				messenger.requireResize();
-				$('.lightbox-backdrop').one('click', function(){
-					ui.hideLightbox();
-				})
-			},
-			copy : function(o) {
-				$('#form-window').html(app.template.render("copyDocuments", { action : o.url, currentPath: o.url }));
-				var showFolders = function(path){
-					var nodePattern = function(node, subNodes){
-						if(node.name){
-							return '<li class="row">\
-										<input type="checkbox" />\
-										<span class="folderPath">\
-										<a class="showCreate"><strong>+</strong></a>\
-										' + node.name + '</span>\
-										<ul style="display:block" class="row">\
-											<li class="row createFolder">\
-												<input type="checkbox" />\
-												<em class="folderPath editable">Nouveau dossier</em>\
-											</li>\
-											' + subNodes() + '\
-										</ul>\
-									</li>';
-						}
-						else{
-							return '\
-								<li class="row">\
-									<input type="checkbox" />\
-									<em class="folderPath editable" contenteditable>Nouveau dossier</em>\
-								</li>\
-								' + subNodes();
-						}
-
-					};
-
-					var container = $('#foldersTree');
-
-					var filter = 'owner';
-					if(navigation.currentUrl().indexOf('shared') !== -1){
-						filter = 'shared';
-					}
-					tools.displayFoldersTree(nodePattern, filter, container);
-				};
-				showFolders();
-
-				ui.showLightbox();
-
-				messenger.requireResize();
-				$('.lightbox-backdrop').one('click', function(){
-					ui.hideLightbox();
-				})
-			},
-			moveOrCopyDocuments : function(o) {
-				ui.hideLightbox();
-				var ids = "",
-					form = $(o.target).parents("form"),
-					action = form.attr("action"),
-					method;
-
-				if (action.match(/copy$/g)) {
-					method = "post";
-				} else {
-					method = "put";
-				}
-
-				$("#list :checkbox:checked:visible").each(function(i) {
-					var id = $(this).val().split('/');
-					id = id[id.length - 1];
-					ids += "," + id;
-				});
-				if (ids != "") {
-					ids = ids.substring(1);
-				}
-
-				$('.folders :checkbox:checked:visible, .folders :radio:checked:visible').each(function(){
-					if(!$(this).parent('li').children('.folderPath').contents(':not(a)').text()){
-						return;
-					}
-
-					var parentPath = function(element){
-						var elementText = element.children('.folderPath').contents(':not(a)').text().trim();
-						if(element.parent().closest('li').length === 0){
-							return  elementText;
-						}
-						return parentPath(element.parent().closest('li')) + '_' + elementText;
-					}
-
-					var path = parentPath($(this).parent('li'));
-
-					One[method](action + "/" + ids + "/" + path)
-						.done(function(){
-							var args = navigation.pathArguments();
-							if(!args){
-								args = 'hierarchical=true&filter=owner'
-							}
-							navigation.redirect('documents/' + path + '?' + args)
-							navigation.refresh();
-							navigation.showFolders();
-						});
-				})
-			}
-
-		}
-	});
-	return app;
-}();
-
-$(document).ready(function(){
-	workspace.init();
-
-	One.get('/userbook/api/person').done(function(data){
-		tools.myId(data.result[0].id);
-
-		workspace.action.documents({url : "documents?hierarchical=true&filter=owner"});
-		workspace.action.getFolders({ hierarchical: true }, undefined, function(data) {
-			navigation.redirect('documents?hierarchical=true&filter=owner');
-		});
-
-		navigation.showFolders(undefined);
-	})
-
-	$('.workspace').on('change', '.select-file, .selectAllCheckboxes', function(){
-		var applyCheckedClasses = function(node, check){
-			if(node.hasClass('checked')){
-				node.removeClass('checked');
-				node.next().removeClass('checked');
-			}
-			else{
-				node.addClass('checked');
-				node.next().addClass('checked');
-			}
-		}
-
-		if($(this).hasClass('selectAllCheckboxes')){
-			$('#list :checkbox').prop('checked', this.checked);
-			if(this.checked){
-				$('tr').addClass('checked')
-			}
-			else{
-				$('tr').removeClass('checked')
-			}
-		}
-		else{
-			applyCheckedClasses($(this).parent().parent());
-		}
-		if($('.select-file:checked').length > 0){
-			$('.contextual').removeAttr('disabled');
-		}
-		else{
-			$('.contextual').attr('disabled', 'disabled');
-		}
-	});
-
-	$('.workspace').on('click', '.showCreate', function(){
-		$(this).parent().parent().find('.createFolder').first().show();
-		messenger.requireResize();
-	})
-
-	$('.lightbox-window').on('change', '[type=radio], [type=checkbox]', function(){
-		var editContainer = $(this).next('em');
-		if(editContainer.hasClass('editable') && this.checked){
-			editContainer.html(' ');
-			var input = $('<input />')
-				.attr('type', 'text')
-				.addClass('inline-editing')
-				.appendTo(editContainer);
-			input.focus();
-			editContainer.addClass('active');
-			input.on('change', function(){
-				editContainer.html(input.val());
-			})
-		}
-	})
-});

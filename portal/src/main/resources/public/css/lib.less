@@ -225,11 +225,11 @@
 	behavior: url(/assets/themes/panda/css/PIE.htc);
 }
 
-.run-transition(@property: color, @speed: 250ms){
-  -o-transition: @property @speed ease;
-  -moz-transition: @property @speed ease;
-  -webkit-transition: @property @speed ease;
-  transition: @property @speed ease;
+.run-transition(@property: color, @speed: 250ms, @timing: ease){
+  -o-transition: @property @speed @timing;
+  -moz-transition: @property @speed @timing;
+  -webkit-transition: @property @speed @timing;
+  transition: @property @speed @timing;
 }
 
 .border-box{

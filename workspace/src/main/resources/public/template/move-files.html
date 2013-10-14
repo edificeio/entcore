@@ -1,0 +1,15 @@
+<form ng-submit="move()">
+	<div class="row">
+		<h1 translate key="workspace.move"></h1>
+		<nav class="vertical">
+			<nav class="vertical" ng-init="value=editTree; editMode='single'">
+				<ul data-ng-include="'folder-management'"></ul>
+			</nav>
+		</nav>
+		<div class="lightbox-buttons fluid">
+			<input type="button" class="cancel" translate-attr="value" value="cancel" />
+			<input type="submit" translate-attr="value" value="workspace.move" />
+			<div class="clear"></div>
+		</div>
+	</div>
+</form>

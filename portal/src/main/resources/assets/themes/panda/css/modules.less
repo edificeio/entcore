@@ -428,7 +428,15 @@ nav.vertical{
 		width: 99%;
 		padding-left: 0;
 
-
+	ul.selected{
+		max-height: 500px;
+		.run-transition(all, 250ms, ease-in-out)
+	}
+	ul.closed{
+		max-height: 0px;
+		.run-transition(all);
+		overflow: hidden;
+	}
 	li{
 		padding: 0;
 		em{
@@ -796,7 +804,6 @@ table{
 		transition-timing-function: cubic-bezier(0, 1, 0.3, 1);
 	}
 	tr{
-
 		border-top: 1px solid @medium-grey;
 		background: transparent;
 		.run-transition(background);
@@ -815,8 +822,9 @@ table{
 
 			h2{
 				font-size: 14px;
-				background: #eee;
-				border: 1px solid #ccc;
+				background: @ultra-light-grey;
+				border-top: 1px solid #ccc;
+				border-bottom: 1px solid #ccc;
 				font-weight: normal;
 				padding: 5px;
 				color: #000;
@@ -847,7 +855,6 @@ table{
 					font-size: 12px;
 					list-style-type: none;
 					padding: 5px;
-					background: #fafafa;
 					width: 100%;
 				}
 			}

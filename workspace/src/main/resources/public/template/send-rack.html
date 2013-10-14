@@ -1,0 +1,27 @@
+<div class="fixed-block height-four">
+	<form id="upload-form" method="post" enctype="multipart/form-data" class="fixed twelve cell" ng-submit="sendNewFile('rack')">
+		<div class="twelve cell fluid">
+			<h1 translate key="workspace.send.rack"></h1>
+			<div class="row">
+				<label class="four cell" translate key="workspace.rack.file"></label>
+				<div class="eight cell select-file">
+					<div class="hidden-content">
+						<input type="file"  file-input-change="setFileName()" data-ng-model="newFile.file" />
+					</div>
+					<button class="file-button" translate key="choose"></button>
+					<input type="text" data-ng-model="newFile.name" />
+				</div>
+			</div>
+			<div class="row">
+				<label class="four cell" translate key="workspace.rack.to"></label>
+				<select class="eight cell" name="to">
+					<option value="[[user.id]]" ng-repeat="user in users">[[user.username]]</option>
+				</select>
+			</div>
+			<div class="lightbox-buttons">
+				<input type="button" class="cancel" translate-attr="value" value="cancel" />
+				<input call="sendFile" type="button" translate-attr="value" value="upload" />
+			</div>
+		</div>
+	</form>
+</div>

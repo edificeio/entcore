@@ -1,0 +1,15 @@
+<form ng-submit="copy()">
+	<div class="row">
+		<h1 translate key="workspace.copy"></h1>
+		<nav class="vertical">
+			<nav class="vertical" ng-init="value=editTree; editMode='multiple'">
+				<ul data-ng-include="'folder-management'"></ul>
+			</nav>
+		</nav>
+		<div class="lightbox-buttons fluid">
+			<input type="button" class="cancel" translate-attr="value" value="cancel" />
+			<input type="submit" translate-attr="value" value="workspace.copy" />
+			<div class="clear"></div>
+		</div>
+	</div>
+</form>

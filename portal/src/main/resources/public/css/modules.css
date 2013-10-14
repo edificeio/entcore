@@ -277,9 +277,6 @@ nav.vertical {
 nav.vertical h1 {
   margin-top: 0;
 }
-nav.vertical ul {
-  display: block;
-}
 nav.vertical ul li {
   float: none;
   display: block;
@@ -297,16 +294,10 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
-nav.vertical ul li ul {
-  display: none;
-}
 nav.vertical ul li input {
   position: relative !important;
   top: 0px !important;
   left: 0px !important;
-}
-nav.vertical ul li.selected ul {
-  display: block;
 }
 .navbar {
   height: 40px;
@@ -386,39 +377,31 @@ i.liquid {
   float: none !important;
   vertical-align: middle;
 }
-.list-view ul,
-.list-view header,
-.list-view h2 {
-  display: none;
-}
-.list-view table {
+table.list-view {
   width: 100%;
 }
-.list-view table tr.overline {
+table.list-view tr.overline {
   border-bottom: none;
 }
-.list-view table tr.underline {
+table.list-view tr.underline {
   border-top: none;
   padding-bottom: 15px;
 }
-.list-view table tr.underline td {
+table.list-view tr.underline td {
   vertical-align: bottom;
 }
-.list-view table td h2 {
+table.list-view td h2 {
   clear: both;
   margin-top: 15px;
   margin-bottom: 0;
 }
-.list-view table td img {
+table.list-view td img {
   vertical-align: middle;
 }
-.icons-view ul {
+ul.icons-view {
   padding-left: 0;
 }
-.icons-view table {
-  display: none;
-}
-.icons-view li {
+ul.icons-view li {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -431,41 +414,41 @@ i.liquid {
   position: relative;
   list-style-type: none;
 }
-.icons-view li img {
+ul.icons-view li img {
   max-width: 100%;
 }
 @media screen and (min-width: 720px) {
-  .icons-view li {
+  ul.icons-view li {
     width: 25%;
   }
 }
 @media screen and (max-width: 720px) {
-  .icons-view li {
+  ul.icons-view li {
     width: 100%;
   }
 }
-.icons-view li img,
-.icons-view li i {
+ul.icons-view li img,
+ul.icons-view li i {
   float: none !important;
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
   max-width: 100%;
 }
-.icons-view li i {
+ul.icons-view li i {
   width: 129px;
   height: 129px;
   background-size: auto 100%;
 }
-.icons-view li input[type=checkbox] {
+ul.icons-view li input[type=checkbox] {
   position: absolute;
   left: 20px;
   top: 20px;
 }
-.icons-view li em {
+ul.icons-view li em {
   display: none;
 }
-.icons-view li a {
+ul.icons-view li a {
   display: block;
   text-align: center;
   margin: 0;
@@ -473,7 +456,7 @@ i.liquid {
   width: 100%;
   position: relative;
 }
-.icons-view li:nth-child(4n + 5) {
+ul.icons-view li:nth-child(4n + 5) {
   clear: left;
 }
 .enhanced-select {

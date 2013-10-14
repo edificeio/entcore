@@ -1,20 +1,20 @@
 <div class="fixed-block height-four">
-	<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="fixed twelve cell">
+	<form id="upload-form" method="post" ng-submit="sendNewFile('document')" enctype="multipart/form-data" class="fixed twelve cell">
 		<div class="twelve fluid cell">
 			<h1 translate key="workspace.add.document"></h1>
 			<div class="row">
 				<div class="eight cell select-file">
 					<div class="hidden-content">
-						<input type="file" name="file" id="new-file" />
+						<input type="file"  file-input-change="setFileName()" data-ng-model="newFile.file" />
 					</div>
-					<button class="file-button" translate key="choose"></button>\
-					<input type="text" name="name" data-display-file value="{{#i18n}}nofile{{/i18n}}" />\
-				</div>\
-			</div>\
-			<div class="lightbox-buttons">\
-				<input class="cancel" type="button" translate-attr="value" value="cancel" />\
-				<input call="sendFile" type="submit" value="{{#i18n}}upload{{/i18n}}" />\
-			</div>\
-		</div>\
-	</form>\
+					<button class="file-button" translate key="choose"></button>
+					<input type="text" data-ng-model="newFile.name" />
+				</div>
+			</div>
+			<div class="lightbox-buttons">
+				<input class="cancel" type="button" translate-attr="value" value="cancel" />
+				<input call="sendFile" type="submit" value="[[translate(loading || 'upload')]]" ng-disabled="loading" />
+			</div>
+		</div>
+	</form>
 </div>
