@@ -164,6 +164,9 @@ $(document).ready(function(){
 			if($(this).attr('call')){
 				return;
 			}
+			if($(this).attr('href').indexOf('javascript:') !== -1){
+				return;
+			}
 			messenger.sendMessage({
 				name: 'redirect',
 				data: $(this).attr('href')

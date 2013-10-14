@@ -128,10 +128,7 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 	})
 	.factory('notify', function(){
 		if(!window.humane){
-			One.load('humane', function(){
-				humane.timeout = 0;
-				humane.clickToClose = true;
-			});
+			One.load('humane');
 		}
 
 		return {
@@ -198,6 +195,13 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			translate: One.translate
 		}
 	})
+	.factory('textEditor', function(){
+		if(window.CKEDITOR === undefined){
+			loader.syncLoad('ckeditor');
+			CKEDITOR.basePath = '/infra/public/ckeditor/';
+		}
+		return CKEDITOR;
+	})
 	.factory('_', function(){
 		if(window._ === undefined){
 			loader.syncLoad('underscore');
@@ -242,7 +246,7 @@ oneModule.directive('fileInputChange', function($compile){
 				$scope.file = $element[0].files[0];
 				$scope.$apply();
 				$scope.fileInputChange();
-
+				$scope.$apply();
 			})
 		}
 	}
@@ -283,9 +287,6 @@ oneModule.directive('enhancedSelect', function($compile) {
 oneModule.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
-		scope:{
-			key: '&'
-		},
 		compile: function compile($element, $attributes, transclude) {
 			$element.text(lang.translate($attributes.key));
 			return {
