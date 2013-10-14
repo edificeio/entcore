@@ -196,9 +196,10 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 	})
 	.factory('textEditor', function(){
+		CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
 		if(window.CKEDITOR === undefined){
 			loader.syncLoad('ckeditor');
-			CKEDITOR.basePath = '/infra/public/ckeditor/';
+			CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins';
 		}
 		return CKEDITOR;
 	})
@@ -300,9 +301,6 @@ oneModule.directive('translate', function($compile) {
 oneModule.directive('translateAttr', function($compile) {
 	return {
 		restrict: 'A',
-		scope:{
-			translateAttr: '&'
-		},
 		compile: function compile($element, $attributes, transclude) {
 			$element.attr($attributes.translateAttr, lang.translate($attributes[$attributes.translateAttr]));
 			return {

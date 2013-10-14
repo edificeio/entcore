@@ -1,4 +1,42 @@
-function Workspace($scope, http, lang, date, ui, notify, _, textEditor){
+var tools = (function(){
+	return {
+		roleFromFileType: function(fileType){
+			var types = {
+				'doc': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+				},
+				'xls': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1;
+				},
+				'img': function(type){
+					return type.indexOf('image') !== -1;
+				},
+				'pdf': function(type){
+					return type.indexOf('pdf') !== -1;
+				},
+				'ppt': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1;
+				},
+				'video': function(type){
+					return type.indexOf('video') !== -1;
+				},
+				'audio': function(type){
+					return type.indexOf('audio') !== -1;
+				}
+			}
+
+			for(var type in types){
+				if(types[type](fileType)){
+					return type;
+				}
+			}
+
+			return 'unknown';
+		}
+	}
+}());
+
+function Workspace($scope, http, lang, date, ui, notify, _){
 	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
 	$scope.myId = '';
 	$scope.users = [];
@@ -9,6 +47,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, textEditor){
 
 	http.get('/userbook/api/person').done(function(data){
 		$scope.myId = data.result[0].id;
+		$scope.myName = data.result[0].displayName;
 	});
 
 	$scope.documentPath = function(document){
@@ -140,6 +179,23 @@ function Workspace($scope, http, lang, date, ui, notify, _, textEditor){
 			});
 		});
 	};
+
+	$scope.sendComment = function(){
+		ui.hideLightbox();
+		http.post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + $scope.targetDocument.comment).done(function(){
+			if(!$scope.targetDocument.comments){
+				$scope.targetDocument.comments = [];
+			}
+			$scope.targetDocument.comments.push({
+				author: $scope.myId,
+				authorName: $scope.myName,
+				comment: $scope.targetDocument.comment,
+				posted: new Date()
+			});
+			$scope.targetDocument.showComments = true;
+			$scope.$apply();
+		});
+	}
 
 	function currentTree(){
 		var trees = [{
@@ -408,148 +464,4 @@ function Workspace($scope, http, lang, date, ui, notify, _, textEditor){
 }
 
 
-var tools = (function(){
-	var myId;
 
-	var findAuthorizations = function(authorizations, owner){
-		if(!(authorizations instanceof Array) || owner === myId){
-			return {
-				comment: true,
-				share: true
-			}
-		}
-
-		var myRights = {
-			comment: false,
-			share: false
-		}
-
-		authorizations.forEach(function(auth){
-			if(auth.userId !== myId){
-				return;
-			}
-
-			for(var property in auth){
-				if(property.indexOf('comment') !== -1){
-					myRights.comment = true;
-				}
-			}
-		})
-
-		return myRights;
-	}
-
-	return {
-		myId: function(id){
-			if(!id){
-				return myId;
-			}
-			myId = id;
-		},
-		roleFromFileType: function(fileType){
-			var types = {
-				'doc': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
-				},
-				'xls': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1;
-				},
-				'img': function(type){
-					return type.indexOf('image') !== -1;
-				},
-				'pdf': function(type){
-					return type.indexOf('pdf') !== -1;
-				},
-				'ppt': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1;
-				},
-				'video': function(type){
-					return type.indexOf('video') !== -1;
-				},
-				'audio': function(type){
-					return type.indexOf('audio') !== -1;
-				}
-			}
-
-			for(var type in types){
-				if(types[type](fileType)){
-					return type;
-				}
-			}
-
-			return 'unknown';
-		},
-		refresh: function(){
-			window.location.reload();
-		},
-		contextualButtons: function(contextName){
-			var contextsButtons = {
-				ownerDocuments: [
-					{ text: 'workspace.add.document', call: 'addDocument', icon: true },
-					{ text: 'workspace.send.rack', call: 'sendRack' },
-					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
-					{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
-					{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
-				],
-				sharedDocuments: [
-					{ text: 'workspace.send.rack', call: 'sendRack' },
-					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'document/trash', contextual: true },
-					{ text: 'workspace.move', call: 'move', url: 'documents/move', contextual: true },
-					{ text: 'workspace.copy', call: 'copy', url: 'documents/copy', contextual: true }
-				],
-				rack: [
-					{ text: 'workspace.send.rack', call: 'sendRack' },
-					{ text: 'workspace.move.racktodocs', call: 'copy', url: 'rack/documents/copy', contextual: true },
-					{ text: 'workspace.move.trash', call: 'moveTrash', url: 'rack/trash', contextual: true }
-				],
-				trash: [
-					{ text: 'workspace.move.trash', call: 'remove', contextual: true },
-					{ text: 'workspace.trash.restore', call: 'restore', contextual: true }
-				]
-			}
-
-			return contextsButtons[contextName];
-		},
-		formatResponse: function(response, callback){
-			response.forEach(function(item){
-				item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
-				var fileNameSplit = item.metadata.filename.split('.');
-				item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
-				if(item.metadata.contentType === 'img'){
-					item.thumbnail = 'document/' + item._id;
-				}
-
-				if(item.from){
-					if(item.metadata.contentType === 'img'){
-						item.thumbnail = 'rack/' + item._id;
-					}
-					One.get('/userbook/api/person?id=' + item.from)
-						.done(function(fromData){
-							One.get('/userbook/api/person?id=' + item.to)
-								.done(function(toData){
-									item.from = fromData.result[0].displayName;
-									item.to = toData.result[0].displayName;
-									callback(response);
-								});
-						});
-				}
-
-				if(item.created){
-					item.created = item.created.split(' ')[0];
-					item.modified = item.modified.split(' ')[0];
-				}
-				if(item.sent){
-					item.sent = item.sent.split(' ')[0];
-				}
-			})
-
-			callback(response);
-		},
-		mapFolderName: function(dir){
-			if (dir.indexOf("_") !== -1) {
-				return { name : dir.substring(dir.lastIndexOf("_") + 1), path : dir };
-			}
-			return { name : dir, path : dir };
-		}
-	}
-}());

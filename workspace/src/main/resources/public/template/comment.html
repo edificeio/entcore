@@ -1,2 +1,14 @@
-<h1 translate key="workspace.comment"></h1>
-	<div contenteditable="true"></div>
+<div class="fixed-block height-six">
+	<div class="fixed twelve cell">
+		<form class="twelve fluid cell" ng-submit="sendComment()">
+			<h1 translate key="workspace.comment"></h1>
+			<div class="row">
+				<textarea ng-model="targetDocument.comment"></textarea>
+			</div>
+			<div class="lightbox-buttons fluid">
+				<input class="cancel" type="button" translate-attr="value" value="cancel" />
+				<input type="submit" translate-attr="value" value="workspace.comment" />
+			</div>
+		</form>
+	</div>
+</div>
