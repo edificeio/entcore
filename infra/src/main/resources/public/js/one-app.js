@@ -308,7 +308,8 @@ oneModule.directive('htmlEditor', function($compile){
 		restrict: 'E',
 		transclude: true,
 		replace: true,
-		template: '<div contenteditable="true"></div>',
+		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
+			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
