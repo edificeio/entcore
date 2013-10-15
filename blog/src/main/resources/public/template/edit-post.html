@@ -1,6 +1,6 @@
 <form data-ng-submit="createPost()">
 	<input type="text" data-ng-model="dataToEdit.title"/>
-	<textarea data-ng-model="dataToEdit.content"></textarea>
+	<html-editor></html-editor>
 	<input type="submit" class="button right-magnet" value="Valider">
 	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(dataToEdit.blogid)" value="Annuler">
 </form>

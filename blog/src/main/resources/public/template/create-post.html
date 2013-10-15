@@ -1,6 +1,6 @@
 <form data-ng-submit="createPost()">
 	<input type="text" data-ng-model="newPostTitle" placeholder="Entrez le titre de votre billet"/>
-	<textarea data-ng-model="newPostContent" placeholder="Entrez le contenu de votre billet"></textarea>
+	<html-editor></html-editor>
 	<input type="submit" class="button right-magnet" value="Valider">
 	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(currentBlog.id)" value="Annuler">
 </form>

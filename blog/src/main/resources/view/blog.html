@@ -16,7 +16,7 @@
 							 'height-one':true, 'box':true, 'row':true, 
 							 'selected':isSelected([[blog.id]])}">
 						<div class="four cell fixed">
-							<div class="fluid twelve cell">
+							<div class="fluid twelve cell clip">
 								<img src="{{#static}}img/blog.png{{/static}}">
 							</div>
 						</div>
@@ -29,7 +29,7 @@
 							</div>
 						</div>
 					</section>
-					<a data-ng-click="showEditBlog([[blog.id]])">{{#i18n}}blog.edit.blog{{/i18n}}</a><hr>
+					<a data-ng-click="showEditBlog([[blog.id]])">{{#i18n}}blog.edit.title{{/i18n}}</a><hr>
 				</div>
 				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>

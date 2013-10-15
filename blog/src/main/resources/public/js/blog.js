@@ -19,7 +19,7 @@ var views = {
 	"displayBlog":{}
 }
 
-function Blog($scope, http, lang, date, notify){
+function Blog($scope, http, date){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
 	$scope.currentPostId = '';
@@ -87,6 +87,7 @@ function Blog($scope, http, lang, date, notify){
 				$scope.currentBlog = '';
 				$scope.currentView= views.editBlog;
 				$scope.$apply();
+
 			});
 	}
 	$scope.showEditPost = function(id){
