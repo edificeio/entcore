@@ -398,6 +398,9 @@ table.list-view td h2 {
 table.list-view td img {
   vertical-align: middle;
 }
+.cke_editor_editor1 {
+  display: block !important;
+}
 ul.icons-view {
   padding-left: 0;
 }
@@ -612,6 +615,10 @@ article h2:first-child {
 .text-container article.box .bottom-locked {
   position: absolute;
   bottom: 7px;
+}
+.box .clip,
+.text-container article.box .clip {
+  overflow: hidden;
 }
 .box .avatar,
 .text-container article.box .avatar {
