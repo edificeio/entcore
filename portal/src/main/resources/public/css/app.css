@@ -401,6 +401,11 @@ table.list-view td img {
 .cke_editor_editor1 {
   display: block !important;
 }
+.editor-container {
+  margin-top: 100px;
+  min-height: 300px;
+  margin-bottom: 15px;
+}
 ul.icons-view {
   padding-left: 0;
 }

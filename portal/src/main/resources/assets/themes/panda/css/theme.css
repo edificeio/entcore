@@ -401,6 +401,11 @@ table.list-view td img {
 .cke_editor_editor1 {
   display: block !important;
 }
+.editor-container {
+  margin-top: 100px;
+  min-height: 300px;
+  margin-bottom: 15px;
+}
 ul.icons-view {
   padding-left: 0;
 }
@@ -2491,6 +2496,10 @@ table tr td ul li {
   list-style-type: none;
   padding: 5px;
   width: 100%;
+}
+.editor-container {
+  border: 1px solid #eeeeee;
+  background: #fff;
 }
 em.low-importance {
   font-size: 12px;
