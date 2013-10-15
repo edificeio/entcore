@@ -5,18 +5,16 @@
 
 CKEDITOR.editorConfig = function( config ) {
 	config.toolbar = [
-		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
-		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: ['Scayt'] },
-		'/',
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
-		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
+		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Link', 'Unlink'] },
 		{ name: 'insert', items: [ 'Image', 'Table', 'Smiley'] },
 		'/',
-		{ name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
+		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
-		{ name: 'others', items: [ '-' ] }
+		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
+		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }
 	];
 
 // Toolbar groups configuration.

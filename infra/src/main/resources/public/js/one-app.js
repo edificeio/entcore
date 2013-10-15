@@ -195,14 +195,6 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			translate: One.translate
 		}
 	})
-	.factory('textEditor', function(){
-		CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
-		if(window.CKEDITOR === undefined){
-			loader.syncLoad('ckeditor');
-			CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins';
-		}
-		return CKEDITOR;
-	})
 	.factory('_', function(){
 		if(window._ === undefined){
 			loader.syncLoad('underscore');
@@ -310,3 +302,29 @@ oneModule.directive('translateAttr', function($compile) {
 		}
 	};
 });
+
+oneModule.directive('htmlEditor', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		template: '<div contenteditable="true"></div>',
+		compile: function($element, $attributes, $transclude){
+			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			if(window.CKEDITOR === undefined){
+				loader.syncLoad('ckeditor');
+				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins';
+			}
+			return function($scope, $element, $attributes){
+				CKEDITOR.inlineAll();
+				var editor = $('[contenteditable=true]');
+
+				editor.focus();
+				//wait for editor panel to be added
+				$("body").bind("DOMSubtreeModified", function() {
+					$('.cke_editor_editor1').width(editor.width());
+				});
+			}
+		}
+	}
+})
