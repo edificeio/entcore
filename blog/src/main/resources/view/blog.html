@@ -7,13 +7,26 @@
 		<script src="{{#static}}js/blog.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body data-ng-controller="Blog">
+	<div class="row">
 		<div class="four cell">
 			<a data-ng-click="displayLastPosts()"><h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1></a>
-			<hr>
+		</div>
+		<div class="eight cell">
+			<nav class="contextual-buttons row">
+				<div class="action-buttons">
+					<button data-ng-click="showCreatePost()" class="button" data-ng-disabled="isCurrentView('createPost')" data-ng-if="isVisible()">
+						<i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}
+					</button>
+				</div>
+			</nav>
+		</div>
+	</div>
+	<div class="row text-container">
+		<div class="four cell">
 			<nav class="vertical">
 				<div data-ng-repeat="blog in blogs">
 					<section data-ng-class="{'fixed-block':true, 'cell':true,
-							 'height-one':true, 'box':true, 'row':true, 
+							 'height-one':true, 'box':true, 'row':true,
 							 'selected':isSelected([[blog.id]])}">
 						<div class="four cell fixed">
 							<div class="fluid twelve cell clip">
@@ -33,16 +46,8 @@
 				</div>
 				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
-		</div>
-		<div class="eight cell">
-			<nav class="contextual-buttons row">
-				<div class="action-buttons">
-					<a data-ng-click="showCreatePost()" class="button" data-ng-disabled="isCurrentView('createPost')" data-ng-if="isVisible()">
-						<i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}
-					</a>
-				</div>
-			</nav>
-			<hr>
+	</div>
+	<div class="eight cell">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
 			<article class="text-container row">
@@ -62,7 +67,7 @@
 					</h5>
 					<p class="row">[[post.content]]</p>
 					<div class="row" data-ng-if="post.commentable">
-						<a class="button" data-ng-click="showCommentPost([[post.id]])" 
+						<a class="button" data-ng-click="showCommentPost([[post.id]])"
 						   data-ng-disabled="(commentFormPath !== '') && (currentPostId == [[post.id]])">
 							{{#i18n}}blog.comment.post{{/i18n}}
 						</a>
@@ -73,5 +78,7 @@
 			</article>
 		</div>
 		<div class="clear"></div>
+		</div>
+
 	</body>
 </html>
