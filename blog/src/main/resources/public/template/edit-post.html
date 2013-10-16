@@ -1,6 +1,6 @@
 <form data-ng-submit="createPost()">
 	<input type="text" data-ng-model="dataToEdit.title"/>
-	<html-editor></html-editor>
+	<html-editor file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"></html-editor>
 	<input type="submit" class="button right-magnet" value="Valider">
 	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(dataToEdit.blogid)" value="Annuler">
 </form>
