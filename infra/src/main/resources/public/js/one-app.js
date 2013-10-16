@@ -314,9 +314,11 @@ oneModule.directive('htmlEditor', function($compile){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
-				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins';
+				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+
 			}
 			return function($scope, $element, $attributes){
+				CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 

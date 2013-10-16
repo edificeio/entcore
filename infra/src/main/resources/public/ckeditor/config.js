@@ -4,11 +4,13 @@
  */
 
 CKEDITOR.editorConfig = function( config ) {
+	config.allowedContent = true;
+	config.extraPlugins = 'upload';
 	config.toolbar = [
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Link', 'Unlink'] },
-		{ name: 'insert', items: [ 'Image', 'Table', 'Smiley'] },
+		{ name: 'insert', items: [ 'Image', 'Table', 'Smiley', 'SpecialChar', 'Upload'] },
 		'/',
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
@@ -35,4 +37,6 @@ CKEDITOR.editorConfig = function( config ) {
 		{ name: 'others' },
 		{ name: 'about' }
 	];
+
+	config.allowedContent = true
 };
