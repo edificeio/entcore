@@ -1,11 +1,17 @@
 package edu.one.core.blog;
 
 import edu.one.core.blog.controllers.BlogController;
+import edu.one.core.blog.controllers.PostController;
 import edu.one.core.blog.security.BlogResourcesProvider;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Server;
+import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.request.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class Blog extends Server {
 
@@ -26,7 +32,18 @@ public class Blog extends Server {
 		blogController.get("/list/all", "list");
 		blogController.get("/:blogId", "get");
 
-		SecurityHandler.addFilter(new ActionFilter(blogController.securedUriBinding(),
+		PostController postController = new PostController(vertx, container, rm, securedActions, mongo);
+		postController.post("/post/:blogId", "create");
+		postController.put("/post/:blogId/:postId", "update");
+		postController.delete("/post/:blogId/:postId", "delete");
+		postController.get("/post/list/all/:blogId", "list");
+		postController.get("/post/:blogId/:postId", "get");
+
+		List<Set<Binding>> securedUriBinding = new ArrayList<>();
+		securedUriBinding.add(blogController.securedUriBinding());
+		securedUriBinding.add(postController.securedUriBinding());
+
+		SecurityHandler.addFilter(new ActionFilter(securedUriBinding,
 				Server.getEventBus(vertx), new BlogResourcesProvider(mongo)));
 	}
 

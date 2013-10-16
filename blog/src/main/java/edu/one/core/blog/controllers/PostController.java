@@ -2,11 +2,10 @@ package edu.one.core.blog.controllers;
 
 import static edu.one.core.blog.controllers.BlogResponseHandler.*;
 
-import edu.one.core.blog.services.BlogService;
-import edu.one.core.blog.services.impl.DefaultBlogService;
+import edu.one.core.blog.security.BlogResourcesProvider;
+import edu.one.core.blog.services.PostService;
+import edu.one.core.blog.services.impl.DefaultPostService;
 import edu.one.core.infra.Controller;
-import java.util.Map;
-
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Utils;
 import edu.one.core.infra.security.UserUtils;
@@ -20,25 +19,27 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.platform.Container;
 
-public class BlogController extends Controller {
+import java.util.Map;
 
-	private final BlogService blog;
+public class PostController extends Controller {
 
-	public BlogController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
-		MongoDb mongo) {
+	private final PostService post;
+
+	public PostController(Vertx vertx, Container container,
+						  RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
+						  MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
-		this.blog = new DefaultBlogService(mongo);
-	}
-
-	@SecuredAction("blog.view")
-	public void blog(HttpServerRequest request) {
-		renderView(request);
+		this.post = new DefaultPostService(mongo);
 	}
 
 	// TODO improve fields matcher and validater
-	@SecuredAction("blog.create")
+	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
 	public void create(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		if (blogId == null || blogId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -47,7 +48,7 @@ public class BlogController extends Controller {
 					request.endHandler(new VoidHandler() {
 						@Override
 						protected void handle() {
-							blog.create(Utils.jsonFromMultimap(request.formAttributes()), user,
+							post.create(blogId, Utils.jsonFromMultimap(request.formAttributes()), user,
 									defaultResponseHandler(request));
 						}
 					});
@@ -58,10 +59,10 @@ public class BlogController extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
-		final String blogId = request.params().get("blogId");
-		if (blogId == null || blogId.trim().isEmpty()) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
@@ -69,39 +70,45 @@ public class BlogController extends Controller {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				blog.update(blogId, Utils.jsonFromMultimap(request.formAttributes()),
+				post.update(postId, Utils.jsonFromMultimap(request.formAttributes()),
 						defaultResponseHandler(request));
 			}
 		});
 	}
 
-	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
-		final String blogId = request.params().get("blogId");
-		if (blogId == null || blogId.trim().isEmpty()) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
-		blog.delete(blogId, defaultResponseHandler(request, 204));
+		post.delete(postId, defaultResponseHandler(request, 204));
 	}
 
 	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		post.get(postId, BlogResourcesProvider.getStateType(request), defaultResponseHandler(request));
+	}
+
+	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
+	public void list(final HttpServerRequest request) {
 		final String blogId = request.params().get("blogId");
 		if (blogId == null || blogId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
-		blog.get(blogId, defaultResponseHandler(request));
-	}
-
-	@SecuredAction("blog.list")
-	public void list(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					blog.list(user, arrayResponseHandler(request));
+					post.list(blogId, BlogResourcesProvider.getStateType(request),
+							user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
