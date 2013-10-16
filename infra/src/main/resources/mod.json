@@ -110,7 +110,7 @@
           { "location" : "/communication", "proxy_pass": "http://localhost:8015" },
           { "location" : "/timeline", "proxy_pass": "http://localhost:8016" },
           { "location" : "/blog", "proxy_pass": "http://localhost:8018" },
-          { "location" : "/userbook", "proxy_pass": "http://localhost:8101" }
+          { "location" : "/userbook", "proxy_pass": "http://localhost:8003" }
         ]
       }
     },{
