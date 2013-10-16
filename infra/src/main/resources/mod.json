@@ -72,7 +72,7 @@
   ],
   "external-modules" : [
     {
-      "name" : "io.vertx~mod-mongo-persistor~2.0.0-final-WSE",
+      "name" : "io.vertx~mod-mongo-persistor~2.0.1-WSE-SNAPSHOT",
       "config" : {
         "address": "wse.mongodb.persistor",
         "host": "localhost",
