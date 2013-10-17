@@ -1,6 +1,7 @@
 package edu.one.core.blog.services.impl;
 
 import com.mongodb.QueryBuilder;
+import edu.one.core.blog.services.BlogService;
 import edu.one.core.blog.services.PostService;
 import edu.one.core.infra.*;
 import edu.one.core.infra.security.resources.UserInfos;
@@ -135,6 +136,68 @@ public class DefaultPostService implements PostService {
 				}
 			});
 		}
+	}
+
+	@Override
+	public void submit(String postId, UserInfos user, final Handler<Either<String, JsonObject>> result) {
+		QueryBuilder query = QueryBuilder.start("_id").is(postId)
+				.put("state").is(StateType.DRAFT.name()).put("author.userId").is(user.getUserId());
+		final JsonObject q = MongoQueryBuilder.build(query);
+		JsonObject keys = new JsonObject().putNumber("blog", 1);
+		JsonArray fetch = new JsonArray().addString("blog");
+		mongo.findOne(POST_COLLECTION, q, keys, fetch,
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) &&
+						event.body().getObject("result", new JsonObject()).size() > 0) {
+					BlogService.PublishType type = Utils.stringToEnum(event.body().getObject("result")
+							.getObject("blog",  new JsonObject()).getString("publish-type"),
+							BlogService.PublishType.RESTRAINT, BlogService.PublishType.class);
+					StateType state;
+					if (BlogService.PublishType.RESTRAINT.equals(type)) {
+						state = StateType.SUBMITTED;
+					} else {
+						state = StateType.PUBLISHED;
+					}
+					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", state.name());
+					mongo.update(POST_COLLECTION, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							result.handle(Utils.validResult(res));
+						}
+					});
+				} else {
+					result.handle(Utils.validResult(event));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void publish(String postId, final Handler<Either<String, JsonObject>> result) {
+		QueryBuilder query = QueryBuilder.start("_id").is(postId);
+		MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", StateType.PUBLISHED.name());
+		mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), updateQuery.build(),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				result.handle(Utils.validResult(res));
+			}
+		});
+	}
+
+	@Override
+	public void unpublish(String postId, final Handler<Either<String, JsonObject>> result) {
+		QueryBuilder query = QueryBuilder.start("_id").is(postId);
+		MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", StateType.DRAFT.name());
+		mongo.update(POST_COLLECTION, MongoQueryBuilder.build(query), updateQuery.build(),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				result.handle(Utils.validResult(res));
+			}
+		});
 	}
 
 	private boolean validationError(Handler<Either<String, JsonObject>> result, JsonObject b) {

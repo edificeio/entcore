@@ -28,4 +28,10 @@ public interface PostService {
 
 	void list(String blogId, StateType state, UserInfos user, Handler<Either<String, JsonArray>> result);
 
+	void submit(String postId, UserInfos user, Handler<Either<String, JsonObject>> result);
+
+	void publish(String postId, Handler<Either<String, JsonObject>> result);
+
+	void unpublish(String postId, Handler<Either<String, JsonObject>> result);
+
 }

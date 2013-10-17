@@ -48,10 +48,13 @@ public class BlogResourcesProvider implements ResourcesProvider {
 					break;
 				case "list":
 				case "create":
+				case "submit":
+				case "publish":
 					authorizeBlog(request, user, binding.getServiceMethod(), handler);
 					break;
 				case "update":
 				case "delete":
+				case "unpublish":
 					authorizeUpdateDeletePost(request, user, binding.getServiceMethod(), handler);
 					break;
 				default:

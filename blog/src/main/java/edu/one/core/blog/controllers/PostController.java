@@ -116,4 +116,43 @@ public class PostController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
+	public void submit(final HttpServerRequest request) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					post.submit(postId, user, defaultResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	public void publish(final HttpServerRequest request) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		post.publish(postId, defaultResponseHandler(request));
+	}
+
+	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
+	public void unpublish(final HttpServerRequest request) {
+		final String postId = request.params().get("postId");
+		if (postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		post.unpublish(postId, defaultResponseHandler(request));
+	}
+
 }

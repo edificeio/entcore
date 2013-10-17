@@ -23,6 +23,10 @@ public class DefaultBlogService implements BlogService{
 
 	@Override
 	public void create(JsonObject blog, UserInfos author, final Handler<Either<String, JsonObject>> result) {
+		CommentType commentType = Utils.stringToEnum(blog.getString("comment-type", "").toUpperCase(),
+				CommentType.NONE, CommentType.class);
+		PublishType publishType = Utils.stringToEnum(blog.getString("publish-type", "").toUpperCase(),
+				PublishType.RESTRAINT, PublishType.class);
 		JsonObject now = MongoDb.now();
 		JsonObject owner = new JsonObject()
 				.putString("userId", author.getUserId())
@@ -34,6 +38,8 @@ public class DefaultBlogService implements BlogService{
 		blog.putObject("created", now)
 				.putObject("modified", now)
 				.putObject("author", owner)
+				.putString("comment-type", commentType.name())
+				.putString("publish-type", publishType.name())
 				.putArray("shared", new JsonArray().addObject(manager));
 		JsonObject b = Utils.validAndGet(blog, FIELDS, FIELDS);
 		if (validationError(result, b)) return;
@@ -48,6 +54,22 @@ public class DefaultBlogService implements BlogService{
 	@Override
 	public void update(String blogId, JsonObject blog, final Handler<Either<String, JsonObject>> result) {
 		blog.putObject("modified", MongoDb.now());
+		if (blog.getString("comment-type") != null) {
+			try {
+				CommentType.valueOf(blog.getString("comment-type").toUpperCase());
+				blog.putString("comment-type", blog.getString("comment-type").toUpperCase());
+			} catch (IllegalArgumentException | NullPointerException e) {
+				blog.removeField("comment-type");
+			}
+		}
+		if (blog.getString("publish-type") != null) {
+			try {
+				PublishType.valueOf(blog.getString("publish-type").toUpperCase());
+				blog.putString("publish-type", blog.getString("publish-type").toUpperCase());
+			} catch (IllegalArgumentException | NullPointerException e) {
+				blog.removeField("publish-type");
+			}
+		}
 		JsonObject b = Utils.validAndGet(blog, UPDATABLE_FIELDS, Collections.<String>emptyList());
 		if (validationError(result, b)) return;
 		QueryBuilder query = QueryBuilder.start("_id").is(blogId);

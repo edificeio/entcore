@@ -38,6 +38,9 @@ public class Blog extends Server {
 		postController.delete("/post/:blogId/:postId", "delete");
 		postController.get("/post/list/all/:blogId", "list");
 		postController.get("/post/:blogId/:postId", "get");
+		postController.put("/post/submit/:blogId/:postId", "submit");
+		postController.put("/post/publish/:blogId/:postId", "publish");
+		postController.put("/post/unpublish/:blogId/:postId", "unpublish");
 
 		List<Set<Binding>> securedUriBinding = new ArrayList<>();
 		securedUriBinding.add(blogController.securedUriBinding());

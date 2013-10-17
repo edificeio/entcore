@@ -14,11 +14,13 @@ public interface BlogService {
 
 	enum CommentType { NONE, IMMEDIATE, RESTRAINT };
 
+	enum PublishType { IMMEDIATE, RESTRAINT };
+
 	List<String> FIELDS = Arrays.asList("author", "title", "description",
-			"thumbnail", "comment-type", "created", "modified", "shared");
+			"thumbnail", "comment-type", "created", "modified", "shared", "publish-type");
 
 	List<String> UPDATABLE_FIELDS = Arrays.asList("title", "description",
-			"thumbnail", "comment-type", "modified");
+			"thumbnail", "comment-type", "modified", "publish-type");
 
 	void create(JsonObject blog, UserInfos author, Handler<Either<String, JsonObject>> result);
 
