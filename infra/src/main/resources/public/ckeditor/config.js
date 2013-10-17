@@ -47,7 +47,7 @@ CKEDITOR.editorConfig = function( config ) {
 		.children('link')
 		.attr('href')
 		.split('/css')[0] + '/img/icons/';
-	console.log(moodsPath);
+
 	config.smiley_path = moodsPath;
 	config.smiley_images= ['angry-panda-small.png', 'dreamy-panda-small.png', 'happy-panda-small.png',
 	'joker-panda-small.png', 'love-panda-small.png', 'proud-panda-small.png', 'sad-panda-small.png',

@@ -94,3 +94,14 @@ var ui = (function(){
 
 	return ui;
 }());
+
+// Remove event in JQuery
+(function($){
+	$.event.special.removed = {
+		remove: function(o) {
+			if (o.handler) {
+				o.handler()
+			}
+		}
+	}
+})(jQuery)

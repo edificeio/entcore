@@ -322,11 +322,19 @@ oneModule.directive('htmlEditor', function($compile){
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 
+				editor.on('focus', function(){
+					//wait for editor panel to be added
+					$("body").on("DOMSubtreeModified.editor", function() {
+						$('.cke_chrome').width(editor.width());
+						$('body').unbind('DOMSubtreeModified.editor')
+					});
+				})
 				editor.focus();
-				//wait for editor panel to be added
-				$("body").bind("DOMSubtreeModified", function() {
-					$('.cke_editor_editor1').width(editor.width());
-				});
+
+
+				$element.on('removed', function(){
+					$('.cke').remove();
+				})
 			}
 		}
 	}
