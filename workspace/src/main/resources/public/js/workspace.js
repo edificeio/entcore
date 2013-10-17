@@ -454,7 +454,14 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 				$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
 			}
 		});
-	}
+	};
+
+	$scope.boxes = { selectAll: false }
+	$scope.switchSelectAll = function(){
+		$scope.openedFolder.content.forEach(function(document){
+			document.selected = $scope.boxes.selectAll;
+		});
+	};
 
 	var targetFolders = [];
 	$scope.switchTargetFolder = function(key, value){

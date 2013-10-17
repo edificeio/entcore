@@ -2,7 +2,7 @@
 	<thead>
 		<tr>
 			<th scope="col">
-				<input type="checkbox" class="selectAllCheckboxes" />
+				<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
 			</th>
 			<th scope="col"></th>
 			<th scope="col" class="five" translate key="name"></th>
