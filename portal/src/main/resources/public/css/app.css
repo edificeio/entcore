@@ -637,6 +637,10 @@ article h2:first-child {
   width: 100%;
   height: 100%;
 }
+[ng-click],
+[data-ng-click] {
+  cursor: pointer;
+}
 hr {
   border: none;
   margin: 15px;
