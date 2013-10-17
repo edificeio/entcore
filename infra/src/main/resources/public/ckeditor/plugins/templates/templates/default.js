@@ -26,7 +26,7 @@ CKEDITOR.addTemplates(
 			description:"Une illustration enveloppée dans du texte.",
 			html:'<h2 class="text-container">Titre</h2>' +
 				'<div class="row text-container">' +
-				'<div class="three cell clip img-container avatar">' +
+				'<div class="three cell clip img-container avatar" style="margin: 10px">' +
 				'<img src="' + imagesPath + 'filler-image.png" />' +
 				'</div>' +
 				'<p class="text-container" style="text-align: justify;margin-top:0">Contenu de l\'article</p></div>'
