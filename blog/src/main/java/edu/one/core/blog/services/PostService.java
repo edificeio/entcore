@@ -24,14 +24,23 @@ public interface PostService {
 
 	void delete(String postId, Handler<Either<String, JsonObject>> result);
 
-	void get(String postId, StateType state, Handler<Either<String, JsonObject>> result);
+	void get(String blogId, String postId, StateType state, Handler<Either<String, JsonObject>> result);
 
 	void list(String blogId, StateType state, UserInfos user, Handler<Either<String, JsonArray>> result);
 
-	void submit(String postId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void submit(String blogId, String postId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
-	void publish(String postId, Handler<Either<String, JsonObject>> result);
+	void publish(String blogId, String postId, Handler<Either<String, JsonObject>> result);
 
 	void unpublish(String postId, Handler<Either<String, JsonObject>> result);
+
+	void addComment(String blogId, String postId, String comment, UserInfos author,
+			Handler<Either<String, JsonObject>> result);
+
+	void deleteComment(String blogId, String commentId, UserInfos author, Handler<Either<String, JsonObject>> result);
+
+	void listComment(String blogId, String postId, UserInfos author, Handler<Either<String, JsonArray>> result);
+
+	void publishComment(String blogId, String commentId, Handler<Either<String, JsonObject>> result);
 
 }

@@ -88,12 +88,14 @@ public class PostController extends Controller {
 
 	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
 		final String postId = request.params().get("postId");
-		if (postId == null || postId.trim().isEmpty()) {
+		if (blogId == null || blogId.trim().isEmpty() ||
+				postId == null || postId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
-		post.get(postId, BlogResourcesProvider.getStateType(request), defaultResponseHandler(request));
+		post.get(blogId, postId, BlogResourcesProvider.getStateType(request), defaultResponseHandler(request));
 	}
 
 	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
@@ -118,8 +120,10 @@ public class PostController extends Controller {
 
 	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
 	public void submit(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
 		final String postId = request.params().get("postId");
-		if (postId == null || postId.trim().isEmpty()) {
+		if (blogId == null || blogId.trim().isEmpty() ||
+				postId == null || postId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
@@ -127,7 +131,7 @@ public class PostController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					post.submit(postId, user, defaultResponseHandler(request));
+					post.submit(blogId, postId, user, defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
@@ -137,12 +141,14 @@ public class PostController extends Controller {
 
 	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
 	public void publish(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
 		final String postId = request.params().get("postId");
-		if (postId == null || postId.trim().isEmpty()) {
+		if (blogId == null || blogId.trim().isEmpty() ||
+				postId == null || postId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
-		post.publish(postId, defaultResponseHandler(request));
+		post.publish(blogId, postId, defaultResponseHandler(request));
 	}
 
 	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)
@@ -153,6 +159,102 @@ public class PostController extends Controller {
 			return;
 		}
 		post.unpublish(postId, defaultResponseHandler(request));
+	}
+
+	@SecuredAction(value = "blog.comment", type = ActionType.RESOURCE)
+	public void comment(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		final String postId = request.params().get("postId");
+		if (blogId == null || blogId.trim().isEmpty() ||
+				postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							post.addComment(blogId, postId, request.formAttributes().get("comment"),
+									user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "blog.comment", type = ActionType.RESOURCE)
+	public void deleteComment(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		final String commentId = request.params().get("commentId");
+		if (blogId == null || blogId.trim().isEmpty() ||
+				commentId == null || commentId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							post.deleteComment(blogId, commentId, user,
+									defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
+	public void comments(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		final String postId = request.params().get("postId");
+		if (blogId == null || blogId.trim().isEmpty() ||
+				postId == null || postId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							post.listComment(blogId, postId, user,
+									arrayResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	public void publishComment(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		final String commentId = request.params().get("commentId");
+		if (blogId == null || blogId.trim().isEmpty() ||
+				commentId == null || commentId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		post.publishComment(blogId, commentId, defaultResponseHandler(request));
 	}
 
 }
