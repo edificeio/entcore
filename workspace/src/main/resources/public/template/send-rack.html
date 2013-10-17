@@ -14,13 +14,12 @@
 			</div>
 			<div class="row">
 				<label class="four cell" translate key="workspace.rack.to"></label>
-				<select class="eight cell" name="to">
-					<option value="[[user.id]]" ng-repeat="user in users">[[user.username]]</option>
+				<select class="eight cell" ng-model="to.id" ng-options="user.id as user.username for user in users">
 				</select>
 			</div>
 			<div class="lightbox-buttons">
 				<input type="button" class="cancel" translate-attr="value" value="cancel" />
-				<input call="sendFile" type="button" translate-attr="value" value="upload" />
+				<input call="sendFile" type="submit" translate-attr="value" value="upload" />
 			</div>
 		</div>
 	</form>

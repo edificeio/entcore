@@ -430,32 +430,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
 	};
 
-	$scope.sendNewFile = function(context){
-		var formData = new FormData();
-		formData.append('file', $scope.newFile.file);
-		var url = '';
-		if (context === 'rack') {
-			url = 'rack/' + $scope.toName;
-		}
-		else{
-			url = 'document'
-		}
-		$scope.loading = $scope.translate('loading');
-		http.postFile(url + '?name=' + $scope.newFile.name,  formData).done(function(e){
-			ui.hideLightbox();
-			$scope.loading = '';
-			var path = folderToString($scope.folders[$scope.currentTree.name], $scope.currentTree.name, $scope.openedFolder.folder, $scope.openedFolder.name);
-			if(context !== 'rack' && path !== ''){
-				http.put("documents/move/" + e._id + path).done(function(){
-					$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
-				});
-			}
-			else{
-				$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name);
-			}
-		});
-	};
-
 	$scope.boxes = { selectAll: false }
 	$scope.switchSelectAll = function(){
 		$scope.openedFolder.content.forEach(function(document){
@@ -525,12 +499,15 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
 	};
 
+	$scope.to = {
+		id: ''
+	}
 	$scope.sendNewFile = function(context){
 		var formData = new FormData();
 		formData.append('file', $scope.newFile.file);
 		var url = '';
 		if (context === 'rack') {
-			url = 'rack/' + $scope.toName;
+			url = 'rack/' + $scope.to.id;
 		}
 		else{
 			url = 'document'
