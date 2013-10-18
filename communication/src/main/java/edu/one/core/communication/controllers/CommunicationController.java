@@ -341,6 +341,9 @@ public class CommunicationController extends Controller {
 			case "usersCanSeeMe":
 				usersCanSeeMe(userId, responseHandler);
 				break;
+			case "visibleProfilsGroups":
+				visibleProfilsGroups(userId, responseHandler);
+				break;
 			default:
 				message.reply(new JsonArray());
 				break;
@@ -407,6 +410,31 @@ public class CommunicationController extends Controller {
 				"RETURN distinct m.id as id, m.ENTPersonLogin as login, " +
 				"m.ENTPersonNomAffichage? as username, m.type as type " +
 				"ORDER BY username ";
+		Map<String, Object> params = new HashMap<>();
+		params.put("userId", userId);
+		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonArray r = new JsonArray();
+				if ("ok".equals(res.body().getString("status"))) {
+					r = resultToJsonArray(res.body().getObject("result"));
+				}
+				handler.handle(r);
+			}
+		});
+	}
+
+	private void visibleProfilsGroups(String userId, final Handler<JsonArray> handler) {
+		String query =
+				"START n = node:node_auto_index(id={userId}) " +
+				"MATCH n-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-gp " +
+				"WHERE has(gp.type) AND gp.type IN ['GROUP_CLASSE_PERSRELELEVE','GROUP_CLASSE_ELEVE'," +
+						"'GROUP_CLASSE_PERSEDUCNAT','GROUP_CLASSE_ENSEIGNANT','GROUP_ETABEDUCNAT_PERSRELELEVE'," +
+						"'GROUP_ETABEDUCNAT_ELEVE','GROUP_ETABEDUCNAT_PERSEDUCNAT','GROUP_ETABEDUCNAT_ENSEIGNANT'," +
+						"'GROUP_ETABEDUCNAT_DIRECTEUR'] " +
+				"RETURN distinct gp.id as id, gp.name as name, gp.type as type " +
+				"ORDER BY name ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
