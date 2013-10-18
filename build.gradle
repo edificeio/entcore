@@ -60,6 +60,7 @@ project(':admin') {
   dependencies {
     provided project(':processor')
     compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
 
@@ -68,6 +69,7 @@ project(':app-registry') {
     provided project(':processor')
     compile project(':infra')
     compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
 
@@ -86,6 +88,7 @@ project(':communication') {
     provided project(':processor')
     compile project(':infra')
     compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
 
@@ -102,6 +105,7 @@ project(':directory') {
     compile project(':dataDictionary')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile 'net.sf.opencsv:opencsv:2.4'
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
 
@@ -158,14 +162,6 @@ project(':workspace') {
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
     testCompile 'com.ning:async-http-client:1.7.17'
     testCompile 'commons-codec:commons-codec:1.8'
-  }
-}
-
-project(':history') {
-  dependencies {
-    provided project(':processor')
-    compile project(':infra')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
   }
 }
 
