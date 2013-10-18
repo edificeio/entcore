@@ -1,5 +1,6 @@
 package edu.one.core.blog.security;
 
+import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.controllers.BlogController;
 import edu.one.core.blog.controllers.PostController;
@@ -14,6 +15,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlogResourcesProvider implements ResourcesProvider {
 
@@ -34,6 +38,8 @@ public class BlogResourcesProvider implements ResourcesProvider {
 				case "update":
 				case "delete":
 				case "get":
+				case "share":
+				case "shareSubmit":
 					authorizeBlog(request, user, binding.getServiceMethod(), handler);
 					break;
 				default:
@@ -73,16 +79,28 @@ public class BlogResourcesProvider implements ResourcesProvider {
 							   UserInfos user, String serviceMethod, Handler<Boolean> handler) {
 		String id = request.params().get("blogId");
 		if (id != null && !id.trim().isEmpty()) {
-			QueryBuilder query = QueryBuilder.start("_id").is(id).put("shared").elemMatch(
-					QueryBuilder.start("userId").is(user.getUserId()).or(
-							QueryBuilder.start(serviceMethod.replaceAll("\\.", "-")).is(true).get(),
-							QueryBuilder.start("manager").is(true).get()
-					).get()
-			);
+			QueryBuilder query = getDefaultQueryBuilder(user, serviceMethod, id);
 			executeCountQuery(request, "blogs", MongoQueryBuilder.build(query), 1, handler);
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private QueryBuilder getDefaultQueryBuilder(UserInfos user, String serviceMethod, String id) {
+		List<DBObject> groups = new ArrayList<>();
+		groups.add(QueryBuilder.start("userId").is(user.getUserId())
+				.put(serviceMethod.replaceAll("\\.", "-")).is(true).get());
+		groups.add(QueryBuilder.start("userId").is(user.getUserId())
+				.put("manager").is(true).get());
+		for (String gpId: user.getProfilGroupsIds()) {
+			groups.add(QueryBuilder.start("groupId").is(gpId)
+					.put(serviceMethod.replaceAll("\\.", "-")).is(true).get());
+			groups.add(QueryBuilder.start("groupId").is(gpId)
+					.put("manager").is(true).get());
+		}
+		return QueryBuilder.start("_id").is(id).put("shared").elemMatch(
+			new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+		);
 	}
 
 	private void authorizeUpdateDeletePost(HttpServerRequest request,
@@ -103,12 +121,7 @@ public class BlogResourcesProvider implements ResourcesProvider {
 				postId != null && !postId.trim().isEmpty()) {
 			PostService.StateType state = getStateType(request);
 			if (PostService.StateType.PUBLISHED.equals(state)) {
-				QueryBuilder query = QueryBuilder.start("_id").is(blogId).put("shared").elemMatch(
-						QueryBuilder.start("userId").is(user.getUserId()).or(
-								QueryBuilder.start(serviceMethod.replaceAll("\\.", "-")).is(true).get(),
-								QueryBuilder.start("manager").is(true).get()
-						).get()
-				);
+				QueryBuilder query = getDefaultQueryBuilder(user, serviceMethod, blogId);
 				executeCountQuery(request, "blogs", MongoQueryBuilder.build(query), 1, handler);
 			} else {
 				checkContribResource(request, user, handler, postId);
@@ -143,8 +156,9 @@ public class BlogResourcesProvider implements ResourcesProvider {
 						for (Object o: res.getObject("blog").getArray("shared")) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject json = (JsonObject) o;
-							if (json != null && json.getBoolean("manager") &&
-									user.getUserId().equals(json.getString("userId"))) {
+							if (json != null && json.getBoolean("manager", false) &&
+									(user.getUserId().equals(json.getString("userId")) ||
+											user.getProfilGroupsIds().contains(json.getString("groupId")))) {
 								handler.handle(true);
 								return;
 							}

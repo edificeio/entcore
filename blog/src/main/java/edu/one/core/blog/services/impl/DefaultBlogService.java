@@ -1,5 +1,6 @@
 package edu.one.core.blog.services.impl;
 
+import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogService;
 import edu.one.core.infra.*;
@@ -9,7 +10,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class DefaultBlogService implements BlogService{
 
@@ -122,8 +125,14 @@ public class DefaultBlogService implements BlogService{
 
 	@Override
 	public void list(UserInfos user, final Handler<Either<String, JsonArray>> result) {
+		List<DBObject> groups = new ArrayList<>();
+		groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+		for (String gpId: user.getProfilGroupsIds()) {
+			groups.add(QueryBuilder.start("groupId").is(gpId).get());
+		}
 		QueryBuilder query = QueryBuilder.start("shared").elemMatch(
-				QueryBuilder.start("userId").is(user.getUserId()).get());
+				new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+		);
 		JsonObject sort = new JsonObject().putNumber("modified", -1);
 		mongo.find(BLOG_COLLECTION, MongoQueryBuilder.build(query), sort, null,
 				new Handler<Message<JsonObject>>() {
@@ -132,6 +141,57 @@ public class DefaultBlogService implements BlogService{
 				result.handle(Utils.validResults(event));
 			}
 		});
+	}
+
+	@Override
+	public void share(String blogId, final JsonArray sharedArray, final List<String> updatableGroupsId,
+				final Handler<Either<String, JsonObject>> result) {
+		if (sharedArray == null) {
+			result.handle(new Either.Left<String, JsonObject>("Invalid sharing."));
+			return;
+		}
+		QueryBuilder query = QueryBuilder.start("_id").is(blogId);
+		JsonObject keys = new JsonObject().putNumber("author", 1).putNumber("shared", 1);
+		final JsonObject q = MongoQueryBuilder.build(query);
+		mongo.findOne(BLOG_COLLECTION, q, keys, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) &&
+						event.body().getObject("result", new JsonObject()).getObject("author") != null) {
+					JsonArray actual = event.body().getObject("result")
+							.getArray("shared");
+					for (int i = 0; i < actual.size(); i++) {
+						JsonObject s = actual.get(i);
+						String groupId = s.getString("groupId");
+						if (groupId == null || !updatableGroupsId.contains(groupId)) {
+							sharedArray.addObject(s);
+						}
+					}
+					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("shared", sharedArray);
+					mongo.update(BLOG_COLLECTION, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							result.handle(Utils.validResult(res));
+						}
+					});
+				} else {
+					result.handle(Utils.validResult(event));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void shared(String blogId, final Handler<Either<String, JsonObject>> result) {
+		QueryBuilder query = QueryBuilder.start("_id").is(blogId);
+		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		mongo.findOne(BLOG_COLLECTION, MongoQueryBuilder.build(query), keys,
+				new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						result.handle(Utils.validResult(event));
+					}
+				});
 	}
 
 	private boolean validationError(Handler<Either<String, JsonObject>> result, JsonObject b) {

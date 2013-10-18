@@ -26,7 +26,8 @@ public class Blog extends Server {
 
 		blogController.get("", "blog");
 		blogController.post("", "create");
-	//	blogController.put("/:blogId/share", "share");
+		blogController.get("/share/:blogId", "share");
+		blogController.post("/share/:blogId", "shareSubmit");
 		blogController.put("/:blogId", "update");
 		blogController.delete("/:blogId", "delete");
 		blogController.get("/list/all", "list");

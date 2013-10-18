@@ -1,5 +1,6 @@
 package edu.one.core.blog.services.impl;
 
+import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogService;
 import edu.one.core.blog.services.PostService;
@@ -10,7 +11,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class DefaultPostService implements PostService {
@@ -127,8 +130,7 @@ public class DefaultPostService implements PostService {
 						}
 					});
 		} else {
-			QueryBuilder query2 = QueryBuilder.start("_id").is(blogId).put("shared").elemMatch(
-					QueryBuilder.start("userId").is(user.getUserId()).put("manager").is(true).get());
+			QueryBuilder query2 = getDefautQueryBuilder(blogId, user);
 			mongo.count("blogs", MongoQueryBuilder.build(query2), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
@@ -147,6 +149,19 @@ public class DefaultPostService implements PostService {
 				}
 			});
 		}
+	}
+
+	private QueryBuilder getDefautQueryBuilder(String blogId, UserInfos user) {
+		List<DBObject> groups = new ArrayList<>();
+		groups.add(QueryBuilder.start("userId").is(user.getUserId())
+				.put("manager").is(true).get());
+		for (String gpId: user.getProfilGroupsIds()) {
+			groups.add(QueryBuilder.start("groupId").is(gpId)
+					.put("manager").is(true).get());
+		}
+		return QueryBuilder.start("_id").is(blogId).put("shared").elemMatch(
+				new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+		);
 	}
 
 	@Override
@@ -263,8 +278,7 @@ public class DefaultPostService implements PostService {
 	@Override
 	public void deleteComment(final String blogId, final String commentId, final UserInfos user,
 			final Handler<Either<String, JsonObject>> result) {
-		QueryBuilder query2 = QueryBuilder.start("_id").is(blogId).put("shared").elemMatch(
-				QueryBuilder.start("userId").is(user.getUserId()).put("manager").is(true).get());
+		QueryBuilder query2 = getDefautQueryBuilder(blogId, user);
 		mongo.count("blogs", MongoQueryBuilder.build(query2), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -325,10 +339,9 @@ public class DefaultPostService implements PostService {
 			for (Object o: res.getArray("shared")) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject json = (JsonObject) o;
-				if (json != null && json.getBoolean("manager") &&
-						user.getUserId().equals(json.getString("userId"))) {
-					return true;
-				}
+				return json != null && json.getBoolean("manager", false) &&
+						(user.getUserId().equals(json.getString("userId")) ||
+								user.getProfilGroupsIds().contains(json.getString("groupId")));
 			}
 		}
 		return false;
