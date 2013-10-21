@@ -50,7 +50,7 @@
 	<div class="eight cell">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
-			<article class="text-container row">
+			<article class="text-container row" ng-if="blogs.length > 0 || currentView !== ''">
 				<section data-ng-include="currentView.path"></section>
 				<section data-ng-repeat="post in currentBlog.posts" class="row">
 					<div class="row">
@@ -76,8 +76,8 @@
 						</div>
 						<div class="four cell right-magnet">
 							<a ng-click="switchComments(post)">
-								<span ng-if="!post.showComments">Afficher les commentaires ([[nbComments(post)]])</span>
-								<span ng-if="post.showComments">Masquer les commentaires ([[nbComments(post)]])</span>
+								<span ng-if="!post.showComments && nbComments(post) > 0">Afficher les commentaires ([[nbComments(post)]])</span>
+								<span ng-if="post.showComments && nbComments(post) > 0">Masquer les commentaires ([[nbComments(post)]])</span>
 							</a>
 						</div>
 						<div class="clear"></div>

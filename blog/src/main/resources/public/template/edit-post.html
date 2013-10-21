@@ -4,7 +4,7 @@
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog._id + '&protected=true'"
 		ng-model="currentPost.content"></html-editor>
 	<input type="submit" class="button right-magnet" value="Valider">
-	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(currentBlog._id)" value="Annuler">
+	<input type="button" class="button right-magnet cancel" data-ng-click="currentBlogView()" value="Annuler">
 </form>
 <div class="clear"></div>
 <hr class="solid">

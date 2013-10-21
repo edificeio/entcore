@@ -37,23 +37,24 @@ function Blog($scope, http, date, _){
 				$scope.$apply();
 			});
 	}
-	refreshBlogList(function(){
-		if($scope.blogs.length > 0){
-			$scope.displayBlog($scope.blogs[0]);
-		}
 
-	});
 
-	$scope.displayLastPosts = function(){
-		http.get('public/mock/mock-last-posts.json')
-		.done(function(data){
-			$scope.currentBlog = data;
-			$scope.currentView= views.lastPosts;
-			$scope.$apply();
+	$scope.defaultView = function(){
+		$scope.currentView = '';
+		refreshBlogList(function(){
+			if($scope.blogs.length > 0){
+				$scope.displayBlog($scope.blogs[0]);
+			}
 		});
+	};
+
+	$scope.currentBlogView  = function(){
+		$scope.currentView = '';
+		$scope.displayBlog($scope.currentBlog);
 	}
-	$scope.displayLastPosts();
-	
+
+	$scope.defaultView();
+
 	$scope.displayBlog = function(blog){
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
@@ -116,6 +117,7 @@ function Blog($scope, http, date, _){
 			});
 	}
 	$scope.showCommentPost = function(post){
+		post.showComments = true;
 		$scope.commentFormPath = "/blog/public/template/comment-post.html";
 		$scope.currentPost = post;
 	}
@@ -180,6 +182,7 @@ function Blog($scope, http, date, _){
 		http.post('/blog/comment/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.create.comment).done(function(e){
 			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + $scope.currentPost._id).done(function(comments){
 				$scope.currentPost.comments = comments;
+				$scope.hideCommentForm();
 				$scope.$apply();
 			})
 		})
