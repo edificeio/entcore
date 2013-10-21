@@ -38,7 +38,6 @@ var tools = (function(){
 
 function Workspace($scope, http, lang, date, ui, notify, _){
 	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
-	$scope.myId = '';
 	$scope.users = [];
 
 	$scope.documentPath = function(document){
@@ -52,7 +51,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 
 	function formatDocuments(documents, callback){
 		var findAuthorizations = function(authorizations, owner){
-			if(!(authorizations instanceof Array) || owner === $scope.myId){
+			if(!(authorizations instanceof Array) || owner === $scope.me.userId){
 				return {
 					comment: true,
 					share: true
@@ -65,7 +64,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 			}
 
 			authorizations.forEach(function(auth){
-				if(auth.userId !== $scope.myId){
+				if(auth.userId !== $scope.me.userId){
 					return;
 				}
 
@@ -180,8 +179,8 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 				$scope.targetDocument.comments = [];
 			}
 			$scope.targetDocument.comments.push({
-				author: $scope.myId,
-				authorName: $scope.myName,
+				author: $scope.me.userId,
+				authorName: $scope.me.username,
 				comment: $scope.targetDocument.comment,
 				posted: new Date()
 			});
@@ -282,7 +281,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 
 		http.get(tree.path +  folderToString($scope.folders[tree.name], tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
 			formatDocuments(documents, function(result){
-				 $scope.openedFolder.content = result;
+				$scope.openedFolder.content = result;
 				$scope.$apply();
 			});
 		})
@@ -426,7 +425,10 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	};
 
 	updateFolders();
-	$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
+	http.get('/auth/oauth2/userinfo').done(function(data){
+		$scope.me = data;
+		$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
+	});
 
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
@@ -533,10 +535,5 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 
 	http.get("users/available-rack").done(function(response){
 		$scope.users = response;
-	});
-
-	http.get('/userbook/api/person').done(function(data){
-		$scope.myId = data.result[0].id;
-		$scope.myName = data.result[0].displayName;
 	});
 };
