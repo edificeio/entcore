@@ -27,7 +27,7 @@
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
 		<td colspan="5" class="container-cell">
 			<a ng-click="openCommentView(document)" ng-if="document.myRights.comment" class="small button cell" translate key="workspace.document.comment"></a>
-			<a href="share?id=[[document._id]]" ng-if="document.myRights.share" call="share" class="small button cell" translate key="workspace.share"></a>
+			<a ng-if="document.myRights.share" ng-click="openShareView(document)" class="small button cell" translate key="workspace.share"></a>
 				<span class="cell right-magnet action-cell" ng-if="document.comments.length > 0">
 					<a ng-if="!document.showComments" data-ng-click="toggleComments(document)">
 						[[translate('workspace.document.comment.show')]] ([[document.comments.length]])

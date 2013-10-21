@@ -84,11 +84,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
 
 			if(item.from){
-				One.get('/userbook/api/person?id=' + item.from)
-					.done(function(fromData){
-						item.ownerName = fromData.result[0].displayName;
-						callback(documents);
-					});
+				item.ownerName = item.fromName;
 			}
 
 			item.myRights = findAuthorizations(item.shared, item.owner);
@@ -129,6 +125,12 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		$scope.targetDocument = document;
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
+	};
+
+	$scope.openShareView = function(document){
+		$scope.targetDocument = document;
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.share;
 	}
 
 	$scope.toTrash = function(url){
@@ -248,7 +250,8 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 			sendRack: 'public/template/send-rack.html',
 			moveFile: 'public/template/move-files.html',
 			copyFile: 'public/template/copy-files.html',
-			comment: 'public/template/comment.html'
+			comment: 'public/template/comment.html',
+			share: 'public/template/share.html'
 		},
 		documents: {
 			list: 'public/template/list-view.html',

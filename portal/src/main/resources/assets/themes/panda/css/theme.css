@@ -717,6 +717,9 @@ dl dt {
 .flowing .cancel-flow form {
   height: auto;
 }
+.flowing.sharing td:nth-child(2) {
+  width: 100px;
+}
 td.icon {
   width: 25px !important;
   height: 25px !important;
