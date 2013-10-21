@@ -146,7 +146,7 @@ function Blog($scope, http, date, _, ui){
 
 	$scope.createPost = function(){
 		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(newPost){
-			http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + newPost._id).done(function(){
+			http.put('/blog/post/submit/' + $scope.currentBlog._id + '/' + newPost._id).done(function(){
 				$scope.displayBlog($scope.currentBlog);
 				$scope.$apply();
 			})
