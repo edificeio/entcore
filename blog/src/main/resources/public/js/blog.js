@@ -37,7 +37,12 @@ function Blog($scope, http, date, _){
 				$scope.$apply();
 			});
 	}
-	refreshBlogList();
+	refreshBlogList(function(){
+		if($scope.blogs.length > 0){
+			$scope.displayBlog($scope.blogs[0]);
+		}
+
+	});
 
 	$scope.displayLastPosts = function(){
 		http.get('public/mock/mock-last-posts.json')
