@@ -1,5 +1,13 @@
 {
 	"workspace.title": "Workspace",
 	"workspace.header": "Workspace",
-	"workspace.share" : "Share"
+	"workspace.share" : "Share",
+    "group.profil.school.eleve" : "Tous les élèves de l'école ",
+    "group.profil.school.enseignant" : "Tous les enseignants de l'école ",
+    "group.profil.school.persreleleve" : "Tous les parents de l'école ",
+    "group.profil.school.directeur" : "Tous les directeurs de l'école ",
+    "group.profil.class.eleve" : "Tous les élèves de la classe ",
+    "group.profil.class.enseignant" : "Tous les enseignants de la classe ",
+    "group.profil.class.persreleleve" : "Tous les parents de la classe ",
+    "group.profil.class.directeur" : "Tous les directeurs de la classe "
 }
