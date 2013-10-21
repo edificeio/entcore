@@ -19,7 +19,7 @@ var views = {
 	"displayBlog":{}
 }
 
-function Blog($scope, http, date, _){
+function Blog($scope, http, date, _, ui){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
 	$scope.currentPost = {};
@@ -186,7 +186,11 @@ function Blog($scope, http, date, _){
 				$scope.$apply();
 			})
 		})
-	}
+	};
+
+	$scope.openSharingView = function(){
+		ui.showLightbox();
+	};
 
 	$scope.removePost = function(post){
 		http.delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){
