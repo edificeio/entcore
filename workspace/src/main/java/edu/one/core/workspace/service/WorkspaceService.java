@@ -91,16 +91,20 @@ public class WorkspaceService extends Controller {
 									if (shared != null && shared.size() > 0) {
 										for (Object o : shared) {
 											JsonObject userShared = (JsonObject) o;
-											String userId = userShared.getString("userId");
+											String userOrGroupId = userShared.getString("groupId",
+													userShared.getString("userId"));
+											if (userOrGroupId == null) continue;
 											for (String attrName : userShared.getFieldNames()) {
-												if ("userId".equals(attrName)) continue;
+												if ("userId".equals(attrName) || "groupId".equals(attrName)) {
+													continue;
+												}
 												if (userShared.getBoolean(attrName, false)) {
-													checked.add(attrName + "_" + userId);
+													checked.add(attrName + "_" + userOrGroupId);
 												}
 											}
 										}
 									}
-									shareResource(request, checked);
+									shareGroupResource(request, id, checked);
 								} else {
 									badRequest(request);
 								}
@@ -122,7 +126,8 @@ public class WorkspaceService extends Controller {
 			protected void handle() {
 				final String id = request.formAttributes().get("resourceId");
 				final List<String> shares = request.formAttributes().getAll("shares");
-				if (id != null && shares != null && !id.trim().isEmpty()) {
+				final List<String> shareGroups = request.formAttributes().getAll("shareGroups");
+				if (id != null && shares != null && shareGroups != null && !id.trim().isEmpty()) {
 					UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 						@Override
@@ -138,6 +143,20 @@ public class WorkspaceService extends Controller {
 										JsonObject j = sharesMap.get(s[1]);
 										if (j == null) {
 											j = new JsonObject().putString("userId", s[1]);
+											sharesMap.put(s[1], j);
+										}
+										j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
+									}
+								}
+								for (String share : shareGroups) {
+									String [] s = share.split("_");
+									if (s.length != 2) continue;
+									String [] actions = s[0].split(",");
+									if (actions.length < 1) continue;
+									for (int i = 0; i < actions.length; i++) {
+										JsonObject j = sharesMap.get(s[1]);
+										if (j == null) {
+											j = new JsonObject().putString("groupId", s[1]);
 											sharesMap.put(s[1], j);
 										}
 										j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
@@ -177,12 +196,46 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void notifyShare(HttpServerRequest request, String resource, UserInfos user, JsonArray sharedArray) {
-		List<String> recipients = new ArrayList<>();
+	private void notifyShare(final HttpServerRequest request, final String resource,
+				final UserInfos user, JsonArray sharedArray) {
+		final List<String> recipients = new ArrayList<>();
+		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
 		for (Object j : sharedArray) {
 			JsonObject json = (JsonObject) j;
-			recipients.add(json.getString("userId"));
+			String userId = json.getString("userId");
+			if (userId != null) {
+				recipients.add(userId);
+				remaining.getAndDecrement();
+			} else {
+				String groupId = json.getString("groupId");
+				if (groupId != null) {
+					UserUtils.findUsersInProfilsGroups(groupId, eb, new Handler<JsonArray>() {
+						@Override
+						public void handle(JsonArray event) {
+							log.debug(event.encode());
+							if (event != null) {
+								for(Object o: event) {
+									if (!(o instanceof JsonObject)) continue;
+									JsonObject j = (JsonObject) o;
+									String id = j.getString("id");
+									log.debug(id);
+									recipients.add(id);
+								}
+							}
+							if (remaining.decrementAndGet() < 1) {
+								sendNotify(request, resource, user, recipients);
+							}
+						}
+					});
+				}
+			}
 		}
+		if (remaining.get() < 1) {
+			sendNotify(request, resource, user, recipients);
+		}
+	}
+
+	private void sendNotify(HttpServerRequest request, String resource, UserInfos user, List<String> recipients) {
 		JsonObject params = new JsonObject()
 		.putString("uri", container.config().getString("userbook-host") +
 				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
@@ -636,6 +689,16 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	private String orSharedElementMatch(UserInfos user) {
+		StringBuilder sb = new StringBuilder();
+		if (user.getProfilGroupsIds() != null) {
+			for (String groupId: user.getProfilGroupsIds()) {
+				sb.append(", { \"groupId\": \"" + groupId + "\" }");
+			}
+		}
+		return "{ \"$or\" : [{ \"userId\": \"" + user.getUserId() + "\" }" + sb.toString() + "]}";
+	}
+
 	@SecuredAction("workspace.document.list.folders")
 	public void listFolders(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -650,12 +713,10 @@ public class WorkspaceService extends Controller {
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
 					} else if ("shared".equals(filter)) {
-						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}";
+						query += "\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
 					} else {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
-								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}}]";
+								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
 					if (relativePath != null) {
 						query += ", \"folder\" : { \"$regex\" : \"^" + relativePath + "(_|$)\" }}";
@@ -835,12 +896,10 @@ public class WorkspaceService extends Controller {
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
 					} else if ("shared".equals(filter)) {
-						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}";
+						query += "\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
 					} else {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
-								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}}]";
+								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
 					String forApplication = getOrElse(request.params()
 							.get("application"), WorkspaceService.WORKSPACE_NAME);
@@ -882,12 +941,10 @@ public class WorkspaceService extends Controller {
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
 					} else if ("shared".equals(filter)) {
-						query += "\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}";
+						query += "\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
 					} else {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
-								"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-								+ user.getUserId()+ "\"}}}]";
+								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
 					String expectedFolder = request.params().get("folder");
 					String forApplication = getOrElse(request.params()

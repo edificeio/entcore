@@ -55,8 +55,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			JsonArray idsArray = new JsonArray(ids.split(","));
 			String query = "{ \"_id\": { \"$in\" : " + idsArray.encode() + "}, "
 					+ "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
-					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
+					"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user, serviceMethod) + "}}]}";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION,
 					new JsonObject(query), idsArray.size(), handler);
 		} else {
@@ -64,13 +63,27 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		}
 	}
 
+	private String orSharedElementMatch(UserInfos user, String serviceMethod) {
+		String s =  serviceMethod.replaceAll("\\.", "-");
+		StringBuilder sb = new StringBuilder();
+		if (user.getProfilGroupsIds() != null) {
+			for (String groupId: user.getProfilGroupsIds()) {
+				sb.append(", { \"groupId\": \"" + groupId + "\", \"" + s + "\": true }");
+			}
+		}
+		return "{ \"$or\" : [" +
+				"{ \"userId\": \"" + user.getUserId() + "\", \"" + s + "\": true }" +
+				sb.toString() +
+				"]}";
+	}
+
 	private void authorizeGetDocument(HttpServerRequest request,
 			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-					"\"}, { \"protected\" : true}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
+					"\"}, { \"protected\" : true}, {\"shared\" : { \"$elemMatch\" : " +
+					orSharedElementMatch(user, serviceMethod) + "}}]}";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
@@ -82,8 +95,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-					"\"}, {\"shared\" : { \"$elemMatch\" : { \"userId\": \""
-					+ user.getUserId()+ "\", \"" + serviceMethod.replaceAll("\\.", "-") + "\": true }}}]}";
+					"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user, serviceMethod) + "}}]}";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);
