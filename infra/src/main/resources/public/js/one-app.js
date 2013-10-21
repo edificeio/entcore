@@ -308,6 +308,9 @@ oneModule.directive('htmlEditor', function($compile){
 		restrict: 'E',
 		transclude: true,
 		replace: true,
+		scope: {
+			ngModel: '='
+		},
 		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
@@ -326,9 +329,25 @@ oneModule.directive('htmlEditor', function($compile){
 					//wait for editor panel to be added
 					$("body").on("DOMSubtreeModified.editor", function() {
 						$('.cke_chrome').width(editor.width());
-						$('body').unbind('DOMSubtreeModified.editor')
+						$('body').unbind('DOMSubtreeModified.editor');
+						CKEDITOR.on('instanceReady', function(){
+							editor.html($scope.ngModel)
+						})
+						$scope.$watch('ngModel', function(newValue){
+							if(editor.html() !== newValue){
+								editor.html(newValue);
+							}
+						})
 					});
-				})
+				});
+
+				editor.on('blur', function(e) {
+					$scope.ngModel = editor.html();
+					$scope.$apply();
+				});
+
+
+
 				editor.focus();
 
 
