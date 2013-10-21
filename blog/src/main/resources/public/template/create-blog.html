@@ -1,10 +1,25 @@
-<form data-ng-submit="createBlog()" class="row">
-	<div class="row">
-		<img src="public/img/blog.png" class="two cell"/>
-		<input type="text" class="nine cell right-magnet" data-ng-model="newPostTitle" placeholder="Entrez le titre de votre blog"/>
+<form class="row">
+	<div class="row text-container">
+		<div class="two cell clip fixed-block height-two">
+			<img ng-src="[[blogThumbnail(create.blog)]]" />
+		</div>
+		<div class="nine cell text-container">
+			<input type="text" data-ng-model="create.blog.title" required placeholder="Entrez le titre de votre blog" class="twelve cell" />
+			<form id="upload-form" method="post" enctype="multipart/form-data">
+				<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
+				<div class="hidden-content">
+					<input type="file" name="file"  id="avatar" file-input-change="updateBlogImage(create.blog)" data-ng-model="photo.file"/>
+				</div>
+				<button class="file-button" data-linked="avatar">Changer l'image</button>
+			</form>
+		</div>
+
+
 	</div>
-	<div class="row">
-		<input type="submit" class="button right-magnet" value="Valider">
+	<div class="row text-container">
+
+
+		<input type="submit" data-ng-click="createBlog()" class="button right-magnet" value="Valider">
 		<input type="button" class="button right-magnet cancel" data-ng-click="displayLastPosts()" value="Annuler">
 		<div class="clear"></div>
 	</div>

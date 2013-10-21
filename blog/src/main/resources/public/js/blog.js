@@ -1,67 +1,76 @@
 var views = {
 	"createBlog":{
-		"path":"public/template/create-blog.html",
+		"path":"/blog/public/template/create-blog.html",
 		"allow":true
 	},
 	"editBlog":{
-		"path":"public/template/edit-blog.html",
+		"path":"/blog/public/template/edit-blog.html",
 		"allow":true
 	},
 	"createPost":{
-		"path":"public/template/create-post.html",
+		"path":"/blog/public/template/create-post.html",
 		"allow":true
 	},
 	"editPost":{
-		"path":"public/template/edit-post.html",
+		"path":"/blog/public/template/edit-post.html",
 		"allow":true
 	},
 	"lastPosts":{},
 	"displayBlog":{}
 }
 
-function Blog($scope, http, date){
+function Blog($scope, http, date, _){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
-	$scope.currentPostId = '';
-	$scope.dataToEdit = {};
+	$scope.currentPost = {};
 
 	$scope.currentView = '';
 	$scope.commentFormPath = '';
 
-	http.get('public/mock/mock-blogs-list.json')
-		.done(function(data){
-			$scope.blogs = data;
-			$scope.$apply();
-		});
+	function refreshBlogList(callback){
+		http.get('blog/list/all')
+			.done(function(data){
+				$scope.blogs = data;
+				if(typeof callback === 'function'){
+					callback(data);
+				}
+				$scope.$apply();
+			});
+	}
+	refreshBlogList();
 
 	$scope.displayLastPosts = function(){
 		http.get('public/mock/mock-last-posts.json')
 		.done(function(data){
 			$scope.currentBlog = data;
-			$scope.dataToEdit = '';
 			$scope.currentView= views.lastPosts;
 			$scope.$apply();
 		});
 	}
 	$scope.displayLastPosts();
 	
-	$scope.displayBlog = function(id){
-		http.get('public/mock/mock-blog-' + id + '.json')
-			.done(function(data){
-				$scope.currentBlog = data;
-				$scope.dataToEdit = '';
-				$scope.currentView= views.displayBlog;
-				$scope.$apply();
-			});
+	$scope.displayBlog = function(blog){
+		$scope.currentBlog = blog;
+		http.get('/blog/post/list/all/' + blog._id).done(function(data){
+			$scope.currentBlog.posts = data;
+			$scope.currentView= views.displayBlog;
+			$scope.$apply();
+		});
 	};
 
-	$scope.isSelected = function(id){
-		if ($scope.currentView !== views.lastPosts){
-			return ($scope.dataToEdit.id === undefined) 
-				? (id == $scope.currentBlog.id) : (id == $scope.dataToEdit.id);
-		} else {
-			return false;
+	$scope.nbComments = function(post){
+		if(!post.comments){
+			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + post._id).done(function(comments){
+				post.comments = comments;
+				$scope.$apply();
+			});
+			return '-';
 		}
+		return post.comments.length;
+	}
+
+	$scope.isSelected = function(id){
+		return id === $scope.currentBlog._id && $scope.currentView !== views.lastPosts;
 	}
 	$scope.isVisible = function(){
 		return ($scope.currentView !== views.createBlog 
@@ -70,6 +79,10 @@ function Blog($scope, http, date){
 	}
 	$scope.isCurrentView = function(name){
 		return ($scope.currentView == views[name]);
+	};
+
+	$scope.switchComments = function(post){
+		post.showComments = !post.showComments;
 	}
 
 	$scope.showCreatePost = function(){
@@ -77,36 +90,125 @@ function Blog($scope, http, date){
 	}
 	$scope.showCreateBlog= function(){
 		$scope.currentBlog = '';
-		$scope.dataToEdit = '';
 		$scope.currentView = views.createBlog;
 	}
-	$scope.showEditBlog = function(id){
-		http.get('public/mock/mock-blog-' + id + '.json')
+	$scope.showEditBlog = function(blog){
+		http.get('/blog/' + blog._id)
 			.done(function(data){
-				$scope.dataToEdit = data;
-				$scope.currentBlog = '';
+				$scope.currentBlog = data;
 				$scope.currentView= views.editBlog;
 				$scope.$apply();
 
 			});
 	}
-	$scope.showEditPost = function(id){
-		http.get('public/mock/mock-post-' + id + '.json')
+	$scope.showEditPost = function(post){
+		$scope.currentPost = post;
+		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id)
 			.done(function(data){
-				$scope.dataToEdit = data;
+				$scope.currentPost = data;
 				$scope.currentView= views.editPost;
 				$scope.$apply();
 			});
 	}
-	$scope.showCommentPost = function(id){
-		$scope.commentFormPath = "public/template/comment-post.html";
-		$scope.currentPostId = id;
+	$scope.showCommentPost = function(post){
+		$scope.commentFormPath = "/blog/public/template/comment-post.html";
+		$scope.currentPost = post;
 	}
 	$scope.hideCommentForm = function(){
 		$scope.commentFormPath = "";
 	}
 
-	$scope.createPost = function(){};
-	$scope.createBlog = function(){};
+	$scope.create = {
+		post: {
+			state: 'DRAFT'
+		},
+		blog: {
+			thumbnail: '',
+			'comment-type': 'IMMEDIATE',
+			'publish-type': 'IMMEDIATE',
+			description: ''
+		},
+		comment: {
+			comment: ''
+		}
+	}
 
+	$scope.formatDate = function(dateString){
+		return date.format(dateString, 'dddd LL')
+	}
+
+	$scope.createPost = function(){
+		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(newPost){
+			http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + newPost._id).done(function(){
+				$scope.displayBlog($scope.currentBlog);
+				$scope.$apply();
+			})
+		})
+	};
+
+	$scope.blogThumbnail = function(blog){
+		if(blog.thumbnail !== ''){
+			return blog.thumbnail;
+		}
+		return '/blog/public/img/blog.png';
+	}
+
+	$scope.photo = { file: undefined }
+	$scope.updateBlogImage = function(blog){
+		var formData = new FormData();
+		formData.append('file', $scope.photo.file);
+
+		http.postFile('/workspace/document?application=blog-newblog&protected=true&name=' + $scope.photo.file.name, formData)
+			.done(function(e){
+				blog.thumbnail = '/workspace/document/' + e._id;
+				$scope.$apply();
+			})
+	}
+
+	$scope.updatePost = function(){
+		http.put('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.currentPost).done(function(){
+			$scope.displayBlog($scope.currentBlog);
+		})
+	};
+
+	$scope.commentPost = function(){
+		http.post('/blog/comment/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.create.comment).done(function(e){
+			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + $scope.currentPost._id).done(function(comments){
+				$scope.currentPost.comments = comments;
+				$scope.$apply();
+			})
+		})
+	}
+
+	$scope.removePost = function(post){
+		http.delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){
+			$scope.displayBlog($scope.currentBlog);
+		});
+	}
+
+	$scope.saveBlogChanges = function(){
+		http.put('/blog/' + $scope.currentBlog._id, $scope.currentBlog).done(function(){
+			refreshBlogList(function(){
+				$scope.displayBlog($scope.currentBlog);
+			});
+		})
+	}
+
+	$scope.createBlog = function(){
+		http.post('/blog', $scope.create.blog)
+			.done(function(newBlog){
+				refreshBlogList(function(){
+					$scope.displayBlog(newBlog);
+				});
+			});
+	};
+
+	$scope.removeBlog = function(){
+		http.delete('/blog/' + $scope.currentBlog._id).done(function(){
+			refreshBlogList(function(){
+				$scope.currentBlog = '';
+				$scope.currentView = '';
+			})
+		})
+	}
 }

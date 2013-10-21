@@ -1,11 +1,26 @@
-<form data-ng-submit="createBlog()" class="row">
+<div class="row content-line">
+	<button ng-click="removeBlog()" class="cancel">Supprimer le blog</button>
+</div>
+<form data-ng-submit="saveBlogChanges()" class="row content-line">
 	<div class="row">
-		<img src="public/img/blog.png" class="two cell"/>
-		<input type="text" class="nine cell right-magnet" data-ng-model="dataToEdit.title" value=""/>
+		<div class="two cell clip fixed-block height-two">
+			<img ng-src="[[blogThumbnail(currentBlog)]]" />
+		</div>
+		<div class="ten cell text-container">
+			<input type="text" class="twelve cell" data-ng-model="currentBlog.title" required />
+			<form id="upload-form" method="post" enctype="multipart/form-data">
+				<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
+				<div class="hidden-content">
+					<input type="file" name="file"  id="avatar" file-input-change="updateBlogImage(currentBlog)" data-ng-model="photo.file"/>
+				</div>
+				<button class="file-button" data-linked="avatar">Changer l'image</button>
+			</form>
+		</div>
+
 	</div>
 	<div class="row">
-		<input type="submit" class="button right-magnet" value="Valider">
-		<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog([[dataToEdit.id]])" value="Annuler">
+		<input type="submit" class="button right-magnet" value="Valider" data-ng-click="saveBlogChanges()">
+		<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(currentBlog)" value="Annuler">
 		<div class="clear"></div>
 	</div>
 </form>

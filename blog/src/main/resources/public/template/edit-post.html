@@ -1,8 +1,10 @@
-<form data-ng-submit="createPost()">
-	<input type="text" data-ng-model="dataToEdit.title" class="twelve cell" />
-	<html-editor file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"></html-editor>
+<form data-ng-submit="updatePost()">
+	<input type="text" data-ng-model="currentPost.title" class="twelve cell" required />
+	<html-editor
+		file-upload-path="'/workspace/document?application=blog-' + currentBlog._id + '&protected=true'"
+		ng-model="currentPost.content"></html-editor>
 	<input type="submit" class="button right-magnet" value="Valider">
-	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(dataToEdit.blogid)" value="Annuler">
+	<input type="button" class="button right-magnet cancel" data-ng-click="displayBlog(currentBlog._id)" value="Annuler">
 </form>
 <div class="clear"></div>
 <hr class="solid">
