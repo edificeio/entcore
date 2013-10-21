@@ -611,6 +611,9 @@ article h2:first-child {
 .text-container article {
   margin-bottom: 15px;
 }
+.content-line {
+  margin-bottom: 15px;
+}
 .clip {
   overflow: hidden;
 }

@@ -611,6 +611,9 @@ article h2:first-child {
 .text-container article {
   margin-bottom: 15px;
 }
+.content-line {
+  margin-bottom: 15px;
+}
 .clip {
   overflow: hidden;
 }
@@ -2128,6 +2131,9 @@ h3 {
   color: #2f8cc9;
   font-weight: normal;
   font-size: 18px;
+}
+article.comment {
+  background: #f6f6f6;
 }
 .box {
   -webkit-border-radius: 10px;
