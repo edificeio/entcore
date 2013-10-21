@@ -344,6 +344,9 @@ public class CommunicationController extends Controller {
 			case "visibleProfilsGroups":
 				visibleProfilsGroups(userId, responseHandler);
 				break;
+			case "usersInProfilGroup":
+				usersInProfilGroup(userId, responseHandler);
+				break;
 			default:
 				message.reply(new JsonArray());
 				break;
@@ -439,6 +442,28 @@ public class CommunicationController extends Controller {
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 
+			@Override
+			public void handle(Message<JsonObject> res) {
+				JsonArray r = new JsonArray();
+				if ("ok".equals(res.body().getString("status"))) {
+					r = resultToJsonArray(res.body().getObject("result"));
+				}
+				handler.handle(r);
+			}
+		});
+	}
+
+	private void usersInProfilGroup(String profilGroupId, final Handler<JsonArray> handler) {
+		String query =
+				"START n = node:node_auto_index({group}) " +
+				"MATCH n<-[:APPARTIENT]-u " +
+				"WHERE has(u.type) AND u.type IN ['PERSRELELEVE','ELEVE','PERSEDUCNAT','ENSEIGNANT'] " +
+				"RETURN distinct u.id as id, u.ENTPersonLogin? as login," +
+						" u.ENTPersonNomAffichage? as username, u.type as type " +
+				"ORDER BY username ";
+		Map<String, Object> params = new HashMap<>();
+		params.put("group", "id:" + profilGroupId + " AND type:GROUP_*");
+		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				JsonArray r = new JsonArray();
