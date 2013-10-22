@@ -91,6 +91,9 @@
 								<article class="comment text-container">
 									<a href="/userbook/annuaire#[[comment.author.userId]]">[[comment.author.username]]</a>
 									<em>[[formatDate(comment.created.$date)]]</em>
+									<a class="cell right-magnet"
+									   ng-click="removeComment(post, comment)"
+									   ng-if="comment.author.userId === me.userId">Supprimer</a>
 									<p>[[comment.comment]]</p>
 								</article>
 							</div>

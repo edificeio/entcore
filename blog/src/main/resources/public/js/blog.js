@@ -24,6 +24,8 @@ function Blog($scope, http, date, _, ui){
 	$scope.currentBlog = {};
 	$scope.currentPost = {};
 
+	$scope.me = {};
+
 	$scope.currentView = '';
 	$scope.commentFormPath = '';
 
@@ -38,6 +40,9 @@ function Blog($scope, http, date, _, ui){
 			});
 	}
 
+	http.get('/auth/oauth2/userinfo').done(function(data){
+		$scope.me = data;
+	})
 
 	$scope.defaultView = function(){
 		$scope.currentView = '';
@@ -202,6 +207,13 @@ function Blog($scope, http, date, _, ui){
 	$scope.removePost = function(post){
 		http.delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){
 			$scope.displayBlog($scope.currentBlog);
+		});
+	};
+
+	$scope.removeComment = function(post, comment){
+		http.delete('/blog/comment/' + $scope.currentBlog._id + '/' + post._id + '/' + comment.id).done(function(){
+			post.comments = undefined;
+			$scope.$apply();
 		});
 	}
 
