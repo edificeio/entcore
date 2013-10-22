@@ -1886,6 +1886,9 @@ input[type=password] {
   border-radius: 5px;
   border: 1px solid #ccc;
   line-height: 25px;
+  height: 25px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   padding-left: 3px;
 }
 label {
