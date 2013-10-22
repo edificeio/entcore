@@ -9,7 +9,7 @@ object IntegrationTestScenario {
     ImportScenario.scn
   }
   .group("Directory Scenario") {
-    LoginScenario.scn
+    DirectoryScenario.scn
   }
 
 }
