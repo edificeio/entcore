@@ -2506,7 +2506,7 @@ table tr td {
   padding: 5px;
   font-size: 12px;
 }
-table tr td em {
+table tr td em.tag {
   font-size: 13px;
   color: #cccccc;
   padding-left: 10px;
@@ -2525,6 +2525,9 @@ table tr td h2 i {
 }
 table tr td a {
   margin: 5px;
+}
+table tr td .comment a {
+  margin-left: 0;
 }
 table tr td a.button {
   font-size: 1.3em;
