@@ -11,6 +11,9 @@ object IntegrationTestScenario {
   .group("Directory Scenario") {
     DirectoryScenario.scn
   }
+  .group("App-registry Scenario") {
+    AppRegistryScenario.scn
+  }
   .group("Auth Scenario") {
     AuthScenario.scn
   }

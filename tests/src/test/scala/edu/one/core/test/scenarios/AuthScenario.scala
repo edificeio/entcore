@@ -8,7 +8,10 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.Base64
 
 object AuthScenario {
 
-	val scn = exec(http("Get activation page")
+	val scn = exec(http("Logout admin user")
+      .get("""/auth/logout""")
+    .check(status.is(302)))
+    .exec(http("Get activation page")
 			.get("""/auth/activation""")
 		.check(status.is(200)))
 		.exec(http("Activate student account")

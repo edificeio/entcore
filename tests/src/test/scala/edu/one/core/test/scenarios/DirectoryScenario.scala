@@ -82,8 +82,5 @@ object DirectoryScenario {
       .check(status.is(200), jsonPath("status").is("ok"),
         jsonPath("$.result.0.login").find.saveAs("studentLogin"),
         jsonPath("$.result.0.code").find.saveAs("studentCode")))
-		.exec(http("Logout admin user")
-			.get("""/auth/logout""")
-      .check(status.is(302)))
 
 }
