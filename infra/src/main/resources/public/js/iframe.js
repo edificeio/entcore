@@ -189,7 +189,7 @@ $(document).ready(function(){
 			setTimeout(function(){
 				waitForResize = false;
 				resize();
-			}, 100)
+			}, 1000)
 			waitForResize = true;
 		}
 	});
