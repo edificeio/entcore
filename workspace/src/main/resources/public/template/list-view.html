@@ -20,7 +20,7 @@
 	<tr data-ng-repeat-start="document in openedFolder.content" ng-class="{ overline: true, checked: document.selected }">
 		<td><input type="checkbox" data-ng-model="document.selected" /></td>
 		<td><i role="[[document.metadata.contentType]]"></i></td>
-		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em>[[document.metadata.extension]]</em></td>
+		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
 		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
 	</tr>
@@ -36,14 +36,13 @@
 						[[translate('workspace.document.comment.hide')]]
 					</a>
 				</span>
-			<h2 ng-if="document.showComments"><span translate key="workspace.comments"></span></h2>
-			<ul class="row" ng-if="document.showComments">
-				<li class="twelve cell" data-ng-repeat="comment in document.comments">
+			<section class="row text-container" ng-if="document.showComments">
+				<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in document.comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-					- <em>[[longDate(comment.posted)]]</em>
-					- <span>[[comment.comment]]</span>
-				</li>
-			</ul>
+					<em>[[longDate(comment.posted)]]</em>
+					<p>[[comment.comment]]</p>
+				</article>
+			</section>
 		</td>
 	</tr>
 	</tbody>
