@@ -641,7 +641,8 @@ article h2:first-child {
   height: 100%;
 }
 [ng-click],
-[data-ng-click] {
+[data-ng-click],
+[call] {
   cursor: pointer;
 }
 hr {
