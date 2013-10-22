@@ -717,8 +717,34 @@ dl dt {
 .flowing .cancel-flow form {
   height: auto;
 }
-.flowing.sharing td:nth-child(2) {
-  width: 100px;
+.flowing.sharing td:nth-child(2),
+.flowing.sharing td:nth-child(3),
+.flowing.sharing td:nth-child(4),
+.flowing.sharing td:nth-child(5),
+.flowing.sharing th:nth-child(2),
+.flowing.sharing th:nth-child(3),
+.flowing.sharing th:nth-child(4),
+.flowing.sharing th:nth-child(5) {
+  min-width: 80px;
+  text-align: center;
+}
+.flowing.sharing th:first-child {
+  width: 500px;
+}
+.flowing.sharing th {
+  font-size: 14px;
+  font-weight: normal;
+  padding: 5px;
+}
+.flowing.sharing td:first-child {
+  text-align: left;
+}
+.flowing.sharing td {
+  text-align: center;
+}
+.flowing.sharing td input[type=checkbox] {
+  display: inline;
+  float: none;
 }
 td.icon {
   width: 25px !important;

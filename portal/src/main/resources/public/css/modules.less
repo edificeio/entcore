@@ -465,8 +465,28 @@ dl{
 }
 
 .flowing.sharing{
-	td:nth-child(2){
-		width: 100px;
+	td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5),
+	th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5){
+		min-width: 80px;
+		text-align: center;
+	}
+	th:first-child{
+		width: 500px;
+	}
+	th{
+		font-size: 14px;
+		font-weight: normal;
+		padding: 5px
+	}
+	td:first-child{
+		text-align: left;
+	}
+	td{
+		text-align: center;
+		input[type=checkbox]{
+			display: inline;
+			float: none;
+		}
 	}
 }
 
