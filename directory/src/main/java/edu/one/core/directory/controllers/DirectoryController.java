@@ -109,8 +109,8 @@ public class DirectoryController extends Controller {
 		neo.send("START n=node:node_auto_index(id={classId}) "
 				+ "MATCH n<-[:APPARTIENT]-m "
 				+ "WHERE m.type IN [" + types + "] "
-				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode? as code, m.ENTPersonNom as firstName,"
-				+ "m.ENTPersonPrenom as lastName, n.id as classId", params, request.response());
+				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode? as code, m.ENTPersonPrenom as firstName,"
+				+ "m.ENTPersonNom as lastName, n.id as classId", params, request.response());
 	}
 
 	@SecuredAction("directory.authent")
