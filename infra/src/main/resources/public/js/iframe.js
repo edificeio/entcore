@@ -175,22 +175,7 @@ $(document).ready(function(){
 		})
 	}
 
-	//automated require resize
-	//will wait for all changes in a given time and apply all at once
-	//to avoid useless load
-	var waitForResize = false;
-	function resize(){
-			messenger.requireResize();
-	}
-
-	$("body").bind("DOMSubtreeModified", function() {
-		if(!waitForResize){
-			resize();
-			setTimeout(function(){
-				waitForResize = false;
-				resize();
-			}, 1000)
-			waitForResize = true;
-		}
-	});
+	setInterval(function(){
+		messenger.requireResize()
+	}, 500)
 });
