@@ -202,6 +202,13 @@ function Blog($scope, http, date, _, ui){
 
 	$scope.openSharingView = function(){
 		ui.showLightbox();
+		//Small hack until we get final version
+		$('.share form').submit(function(e){
+			e.preventDefault();
+			http.post($('.share form').attr('action'), $('.share form').serialize()).done(function(){
+				ui.hideLightbox();
+			})
+		})
 	};
 
 	$scope.removePost = function(post){
