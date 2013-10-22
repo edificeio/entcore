@@ -92,10 +92,13 @@ function Blog($scope, http, date, _, ui){
 	}
 
 	$scope.showCreatePost = function(){
+		resetScope();
 		$scope.currentView = views.createPost;
+
 	}
 	$scope.showCreateBlog= function(){
 		$scope.currentBlog = '';
+		resetScope();
 		$scope.currentView = views.createBlog;
 	}
 	$scope.showEditBlog = function(blog){
@@ -120,25 +123,29 @@ function Blog($scope, http, date, _, ui){
 		post.showComments = true;
 		$scope.commentFormPath = "/blog/public/template/comment-post.html";
 		$scope.currentPost = post;
+		resetScope()
 	}
 	$scope.hideCommentForm = function(){
 		$scope.commentFormPath = "";
 	}
 
-	$scope.create = {
-		post: {
-			state: 'DRAFT'
-		},
-		blog: {
-			thumbnail: '',
-			'comment-type': 'IMMEDIATE',
-			'publish-type': 'IMMEDIATE',
-			description: ''
-		},
-		comment: {
-			comment: ''
+	function resetScope(){
+		$scope.create = {
+			post: {
+				state: 'DRAFT'
+			},
+			blog: {
+				thumbnail: '',
+				'comment-type': 'IMMEDIATE',
+				'publish-type': 'IMMEDIATE',
+				description: ''
+			},
+			comment: {
+				comment: ''
+			}
 		}
 	}
+	resetScope();
 
 	$scope.formatDate = function(dateString){
 		return date.format(dateString, 'dddd LL')
