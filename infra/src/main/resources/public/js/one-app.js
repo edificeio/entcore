@@ -303,6 +303,20 @@ oneModule.directive('translateAttr', function($compile) {
 	};
 });
 
+oneModule.directive('bindHtmlUnsafe', function($compile){
+	return {
+		restrict: 'A',
+		scope: {
+			bindHtmlUnsafe: '&'
+		},
+		link: function($scope, $element){
+			$scope.$watch('bindHtmlUnsafe', function(newVal){
+				$element.html(newVal)
+			});
+		}
+	}
+});
+
 oneModule.directive('htmlEditor', function($compile){
 	return {
 		restrict: 'E',
