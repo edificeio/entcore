@@ -6,8 +6,6 @@
 		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
 
-
-		<script type="text/javascript" src="{{#infra}}js/iframe.js{{/infra}}"></script>
 		<script type="text/ng-template" id="folder-content">
 			<a data-ng-class="{ selected: openedFolder.folder === value }" data-ng-click="openFolder(value, key)">[[translate(key)]]</a>
 			<ul data-ng-class="{ selected: containsCurrentFolder(value), closed: !containsCurrentFolder(value) }" ng-if="containsCurrentFolder(value)">
