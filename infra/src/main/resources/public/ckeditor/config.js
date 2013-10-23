@@ -54,4 +54,5 @@ CKEDITOR.editorConfig = function( config ) {
 	'tired-panda-small.png', 'worried-panda-small.png'];
 	config.smiley_descriptions= ['En colère', 'Rêveur', 'Content', 'Farceur', 'Amoureux',
 	'Fier', 'Triste', 'Fatigué', 'Embêté'];
+	config.templates_replaceContent = false;
 };
