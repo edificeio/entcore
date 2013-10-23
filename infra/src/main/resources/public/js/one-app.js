@@ -307,7 +307,7 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
-			bindHtmlUnsafe: '&'
+			bindHtmlUnsafe: '='
 		},
 		link: function($scope, $element){
 			$scope.$watch('bindHtmlUnsafe', function(newVal){
