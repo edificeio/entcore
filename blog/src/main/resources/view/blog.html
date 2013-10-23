@@ -65,7 +65,11 @@
 							{{#i18n}}blog.on.blog{{/i18n}} <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
 						</span>
 					</h5>
-					<div class="row" bind-html-unsafe="post.content"></div>
+					<div class="row" bind-html-unsafe="post.content" ng-if="post.showEverything"></div>
+					<div class="row" ng-if="!post.showEverything">
+						<preview content="post.content"></preview>
+						<a ng-click="showEverything(post)">Voir la suite</a>
+					</div>
 					<div class="clear"></div>
 					<div class="row content-line">
 						<div class="two cell">

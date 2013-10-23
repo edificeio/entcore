@@ -53,6 +53,10 @@ function Blog($scope, http, date, _, ui){
 		});
 	};
 
+	$scope.showEverything = function(post){
+		post.showEverything = true;
+	}
+
 	$scope.currentBlogView  = function(){
 		$scope.currentView = '';
 		$scope.displayBlog($scope.currentBlog);
