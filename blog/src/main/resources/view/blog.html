@@ -65,7 +65,7 @@
 							{{#i18n}}blog.on.blog{{/i18n}} <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
 						</span>
 					</h5>
-					<div class="row" data-ng-bind-html="post.content"></div>
+					<div class="row" bind-html-unsafe="post.content"></div>
 					<div class="clear"></div>
 					<div class="row content-line">
 						<div class="two cell">
