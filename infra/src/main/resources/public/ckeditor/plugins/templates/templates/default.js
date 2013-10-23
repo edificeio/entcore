@@ -7,6 +7,11 @@ CKEDITOR.addTemplates(
 	"default",{
 		imagesPath: imagesPath,
 		templates:[{
+			title:"Page blanche",
+			image:"blank.gif",
+			description:"Une simple page blanche.",
+			html:''
+		},{
 			title:"Deux colonnes",
 			image:"two-cols.gif",
 			description:"Deux colonnes fluides et un titre.",
