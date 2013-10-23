@@ -303,6 +303,38 @@ oneModule.directive('translateAttr', function($compile) {
 	};
 });
 
+oneModule.directive('preview', function($compile){
+	return {
+		restrict: 'E',
+		template: '<div class="row"><div class="row fixed-block four-height">' +
+			'<div class="four cell fixed image"></div>' +
+			'<div class="eight cell fixed-block left-four paragraph"></div>' +
+			'</div></div>',
+		replace: true,
+		scope: {
+			content: '='
+		},
+		link: function($scope, $element, $attributes){
+				$scope.$watch('content', function(newValue){
+					var hasImage = newValue.indexOf('<img') !== -1;
+					var hasParagraph = newValue.indexOf('<p') !== -1;
+
+					var image = '';
+					var paragraph = '';
+					if(hasImage){
+						image = '<img ' + newValue.split('<img')[1].split('>')[0] + ' /></div>';
+						$element.find('.image').html(image);
+					}
+					if(hasParagraph){
+						paragraph = newValue.split('<p')[1].split('</p>')[0];
+						$element.find('.paragraph').html(paragraph);
+					}
+					$element.find('.paragraph img').remove();
+				})
+			}
+		}
+})
+
 oneModule.directive('bindHtmlUnsafe', function($compile){
 	return {
 		restrict: 'A',
@@ -360,10 +392,7 @@ oneModule.directive('htmlEditor', function($compile){
 					$scope.$apply();
 				});
 
-
-
 				editor.focus();
-
 
 				$element.on('removed', function(){
 					$('.cke').remove();
