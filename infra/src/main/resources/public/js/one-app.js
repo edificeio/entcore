@@ -393,4 +393,8 @@ oneModule.directive('htmlEditor', function($compile){
 			}
 		}
 	}
+});
+
+$(document).ready(function(){
+	angular.bootstrap($('html'), ['one'])
 })

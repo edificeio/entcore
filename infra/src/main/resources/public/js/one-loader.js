@@ -10,13 +10,12 @@ var loader = (function(){
 			{ path: 'humane.min.js', async: true }],
 		'app': [
 			{ path: 'jquery-1.9.1.js', async: true },
-			{ path: 'iframe.js', async: true},
 			{ path: 'angular.min.js', async: true },
 			{ path: 'angular-sanitize.min.js', async: true },
-			{ path: 'mustache.js', async: true},
-			{ path: 'one-app.js', async: true },
 			{ path: 'one.js', async: true },
-			{ path: 'ui.js', async: true }]
+			{ path: 'iframe.js', async: true},
+			{ path: 'ui.js', async: true },
+			{ path: 'one-app.js', async: true }]
 	};
 
 	var loadedScripts = {};
