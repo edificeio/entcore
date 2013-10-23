@@ -161,7 +161,7 @@ $(document).ready(function(){
 	}
 	if(parent !== window){
 		$('body').on('click', 'a[href]', function(e){
-			if($(this).attr('call')){
+			if($(this).attr('call') || $(this).attr('target')){
 				return;
 			}
 			if($(this).attr('href').indexOf('javascript:') !== -1){
