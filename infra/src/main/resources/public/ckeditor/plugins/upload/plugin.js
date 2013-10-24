@@ -14,7 +14,10 @@ CKEDITOR.plugins.add( 'upload', {
 					var formData = new FormData();
 					formData.append('file', fileSelector[0].files[0]);
 
-					One.postFile(uploadPath + '?name=' + fileSelector[0].files[0].name,  formData).done(function(e){
+					One.postFile(uploadPath + '&name=' + fileSelector[0].files[0].name,  formData, {
+							requestName: 'ckeditor-image'
+						})
+						.done(function(e){
 						var image = editor.document.createElement('img');
 
 						image.setAttribute('src', '/workspace/document/' + e._id);
