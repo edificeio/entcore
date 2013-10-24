@@ -209,7 +209,20 @@ function Blog($scope, http, date, _, ui){
 		})
 	};
 
+	$scope.openConfirmView = function(action, args){
+		$scope.lightboxPath = '/blog/public/template/confirm.html';
+		$scope.onConfirm = {
+			func: function(args){
+				ui.hideLightbox();
+				action(args);
+			},
+			args: args
+		};
+		ui.showLightbox();
+	}
+
 	$scope.openSharingView = function(){
+		$scope.lightboxPath = '/blog/share/' + $scope.currentBlog._id;
 		ui.showLightbox();
 		//Small hack until we get final version
 		$('.share form').submit(function(e){

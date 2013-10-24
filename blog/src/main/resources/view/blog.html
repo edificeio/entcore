@@ -56,7 +56,7 @@
 					<div class="row">
 						<h2 class="seven cell">[[post.title]]</h2>
 						<a class="button right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')">{{#i18n}}blog.edit.post{{/i18n}}</a>
-						<a class="button right-magnet" data-ng-click="removePost(post)">{{#i18n}}blog.delete.post{{/i18n}}</a>
+						<a class="button right-magnet" data-ng-click="openConfirmView(removePost, post)">{{#i18n}}blog.delete.post{{/i18n}}</a>
 					</div>
 					<div class="row"><hr></div>
 					<h5 class="row">
@@ -109,7 +109,7 @@
 		<section class="lightbox-window eight cell">
 			<div class="twelve cell">
 				<form>
-					<section ng-include="'/blog/share/' + currentBlog._id" class="flowing sharing">
+					<section ng-include="lightboxPath" class="flowing sharing">
 					</section>
 				</form>
 			</div>
