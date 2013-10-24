@@ -258,6 +258,11 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		}
 	};
 
+	//temporary hack before final sharing view
+	$('body').on('click', '.sharing input[type=submit]', function(){
+		ui.hideLightbox();
+	})
+
 	$scope.currentViews = {
 		lightbox: '',
 		documents: $scope.views.documents.list
