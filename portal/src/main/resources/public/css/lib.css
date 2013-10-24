@@ -15,6 +15,7 @@
   box-sizing: border-box;
   float: left;
   display: block;
+  position: relative;
 }
 .right-magnet {
   float: right !important;

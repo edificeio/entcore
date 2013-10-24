@@ -15,6 +15,7 @@
   box-sizing: border-box;
   float: left;
   display: block;
+  position: relative;
 }
 .right-magnet {
   float: right !important;
@@ -513,6 +514,7 @@ section .contextual-buttons .action-buttons {
   box-sizing: border-box;
   float: left;
   display: block;
+  position: relative;
   width: 1;
   line-height: 50px;
   margin-bottom: 10px;
@@ -547,6 +549,7 @@ section .contextual-buttons article li {
   box-sizing: border-box;
   float: left;
   display: block;
+  position: relative;
   float: right;
   text-align: right;
 }
@@ -660,6 +663,13 @@ section.lightbox-window .lightbox-buttons {
 section.lightbox-window .lightbox-buttons input[type=submit],
 section.lightbox-window .lightbox-buttons input[type=button] {
   float: right;
+}
+.loading-panel {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 dl dd {
   margin-left: 0;
