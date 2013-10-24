@@ -523,7 +523,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 			url = 'document'
 		}
 		$scope.loading = $scope.translate('loading');
-		http.postFile(url + '?name=' + $scope.newFile.name,  formData).done(function(e){
+		http.postFile(url + '?name=' + $scope.newFile.name,  formData, { requestName: 'file-upload' }).done(function(e){
 			ui.hideLightbox();
 			$scope.loading = '';
 			var path = folderToString($scope.folders[$scope.currentTree.name], $scope.currentTree.name, $scope.openedFolder.folder, $scope.openedFolder.name);
