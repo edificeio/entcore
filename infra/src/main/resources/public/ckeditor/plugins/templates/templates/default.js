@@ -7,11 +7,6 @@ CKEDITOR.addTemplates(
 	"default",{
 		imagesPath: imagesPath,
 		templates:[{
-			title:"Page blanche",
-			image:"blank.gif",
-			description:"Une simple page blanche.",
-			html:''
-		},{
 			title:"Deux colonnes",
 			image:"two-cols.gif",
 			description:"Deux colonnes fluides et un titre.",
@@ -29,12 +24,12 @@ CKEDITOR.addTemplates(
 			title:"Illustration et texte",
 			image:"image-and-text.gif",
 			description:"Une illustration enveloppée dans du texte.",
-			html:'<h2 class="text-container">Titre</h2>' +
-				'<div class="row text-container">' +
-				'<div class="three cell clip img-container avatar" style="margin: 10px">' +
+			html:'<h2>Titre</h2>' +
+				'<div class="row">' +
+				'<div class="three cell clip img-container avatar" style="margin: 10px; margin-left: 0">' +
 				'<img src="' + imagesPath + 'filler-image.png" />' +
 				'</div>' +
-				'<p class="text-container" style="text-align: justify;margin-top:0">Contenu de l\'article</p></div>'
+				'<p style="text-align: justify;margin:0">Contenu de l\'article</p></div>'
 		},{
 			title:"Vignettes",
 			image:"images.gif",
