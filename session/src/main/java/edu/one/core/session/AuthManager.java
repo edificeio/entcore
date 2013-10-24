@@ -77,16 +77,30 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 	}
 
-	private void doFindByUserId(Message<JsonObject> message) {
-		String userId = message.body().getString("userId");
+	private void doFindByUserId(final Message<JsonObject> message) {
+		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
 			sendError(message, "Invalid userId.");
 			return;
 		}
 
 		LoginInfo info = logins.get(userId);
-		if (info == null) {
+		if (info == null && !message.body().getBoolean("allowDisconnectedUser", false)) {
 			sendError(message, "Invalid userId.");
+			return;
+		} else if (info == null) {
+			generateSessionInfos(userId, new Handler<JsonObject>() {
+
+				@Override
+				public void handle(JsonObject infos) {
+					if (infos != null) {
+						sendOK(message, new JsonObject().putString("status", "ok")
+								.putObject("session", infos));
+					} else {
+						sendError(message, "Invalid userId : " + userId);
+					}
+				}
+			});
 			return;
 		}
 		JsonObject session = sessions.get(info.sessionId);
