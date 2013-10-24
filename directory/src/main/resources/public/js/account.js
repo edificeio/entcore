@@ -99,7 +99,7 @@ function Account($scope, http, lang, date, notify, _){
 	};
 
 	$scope.changeVisibility = function(hobby){
-		if(hobby.visibility === 'public'){
+		if(hobby.visibility.toLowerCase() === 'public'){
 			hobby.visibility = 'PRIVE';
 		}
 		else{
@@ -115,7 +115,7 @@ function Account($scope, http, lang, date, notify, _){
 		form.append("name","blablabla");
 
 
-		http.postFile("document?application=userbook&protected=true", form, {})
+		http.postFile("document?application=userbook&protected=true", form, { requestName: 'avatar'})
 			.done(function (data) {
 				if (data.status == "ok") {
 					$scope.account.picture = data._id;
