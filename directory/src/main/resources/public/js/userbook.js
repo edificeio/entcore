@@ -89,7 +89,7 @@ var userbook = function(){
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
-							<div class="six cell">\
+							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
@@ -113,7 +113,7 @@ var userbook = function(){
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
-							<div class="six cell">\
+							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
@@ -137,7 +137,7 @@ var userbook = function(){
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
 							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
-							<div class="six cell">\
+							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
 								</div>\
