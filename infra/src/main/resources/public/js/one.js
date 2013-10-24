@@ -58,7 +58,7 @@ var http = (function(){
 							messenger.notify('error', 'e' + e.status);
 						}
 						else{
-							oneApp.notify.error(oneApp.i18n.i18n()("e" + e.status));
+							humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
 						}
 					}
 

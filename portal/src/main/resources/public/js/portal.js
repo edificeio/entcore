@@ -118,7 +118,7 @@ var messenger = (function(){
 			$('body').unbind('click.lightbox');
 		},
 		notify: function(message){
-			humane.spawn({ addnCls: 'humane-original-' + message.data.type })(message.data.message);
+			humane.spawn({ addnCls: 'humane-original-' + message.data.type })(lang.translate(message.data.message));
 		},
 		'redirect-parent': function(message){
 			window.location.href = message.data;
