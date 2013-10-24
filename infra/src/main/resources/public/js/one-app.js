@@ -350,7 +350,7 @@ oneModule.directive('htmlEditor', function($compile){
 		scope: {
 			ngModel: '='
 		},
-		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
+		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
@@ -394,6 +394,25 @@ oneModule.directive('htmlEditor', function($compile){
 		}
 	}
 });
+
+oneModule.directive('loadingPanel', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			http().bind('request-started.' + $attributes.loadingPanel, function(e){
+				var loadingIllustrationPath = $('link').attr('href').split('/css')[0] + '/img/illustrations/loading.gif';
+				$element.append('<div class="loading-panel">' +
+					'<h1>' + lang.translate('loading') + '</h1>' +
+					'<img src="' + loadingIllustrationPath + '" />' +
+					'</div>');
+
+			})
+			http().bind('request-ended.' + $attributes.loadingPanel, function(e){
+				$element.find('.loading-panel').remove();
+			})
+		}
+	}
+})
 
 $(document).ready(function(){
 	angular.bootstrap($('html'), ['one'])

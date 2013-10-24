@@ -134,7 +134,7 @@ var messenger = (function(){
 }());
 
 function Navigation($scope, http){
-	http.bind('disconnected', function(event){
+	http().bind('disconnected', function(event){
 		messenger.redirectParent('/');
 	});
 

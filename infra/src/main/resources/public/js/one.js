@@ -40,6 +40,11 @@ var http = (function(){
 			params.url = url;
 			params.cache = false;
 
+			var requestName = params.requestName;
+			if(requestName && that.events['request-started.' + requestName]){
+				that.events['request-started.' + requestName]();
+			}
+
 			$.ajax(params)
 				.done(function(e, statusText, xhr){
 					if(typeof that.statusCallbacks.done === 'function'){
@@ -47,6 +52,9 @@ var http = (function(){
 							that.events.disconnected(e, statusText, xhr);
 						}
 						that.statusCallbacks.done(e, statusText, xhr);
+					}
+					if(requestName && that.events['request-ended.' + requestName]){
+						that.events['request-ended.' + requestName]();
 					}
 				})
 				.fail(function(e){
@@ -62,6 +70,9 @@ var http = (function(){
 						}
 					}
 
+					if(requestName && that.events['request-ended.' + requestName]){
+						that.events['request-ended.' + requestName]();
+					}
 					console.log('HTTP error:' + e.status);
 					console.log(e);
 				});
@@ -78,7 +89,7 @@ var http = (function(){
 
 	var requestTypes = ['get', 'post', 'put', 'delete'];
 	requestTypes.forEach(function(type){
-		Http.prototype[type] = function(url, data, params){
+		Http.prototype[type] = function(url, data, params, requestName){
 			var that = this;
 
 			if(!params){
@@ -98,7 +109,7 @@ var http = (function(){
 				}
 			}
 			params.type = type.toUpperCase();
-			return this.request(url, params);
+			return this.request(url, params, requestName);
 		};
 	});
 
@@ -128,7 +139,8 @@ One = {
 		}
 		params.contentType = false;
 		params.processData = false;
-		return http().post(url, data, params);
+
+		return http().post(url, data, params)
 	},
 	bind: function(eventName, handler){
 		http().bind(eventName, handler);
