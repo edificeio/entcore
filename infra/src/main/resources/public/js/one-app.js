@@ -350,7 +350,7 @@ oneModule.directive('htmlEditor', function($compile){
 		scope: {
 			ngModel: '='
 		},
-		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container text-container twelve cell" loading-panel="ckeditor-image">' +
+		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';

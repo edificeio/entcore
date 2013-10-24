@@ -8,14 +8,13 @@ CKEDITOR.editorConfig = function( config ) {
 	config.extraPlugins = 'upload';
 	config.toolbar = [
 		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['NewPage', 'Templates' ] },
+		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
+		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Link', 'Unlink'] },
 		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
-		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
-		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
-
 		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }
 	];
 
