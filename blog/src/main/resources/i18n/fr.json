@@ -20,5 +20,6 @@
 	"group.profil.class.eleve" : "Tous les élèves de la classe ",
 	"group.profil.class.enseignant" : "Tous les enseignants de la classe ",
 	"group.profil.class.persreleleve" : "Tous les parents de la classe ",
-	"group.profil.class.directeur" : "Tous les directeurs de la classe "
+	"group.profil.class.directeur" : "Tous les directeurs de la classe ",
+	"loading": "Chargement"
 }

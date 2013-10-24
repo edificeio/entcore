@@ -19,6 +19,10 @@ var views = {
 	"displayBlog":{}
 }
 
+function resolveMyRights(me){
+
+}
+
 function Blog($scope, http, date, _, ui){
 	$scope.blogs = [];
 	$scope.currentBlog = {};
@@ -42,6 +46,7 @@ function Blog($scope, http, date, _, ui){
 
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
+		resolveMyRights($scope.me);
 	})
 
 	$scope.defaultView = function(){
