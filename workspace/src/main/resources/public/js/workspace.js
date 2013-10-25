@@ -162,6 +162,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	};
 
 	$scope.openMoveFileView = function(action){
+		$scope.editMode = 'single'
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox[action];
 	};
