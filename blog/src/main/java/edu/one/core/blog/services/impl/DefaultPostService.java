@@ -180,16 +180,13 @@ public class DefaultPostService implements PostService {
 					BlogService.PublishType type = Utils.stringToEnum(event.body().getObject("result")
 							.getObject("blog",  new JsonObject()).getString("publish-type"),
 							BlogService.PublishType.RESTRAINT, BlogService.PublishType.class);
-					StateType state;
-					if (BlogService.PublishType.RESTRAINT.equals(type)) {
-						state = StateType.SUBMITTED;
-					} else {
-						state = StateType.PUBLISHED;
-					}
+					final StateType state = (BlogService.PublishType.RESTRAINT.equals(type)) ?
+							StateType.SUBMITTED : StateType.PUBLISHED;
 					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("state", state.name());
 					mongo.update(POST_COLLECTION, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> res) {
+							res.body().putString("state", state.name());
 							result.handle(Utils.validResult(res));
 						}
 					});

@@ -1,13 +1,14 @@
 package edu.one.core.blog.controllers;
 
 import static edu.one.core.blog.controllers.BlogResponseHandler.*;
+import static edu.one.core.infra.security.UserUtils.getUserInfos;
 
 import edu.one.core.blog.security.BlogResourcesProvider;
+import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.blog.services.PostService;
+import edu.one.core.blog.services.impl.DefaultBlogTimelineService;
 import edu.one.core.blog.services.impl.DefaultPostService;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Utils;
+import edu.one.core.infra.*;
 import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
@@ -17,6 +18,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import java.util.Map;
@@ -24,12 +26,14 @@ import java.util.Map;
 public class PostController extends Controller {
 
 	private final PostService post;
+	private final BlogTimelineService timelineService;
 
 	public PostController(Vertx vertx, Container container,
 						  RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
 						  MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
 		this.post = new DefaultPostService(mongo);
+		this.timelineService = new DefaultBlogTimelineService(eb, container, new Neo(eb, log), mongo);
 	}
 
 	// TODO improve fields matcher and validater
@@ -83,7 +87,19 @@ public class PostController extends Controller {
 			badRequest(request);
 			return;
 		}
-		post.delete(postId, defaultResponseHandler(request, 204));
+		post.delete(postId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					timelineService.deletedPost(postId);
+					renderJson(request, event.right().getValue(), 204);
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					renderJson(request, error, 400);
+				}
+			}
+		});
 	}
 
 	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
@@ -131,7 +147,28 @@ public class PostController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					post.submit(blogId, postId, user, defaultResponseHandler(request));
+					post.submit(blogId, postId, user, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								if ("PUBLISHED".equals(event.right().getValue().getString("state"))) {
+									getUserInfos(eb, request, new Handler<UserInfos>() {
+										@Override
+										public void handle(UserInfos user) {
+											timelineService.notifyPublishPost(request, blogId, postId, user,
+													container.config().getString("host", "http://localhost:8018") +
+															pathPrefix + "?blog=" + blogId);
+										}
+									});
+								}
+								renderJson(request, event.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", event.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
@@ -148,7 +185,26 @@ public class PostController extends Controller {
 			badRequest(request);
 			return;
 		}
-		post.publish(blogId, postId, defaultResponseHandler(request));
+		post.publish(blogId, postId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					getUserInfos(eb, request, new Handler<UserInfos>() {
+						@Override
+						public void handle(UserInfos user) {
+							timelineService.notifyPublishPost(request, blogId, postId, user,
+									container.config().getString("host", "http://localhost:8018") +
+									pathPrefix + "?blog=" + blogId);
+						}
+					});
+					renderJson(request, event.right().getValue());
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					renderJson(request, error, 400);
+				}
+			}
+		});
 	}
 
 	@SecuredAction(value = "blog.contrib", type = ActionType.RESOURCE)

@@ -4,14 +4,14 @@ import static edu.one.core.blog.controllers.BlogResponseHandler.*;
 import static edu.one.core.infra.security.UserUtils.*;
 
 import edu.one.core.blog.services.BlogService;
+import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.blog.services.impl.DefaultBlogService;
-import edu.one.core.infra.Controller;
+import edu.one.core.blog.services.impl.DefaultBlogTimelineService;
+import edu.one.core.infra.*;
 
 import java.util.*;
 
-import edu.one.core.infra.Either;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Utils;
+import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
@@ -27,6 +27,7 @@ import org.vertx.java.platform.Container;
 public class BlogController extends Controller {
 
 	private final BlogService blog;
+	private final BlogTimelineService timelineService;
 	private final List<String> managerActions;
 
 	public BlogController(Vertx vertx, Container container,
@@ -34,6 +35,7 @@ public class BlogController extends Controller {
 		MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
 		this.blog = new DefaultBlogService(mongo);
+		this.timelineService = new DefaultBlogTimelineService(eb, container, new Neo(eb, log), mongo);
 		this.managerActions = loadManagerActions(securedActions.values());
 	}
 
@@ -76,9 +78,34 @@ public class BlogController extends Controller {
 			@Override
 			protected void handle() {
 				blog.update(blogId, Utils.jsonFromMultimap(request.formAttributes()),
-						defaultResponseHandler(request));
+						new Handler<Either<String, JsonObject>>() {
+							@Override
+							public void handle(Either<String, JsonObject> event) {
+								if (event.isRight()) {
+									UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+										@Override
+										public void handle(UserInfos user) {
+											if (user != null) {
+												timelineService.notifyUpdateBlog(request, blogId, user,
+														getBlogUri(blogId));
+											}
+										}
+									});
+									renderJson(request, event.right().getValue());
+								} else {
+									JsonObject error = new JsonObject()
+											.putString("error", event.left().getValue());
+									renderJson(request, error, 400);
+								}
+							}
+						});
 			}
 		});
+	}
+
+	private String getBlogUri(String blogId) {
+		return container.config().getString("host", "http://localhost:8018") +
+			pathPrefix + "?blog=" + blogId;
 	}
 
 	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
@@ -88,7 +115,19 @@ public class BlogController extends Controller {
 			badRequest(request);
 			return;
 		}
-		blog.delete(blogId, defaultResponseHandler(request, 204));
+		blog.delete(blogId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					timelineService.deletedBlog(blogId);
+					renderJson(request, event.right().getValue(), 204);
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					renderJson(request, error, 400);
+				}
+			}
+		});
 	}
 
 	@SecuredAction(value = "blog.read", type = ActionType.RESOURCE)
@@ -245,7 +284,25 @@ public class BlogController extends Controller {
 									sharedArray.add(jo);
 								}
 								visibleGroupsIds.addAll(visibleUsersIds);
-								blog.share(blogId, sharedArray, visibleGroupsIds, defaultResponseHandler(request));
+								blog.share(blogId, sharedArray, visibleGroupsIds, new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isRight()) {
+											getUserInfos(eb, request, new Handler<UserInfos>() {
+												@Override
+												public void handle(UserInfos user) {
+													timelineService.notifyShare(request
+														, blogId, user, sharedArray, getBlogUri(blogId));
+												}
+											});
+											renderJson(request, event.right().getValue());
+										} else {
+											JsonObject error = new JsonObject()
+													.putString("error", event.left().getValue());
+											renderJson(request, error, 400);
+										}
+									}
+								});
 							}
 						});
 					}
