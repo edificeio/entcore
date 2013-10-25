@@ -42,9 +42,11 @@
 							</div>
 						</div>
 					</section>
-					<a data-ng-click="showEditBlog(blog)">{{#i18n}}blog.edit.title{{/i18n}}</a><hr>
+					<a data-ng-click="showEditBlog(blog)" ng-if="blog.myRights.blog.edit">{{#i18n}}blog.edit.title{{/i18n}}</a>
+					<a ng-if="!blog.myRights.blog.edit">&nbsp;</a>
+					<hr class="clear content-line" />
 				</div>
-				<h5><a data-ng-click="showCreateBlog()">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+				<h5><a data-ng-click="showCreateBlog()" ng-if="me.myRights.blog.post">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
 	</div>
 	<div class="eight cell">
@@ -55,8 +57,8 @@
 				<section data-ng-repeat="post in currentBlog.posts" class="row">
 					<div class="row">
 						<h2 class="seven cell">[[post.title]]</h2>
-						<a class="button right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')">{{#i18n}}blog.edit.post{{/i18n}}</a>
-						<a class="button right-magnet" data-ng-click="openConfirmView(removePost, post)">{{#i18n}}blog.delete.post{{/i18n}}</a>
+						<a class="button right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">{{#i18n}}blog.edit.post{{/i18n}}</a>
+						<a class="button right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="currentBlog.myRights.post.remove">{{#i18n}}blog.delete.post{{/i18n}}</a>
 					</div>
 					<div class="row"><hr></div>
 					<h5 class="row">
@@ -70,7 +72,7 @@
 					<div class="row content-line">
 						<div class="two cell">
 							<a class="button" data-ng-click="showCommentPost(post)"
-							   data-ng-disabled="(commentFormPath !== '') && (currentPost == post)">
+							   data-ng-disabled="(commentFormPath !== '') && (currentPost == post)" ng-if="currentBlog.myRights.comment.post">
 								{{#i18n}}blog.comment.post{{/i18n}}
 							</a>
 						</div>
@@ -93,7 +95,7 @@
 									<em>[[formatDate(comment.created.$date)]]</em>
 									<a class="cell right-magnet"
 									   ng-click="removeComment(post, comment)"
-									   ng-if="comment.author.userId === me.userId">Supprimer</a>
+									   ng-if="currentBlog.myRights.comment.remove">Supprimer</a>
 									<p>[[comment.comment]]</p>
 								</article>
 							</div>

@@ -20,12 +20,16 @@ var views = {
 }
 
 function resolveMyRights(me){
-
+	me.myRights = {
+		blog: {
+			post: _.where(me.authorizedActions, { name: "edu.one.core.blog.controllers.BlogController|create" }).length > 0
+		}
+	}
 }
 
 function Blog($scope, http, date, _, ui){
 	$scope.blogs = [];
-	$scope.currentBlog = {};
+	$scope.currentBlog = undefined;
 	$scope.currentPost = {};
 
 	$scope.me = {};
@@ -33,9 +37,49 @@ function Blog($scope, http, date, _, ui){
 	$scope.currentView = '';
 	$scope.commentFormPath = '';
 
+	function blogRights(blog){
+		blog.myRights = {
+			comment: {
+				post: true,
+				remove: true
+			},
+			post: {
+				post: true,
+				remove: true,
+				edit: true
+			},
+			blog: {
+				edit: true
+			}
+		}
+		var ownerRights = _.where(blog.shared, { userId: $scope.me.userId, manager: true });
+
+		if(ownerRights.length > 0){
+			return;
+		}
+		var currentSharedRights = _.filter(blog.shared, function(sharedRight){
+			return $scope.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
+				|| sharedRight.userId === $scope.me.userId;
+		});
+
+		function setRight(path){
+			return _.find(currentSharedRights, function(right){
+					return right[path];
+				}) !== undefined;
+		}
+
+		blog.myRights.comment.post = setRight('edu-one-core-blog-controllers-PostController|comment');
+		blog.myRights.comment.remove = setRight('edu-one-core-blog-controllers-PostController|deleteComment');
+		blog.myRights.post.post = setRight('edu-one-core-blog-controllers-PostController|submit');
+		blog.myRights.post.edit = setRight('edu-one-core-blog-controllers-PostController|update');
+		blog.myRights.post.remove = setRight('edu-one-core-blog-controllers-PostController|delete');
+		blog.myRights.blog.edit = setRight('manager');
+	}
+
 	function refreshBlogList(callback){
 		http.get('blog/list/all')
 			.done(function(data){
+				data.forEach(blogRights);
 				$scope.blogs = data;
 				if(typeof callback === 'function'){
 					callback(data);
@@ -93,9 +137,8 @@ function Blog($scope, http, date, _, ui){
 		return id === $scope.currentBlog._id && $scope.currentView !== views.lastPosts;
 	}
 	$scope.isVisible = function(){
-		return ($scope.currentView !== views.createBlog 
-			&& $scope.currentView !== views.lastPosts 
-			&& $scope.currentView !== views.editBlog);
+		return $scope.currentBlog && ($scope.currentView !== views.createBlog
+			&& $scope.currentView !== views.editBlog) && $scope.currentBlog.myRights.post.post;
 	}
 	$scope.isCurrentView = function(name){
 		return ($scope.currentView == views[name]);
@@ -225,7 +268,7 @@ function Blog($scope, http, date, _, ui){
 		$scope.lightboxPath = '/blog/share/' + $scope.currentBlog._id;
 		ui.showLightbox();
 		//Small hack until we get final version
-		$('.share form').submit(function(e){
+		$('body').on('click', '.share input[type=submit]', function(e){
 			e.preventDefault();
 			http.post($('.share form').attr('action'), $('.share form').serialize()).done(function(){
 				ui.hideLightbox();
@@ -258,7 +301,7 @@ function Blog($scope, http, date, _, ui){
 		http.post('/blog', $scope.create.blog)
 			.done(function(newBlog){
 				refreshBlogList(function(){
-					$scope.displayBlog(newBlog);
+					$scope.displayBlog(_.where($scope.blogs, { _id: newBlog._id})[0]);
 				});
 			});
 	};
