@@ -52,6 +52,9 @@
 	<div class="eight cell">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
+			<article class="text-container row" ng-if="blogs.length === 0 && currentView === ''">
+				{{#i18n}}noblog{{/i18n}}
+			</article>
 			<article class="text-container row" ng-if="blogs.length > 0 || currentView !== ''">
 				<section data-ng-include="currentView.path"></section>
 				<section data-ng-repeat="post in currentBlog.posts" class="row">

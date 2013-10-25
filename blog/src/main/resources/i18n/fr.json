@@ -28,5 +28,6 @@
   "blog.comment" :"Commenter",
   "blog.manager" : "Gérer",
   "share.users" : "Utilisateurs",
-  "share.groups" : "Groupes"
+  "share.groups" : "Groupes",
+  "noblog": "Aucun blog n'a été créé pour l'instant"
 }
