@@ -32,6 +32,11 @@ var tools = (function(){
 			}
 
 			return 'unknown';
+		},
+		resolveMyRights: function(me){
+			me.myRights = {
+
+			}
 		}
 	}
 }());
@@ -39,6 +44,44 @@ var tools = (function(){
 function Workspace($scope, http, lang, date, ui, notify, _){
 	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
 	$scope.users = [];
+
+	var setDocumentRights = function(document){
+		document.myRights = {
+			document: {
+				remove: true,
+				move: true,
+				copy: true,
+				moveTrash: true,
+				share: true
+			},
+			comment: {
+				post: true
+			}
+		}
+
+		if(document.owner === $scope.me.userId){
+			document.myRights.share = document.myRights.share &&
+				_.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|share'}).length > 0;
+			return;
+		}
+
+		var currentSharedRights = _.filter(document.shared, function(sharedRight){
+			return $scope.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
+				|| sharedRight.userId === $scope.me.userId;
+		});
+
+		function setRight(path){
+			return _.find(currentSharedRights, function(right){
+				return right[path];
+			}) !== undefined;
+		}
+
+		document.myRights.document.moveTrash = setRight('edu-one-core-workspace-service-WorkspaceService|moveTrash');
+		document.myRights.document.move = setRight('edu-one-core-workspace-service-WorkspaceService|moveDocument');
+		document.myRights.document.copy = setRight('edu-one-core-workspace-service-WorkspaceService|moveDocument');
+		document.myRights.comment.post = setRight('edu-one-core-workspace-service-WorkspaceService|commentDocument');
+		document.myRights.document.share = false;
+	}
 
 	$scope.documentPath = function(document){
 		if($scope.currentTree.name === 'rack'){
@@ -50,33 +93,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	}
 
 	function formatDocuments(documents, callback){
-		var findAuthorizations = function(authorizations, owner){
-			if(!(authorizations instanceof Array) || owner === $scope.me.userId){
-				return {
-					comment: true,
-					share: true
-				}
-			}
-
-			var myRights = {
-				comment: false,
-				share: false
-			}
-
-			authorizations.forEach(function(auth){
-				if(auth.userId !== $scope.me.userId){
-					return;
-				}
-
-				for(var property in auth){
-					if(property.indexOf('comment') !== -1){
-						myRights.comment = true;
-					}
-				}
-			});
-			return myRights;
-		}
-
 		documents.forEach(function(item){
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
@@ -86,7 +102,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 				item.ownerName = item.fromName;
 			}
 
-			item.myRights = findAuthorizations(item.shared, item.owner);
+			setDocumentRights(item);
 		})
 
 		callback(documents);
@@ -211,6 +227,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	}, {
 		name: 'trash',
 		path: 'documents/Trash',
+		filter: 'owner',
 		buttons: [
 			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true },
 			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true }
