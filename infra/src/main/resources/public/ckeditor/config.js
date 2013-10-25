@@ -3,7 +3,8 @@
  * For licensing, see LICENSE.html or http://ckeditor.com/license
  */
 
-CKEDITOR.editorConfig = function( config ) {
+CKEDITOR.editorConfig = function(config){
+	config.removePlugins = 'magicline';
 	config.allowedContent = true;
 	config.extraPlugins = 'upload';
 	config.toolbar = [
