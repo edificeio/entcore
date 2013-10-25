@@ -210,37 +210,45 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		path: 'documents',
 		filter: 'owner',
 		buttons: [
-			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true },
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
-			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
-			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
+			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
+				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addDocument'}).length > 0;
+			} },
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } }
 		]
 	}, {
 		name: 'rack',
 		path: 'rack/documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true }
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true, allow: function(){ return true } }
 		]
 	}, {
 		name: 'trash',
 		path: 'documents/Trash',
 		filter: 'owner',
 		buttons: [
-			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true },
-			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true }
+			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } }
 		]
 	}, {
 		name: 'shared',
 		filter: 'shared',
 		path: 'documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true },
-			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true },
-			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true }
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
+				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
+			} },
+			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){
+				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.move === false }) === undefined;
+			} },
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){
+				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.move === false }) === undefined;
+			} }
 		]
 	}];
 
@@ -447,6 +455,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	};
 
 	updateFolders();
+	$scope.me = { authorizedActions: [] };
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		$scope.openFolder($scope.folders.documents, 'documents', trees[0]);

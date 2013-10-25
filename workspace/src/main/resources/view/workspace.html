@@ -45,12 +45,13 @@
 			<section class="eight cell">
 				<nav class="contextual-buttons row">
 					<div class="action-buttons">
-						<button
-								ng-repeat="button in currentTree.buttons"
+						<div class="cell" ng-repeat="button in currentTree.buttons"><button
+
 								ng-disabled="button.contextual && selectedDocuments().length === 0"
-								ng-click="button.action(button.url)">
+								ng-click="button.action(button.url)"
+								ng-if="button.allow()">
 							<i role="add" ng-if="button.icon"></i> [[translate(button.text)]]
-						</button>
+						</button></div>
 					</div>
 					<div class="display-buttons">
 						<i role="show-list"
