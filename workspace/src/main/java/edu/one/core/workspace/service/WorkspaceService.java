@@ -104,7 +104,7 @@ public class WorkspaceService extends Controller {
 											}
 										}
 									}
-									shareGroupResource(request, id, checked);
+									shareUserAndGroupResource(request, id, checked);
 								} else {
 									badRequest(request);
 								}
