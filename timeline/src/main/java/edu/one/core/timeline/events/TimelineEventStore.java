@@ -9,7 +9,7 @@ import org.vertx.java.core.json.JsonObject;
 public interface TimelineEventStore {
 
 	List<String> FIELDS = Arrays.asList("resource", "sender", "message",
-			"recipients", "comments", "add-comment");
+			"recipients", "comments", "add-comment", "sub-resource");
 
 	List<String> REQUIRED_FIELDS = Arrays.asList("resource", "message", "recipients");
 
@@ -18,5 +18,7 @@ public interface TimelineEventStore {
 	void delete(String resource, Handler<JsonObject> result);
 
 	void get(String recipient, int offset, int limit, Handler<JsonObject> result);
+
+	void deleteSubResource(String resource, Handler<JsonObject> result);
 
 }

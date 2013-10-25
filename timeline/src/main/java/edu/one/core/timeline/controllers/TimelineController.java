@@ -101,6 +101,8 @@ public class TimelineController extends Controller {
 		case "delete":
 			store.delete(json.getString("resource"), handler);
 			break;
+		case "deleteSubResource":
+			store.deleteSubResource(json.getString("sub-resource"), handler);
 		default:
 			message.reply(new JsonObject().putString("status", "error")
 					.putString("message", "Invalid action."));

@@ -62,6 +62,17 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		}
 	}
 
+	@Override
+	public void deleteSubResource(String resource, Handler<JsonObject> result) {
+		if (resource != null && !resource.trim().isEmpty()) {
+			JsonObject query = new JsonObject()
+					.putString("sub-resource", resource);
+			mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
+		} else {
+			result.handle(invalidArguments());
+		}
+	}
+
 	private JsonObject validAndGet(JsonObject json) {
 		if (json != null) {
 			JsonObject e = json.copy();
