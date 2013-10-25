@@ -364,28 +364,24 @@ oneModule.directive('htmlEditor', function($compile){
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 
-				editor.on('focus', function(){
-						CKEDITOR.on('instanceReady', function(){
-							editor.html($scope.ngModel);
-							$('.cke_chrome').width(editor.width());
-							$('.cke_chrome').offset({
-								top: editor.offset().top - $('.cke_chrome').height(),
-								left: editor.offset().left
-							});
-						})
-						$scope.$watch('ngModel', function(newValue){
-							if(editor.html() !== newValue){
-								editor.html(newValue);
-							}
-						})
+				CKEDITOR.on('instanceReady', function(){
+					editor.html($scope.ngModel);
+					$('.cke_chrome').width(editor.width());
+					$('.cke_chrome').offset({
+						top: editor.offset().top - $('.cke_chrome').height(),
+						left: editor.offset().left
+					});
+				})
+				$scope.$watch('ngModel', function(newValue){
+					if(editor.html() !== newValue){
+						editor.html(newValue);
+					}
 				});
 
 				editor.on('blur', function(e) {
 					$scope.ngModel = editor.html();
 					$scope.$apply();
 				});
-
-				editor.focus();
 
 				$element.on('removed', function(){
 					$('.cke').remove();
