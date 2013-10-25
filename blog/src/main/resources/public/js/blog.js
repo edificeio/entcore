@@ -84,6 +84,15 @@ function Blog($scope, http, date, _, ui){
 				if(typeof callback === 'function'){
 					callback(data);
 				}
+				var sp = window.location.href.split('blog=');
+				if(!$scope.currentBlog && $scope.blogs.length > 0){
+					if(sp.length > 1){
+						$scope.currentBlog = _.where($scope.blogs, { _id: sp[1] })[0];
+					}
+					else{
+						$scope.currentBlog = $scope.blogs[0];
+					}
+				}
 				$scope.$apply();
 			});
 	}
@@ -95,11 +104,7 @@ function Blog($scope, http, date, _, ui){
 
 	$scope.defaultView = function(){
 		$scope.currentView = '';
-		refreshBlogList(function(){
-			if($scope.blogs.length > 0){
-				$scope.displayBlog($scope.blogs[0]);
-			}
-		});
+		refreshBlogList();
 	};
 
 	$scope.showEverything = function(post){
