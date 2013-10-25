@@ -437,7 +437,7 @@ public class CommunicationController extends Controller {
 						"'GROUP_ETABEDUCNAT_ELEVE','GROUP_ETABEDUCNAT_PERSEDUCNAT','GROUP_ETABEDUCNAT_ENSEIGNANT'," +
 						"'GROUP_ETABEDUCNAT_DIRECTEUR'] " +
 				"RETURN distinct gp.id as id, gp.name as name, gp.type as type " +
-				"ORDER BY name ";
+				"ORDER BY type DESC, name ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
