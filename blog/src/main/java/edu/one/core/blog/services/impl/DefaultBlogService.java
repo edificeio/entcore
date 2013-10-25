@@ -144,7 +144,7 @@ public class DefaultBlogService implements BlogService{
 	}
 
 	@Override
-	public void share(String blogId, final JsonArray sharedArray, final List<String> updatableGroupsId,
+	public void share(String blogId, final JsonArray sharedArray, final List<String> updatableId,
 				final Handler<Either<String, JsonObject>> result) {
 		if (sharedArray == null) {
 			result.handle(new Either.Left<String, JsonObject>("Invalid sharing."));
@@ -160,10 +160,12 @@ public class DefaultBlogService implements BlogService{
 						event.body().getObject("result", new JsonObject()).getObject("author") != null) {
 					JsonArray actual = event.body().getObject("result")
 							.getArray("shared");
+					String authorId = event.body().getObject("result")
+							.getObject("author").getString("userId");
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.get(i);
-						String groupId = s.getString("groupId");
-						if (groupId == null || !updatableGroupsId.contains(groupId)) {
+						String id = s.getString("groupId", s.getString("userId"));
+						if (!updatableId.contains(id) || (authorId != null && authorId.equals(id))) {
 							sharedArray.addObject(s);
 						}
 					}

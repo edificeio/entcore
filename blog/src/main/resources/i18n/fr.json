@@ -22,5 +22,11 @@
 	"group.profil.class.persreleleve" : "Tous les parents de la classe ",
 	"group.profil.class.directeur" : "Tous les directeurs de la classe ",
 	"loading": "Chargement",
-	"cancel": "Annuler"
+	"cancel": "Annuler",
+  "blog.read": "Lire",
+  "blog.contrib" : "Contribuer",
+  "blog.comment" :"Commenter",
+  "blog.manager" : "Gérer",
+  "share.users" : "Utilisateurs",
+  "share.groups" : "Groupes"
 }

@@ -1,6 +1,7 @@
 package edu.one.core.blog.controllers;
 
 import static edu.one.core.blog.controllers.BlogResponseHandler.*;
+import static edu.one.core.infra.security.UserUtils.*;
 
 import edu.one.core.blog.services.BlogService;
 import edu.one.core.blog.services.impl.DefaultBlogService;
@@ -11,8 +12,6 @@ import java.util.*;
 import edu.one.core.infra.Either;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Utils;
-import edu.one.core.infra.http.Renders;
-import edu.one.core.infra.security.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
@@ -46,7 +45,7 @@ public class BlogController extends Controller {
 	// TODO improve fields matcher and validater
 	@SecuredAction("blog.create")
 	public void create(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
@@ -104,7 +103,7 @@ public class BlogController extends Controller {
 
 	@SecuredAction("blog.list")
 	public void list(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
@@ -132,23 +131,25 @@ public class BlogController extends Controller {
 					if (shared != null && shared.size() > 0) {
 						for (Object o : shared) {
 							JsonObject userShared = (JsonObject) o;
-							String groupId = userShared.getString("groupId");
+							String userOrGroupId = userShared.getString("groupId",
+									userShared.getString("userId"));
 							for (String attrName : userShared.getFieldNames()) {
-								if ("userId".equals(attrName)) continue;
-								if ("groupId".equals(attrName)) continue;
+								if ("userId".equals(attrName) || "groupId".equals(attrName)) {
+									continue;
+								}
 								if ("manager".equals(attrName)) {
 									for (String m: managerActions) {
-										checked.add(m + "_" + groupId);
+										checked.add(m + "_" + userOrGroupId);
 									}
 									continue;
 								}
 								if (userShared.getBoolean(attrName, false)) {
-									checked.add(attrName + "_" + groupId);
+									checked.add(attrName + "_" + userOrGroupId);
 								}
 							}
 						}
 					}
-					shareGroupResource(request, blogId, checked);
+					shareUserAndGroupResource(request, blogId, checked);
 				} else {
 					notFound(request);
 				}
@@ -168,47 +169,85 @@ public class BlogController extends Controller {
 					badRequest(request);
 					return;
 				}
-				UserUtils.findVisibleProfilsGroups(eb, request, new Handler<JsonArray>() {
+				findVisibleUsers(eb, request, new Handler<JsonArray>() {
 					@Override
-					public void handle(JsonArray visibleGroups) {
-						final List<String> shareGroups = request.formAttributes().getAll("shareGroups");
-						final List<String> visibleGroupsIds = new ArrayList<>();
-						for (int i = 0; i < visibleGroups.size(); i++) {
-							JsonObject j = visibleGroups.get(i);
-							if (j != null && j.getString("id") != null) {
-								visibleGroupsIds.add(j.getString("id"));
-							}
-						}
-						Map<String, JsonObject> sharesMap = new HashMap<>();
-						for (String shareGroup : shareGroups) {
-							String [] s = shareGroup.split("_");
-							if (s.length != 2) continue;
-							String [] actions = s[0].split(",");
-							if (actions.length < 1) continue;
-							if (!visibleGroupsIds.contains(s[1])) continue;
-							if (Arrays.asList(actions).containsAll(managerActions)) {
-								JsonObject j = sharesMap.get(s[1]);
-								if (j == null) {
-									j = new JsonObject().putString("groupId", s[1]);
-									sharesMap.put(s[1], j);
-								}
-								j.putBoolean("manager", true);
-							} else {
-								for (int i = 0; i < actions.length; i++) {
-									JsonObject j = sharesMap.get(s[1]);
-									if (j == null) {
-										j = new JsonObject().putString("groupId", s[1]);
-										sharesMap.put(s[1], j);
+					public void handle(final JsonArray visibleUsers) {
+						findVisibleProfilsGroups(eb, request, new Handler<JsonArray>() {
+							@Override
+							public void handle(JsonArray visibleGroups) {
+								final List<String> shares = request.formAttributes().getAll("shares");
+								final List<String> shareGroups = request.formAttributes().getAll("shareGroups");
+								final List<String> visibleGroupsIds = new ArrayList<>();
+								for (int i = 0; i < visibleGroups.size(); i++) {
+									JsonObject j = visibleGroups.get(i);
+									if (j != null && j.getString("id") != null) {
+										visibleGroupsIds.add(j.getString("id"));
 									}
-									j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
 								}
+								final List<String> visibleUsersIds = new ArrayList<>();
+								for (int i = 0; i < visibleUsers.size(); i++) {
+									JsonObject j = visibleUsers.get(i);
+									if (j != null && j.getString("id") != null) {
+										visibleUsersIds.add(j.getString("id"));
+									}
+								}
+								Map<String, JsonObject> sharesMap = new HashMap<>();
+								for (String share : shares) {
+									String[] s = share.split("_");
+									if (s.length != 2) continue;
+									String[] actions = s[0].split(",");
+									if (actions.length < 1) continue;
+									if (!visibleUsersIds.contains(s[1])) continue;
+									if (Arrays.asList(actions).containsAll(managerActions)) {
+										JsonObject j = sharesMap.get(s[1]);
+										if (j == null) {
+											j = new JsonObject().putString("userId", s[1]);
+											sharesMap.put(s[1], j);
+										}
+										j.putBoolean("manager", true);
+									} else {
+										for (int i = 0; i < actions.length; i++) {
+											JsonObject j = sharesMap.get(s[1]);
+											if (j == null) {
+												j = new JsonObject().putString("userId", s[1]);
+												sharesMap.put(s[1], j);
+											}
+											j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
+										}
+									}
+								}
+								for (String shareGroup : shareGroups) {
+									String[] s = shareGroup.split("_");
+									if (s.length != 2) continue;
+									String[] actions = s[0].split(",");
+									if (actions.length < 1) continue;
+									if (!visibleGroupsIds.contains(s[1])) continue;
+									if (Arrays.asList(actions).containsAll(managerActions)) {
+										JsonObject j = sharesMap.get(s[1]);
+										if (j == null) {
+											j = new JsonObject().putString("groupId", s[1]);
+											sharesMap.put(s[1], j);
+										}
+										j.putBoolean("manager", true);
+									} else {
+										for (int i = 0; i < actions.length; i++) {
+											JsonObject j = sharesMap.get(s[1]);
+											if (j == null) {
+												j = new JsonObject().putString("groupId", s[1]);
+												sharesMap.put(s[1], j);
+											}
+											j.putBoolean(actions[i].replaceAll("\\.", "-"), true);
+										}
+									}
+								}
+								final JsonArray sharedArray = new JsonArray();
+								for (JsonObject jo : sharesMap.values()) {
+									sharedArray.add(jo);
+								}
+								visibleGroupsIds.addAll(visibleUsersIds);
+								blog.share(blogId, sharedArray, visibleGroupsIds, defaultResponseHandler(request));
 							}
-						}
-						final JsonArray sharedArray = new JsonArray();
-						for (JsonObject jo: sharesMap.values()) {
-							sharedArray.add(jo);
-						}
-						blog.share(blogId, sharedArray, visibleGroupsIds, defaultResponseHandler(request));
+						});
 					}
 				});
 			}
