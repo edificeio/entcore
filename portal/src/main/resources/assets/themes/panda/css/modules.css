@@ -399,8 +399,12 @@ table.list-view td h2 {
 table.list-view td img {
   vertical-align: middle;
 }
-.cke_editor_editor1 {
+.cke_editor_editor1,
+.cke_editor_editor2 {
   display: block !important;
+}
+#cke_61_uiElement {
+  display: none;
 }
 .editor-container {
   margin-top: 100px;
