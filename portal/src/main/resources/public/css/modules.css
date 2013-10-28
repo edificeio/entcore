@@ -406,8 +406,8 @@ table.list-view td img {
 .cke_tpl_list {
   height: 312px !important;
 }
-#cke_59_uiElement {
-  display: none;
+.cke_dialog {
+  top: 0px !important;
 }
 .editor-container {
   margin-top: 100px;
