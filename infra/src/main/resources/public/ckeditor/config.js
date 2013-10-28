@@ -8,7 +8,7 @@ CKEDITOR.editorConfig = function(config){
 	config.allowedContent = true;
 	config.extraPlugins = 'upload';
 	config.toolbar = [
-		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['NewPage', 'Templates' ] },
+		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
 		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
