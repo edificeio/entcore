@@ -101,6 +101,7 @@ function Blog($scope, http, date, _, ui){
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		resolveMyRights($scope.me);
+		$scope.$apply();
 	})
 
 	$scope.defaultView = function(){
