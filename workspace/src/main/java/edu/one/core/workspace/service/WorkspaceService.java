@@ -446,7 +446,8 @@ public class WorkspaceService extends Controller {
 
 	private boolean inlineDocumentResponse(JsonObject doc, String application) {
 		JsonObject metadata = doc.getObject("metadata");
-		return metadata != null && (
+		String storeApplication = doc.getString("application");
+		return metadata != null && !"WORKSPACE".equals(storeApplication) && (
 				"image/jpeg".equals(metadata.getString("content-type")) ||
 				"image/gif".equals(metadata.getString("content-type")) ||
 				"image/png".equals(metadata.getString("content-type")) ||
