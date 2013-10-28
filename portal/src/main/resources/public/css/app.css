@@ -417,6 +417,9 @@ table.list-view td img {
 .cke_dialog {
   top: 0px !important;
 }
+#cke_58_uiElement {
+  display: none;
+}
 .editor-container {
   margin-top: 100px;
   min-height: 300px;
