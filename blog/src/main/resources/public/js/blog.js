@@ -93,6 +93,7 @@ function Blog($scope, http, date, _, ui){
 						$scope.currentBlog = $scope.blogs[0];
 					}
 				}
+				$scope.displayBlog($scope.currentBlog);
 				$scope.$apply();
 			});
 	}
