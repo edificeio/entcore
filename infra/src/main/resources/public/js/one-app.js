@@ -366,11 +366,14 @@ oneModule.directive('htmlEditor', function($compile){
 
 				CKEDITOR.on('instanceReady', function(){
 					editor.html($scope.ngModel);
-					$('.cke_chrome').width(editor.width());
-					$('.cke_chrome').offset({
-						top: editor.offset().top - $('.cke_chrome').height(),
-						left: editor.offset().left
-					});
+					$('img').on('load', function(){
+						$('.cke_chrome').width(editor.width());
+						$('.cke_chrome').offset({
+							top: editor.offset().top - $('.cke_chrome').height(),
+							left: editor.offset().left
+						});
+					})
+
 				})
 				$scope.$watch('ngModel', function(newValue){
 					if(editor.html() !== newValue){
