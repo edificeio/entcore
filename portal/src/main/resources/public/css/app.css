@@ -407,6 +407,9 @@ table.list-view td img {
   vertical-align: middle;
   margin: 0;
 }
+.v-center-container .v-center img {
+  width: 100%;
+}
 .cke_editor_editor1,
 .cke_editor_editor2 {
   display: block !important;
