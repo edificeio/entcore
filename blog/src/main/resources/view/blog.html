@@ -26,11 +26,11 @@
 			<nav class="vertical">
 				<div data-ng-repeat="blog in blogs">
 					<section data-ng-class="{'fixed-block':true, 'cell':true,
-							 'height-one':true, 'box':true, 'row':true,
+							 'height-one':true, 'box':true, 'row':true, 'clip': true,
 							 'selected':isSelected(blog._id)}">
 						<div class="four cell fixed">
-							<div class="fluid twelve cell clip">
-								<img ng-src="[[blogThumbnail(blog)]]" />
+							<div class="fluid twelve cell v-center-container">
+								<p class="v-center"><img ng-src="[[blogThumbnail(blog)]]" /></p>
 							</div>
 						</div>
 						<div class="eight cell fixed right-magnet text-container">
