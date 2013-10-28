@@ -58,6 +58,9 @@ function Blog($scope, http, date, _, ui){
 			return;
 		}
 		var currentSharedRights = _.filter(blog.shared, function(sharedRight){
+			if(!$scope.me.profilGroupsIds){
+				return false;
+			}
 			return $scope.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
 				|| sharedRight.userId === $scope.me.userId;
 		});
@@ -101,6 +104,7 @@ function Blog($scope, http, date, _, ui){
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		resolveMyRights($scope.me);
+		refreshBlogList();
 		$scope.$apply();
 	})
 
