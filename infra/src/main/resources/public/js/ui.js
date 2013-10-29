@@ -1,7 +1,21 @@
 var ui = (function(){
+	var mainLightbox = {
+		show: function(){
+			$('.lightbox-backdrop').fadeIn();
+			$('.lightbox-window').fadeIn();
+			$('.lightbox-window').css({
+				'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px',
+				'margin-top': '100px'
+			});
+		},
+		hide: function(){
+			$('.lightbox-backdrop').fadeOut();
+			$('.lightbox-window').fadeOut();
+		}
+	};
 
-	var ui = {
-		showLightbox: function(){
+	var iframeLightbox = {
+		show: function(){
 			$('.lightbox-backdrop').fadeIn('normal', function(){
 				messenger.requireResize();
 			});
@@ -15,10 +29,29 @@ var ui = (function(){
 				data: {}
 			});
 		},
-		hideLightbox: function(){
+		hide: function(){
 			$('.lightbox-backdrop').fadeOut();
 			$('.lightbox-window').fadeOut();
 			messenger.closeLightbox();
+		}
+	}
+
+	var ui = {
+		showLightbox: function(){
+			if(parent !== window){
+				iframeLightbox.show();
+			}
+			else{
+				mainLightbox.show();
+			}
+		},
+		hideLightbox: function(){
+			if(parent !== window){
+				iframeLightbox.hide();
+			}
+			else{
+				mainLightbox.hide();
+			}
 		}
 	};
 
@@ -28,9 +61,11 @@ var ui = (function(){
 			$(this).addClass('selected');
 		});
 
-		$('.lightbox-window').on('click', '.close-lightbox i, .lightbox-buttons .cancel', function(){
+		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel', function(){
 			ui.hideLightbox();
 		});
+
+		$('.remove-fout').removeClass('remove-fout');
 
 		$('body').on('click', '.select-file input[type!="file"], button', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
@@ -94,6 +129,8 @@ var ui = (function(){
 
 	return ui;
 }());
+
+
 
 // Remove event in JQuery
 (function($){

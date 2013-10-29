@@ -261,7 +261,6 @@ oneModule.directive('enhancedSelect', function($compile) {
 				$scope.$eval($scope.change);
 				$element.unbind('change');
 			})
-
 		},
 		template: '\
 			<div>\
@@ -340,6 +339,27 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 			$scope.$watch('bindHtmlUnsafe', function(newVal){
 				$element.html(newVal)
 			});
+		}
+	}
+});
+
+oneModule.directive('portal', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		templateUrl: '/public/template/portal.html',
+		compile: function($element, $attribute){
+			$.getJSON('/public/data/portal.json', function(data){
+				var css = data.skin;
+				$('head').append($('<link>', {
+					rel: 'stylesheet',
+					type: 'text/css',
+					href: css
+				}));
+				$.get(data.template, function(nav){
+					//$element.html(nav);
+				})
+			})
 		}
 	}
 });
@@ -423,3 +443,18 @@ oneModule.directive('loadingPanel', function($compile){
 $(document).ready(function(){
 	angular.bootstrap($('html'), ['one'])
 })
+
+
+function Account($scope, http){
+	"use strict";
+
+	$scope.refreshAvatar = function(){
+		http.get('/userbook/api/person').done(function(result){
+			$scope.avatar = result.result['0'].photo;
+			$scope.username = result.result['0'].displayName;
+			$scope.$apply();
+		});
+	};
+
+	$scope.refreshAvatar();
+}
