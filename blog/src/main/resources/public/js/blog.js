@@ -135,6 +135,7 @@ function Blog($scope, http, date, _, ui){
 
 	$scope.nbComments = function(post){
 		if(!post.comments){
+			post.comments = [];
 			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + post._id).done(function(comments){
 				post.comments = comments;
 				$scope.$apply();
