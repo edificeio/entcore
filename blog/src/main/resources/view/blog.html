@@ -65,7 +65,7 @@
 					</div>
 					<div class="row"><hr></div>
 					<h5 class="row">
-						{{#i18n}}blog.by{{/i18n}} <a href="/userbook/annuaire?myClass#[[post.author.userId]]">[[post.author.username]]</a> {{#i18n}}blog.on.date{{/i18n}} [[formatDate(post.created.$date)]]
+						{{#i18n}}blog.by{{/i18n}} <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> {{#i18n}}blog.on.date{{/i18n}} [[formatDate(post.created.$date)]]
 						<span data-ng-if="isCurrentView('lastPosts')">
 							{{#i18n}}blog.on.blog{{/i18n}} <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
 						</span>
