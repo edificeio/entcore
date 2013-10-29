@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="app">
+<html>
 	<head>
 		<title>{{#i18n}}blog.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -7,6 +7,9 @@
 		<script src="{{#static}}js/blog.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body data-ng-controller="Blog">
+	<portal>
+
+
 	<div class="row">
 		<div class="four cell">
 			<a data-ng-click="displayLastPosts()"><h1><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</h1></a>
@@ -125,6 +128,6 @@
 		</section>
 		<div class="clear"></div>
 		</div>
-
+	</portal>
 	</body>
 </html>
