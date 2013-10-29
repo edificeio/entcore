@@ -84,9 +84,7 @@ var loader = (function(){
 }())
 
 document.addEventListener('DOMContentLoaded', function(){
-	if(window !== parent){
-		document.getElementsByTagName('body')[0].style.display = 'none';
-	}
+	document.getElementsByTagName('body')[0].style.display = 'none';
 })
 
 

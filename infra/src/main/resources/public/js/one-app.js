@@ -356,9 +356,7 @@ oneModule.directive('portal', function($compile){
 					type: 'text/css',
 					href: css
 				}));
-				$.get(data.template, function(nav){
-					//$element.html(nav);
-				})
+				$('body').show();
 			})
 		}
 	}

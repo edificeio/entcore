@@ -4,7 +4,6 @@ var ui = (function(){
 			$('.lightbox-backdrop').fadeIn();
 			$('.lightbox-window').fadeIn();
 			$('.lightbox-window').css({
-				'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px',
 				'margin-top': '100px'
 			});
 		},
