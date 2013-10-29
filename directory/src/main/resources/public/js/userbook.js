@@ -306,13 +306,16 @@ $(document).ready(function(){
 	userbook.init();
 	userbook.action.refreshClassList();
 	if (location.href.indexOf("#",0)!==-1){
-		var id = location.href.split("#")[1];
-		$('#people').remove();
-		$('#person').removeClass('eight').addClass('twelve');
-		$('.annuaire').first().remove();
-		$('.search').remove();
-		userbook.action.person(
-			{"url":"api/person?id="+ location.href.split("#")[1] + "&type=" + location.href.split("#")[2]}
-		);
+		setTimeout(function(){
+			var id = location.href.split("#")[1];
+			$('#people').remove();
+			$('#person').removeClass('eight').addClass('twelve');
+			$('.annuaire').first().remove();
+			$('.search').remove();
+			userbook.action.person(
+				{"url":"api/person?id="+ location.href.split("#")[1] + "&type=" + location.href.split("#")[2]}
+			);
+		}, 500)
+
 	}
 });
