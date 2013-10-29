@@ -8,12 +8,7 @@ ONE : Notes de versions
 
 ## Droits et habilitation
 
-* structuration de l'écran de partage en groupe
-
-## Admin
-
-* [Annuaire] #20: Affichage des parents dans l'annuaire admin
-* [Annuaire] #22: Ajouter les infos de classe et école dans les exports utilisateurs
+* structuration de l'écran de partage en groupes et utilisateurs
 
 ## Opérations techniques
 
@@ -24,10 +19,6 @@ ONE : Notes de versions
 * [sécurité] #180: Création du type Authentification pour l'annotation SecuredAction pour filter l'accès simplement pour les utilisateurs authentifiés
 * [infra] #211: Sortir les librairies utilitaires pour vertx dans un dépôt séparé
 * [dictionnaire des données] #344:  pourvoir charger des fichiers ressource depuis le classpath
-
-## Anomalies corrigées
-
-* #355: Mettre à jour l'avatar plutôt que de créer un nouveau document "workspace"
 
 # v1.0.0
 
