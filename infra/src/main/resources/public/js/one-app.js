@@ -258,7 +258,7 @@ oneModule.directive('enhancedSelect', function($compile) {
 			$element.bind('change', function(){
 				$scope.current.id = $element.find('.current').data('selected');
 				$scope.$eval($scope.change);
-				element.unbind('change');
+				$element.unbind('change');
 			})
 
 		},
