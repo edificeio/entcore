@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="app">
+<html>
 	<head>
 		<title>{{#i18n}}workspace.title{{/i18n}}</title>
 		<meta charset="utf-8" />
@@ -37,6 +37,9 @@
 		</script>
 	</head>
 	<body data-ng-controller="Workspace">
+	<portal>
+
+
 		<div class="row">
 			<section class="four cell">
 				<h1><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</h1>
@@ -64,17 +67,20 @@
 							ng-click="switchView('documents', 'icons')"></i>
 					</div>
 				</nav>
-				<section class="lightbox-window eight cell" loading-panel="file-upload">
-					<div class="twelve cell" ng-include="currentViews.lightbox"></div>
-					<div class="close-lightbox">
-						<i role="close-2x"></i>
-					</div>
-					<div class="clear"></div>
-				</section>
+
 				<article data-ng-include="currentViews.documents" class="row"></article>
 			</section>
 		</div>
-		<section class="lightbox-backdrop"></section>
+
 		<div class="clear"></div>
+	</portal>
+	<section class="lightbox-window eight cell" loading-panel="file-upload">
+		<div class="twelve cell" ng-include="currentViews.lightbox"></div>
+		<div class="close-lightbox">
+			<i role="close-2x"></i>
+		</div>
+		<div class="clear"></div>
+	</section>
+	<section class="lightbox-backdrop"></section>
 	</body>
 </html>
