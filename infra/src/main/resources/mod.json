@@ -26,8 +26,8 @@
         "authenticationServer": {
           "loginURL": "http://localhost:8080/auth/login",
           "logoutURL": "http://localhost:8080/auth/logout",
-          "loginCallback": "http://localhost:8080",
-          "logoutCallback": "http://localhost:8080"
+          "loginCallback": "http://localhost:8080/timeline/timeline",
+          "logoutCallback": "http://localhost:8080/timeline/timeline"
         },
         "host": "http://localhost:8080"
       }
