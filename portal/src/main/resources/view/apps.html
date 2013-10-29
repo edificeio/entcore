@@ -1,36 +1,28 @@
 <!doctype html>
-	<html class="app">
+	<html>
 		<head>
-			<script type="text/javascript" src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" id="context"></script>
-			<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
-			<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
-			<script type="text/javascript" src="{{#infra}}js/iframe.js{{/infra}}"></script>
+			<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 			<link rel="stylesheet" type="text/css" href="/public/css/app.css" />
 		</head>
 		<body>
-		<h1><i role="apps"></i>Mes applis</h1>
+			<portal>
+				<h1><i role="apps"></i>Mes applis</h1>
 
-		<nav role="apps-navigation" class="list icons-view">
-			<article>
-				<ul class="list icons-view">
-					{{#apps}}
-					<li>
-						<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>
-							<i role="{{icon}}"></i>
-						</a>
-						<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>{{name}}</a>
-					</li>
-					{{/apps}}
-				</ul>
-				<div class="clear"></div>
-			</article>
-		</nav>
-
-
+				<nav class="list icons-view">
+					<article>
+						<ul class="list icons-view">
+							{{#apps}}
+							<li>
+								<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>
+								<i role="{{icon}}"></i>
+								</a>
+								<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>{{name}}</a>
+							</li>
+							{{/apps}}
+						</ul>
+						<div class="clear"></div>
+					</article>
+				</nav>
+			</portal>
 		</body>
 	</html>

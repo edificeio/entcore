@@ -1,0 +1,33 @@
+<div class="centered container row">
+	<header class="main">
+		<section class="navbar row" data-ng-controller="Account">
+			<div class="cell six">
+				<img data-ng-src="/userbook/document/[[avatar]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" id="my-photo" />
+				<span class="welcome-message">Bonjour [[username]], bienvenue !</span>
+			</div>
+			<div class="cell six">
+				<nav class="account">
+					<a href="/userbook/mon-compte"><i role="user"></i></a>
+					<a href="/auth/logout?callback={{logoutCallback}}"><i role="shutdown"></i></a>
+					<div class="clear"></div>
+				</nav>
+			</div>
+		</section>
+		<section class="row">
+				<a href="/timeline/timeline"><div class="logo"></div></a>
+			<nav class="horizontal">
+				<a href="/timeline/timeline">Quoi de neuf ?</a>
+				<a href="/userbook/annuaire?myClass">La classe</a>
+				<a href="/apps">Mes applis</a>
+			</nav>
+		</section>
+
+	</header>
+	<div class="main wrapper">
+		<section class="main">
+			<div id="directory"></div>
+			<div ng-transclude></div>
+			<div class="clear"></div>
+		</section>
+	</div>
+</div>

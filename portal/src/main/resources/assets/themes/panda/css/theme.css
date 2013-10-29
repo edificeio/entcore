@@ -840,6 +840,7 @@ body {
   box-sizing: border-box;
   min-height: 100%;
   padding: 15px;
+  text-align: left;
 }
 section.lightbox-backdrop {
   position: fixed;

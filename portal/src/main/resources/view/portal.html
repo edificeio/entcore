@@ -35,9 +35,9 @@
 					<nav data-ng-controller="Navigation">
 					<div class="logo" data-ng-click="redirect('{{timeline}}/timeline')" data-link="{{timeline}}/timeline"></div></nav>
 					<nav class="horizontal" data-ng-controller="Navigation">
-						<a class="remove-fout" data-ng-click="redirect('{{timeline}}/timeline')">{{#i18n}}portal.header.navigation.whatsnew{{/i18n}}</a>
-						<a class="remove-fout" data-ng-click="redirect('{{userbook}}/annuaire?myClass')">{{#i18n}}portal.header.navigation.classMembers{{/i18n}}</a>
-						<a class="remove-fout" data-ng-click="redirect('{{portal}}/apps')">{{#i18n}}portal.header.navigation.myapps{{/i18n}}</a>
+						<a class="remove-fout" data-ng-click="redirect('{{timeline}}/timeline')">Quoi de neuf ?</a>
+						<a class="remove-fout" data-ng-click="redirect('{{userbook}}/annuaire?myClass')">La classe</a>
+						<a class="remove-fout" data-ng-click="redirect('{{portal}}/apps')">Mes applis</a>
 					</nav>
 				</section>
 
@@ -47,7 +47,7 @@
 
 
 					<div id="directory"></div>
-					<iframe id="applications" scrolling="no"></iframe>
+					<div ng-transclude></div>
 					<div class="clear"></div>
 				</section>
 			</div>
