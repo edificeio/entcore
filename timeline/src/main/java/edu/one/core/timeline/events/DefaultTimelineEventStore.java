@@ -53,6 +53,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			.putNumber("_id", 0)
 			.putNumber("message", 1)
 			.putNumber("date", 1)
+			.putNumber("sender", 1)
 			.putNumber("comments", 1)
 			.putNumber("add-comment", 1);
 			mongo.find(TIMELINE_COLLECTION, sort.putObject("$query", query), null, keys,
