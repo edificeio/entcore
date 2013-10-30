@@ -169,9 +169,22 @@ table.list-view{
 }
 
 .toggle-panel{
+	.toggle{
+		width: 300px;
+	}
+	width: 300px;
 	position: absolute;
 	top: 0;
 	right: -15px;
+	overflow: hidden;
+	.run-transition(width);
+
+}
+
+.toggle-panel.hide{
+	overflow: hidden;
+	width: 0;
+	.run-transition(width);
 }
 
 .editor-container{

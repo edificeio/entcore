@@ -422,9 +422,26 @@ table.list-view td img {
   display: none;
 }
 .toggle-panel {
+  width: 300px;
   position: absolute;
   top: 0;
   right: -15px;
+  overflow: hidden;
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
+}
+.toggle-panel .toggle {
+  width: 300px;
+}
+.toggle-panel.hide {
+  overflow: hidden;
+  width: 0;
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
 }
 .editor-container {
   margin-top: 100px;

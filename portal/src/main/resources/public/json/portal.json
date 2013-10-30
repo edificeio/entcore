@@ -1,5 +1,5 @@
 {
-	"skin": "/assets/themes/panda/css/theme.css",
+	"skin": "/assets/themes/panda/",
 	"template": "/public/template/portal.html",
 	"logoutCallback": ""
 }

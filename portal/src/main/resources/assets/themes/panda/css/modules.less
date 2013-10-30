@@ -27,8 +27,14 @@ i[role=new-mail]{
 .toggle-panel{
 	background: @ultra-light-grey;
 	box-shadow: -5px 5px 3px rgba(155, 155, 155, 0.2);
-	.rounded-corners(10px);
-	.text-container;
+	.rounded-corners-left(10px);
+	.toggle{
+		.text-container;
+		h1{
+			margin-top: 0;
+		}
+	}
+
 }
 
 .loading-panel{
@@ -348,6 +354,19 @@ i[role=tools]{
 		border: 2px solid #fff;
 		.rounded-corners-right(10px);
 		background: @medium-blue;
+		.run-transition(background);
+	}
+	li:hover{
+		background: #2c6f9b;
+		.run-transition(background);
+	}
+	li.active{
+		background: @orange;
+		.run-transition(background);
+	}
+	li.active:hover{
+		background: @dark-orange;
+		.run-transition(background);
 	}
 }
 
