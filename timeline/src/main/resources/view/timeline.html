@@ -25,18 +25,18 @@
 			</div>
 			<div ng-controller="Personalization">
 				<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
-					<div class="toggle">
+					<div class="toggle cell">
 						<h1>Personnalisation</h1>
 						<div class="row">
 							<div class="twelve cell">
 								<h2>Mes thèmes</h2>
-								<div class="list icons-view">
-									<ul>
+								<div class="twelve cell">
+									<ul class="list icons-view two-cols">
 										<li ng-repeat="skin in skins" ng-click="saveTheme(skin)">
-											<div>
+											<div class="img-container">
 												<img ng-src="[[skin.skinPath]]thumbnail.png" />
 											</div>
-											[[skin.displayName]]
+											<a>[[skin.displayName]]</a>
 										</li>
 									</ul>
 								</div>
