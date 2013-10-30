@@ -418,16 +418,41 @@ table.list-view td img {
 .cke_tpl_list {
   height: 312px !important;
 }
-.cke_dialog {
-  top: 0px !important;
-}
 #cke_58_uiElement {
   display: none;
+}
+.toggle-panel {
+  position: absolute;
+  top: 0;
+  right: -15px;
 }
 .editor-container {
   margin-top: 100px;
   min-height: 300px;
   margin-bottom: 15px;
+}
+ul.icons-tabs {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  right: -60px;
+  width: 45px;
+  height: 45px;
+  display: table;
+}
+ul.icons-tabs li {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  width: 100%;
+  display: table-cell;
+  vertical-align: middle;
+}
+ul.icons-tabs li i {
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
 }
 ul.icons-view {
   padding-left: 0;
@@ -923,6 +948,22 @@ i[role=new-mail] {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+}
+.toggle-panel {
+  background: #f6f6f6;
+  box-shadow: -5px 5px 3px rgba(155, 155, 155, 0.2);
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+  padding: 10px;
+}
+.toggle-panel h1 {
+  margin-top: 1em;
+}
+.toggle-panel article {
+  margin-bottom: 15px;
 }
 .loading-panel {
   opacity: 0.9;
@@ -1916,6 +1957,48 @@ i[role=arrow-bottom] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+}
+i[role=arrow-bottom] {
+  height: 9px;
+  width: 9px;
+  background-image: url("../img/icons/arrow-bottom.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=tools] {
+  height: 28px;
+  width: 28px;
+  background-image: url("../img/icons/tools.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.icons-tabs li {
+  border: 2px solid #fff;
+  -webkit-border-top-right-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -moz-border-top-right-radius: 10px;
+  -moz-border-bottom-right-radius: 10px;
+  -ms-border-top-right-radius: 10px;
+  -ms-border-bottom-right-radius: 10px;
+  -o-border-top-right-radius: 10px;
+  -o-border-bottom-right-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: #2f8cc9;
 }
 a.button {
   padding-left: 7px;
