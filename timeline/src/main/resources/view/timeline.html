@@ -23,6 +23,25 @@
 					</article>
 				</div>
 			</div>
+			<div ng-controller="Personalization" class="toggle-panel">
+				<h1>Personnalisation</h1>
+				<div class="row">
+					<div class="twelve cell">
+						<h2>Mes thèmes</h2>
+						<div class="list icons-view">
+							<ul>
+								<li ng-repeat="skin in skins" ng-click="saveTheme(skin)">[[skin.displayName]]</li>
+							</ul>
+						</div>
+						<h2>Ma page d'accueil</h2>
+						<h2>Mes widgets</h2>
+					</div>
+				</div>
+			</div>
+			<ul class="icons-tabs">
+				<li><i role="tools"></i></li>
+			</ul>
 		</portal>
+
 	</body>
 </html>

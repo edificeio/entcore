@@ -9,3 +9,14 @@ function Timeline($scope, date, http){
 		return date.calendar(dateString);
 	}
 }
+
+function Personalization($scope, http, ui){
+	http.get('/timeline/public/json/themes.json').done(function(data){
+		$scope.skins = data;
+		$scope.$apply();
+	})
+
+	$scope.saveTheme = function(skin){
+		ui.setStyle(skin.skinPath);
+	}
+}
