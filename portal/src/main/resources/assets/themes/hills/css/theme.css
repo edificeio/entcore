@@ -471,6 +471,19 @@ ul.icons-tabs li i {
   margin-right: auto;
   float: none;
 }
+ul.icons-view.two-cols li {
+  width: 1;
+}
+@media screen and (min-width: 720px) {
+  ul.icons-view.two-cols li {
+    width: 50%;
+  }
+}
+@media screen and (max-width: 720px) {
+  ul.icons-view.two-cols li {
+    width: 100%;
+  }
+}
 ul.icons-view {
   padding-left: 0;
 }
