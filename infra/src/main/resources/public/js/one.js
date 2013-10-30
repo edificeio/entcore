@@ -161,3 +161,27 @@ One = {
 		return lang.translate(key);
 	}
 };
+
+var me = (function(){
+	var infos = {};
+	$.get('/auth/oauth2/userinfo', function(data){
+		infos = data;
+	});
+
+	return {
+		userInfos: function(){
+			return infos;
+		},
+		allowedPaths: function(){
+
+		}
+	}
+}())
+
+var navigation = (function(){
+	return {
+		load: function(path){
+
+		}
+	}
+}())

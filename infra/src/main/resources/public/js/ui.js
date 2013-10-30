@@ -51,6 +51,19 @@ var ui = (function(){
 			else{
 				mainLightbox.hide();
 			}
+		},
+		setStyle: function(stylePath){
+			if($('#theme').length === 0){
+				$('head').append($('<link>', {
+					rel: 'stylesheet',
+					type: 'text/css',
+					href: stylePath,
+					id: 'theme'
+				}));
+			}
+			else{
+				$('#theme').attr('href', stylePath);
+			}
 		}
 	};
 

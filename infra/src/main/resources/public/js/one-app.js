@@ -349,13 +349,9 @@ oneModule.directive('portal', function($compile){
 		transclude: true,
 		templateUrl: '/public/template/portal.html',
 		compile: function($element, $attribute){
-			$.getJSON('/public/data/portal.json', function(data){
+			$.getJSON('/public/json/portal.json', function(data){
 				var css = data.skin;
-				$('head').append($('<link>', {
-					rel: 'stylesheet',
-					type: 'text/css',
-					href: css
-				}));
+				ui.setStyle(css);
 				$('body').show();
 			})
 		}
