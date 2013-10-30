@@ -18,5 +18,9 @@ function Personalization($scope, http, ui){
 
 	$scope.saveTheme = function(skin){
 		ui.setStyle(skin.skinPath);
+	};
+
+	$scope.togglePanel = function(){
+		$scope.showPanel = !$scope.showPanel;
 	}
 }

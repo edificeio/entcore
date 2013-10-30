@@ -2,10 +2,10 @@
 	"_id": "1234",
 	"displayName": "Panda",
 	"thumbnail": "",
-	"skinPath": "/assets/themes/panda/css/theme.css"
+	"skinPath": "/assets/themes/panda/"
 }, {
 	"_id": "5678",
 	"displayName": "Collines",
 	"thumbnail": "",
-	"skinPath": "/assets/themes/hills/css/theme.css"
+	"skinPath": "/assets/themes/hills/"
 }]

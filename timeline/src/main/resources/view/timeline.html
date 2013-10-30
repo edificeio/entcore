@@ -23,24 +23,33 @@
 					</article>
 				</div>
 			</div>
-			<div ng-controller="Personalization" class="toggle-panel">
-				<h1>Personnalisation</h1>
-				<div class="row">
-					<div class="twelve cell">
-						<h2>Mes thèmes</h2>
-						<div class="list icons-view">
-							<ul>
-								<li ng-repeat="skin in skins" ng-click="saveTheme(skin)">[[skin.displayName]]</li>
-							</ul>
+			<div ng-controller="Personalization">
+				<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
+					<div class="toggle">
+						<h1>Personnalisation</h1>
+						<div class="row">
+							<div class="twelve cell">
+								<h2>Mes thèmes</h2>
+								<div class="list icons-view">
+									<ul>
+										<li ng-repeat="skin in skins" ng-click="saveTheme(skin)">
+											<div>
+												<img ng-src="[[skin.skinPath]]thumbnail.png" />
+											</div>
+											[[skin.displayName]]
+										</li>
+									</ul>
+								</div>
+							</div>
 						</div>
-						<h2>Ma page d'accueil</h2>
-						<h2>Mes widgets</h2>
 					</div>
 				</div>
+				<ul class="icons-tabs">
+					<li ng-click="togglePanel()" ng-class="{ active: showPanel }"><i role="tools"></i></li>
+				</ul>
+
 			</div>
-			<ul class="icons-tabs">
-				<li><i role="tools"></i></li>
-			</ul>
+
 		</portal>
 
 	</body>
