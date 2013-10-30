@@ -49,6 +49,7 @@ public class Directory extends Server {
 				.get("/api/edit-user-info", "editUserInfo")
 				.get("/api/edit-userbook-info", "editUserBookInfo")
 				.get("/api/set-visibility", "setVisibility")
+				.get("/avatar/:id", "getAvatar")
 				.postWithRegEx(".*", "proxyDocument")
 				.getWithRegEx(".*", "proxyDocument");
 

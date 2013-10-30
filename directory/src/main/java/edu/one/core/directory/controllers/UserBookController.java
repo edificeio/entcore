@@ -340,4 +340,34 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void getAvatar(final HttpServerRequest request) {
+		String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			String query =
+					"START n=node:node_auto_index(id={id}) " +
+					"MATCH n-[:USERBOOK]->u " +
+					"WHERE has(u.type) AND u.type = 'USERBOOK' " +
+					"RETURN distinct u.picture as photo";
+			Map<String, Object> params = new HashMap<>();
+			params.put("id", id);
+			neo.send(query, params, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						String photoId = event.body().getObject("result", new JsonObject())
+								.getObject("0", new JsonObject()).getString("photo");
+						if (photoId != null && !photoId.trim().isEmpty()) {
+							redirectPermanent(request, "/workspace/document/" + photoId);
+							return;
+						}
+					}
+					request.response().sendFile("./public/img/no-avatar.jpg");
+				}
+			});
+		} else {
+			request.response().sendFile("./public/img/no-avatar.jpg");
+		}
+	}
+
 }
