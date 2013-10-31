@@ -187,6 +187,7 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			put: One.put,
 			delete: One.delete,
 			postFile: One.postFile,
+			putFile: One.putFile,
 			bind: One.bind
 		}
 	})

@@ -142,6 +142,15 @@ One = {
 
 		return http().post(url, data, params)
 	},
+	putFile: function(url, data, params){
+		if(typeof params !== 'object'){
+			params = {};
+		}
+		params.contentType = false;
+		params.processData = false;
+
+		return http().put(url, data, params)
+	},
 	bind: function(eventName, handler){
 		http().bind(eventName, handler);
 	},
