@@ -1,0 +1,20 @@
+{
+	"/": {
+		"routes": {
+			"notifications": {
+
+			},
+			"notification": {
+				"routes": {
+					"comment": {
+						"request": {
+							"path": "[[notification['add-comment']]]",
+							"verb": "POST",
+							"data": "comment"
+						}
+					}
+				}
+			}
+		}
+	}
+}
