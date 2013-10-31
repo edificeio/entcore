@@ -24,3 +24,7 @@ function Personalization($scope, http, ui){
 		$scope.showPanel = !$scope.showPanel;
 	}
 }
+
+function Widgets(){
+
+}
