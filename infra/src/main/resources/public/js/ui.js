@@ -57,12 +57,12 @@ var ui = (function(){
 				$('head').append($('<link>', {
 					rel: 'stylesheet',
 					type: 'text/css',
-					href: stylePath + 'css/theme.css',
+					href: stylePath + 'theme.css',
 					id: 'theme'
 				}));
 			}
 			else{
-				$('#theme').attr('href', stylePath + 'css/theme.css');
+				$('#theme').attr('href', stylePath + 'theme.css');
 			}
 		}
 	};
