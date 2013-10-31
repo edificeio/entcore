@@ -65,6 +65,16 @@
     left: 16.666666666666668%;
   }
 }
+@media screen and (min-width: 720px) {
+  .fixed-block.height-one {
+    padding-bottom: 8.333333333333334%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-one {
+    left: 8.333333333333334%;
+  }
+}
 .fluid {
   position: relative !important;
 }
@@ -424,7 +434,7 @@ table.list-view td img {
 .toggle-panel {
   width: 300px;
   position: absolute;
-  top: 0;
+  top: 2px;
   right: -15px;
   overflow: hidden;
   -o-transition: width 250ms ease;
@@ -681,6 +691,9 @@ header h2 {
 }
 article h2:first-child {
   margin-top: 0px;
+}
+.block-container {
+  padding: 10px;
 }
 .text-container {
   padding: 10px;

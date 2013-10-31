@@ -65,6 +65,16 @@
     left: 16.666666666666668%;
   }
 }
+@media screen and (min-width: 720px) {
+  .fixed-block.height-one {
+    padding-bottom: 8.333333333333334%;
+  }
+}
+@media screen and (min-width: 720px) {
+  .fixed-block.left-one {
+    left: 8.333333333333334%;
+  }
+}
 .fluid {
   position: relative !important;
 }
