@@ -1,11 +1,21 @@
 [{
 	"_id": "1234",
 	"displayName": "Panda",
-	"thumbnail": "",
-	"skinPath": "/assets/themes/panda/"
+	"skinPath": "/assets/themes/panda/default/"
 }, {
 	"_id": "5678",
 	"displayName": "Collines",
-	"thumbnail": "",
-	"skinPath": "/assets/themes/hills/"
+	"skinPath": "/assets/themes/panda/hills/"
+}, {
+	"_id": "91011",
+	"displayName": "Désert",
+	"skinPath": "/assets/themes/panda/desert/"
+}, {
+	"_id": "1213",
+	"displayName": "Bambou",
+	"skinPath": "/assets/themes/panda/panda-food/"
+}, {
+	"_id": "1415",
+	"displayName": "Galaxie",
+	"skinPath": "/assets/themes/panda/sparkly/"
 }]

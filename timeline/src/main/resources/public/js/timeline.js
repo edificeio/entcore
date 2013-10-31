@@ -1,13 +1,9 @@
-function Timeline($scope, date, http, navigation){
+function Timeline($scope, date, http){
 	$scope.notifications = [];
 	http.get('lastNotifications').done(function(response){
 		$scope.notifications = response.results;
 		$scope.$apply();
 	});
-
-	$scope.navigate = function(path, scope){
-		navigation.navigate(path, scope);
-	}
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
