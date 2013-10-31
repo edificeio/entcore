@@ -11,7 +11,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.security.UserUtils;
+import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
 import edu.one.core.timeline.events.DefaultTimelineEventStore;

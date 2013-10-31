@@ -18,7 +18,7 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.security.BCrypt;
 
 public class OAuthDataHandler extends DataHandler {

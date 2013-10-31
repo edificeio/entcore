@@ -56,6 +56,13 @@ subprojects {
 	}
 }
 
+project(':common') {
+  dependencies {
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
+  }
+}
+
 project(':admin') {
   dependencies {
     provided project(':processor')
@@ -67,7 +74,7 @@ project(':admin') {
 project(':app-registry') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -76,7 +83,7 @@ project(':app-registry') {
 project(':auth') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
     compile "jp.eisbahn:oauth2-server:1.1-SNAPSHOT"
@@ -86,7 +93,7 @@ project(':auth') {
 project(':communication') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -101,7 +108,7 @@ project(':dataDictionary') {
 project(':directory') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile project(':dataDictionary')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile 'net.sf.opencsv:opencsv:2.4'
@@ -112,7 +119,6 @@ project(':directory') {
 project(':history') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
     compile "edu.one.core:web-utils:$webUtilsVersion"
   }
 }
@@ -126,6 +132,7 @@ project(':infra') {
 project(':portal') {
   dependencies {
     provided project(':processor')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
   }
 }
@@ -140,6 +147,7 @@ project(':sync') {
 project(':timeline') {
   dependencies {
     provided project(':processor')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -148,7 +156,7 @@ project(':timeline') {
 project(':blog') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -157,7 +165,7 @@ project(':blog') {
 project(':workspace') {
   dependencies {
     provided project(':processor')
-    compile project(':infra')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
     testCompile 'com.ning:async-http-client:1.7.17'

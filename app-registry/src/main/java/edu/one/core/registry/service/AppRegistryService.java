@@ -18,10 +18,10 @@ import org.vertx.java.platform.Container;
 import com.google.common.base.Joiner;
 
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.Utils;
-import edu.one.core.infra.security.UserUtils;
+import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
 

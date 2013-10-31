@@ -10,7 +10,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.google.common.base.Joiner;
 
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 
 public class DefaultProfils implements Profils {
 

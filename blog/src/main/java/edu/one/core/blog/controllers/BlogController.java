@@ -1,17 +1,18 @@
 package edu.one.core.blog.controllers;
 
 import static edu.one.core.blog.controllers.BlogResponseHandler.*;
-import static edu.one.core.infra.security.UserUtils.*;
+import static edu.one.core.common.user.UserUtils.*;
 
 import edu.one.core.blog.services.BlogService;
 import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.blog.services.impl.DefaultBlogService;
 import edu.one.core.blog.services.impl.DefaultBlogTimelineService;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.*;
 
 import java.util.*;
 
-import edu.one.core.infra.security.UserUtils;
+import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;

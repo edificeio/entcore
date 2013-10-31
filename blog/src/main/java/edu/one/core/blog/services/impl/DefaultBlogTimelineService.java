@@ -5,7 +5,7 @@ import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.MongoQueryBuilder;
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.security.resources.UserInfos;
 import org.vertx.java.core.Handler;

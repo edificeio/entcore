@@ -4,7 +4,7 @@ import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
 import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 
 public class OAuthDataHandlerFactory implements DataHandlerFactory {
 

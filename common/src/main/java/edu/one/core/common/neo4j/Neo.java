@@ -1,4 +1,4 @@
-package edu.one.core.infra;
+package edu.one.core.common.neo4j;
 
 import java.util.Map;
 

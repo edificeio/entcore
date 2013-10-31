@@ -13,7 +13,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.security.BCrypt;

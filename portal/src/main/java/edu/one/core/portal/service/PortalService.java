@@ -2,7 +2,7 @@ package edu.one.core.portal.service;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.http.StaticResource;
-import edu.one.core.infra.security.UserUtils;
+import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.portal.mustache.AssetResourceTemplateFunction;
 import edu.one.core.security.ActionType;

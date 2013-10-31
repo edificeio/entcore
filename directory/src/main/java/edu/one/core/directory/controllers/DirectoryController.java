@@ -32,7 +32,7 @@ import edu.one.core.directory.profils.DefaultProfils;
 import edu.one.core.directory.profils.Profils;
 import edu.one.core.directory.users.UserQueriesBuilder;
 import edu.one.core.infra.Controller;
-import edu.one.core.infra.Neo;
+import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.security.BCrypt;
 import edu.one.core.security.SecuredAction;
 
