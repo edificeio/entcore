@@ -38,6 +38,7 @@ function Account($scope, http, lang, date, notify, _){
 	http.get('api/person')
 		.done(function(data){
 			$scope.account = personDataExtractor(data);
+			$scope.account.pictureVersion = 0;
 			$scope.account.mood = _($scope.moods).where({id: $scope.account.mood})[0];
 			$scope.$apply();
 		});
@@ -110,19 +111,31 @@ function Account($scope, http, lang, date, notify, _){
 	};
 
 	$scope.updateAvatar = function(){
-		var form = new FormData();
+		var form = new FormData(),
+		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 		form.append("image", $scope.photo);
 		form.append("name","blablabla");
 
 
-		http.postFile("document?application=userbook&protected=true", form, { requestName: 'avatar'})
-			.done(function (data) {
-				if (data.status == "ok") {
-					$scope.account.picture = data._id;
-					$scope.saveProperty('picture');
-					$scope.$apply();
-					messenger.updateAvatar();
-				}
-			});
+        if (uuidRegex.test($scope.account.picture)) {
+            http.putFile("/workspace/document/" + $scope.account.picture, form, { requestName: 'avatar'})
+                .done(function (data) {
+                    if (data.status == "ok") {
+                        $scope.account.pictureVersion = $scope.account.pictureVersion + 1;
+                        $scope.$apply();
+                        messenger.updateAvatar();
+                    }
+                });
+        } else {
+            http.postFile("/workspace/document?application=userbook&protected=true", form, { requestName: 'avatar'})
+                .done(function (data) {
+                    if (data.status == "ok") {
+                        $scope.account.picture = data._id;
+                        $scope.saveProperty('picture');
+                        $scope.$apply();
+                        messenger.updateAvatar();
+                    }
+                });
+		}
 	}
 }
