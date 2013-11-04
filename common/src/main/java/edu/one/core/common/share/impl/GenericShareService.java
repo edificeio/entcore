@@ -198,4 +198,21 @@ public abstract class GenericShareService implements ShareService {
 		});
 	}
 
+
+	protected List<String> findRemoveActions(List<String> removeActions) {
+		if (removeActions == null || removeActions.isEmpty()) {
+			return null;
+		}
+		List<String> rmActions = new ArrayList<>(removeActions);
+		for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
+			for (String a: removeActions) {
+				if (ga.getValue().contains(a)) {
+					rmActions.add(ga.getKey());
+					break;
+				}
+			}
+		}
+		return rmActions;
+	}
+
 }

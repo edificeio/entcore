@@ -18,4 +18,10 @@ public interface ShareService {
 	void userShare(String userId, String userShareId, String resourceId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler);
 
+	void removeGroupShare(String groupId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler);
+
+	void removeUserShare(String userId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler);
+
 }

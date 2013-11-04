@@ -183,4 +183,59 @@ public class MongoDbShareService extends GenericShareService {
 		});
 	}
 
+	@Override
+	public void removeGroupShare(String groupId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler) {
+		removeShare(resourceId, groupId, actions, true, handler);
+	}
+
+	@Override
+	public void removeUserShare(String userId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler) {
+		removeShare(resourceId, userId, actions, false, handler);
+	}
+
+	private void removeShare(String resourceId, final String shareId, List<String> removeActions,
+			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
+		final String shareIdAttr = isGroup ? "groupId" : "userId";
+		final List<String> actions = findRemoveActions(removeActions);
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		final JsonObject q = MongoQueryBuilder.build(query);
+		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) &&
+						event.body().getObject("result") != null) {
+					JsonArray actual = event.body().getObject("result")
+							.getArray("shared", new JsonArray());
+					JsonArray shared = new JsonArray();
+					for (int i = 0; i < actual.size(); i++) {
+						JsonObject s = actual.get(i);
+						String id = s.getString(shareIdAttr);
+						if (shareId.equals(id)) {
+							if (actions != null) {
+								for (String action: actions) {
+									s.removeField(action);
+								}
+								shared.add(s);
+							}
+						} else {
+							shared.add(s);
+						}
+					}
+					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("shared", shared);
+					mongo.update(collection, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							handler.handle(Utils.validResult(res));
+						}
+					});
+				} else {
+					handler.handle(new Either.Left<String, JsonObject>("Resource not found."));
+				}
+			}
+		});
+	}
+
 }
