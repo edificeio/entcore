@@ -1,4 +1,4 @@
-package edu.one.core.blog.controllers;
+package edu.one.core.common.http.response;
 
 import edu.one.core.infra.Either;
 import edu.one.core.infra.http.Renders;
@@ -7,15 +7,15 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class BlogResponseHandler {
+public class DefaultResponseHandler {
 
-	private BlogResponseHandler() {}
+	private DefaultResponseHandler() {}
 
-	protected static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request) {
+	public static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request) {
 		return defaultResponseHandler(request, 200);
 	}
 
-	protected static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request,
+	public static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request,
 																	   final int successCode) {
 		return new Handler<Either<String, JsonObject>>() {
 			@Override
@@ -31,7 +31,7 @@ public class BlogResponseHandler {
 		};
 	}
 
-	protected static Handler<Either<String, JsonArray>> arrayResponseHandler(final HttpServerRequest request) {
+	public static Handler<Either<String, JsonArray>> arrayResponseHandler(final HttpServerRequest request) {
 		return new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {

@@ -1,6 +1,6 @@
 package edu.one.core.blog.controllers;
 
-import static edu.one.core.blog.controllers.BlogResponseHandler.*;
+import static edu.one.core.common.http.response.DefaultResponseHandler.*;
 import static edu.one.core.common.user.UserUtils.getUserInfos;
 
 import edu.one.core.blog.security.BlogResourcesProvider;
