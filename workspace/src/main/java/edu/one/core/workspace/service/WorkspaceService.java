@@ -1,5 +1,7 @@
 package edu.one.core.workspace.service;
 
+import static edu.one.core.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static edu.one.core.common.user.UserUtils.getUserInfos;
 import static edu.one.core.infra.Utils.getOrElse;
 
 import java.io.IOException;
@@ -12,6 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.mongodb.QueryBuilder;
+import edu.one.core.common.share.ShareService;
+import edu.one.core.common.share.impl.MongoDbShareService;
+import edu.one.core.infra.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -22,13 +28,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.FileUtils;
-import edu.one.core.infra.MongoDb;
 import edu.one.core.common.neo4j.Neo;
-import edu.one.core.infra.NotificationHelper;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.TracerHelper;
 import edu.one.core.infra.http.ETag;
 import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
@@ -48,6 +48,7 @@ public class WorkspaceService extends Controller {
 	private final Neo neo;
 	private final NotificationHelper notification;
 	private final TracerHelper trace;
+	private final ShareService shareService;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -60,11 +61,52 @@ public class WorkspaceService extends Controller {
 		neo = new Neo(eb, log);
 		notification = new NotificationHelper(eb, container);
 		this.trace = trace;
+		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 	}
 
 	@SecuredAction("workspace.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
+	}
+
+	@SecuredAction("workspace.share.json")
+	public void shareJson(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					isOwner(DocumentDao.DOCUMENTS_COLLECTION, id, user, new Handler<Boolean>() {
+						@Override
+						public void handle(Boolean event) {
+							if (Boolean.TRUE.equals(event)) {
+								shareService.shareInfos(user.getUserId(), id, defaultResponseHandler(request));
+							} else {
+								unauthorized(request);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	private void isOwner(String collection, String documentId, UserInfos user,
+			final Handler<Boolean> handler) {
+		QueryBuilder query = QueryBuilder.start("_id").is(documentId).put("owner").is(user.getUserId());
+		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonObject res = event.body();
+				handler.handle(res != null && "ok".equals(res.getString("status")) && 1 == res.getInteger("count"));
+			}
+		});
 	}
 
 	@SecuredAction("workspace.share")
