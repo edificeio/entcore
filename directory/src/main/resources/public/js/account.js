@@ -20,7 +20,7 @@ var personDataExtractor = function(d) {
 	return person;
 };
 
-function Account($scope, http, lang, date, notify, _){
+function MyAccount($scope, http, lang, date, notify, _){
 	$scope.account = {};
 	var moods = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	$scope.moods = [];
@@ -116,26 +116,25 @@ function Account($scope, http, lang, date, notify, _){
 		form.append("image", $scope.photo);
 		form.append("name","blablabla");
 
-
-        if (uuidRegex.test($scope.account.picture)) {
-            http.putFile("/workspace/document/" + $scope.account.picture, form, { requestName: 'avatar'})
-                .done(function (data) {
-                    if (data.status == "ok") {
-                        $scope.account.pictureVersion = $scope.account.pictureVersion + 1;
-                        $scope.$apply();
-                        messenger.updateAvatar();
-                    }
-                });
-        } else {
-            http.postFile("/workspace/document?application=userbook&protected=true", form, { requestName: 'avatar'})
-                .done(function (data) {
-                    if (data.status == "ok") {
-                        $scope.account.picture = data._id;
-                        $scope.saveProperty('picture');
-                        $scope.$apply();
-                        messenger.updateAvatar();
-                    }
-                });
+	if (uuidRegex.test($scope.account.picture)) {
+			http.putFile("/workspace/document/" + $scope.account.picture, form, { requestName: 'avatar'})
+				.done(function (data) {
+					if (data.status == "ok") {
+						$scope.account.pictureVersion = $scope.account.pictureVersion + 1;
+						$scope.$apply();
+						messenger.updateAvatar();
+					}
+				});
+		} else {
+			http.postFile("/workspace/document?application=userbook&protected=true", form, { requestName: 'avatar'})
+				.done(function (data) {
+					if (data.status == "ok") {
+						$scope.account.picture = data._id;
+						$scope.saveProperty('picture');
+						$scope.$apply();
+						messenger.updateAvatar();
+					}
+				});
 		}
 	}
 }

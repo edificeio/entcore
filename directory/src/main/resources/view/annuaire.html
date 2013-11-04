@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="app">
+<html>
 	<head>
 		<title>{{#i18n}}userBook.class.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -14,7 +14,6 @@
 		<script src="{{#infra}}js/one-app.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/one.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/userbook.js{{/static}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/iframe.js{{/infra}}" type="text/javascript"></script>
 		<style>
 			h4{
 				margin-top: 0 !important
@@ -22,6 +21,9 @@
 		</style>
 	</head>
 	<body>
+	<portal>
+
+
 		<div class="twelve cell annuaire">
 			<div class="contextual-buttons right-magnet">
 				<div class="display-buttons clear right-magnet">
@@ -47,5 +49,6 @@
 			</div>
 		</div>
 		<div class="clear"></div>
+	</portal>
 	</body>
 </html>
