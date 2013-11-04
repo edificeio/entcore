@@ -40,6 +40,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 			$scope.account = personDataExtractor(data);
 			$scope.account.pictureVersion = 0;
 			$scope.account.mood = _($scope.moods).where({id: $scope.account.mood})[0];
+			$scope.account.photo = {};
 			$scope.$apply();
 		});
 
