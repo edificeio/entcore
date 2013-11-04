@@ -1,16 +1,18 @@
 {
 	"/": {
 		"routes": {
-			"notifications": {
-
-			},
 			"notification": {
 				"routes": {
 					"comment": {
-						"request": {
-							"path": "[[notification['add-comment']]]",
-							"verb": "POST",
-							"data": "comment"
+						"view": {
+							"path": "comment.html"
+						},
+						"routes": {
+							"post": {
+								"url": "[[notification['add-comment']]]",
+								"verb": "POST",
+								"data": "create.comment"
+							}
 						}
 					}
 				}
