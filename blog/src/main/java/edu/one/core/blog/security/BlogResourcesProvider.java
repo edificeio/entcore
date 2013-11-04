@@ -40,6 +40,7 @@ public class BlogResourcesProvider implements ResourcesProvider {
 				case "get":
 				case "share":
 				case "shareJson":
+				case "shareJsonSubmit":
 				case "shareSubmit":
 					authorizeBlog(request, user, binding.getServiceMethod(), handler);
 					break;

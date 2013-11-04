@@ -182,6 +182,47 @@ public class BlogController extends Controller {
 	}
 
 	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	public void shareJsonSubmit(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		if (blogId == null || blogId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final List<String> actions = request.formAttributes().getAll("actions");
+				final String groupId = request.formAttributes().get("groupId");
+				final String userId = request.formAttributes().get("userId");
+				if (actions == null || actions.isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(UserInfos user) {
+						if (user != null) {
+							if (groupId != null) {
+								shareService.groupShare(user.getUserId(), groupId, blogId, actions,
+										defaultResponseHandler(request));
+							} else if (userId != null) {
+								shareService.userShare(user.getUserId(), userId, blogId, actions,
+										defaultResponseHandler(request));
+							} else {
+								badRequest(request);
+							}
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+
+	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
 	public void share(final HttpServerRequest request) {
 		final String blogId = request.params().get("blogId");
 		if (blogId == null || blogId.trim().isEmpty()) {
