@@ -97,6 +97,70 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@SecuredAction("workspace.share.json")
+	public void shareJsonSubmit(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final List<String> actions = request.formAttributes().getAll("actions");
+				final String groupId = request.formAttributes().get("groupId");
+				final String userId = request.formAttributes().get("userId");
+				if (actions == null || actions.isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							isOwner(DocumentDao.DOCUMENTS_COLLECTION, id, user, new Handler<Boolean>() {
+								@Override
+								public void handle(Boolean event) {
+									if (Boolean.TRUE.equals(event)) {
+										Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
+											@Override
+											public void handle(Either<String, JsonObject> event) {
+												if (event.isRight()) {
+													JsonObject n = event.right().getValue()
+															.getObject("notify-timeline");
+													if (n != null) {
+														notifyShare(request, id, user, new JsonArray().add(n));
+													}
+													renderJson(request, event.right().getValue());
+												} else {
+													JsonObject error = new JsonObject()
+															.putString("error", event.left().getValue());
+													renderJson(request, error, 400);
+												}
+											}
+										};
+										if (groupId != null) {
+											shareService.groupShare(user.getUserId(), groupId, id, actions, r);
+										} else if (userId != null) {
+											shareService.userShare(user.getUserId(), userId, id, actions, r);
+										} else {
+											badRequest(request);
+										}
+									} else {
+										unauthorized(request);
+									}
+								}
+							});
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
 	private void isOwner(String collection, String documentId, UserInfos user,
 			final Handler<Boolean> handler) {
 		QueryBuilder query = QueryBuilder.start("_id").is(documentId).put("owner").is(user.getUserId());

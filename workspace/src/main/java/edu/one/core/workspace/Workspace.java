@@ -23,6 +23,8 @@ public class Workspace extends Server {
 
 		service.get("/share/json/:id", "shareJson");
 
+		service.put("/share/json/:id", "shareJsonSubmit");
+
 		service.get("/share", "share");
 
 		service.post("/share", "shareDocument");
