@@ -2,6 +2,7 @@ package edu.one.core.common.share.impl;
 
 import edu.one.core.common.share.ShareService;
 import edu.one.core.common.user.UserUtils;
+import edu.one.core.infra.Either;
 import edu.one.core.infra.security.ActionType;
 import edu.one.core.infra.security.SecuredAction;
 import org.vertx.java.core.Handler;
@@ -11,12 +12,20 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.*;
 
+import static edu.one.core.common.user.UserUtils.findVisibleProfilsGroups;
+import static edu.one.core.common.user.UserUtils.findVisibleUsers;
+
 public abstract class GenericShareService implements ShareService {
 
 	protected final EventBus eb;
+	protected final Map<String, SecuredAction> securedActions;
+	protected final Map<String, List<String>> groupedActions;
 
-	public GenericShareService(EventBus eb) {
+	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
+			Map<String, List<String>> groupedActions) {
 		this.eb = eb;
+		this.securedActions = securedActions;
+		this.groupedActions = groupedActions;
 	}
 
 	protected JsonArray getResoureActions(Map<String, SecuredAction> securedActions) {
@@ -26,12 +35,12 @@ public abstract class GenericShareService implements ShareService {
 				JsonObject a = resourceActions.getObject(action.getDisplayName());
 				if (a == null) {
 					a = new JsonObject()
-							.putArray("name", new JsonArray().add(action.getName()))
+							.putArray("name", new JsonArray().add(action.getName().replaceAll("\\.", "-")))
 							.putString("displayName", action.getDisplayName())
 							.putString("type", action.getType());
 					resourceActions.putObject(action.getDisplayName(), a);
 				} else {
-					a.getArray("name").add(action.getName());
+					a.getArray("name").add(action.getName().replaceAll("\\.", "-"));
 				}
 			}
 		}
@@ -72,7 +81,7 @@ public abstract class GenericShareService implements ShareService {
 						}
 					}
 				}
-				UserUtils.findVisibleUsers(eb, userId, new Handler<JsonArray>() {
+				findVisibleUsers(eb, userId, new Handler<JsonArray>() {
 					@Override
 					public void handle(JsonArray visibleUsers) {
 						JsonObject users = new JsonObject();
@@ -100,4 +109,93 @@ public abstract class GenericShareService implements ShareService {
 			}
 		});
 	}
+
+	// TODO improve query
+	protected void profilGroupIsVisible(String userId, final String groupId, final Handler<Boolean> handler) {
+		if (userId == null || groupId == null) {
+			handler.handle(false);
+			return;
+		}
+		findVisibleProfilsGroups(eb, userId, new Handler<JsonArray>() {
+			@Override
+			public void handle(JsonArray visibleGroups) {
+				final List<String> visibleGroupsIds = new ArrayList<>();
+				for (int i = 0; i < visibleGroups.size(); i++) {
+					JsonObject j = visibleGroups.get(i);
+					if (j != null && j.getString("id") != null) {
+						visibleGroupsIds.add(j.getString("id"));
+					}
+				}
+				handler.handle(visibleGroupsIds.contains(groupId));
+			}
+		});
+	}
+
+	protected void userIsVisible(String userId, final String userShareId, final Handler<Boolean> handler) {
+		if (userId == null || userShareId == null) {
+			handler.handle(false);
+			return;
+		}
+		findVisibleUsers(eb, userId, new Handler<JsonArray>() {
+			@Override
+			public void handle(JsonArray visibleUsers) {
+				final List<String> visibleUsersIds = new ArrayList<>();
+				for (int i = 0; i < visibleUsers.size(); i++) {
+					JsonObject j = visibleUsers.get(i);
+					if (j != null && j.getString("id") != null) {
+						visibleUsersIds.add(j.getString("id"));
+					}
+				}
+				handler.handle(visibleUsersIds.contains(userShareId));
+			}
+		});
+	}
+
+	protected boolean actionsExists(List<String> actions) {
+		if (securedActions != null) {
+			List<String> a = new ArrayList<>();
+			for (String action: securedActions.keySet()) {
+				a.add(action.replaceAll("\\.", "-"));
+			}
+			return a.containsAll(actions);
+		}
+		return false;
+	}
+
+	protected void groupShareValidation(String userId, String groupShareId, final List<String> actions,
+			final Handler<Either<String, JsonObject>> handler) {
+		profilGroupIsVisible(userId, groupShareId, new Handler<Boolean>() {
+			@Override
+			public void handle(Boolean visible) {
+				if (Boolean.TRUE.equals(visible)) {
+					if (actionsExists(actions)) {
+						handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+					} else {
+						handler.handle(new Either.Left<String, JsonObject>("Invalid actions."));
+					}
+				} else {
+					handler.handle(new Either.Left<String, JsonObject>("Profil group not found."));
+				}
+			}
+		});
+	}
+
+	protected void userShareValidation(String userId, String userShareId, final List<String> actions,
+										final Handler<Either<String, JsonObject>> handler) {
+		userIsVisible(userId, userShareId, new Handler<Boolean>() {
+			@Override
+			public void handle(Boolean visible) {
+				if (Boolean.TRUE.equals(visible)) {
+					if (actionsExists(actions)) {
+						handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+					} else {
+						handler.handle(new Either.Left<String, JsonObject>("Invalid actions."));
+					}
+				} else {
+					handler.handle(new Either.Left<String, JsonObject>("User not found."));
+				}
+			}
+		});
+	}
+
 }

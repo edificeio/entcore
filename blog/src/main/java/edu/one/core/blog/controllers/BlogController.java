@@ -44,7 +44,7 @@ public class BlogController extends Controller {
 		this.managerActions = loadManagerActions(securedActions.values());
 		this.groupedActions = new HashMap<>();
 		this.groupedActions.put("manager", managerActions);
-		this.shareService = new MongoDbShareService(eb, mongo, "blogs");
+		this.shareService = new MongoDbShareService(eb, mongo, "blogs", securedActions, groupedActions);
 	}
 
 	@SecuredAction("blog.view")
@@ -173,8 +173,7 @@ public class BlogController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					shareService.shareInfos(user.getUserId(), blogId, securedActions,
-							groupedActions, defaultResponseHandler(request));
+					shareService.shareInfos(user.getUserId(), blogId, defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}

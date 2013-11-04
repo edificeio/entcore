@@ -1,10 +1,7 @@
 package edu.one.core.common.share.impl;
 
 import com.mongodb.QueryBuilder;
-import edu.one.core.infra.Either;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.MongoQueryBuilder;
-import edu.one.core.infra.Utils;
+import edu.one.core.infra.*;
 import edu.one.core.infra.security.SecuredAction;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -20,15 +17,16 @@ public class MongoDbShareService extends GenericShareService {
 	private final String collection;
 	private final MongoDb mongo;
 
-	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection) {
-		super(eb);
+	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection,
+			Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+		super(eb, securedActions, groupedActions);
 		this.mongo = mongo;
 		this.collection = collection;
 	}
 
 	@Override
-	public void shareInfos(final String userId, String resourceId, Map<String, SecuredAction> securedActions,
-			final Map<String, List<String>> groupedActions, final Handler<Either<String, JsonObject>> handler) {
+	public void shareInfos(final String userId, String resourceId,
+			final Handler<Either<String, JsonObject>> handler) {
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid userId."));
 			return;
@@ -87,5 +85,95 @@ public class MongoDbShareService extends GenericShareService {
 		});
 	}
 
+	@Override
+	public void groupShare(String userId, final String groupShareId, final String resourceId,
+			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
+		groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					share(resourceId, groupShareId, actions, true, handler);
+				} else {
+					handler.handle(event);
+				}
+			}
+		});
+	}
+
+	private void share(String resourceId, final String groupShareId, final List<String> actions,
+			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
+		final String shareIdAttr = isGroup ? "groupId" : "userId";
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		final JsonObject q = MongoQueryBuilder.build(query);
+		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) &&
+						event.body().getObject("result") != null) {
+					JsonArray actual = event.body().getObject("result")
+							.getArray("shared", new JsonArray());
+					boolean exist = false;
+					for (int i = 0; i < actual.size(); i++) {
+						JsonObject s = actual.get(i);
+						String id = s.getString(shareIdAttr);
+						if (groupShareId.equals(id)) {
+							for (String action: actions) {
+								s.putBoolean(action, true);
+							}
+							if (groupedActions != null) {
+								for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
+									if (actions.containsAll(ga.getValue())) {
+										s.putBoolean(ga.getKey(), true);
+									}
+								}
+							}
+							exist = true;
+							break;
+						}
+					}
+					if (!exist) {
+						JsonObject t = new JsonObject().putString(shareIdAttr, groupShareId);
+						actual.add(t);
+						for (String action: actions) {
+							t.putBoolean(action, true);
+						}
+						if (groupedActions != null) {
+							for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
+								if (actions.containsAll(ga.getValue())) {
+									t.putBoolean(ga.getKey(), true);
+								}
+							}
+						}
+						// TODO Timeline : notify share
+					}
+					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("shared", actual);
+					mongo.update(collection, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> res) {
+							handler.handle(Utils.validResult(res));
+						}
+					});
+				} else {
+					handler.handle(new Either.Left<String, JsonObject>("Resource not found."));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void userShare(String userId, final String userShareId, final String resourceId,
+			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
+		userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					share(resourceId, userShareId, actions, false, handler);
+				} else {
+					handler.handle(event);
+				}
+			}
+		});
+	}
 
 }

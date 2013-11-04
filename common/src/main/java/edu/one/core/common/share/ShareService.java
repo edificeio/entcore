@@ -10,7 +10,12 @@ import java.util.Map;
 
 public interface ShareService {
 
-	void shareInfos(String userId, String resourceId, Map<String, SecuredAction> securedActions,
-			Map<String, List<String>> groupedActions, Handler<Either<String, JsonObject>> handler);
+	void shareInfos(String userId, String resourceId, Handler<Either<String, JsonObject>> handler);
+
+	void groupShare(String userId, String groupShareId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler);
+
+	void userShare(String userId, String userShareId, String resourceId, List<String> actions,
+			Handler<Either<String, JsonObject>> handler);
 
 }
