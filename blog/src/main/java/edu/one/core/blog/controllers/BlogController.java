@@ -236,6 +236,31 @@ public class BlogController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	public void removeShare(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		if (blogId == null || blogId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final List<String> actions = request.formAttributes().getAll("actions");
+				final String groupId = request.formAttributes().get("groupId");
+				final String userId = request.formAttributes().get("userId");
+				if (groupId != null) {
+					shareService.removeGroupShare(groupId, blogId, actions, defaultResponseHandler(request));
+				} else if (userId != null) {
+					shareService.removeUserShare(userId, blogId, actions, defaultResponseHandler(request));
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
 
 	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
 	public void share(final HttpServerRequest request) {
