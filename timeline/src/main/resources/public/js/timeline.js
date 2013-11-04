@@ -1,4 +1,4 @@
-function Timeline($scope, date, http, navigate){
+function Timeline($scope, date, http){
 	$scope.notifications = [];
 	http.get('lastNotifications').done(function(response){
 		$scope.notifications = response.results;
