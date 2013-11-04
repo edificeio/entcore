@@ -11,6 +11,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MongoDbShareService extends GenericShareService {
 
@@ -132,6 +133,7 @@ public class MongoDbShareService extends GenericShareService {
 							break;
 						}
 					}
+					final AtomicBoolean notifyTimeline = new AtomicBoolean(false);
 					if (!exist) {
 						JsonObject t = new JsonObject().putString(shareIdAttr, groupShareId);
 						actual.add(t);
@@ -145,12 +147,17 @@ public class MongoDbShareService extends GenericShareService {
 								}
 							}
 						}
-						// TODO Timeline : notify share
+						notifyTimeline.set(true);
 					}
 					MongoUpdateBuilder updateQuery = new MongoUpdateBuilder().set("shared", actual);
 					mongo.update(collection, q, updateQuery.build(), new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> res) {
+							if (notifyTimeline.get()) {
+								JsonObject notify = new JsonObject();
+								notify.putString(shareIdAttr, groupShareId);
+								res.body().putObject("notify-timeline", notify);
+							}
 							handler.handle(Utils.validResult(res));
 						}
 					});

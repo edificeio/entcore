@@ -201,14 +201,29 @@ public class BlogController extends Controller {
 				}
 				getUserInfos(eb, request, new Handler<UserInfos>() {
 					@Override
-					public void handle(UserInfos user) {
+					public void handle(final UserInfos user) {
 						if (user != null) {
+							Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> event) {
+									if (event.isRight()) {
+										JsonObject n = event.right().getValue().getObject("notify-timeline");
+										if (n != null) {
+											timelineService.notifyShare(
+												request, blogId, user, new JsonArray().add(n), getBlogUri(blogId));
+										}
+										renderJson(request, event.right().getValue());
+									} else {
+										JsonObject error = new JsonObject()
+												.putString("error", event.left().getValue());
+										renderJson(request, error, 400);
+									}
+								}
+							};
 							if (groupId != null) {
-								shareService.groupShare(user.getUserId(), groupId, blogId, actions,
-										defaultResponseHandler(request));
+								shareService.groupShare(user.getUserId(), groupId, blogId, actions, r);
 							} else if (userId != null) {
-								shareService.userShare(user.getUserId(), userId, blogId, actions,
-										defaultResponseHandler(request));
+								shareService.userShare(user.getUserId(), userId, blogId, actions, r);
 							} else {
 								badRequest(request);
 							}
