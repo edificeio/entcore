@@ -114,7 +114,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 	$scope.updateAvatar = function(){
 		var form = new FormData(),
 		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-		form.append("image", $scope.photo);
+		form.append("image", $scope.account.photo);
 		form.append("name","blablabla");
 
 	if (uuidRegex.test($scope.account.picture)) {
@@ -123,7 +123,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 					if (data.status == "ok") {
 						$scope.account.pictureVersion = $scope.account.pictureVersion + 1;
 						$scope.$apply();
-						messenger.updateAvatar();
+						ui.updateAvatar();
 					}
 				});
 		} else {
@@ -133,7 +133,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 						$scope.account.picture = data._id;
 						$scope.saveProperty('picture');
 						$scope.$apply();
-						messenger.updateAvatar();
+						ui.updateAvatar();
 					}
 				});
 		}
