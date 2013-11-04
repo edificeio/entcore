@@ -420,7 +420,7 @@ oneModule.directive('loadingPanel', function($compile){
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
 			http().bind('request-started.' + $attributes.loadingPanel, function(e){
-				var loadingIllustrationPath = $('link').attr('href').split('/css')[0] + '/img/illustrations/loading.gif';
+				var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
 				$element.append('<div class="loading-panel">' +
 					'<h1>' + lang.translate('loading') + '</h1>' +
 					'<img src="' + loadingIllustrationPath + '" />' +

@@ -52,6 +52,10 @@ var ui = (function(){
 				mainLightbox.hide();
 			}
 		},
+		updateAvatar: function(){
+			var scope = angular.element(document.getElementById('my-photo')).scope();
+			scope.refreshAvatar();
+		},
 		setStyle: function(stylePath){
 			if($('#theme').length === 0){
 				$('head').append($('<link>', {
