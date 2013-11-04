@@ -8,6 +8,8 @@ import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.blog.services.impl.DefaultBlogService;
 import edu.one.core.blog.services.impl.DefaultBlogTimelineService;
 import edu.one.core.common.neo4j.Neo;
+import edu.one.core.common.share.ShareService;
+import edu.one.core.common.share.impl.MongoDbShareService;
 import edu.one.core.infra.*;
 
 import java.util.*;
@@ -30,6 +32,8 @@ public class BlogController extends Controller {
 	private final BlogService blog;
 	private final BlogTimelineService timelineService;
 	private final List<String> managerActions;
+	private final Map<String, List<String>> groupedActions;
+	private final ShareService shareService;
 
 	public BlogController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
@@ -38,6 +42,9 @@ public class BlogController extends Controller {
 		this.blog = new DefaultBlogService(mongo);
 		this.timelineService = new DefaultBlogTimelineService(eb, container, new Neo(eb, log), mongo);
 		this.managerActions = loadManagerActions(securedActions.values());
+		this.groupedActions = new HashMap<>();
+		this.groupedActions.put("manager", managerActions);
+		this.shareService = new MongoDbShareService(eb, mongo, "blogs");
 	}
 
 	@SecuredAction("blog.view")
@@ -148,6 +155,26 @@ public class BlogController extends Controller {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					blog.list(user, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "blog.manager", type = ActionType.RESOURCE)
+	public void shareJson(final HttpServerRequest request) {
+		final String blogId = request.params().get("blogId");
+		if (blogId == null || blogId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					shareService.shareInfos(user.getUserId(), blogId, securedActions,
+							groupedActions, defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
