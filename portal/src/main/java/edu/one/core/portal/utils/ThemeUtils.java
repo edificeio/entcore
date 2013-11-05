@@ -4,6 +4,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +23,7 @@ public class ThemeUtils {
 						themes.handle(Arrays.asList(event.result()));
 					} else {
 						final String[] files = event.result();
-						final int idx = files[0].lastIndexOf('/');
+						final int idx = files[0].lastIndexOf(File.separatorChar);
 						List<String> t = new ArrayList<>();
 						for (int i = 0; i < files.length; i++) {
 							String file = files[i];
