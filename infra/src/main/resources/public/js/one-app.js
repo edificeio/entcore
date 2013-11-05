@@ -202,6 +202,9 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 		return _;
 	})
+	.factory('navigation', function(){
+		return navigation;
+	})
 	.factory('ui', function(){
 		return ui;
 	});
@@ -430,6 +433,61 @@ oneModule.directive('loadingPanel', function($compile){
 			http().bind('request-ended.' + $attributes.loadingPanel, function(e){
 				$element.find('.loading-panel').remove();
 			})
+		}
+	}
+});
+
+oneModule.directive('navigationContext', function($compile){
+	return {
+		scope: {
+			ngModel: '=',
+			parentContext: '@',
+			path: '@'
+		},
+		restrict: 'E',
+		transclude: true,
+		template: '<div ng-transclude></div>',
+		link: function($scope, $element, $attribute){
+			var newContext = navigation.addContext($scope.parentContext);
+			$scope.ngModel = newContext;
+			navigation.navigate(newContext, $scope.path);
+
+			navigation.listen(function(){
+				$element.trigger('navigation-changed');
+			}, newContext);
+			navigation.listen(function(){
+				console.log('test');
+			});
+		}
+	}
+})
+
+oneModule.directive('view', function($compile){
+	return {
+		template: '<div ng-include="view"></div>',
+		compile: function($element, $attributes){
+			return function($scope, $element, $attributes){
+				var viewName = $attributes.view;
+
+				var updateView = function(){
+					var currentViews = navigation.views();
+					$scope.view = currentViews[viewName];
+
+					if(!$scope.$$phase) {
+						$scope.$apply('view');
+					}
+				};
+
+				var parentContext = $element.parents('navigation-context');
+				if(parentContext.length === 0){
+					navigation.listen(updateView);
+				}
+				else{
+					parentContext.on('navigation-changed', function(){
+						updateView();
+					});
+				}
+			}
 		}
 	}
 })

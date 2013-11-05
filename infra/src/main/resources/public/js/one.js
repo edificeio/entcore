@@ -179,9 +179,115 @@ var me = (function(){
 }())
 
 var navigation = (function(){
-	return {
-		load: function(path){
+	function NavigationContext(parentContext){
+		this.position = parentContext.position;
+		this.views = [];
+		parentContext.views.forEach(function(view){
+			this.views.push(view);
+		});
+		this.positionPath = parentContext.positionPath;
+		this.callbacks = [];
+		this.children = [];
+		parentContext.children.push(this);
+	}
 
+	var navigationTree = { '/': {}};
+	var rootContext = new NavigationContext({
+		position: navigationTree['/'],
+		positionPath: '/',
+		scope: {},
+		views: [],
+		children: []
+	});
+
+	$.get('public/json/navigation.json').done(function(data){
+		navigationTree = data;
+		setRoot(rootContext);
+		notify(rootContext);
+	});
+
+	function setRoot(context){
+		context.position = navigationTree['/'];
+		context.positionPath = '/';
+		context.scope = {};
+	}
+
+	function findParent(p, current){
+		var result;
+		for(var route in current.routes){
+			if(current.routes[route] === p){
+				return current;
+			}
+			result = result || findParent(p, current.routes[route]);
+		}
+		return result;
+	}
+
+	function traverse(context, path){
+		if(path[0] === '/'){
+			setRoot(context);
+		}
+		else{
+			context.position = findParent(context.position, navigationTree['/']);
+		}
+		var subPaths = path.split('/');
+
+		subPaths.forEach(function(subPath){
+			if(!subPath){
+				return;
+			}
+			if(!context.position.routes[subPath]){
+				throw 'Path not found in current position: ' + subPath + ' -- current position: ' + context.positionPath;
+			}
+			else{
+				context.position = context.position.routes[subPath];
+				for(var view in context.position.views){
+					context.views[view] = context.position.views[view];
+				}
+			}
+		})
+		context.positionPath = path;
+	}
+
+	function notify(context){
+		context.callbacks.forEach(function(cb){
+			if(typeof cb === 'function'){
+				cb();
+			}
+		});
+
+		context.children.forEach(function(child){
+			notify(child);
+		})
+	}
+
+	return {
+		navigate: function(context, path){
+			traverse(context, path);
+			notify(context);
+		},
+		execute: function(context, path){
+			var initialPosition = context.position;
+			this.navigate(context, path);
+			context.position = initialPosition;
+		},
+		position: function(context){
+			return context.position;
+		},
+		views: function(context){
+			return context.views;
+		},
+		listen: function(callback, context){
+			if(!context){
+				context = rootContext;
+			}
+			context.callbacks.push(callback);
+		},
+		addContext: function(parentContext){
+			if(!parentContext){
+				parentContext = rootContext;
+			}
+			return new NavigationContext(parentContext);
 		}
 	}
 }())
