@@ -20,6 +20,7 @@ function Personalization($scope, http, ui){
 
 	$scope.saveTheme = function(skin){
 		ui.setStyle(skin.skinPath);
+		http.get('/userbook/api/edit-userbook-info?prop=theme&value=' + skin._id);
 	};
 
 	$scope.togglePanel = function(){
