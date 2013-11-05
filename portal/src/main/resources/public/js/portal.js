@@ -124,8 +124,7 @@ var messenger = (function(){
 			window.location.href = message.data;
 		},
 		'update-avatar': function(){
-			var scope = angular.element(document.getElementById('my-photo')).scope();
-			scope.refreshAvatar();
+			ui.updateAvatar();
 		}
 	};
 

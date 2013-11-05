@@ -659,7 +659,8 @@ section .contextual-buttons article li {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.logo {
+.logo,
+.content-block {
   margin-top: 10px;
   margin-bottom: 10px;
   display: block;
