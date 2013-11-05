@@ -1,4 +1,4 @@
-function Timeline($scope, date, http){
+function Timeline($scope, date, http, navigation){
 	$scope.notifications = [];
 	http.get('lastNotifications').done(function(response){
 		$scope.notifications = response.results;
@@ -7,7 +7,9 @@ function Timeline($scope, date, http){
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
-	}
+	};
+
+	$scope.navigate = navigation.navigate;
 }
 
 function Personalization($scope, http, ui){
@@ -29,9 +31,6 @@ function Personalization($scope, http, ui){
 			comment: ''
 		}
 	}
-	$scope.addComment = function(){
-		navigate('post');
-	};
 }
 
 function Widgets(){

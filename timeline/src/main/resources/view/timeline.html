@@ -7,6 +7,9 @@
 		<script src="{{#static}}js/timeline.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body>
+		<script type="text/ng-template" id="add-comment">
+			<button ng-click="navigate('comment', navigation.context)">Commenter</button>
+		</script>
 		<portal>
 			<div class="timeline row">
 				<div class="mod">
@@ -16,25 +19,31 @@
 					<div class="block-container nine cell">
 						<h1><i role="notification"></i>{{#i18n}}timeline.title{{/i18n}}</h1>
 						<article data-ng-controller="Timeline" class="twelve cell fluid">
-							<div data-ng-repeat="notification in notifications" class="row">
-								<div class="two cell fixed-block height-two">
-									<div class="fixed cell text-container">
-										<div class="fluid cell clip">
-											<img ng-src="/userbook/avatar/[[notification.sender]]" />
+							<div data-ng-repeat="notification in notifications" class="row line">
+							<navigation-context ng-model="notification.context" path="/notification/default">
+
+									<div class="two cell fixed-block height-two">
+										<div class="fixed cell text-container">
+											<div class="fluid cell clip">
+												<img ng-src="/userbook/avatar/[[notification.sender]]" />
+											</div>
 										</div>
 									</div>
-								</div>
-								<div class="ten cell text-container">
-									<div class="cell nine" data-ng-bind-html="notification.message"></div>
-									<div class="cell right-magnet">
-										<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
+									<div class="ten cell text-container">
+										<div class="row">
+											<div class="cell nine" data-ng-bind-html="notification.message"></div>
+											<div class="cell right-magnet">
+												<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
+											</div>
+										</div>
+										<div class="row">
+											<div class="twelve cell content-block" view="comment">
+											</div>
+										</div>
 									</div>
-								</div>
-								<div class="row" view="/notification/comment">
-									<button ng-click="addComment()">Commenter</button>
-								</div>
-								<div class="clear"></div>
-								<hr class="solid" />
+									<div class="clear"></div>
+
+							</navigation-context>
 							</div>
 						</article>
 					</div>

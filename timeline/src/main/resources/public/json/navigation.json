@@ -1,11 +1,20 @@
 {
 	"/": {
 		"routes": {
+			"default": {},
 			"notification": {
 				"routes": {
+					"default": {
+						"routes": {
+							"comment": "comment"
+						},
+						"views": {
+							"comment": "add-comment"
+						}
+					},
 					"comment": {
-						"view": {
-							"path": "comment.html"
+						"views": {
+							"comment": "public/template/write-comment.html"
 						},
 						"routes": {
 							"post": {
