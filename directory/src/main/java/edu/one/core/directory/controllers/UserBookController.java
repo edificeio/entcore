@@ -1,10 +1,7 @@
 package edu.one.core.directory.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import edu.one.core.common.notification.TimelineHelper;
@@ -27,8 +24,6 @@ import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.common.user.UserUtils;
 import edu.one.core.infra.security.resources.UserInfos;
 import edu.one.core.security.SecuredAction;
-
-import java.util.Arrays;
 
 public class UserBookController extends Controller {
 
@@ -369,6 +364,26 @@ public class UserBookController extends Controller {
 		} else {
 			request.response().sendFile("./public/img/no-avatar.jpg");
 		}
+	}
+
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void personBirthday(final HttpServerRequest request) {
+		Calendar c = Calendar.getInstance();
+		int month = c.get(Calendar.MONTH);
+		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
+				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
+		String customReturn =
+				"WHERE has(visibles.ENTPersonDateNaissance) AND visibles.ENTPersonDateNaissance=~{regex}" +
+				"RETURN distinct visibles.id as id, visibles.ENTPersonNomAffichage as username, " +
+						"visibles.ENTPersonDateNaissance as birthDate";
+		JsonObject params = new JsonObject();
+		params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
+		UserUtils.findVisibleUsers(eb, request, customReturn, params, new Handler<JsonArray>() {
+			@Override
+			public void handle(JsonArray users) {
+				renderJson(request, users);
+			}
+		});
 	}
 
 }
