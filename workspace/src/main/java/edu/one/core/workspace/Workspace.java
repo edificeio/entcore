@@ -79,6 +79,8 @@ public class Workspace extends Server {
 
 		service.get("/users/available-rack", "rackAvailableUsers");
 
+		service.get("/workspace/availables-workflow-actions", "getActionsInfos");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
 				Server.getEventBus(vertx), new WorkspaceResourcesProvider(mongo)));
 

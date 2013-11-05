@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mongodb.QueryBuilder;
+import edu.one.core.common.http.request.ActionsUtils;
 import edu.one.core.common.share.ShareService;
 import edu.one.core.common.share.impl.MongoDbShareService;
 import edu.one.core.infra.*;
@@ -1258,6 +1259,11 @@ public class WorkspaceService extends Controller {
 		} else {
 			badRequest(request);
 		}
+	}
+
+	@SecuredAction(value = "workspace.habilitation", type = ActionType.AUTHENTICATED)
+	public void getActionsInfos(final HttpServerRequest request) {
+		ActionsUtils.findWorkflowSecureActions(eb, request, this);
 	}
 
 }

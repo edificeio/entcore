@@ -35,6 +35,7 @@ public class Blog extends Server {
 		blogController.delete("/:blogId", "delete");
 		blogController.get("/list/all", "list");
 		blogController.get("/:blogId", "get");
+		blogController.get("/blog/availables-workflow-actions", "getActionsInfos");
 
 		PostController postController = new PostController(vertx, container, rm, securedActions, mongo);
 		postController.post("/post/:blogId", "create");

@@ -7,6 +7,7 @@ import edu.one.core.blog.services.BlogService;
 import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.blog.services.impl.DefaultBlogService;
 import edu.one.core.blog.services.impl.DefaultBlogTimelineService;
+import edu.one.core.common.http.request.ActionsUtils;
 import edu.one.core.common.neo4j.Neo;
 import edu.one.core.common.share.ShareService;
 import edu.one.core.common.share.impl.MongoDbShareService;
@@ -430,6 +431,12 @@ public class BlogController extends Controller {
 			}
 		}
 		return  managerActions;
+	}
+
+
+	@SecuredAction(value = "blog.habilitation", type = ActionType.AUTHENTICATED)
+	public void getActionsInfos(final HttpServerRequest request) {
+		ActionsUtils.findWorkflowSecureActions(eb, request, this);
 	}
 
 }
