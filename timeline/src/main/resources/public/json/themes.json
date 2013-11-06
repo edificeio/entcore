@@ -4,11 +4,11 @@
 	"skinPath": "/assets/themes/panda/default/"
 }, {
 	"_id": "hills",
-	"displayName": "hills",
+	"displayName": "Collines",
 	"skinPath": "/assets/themes/panda/hills/"
 }, {
 	"_id": "desert",
-	"displayName": "desert",
+	"displayName": "Désert",
 	"skinPath": "/assets/themes/panda/desert/"
 }, {
 	"_id": "panda-food",
@@ -18,4 +18,8 @@
 	"_id": "sparkly",
 	"displayName": "Galaxie",
 	"skinPath": "/assets/themes/panda/sparkly/"
+}, {
+	"_id": "eliot",
+	"displayName": "Open ENT",
+	"skinPath": "/assets/themes/panda/eliot/"
 }]

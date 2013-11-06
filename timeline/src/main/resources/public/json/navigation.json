@@ -8,12 +8,12 @@
 						"routes": {
 							"comment": "comment"
 						},
-						"views": {
+						"templates": {
 							"comment": "add-comment"
 						}
 					},
 					"comment": {
-						"views": {
+						"templates": {
 							"comment": "public/template/write-comment.html"
 						},
 						"routes": {

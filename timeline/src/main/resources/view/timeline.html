@@ -13,37 +13,28 @@
 		<portal>
 			<div class="timeline row">
 				<div class="mod">
-					<div ng-controller="Widgets" class="three cell">
-						<article class="row"></article>
-					</div>
-					<div class="block-container nine cell">
+					<div class="block-container twelve cell">
 						<h1><i role="notification"></i>{{#i18n}}timeline.title{{/i18n}}</h1>
 						<article data-ng-controller="Timeline" class="twelve cell fluid">
-							<div data-ng-repeat="notification in notifications" class="row line">
-							<navigation-context ng-model="notification.context" path="/notification/default">
-
-									<div class="two cell fixed-block height-two">
-										<div class="fixed cell text-container">
-											<div class="fluid cell clip">
-												<img ng-src="/userbook/avatar/[[notification.sender]]" />
-											</div>
+							<div data-ng-repeat="notification in notifications" class="row line" path="/notification/default">
+								<div class="two cell fixed-block height-two">
+									<div class="fixed twelve cell text-container">
+										<div class="fluid twelve cell clip">
+											<img ng-src="/userbook/avatar/[[notification.sender]]" />
 										</div>
 									</div>
-									<div class="ten cell text-container">
-										<div class="row">
-											<div class="cell nine" data-ng-bind-html="notification.message"></div>
-											<div class="cell right-magnet">
-												<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
-											</div>
-										</div>
-										<div class="row">
-											<div class="twelve cell content-block" view="comment">
-											</div>
+								</div>
+								<div class="ten cell text-container">
+									<div class="row">
+										<div class="cell nine" data-ng-bind-html="notification.message"></div>
+										<div class="cell right-magnet">
+											<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
 										</div>
 									</div>
-									<div class="clear"></div>
-
-							</navigation-context>
+									<div class="row">
+									</div>
+								</div>
+								<div class="clear"></div>
 							</div>
 						</article>
 					</div>
