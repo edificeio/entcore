@@ -92,6 +92,18 @@ public class PortalService extends Controller {
 		});
 
 	}
+	
+	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
+	public void adapter(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject session) {
+				renderView(request);
+			}
+		});
+
+	}
 
 	public void assets(final HttpServerRequest request) {
 		if (dev) {
