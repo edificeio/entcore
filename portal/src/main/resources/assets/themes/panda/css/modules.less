@@ -161,6 +161,10 @@ i[role=workspace-large]{
 	.icon(workspace-large, 135px);
 }
 
+i[role=cahier-de-texte-large]{
+	.icon(cahier-de-texte-large, 135px);
+}
+
 i[role=conversation-large]{
 	.icon(conversation-large, 135px);
 }
@@ -650,12 +654,13 @@ article.box{
 	border: 1px solid #ccc;
 }
 
-.box.selected{
+section.selected, article.selected{
 	background: @medium-blue;
 	color: #fff;
 	h3,h4{
 		color: #fff;
 	}
+	.rounded-corners(10px);
 }
 
 article.box.selected{

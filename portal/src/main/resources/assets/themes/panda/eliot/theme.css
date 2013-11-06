@@ -2920,8 +2920,193 @@ form {
   text-align: center;
 }
 body {
-  background-image: url(../img/illustrations/panda-food-background.jpg);
-  background-size: 100% auto;
-  background-color: #69bc26;
-  background-repeat: no-repeat;
+  background: -webkit-linear-gradient(#aaaaaa, #ffffff);
+  background: -moz-linear-gradient(#aaaaaa, #ffffff);
+  background: -o-linear-gradient(#aaaaaa, #ffffff);
+  background: linear-gradient(#aaaaaa, #ffffff);
+  -pie-background: linear-gradient(#aaaaaa, #ffffff);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+  background-attachment: fixed;
+}
+.navbar {
+  background: -webkit-linear-gradient(#666666, #333333);
+  background: -moz-linear-gradient(#666666, #333333);
+  background: -o-linear-gradient(#666666, #333333);
+  background: linear-gradient(#666666, #333333);
+  -pie-background: linear-gradient(#666666, #333333);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+  position: fixed;
+  top: 0;
+  max-width: 100%;
+  left: 0;
+  border-radius: 0px;
+}
+.navbar .welcome-message {
+  font-size: 12px;
+  font-family: Arial;
+  color: #fff;
+}
+h1 {
+  background: #708FBE;
+  color: #fff;
+  font-family: Arial;
+  text-transform: none;
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 35px;
+}
+article {
+  border-radius: 0px;
+  border-color: #708FBE;
+}
+section .logo {
+  top: 48px;
+  height: 70px;
+  position: absolute;
+  left: 20px;
+  background: url(../img/illustrations/Haute-Normandie.png) no-repeat;
+  background-size: contain;
+}
+.container .main.wrapper {
+  background: url('../img/illustrations/banner-enseignant.jpg') no-repeat top right #f7f8fc;
+  background-size: auto 82px;
+  border: 1px solid #8F8F8F;
+  top: 50px;
+  padding-top: 80px;
+}
+nav.horizontal {
+  position: fixed;
+  top: 7px;
+  right: 120px;
+  height: 50px;
+}
+nav.horizontal a {
+  background: none;
+  font-family: Arial;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
+nav.horizontal a:hover {
+  background: none;
+  color: #E5E500;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
+body .container {
+  width: 100%;
+}
+.main {
+  width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.main section.main {
+  border: 1px solid #8F8F8F;
+  border-top: none;
+  border-radius: 0px;
+  margin-left: -1px;
+}
+nav.vertical a {
+  border-radius: 0px !important;
+}
+nav.vertical a.selected {
+  background: #708FBE !important;
+}
+article thead,
+article header {
+  background: #708FBE;
+  border-radius: 0px;
+}
+.toggle-panel .toggle h2 {
+  font-family: Arial;
+  text-transform: none;
+  font-size: 14px;
+}
+button,
+input[type=button],
+input[type=submit],
+.button,
+a.button,
+a.small.button {
+  font-family: Arial;
+  font-size: 12px;
+  background: #EEE;
+  color: #000;
+  border: 1px solid #CCC;
+  border-radius: 0px;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+section .contextual-buttons .action-buttons {
+  line-height: 30px;
+}
+.contextual-buttons {
+  padding-left: 20px !important;
+}
+table,
+thead,
+tr,
+th {
+  border-radius: 0px !important;
+}
+article.selected,
+section.selected {
+  background: #708FBE;
+  border-radius: 0px !important;
+}
+button i {
+  margin-top: 0px;
+}
+i[role=angry-panda] {
+  display: none !important;
+}
+i[role=default-panda] {
+  display: none !important;
+}
+i[role=dreamy-panda] {
+  display: none !important;
+}
+i[role=happy-panda] {
+  display: none !important;
+}
+i[role=joker-panda] {
+  display: none !important;
+}
+i[role=love-panda] {
+  display: none !important;
+}
+i[role=proud-panda] {
+  display: none !important;
+}
+i[role=sad-panda] {
+  display: none !important;
+}
+i[role=sick-panda] {
+  display: none !important;
+}
+i[role=tired-panda] {
+  display: none !important;
+}
+i[role=worried-panda] {
+  display: none !important;
+}
+article.box,
+.box {
+  border-radius: 0px;
+}
+h1 {
+  padding-left: 5px;
+}
+.enhanced-select {
+  display: none;
+}
+iframe {
+  height: 500px;
 }

@@ -1372,6 +1372,20 @@ i[role=workspace-large] {
   float: left;
   vertical-align: middle;
 }
+i[role=cahier-de-texte-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/cahier-de-texte-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=conversation-large] {
   height: 135px;
   width: 135px;
@@ -2411,12 +2425,20 @@ article.comment {
 article.box {
   border: 1px solid #ccc;
 }
-.box.selected {
+section.selected,
+article.selected {
   background: #2f8cc9;
   color: #fff;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
 }
-.box.selected h3,
-.box.selected h4 {
+section.selected h3,
+article.selected h3,
+section.selected h4,
+article.selected h4 {
   color: #fff;
 }
 article.box.selected h4 {
