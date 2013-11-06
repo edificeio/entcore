@@ -277,7 +277,8 @@ function Blog($scope, http, date, _, ui){
 	}
 
 	$scope.openSharingView = function(){
-		$scope.lightboxPath = '/blog/share/' + $scope.currentBlog._id;
+		//$scope.lightboxPath = '/blog/share/' + $scope.currentBlog._id;
+		$scope.lightboxPath = '/blog/public/template/share.html'
 		ui.showLightbox();
 		//Small hack until we get final version
 		$('body').on('click.share', '.share input[type=submit]', function(e){

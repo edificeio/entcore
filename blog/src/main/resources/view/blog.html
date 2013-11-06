@@ -29,7 +29,7 @@
 			<nav class="vertical">
 				<div data-ng-repeat="blog in blogs">
 					<section data-ng-class="{'fixed-block':true, 'cell':true,
-							 'height-one':true, 'box':true, 'row':true, 'clip': true,
+							 'height-four':true, 'row':true, 'clip': true,
 							 'selected':isSelected(blog._id)}">
 						<div class="four cell fixed">
 							<div class="fluid twelve cell v-center-container">
@@ -120,7 +120,7 @@
 	<section class="lightbox-window six cell">
 		<div class="twelve cell">
 			<form>
-				<section ng-include="lightboxPath" class="flowing sharing">
+				<section ng-include="lightboxPath">
 				</section>
 			</form>
 		</div>
