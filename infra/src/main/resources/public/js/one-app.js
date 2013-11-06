@@ -188,7 +188,8 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			delete: One.delete,
 			postFile: One.postFile,
 			putFile: One.putFile,
-			bind: One.bind
+			bind: One.bind,
+			serialize: One.serialize
 		}
 	})
 	.factory('lang', function(){
@@ -490,6 +491,19 @@ oneModule.directive('view', function($compile){
 			}
 		}
 	}
+});
+
+oneModule.directive('sharePanel', function($compile){
+	return {
+		scope: {
+			resources: '='
+		},
+		restrict: 'E',
+		templateUrl: '/infra/public/template/share-panel.html',
+		link: function($scope, $element, $attributes){
+
+		}
+	}
 })
 
 $(document).ready(function(){
@@ -509,4 +523,77 @@ function Account($scope, http){
 	};
 
 	$scope.refreshAvatar();
+}
+
+function Share($scope, http, _){
+	$scope.sharing = {};
+	$scope.edited = [];
+	$scope.found = [];
+
+	function actionsToRights(item){
+		var actions = [];
+		for(var action in item.actions){
+			_.where($scope.sharing.actions, { displayName: action }).forEach(function(item){
+				item.name.forEach(function(i){
+					actions.push(i);
+				})
+			})
+		}
+
+		return actions;
+	}
+
+	function rightToAction(right){
+
+	}
+
+	http.get('/blog/share/json/' + $scope.resources._id).done(function(data){
+		$scope.sharing = data;
+		$scope.$apply('sharing');
+	});
+
+	$scope.addEdit = function(item){
+		item.actions = {};
+		$scope.edited.push(item);
+		console.log(item);
+	};
+
+	$scope.findStuff = function(){
+		$scope.search = $scope.search.toLowerCase();
+		$scope.found = _.union(
+			_.filter($scope.sharing.groups.visibles, function(group){
+				return group.name.toLowerCase().indexOf($scope.search) !== -1;
+			}),
+			_.filter($scope.sharing.users.visibles, function(user){
+				return (user.firstName.toLowerCase() + ' ' + user.lastName.toLowerCase())
+					.indexOf($scope.search) !== -1;
+			})
+		);
+	};
+
+	$scope.saveRights = function(){
+		$scope.edited.forEach(function(element){
+			var actions = actionsToRights(element);
+
+			var path = '/blog/share/json/' + $scope.resources._id;
+			var data;
+			if(element.login !== undefined){
+				data = {
+					userId: element.id
+				}
+			}
+			else{
+				data = {
+					groupId: element.id
+				}
+			}
+
+			data.actions = actions;
+
+
+			http.put(path, http.serialize(data)).done(function(data){
+
+				})
+		});
+	}
 }

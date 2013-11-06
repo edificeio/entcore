@@ -25,9 +25,18 @@ var http = (function(){
 			var str = [];
 			for(var p in obj){
 				if (obj.hasOwnProperty(p)) {
-					str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+					if(obj[p] instanceof Array){
+						for(var i = 0; i < obj[p].length; i++){
+							str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p][i]))
+						}
+					}
+					else{
+						str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+					}
 				}
 			}
+
+
 			return str.join("&");
 		},
 		events: {
@@ -159,6 +168,9 @@ One = {
 	},
 	translate: function(key){
 		return lang.translate(key);
+	},
+	serialize: function(obj){
+		return http().serialize(obj);
 	}
 };
 
@@ -200,11 +212,11 @@ var navigation = (function(){
 		children: []
 	});
 
-	$.get('public/json/navigation.json').done(function(data){
+	/*$.get('public/json/navigation.json').done(function(data){
 		navigationTree = data;
 		setRoot(rootContext);
 		notify(rootContext);
-	});
+	});*/
 
 	function setRoot(context){
 		context.position = navigationTree['/'];

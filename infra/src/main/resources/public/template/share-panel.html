@@ -1,0 +1,34 @@
+<form>
+<h2>Personnaliser la visibilité</h2>
+
+		<div ng-controller="Share">
+			<table>
+				<thead>
+					<th></th>
+					<th ng-repeat="action in sharing.actions" translate key="[[action.displayName]]"></th>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in edited">
+						<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
+						<td ng-repeat="action in sharing.actions">
+							<input type="checkbox" ng-model="item.actions[action.displayName]" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+		   <input type="text" ng-model="search" ng-change="findStuff()" />
+			<div>
+				<div ng-repeat="item in found | limitTo:5" class="row">
+					<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
+				</div>
+			</div>
+			<div class="lightbox-buttons fluid">
+				<input type="submit" ng-click="saveRights()" value="Partager" />
+				<input type="button" class="cancel" value="Annuler"/>
+			</div>
+		</div>
+
+
+
+</form>
