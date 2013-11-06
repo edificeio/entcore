@@ -64,5 +64,6 @@
 	"loading": "Chargement",
 	"import.file": "Importer",
 	"share.users" : "Utilisateurs",
-	"share.groups" : "Groupes"
+	"share.groups" : "Groupes",
+	"root" : "Racine"
 }

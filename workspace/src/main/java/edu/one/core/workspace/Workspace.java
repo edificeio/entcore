@@ -45,11 +45,15 @@ public class Workspace extends Server {
 
 		service.put("/document/move/:id/:folder", "moveDocument");
 
+		service.put("/documents/move/:ids", "moveDocuments");
+
 		service.put("/documents/move/:ids/:folder", "moveDocuments");
 
 		service.put("/document/trash/:id", "moveTrash");
 
 		service.put("/restore/document/:id", "restoreTrash");
+
+		service.post("/documents/copy/:ids", "copyDocuments");
 
 		service.post("/documents/copy/:ids/:folder", "copyDocuments");
 
@@ -66,6 +70,8 @@ public class Workspace extends Server {
 		service.get("/rack/:id", "getRackDocument");
 
 		service.delete("/rack/:id", "deleteRackDocument");
+
+		service.post("/rack/documents/copy/:ids", "copyRackDocuments");
 
 		service.post("/rack/documents/copy/:ids/:folder", "copyRackDocuments");
 

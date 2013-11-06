@@ -690,9 +690,8 @@ public class WorkspaceService extends Controller {
 
 	private void copyFiles(final HttpServerRequest request, final String collection, final String owner) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		String folder = request.params().get("folder");
-		if (ids != null && folder != null &&
-				!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+		final String folder = request.params().get("folder");
+		if (ids != null && !ids.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
 			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}";
 			if (owner != null) {
@@ -722,7 +721,11 @@ public class WorkspaceService extends Controller {
 							}
 							dest.putString("created", now);
 							dest.putString("modified", now);
-							dest.putString("folder", request.params().get("folder"));
+							if (folder != null && !folder.trim().isEmpty()) {
+								dest.putString("folder", folder);
+							} else {
+								dest.removeField("folder");
+							}
 							insert.add(dest);
 							String filePath = orig.getString("file");
 							if (filePath != null) {
@@ -1015,12 +1018,17 @@ public class WorkspaceService extends Controller {
 	public void moveDocuments(final HttpServerRequest request) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
 		String folder = request.params().get("folder");
-		if (ids != null && folder != null &&
-				!ids.trim().isEmpty() && !folder.trim().isEmpty()) {
+		if (ids != null && !ids.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
 			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
-			String obj = "{ \"$set\" : { \"folder\": \"" + folder +
-					"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+			String obj;
+			if (folder != null && !folder.trim().isEmpty()) {
+				obj = "{ \"$set\" : { \"folder\": \"" + folder +
+						"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+			} else {
+				obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
+						" \"$unset\" : { \"folder\" : 1 }}";
+			}
 			mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
 					new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
 				@Override

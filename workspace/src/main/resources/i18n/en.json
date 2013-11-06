@@ -11,5 +11,6 @@
     "group.profil.class.persreleleve" : "Tous les parents de la classe ",
     "group.profil.class.directeur" : "Tous les directeurs de la classe ",
     "share.users" : "Utilisateurs",
-    "share.groups" : "Groupes"
+    "share.groups" : "Groupes",
+    "root" : "Root"
 }

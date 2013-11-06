@@ -124,7 +124,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 				}
 			}
 		};
-		if(treeName === key){
+		if(treeName === key || !key){
 			return '';
 		}
 		return '/' + folderString(tree, treeName)

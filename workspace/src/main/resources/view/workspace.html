@@ -15,10 +15,12 @@
 			</ul>
 		</script>
 		<script type="text/ng-template" id="folder-management">
-			<input type="radio" name="folder" ng-if="key !== undefined && editMode === 'single'" ng-model="selectedFolder.name" ng-value="key" ng-change="setFolder(key, value)" />
-			<input type="checkbox" ng-if="key !== undefined && editMode === 'multiple'" ng-checked="isTargetFolder(key, value)" ng-value="key" ng-click="switchTargetFolder(key, value)" />
+			<input type="radio" name="folder" ng-if="editMode === 'single'" ng-model="selectedFolder.name" ng-value="key" ng-change="setFolder(key, value)" />
+			<input type="checkbox" ng-if="editMode === 'multiple'" ng-checked="isTargetFolder(key, value)" ng-value="key" ng-click="switchTargetFolder(key, value)" />
 			<span ng-if="key !== undefined">
 				<a ng-click="openEditView(value)"><strong>+</strong></a>[[translate(key)]]</span>
+            <span ng-if="key === undefined">
+				<a ng-click="openEditView('')"><strong>+</strong></a>[[translate("root")]]</span>
 			<ul class="row">
 				<li class="row" ng-if="isEditViewOpened(value)">
 					<input type="radio" name="folder" ng-click="startEditing(value)" ng-if="editMode === 'single'" />
