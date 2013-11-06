@@ -14,6 +14,7 @@ public class Portal extends Server {
 		service.get("/", "portal")
 				.get("/theme-documentation", "themeDocumentation")
 				.get("/apps", "apps")
+				.get("/adapter", "adapter")
 				.get("/theme", "getTheme")
 				.getWithRegEx("/assets/.+", "assets");
 
