@@ -3,11 +3,14 @@ package edu.one.core.timeline.events;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Server;
+
+import java.util.List;
 
 
 public class DefaultTimelineEventStore implements TimelineEventStore {
@@ -44,9 +47,20 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	@Override
-	public void get(String recipient, int offset, int limit, Handler<JsonObject> result) {
+	public void get(String recipient, List<String> types, int offset, int limit, Handler<JsonObject> result) {
 		if (recipient != null && !recipient.trim().isEmpty()) {
 			JsonObject query = new JsonObject().putString("recipients", recipient);
+			if (types != null && !types.isEmpty()) {
+				if (types.size() == 1) {
+					query.putString("type", types.get(0));
+				} else {
+					JsonArray typesFilter = new JsonArray();
+					for (String t: types) {
+						typesFilter.addObject(new JsonObject().putString("type", t));
+					}
+					query.putArray("$or", typesFilter);
+				}
+			}
 			JsonObject sort = new JsonObject()
 			.putObject("$orderby", new JsonObject().putNumber("date", -1));
 			JsonObject keys = new JsonObject()
@@ -72,6 +86,20 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		} else {
 			result.handle(invalidArguments());
 		}
+	}
+
+	@Override
+	public void listTypes(final Handler<JsonArray> result) {
+		mongo.distinct(TIMELINE_COLLECTION, "type", new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					result.handle(event.body().getArray("values", new JsonArray()));
+				} else {
+					result.handle(new JsonArray());
+				}
+			}
+		});
 	}
 
 	private JsonObject validAndGet(JsonObject json) {

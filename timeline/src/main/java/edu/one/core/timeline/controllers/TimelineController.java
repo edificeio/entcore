@@ -1,12 +1,15 @@
 package edu.one.core.timeline.controllers;
 
+import java.util.List;
 import java.util.Map;
 
+import edu.one.core.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -40,11 +43,12 @@ public class TimelineController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String page = request.params().get("page");
+					List<String> types = request.params().getAll("type");
 					int offset = 0;
 					try {
 						offset = 25 * Integer.parseInt(page);
 					} catch (NumberFormatException e) {}
-					store.get(user.getUserId(), offset, 25, new Handler<JsonObject>() {
+					store.get(user.getUserId(), types, offset, 25, new Handler<JsonObject>() {
 
 						@Override
 						public void handle(JsonObject res) {
@@ -58,6 +62,17 @@ public class TimelineController extends Controller {
 				} else {
 					unauthorized(request);
 				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "timeline.auth", type = ActionType.AUTHENTICATED)
+	public void listTypes(final HttpServerRequest request) {
+		store.listTypes(new Handler<JsonArray>() {
+
+			@Override
+			public void handle(JsonArray res) {
+				renderJson(request, res);
 			}
 		});
 	}
@@ -95,6 +110,7 @@ public class TimelineController extends Controller {
 			break;
 		case "get":
 			store.get(json.getString("recipient"),
+					null,
 					json.getInteger("offset", 0),
 					json.getInteger("limit", 25), handler);
 			break;
@@ -103,6 +119,14 @@ public class TimelineController extends Controller {
 			break;
 		case "deleteSubResource":
 			store.deleteSubResource(json.getString("sub-resource"), handler);
+		case "list-types":
+			store.listTypes(new Handler<JsonArray>() {
+				@Override
+				public void handle(JsonArray types) {
+					message.reply(new JsonObject().putString("status", "ok").putArray("types", types));
+				}
+			});
+			break;
 		default:
 			message.reply(new JsonObject().putString("status", "error")
 					.putString("message", "Invalid action."));

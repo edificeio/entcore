@@ -140,3 +140,9 @@ Le chemin du dossier contenant les fichiers XML pour l'import AAF :
  * Langue : Anglais
  * préfix : [<ticket>], [Fix <ticket>], [Tmp], [Doc]
 
+# Migration de données
+
+## Exemple d'execution de script MongoDb
+
+  mongo localhost:27017/dbName migration/1.2.0/1.2.0-mongodb.js
+

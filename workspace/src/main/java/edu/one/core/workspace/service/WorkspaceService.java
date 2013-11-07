@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.mongodb.QueryBuilder;
 import edu.one.core.common.http.request.ActionsUtils;
+import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.common.share.ShareService;
 import edu.one.core.common.share.impl.MongoDbShareService;
 import edu.one.core.infra.*;
@@ -47,7 +48,7 @@ public class WorkspaceService extends Controller {
 	private final DocumentDao documentDao;
 	private final RackDao rackDao;
 	private final Neo neo;
-	private final NotificationHelper notification;
+	private final TimelineHelper notification;
 	private final TracerHelper trace;
 	private final ShareService shareService;
 
@@ -60,7 +61,7 @@ public class WorkspaceService extends Controller {
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
-		notification = new NotificationHelper(eb, container);
+		notification = new TimelineHelper(eb, container);
 		this.trace = trace;
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 	}
@@ -396,7 +397,7 @@ public class WorkspaceService extends Controller {
 		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
 				pathPrefix + "/document/" + resource);
 		try {
-			notification.notifyTimeline(request, user, recipients, resource,
+			notification.notifyTimeline(request, user, WORKSPACE_NAME, recipients, resource,
 					"notify-share.html", params);
 		} catch (IOException e) {
 			log.error("Unable to send timeline notification", e);

@@ -3,10 +3,10 @@ package edu.one.core.blog.services.impl;
 import com.google.common.base.Joiner;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogTimelineService;
+import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.MongoQueryBuilder;
 import edu.one.core.common.neo4j.Neo;
-import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.security.resources.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -27,10 +27,11 @@ import java.util.Map;
 public class DefaultBlogTimelineService implements BlogTimelineService {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultBlogTimelineService.class);
+	private static final String NOTIFICATION_TYPE = "BLOG";
 
 	private final Neo neo;
 	private final MongoDb mongo;
-	private final NotificationHelper notification;
+	private final TimelineHelper notification;
 	private final Container container;
 	private static final String NEO_QUERY = "START n=node:node_auto_index({ids}) " +
 			"MATCH n<-[:APPARTIENT*0..1]-u " +
@@ -41,7 +42,7 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 	public DefaultBlogTimelineService(EventBus eb, Container container, Neo neo, MongoDb mongo) {
 		this.neo = neo;
 		this.mongo = mongo;
-		this.notification = new NotificationHelper(eb, container);
+		this.notification = new TimelineHelper(eb, container);
 		this.container = container;
 	}
 
@@ -81,7 +82,7 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 												.putString("blogTitle", blogTitle)
 												.putString("resourceUri", resourceUri);
 										try {
-											notification.notifyTimeline(request, user, recipients,
+											notification.notifyTimeline(request, user, NOTIFICATION_TYPE, recipients,
 													blogId, "notification/notify-share.html", p);
 										} catch (IOException e) {
 											log.error("Unable to send timeline notification", e);
@@ -116,7 +117,7 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 									.putString("blogTitle", blog.getString("title"))
 									.putString("resourceUri", resourceUri);
 							try {
-								notification.notifyTimeline(request, user, recipients,
+								notification.notifyTimeline(request, user, NOTIFICATION_TYPE, recipients,
 										blogId, "notification/notify-update-blog.html", p);
 							} catch (IOException e) {
 								log.error("Unable to send timeline notification", e);
@@ -152,7 +153,7 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 									.putString("postTitle", blog.getString("title"))
 									.putString("postUri", resourceUri + "&post=" + postId);
 							try {
-								notification.notifyTimeline(request, user, recipients,
+								notification.notifyTimeline(request, user, NOTIFICATION_TYPE, recipients,
 										blogId, postId, "notification/notify-publish-post.html", p);
 							} catch (IOException e) {
 								log.error("Unable to send timeline notification", e);

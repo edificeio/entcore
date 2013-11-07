@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -21,7 +22,6 @@ import org.vertx.java.platform.Container;
 import edu.one.core.datadictionary.validation.RegExpValidator;
 import edu.one.core.infra.Controller;
 import edu.one.core.common.neo4j.Neo;
-import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.common.user.UserUtils;
@@ -32,11 +32,12 @@ import java.util.Arrays;
 
 public class UserBookController extends Controller {
 
+	private static final String NOTIFICATION_TYPE = "USERBOOK";
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject userBookData;
 	private HttpClient client;
-	private final NotificationHelper notification;
+	private final TimelineHelper notification;
 
 	public UserBookController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
@@ -50,7 +51,7 @@ public class UserBookController extends Controller {
 							.setPort(config.getInteger("workspace-port"))
 							.setMaxPoolSize(16)
 							.setKeepAlive(false);
-			notification = new NotificationHelper(eb, container);
+			notification = new TimelineHelper(eb, container);
 		}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
@@ -330,7 +331,7 @@ public class UserBookController extends Controller {
 				.putString("motto", request.params().get("value"))
 				.putString("moodImg", request.params().get("value"));
 				try {
-					notification.notifyTimeline(request, user, userIds,
+					notification.notifyTimeline(request, user, NOTIFICATION_TYPE, userIds,
 							user.getUserId()+System.currentTimeMillis()+action,
 							"notify-" + action + ".html", params);
 				} catch (IOException e) {
