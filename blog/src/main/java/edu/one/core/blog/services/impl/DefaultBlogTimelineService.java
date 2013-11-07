@@ -164,16 +164,6 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 		}
 	}
 
-	@Override
-	public void deletedBlog(String blogId) {
-		notification.deleteFromTimeline(blogId);
-	}
-
-	@Override
-	public void deletedPost(String postId) {
-		notification.deleteSubResourceFromTimeline(postId);
-	}
-
 	private void findRecipiants(String collection, QueryBuilder query, JsonObject keys,
 			final JsonArray fetch, final UserInfos user,
 				final Handler<Map<String, Object>> handler) {

@@ -649,7 +649,6 @@ public class WorkspaceService extends Controller {
 									@Override
 									public void handle(JsonObject result) {
 										if ("ok".equals(result.getString("status"))) {
-											notification.deleteFromTimeline(id);
 											renderJson(request, result, 204);
 										} else {
 											renderError(request, result);

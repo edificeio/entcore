@@ -128,7 +128,6 @@ public class BlogController extends Controller {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					timelineService.deletedBlog(blogId);
 					renderJson(request, event.right().getValue(), 204);
 				} else {
 					JsonObject error = new JsonObject()

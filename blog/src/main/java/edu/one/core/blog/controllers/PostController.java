@@ -92,7 +92,6 @@ public class PostController extends Controller {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					timelineService.deletedPost(postId);
 					renderJson(request, event.right().getValue(), 204);
 				} else {
 					JsonObject error = new JsonObject()
