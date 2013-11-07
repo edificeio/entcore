@@ -12,6 +12,7 @@ body{
 	max-width: 100%;
 	left: 0;
 	border-radius: 0px;
+	z-index: 2;
 
 	.welcome-message{
 		font-size: 12px;
@@ -21,7 +22,6 @@ body{
 }
 
 h1{
-	background: #708FBE;
 	color: #fff;
 	font-family: Arial;
 	text-transform: none;
@@ -57,6 +57,7 @@ nav.horizontal{
 	top: 7px;
 	right: 120px;
 	height: 50px;
+	z-index: 3;
 
 	a{
 		background: none;
@@ -106,6 +107,7 @@ article thead, article header{
 }
 
 .toggle-panel{
+	z-index: 5;
 	.toggle{
 		h2{
 			font-family: Arial;
@@ -132,6 +134,48 @@ section .contextual-buttons .action-buttons{
 
 .contextual-buttons{
 	padding-left: 20px !important;
+	margin-top: 45px;
+	height: 40px;
+	.vertical-gradient(#dae6f4, #c9d9ed);
+	border: 1px solid #ccc;
+
+	.action-buttons{
+		margin-top: 5px;
+		margin-bottom: 0;
+	}
+
+	button, a.button, input[type=button]{
+		background: none;
+		border:none;
+		text-transform: none;
+	}
+	button:disabled, a.button:disabled, input[type=button]:disabled{
+		color: #ccc
+	}
+}
+
+i[role=show-icons]{
+	.icon(show-icons-unsaturated, 37px);
+}
+
+i[role=show-details]{
+	.icon(show-details-unsaturated, 37px);
+}
+
+i[role=show-list]{
+	.icon(show-list-unsaturated, 37px);
+}
+
+i[role=show-icons].selected{
+	.icon(show-icons-selected-blue, 37px);
+}
+
+i[role=show-details].selected{
+	.icon(show-details-selected-blue, 37px);
+}
+
+i[role=show-list].selected{
+	.icon(show-list-selected-blue, 37px);
 }
 
 table, thead, tr, th{
@@ -203,6 +247,23 @@ h1{
 	display: none;
 }
 
-iframe{
-	height: 500px;
+
+
+h1{
+	.vertical-gradient(#a5b1d3, #586eae);
+	position: relative;
+	z-index: 1;
+
+	i[role=storage], i[role=blog]{
+		.vertical-gradient(#a5b1d3, #586eae);
+		width: 298.3%;
+		position: absolute;
+		z-index: -1;
+		height: 36px;
+		margin-top: -1px;
+
+	}
+	i[role=apps], i[role=account], i[role=userbook], i[role=notification]{
+		display: none;
+	}
 }

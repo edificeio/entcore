@@ -954,7 +954,8 @@ body.lightbox-body section.lightbox-main {
   background: rgba(255, 255, 255, 0.3);
 }
 iframe {
-  overflow: hidden;
+  overflow: auto;
+  height: 500px;
 }
 html.app {
   min-height: 0;
@@ -1362,6 +1363,20 @@ i[role=workspace-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=notes-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/notes-large.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
