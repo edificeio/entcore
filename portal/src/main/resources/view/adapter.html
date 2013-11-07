@@ -5,8 +5,14 @@
 	<link rel="stylesheet" type="text/css" href="/public/css/app.css" />
 </head>
 <body>
+
 <portal>
-	<iframe src="https://demo.web-education.net/eliot-textes-app/cahierDeTextes/accueil"></iframe>
+	<iframe src="https://demo.web-education.net/eliot-textes-app/cahierDeTextes/accueil" seamless id="adapter"></iframe>
 </portal>
+<script>
+	if(window.location.href.split('#').length > 1){
+		document.getElementById('adapter').setAttribute('src', 'https://demo.web-education.net/connexion-scol/login?service=https%3A%2F%2Fdemo.web-education.net%2Fweb-viescolaire%2F');
+	}
+</script>
 </body>
 </html>

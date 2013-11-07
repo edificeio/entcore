@@ -954,7 +954,8 @@ body.lightbox-body section.lightbox-main {
   background: rgba(255, 255, 255, 0.3);
 }
 iframe {
-  overflow: hidden;
+  overflow: auto;
+  height: 500px;
 }
 html.app {
   min-height: 0;
