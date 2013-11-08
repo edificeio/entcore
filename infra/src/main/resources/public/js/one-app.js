@@ -533,32 +533,19 @@ function Share($scope, http, ui, _, lang){
 
 	$scope.translate = lang.translate;
 
-	function actionsToRights(item, findMissing){
+	function actionsToRights(item){
 		var actions = [];
 		for(var action in item.actions){
-			if(!findMissing){
+			if(item.actions[action]){
 				_.where($scope.sharing.actions, { displayName: action }).forEach(function(item){
 					item.name.forEach(function(i){
 						actions.push(i);
-					})
-				})
+					});
+				});
 			}
 		}
 
 		return actions;
-	}
-
-	function findMissingActions(item){
-		var missingActions = [];
-		$scope.sharing.actions.forEach(function(action){
-			if(!item.actions[action.displayName]){
-				action.name.forEach(function(action){
-					missingActions.push(action);
-				})
-			}
-		});
-
-		return missingActions;
 	}
 
 	function rightsToActions(rights){
@@ -643,11 +630,11 @@ function Share($scope, http, ui, _, lang){
 			}
 		}
 
-		http.put(path, http.serialize(data)).done(function(data){
-			$scope.edited = _.reject($scope.edited, function(item){
-				return item.id === element.id;
-			})
-		})
+		$scope.edited = _.reject($scope.edited, function(item){
+			return item.id === element.id;
+		});
+
+		http.put(path, http.serialize(data));
 	}
 
 	function setRights(data, actions, addOrRemove){
@@ -657,28 +644,32 @@ function Share($scope, http, ui, _, lang){
 		http.put(path, http.serialize(data));
 	}
 
-	$scope.saveRights = function(){
-		ui.hideLightbox();
-		$scope.edited.forEach(function(element){
-			var data;
-			if(element.login !== undefined){
-				data = { userId: element.id }
-			}
-			else{
-				data = { groupId: element.id }
-			}
-			var actions = actionsToRights(element);
+	$scope.maxEdit = 5;
 
-			if($scope.sharing.users.checked[element.id] || $scope.sharing.groups.checked[element.id]){
-				//drop existing rights
-				http.put('/blog/share/remove/' + $scope.resources._id, http.serialize(data)).done(function(){
-					//add new rights
-					setRights(data, actions, 'json');
-				});
-			}
-			else{
-				setRights(data, actions, 'json');
-			}
-		});
+	$scope.displayMore = function(){
+		var displayMoreInc = 5;
+		$scope.maxEdit += displayMoreInc;
 	}
+
+	$scope.saveRights = function(element){
+		var data;
+		if(element.login !== undefined){
+			data = { userId: element.id }
+		}
+		else{
+			data = { groupId: element.id }
+		}
+		var actions = actionsToRights(element);
+
+		if($scope.sharing.users.checked[element.id] || $scope.sharing.groups.checked[element.id]){
+			//drop existing rights
+			http.put('/blog/share/remove/' + $scope.resources._id, http.serialize(data)).done(function(){
+				//add new rights
+				setRights(data, actions, 'json');
+			});
+		}
+		else{
+			setRights(data, actions, 'json');
+		}
+	};
 }

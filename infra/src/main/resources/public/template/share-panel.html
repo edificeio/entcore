@@ -8,11 +8,11 @@
 						<th></th>
 					</thead>
 					<tbody>
-						<tr ng-repeat="item in edited">
+						<tr ng-repeat="item in edited | limitTo:maxEdit">
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
 							<td ng-repeat="action in sharing.actions">
 								<label>
-								<input type="checkbox" ng-model="item.actions[action.displayName]" />
+								<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item)" />
 								<span></span>
 								</label>
 							</td>
@@ -20,6 +20,7 @@
 						</tr>
 					</tbody>
 				</table>
+				<a ng-click="displayMore()" ng-if="edited.length > maxEdit" class="display-more">Voir la suite</a>
 			</div>
 			<div class="row">
 				<h3>Rechercher des utilisateurs</h3>
@@ -29,13 +30,6 @@
 						<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
 					</div>
 				</div>
-				<div class="clear"></div>
-				<form>
-					<div class="lightbox-buttons fluid text-container">
-						<input type="submit" ng-click="saveRights()" value="Partager" />
-						<input type="button" class="cancel" value="Annuler"/>
-					</div>
-					<div class="clear"></div>
-				</form>
+				<hr />
 			</div>
 		</div>
