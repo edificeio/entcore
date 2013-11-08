@@ -425,7 +425,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	}
 
 	$scope.editTree = {};
-	$scope.openEditView($scope.editTree);
 	function updateFolders(){
 		getFolders($scope.folders.documents, { filter: 'owner' });
 		getFolders($scope.editTree, { filter: 'owner' });
@@ -498,7 +497,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 	}
 
 	$scope.editTree = {};
-	$scope.openEditView($scope.editTree);
 	function updateFolders(){
 		getFolders($scope.folders.documents, { filter: 'owner' });
 		getFolders($scope.editTree, { filter: 'owner' });
@@ -511,7 +509,9 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		var folderString = folderToString($scope.editTree, 'documents', $scope.selectedFolder.folder, $scope.selectedFolder.name);
 		http.put('documents/move/' + selectedDocumentsIds + folderString).done(function(){
 			updateFolders();
+			$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name, $scope.currentTree);
 		});
+
 	};
 
 	$scope.copy = function(){

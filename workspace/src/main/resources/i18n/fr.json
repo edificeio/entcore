@@ -66,6 +66,7 @@
 	"share.users" : "Utilisateurs",
 	"share.groups" : "Groupes",
 	"root" : "Racine",
+	"share.title": "Personnaliser la visibilité",
 	"share.more": "Voir la suite",
 	"share.search.title": "Rechercher des utilisateurs",
 	"share.search.placeholder": "Ex : Sabine, Dupont, Enseignants de l'école..."

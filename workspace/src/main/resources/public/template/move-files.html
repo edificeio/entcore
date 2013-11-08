@@ -3,7 +3,9 @@
 		<h1 translate key="workspace.move"></h1>
 		<nav class="vertical">
 			<nav class="vertical" ng-init="value=editTree; editMode='single'">
-				<ul data-ng-include="'folder-management'"></ul>
+				<ul>
+					<li data-ng-include="'folder-management'"></li>
+				</ul>
 			</nav>
 		</nav>
 		<div class="lightbox-buttons fluid">
