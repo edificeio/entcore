@@ -47,9 +47,10 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	@Override
-	public void get(String recipient, List<String> types, int offset, int limit, Handler<JsonObject> result) {
+	public void get(final String recipient, List<String> types, int offset, int limit,
+			final Handler<JsonObject> result) {
 		if (recipient != null && !recipient.trim().isEmpty()) {
-			JsonObject query = new JsonObject().putString("recipients", recipient);
+			JsonObject query = new JsonObject().putString("recipients.userId", recipient);
 			if (types != null && !types.isEmpty()) {
 				if (types.size() == 1) {
 					query.putString("type", types.get(0));
@@ -61,17 +62,22 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 					query.putArray("$or", typesFilter);
 				}
 			}
-			JsonObject sort = new JsonObject()
-			.putObject("$orderby", new JsonObject().putNumber("date", -1));
+			JsonObject sort = new JsonObject().putNumber("date", -1);
 			JsonObject keys = new JsonObject()
-			.putNumber("_id", 0)
 			.putNumber("message", 1)
 			.putNumber("date", 1)
 			.putNumber("sender", 1)
+			.putNumber("recipients.$", 1)
 			.putNumber("comments", 1)
 			.putNumber("add-comment", 1);
-			mongo.find(TIMELINE_COLLECTION, sort.putObject("$query", query), null, keys,
-					offset, limit, 100, resultHandler(result));
+			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
+					offset, limit, 100, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					result.handle(message.body());
+					markEventsAsRead(message, recipient);
+				}
+			});
 		} else {
 			result.handle(invalidArguments());
 		}
@@ -131,6 +137,25 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				result.handle(message.body());
 			}
 		};
+	}
+
+	private void markEventsAsRead(Message<JsonObject> message, String recipient) {
+		JsonArray events = message.body().getArray("results");
+		if (events != null && "ok".equals(message.body().getString("status"))) {
+			JsonArray ids = new JsonArray();
+			for (Object o : events) {
+				if (!(o instanceof JsonObject)) continue;
+				JsonObject json = (JsonObject) o;
+				ids.addString(json.getString("_id"));
+			}
+			JsonObject q = new JsonObject()
+					.putObject("_id", new JsonObject().putArray("$in", ids))
+					.putObject("recipients", new JsonObject().putObject("$elemMatch",
+							new JsonObject().putString("userId", recipient).putNumber("unread", 1)
+					));
+			mongo.update(TIMELINE_COLLECTION, q, new JsonObject().putObject("$set",
+					new JsonObject().putNumber("recipients.$.unread", 0)), false, true);
+		}
 	}
 
 }

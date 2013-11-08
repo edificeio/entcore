@@ -31,13 +31,17 @@ public class TimelineHelper {
 		public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type,
 				List<String> recipients, String resource, String subResource, String template, JsonObject params)
 				throws IOException {
+			JsonArray r = new JsonArray();
+			for (String userId: recipients) {
+				r.addObject(new JsonObject().putString("userId", userId).putNumber("unread", 1));
+			}
 			JsonObject event = new JsonObject()
 					.putString("action", "add")
 					.putString("resource", resource)
 					.putString("type", type)
 					.putString("sender", sender.getUserId())
 					.putString("message", render.processTemplate(request, template, params))
-					.putArray("recipients", new JsonArray(recipients.toArray()));
+					.putArray("recipients", r);
 			if (subResource != null && !subResource.trim().isEmpty()) {
 				event.putString("sub-resource", subResource);
 			}
