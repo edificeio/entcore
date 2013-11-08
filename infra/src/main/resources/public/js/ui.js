@@ -4,8 +4,17 @@ var ui = (function(){
 			$('.lightbox-backdrop').fadeIn();
 			$('.lightbox-window').fadeIn();
 			$('.lightbox-window').css({
+				'margin-top': 0,
+				'position': 'fixed',
+				top: 0
+			})
+			var offset = $('.lightbox-window').offset();
+			$('.lightbox-window').css({
+				'position': 'absolute',
+				'top': offset.top,
 				'margin-top': '100px'
-			});
+			})
+
 		},
 		hide: function(){
 			$('.lightbox-backdrop').fadeOut();

@@ -1,6 +1,11 @@
+var appPrefix = '';
+if(window.location.pathname.split('/').length > 0){
+	appPrefix = window.location.pathname.split('/')[1]
+}
+
 var lang = (function(){
 	var bundle = {};
-	$.ajax({url: 'i18n', async: false})
+	$.ajax({url: '/' + appPrefix + '/i18n', async: false})
 		.done(function(data){
 			bundle = data;
 		})

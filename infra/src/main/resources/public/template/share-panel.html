@@ -1,34 +1,41 @@
-<form>
-<h2>Personnaliser la visibilité</h2>
-
-		<div ng-controller="Share">
-			<table>
-				<thead>
-					<th></th>
-					<th ng-repeat="action in sharing.actions" translate key="[[action.displayName]]"></th>
-				</thead>
-				<tbody>
-					<tr ng-repeat="item in edited">
-						<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
-						<td ng-repeat="action in sharing.actions">
-							<input type="checkbox" ng-model="item.actions[action.displayName]" />
-						</td>
-					</tr>
-				</tbody>
-			</table>
-
-		   <input type="text" ng-model="search" ng-change="findStuff()" />
-			<div>
-				<div ng-repeat="item in found | limitTo:5" class="row">
-					<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
-				</div>
+		<div ng-controller="Share" class="share">
+			<div class="row line">
+				<h3>Personnaliser la visibilité</h3>
+				<table>
+					<thead>
+						<th></th>
+						<th ng-repeat="action in sharing.actions">[[translate(action.displayName)]]</th>
+						<th></th>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in edited">
+							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
+							<td ng-repeat="action in sharing.actions">
+								<label>
+								<input type="checkbox" ng-model="item.actions[action.displayName]" />
+								<span></span>
+								</label>
+							</td>
+							<td class="drop-line" ng-click="remove(item)"></td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
-			<div class="lightbox-buttons fluid">
-				<input type="submit" ng-click="saveRights()" value="Partager" />
-				<input type="button" class="cancel" value="Annuler"/>
+			<div class="row">
+				<h3>Rechercher des utilisateurs</h3>
+				<input type="text" ng-model="search" ng-change="findUserOrGroup()" />
+				<div>
+					<div ng-repeat="item in found | limitTo:5" class="row autocomplete">
+						<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<form>
+					<div class="lightbox-buttons fluid text-container">
+						<input type="submit" ng-click="saveRights()" value="Partager" />
+						<input type="button" class="cancel" value="Annuler"/>
+					</div>
+					<div class="clear"></div>
+				</form>
 			</div>
 		</div>
-
-
-
-</form>
