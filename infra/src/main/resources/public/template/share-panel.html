@@ -1,6 +1,6 @@
 		<div ng-controller="Share" class="share">
 			<div class="row line">
-				<h3>Personnaliser la visibilité</h3>
+				<h3>[[translate('share.title')]]</h3>
 				<table>
 					<thead>
 						<th></th>
@@ -20,11 +20,11 @@
 						</tr>
 					</tbody>
 				</table>
-				<a ng-click="displayMore()" ng-if="edited.length > maxEdit" class="display-more">Voir la suite</a>
+				<a ng-click="displayMore()" ng-if="edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
 			</div>
 			<div class="row">
-				<h3>Rechercher des utilisateurs</h3>
-				<input type="text" ng-model="search" ng-change="findUserOrGroup()" />
+				<h3>[[translate('share.search.title')]]</h3>
+				<input type="text" ng-model="search" ng-change="findUserOrGroup()" translate-attr="placeholder" placeholder="share.search.placeholder" />
 				<div>
 					<div ng-repeat="item in found | limitTo:5" class="row autocomplete">
 						<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
