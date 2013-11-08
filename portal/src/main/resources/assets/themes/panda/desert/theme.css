@@ -2980,6 +2980,18 @@ img[src=""] {
 }
 .share input[type=text] {
   margin-left: 15px;
+  margin-bottom: 15px;
+}
+.share .display-more {
+  text-align: right;
+  width: 100%;
+  display: block;
+  font-size: 15px;
+  padding: 15px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .autocomplete em {
   color: #666;
