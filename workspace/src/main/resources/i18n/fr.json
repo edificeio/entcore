@@ -65,5 +65,8 @@
 	"import.file": "Importer",
 	"share.users" : "Utilisateurs",
 	"share.groups" : "Groupes",
-	"root" : "Racine"
+	"root" : "Racine",
+	"share.more": "Voir la suite",
+	"share.search.title": "Rechercher des utilisateurs",
+	"share.search.placeholder": "Ex : Sabine, Dupont, Enseignants de l'école..."
 }
