@@ -576,6 +576,7 @@ function Share($scope, http, ui, _, lang){
 					});
 					elementObj.actions = groupActions;
 					$scope.edited.push(elementObj);
+					elementObj.index = $scope.edited.length;
 				}
 			}
 
@@ -596,6 +597,7 @@ function Share($scope, http, ui, _, lang){
 	$scope.addEdit = function(item){
 		item.actions = {};
 		$scope.edited.push(item);
+		item.index = $scope.edited.length;
 		$scope.found = [];
 		$scope.search = '';
 	};
