@@ -564,7 +564,7 @@ function Share($scope, http, ui, _, lang){
 	}
 
 	var feedData = function(){
-		http.get('/blog/share/json/' + $scope.resources._id).done(function(data){
+		http.get('/' + appPrefix + '/share/json/' + $scope.resources._id).done(function(data){
 			$scope.sharing = data;
 
 			function addToEdit(type){
@@ -638,7 +638,7 @@ function Share($scope, http, ui, _, lang){
 	}
 
 	function setRights(data, actions, addOrRemove){
-		var path = '/blog/share/' + addOrRemove + '/' + $scope.resources._id;
+		var path = '/' + appPrefix + '/share/' + addOrRemove + '/' + $scope.resources._id;
 		data.actions = actions;
 
 		http.put(path, http.serialize(data));
@@ -663,7 +663,7 @@ function Share($scope, http, ui, _, lang){
 
 		if($scope.sharing.users.checked[element.id] || $scope.sharing.groups.checked[element.id]){
 			//drop existing rights
-			http.put('/blog/share/remove/' + $scope.resources._id, http.serialize(data)).done(function(){
+			http.put('/' + appPrefix + '/share/remove/' + $scope.resources._id, http.serialize(data)).done(function(){
 				//add new rights
 				setRights(data, actions, 'json');
 			});
