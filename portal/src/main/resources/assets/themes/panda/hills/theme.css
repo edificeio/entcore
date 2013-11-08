@@ -819,6 +819,9 @@ dl dt {
 .flowing .cancel-flow form {
   height: auto;
 }
+.share {
+  width: 100%;
+}
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
 .flowing.sharing td:nth-child(4),
@@ -2537,7 +2540,7 @@ article em {
   color: #666;
   font-size: 14px;
 }
-article .line {
+.line {
   border-bottom: 1px dashed #ccc;
 }
 .navbar {
@@ -2894,8 +2897,104 @@ img[src=""] {
 .enhanced-select .editing span {
   color: #fff;
 }
+.share table {
+  width: 100%;
+}
+.share tr:hover {
+  background: #ebf4f9;
+  border: 1px solid #ccc;
+}
+.share tr:hover td.drop-line {
+  background: url(../img/icons/close.png) no-repeat center;
+}
+.share td,
+.share th {
+  width: 100px;
+  text-align: center;
+}
+.share td input[type=checkbox],
+.share th input[type=checkbox] {
+  display: none;
+}
+.share td label:hover,
+.share th label:hover {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+.share td label,
+.share th label {
+  cursor: pointer;
+  float: none;
+  display: block;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+.share td label span,
+.share th label span {
+  display: inline-block;
+  width: 19px;
+  height: 19px;
+  margin: -1px 4px 0 0;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.share td label input[type=checkbox]:checked + span,
+.share th label input[type=checkbox]:checked + span {
+  background: url(../img/icons/checkbox-checked.png) no-repeat;
+}
+.share tr {
+  border: 1px solid transparent;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  -ms-border-radius: 0px;
+  -o-border-radius: 0px;
+  border-radius: 0px;
+}
+.share th {
+  font-size: 14px;
+  font-weight: normal;
+  color: #3889c1;
+  padding-bottom: 5px;
+}
+.share td:first-child,
+.share th:first-child {
+  width: 30%;
+  text-align: left;
+  padding-left: 15px;
+}
+.share .line {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}
+.share h3 {
+  padding: 15px;
+}
+.share input[type=text] {
+  margin-left: 15px;
+}
+.autocomplete em {
+  color: #666;
+  font-style: normal;
+  display: block;
+  padding: 3px;
+  padding-left: 15px;
+  border: 1px solid transparent;
+}
+.autocomplete em:hover {
+  background: #ebf4f9;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
 .humane-original-error {
-  background: #fd841c;
   border: 3px solid #fff;
   font-family: KGJune;
   font-size: 30px;

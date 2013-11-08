@@ -714,9 +714,10 @@ article{
 		color: #666;
 		font-size: 14px;
 	}
-	.line{
-		border-bottom: 1px dashed #ccc;
-	}
+}
+
+.line{
+	border-bottom: 1px dashed #ccc;
 }
 
 .navbar{
@@ -1046,8 +1047,97 @@ img[src=""]{
 	}
 }
 
+.share{
+	table{
+		width: 100%;
+	}
+	tr:hover{
+		background: @light-blue;
+		border: 1px solid #ccc;
+		td.drop-line{
+			background: url(../img/icons/close.png) no-repeat center;
+		}
+	}
+	td, th{
+		width: 100px;
+		text-align: center;
+
+		input[type=checkbox]{
+			display: none;
+		}
+
+		label:hover{
+			.rounded-corners(5px);
+			.run-transition(background);
+		}
+
+		label{
+			cursor: pointer;
+			float: none;
+			display: block;
+			.run-transition(background);
+
+			span{
+				display:inline-block;
+				width:19px;
+				height:19px;
+				margin:-1px 4px 0 0;
+				vertical-align:middle;
+				cursor: pointer;
+			}
+
+			input[type=checkbox]:checked + span {
+				background:url(../img/icons/checkbox-checked.png) no-repeat;
+			}
+		}
+	}
+	tr{
+		border: 1px solid transparent;
+		.rounded-corners(0px);
+	}
+	th{
+		font-size: 14px;
+		font-weight: normal;
+		color: @solid-blue;
+		padding-bottom: 5px;
+	}
+	td:first-child, th:first-child{
+		width: 30%;
+		text-align: left;
+		padding-left: 15px;
+	}
+
+	.line{
+		margin-bottom: 15px;
+		padding-bottom: 15px;
+	}
+
+	h3{
+		padding: 15px;
+	}
+
+	input[type=text]{
+		margin-left: 15px;
+	}
+}
+
+.autocomplete {
+	em{
+		color: #666;
+		font-style: normal;
+		display: block;
+		padding: 3px;
+		padding-left: 15px;
+		border: 1px solid transparent;
+	}
+	em:hover{
+		background: @light-blue;
+		border-top: 1px solid #ccc;
+		border-bottom: 1px solid #ccc;
+	}
+}
+
 .humane-original-error{
-	background: @orange;
 	border: 3px solid #fff;
 	font-family: KGJune;
 	font-size: 30px;

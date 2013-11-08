@@ -819,6 +819,9 @@ dl dt {
 .flowing .cancel-flow form {
   height: auto;
 }
+.share {
+  width: 100%;
+}
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
 .flowing.sharing td:nth-child(4),
