@@ -1,7 +1,5 @@
 (function(){
 	var Calendar = LoadedWidgets.findWidget('calendar');
-	Calendar.weeks = [1, 2, 3, 4];
-	Calendar.daysOfWeek = [1, 2, 3, 4, 5, 6, 7];
 
 	Calendar.today = function(format){
 		return moment().format(format);
@@ -61,8 +59,6 @@
 		return lang.translate(_.find(seasons, function(season){
 			return season.start.dayOfYear() <= moment().dayOfYear() && moment().dayOfYear() <= season.end.dayOfYear();
 		}).name);
-
-
 	}
 
 	LoadedWidgets.apply();

@@ -5,5 +5,8 @@
 	"calendar.spring": "Printemps",
 	"calendar.summer": "Eté",
 	"calendar.fall": "Automne",
-	"calendar.winter": "Hiver"
+	"calendar.winter": "Hiver",
+	"blog": "Blog",
+	"workspace": "Espace documentaire",
+	"userbook": "Utilisateurs"
 }

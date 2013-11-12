@@ -1,13 +1,40 @@
-function Timeline($scope, date, http, navigation){
+function Timeline($scope, date, http, navigation, lang){
 	$scope.notifications = [];
-	http.get('lastNotifications').done(function(response){
+	$scope.me = {};
+	$scope.types = [];
+	$scope.translate = lang.translate;
+
+	http.get('/timeline/types').done(function(types){
+		$scope.types = types;
+		$scope.$apply('types');
+	});
+
+	http.get('/auth/oauth2/userinfo', function(info){
+		$scope.me = info;
+		$scope.$apply('me');
+	});
+
+	http.get('/timeline/lastNotifications').done(function(response){
 		$scope.notifications = response.results;
-		$scope.$apply();
+		$scope.$apply('notifications');
 	});
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
 	};
+
+	$scope.isUnRead = function(notification){
+		return _.find(notification.recipients, function(recipient){
+			return recipient.userId === $scope.me.userId;
+		}) !== undefined;
+	};
+
+	$scope.setFilter = function(filter){
+		http.get('/timeline/lastNotifications?type=' + filter).done(function(response){
+			$scope.notifications = response.results;
+			$scope.$apply('notifications');
+		});
+	}
 
 	$scope.navigate = navigation.navigate;
 }

@@ -20,6 +20,14 @@
 				<div class="eight cell">
 						<h1><i role="notification"></i>{{#i18n}}timeline.title{{/i18n}}</h1>
 						<article data-ng-controller="Timeline" class="twelve cell">
+							<div class="row line filters">
+								<h5>Voir les nouveautés du</h5>
+								<ul>
+									<li ng-repeat="type in types" ng-click="setFilter(type)">
+										<i role="[[type.toLowerCase()]]"></i>[[translate(type.toLowerCase())]]
+									</li>
+								</ul>
+							</div>
 							<div data-ng-repeat="notification in notifications" class="row line" path="/notification/default">
 								<div class="two cell fixed-block height-two">
 									<div class="fixed twelve cell text-container">
@@ -28,7 +36,12 @@
 										</div>
 									</div>
 								</div>
-								<div class="ten cell text-container">
+								<div class="ten cell text-container" ng-class="{
+									ten: true,
+									cell: true,
+									'text-container': true,
+									'unread': isUnRead(notification)
+								}">
 									<div class="row">
 										<div class="cell eight" data-ng-bind-html="notification.message"></div>
 										<div class="cell right-magnet">
