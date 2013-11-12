@@ -31,11 +31,17 @@ var loader = (function(){
 	basePath.length = basePath.length - 1;
 	basePath = basePath.join('/');
 
-	var loadScript = function(script){
+	var loadScript = function(script, completePath){
 		var element = document.createElement('script');
 
 		element.async = false;
-		element.src = basePath + '/' + script;
+		if(!completePath){
+			element.src = basePath + '/' + script;
+		}
+		else{
+			element.src = script;
+		}
+
 		element.type = 'text/javascript';
 		document.getElementsByTagName('head')[0].appendChild(element);
 	};
@@ -73,6 +79,11 @@ var loader = (function(){
 		load: function(library){
 			if(!loadedScripts[library]){
 				loadScript(libraries[library]);
+			}
+		},
+		loadFile: function(library){
+			if(!loadedScripts[library]){
+				loadScript(library, true);
 			}
 		},
 		syncLoad: function(library){
