@@ -8,7 +8,7 @@
 						<th></th>
 					</thead>
 					<tbody>
-						<tr ng-repeat="item in edited | limitTo:maxEdit | orderBy:'index':true">
+						<tr ng-repeat="item in edited | orderBy:'index':true | limitTo:maxEdit">
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
 							<td ng-repeat="action in sharing.actions">
 								<label>
