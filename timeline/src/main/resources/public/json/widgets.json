@@ -1,0 +1,7 @@
+[
+	{
+		"name": "calendar",
+		"path": "/timeline/calendar",
+		"js": "/timeline/public/js/calendar.js"
+	}
+]

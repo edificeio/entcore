@@ -1,5 +1,9 @@
 {
 	"timeline.title": "Fil de nouveautés",
 	"timeline.header": "Fil de nouveautés",
-	"timeline.nothingnew": "Aucune nouvelle pour le moment !"
+	"timeline.nothingnew": "Aucune nouvelle pour le moment !",
+	"calendar.spring": "Printemps",
+	"calendar.summer": "Eté",
+	"calendar.fall": "Automne",
+	"calendar.winter": "Hiver"
 }

@@ -34,6 +34,11 @@ public class TimelineController extends Controller {
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
+	
+	@SecuredAction("timeline.calendar")
+	public void calendar(HttpServerRequest request) {
+		renderView(request);
+	}
 
 	@SecuredAction("timeline.events")
 	public void lastEvents(final HttpServerRequest request) {

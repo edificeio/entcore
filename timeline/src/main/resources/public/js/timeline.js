@@ -34,6 +34,26 @@ function Personalization($scope, http, ui){
 	}
 }
 
-function Widgets(){
 
+var LoadedWidgets = [];
+LoadedWidgets.findWidget = function(name){
+	return _.findWhere(LoadedWidgets, {name: name});
+}
+
+function Widgets($scope, http, _, lang){
+	$scope.widgets = LoadedWidgets;
+	LoadedWidgets.apply = function(){
+		if(!$scope.$$phase) {
+			$scope.$apply('widgets');
+		}
+	}
+
+	http.get('/timeline/public/json/widgets.json').done(function(data){
+		data.forEach(function(widget){
+			LoadedWidgets.push(widget);
+			loader.loadFile(widget.js);
+		});
+	});
+
+	$scope.translate = lang.translate;
 }

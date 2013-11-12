@@ -11,7 +11,7 @@ public class Timeline extends Server {
 		TimelineController timeline = new TimelineController(vertx, container, rm, securedActions);
 
 		timeline.get("/timeline", "view");
-
+		timeline.get("/calendar", "calendar");
 		timeline.get("/lastNotifications", "lastEvents");
 
 		timeline.get("/types", "listTypes");
