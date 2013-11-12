@@ -1131,6 +1131,36 @@ img[src=""]{
 	}
 }
 
+.calendar{
+	background: url(../img/illustrations/calendar-header.png) no-repeat;
+	background-size: 100% auto;
+
+	.current-month-header{
+		color: #FFF;
+		font-family: Arial;
+		font-weight: normal;
+		font-size: 18px;
+	}
+
+	.content{
+		border: 1px solid #ccc;
+		border-top: 0;
+		margin-top: 73px;
+		.rounded-corners-bottom(10px);
+		.day{
+			color: #666;
+			font-weight: bold;
+			font-size: 12px;
+			border-left: 1px solid #ccc;
+			border-bottom: 1px solid #ccc;
+		}
+		.day.previous-month, .day.next-month{
+			color: #CCC;
+		}
+
+	}
+}
+
 .autocomplete {
 	em{
 		color: #666;
