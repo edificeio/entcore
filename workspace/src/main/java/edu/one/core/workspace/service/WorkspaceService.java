@@ -640,12 +640,20 @@ public class WorkspaceService extends Controller {
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
 				JsonObject result = res.getObject("result");
-				if ("ok".equals(status) && result != null && result.getString("file") != null) {
+				String thumbSize = request.params().get("thumbnail");
+				String file;
+				if (thumbSize != null && !thumbSize.trim().isEmpty()) {
+					file = result.getObject("thumbnails", new JsonObject())
+							.getString(thumbSize, result.getString("file"));
+				} else {
+					file = result.getString("file");
+				}
+				if ("ok".equals(status) && result != null && file != null) {
 					boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-					if (inline && ETag.check(request, result.getString("file"))) {
-						notModified(request, result.getString("file"));
+					if (inline && ETag.check(request, file)) {
+						notModified(request, file);
 					} else {
-						FileUtils.gridfsSendFile(result.getString("file"),
+						FileUtils.gridfsSendFile(file,
 								result.getString("name"), eb, gridfsAddress, request.response(),
 								inline, result.getObject("metadata"));
 					}
