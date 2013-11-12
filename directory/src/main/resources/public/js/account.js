@@ -113,12 +113,14 @@ function MyAccount($scope, http, lang, date, notify, _){
 
 	$scope.updateAvatar = function(){
 		var form = new FormData(),
-		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		thumbs = "thumbnail=290x290&thumbnail=82x82&thumbnail=48x48";
 		form.append("image", $scope.account.photo);
 		form.append("name","blablabla");
 
 	if (uuidRegex.test($scope.account.picture)) {
-			http.putFile("/workspace/document/" + $scope.account.picture, form, { requestName: 'avatar'})
+    http.putFile("/workspace/document/" + $scope.account.picture + "?" + thumbs,
+        form, { requestName: 'avatar'})
 				.done(function (data) {
 					if (data.status == "ok") {
 						$scope.account.pictureVersion = $scope.account.pictureVersion + 1;
@@ -127,8 +129,9 @@ function MyAccount($scope, http, lang, date, notify, _){
 					}
 				});
 		} else {
-			http.postFile("/workspace/document?application=userbook&protected=true", form, { requestName: 'avatar'})
-				.done(function (data) {
+      http.postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
+          form, { requestName: 'avatar'})
+        .done(function (data) {
 					if (data.status == "ok") {
 						$scope.account.picture = data._id;
 						$scope.saveProperty('picture');

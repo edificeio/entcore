@@ -354,7 +354,7 @@ public class UserBookController extends Controller {
 						String photoId = event.body().getObject("result", new JsonObject())
 								.getObject("0", new JsonObject()).getString("photo");
 						if (photoId != null && !photoId.trim().isEmpty()) {
-							redirectPermanent(request, "/workspace/document/" + photoId);
+							redirectPermanent(request, "/workspace/document/" + photoId + "?" + request.query());
 							return;
 						}
 					}
