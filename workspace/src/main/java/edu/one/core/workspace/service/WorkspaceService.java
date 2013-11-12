@@ -394,32 +394,40 @@ public class WorkspaceService extends Controller {
 				Matcher m = size.matcher(thumb);
 				if (m.matches()) {
 					try {
-						outputs.addObject(new JsonObject()
-								.putNumber("width", Integer.parseInt(m.group(1)))
-								.putNumber("height", Integer.parseInt(m.group(2)))
-								.putString("dest", "gridfs://fs")
-						);
+						int width = Integer.parseInt(m.group(1));
+						int height = Integer.parseInt(m.group(2));
+						if (width == 0 && height == 0) continue;
+						JsonObject j = new JsonObject().putString("dest", "gridfs://fs");
+						if (width != 0) {
+							j.putNumber("width", width);
+						}
+						if (height != 0) {
+							j.putNumber("height", height);
+						}
+						outputs.addObject(j);
 					} catch (NumberFormatException e) {
 						log.error("Invalid thumbnail size.", e);
 						continue;
 					}
 				}
 			}
-			JsonObject json = new JsonObject()
-					.putString("action", "resizeMultiple")
-					.putString("src", "gridfs://fs:" + srcFile.getString("_id"))
-					.putArray("destinations", outputs);
-			eb.send(imageResizerAddress, json, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonObject thumbnails = event.body().getObject("outputs");
-					if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
-						mongo.update(collection, new JsonObject().putString("_id", documentId),
-								new JsonObject().putObject("$set", new JsonObject()
-										.putObject("thumbnails", thumbnails)));
-					}
-				}
-			});
+			if (outputs.size() > 0) {
+				JsonObject json = new JsonObject()
+						.putString("action", "resizeMultiple")
+						.putString("src", "gridfs://fs:" + srcFile.getString("_id"))
+						.putArray("destinations", outputs);
+				eb.send(imageResizerAddress, json, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						JsonObject thumbnails = event.body().getObject("outputs");
+						if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
+							mongo.update(collection, new JsonObject().putString("_id", documentId),
+									new JsonObject().putObject("$set", new JsonObject()
+											.putObject("thumbnails", thumbnails)));
+						}
+				   }
+				});
+			}
 		}
 		if (oldThumbnail != null) {
 			for (String attr: oldThumbnail.getFieldNames()) {
