@@ -236,7 +236,6 @@ var userbook = function(){
 					}
 
 					replaceAvatars();
-					messenger.requireResize();
 				})
 				.error(function(data){app.notify.error(data.status);});
 			},
@@ -262,7 +261,6 @@ var userbook = function(){
 				One.get($('.person').first().find('h4').attr('href'))
 					.done(function(data){
 						that.showPerson(data);
-						messenger.requireResize();
 					});
 			},
 			person : function(o){
@@ -270,7 +268,6 @@ var userbook = function(){
 				One.get(o.url)
 					.done(function(data){
 						that.showPerson(data);
-						messenger.requireResize();
 					});
 			},
 			refreshClassList: function(){
@@ -293,7 +290,6 @@ var userbook = function(){
 						$("#people").html(app.template.render('searchResults', classDataAdaptor(data)));
 					}
 						replaceAvatars();
-					messenger.requireResize();
 				});
 			}
 		}

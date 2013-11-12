@@ -67,12 +67,16 @@ var ui = (function(){
 		},
 		setStyle: function(stylePath){
 			if($('#theme').length === 0){
-				$('head').append($('<link>', {
+				var style = $('<link>', {
 					rel: 'stylesheet',
 					type: 'text/css',
 					href: stylePath + 'theme.css',
 					id: 'theme'
-				}));
+				});
+				style.on('load', function(){
+					$('body').show();
+				})
+				$('head').append(style);
 			}
 			else{
 				$('#theme').attr('href', stylePath + 'theme.css');

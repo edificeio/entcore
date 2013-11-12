@@ -357,7 +357,6 @@ oneModule.directive('portal', function($compile){
 			$.getJSON('/theme?token=' + rand, function(data){
 				var css = data.skin;
 				ui.setStyle(css);
-				$('body').show();
 			})
 		}
 	}
