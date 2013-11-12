@@ -27,10 +27,6 @@ public class Workspace extends Server {
 
 		service.put("/share/remove/:id", "removeShare");
 
-		service.get("/share", "share");
-
-		service.post("/share", "shareDocument");
-
 		service.post("/document", "addDocument");
 
 		service.get("/document/:id", "getDocument");
