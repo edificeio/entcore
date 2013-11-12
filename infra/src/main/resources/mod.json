@@ -137,6 +137,18 @@
       }
     },
     {
+      "name": "com.wse~mod-image-resizer~1.0.0",
+      "config": {
+        "address": "wse.image.resizer",
+        "gridfs": {
+          "host": "localhost",
+          "port": 27017,
+          "db_name": "one_tests",
+          "pool_size": 10
+        }
+      }
+    },
+    {
       "name": "com.wse~http-proxy~1.0.0",
       "config": {
         "port": 8080,

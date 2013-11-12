@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.mongodb.QueryBuilder;
 import edu.one.core.common.http.request.ActionsUtils;
@@ -44,6 +46,7 @@ public class WorkspaceService extends Controller {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 	private final String gridfsAddress;
+	private final String imageResizerAddress;
 	private final MongoDb mongo;
 	private final DocumentDao documentDao;
 	private final RackDao rackDao;
@@ -58,6 +61,7 @@ public class WorkspaceService extends Controller {
 		mongo = new MongoDb(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));
 		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
+		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
@@ -482,7 +486,7 @@ public class WorkspaceService extends Controller {
 			final JsonObject doc) {
 		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject uploaded) {
+			public void handle(final JsonObject uploaded) {
 				if ("ok".equals(uploaded.getString("status"))) {
 					doc.putString("name", getOrElse(request
 							.params().get("name"), uploaded.getObject("metadata")
@@ -496,6 +500,8 @@ public class WorkspaceService extends Controller {
 						public void handle(Message<JsonObject> res) {
 							if ("ok".equals(res.body().getString("status"))) {
 								renderJson(request, res.body(), 201);
+								createThumbnailIfNeeded(mongoCollection, request, uploaded,
+										res.body().getString("_id"), null);
 							} else {
 								renderError(request, res.body());
 							}
@@ -504,6 +510,51 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
+	}
+
+	private void createThumbnailIfNeeded(final String collection, HttpServerRequest request,
+			JsonObject srcFile, final String documentId, JsonObject oldThumbnail) {
+		List<String> thumbs = request.params().getAll("thumbnail");
+		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() &&
+				srcFile != null && isImage(srcFile) && srcFile.getString("_id") != null) {
+			Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
+			JsonArray outputs = new JsonArray();
+			for (String thumb: thumbs) {
+				Matcher m = size.matcher(thumb);
+				if (m.matches()) {
+					try {
+						outputs.addObject(new JsonObject()
+								.putNumber("width", Integer.parseInt(m.group(1)))
+								.putNumber("height", Integer.parseInt(m.group(2)))
+								.putString("dest", "gridfs://fs")
+						);
+					} catch (NumberFormatException e) {
+						log.error("Invalid thumbnail size.", e);
+						continue;
+					}
+				}
+			}
+			JsonObject json = new JsonObject()
+					.putString("action", "resizeMultiple")
+					.putString("src", "gridfs://fs:" + srcFile.getString("_id"))
+					.putArray("destinations", outputs);
+			eb.send(imageResizerAddress, json, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonObject thumbnails = event.body().getObject("outputs");
+					if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
+						mongo.update(collection, new JsonObject().putString("_id", documentId),
+								new JsonObject().putObject("$set", new JsonObject()
+										.putObject("thumbnails", thumbnails)));
+					}
+				}
+			});
+		}
+		if (oldThumbnail != null) {
+			for (String attr: oldThumbnail.getFieldNames()) {
+				FileUtils.gridfsRemoveFile(oldThumbnail.getString(attr), eb, gridfsAddress, null);
+			}
+		}
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
@@ -524,6 +575,11 @@ public class WorkspaceService extends Controller {
 							doc.putString("modified", now);
 							doc.putObject("metadata", metadata);
 							doc.putString("file", uploaded.getString("_id"));
+							final JsonObject thumbs = old.getObject("result", new JsonObject())
+									.getObject("thumbnails");
+							if (thumbs != null) {
+								doc.putObject("thumbnails", new JsonObject());
+							}
 							String query = "{ \"_id\": \"" + request.params().get("id") + "\"}";
 							set.putObject("$set", doc);
 							mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
@@ -542,6 +598,8 @@ public class WorkspaceService extends Controller {
 														renderJson(request, res.body());
 													}
 												});
+										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
+												request, uploaded, request.params().get("id"), thumbs);
 									} else {
 										renderError(request, res.body());
 									}
@@ -610,6 +668,19 @@ public class WorkspaceService extends Controller {
 				"image/svg+xml".equals(metadata.getString("content-type")) ||
 				("application/octet-stream".equals(metadata.getString("content-type")) && application != null)
 			);
+	}
+
+	private boolean isImage(JsonObject doc) {
+		if (doc == null) {
+			return false;
+		}
+		JsonObject metadata = doc.getObject("metadata");
+		return metadata != null && (
+				"image/jpeg".equals(metadata.getString("content-type")) ||
+						"image/gif".equals(metadata.getString("content-type")) ||
+						"image/png".equals(metadata.getString("content-type")) ||
+						"image/tiff".equals(metadata.getString("content-type"))
+		);
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
