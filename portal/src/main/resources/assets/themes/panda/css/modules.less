@@ -1142,6 +1142,36 @@ img[src=""]{
 		font-size: 18px;
 	}
 
+	.current-day{
+		h1{
+			font-family: Arial;
+			color: #000;
+			font-size: 20px;
+			text-align: center;
+			font-weight: normal;
+			margin-bottom: -10px;
+			margin-top: 15px;
+		}
+		h2{
+			font-family: Times New Roman;
+			font-size: 75px;
+			color: #b11f1f;
+			margin: 0;
+			text-align: center;
+			font-weight: normal;
+		}
+		h3{
+			font-family: Calibri;
+			font-weight: 100;
+			color: #666;
+			font-size: 18px;
+			background: url(../img/illustrations/calendar-separator.png) no-repeat center top;
+			text-align: center;
+			margin-top: -10px;
+			padding-top: 6px;
+		}
+	}
+
 	.content{
 		border: 1px solid #ccc;
 		border-top: 0;
@@ -1154,10 +1184,27 @@ img[src=""]{
 			border-left: 1px solid #ccc;
 			border-bottom: 1px solid #ccc;
 		}
+		.day.today{
+			color: #fff;
+			background: #b11f1f;
+		}
 		.day.previous-month, .day.next-month{
 			color: #CCC;
 		}
 
+	}
+}
+
+.line{
+	em, span{
+		font-size: 14px;
+		background: #fefefe;
+	}
+	em[contenteditable=true], span[contenteditable=true]{
+		background: #fff;
+	}
+	a{
+		font-size: 16px;
 	}
 }
 
@@ -1174,6 +1221,35 @@ img[src=""]{
 		background: @light-blue;
 		border-top: 1px solid #ccc;
 		border-bottom: 1px solid #ccc;
+	}
+}
+
+.filters{
+	h5{
+		color: #666;
+		font-size: 14px;
+		font-weight: normal;
+		padding-left: 10px;
+	}
+	li{
+		i{
+			background-size: contain;
+			margin: 0 !important;
+			margin-right: 10px !important;
+		}
+		i[role=workspace]{
+			.icon(share, 20px);
+		}
+		i[role=userbook]{
+			.icon(user, 20px);
+		}
+		i[role=blog]{
+			.icon(blog, 20px);
+		}
+		color: @medium-blue;
+		font-size: 14px;
+		padding-left: 10px;
+		padding-right: 10px;
 	}
 }
 

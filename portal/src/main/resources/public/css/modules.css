@@ -408,15 +408,34 @@ nav.horizontal a {
   width: 100%;
   line-height: 30px;
   height: 30px;
-  font-size: 14px;
-  background: #fefefe;
 }
-.line em[contenteditable=true],
-.line span[contenteditable=true] {
-  background: #fff;
+.filters h5 {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+  width: 1;
+  margin: 0;
 }
-.line a {
-  font-size: 16px;
+.filters h5 img {
+  max-width: 100%;
+}
+@media screen and (min-width: 720px) {
+  .filters h5 {
+    width: 33.333333333333336%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .filters h5 {
+    width: 100%;
+  }
+}
+.filters li {
+  display: inline-block;
+  list-style-type: none;
 }
 .calendar {
   width: 1;
@@ -467,42 +486,11 @@ nav.horizontal a {
     padding-bottom: 58.333333333333336%;
   }
 }
-.calendar .current-day h1 {
-  font-family: Arial;
-  color: #000;
-  font-size: 20px;
-  text-align: center;
-  font-weight: normal;
-  margin-bottom: -10px;
-  margin-top: 15px;
-}
-.calendar .current-day h2 {
-  font-family: Times New Roman;
-  font-size: 75px;
-  color: #b11f1f;
-  margin: 0;
-  text-align: center;
-  font-weight: normal;
-}
-.calendar .current-day h3 {
-  font-family: Calibri;
-  font-weight: 100;
-  color: #666;
-  font-size: 18px;
-  background: url(../img/illustrations/calendar-separator.png) no-repeat center top;
-  text-align: center;
-  margin-top: -10px;
-  padding-top: 6px;
-}
 .calendar .day {
   width: 14.2%;
   height: 24px;
   text-align: center;
   padding-top: 4px;
-}
-.calendar .content .day.today {
-  color: #fff;
-  background: #b11f1f;
 }
 .calendar .current-month-header {
   position: absolute;
