@@ -32,9 +32,4 @@ public interface BlogService {
 
 	void list(UserInfos user, Handler<Either<String, JsonArray>> result);
 
-	void share(String blogId, JsonArray sharedArray, List<String> updatableShareId,
-			   Handler<Either<String, JsonObject>> result);
-
-	void shared(String blogId, Handler<Either<String, JsonObject>> result);
-
 }
