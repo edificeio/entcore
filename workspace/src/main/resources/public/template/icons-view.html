@@ -11,7 +11,7 @@
 			<i role="[[document.metadata.contentType]]-large"  ng-if="document.metadata.contentType !== 'img'">
 			</i>
 			<div ng-if="document.metadata.contentType === 'img'">
-				<img ng-src="[[documentPath(document)]]" alt="thumbnail" />
+				<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />
 			</div>
 		</a>
 		<input type="checkbox" data-ng-model="document.selected" />
