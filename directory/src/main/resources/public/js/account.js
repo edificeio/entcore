@@ -88,15 +88,19 @@ function MyAccount($scope, http, lang, date, notify, _){
 		http.post(url, {
 				oldPassword: $scope.account.oldPassword,
 				password: $scope.account.password,
-				newPassword: $scope.account.password
+				confirmPassword: $scope.account.password,
+				login: $scope.account.login,
+				callback: '/userbook/mon-compte'
 			})
 			.done(function(response){
-				$scope.resetPasswordPath = '';
-				$scope.resetPasswordContent = response;
-				$scope.$apply();
 				if(response.indexOf('html') === -1){
-					ui.showLightbox();
+					notify.error('Le formulaire contient des erreurs');
 				}
+				else{
+					$scope.resetErrors = false;
+					ui.hideLightbox();
+				}
+				$scope.$apply();
 			})
 	};
 
