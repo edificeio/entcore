@@ -2,7 +2,16 @@
 	<div class="content">
 		<nav class="vertical">
 			<ul>
-				<li ng-foreach="birthday in birthdays"><a>[[birthday]]</a></li>
+				<li ng-repeat="birthday in widget.birthdays">
+					<a ng-href="http://localhost/userbook/annuaire#[[birthday.id]]">
+						<img ng-src="/userbook/document/[[birthday.id]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=&thumbnail=48x48" />
+						<div class="user"><p>[[birthday.username]]</p></div>
+						<div class="date">
+							<h2 class="day">[[widget.getDay(birthday.birthDate)]]</h2>
+							<h4 class="month">[[widget.getMonth(birthday.birthDate)]]</h4>
+						</div>
+					</a>
+				</li>
 			</ul>
 		</nav>
 	</div>
