@@ -153,7 +153,7 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		if(window.moment === undefined){
 			loader.syncLoad('moment');
 		}
-		var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+
 		moment.lang(currentLanguage, {
 			calendar : {
 				lastDay : '[Hier à] HH[h]mm',
@@ -361,6 +361,15 @@ oneModule.directive('portal', function($compile){
 		}
 	}
 });
+
+oneModule.directive('localizedClass', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $attributes, $element){
+			$element.$addClass(currentLanguage);
+		}
+	}
+})
 
 oneModule.directive('htmlEditor', function($compile){
 	return {
