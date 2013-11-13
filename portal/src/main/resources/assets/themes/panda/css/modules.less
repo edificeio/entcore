@@ -161,6 +161,10 @@ i[role=workspace-large]{
 	.icon(workspace-large, 135px);
 }
 
+i[role=maxicours-large]{
+	.icon(maxicours-large, 135px);
+}
+
 i[role=notes-large]{
 	.icon(notes-large, 135px);
 }
@@ -1131,9 +1135,23 @@ img[src=""]{
 	}
 }
 
+
+
+.birthday{
+	background-image: url(../img/illustrations/birthdays-header.png);
+
+	.content{
+		border-color: #e83314;
+	}
+
+}
+
+.birthday.fr{
+	background-image: url(../img/illustrations/birthdays-header-fr.png)
+}
+
 .calendar{
-	background: url(../img/illustrations/calendar-header.png) no-repeat;
-	background-size: 100% auto;
+	background-image: url(../img/illustrations/calendar-header.png);
 
 	.current-month-header{
 		color: #FFF;
@@ -1173,10 +1191,7 @@ img[src=""]{
 	}
 
 	.content{
-		border: 1px solid #ccc;
-		border-top: 0;
-		margin-top: 73px;
-		.rounded-corners-bottom(10px);
+		border-color: #ccc;
 		.day{
 			color: #666;
 			font-weight: bold;

@@ -97,6 +97,8 @@ nav.horizontal{
 	}
 }
 
+
+
 .filters{
 	h5{
 		.cell;
@@ -112,11 +114,34 @@ nav.horizontal{
 	}
 }
 
-.calendar{
+.widget-container(@header-size){
 	.twelve;
 	.cell;
 	.fixed-block;
 	.fixed-block.height-seven;
+	background-size: contain;
+	background-repeat: no-repeat;
+	margin-bottom: @header-size + 10px;
+	padding-right: 1px;
+	.content{
+		margin-top: @header-size;
+		.twelve;
+		.cell;
+		.cell.fixed;
+		border: 1px solid;
+		border-top: none;
+		.rounded-corners-bottom(10px);
+		overflow: hidden;
+		height: 98%;
+	}
+}
+
+.birthday{
+	.widget-container(47px);
+}
+
+.calendar{
+	.widget-container(73px);
 	padding-bottom: 49.4% !important;
 
 	.day{
@@ -131,10 +156,6 @@ nav.horizontal{
 		width: 100%;
 		text-align: center;
 		top: 36px;
-	}
-	.content{
-		overflow: hidden;
-		height: 98%;
 	}
 }
 

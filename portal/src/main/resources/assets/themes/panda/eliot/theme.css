@@ -123,10 +123,6 @@
   position: relative;
   height: 1px;
 }
-.fixed-block .cell.fixed {
-  position: absolute;
-  height: 100%;
-}
 .fixed-block .right-magnet.cell.fixed {
   right: 0;
 }
@@ -137,6 +133,10 @@
 .fixed-block .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
+}
+.cell.fixed {
+  position: absolute;
+  height: 100%;
 }
 .one {
   width: 1;
@@ -430,6 +430,94 @@ nav.horizontal a {
   display: inline-block;
   list-style-type: none;
 }
+.birthday {
+  width: 1;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-bottom: 57px;
+  padding-right: 1px;
+}
+@media screen and (min-width: 720px) {
+  .birthday {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .birthday {
+    width: 100%;
+  }
+}
+.birthday img {
+  max-width: 100%;
+}
+.birthday .right-magnet.cell.fixed {
+  right: 0;
+}
+.birthday .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.birthday .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+.birthday .avatar {
+  overflow: hidden;
+}
+@media screen and (min-width: 720px) {
+  .birthday {
+    padding-bottom: 58.333333333333336%;
+  }
+}
+.birthday .content {
+  margin-top: 47px;
+  width: 1;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+  position: absolute;
+  height: 100%;
+  border: 1px solid;
+  border-top: none;
+  -webkit-border-bottom-left-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -moz-border-bottom-left-radius: 10px;
+  -moz-border-bottom-right-radius: 10px;
+  -ms-border-bottom-left-radius: 10px;
+  -ms-border-bottom-right-radius: 10px;
+  -o-border-bottom-left-radius: 10px;
+  -o-border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+  height: 98%;
+}
+@media screen and (min-width: 720px) {
+  .birthday .content {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .birthday .content {
+    width: 100%;
+  }
+}
+.birthday .content img {
+  max-width: 100%;
+}
 .calendar {
   width: 1;
   -webkit-box-sizing: border-box;
@@ -441,6 +529,10 @@ nav.horizontal a {
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-bottom: 83px;
+  padding-right: 1px;
   padding-bottom: 49.4% !important;
 }
 @media screen and (min-width: 720px) {
@@ -455,10 +547,6 @@ nav.horizontal a {
 }
 .calendar img {
   max-width: 100%;
-}
-.calendar .cell.fixed {
-  position: absolute;
-  height: 100%;
 }
 .calendar .right-magnet.cell.fixed {
   right: 0;
@@ -479,6 +567,46 @@ nav.horizontal a {
     padding-bottom: 58.333333333333336%;
   }
 }
+.calendar .content {
+  margin-top: 73px;
+  width: 1;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+  position: absolute;
+  height: 100%;
+  border: 1px solid;
+  border-top: none;
+  -webkit-border-bottom-left-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -moz-border-bottom-left-radius: 10px;
+  -moz-border-bottom-right-radius: 10px;
+  -ms-border-bottom-left-radius: 10px;
+  -ms-border-bottom-right-radius: 10px;
+  -o-border-bottom-left-radius: 10px;
+  -o-border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+  height: 98%;
+}
+@media screen and (min-width: 720px) {
+  .calendar .content {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .calendar .content {
+    width: 100%;
+  }
+}
+.calendar .content img {
+  max-width: 100%;
+}
 .calendar .day {
   width: 14.2%;
   height: 24px;
@@ -490,10 +618,6 @@ nav.horizontal a {
   width: 100%;
   text-align: center;
   top: 36px;
-}
-.calendar .content {
-  overflow: hidden;
-  height: 98%;
 }
 i.liquid {
   max-width: 100% !important;
@@ -1483,6 +1607,20 @@ i[role=workspace-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=maxicours-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/maxicours-large.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3110,9 +3248,17 @@ img[src=""] {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+.birthday {
+  background-image: url(../img/illustrations/birthdays-header.png);
+}
+.birthday .content {
+  border-color: #e83314;
+}
+.birthday.fr {
+  background-image: url(../img/illustrations/birthdays-header-fr.png);
+}
 .calendar {
-  background: url(../img/illustrations/calendar-header.png) no-repeat;
-  background-size: 100% auto;
+  background-image: url(../img/illustrations/calendar-header.png);
 }
 .calendar .current-month-header {
   color: #FFF;
@@ -3148,19 +3294,7 @@ img[src=""] {
   padding-top: 6px;
 }
 .calendar .content {
-  border: 1px solid #ccc;
-  border-top: 0;
-  margin-top: 73px;
-  -webkit-border-bottom-left-radius: 10px;
-  -webkit-border-bottom-right-radius: 10px;
-  -moz-border-bottom-left-radius: 10px;
-  -moz-border-bottom-right-radius: 10px;
-  -ms-border-bottom-left-radius: 10px;
-  -ms-border-bottom-right-radius: 10px;
-  -o-border-bottom-left-radius: 10px;
-  -o-border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-color: #ccc;
 }
 .calendar .content .day {
   color: #666;
