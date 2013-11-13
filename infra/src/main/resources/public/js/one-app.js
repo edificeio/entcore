@@ -226,7 +226,11 @@ oneModule.directive('completeChange', function() {
 
 			$linkElement.bind('change', function() {
 				$scope.field = $linkElement.val();
-				$scope.$eval($scope.exec);
+				if(!$scope.$$phase){
+					$scope.$apply('field');
+				}
+				$scope.$parent.$eval($scope.exec);
+
 			});
 		}
 	};

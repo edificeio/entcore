@@ -13,8 +13,12 @@ var ui = (function(){
 				'position': 'absolute',
 				'top': offset.top,
 				'margin-top': '100px'
-			})
+			});
 
+			var that = this;
+			$('body').on('click', '.lightbox-backdrop', function(){
+				that.hide();
+			});
 		},
 		hide: function(){
 			$('.lightbox-backdrop').fadeOut();
