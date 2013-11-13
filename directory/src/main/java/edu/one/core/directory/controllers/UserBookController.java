@@ -53,6 +53,11 @@ public class UserBookController extends Controller {
 	public void monCompte(HttpServerRequest request) {
 		renderView(request);
 	}
+	
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void birthday(HttpServerRequest request) {
+		renderView(request);
+	}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
