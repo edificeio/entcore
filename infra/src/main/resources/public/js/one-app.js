@@ -545,17 +545,13 @@ function Share($scope, http, ui, _, lang){
 
 	$scope.translate = lang.translate;
 
-	function actionsToRights(item){
+	function actionToRights(item, action){
 		var actions = [];
-		for(var action in item.actions){
-			if(item.actions[action]){
-				_.where($scope.sharing.actions, { displayName: action }).forEach(function(item){
-					item.name.forEach(function(i){
-						actions.push(i);
-					});
-				});
-			}
-		}
+		_.where($scope.sharing.actions, { displayName: action.displayName }).forEach(function(item){
+			item.name.forEach(function(i){
+				actions.push(i);
+			});
+		});
 
 		return actions;
 	}
@@ -665,7 +661,7 @@ function Share($scope, http, ui, _, lang){
 		$scope.maxEdit += displayMoreInc;
 	}
 
-	$scope.saveRights = function(element){
+	$scope.saveRights = function(element, action){
 		var data;
 		if(element.login !== undefined){
 			data = { userId: element.id }
@@ -673,17 +669,13 @@ function Share($scope, http, ui, _, lang){
 		else{
 			data = { groupId: element.id }
 		}
-		var actions = actionsToRights(element);
+		data.actions = actionToRights(element, action);
 
-		if($scope.sharing.users.checked[element.id] || $scope.sharing.groups.checked[element.id]){
-			//drop existing rights
-			http.put('/' + appPrefix + '/share/remove/' + $scope.resources._id, http.serialize(data)).done(function(){
-				//add new rights
-				setRights(data, actions, 'json');
-			});
+		var setPath = 'json';
+		if(!element.actions[action.displayName]){
+			setPath = 'remove';
 		}
-		else{
-			setRights(data, actions, 'json');
-		}
+
+		http.put('/' + appPrefix + '/share/' + setPath + '/' + $scope.resources._id, http.serialize(data));
 	};
 }

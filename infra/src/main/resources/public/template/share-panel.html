@@ -12,7 +12,7 @@
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
 							<td ng-repeat="action in sharing.actions">
 								<label>
-								<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item)" />
+								<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
 								<span></span>
 								</label>
 							</td>
