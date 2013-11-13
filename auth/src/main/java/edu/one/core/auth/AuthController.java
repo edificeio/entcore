@@ -351,7 +351,7 @@ public class AuthController extends Controller {
 
 			@Override
 			protected void handle() {
-				String login = request.formAttributes().get("login");
+				final String login = request.formAttributes().get("login");
 				final String activationCode = request.formAttributes().get("activationCode");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
@@ -367,13 +367,13 @@ public class AuthController extends Controller {
 					}
 					renderView(request, error);
 				} else {
-					trace.info("Activation du compte utilisateur " + login);
 					userAuthAccount.activateAccount(login, activationCode, password,
 							new org.vertx.java.core.Handler<Boolean>() {
 
 						@Override
 						public void handle(Boolean activated) {
 							if (Boolean.TRUE.equals(activated)) {
+								trace.info("Activation du compte utilisateur " + login);
 								redirect(request, "/auth/login");
 							} else {
 								JsonObject error = new JsonObject()
