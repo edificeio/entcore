@@ -1144,6 +1144,44 @@ img[src=""]{
 		border-color: #e83314;
 	}
 
+	nav.vertical{
+		ul{
+			li{
+				a{
+					.rounded-corners(0px);
+					color: @medium-blue;
+
+					.date{
+						color: #666;
+
+						h2, h4{
+							margin: 0;
+							color: #888;
+
+							text-align: center;
+						}
+
+						h2{
+							font-size: 25px;
+						}
+
+						h4{
+							font-size: 12px;
+							font-weight: normal;
+						}
+					}
+				}
+				a:hover{
+					color: #fff;
+					h2, h4{
+						color: #fff;
+					}
+				}
+			}
+
+		}
+	}
+
 }
 
 .birthday.fr{

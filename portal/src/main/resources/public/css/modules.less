@@ -117,8 +117,7 @@ nav.horizontal{
 .widget-container(@header-size){
 	.twelve;
 	.cell;
-	.fixed-block;
-	.fixed-block.height-seven;
+
 	background-size: contain;
 	background-repeat: no-repeat;
 	margin-bottom: @header-size + 10px;
@@ -127,22 +126,61 @@ nav.horizontal{
 		margin-top: @header-size;
 		.twelve;
 		.cell;
-		.cell.fixed;
+
 		border: 1px solid;
 		border-top: none;
 		.rounded-corners-bottom(10px);
 		overflow: hidden;
-		height: 98%;
+
 	}
 }
 
 .birthday{
 	.widget-container(47px);
+	nav.vertical{
+		padding: 0;
+
+		ul{
+			margin: 0;
+			width: 100%;
+			li{
+				padding: 0;
+				margin: 0;
+				a{
+					margin: 0;
+					.user{
+						display: inline-block;
+						.seven;
+						height: 35px;
+						line-height: 100%;
+					}
+					.date{
+						.right-magnet;
+						display: inline-block;
+					}
+
+					img{
+						height: 35px;
+						width: 35px;
+						vertical-align: bottom;
+						margin-right: 10px;
+					}
+				}
+			}
+		}
+	}
 }
 
 .calendar{
+	.fixed-block;
+	.fixed-block.height-seven;
 	.widget-container(73px);
 	padding-bottom: 49.4% !important;
+
+	.content{
+		.cell.fixed;
+		height: 98%;
+	}
 
 	.day{
 		width:14.2%;

@@ -438,9 +438,7 @@ nav.horizontal a {
   box-sizing: border-box;
   float: left;
   display: block;
-  box-sizing: content-box;
   position: relative;
-  height: 1px;
   background-size: contain;
   background-repeat: no-repeat;
   margin-bottom: 57px;
@@ -459,25 +457,6 @@ nav.horizontal a {
 .birthday img {
   max-width: 100%;
 }
-.birthday .right-magnet.cell.fixed {
-  right: 0;
-}
-.birthday .cell.fluid {
-  position: relative;
-  height: 100%;
-}
-.birthday .bottom-magnet.cell {
-  bottom: 0;
-  position: absolute;
-}
-.birthday .avatar {
-  overflow: hidden;
-}
-@media screen and (min-width: 720px) {
-  .birthday {
-    padding-bottom: 58.333333333333336%;
-  }
-}
 .birthday .content {
   margin-top: 47px;
   width: 1;
@@ -488,8 +467,6 @@ nav.horizontal a {
   float: left;
   display: block;
   position: relative;
-  position: absolute;
-  height: 100%;
   border: 1px solid;
   border-top: none;
   -webkit-border-bottom-left-radius: 10px;
@@ -503,7 +480,6 @@ nav.horizontal a {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   overflow: hidden;
-  height: 98%;
 }
 @media screen and (min-width: 720px) {
   .birthday .content {
@@ -518,7 +494,49 @@ nav.horizontal a {
 .birthday .content img {
   max-width: 100%;
 }
+.birthday nav.vertical {
+  padding: 0;
+}
+.birthday nav.vertical ul {
+  margin: 0;
+  width: 100%;
+}
+.birthday nav.vertical ul li {
+  padding: 0;
+  margin: 0;
+}
+.birthday nav.vertical ul li a {
+  margin: 0;
+}
+.birthday nav.vertical ul li a .user {
+  display: inline-block;
+  width: 1;
+  height: 35px;
+  line-height: 100%;
+}
+@media screen and (min-width: 720px) {
+  .birthday nav.vertical ul li a .user {
+    width: 58.333333333333336%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .birthday nav.vertical ul li a .user {
+    width: 100%;
+  }
+}
+.birthday nav.vertical ul li a .date {
+  float: right !important;
+  display: inline-block;
+}
+.birthday nav.vertical ul li a img {
+  height: 35px;
+  width: 35px;
+  vertical-align: bottom;
+  margin-right: 10px;
+}
 .calendar {
+  box-sizing: content-box;
+  height: 1px;
   width: 1;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -526,27 +544,12 @@ nav.horizontal a {
   box-sizing: border-box;
   float: left;
   display: block;
-  box-sizing: content-box;
   position: relative;
-  height: 1px;
   background-size: contain;
   background-repeat: no-repeat;
   margin-bottom: 83px;
   padding-right: 1px;
   padding-bottom: 49.4% !important;
-}
-@media screen and (min-width: 720px) {
-  .calendar {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .calendar {
-    width: 100%;
-  }
-}
-.calendar img {
-  max-width: 100%;
 }
 .calendar .right-magnet.cell.fixed {
   right: 0;
@@ -567,6 +570,19 @@ nav.horizontal a {
     padding-bottom: 58.333333333333336%;
   }
 }
+@media screen and (min-width: 720px) {
+  .calendar {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .calendar {
+    width: 100%;
+  }
+}
+.calendar img {
+  max-width: 100%;
+}
 .calendar .content {
   margin-top: 73px;
   width: 1;
@@ -577,8 +593,6 @@ nav.horizontal a {
   float: left;
   display: block;
   position: relative;
-  position: absolute;
-  height: 100%;
   border: 1px solid;
   border-top: none;
   -webkit-border-bottom-left-radius: 10px;
@@ -592,7 +606,6 @@ nav.horizontal a {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   overflow: hidden;
-  height: 98%;
 }
 @media screen and (min-width: 720px) {
   .calendar .content {
@@ -606,6 +619,11 @@ nav.horizontal a {
 }
 .calendar .content img {
   max-width: 100%;
+}
+.calendar .content {
+  position: absolute;
+  height: 100%;
+  height: 98%;
 }
 .calendar .day {
   width: 14.2%;
