@@ -33,6 +33,7 @@ public class UserBookController extends Controller {
 	private JsonObject userBookData;
 	private HttpClient client;
 	private final TimelineHelper notification;
+	private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
 	public UserBookController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
@@ -358,7 +359,7 @@ public class UserBookController extends Controller {
 					if ("ok".equals(event.body().getString("status"))) {
 						String photoId = event.body().getObject("result", new JsonObject())
 								.getObject("0", new JsonObject()).getString("photo");
-						if (photoId != null && !photoId.trim().isEmpty()) {
+						if (photoId != null && photoId.matches(UUID_REGEX)) {
 							redirectPermanent(request, "/workspace/document/" + photoId + "?" + request.query());
 							return;
 						}
