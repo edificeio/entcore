@@ -241,9 +241,9 @@ function Blog($scope, http, date, _, ui){
 		var formData = new FormData();
 		formData.append('file', $scope.photo.file);
 
-		http.postFile('/workspace/document?application=blog-newblog&protected=true&name=' + $scope.photo.file.name, formData)
+		http.postFile('/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=' + $scope.photo.file.name, formData)
 			.done(function(e){
-				blog.thumbnail = '/workspace/document/' + e._id;
+				blog.thumbnail = '/workspace/document/' + e._id + '?thumbnail=100x100';
 				$scope.$apply();
 			})
 	}
