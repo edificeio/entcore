@@ -132,6 +132,7 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
+		$scope.newFile = { name: $scope.translate('nofile'), file: null };
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
 	};
 
@@ -461,7 +462,6 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
 	});
 
-	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
 		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
 	};
