@@ -88,7 +88,7 @@ var userbook = function(){
 				{{#teachers}}\
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
-							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&thumbnail=82x82" alt="user" /></div>\
 							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -112,7 +112,7 @@ var userbook = function(){
 				{{#parents}}\
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
-							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&thumbnail=82x82" alt="user" /></div>\
 							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -136,7 +136,7 @@ var userbook = function(){
 				{{#students}}\
 				<div class="cell four text-container" >\
 					<article class="box row person text-container" id={{id}}>\
-							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" /></div>\
+							<div class="four cell avatar"><img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&thumbnail=82x82" alt="user" /></div>\
 							<div class="six cell" style="height: 100%">\
 								<div class="row">\
 									<h4 href="api/person?id={{id}}&type={{type}}" call="person">{{displayName}}</h4>\
@@ -157,7 +157,7 @@ var userbook = function(){
 				<div class="row fixed-block height-four">\
 					<div class="text-container fixed cell four">\
 						<div class="avatar twelve fluid cell">\
-							<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg" alt="user" />\
+							<img src="document/{{photo}}?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&thumbnail=290x290" alt="user" />\
 						</div>\
 					</div>\
 					<div class="fixed cell eight text-container right-magnet">\
