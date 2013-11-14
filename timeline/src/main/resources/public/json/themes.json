@@ -18,8 +18,4 @@
 	"_id": "sparkly",
 	"displayName": "Galaxie",
 	"skinPath": "/assets/themes/panda/sparkly/"
-}, {
-	"_id": "eliot",
-	"displayName": "Open ENT",
-	"skinPath": "/assets/themes/panda/eliot/"
 }]
