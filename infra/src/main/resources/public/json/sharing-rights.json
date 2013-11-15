@@ -1,0 +1,19 @@
+{
+	"read": {
+		"priority": 0,
+		"default": true
+	},
+	"contrib": {
+		"priority": 1,
+		"default": false
+	},
+	"manager": {
+		"priority": 2,
+		"default": false
+	},
+	"comment": {
+		"priority": 3,
+		"default": true
+	}
+
+}

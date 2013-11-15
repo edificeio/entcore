@@ -555,6 +555,12 @@ function Share($scope, http, ui, _, lang){
 	$scope.edited = [];
 	$scope.found = [];
 
+	var actionsConfiguration = {};
+
+	http.get('/infra/public/json/sharing-rights.json').done(function(config){
+		actionsConfiguration = config;
+	});
+
 	$scope.translate = lang.translate;
 
 	function actionToRights(item, action){
@@ -568,8 +574,9 @@ function Share($scope, http, ui, _, lang){
 		return actions;
 	}
 
-	function rightsToActions(rights){
+	function rightsToActions(rights, http){
 		var actions = {};
+
 		rights.forEach(function(right){
 			var action = _.find($scope.sharing.actions, function(action){
 				return action.name.indexOf(right) !== -1
@@ -586,6 +593,12 @@ function Share($scope, http, ui, _, lang){
 	var feedData = function(){
 		http.get('/' + appPrefix + '/share/json/' + $scope.resources._id).done(function(data){
 			$scope.sharing = data;
+			$scope.sharing.actions.forEach(function(action){
+				var actionId = action.displayName.split('.')[1];
+				if(actionsConfiguration[actionId]){
+					action.priority = actionsConfiguration[actionId].priority;
+				}
+			})
 
 			function addToEdit(type){
 				for(var element in $scope.sharing[type].checked){
@@ -620,6 +633,14 @@ function Share($scope, http, ui, _, lang){
 		item.index = $scope.edited.length;
 		$scope.found = [];
 		$scope.search = '';
+
+		$scope.sharing.actions.forEach(function(action){
+			var actionId = action.displayName.split('.')[1];
+			if(actionsConfiguration[actionId].default){
+				item.actions[action.displayName] = true;
+				$scope.saveRights(item, action);
+			}
+		});
 	};
 
 	$scope.findUserOrGroup = function(){

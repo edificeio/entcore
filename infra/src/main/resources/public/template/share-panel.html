@@ -4,13 +4,13 @@
 				<table>
 					<thead>
 						<th></th>
-						<th ng-repeat="action in sharing.actions">[[translate(action.displayName)]]</th>
+						<th ng-repeat="action in sharing.actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
 						<th></th>
 					</thead>
 					<tbody>
 						<tr ng-repeat="item in edited | orderBy:'index':true | limitTo:maxEdit">
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
-							<td ng-repeat="action in sharing.actions">
+							<td ng-repeat="action in sharing.actions | orderBy:'priority'">
 								<label>
 								<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
 								<span></span>
