@@ -386,7 +386,7 @@ class ConfigureAccountSimulation extends Simulation {
     }
     .foreach("${birthdayUsers}", "bUserId") {
       exec(http("get birthday avatar")
-        .get("""/userbook/avatar/${bUserId}?thumbnail=82x82""")
+        .get("""/userbook/avatar/${bUserId}?thumbnail=48x48""")
         .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
         .pause(12 milliseconds)
         .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
