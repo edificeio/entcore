@@ -26,8 +26,8 @@
 				<h3>[[translate('share.search.title')]]</h3>
 				<input type="text" ng-model="search" ng-change="findUserOrGroup()" translate-attr="placeholder" placeholder="share.search.placeholder" />
 				<div>
-					<div ng-repeat="item in found | limitTo:5" class="row autocomplete">
-						<em ng-click="addEdit(item)">[[item.name]][[item.firstName]] [[item.lastName]]</em>
+					<div ng-repeat="item in found | limitTo:5 | orderBy:'lastName'" class="row autocomplete">
+						<em ng-click="addEdit(item)">[[item.name]][[item.lastName]] [[item.firstName]]</em>
 					</div>
 				</div>
 				<hr />
