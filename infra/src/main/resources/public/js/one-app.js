@@ -397,22 +397,35 @@ oneModule.directive('htmlEditor', function($compile){
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 
+				var positionning = function(){
+					$('.cke_chrome').width(editor.width());
+					$('.cke_chrome').offset({
+						top: editor.offset().top - $('.cke_chrome').height(),
+						left: editor.offset().left
+					});
+					$('<style></style>').text('.cke_chrome{' +
+						'top:' + (editor.offset().top - $('.cke_chrome').height()) + 'px !important;' +
+						'left:' + editor.offset().left + 'px !important;' +
+						'position: absolute !important' +
+						'}').appendTo('head');
+				};
+
 				CKEDITOR.on('instanceReady', function(){
 					editor.html($scope.ngModel);
-					var positionning = function(){
-						$('.cke_chrome').width(editor.width());
-						$('.cke_chrome').offset({
-							top: editor.offset().top - $('.cke_chrome').height(),
-							left: editor.offset().left
-						});
-					};
+
 					if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
 						$('img').on('load', positionning);
 					}
 					else{
 						positionning();
 					}
+					editor.on('focus', function(){
+						positionning();
+					})
 				})
+
+
+
 				$scope.$watch('ngModel', function(newValue){
 					if(editor.html() !== newValue){
 						editor.html(newValue);

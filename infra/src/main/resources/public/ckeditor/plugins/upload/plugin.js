@@ -6,6 +6,7 @@ CKEDITOR.plugins.add( 'upload', {
 				var fileSelector = $('<input />', {
 					type: 'file'
 				})
+					.hide()
 					.appendTo('body');
 
 
