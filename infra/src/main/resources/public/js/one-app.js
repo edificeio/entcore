@@ -193,9 +193,7 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 	})
 	.factory('lang', function(){
-		return {
-			translate: One.translate
-		}
+		return lang
 	})
 	.factory('_', function(){
 		if(window._ === undefined){
@@ -625,14 +623,15 @@ function Share($scope, http, ui, _, lang){
 	};
 
 	$scope.findUserOrGroup = function(){
-		$scope.search = $scope.search.toLowerCase();
+		var searchTerm = lang.removeAccents($scope.search).toLowerCase();
 		$scope.found = _.union(
 			_.filter($scope.sharing.groups.visibles, function(group){
-				return group.name.toLowerCase().indexOf($scope.search) !== -1;
+				var testName = lang.removeAccents(group.name).toLowerCase();
+				return testName.indexOf(searchTerm) !== -1;
 			}),
 			_.filter($scope.sharing.users.visibles, function(user){
-				return (user.firstName.toLowerCase() + ' ' + user.lastName.toLowerCase())
-					.indexOf($scope.search) !== -1;
+				var testName = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
+				return testName.indexOf(searchTerm) !== -1;
 			})
 		);
 		$scope.found = _.filter($scope.found, function(element){
