@@ -51,7 +51,8 @@ function Personalization($rootScope, $scope, http, ui){
 		$scope.$apply();
 	})
 
-	$scope.saveTheme = function(skin){
+	$scope.saveTheme = function(skin, $event){
+		$event.stopPropagation();
 		ui.setStyle(skin.skinPath);
 		http.get('/userbook/api/edit-userbook-info?prop=theme&value=' + skin._id);
 	};

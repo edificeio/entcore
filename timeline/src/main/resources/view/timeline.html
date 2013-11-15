@@ -66,7 +66,7 @@
 								<h2>Mes thèmes</h2>
 								<div class="twelve cell">
 									<ul class="list icons-view two-cols">
-										<li ng-repeat="skin in skins" ng-click="saveTheme(skin)">
+										<li ng-repeat="skin in skins" ng-click="saveTheme(skin, $event)">
 											<div class="photo-preview">
 												<img ng-src="[[skin.skinPath]]thumbnail.png" />
 											</div>

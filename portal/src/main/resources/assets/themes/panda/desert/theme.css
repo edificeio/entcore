@@ -1236,6 +1236,9 @@ html.app body {
   font-family: Satellite;
   src: url(../fonts/Satellite.otf);
 }
+body {
+  cursor: default !important;
+}
 i[role=new-mail] {
   height: 40px;
   width: 40px;
