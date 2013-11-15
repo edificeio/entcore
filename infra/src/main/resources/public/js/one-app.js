@@ -550,7 +550,7 @@ function Account($scope, http){
 	$scope.refreshAvatar();
 }
 
-function Share($scope, http, ui, _, lang){
+function Share($rootScope, $scope, http, ui, _, lang){
 	$scope.sharing = {};
 	$scope.edited = [];
 	$scope.found = [];
@@ -678,14 +678,9 @@ function Share($scope, http, ui, _, lang){
 			return item.id === element.id;
 		});
 
-		http.put(path, http.serialize(data));
-	}
-
-	function setRights(data, actions, addOrRemove){
-		var path = '/' + appPrefix + '/share/' + addOrRemove + '/' + $scope.resources._id;
-		data.actions = actions;
-
-		http.put(path, http.serialize(data));
+		http.put(path, http.serialize(data)).done(function(){
+			$rootScope.$broadcast('share-updated');
+		});
 	}
 
 	$scope.maxEdit = 5;
@@ -710,6 +705,8 @@ function Share($scope, http, ui, _, lang){
 			setPath = 'remove';
 		}
 
-		http.put('/' + appPrefix + '/share/' + setPath + '/' + $scope.resources._id, http.serialize(data));
+		http.put('/' + appPrefix + '/share/' + setPath + '/' + $scope.resources._id, http.serialize(data)).done(function(){
+			$rootScope.$broadcast('share-updated');
+		});
 	};
 }
