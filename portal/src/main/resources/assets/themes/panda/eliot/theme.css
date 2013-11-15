@@ -2485,7 +2485,8 @@ button[disabled]:hover {
   height: 40px;
   line-height: 40px;
 }
-h1 {
+h1,
+h1 a {
   font-family: KGJune;
   text-transform: uppercase;
   color: #fd841c;
@@ -3385,13 +3386,18 @@ img[src=""] {
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
 }
-.filters h5 {
-  color: #666;
-  font-size: 14px;
-  font-weight: normal;
-  padding-left: 10px;
+.filters {
+  height: 40px;
+  text-align: center;
+}
+.filters ul {
+  margin-top: 10px;
+  display: inline-block;
+  padding-left: 0px;
 }
 .filters li {
+  vertical-align: top;
+  line-height: 23px;
   color: #2f8cc9;
   font-size: 14px;
   padding-left: 10px;
@@ -3401,6 +3407,9 @@ img[src=""] {
   background-size: contain;
   margin: 0 !important;
   margin-right: 10px !important;
+  float: none !important;
+  vertical-align: top !important;
+  display: inline-block !important;
 }
 .filters li i[role=workspace] {
   height: 20px;
@@ -3443,6 +3452,9 @@ img[src=""] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+}
+.filters li.legend {
+  color: #666;
 }
 .humane-original-error {
   border: 3px solid #fff;
