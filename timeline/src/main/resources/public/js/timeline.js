@@ -1,3 +1,9 @@
+function MainController($rootScope, $scope){
+	$scope.closePanel = function(){
+		$rootScope.$broadcast('close-panel');
+	}
+}
+
 function Timeline($scope, date, http, navigation, lang){
 	$scope.notifications = [];
 	$scope.me = {};
@@ -39,7 +45,7 @@ function Timeline($scope, date, http, navigation, lang){
 	$scope.navigate = navigation.navigate;
 }
 
-function Personalization($scope, http, ui){
+function Personalization($rootScope, $scope, http, ui){
 	http.get('/timeline/public/json/themes.json').done(function(data){
 		$scope.skins = data;
 		$scope.$apply();
@@ -50,8 +56,9 @@ function Personalization($scope, http, ui){
 		http.get('/userbook/api/edit-userbook-info?prop=theme&value=' + skin._id);
 	};
 
-	$scope.togglePanel = function(){
+	$scope.togglePanel = function($event){
 		$scope.showPanel = !$scope.showPanel;
+		$event.stopPropagation();
 	};
 
 	$scope.create = {
@@ -59,6 +66,10 @@ function Personalization($scope, http, ui){
 			comment: ''
 		}
 	}
+
+	$rootScope.$on('close-panel', function(e){
+		$scope.showPanel = false;
+	})
 }
 
 

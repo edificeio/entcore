@@ -6,7 +6,7 @@
 		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/timeline.js{{/static}}" type="text/javascript"></script>
 	</head>
-	<body>
+	<body ng-controller="MainController" ng-click="closePanel()">
 		<script type="text/ng-template" id="add-comment">
 			<button ng-click="navigate('comment', navigation.context)">Commenter</button>
 		</script>
@@ -21,8 +21,8 @@
 						<h1><a data-reload><i role="notification"></i>{{#i18n}}timeline.title{{/i18n}}</a></h1>
 						<article data-ng-controller="Timeline" class="twelve cell">
 							<div class="row line filters">
-								<h5>Voir les nouveautés du</h5>
 								<ul>
+									<li class="legend">Voir les nouveautés du</li>
 									<li ng-repeat="type in types" ng-click="setFilter(type)">
 										<i role="[[type.toLowerCase()]]"></i>[[translate(type.toLowerCase())]]
 									</li>
@@ -79,7 +79,7 @@
 					</div>
 				</div>
 				<ul class="icons-tabs">
-					<li ng-click="togglePanel()" ng-class="{ active: showPanel }"><i role="tools"></i></li>
+					<li ng-click="togglePanel($event)" ng-class="{ active: showPanel }"><i role="tools"></i></li>
 				</ul>
 
 			</div>
