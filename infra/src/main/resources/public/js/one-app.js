@@ -360,6 +360,7 @@ oneModule.directive('portal', function($compile){
 			var rand = Math.random();
 			$.getJSON('/theme?token=' + rand, function(data){
 				var css = data.skin;
+				$('[logout]').attr('href', '/auth/logout?callback=' + data.logoutCallback)
 				ui.setStyle(css);
 			})
 		}
