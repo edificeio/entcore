@@ -1,11 +1,19 @@
+var appPrefix = '';
+if(window.location.pathname.split('/').length > 0){
+	appPrefix = window.location.pathname.split('/')[1]
+}
+
+var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+
 var loader = (function(){
 	var configurations = {
 		'portal': [
 			{ path: 'jquery-1.9.1.js', async: true },
 			{ path: 'angular.min.js', async: true },
 			{ path: 'angular-sanitize.min.js', async: true },
-			{ path: 'one-app.js', async: true },
 			{ path: 'one.js', async: true },
+			{ path: 'one-app.js', async: true },
+			{ path: 'underscore-min-1.4.4.js', async: true },
 			{ path: 'ui.js', async: true },
 			{ path: 'humane.min.js', async: true }],
 		'app': [
@@ -61,7 +69,7 @@ var loader = (function(){
 
 	var load = function(script){
 		if(script.async){
-			loadScript(script.path);
+			loadScript(script.path, script.completePath);
 		}
 		else{
 			syncLoadScript(script.path);

@@ -1,10 +1,3 @@
-var appPrefix = '';
-if(window.location.pathname.split('/').length > 0){
-	appPrefix = window.location.pathname.split('/')[1]
-}
-
-var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
-
 var lang = (function(){
 	var bundle = {};
 	$.ajax({url: '/' + appPrefix + '/i18n', async: false})
