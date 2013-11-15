@@ -41,7 +41,11 @@ var tools = (function(){
 	}
 }());
 
-function Workspace($scope, http, lang, date, ui, notify, _){
+function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
+	$rootScope.$on('share-updated', function(){
+		$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name, $scope.currentTree);
+	})
+
 	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
 	$scope.users = [];
 
@@ -327,12 +331,16 @@ function Workspace($scope, http, lang, date, ui, notify, _){
 		if(!dateString){
 			return '';
 		}
-		return date.format(dateString, 'D MMMM')
+		return date.format(dateString, 'D MMMM YYYY')
 	}
 
 	$scope.toggleComments = function(document){
 		document.showComments = !document.showComments;
 	}
+
+	$scope.$watch('targetDocument', function(newVal){
+		console.log(newVal);
+	})
 
 	$scope.containsCurrentFolder = function(folder){
 		var checkSubFolders = function(currentFolder){
