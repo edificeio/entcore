@@ -1113,6 +1113,7 @@ dl dt {
 td.icon {
   width: 25px !important;
   height: 25px !important;
+  position: relative;
 }
 td.text {
   min-width: 150px !important;

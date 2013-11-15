@@ -1113,6 +1113,7 @@ dl dt {
 td.icon {
   width: 25px !important;
   height: 25px !important;
+  position: relative;
 }
 td.text {
   min-width: 150px !important;
@@ -1258,6 +1259,23 @@ i[role=new-mail] {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+}
+i[role=shared] {
+  height: 18px;
+  width: 18px;
+  background-image: url("../img/icons/shared.png");
+  background-repeat: no-repeat;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-position: center;
+  display: block;
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
 }
 .toggle-panel {
   background: #f6f6f6;
