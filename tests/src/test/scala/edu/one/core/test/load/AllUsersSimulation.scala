@@ -2,8 +2,9 @@ package edu.one.core.test.load
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
-class StudentSimulation extends Simulation {
+class AllUsersSimulation extends Simulation {
 
 	val httpProtocol = http
 		.baseURL("http://one")
@@ -13,6 +14,9 @@ class StudentSimulation extends Simulation {
 		.acceptLanguageHeader("fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3")
 		.userAgentHeader("Mozilla/5.0 (X11; Linux i686; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10")
 
-	setUp(StudentScenario.scn.inject(atOnce(1 user))).protocols(httpProtocol)
+  setUp(
+    TeacherScenario.scn.inject(ramp(30 users) over (600 seconds)),
+    StudentScenario.scn.inject(nothingFor(300 seconds), ramp(600 users) over (600 seconds))
+  ).protocols(httpProtocol)
 
 }
