@@ -288,7 +288,7 @@ class StudentSimulation extends Simulation {
 			.get("""/timeline/lastNotifications?_=1384422780887""")
 			.headers(headers_20)
       .check(status.is(200), jsonPath("status").is("ok"),
-        jsonPath("$.results..sender").findAll.saveAs("senders")))
+        jsonPath("$.results..sender").findAll.transform(_.orElse(Some(Nil))).saveAs("senders")))
 		.exec(http("KGJuneBug.ttf")
 			.get("""/assets/themes/panda/fonts/KGJuneBug.ttf""")
 			.headers(headers_45))
