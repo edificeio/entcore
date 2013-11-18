@@ -32,18 +32,26 @@
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>
 						<input type="text" class="six cell" data-complete-change="saveMail(account.email)" data-ng-model="account.email" />
+                        <i role="[[account.visible.email]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
+                        <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.telephone{{/i18n}}</label></div>
 						<em class="six cell">[[account.tel]]</em>
+                        <i role="[[account.visible.phone]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
+                        <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>
 						<em class="six cell">[[account.address]]</em>
+                        <i role="[[account.visible.mail]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
+                        <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.birthdate{{/i18n}}</label></div>
 						<em class="six cell">[[birthDate(account.birthdate)]]</em>
+                        <i role="[[account.visible.birthdate]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
+                        <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.school{{/i18n}}</label></div>
@@ -94,7 +102,7 @@
 				<div class="clear"></div>
 			</div>
 		</article>
-		<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>
+		<h1>{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
 			<article class="text-container">
 				<textarea data-ng-model="account.health" complete-change="saveProperty('health')"></textarea>
 			</article>

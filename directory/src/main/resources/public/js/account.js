@@ -16,6 +16,12 @@ var personDataExtractor = function(d) {
 	});
 
 	person.picture = person.photo;
+	person.visible = {};
+	person.visible.email = ($.inArray("SHOW_EMAIL", person.visibleInfos) >= 0) ? "public" : "prive";
+	person.visible.mail = ($.inArray("SHOW_MAIL", person.visibleInfos) >= 0) ? "public" : "prive";
+	person.visible.phone = ($.inArray("SHOW_PHONE", person.visibleInfos) >= 0) ? "public" : "prive";
+	person.visible.birthdate = ($.inArray("SHOW_BIRTHDATE", person.visibleInfos) >= 0) ? "public" : "prive";
+	person.visible.health = ($.inArray("SHOW_HEALTH", person.visibleInfos) >= 0) ? "public" : "prive";
 	// TODO : extract in conf system
 	return person;
 };
@@ -113,6 +119,16 @@ function MyAccount($scope, http, lang, date, notify, _){
 		}
 
 		One.get('api/set-visibility', { value: hobby.visibility, category: hobby.category });
+	};
+
+	$scope.changeInfosVisibility = function(info, state){
+        if(state.toLowerCase() === 'public'){
+            $scope.account.visible[info] = 'prive';
+        }
+        else{
+            $scope.account.visible[info] = 'public';
+        }
+		One.get('api/edit-user-info-visibility', { info: info, state: $scope.account.visible[info] });
 	};
 
 	$scope.updateAvatar = function(){

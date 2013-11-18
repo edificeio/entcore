@@ -163,14 +163,30 @@ var userbook = function(){
 					<div class="fixed cell eight text-container right-magnet">\
 						<article class="cell twelve text-container fluid">\
 							<h2>{{displayName}}</h2>\
+							{{#email}}\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.email{{/i18n}}</div>\
 								<em class="eight cell">{{email}}</em>\
 							</div>\
+							{{/email}}\
+							{{#address}}\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.address{{/i18n}}</div>\
 								<em class="eight cell">{{address}}</em>\
 							</div>\
+							{{/address}}\
+							{{#tel}}\
+                            <div class="row">\
+                                <div class="four cell">{{#i18n}}userBook.profile.telephone{{/i18n}}</div>\
+                                <em class="eight cell">{{tel}}</em>\
+                            </div>\
+                            {{/tel}}\
+                            {{#birthdate}}\
+                            <div class="row">\
+                                <div class="four cell">{{#i18n}}userBook.profile.birthdate{{/i18n}}</div>\
+                                <em class="eight cell">{{birthdate}}</em>\
+                            </div>\
+                            {{/birthdate}}\
 							<div class="row">\
 								<div class="four cell">{{#i18n}}userBook.profile.motto{{/i18n}}</div>\
 								<em class="eight cell">{{motto}}</em>\
@@ -216,8 +232,10 @@ var userbook = function(){
 					{{/hobbies}}\
 					<div class="clear"></div>\
 				</article>\
+				{{#health}}\
 				<h1>{{#i18n}}userBook.profile.health{{/i18n}}</h1>\
 				<article class="text-container user-content">{{health}}</article>\
+				{{/health}}\
 	'
 		},
 		action : {

@@ -105,13 +105,28 @@ public class UserBookController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String hobbyVisibility;
+					String personnalInfos;
 					Map<String, Object> params = new HashMap<>();
 					if (request.params().get("id") == null) {
 						params.put("userId",user.getUserId());
 						hobbyVisibility = "PUBLIC|PRIVE";
+						personnalInfos =
+								"MATCH u-[r0?:SHOW_EMAIL]->(), u-[r1?:SHOW_BIRTHDATE]->(), " +
+								"u-[r2?:SHOW_PHONE]->(), u-[r3?:SHOW_MAIL]->(), " +
+								"u-[r4?:SHOW_HEALTH]->u " +
+								"WITH DISTINCT h, c, n, v, u, n2, n.ENTPersonAdresse as address, " +
+								"n.ENTPersonMail? as email, u.health? as health, " +
+								"n.ENTPersonTelPerso? as tel, n.ENTPersonDateNaissance? as birthdate, " +
+								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4)]) as r ";
 					} else {
 						params.put("userId",request.params().get("id"));
 						hobbyVisibility = "PUBLIC";
+						personnalInfos = "MATCH u-[?:SHOW_EMAIL]->e, u-[?:SHOW_MAIL]->a, " +
+								"u-[?:SHOW_PHONE]->p, u-[?:SHOW_BIRTHDATE]->b, u-[?:SHOW_HEALTH]->s " +
+								"WITH h, c, n, v, u, n2, a.ENTPersonAdresse? as address, " +
+								"e.ENTPersonMail? as email, s.health? as health, " +
+								"p.ENTPersonTelPerso? as tel, b.ENTPersonDateNaissance? as birthdate, " +
+								"COLLECT([]) as r ";
 					}
 					String query = "START n=node:node_auto_index(id={userId}) "
 								+ "MATCH "
@@ -121,14 +136,16 @@ public class UserBookController extends Controller {
 									+ "(n)-[?:USERBOOK]->(u)-[v?:" + hobbyVisibility + "]->(h1), "
 									+ "(n)-[?:EN_RELATION_AVEC]-(n2) "
 								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
+								+ personnalInfos
 								+ "RETURN DISTINCT "
 									+ "n.id as id,"
 									+ "n.ENTPersonLogin as login, "
 									+ "n.ENTPersonNomAffichage as displayName,"
-									+ "n.ENTPersonAdresse as address,"
-									+ "n.ENTPersonMail? as email, "
-									+ "n.ENTPersonTelPerson? as tel, "
-									+ "n.ENTPersonDateNaissance? as birthdate, "
+									+ "address,"
+									+ "email, "
+									+ "tel, "
+									+ "birthdate, "
+									+ "HEAD(r) as visibleInfos, "
 									+ "c.ENTStructureNomCourant? as schoolName, "
 									+ "n2.ENTPersonNomAffichage? as relatedName, "
 									+ "n2.id? as relatedId,"
@@ -137,7 +154,7 @@ public class UserBookController extends Controller {
 									+ "u.motto? as motto,"
 									+ "COALESCE(u.picture?, {defaultAvatar}) as photo,"
 									+ "COALESCE(u.mood?, {defaultMood}) as mood,"
-									+ "u.health? as health,"
+									+ "health,"
 									+ "COLLECT(type(v)) as visibility,"
 									+ "COLLECT(h.category?) as category,"
 									+ "COLLECT(h.values?) as values";
@@ -388,6 +405,41 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(JsonArray users) {
 				renderJson(request, users);
+			}
+		});
+	}
+
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void editUserInfoVisibility(final HttpServerRequest request) {
+		final List<String> infos = Arrays.asList("email", "mail", "phone", "birthdate", "health");
+		final String info = request.params().get("info");
+		if (info == null || !infos.contains(info)) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", user.getUserId());
+					String relationship = "SHOW_" + info.toUpperCase();
+					String query = "START n=node:node_auto_index(id={id}) ";
+					if ("public".equals(request.params().get("state"))) {
+						query += "MATCH n-[:USERBOOK]->u ";
+						if ("health".equals(info)) {
+							query += "CREATE u-[r:" + relationship + "]->u ";
+						} else {
+							query += "CREATE u-[r:" + relationship + "]->n ";
+						}
+					} else {
+						query += "MATCH n-[:USERBOOK]->u-[r:" + relationship + "]->() " +
+								 "DELETE r";
+					}
+					neo.send(query, params, request.response());
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}
