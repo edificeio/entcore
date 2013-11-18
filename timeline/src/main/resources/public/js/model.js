@@ -1,32 +1,48 @@
 function Notification(){
-
+	this.isUnread = function(){
+		return _.find(this.recipients, function(recipient){
+			return recipient.userId === Model.state.me.userId;
+		}) !== undefined;
+	}
 }
 
-Notification.prototype = {
-	fetch: function(){
+collection(Notification, {
+	sync: function(){
 		var params = {};
 		if(Model.types.current){
 			params.type = Model.types.current;
 		}
 		http().get('/timeline/lastNotifications', params).done(function(response){
-			$scope.notifications = response.results;
-			$scope.$apply('notifications');
+			this.all = response.results;
 		});
-	},
-	isUnread: function(){
-		return _.find(this.recipients, function(recipient){
-				return recipient.userId === Model.state.me.userId;
-			}) !== undefined;
 	}
-};
+});
 
-function NotificationType(){
+function Resource(){
+	this.actions = {
+		comment: {
+			apply: function(){
+				http().post(this.comment, { comment: Model.comments.newItem })
+			}
+		}
+	}
+}
+
+function NotificationType(){}
+
+collection(NotificationType, {
+	sync: function(){
+		http().get('/timeline/types').done(function(data){
+			this.all = data;
+		});
+	}
+})
+
+function Widget(){
 
 }
 
-NotificationType.prototype.rest = {
-	get: '/timeline/types'
-}
+function Theme(){
 
-model.define([Notification, NotificationType]);
+}
 
