@@ -23,6 +23,9 @@
 							<div class="row line filters">
 								<ul>
 									<li class="legend">Voir les nouveautés du</li>
+									<li ng-click="removeFilter()">
+										<i role="apps"></i>[[translate('filters.all')]]
+									</li>
 									<li ng-repeat="type in types" ng-click="setFilter(type)">
 										<i role="[[type.toLowerCase()]]"></i>[[translate(type.toLowerCase())]]
 									</li>

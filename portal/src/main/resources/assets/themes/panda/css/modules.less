@@ -1305,13 +1305,13 @@ img[src=""]{
 		i{
 			background-size: contain;
 			margin: 0 !important;
-			margin-right: 10px !important;
+			margin-right: 3px !important;
 			float: none !important;
 			vertical-align: top !important;
 			display: inline-block !important;
 		}
 		i[role=workspace]{
-			.icon(share, 20px);
+			.icon(workspace-small, 20px);
 		}
 		i[role=userbook]{
 			.icon(user, 20px);
@@ -1319,10 +1319,14 @@ img[src=""]{
 		i[role=blog]{
 			.icon(blog, 20px);
 		}
+		i[role=apps]{
+			.icon(apps-small, 20px);
+			opacity: 0.3;
+		}
 		color: @medium-blue;
-		font-size: 14px;
-		padding-left: 10px;
-		padding-right: 10px;
+		font-size: 13px;
+		padding-left: 5px;
+		padding-right: 5px;
 	}
 	li.legend{
 		color: #666;

@@ -20,10 +20,14 @@ function Timeline($scope, date, http, navigation, lang){
 		$scope.$apply('me');
 	});
 
-	http.get('/timeline/lastNotifications').done(function(response){
-		$scope.notifications = response.results;
-		$scope.$apply('notifications');
-	});
+	function allNotifications(){
+		http.get('/timeline/lastNotifications').done(function(response){
+			$scope.notifications = response.results;
+			$scope.$apply('notifications');
+		});
+	}
+
+	allNotifications();
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
@@ -40,6 +44,10 @@ function Timeline($scope, date, http, navigation, lang){
 			$scope.notifications = response.results;
 			$scope.$apply('notifications');
 		});
+	};
+
+	$scope.removeFilter = function(){
+		allNotifications();
 	}
 
 	$scope.navigate = navigation.navigate;
