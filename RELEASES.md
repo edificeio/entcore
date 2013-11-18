@@ -1,5 +1,51 @@
 ONE : Notes de versions
 =======================
+
+# v1.2.0
+
+## Portail
+
+* [thème] intégration des thèmes Panda déclinés
+* [thème] Personnalisation du thème par utilisateur (avec un volet de configuration)
+* [widget] Infrastructure de widget statique côté client
+* [widget] Date courante
+* [widget] Anniversaires (+ #527 Api permettant de renvoyer tous les utilisateurs avec une date de naissance comprise dans les trois mois encadrant la date courante)
+
+## Fil de nouveautés
+
+* #555 : Pour mettre en évidence les nouveautés jamais consultées
+* #554 : Pour filter les nouveautés par applications sources (Blog, Espace Documentare, Mon Compte)
+* #524 : Pour afficher de l'avatar de l'utilisateur à l'origine de la nouveauté
+
+## Droit et habilitations
+
+* #540, #529, #530, #531, #532, #533, #534, #535, #536 : API REST de gestion des gestions des partages indépendantes des IHM 
+ - Matrice d'autorisation
+ - Utilisateur visible (via règle de communication)
+ - Ajout/Suppression d'un droit ...
+* IHM de présentation synthétique de la matrice d'autorisations et recherche d'utilisateur et de groupe visible par auto-complétion
+
+## Espace Documentaire
+
+* #562, #563 Gestion du format des miniatures (création et affichage)
+* #62 Mise en évidance des documents partagés
+* [fix] #16 Copier un document dans le dossier "racine" de l'arborescence
+
+## Mon compte et Annuaire
+
+* [fix] #567 : Changement de mot de passe cassé par le portage Angular.js 
+* [fix] #556 : Lors de la saisie de la devise  des requêtes sont envoyées avant la fin de la saisie.
+* #522 : Api pour récupérer l'avatar de l'usager à partir de son id
+* [fix] #355 Mettre à jour l'avatar plutôt que de créer un nouveau document "workspace"
+* #436 : Permettre à l'utilisateur de gérer la visibilité de son adresse postale, email et numéro de téléphone dans l'annuaire
+* [fix] #56 : La saisie des centres d'intérêts envoie une requête par lettre saisie
+
+# Opérations Techniques
+
+* [infra] #184 : Regroupement des fonctionnalités communes au application ent-core dans un module
+* [infra] #179 : Ecriture d'module vertx de redimensionnement d'image basé sur _org.imgscalr_
+* [test] Test d'intégration et performance. Ecriture de simulations Gatlin pour  : AppRegistry, Auth, Blog, Directory, Import
+
 # v1.1.0
 
 ## Blog
