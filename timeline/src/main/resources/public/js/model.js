@@ -20,10 +20,13 @@ collection(Notification, {
 
 function Resource(){
 	this.actions = {
-		comment: {
+		writeComment: {
 			apply: function(){
-				http().post(this.comment, { comment: Model.comments.newItem })
+				http().post(this.commentPath, this.comment)
 			}
+		},
+		comments: {
+
 		}
 	}
 }
