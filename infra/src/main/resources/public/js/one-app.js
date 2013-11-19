@@ -661,7 +661,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 	};
 
 	$scope.remove = function(element){
-		var path = '/blog/share/remove/' + $scope.resources._id;
+		var path = '/' + appPrefix + '/share/remove/' + $scope.resources._id;
 		var data;
 		if(element.login !== undefined){
 			data = {
