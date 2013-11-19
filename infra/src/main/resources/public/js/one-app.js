@@ -201,8 +201,8 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 		}
 		return _;
 	})
-	.factory('navigation', function(){
-		return navigation;
+	.factory('model', function(){
+		return Model;
 	})
 	.factory('ui', function(){
 		return ui;
@@ -532,7 +532,9 @@ oneModule.directive('sharePanel', function($compile){
 })
 
 $(document).ready(function(){
-	angular.bootstrap($('html'), ['one'])
+	angular.bootstrap($('html'), ['one']);
+	buildModel();
+	Model.sync();
 })
 
 

@@ -1,51 +1,66 @@
-function Notification(){
-	this.isUnread = function(){
-		return _.find(this.recipients, function(recipient){
-			return recipient.userId === Model.state.me.userId;
-		}) !== undefined;
-	}
-}
-
-collection(Notification, {
-	sync: function(){
-		var params = {};
-		if(Model.types.current){
-			params.type = Model.types.current;
+function buildModel(){
+	function Notification(){
+		this.isUnread = function(){
+			return _.find(this.recipients, function(recipient){
+				return recipient.userId === Model.state.me.userId;
+			}) !== undefined;
 		}
-		http().get('/timeline/lastNotifications', params).done(function(response){
-			this.all = response.results;
-		});
 	}
-});
 
-function Resource(){
-	this.actions = {
-		writeComment: {
-			apply: function(){
-				http().post(this.commentPath, this.comment)
+	Model.collection(Notification, {
+		sync: function(){
+			var params = {};
+			if(Model.notificationTypes.current){
+				params.type = Model.notificationTypes.current;
 			}
-		},
-		comments: {
+			var that = this;
+			http().get('/timeline/lastNotifications', params).done(function(response){
+				that.load(response.results);
+			});
+		}
+	});
 
+	function Resource(){
+		this.actions = {
+			writeComment: {
+				apply: function(){
+					http().post(this.commentPath, this.comment)
+				}
+			},
+			comments: {
+
+			}
 		}
 	}
-}
 
-function NotificationType(){}
+	function NotificationType(){}
 
-collection(NotificationType, {
-	sync: function(){
-		http().get('/timeline/types').done(function(data){
-			this.all = data;
-		});
+	Model.collection(NotificationType, {
+		sync: function(){
+			var that = this;
+			http().get('/timeline/types').done(function(data){
+				that.load(data);
+			});
+		}
+	})
+
+	function Widget(){
+
 	}
-})
 
-function Widget(){
+	Model.collection(Widget);
 
+	function Skin(){}
+
+	Model.collection(Skin, {
+		sync: function(){
+			var that = this;
+			http().get('/timeline/public/json/themes.json').done(function(data){
+				that.load(data);
+			})
+		}
+	});
 }
 
-function Theme(){
 
-}
 

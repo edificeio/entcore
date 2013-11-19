@@ -4,53 +4,29 @@ function MainController($rootScope, $scope){
 	}
 }
 
-function Timeline($scope, date, http, navigation, lang){
-	$scope.notifications = [];
-	$scope.me = {};
-	$scope.types = [];
+function Timeline($scope, date, http, model, lang){
+	$scope.model = model;
 	$scope.translate = lang.translate;
 
-	http.get('/timeline/types').done(function(types){
-		$scope.types = types;
-		$scope.$apply('types');
-	});
+	model.on('change', function(e){
+		if(!$scope.$$phase){
+			$scope.$apply('model');
+			console.log($scope.model);
+		}
 
-	http.get('/auth/oauth2/userinfo', function(info){
-		$scope.me = info;
-		$scope.$apply('me');
-	});
-
-	function allNotifications(){
-		http.get('/timeline/lastNotifications').done(function(response){
-			$scope.notifications = response.results;
-			$scope.$apply('notifications');
-		});
-	}
-
-	allNotifications();
+	})
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
 	};
 
-	$scope.isUnRead = function(notification){
-		return _.find(notification.recipients, function(recipient){
-			return recipient.userId === $scope.me.userId;
-		}) !== undefined;
-	};
-
 	$scope.setFilter = function(filter){
-		http.get('/timeline/lastNotifications?type=' + filter).done(function(response){
-			$scope.notifications = response.results;
-			$scope.$apply('notifications');
-		});
+		$scope.model.notificationsTypes.current = filter;
 	};
 
 	$scope.removeFilter = function(){
-		allNotifications();
+		$scope.model.notificationsTypes.current = null;
 	}
-
-	$scope.navigate = navigation.navigate;
 }
 
 function Personalization($rootScope, $scope, http, ui){

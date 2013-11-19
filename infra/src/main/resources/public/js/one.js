@@ -267,132 +267,61 @@ One = {
 	}
 };
 
-var me = (function(){
-	var infos = {};
-	$.get('/auth/oauth2/userinfo', function(data){
-		infos = data;
-	});
 
-	return {
-		userInfos: function(){
-			return infos;
-		},
-		allowedPaths: function(){
+var Model = {};
+(function(){
+	function Collection(){
+		this.all = [];
+		this.current = null;
+		this.selected = [];
+		this.newItem = null;
+		this.sync = function(){
 
 		}
 	}
-}())
 
-var navigation = (function(){
-	function NavigationContext(parentContext){
-		this.position = parentContext.position;
-		this.views = [];
-		parentContext.views.forEach(function(view){
-			this.views.push(view);
-		});
-		this.positionPath = parentContext.positionPath;
-		this.callbacks = [];
-		this.children = [];
-		parentContext.children.push(this);
+	Collection.prototype.load = function(data){
+		this.all = data;
+		Model.trigger('change');
 	}
 
-	var navigationTree = { '/': {}};
-	var rootContext = new NavigationContext({
-		position: navigationTree['/'],
-		positionPath: '/',
-		scope: {},
-		views: [],
-		children: []
-	});
+	Model.collection = function(obj, methods){
+		var plural = obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
+		Model[plural] = new Collection(obj);
+		var col = Model[plural];
 
-	/*$.get('public/json/navigation.json').done(function(data){
-		navigationTree = data;
-		setRoot(rootContext);
-		notify(rootContext);
-	});*/
-
-	function setRoot(context){
-		context.position = navigationTree['/'];
-		context.positionPath = '/';
-		context.scope = {};
-	}
-
-	function findParent(p, current){
-		var result;
-		for(var route in current.routes){
-			if(current.routes[route] === p){
-				return current;
-			}
-			result = result || findParent(p, current.routes[route]);
+		for(var method in methods){
+			col[method] = methods[method];
 		}
-		return result;
-	}
+	};
 
-	function traverse(context, path){
-		if(path[0] === '/'){
-			setRoot(context);
+	Model.sync = function(){
+		for(var col in Model){
+			console.log(col);
+			console.log(Model[col] instanceof Collection);
+			if(Model[col] instanceof Collection){
+				Model[col].sync();
+			}
 		}
-		else{
-			context.position = findParent(context.position, navigationTree['/']);
+	};
+
+	Model.on = function(event, cb){
+		if(!Model.callbacks){
+			Model.callbacks = {}
 		}
-		var subPaths = path.split('/');
+		if(!Model.callbacks[event]){
+			Model.callbacks[event] = []
+		}
+		Model.callbacks[event].push(cb);
+	};
 
-		subPaths.forEach(function(subPath){
-			if(!subPath){
-				return;
-			}
-			if(!context.position.routes[subPath]){
-				throw 'Path not found in current position: ' + subPath + ' -- current position: ' + context.positionPath;
-			}
-			else{
-				context.position = context.position.routes[subPath];
-				for(var view in context.position.views){
-					context.views[view] = context.position.views[view];
-				}
-			}
-		})
-		context.positionPath = path;
-	}
-
-	function notify(context){
-		context.callbacks.forEach(function(cb){
-			if(typeof cb === 'function'){
-				cb();
-			}
-		});
-
-		context.children.forEach(function(child){
-			notify(child);
-		})
-	}
-
-	return {
-		navigate: function(context, path){
-			traverse(context, path);
-			notify(context);
-		},
-		execute: function(context, path){
-			var initialPosition = context.position;
-			this.navigate(context, path);
-			context.position = initialPosition;
-		},
-		position: function(context){
-			return context.position;
-		},
-		views: function(context){
-			return context.views;
-		},
-		listen: function(callback, context){
-			if(!context){
-				context = rootContext;
-			}
-			context.callbacks.push(callback);
-		},
-		addContext: function(parentContext){
-			if(!parentContext){
-				parentContext = rootContext;
-			}
-			return new NavigationContext(parentContext);
+	Model.trigger = function(event){
+		if(!Model.callbacks || !Model.callbacks[event]){
+			return;
+		}
+		for(var i = 0; i < Model.callbacks[event].length; i++){
+			Model.callbacks[event][i]();
 		}
 	}
-}())
+}());
+
