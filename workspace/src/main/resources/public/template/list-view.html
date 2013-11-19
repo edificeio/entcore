@@ -19,7 +19,12 @@
 	</tr>
 	<tr data-ng-repeat-start="document in openedFolder.content" ng-class="{ overline: true, checked: document.selected }">
 		<td><input type="checkbox" data-ng-model="document.selected" /></td>
-		<td class="icon"><i role="[[document.metadata.contentType]]"></i><i ng-if="document.shared.length > 0" role="shared"></i></td>
+		<td class="icon">
+			<div class="twelve cell">
+				<i role="[[document.metadata.contentType]]"></i>
+				<i ng-if="document.shared.length > 0" role="shared"></i>
+			</div>
+		</td>
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
 		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
