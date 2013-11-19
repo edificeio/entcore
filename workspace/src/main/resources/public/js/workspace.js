@@ -101,6 +101,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
 			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
+			if(item.name.split('.').length > 1){
+				item.name = item.name.split('.')[0];
+			}
 
 			if(item.from){
 				item.ownerName = item.fromName;
@@ -537,7 +540,10 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
-		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
+		var name = $scope.newFile.file.name.split('.')[0];
+		var extension = $scope.newFile.file.name.split('.')[1];
+		$scope.newFile.name = name;
+		$scope.newFile.extension = extension;
 	};
 
 	$scope.to = {
@@ -547,7 +553,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 		var formData = new FormData();
 
 		if($scope.newFile.name){
-			formData.append('file', $scope.newFile.file, $scope.newFile.name);
+			formData.append('file', $scope.newFile.file, $scope.newFile.name + '.' + $scope.newFile.extension);
 		}
 		else{
 			formData.append('file', $scope.newFile.file);
