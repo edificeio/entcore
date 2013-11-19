@@ -470,10 +470,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 		$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
 	});
 
-	$scope.setFileName = function(){
-		$scope.newFile.name = $scope.newFile.file.name.split('.')[0];
-	};
-
 	$scope.boxes = { selectAll: false }
 	$scope.switchSelectAll = function(){
 		$scope.openedFolder.content.forEach(function(document){
@@ -549,7 +545,14 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 	}
 	$scope.sendNewFile = function(context){
 		var formData = new FormData();
-		formData.append('file', $scope.newFile.file);
+
+		if($scope.newFile.name){
+			formData.append('file', $scope.newFile.file, $scope.newFile.name);
+		}
+		else{
+			formData.append('file', $scope.newFile.file);
+		}
+
 		var url = '';
 		if (context === 'rack') {
 			url = 'rack/' + $scope.to.id;
@@ -558,7 +561,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 			url = 'document'
 		}
 		$scope.loading = $scope.translate('loading');
-		http.postFile(url + '?thumbnail=120x120&name=' + $scope.newFile.name,  formData, { requestName: 'file-upload' }).done(function(e){
+		http.postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
 			ui.hideLightbox();
 			$scope.loading = '';
 			var path = folderToString($scope.folders[$scope.currentTree.name], $scope.currentTree.name, $scope.openedFolder.folder, $scope.openedFolder.name);
