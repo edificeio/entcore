@@ -3421,8 +3421,8 @@ img[src=""] {
   line-height: 23px;
   color: #2f8cc9;
   font-size: 13px;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .filters li i {
   background-size: contain;
