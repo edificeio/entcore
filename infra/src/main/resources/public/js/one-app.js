@@ -652,7 +652,8 @@ function Share($rootScope, $scope, http, ui, _, lang){
 			}),
 			_.filter($scope.sharing.users.visibles, function(user){
 				var testName = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
-				return testName.indexOf(searchTerm) !== -1;
+				var testNameReversed = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
+				return testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1;
 			})
 		);
 		$scope.found = _.filter($scope.found, function(element){
