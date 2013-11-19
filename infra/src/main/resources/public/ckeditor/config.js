@@ -47,7 +47,7 @@ CKEDITOR.editorConfig = function(config){
 	var moodsPath = $('head')
 		.children('link')
 		.attr('href')
-		.split('/css')[0] + '/img/icons/';
+		.split('/theme.css')[0] + '/../img/icons/';
 
 	config.smiley_path = moodsPath;
 	config.smiley_images= ['angry-panda-small.png', 'dreamy-panda-small.png', 'happy-panda-small.png',
