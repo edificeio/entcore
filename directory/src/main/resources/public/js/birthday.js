@@ -14,7 +14,9 @@
 			return moment(birthday.birthDate).month() === moment().month();
 		});
 
-		Birthday.birthdays = Birthday.birthdays.sort('username');
+		Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
+			return a.username.localeCompare(b.username);
+		});
 
 		Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
 			return moment(a.birthDate).date() - moment(b.birthDate).date()
