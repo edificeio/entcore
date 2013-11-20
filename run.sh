@@ -1,2 +1,2 @@
 #!/bin/bash
-vertx runMod edu.one.core~infra~1.2.0 &
+vertx runMod edu.one.core~infra~1.3-SNAPSHOT &
