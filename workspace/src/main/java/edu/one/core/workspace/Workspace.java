@@ -59,6 +59,20 @@ public class Workspace extends Server {
 
 		service.get("/folders", "listFolders");
 
+		service.get("/folders/list", "folders");
+
+		service.post("/folder", "addFolder");
+
+		service.put("/folder/move/:id", "moveFolder");
+
+		service.put("/folder/copy/:id", "copyFolder");
+
+		service.put("/folder/trash/:id", "moveTrashFolder");
+
+		service.put("/folder/restore/:id", "restoreFolder");
+
+		service.delete("/folder/:id", "deleteFolder");
+
 		service.post("/rack/:to", "addRackDocument");
 
 		service.get("/rack/documents", "listRackDocuments");

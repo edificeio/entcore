@@ -1,6 +1,7 @@
 package edu.one.core.workspace.service;
 
 import static edu.one.core.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static edu.one.core.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static edu.one.core.common.user.UserUtils.getUserInfos;
 import static edu.one.core.infra.Utils.getOrElse;
 
@@ -22,6 +23,7 @@ import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.common.share.ShareService;
 import edu.one.core.common.share.impl.MongoDbShareService;
 import edu.one.core.infra.*;
+import edu.one.core.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -54,6 +56,7 @@ public class WorkspaceService extends Controller {
 	private final TimelineHelper notification;
 	private final TracerHelper trace;
 	private final ShareService shareService;
+	private final FolderService folderService;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -68,6 +71,7 @@ public class WorkspaceService extends Controller {
 		notification = new TimelineHelper(eb, container);
 		this.trace = trace;
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
+		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
 	}
 
 	@SecuredAction("workspace.view")
@@ -378,6 +382,160 @@ public class WorkspaceService extends Controller {
 							}
 						}
 					});
+				}
+			}
+		});
+	}
+
+	@SecuredAction("workspace.folder.add")
+	public void addFolder(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final String name = request.formAttributes().get("name");
+				final String path = request.formAttributes().get("path");
+				if (name == null || name.trim().isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos userInfos) {
+						if (userInfos != null) {
+							folderService.create(name, path, request.params().get("application"), userInfos,
+									defaultResponseHandler(request, 201));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.folder.copy", type = ActionType.AUTHENTICATED)
+	public void copyFolder(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final String id = request.params().get("id");
+				final String path = request.formAttributes().get("path");
+				final String name = request.formAttributes().get("name");
+				if (id == null || id.trim().isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos userInfos) {
+						if (userInfos != null) {
+							folderService.copy(id, name, path, userInfos,
+									defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.folder.move", type = ActionType.AUTHENTICATED)
+	public void moveFolder(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final String id = request.params().get("id");
+				final String path = request.formAttributes().get("path");
+				if (id == null || id.trim().isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos userInfos) {
+						if (userInfos != null) {
+							folderService.move(id, path, userInfos, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.folder.trash", type = ActionType.AUTHENTICATED)
+	public void moveTrashFolder(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					folderService.trash(id, userInfos, defaultResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+		   }
+		});
+	}
+
+	@SecuredAction(value = "workspace.folder.trash", type = ActionType.AUTHENTICATED)
+	public void restoreFolder(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					folderService.restore(id, userInfos, defaultResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "workspace.folder.delete", type = ActionType.AUTHENTICATED)
+	public void deleteFolder(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					folderService.delete(id, userInfos, defaultResponseHandler(request, 204));
+				} else {
+					unauthorized(request);
+				}
+	  		 }
+		});
+	}
+
+	@SecuredAction(value = "workspace.folders.list", type = ActionType.AUTHENTICATED)
+	public void folders(final HttpServerRequest request) {
+		final String path = request.params().get("path");
+		final boolean hierarchical = request.params().get("hierarchical") != null;
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos userInfos) {
+				if (userInfos != null) {
+					folderService.list(path, userInfos, hierarchical, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
 				}
 			}
 		});
