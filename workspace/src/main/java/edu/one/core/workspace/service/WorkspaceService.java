@@ -272,8 +272,8 @@ public class WorkspaceService extends Controller {
 		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
 				pathPrefix + "/document/" + resource);
 		try {
-			notification.notifyTimeline(request, user, WORKSPACE_NAME, recipients, resource,
-					"notify-share.html", params);
+			notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
+					recipients, resource, "notify-share.html", params);
 		} catch (IOException e) {
 			log.error("Unable to send timeline notification", e);
 		}

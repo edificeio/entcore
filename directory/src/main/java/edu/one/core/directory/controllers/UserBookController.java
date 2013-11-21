@@ -349,7 +349,8 @@ public class UserBookController extends Controller {
 				.putString("motto", request.params().get("value"))
 				.putString("moodImg", request.params().get("value"));
 				try {
-					notification.notifyTimeline(request, user, NOTIFICATION_TYPE, userIds,
+					notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
+							NOTIFICATION_TYPE + "_" + action.toUpperCase(), userIds,
 							user.getUserId()+System.currentTimeMillis()+action,
 							"notify-" + action + ".html", params);
 				} catch (IOException e) {

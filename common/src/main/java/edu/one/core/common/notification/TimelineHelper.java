@@ -22,13 +22,13 @@ public class TimelineHelper {
 			this.render = new Renders(container);
 		}
 
-		public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type,
+		public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
 								   List<String> recipients, String resource, String template, JsonObject params)
 				throws IOException {
-			notifyTimeline(request, sender, type, recipients, resource, null, template, params);
+			notifyTimeline(request, sender, type, eventType, recipients, resource, null, template, params);
 		}
 
-		public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type,
+		public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
 				List<String> recipients, String resource, String subResource, String template, JsonObject params)
 				throws IOException {
 			JsonArray r = new JsonArray();
@@ -39,6 +39,7 @@ public class TimelineHelper {
 					.putString("action", "add")
 					.putString("resource", resource)
 					.putString("type", type)
+					.putString("event-type", eventType)
 					.putString("sender", sender.getUserId())
 					.putString("message", render.processTemplate(request, template, params))
 					.putArray("recipients", r);
