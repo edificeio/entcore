@@ -307,12 +307,13 @@ var Model = {};
 	}
 
 	Model.collection = function(obj, methods){
-		Model[pluralizeName(obj)] = new Collection(obj);
-		var col = Model[pluralizeName(obj)];
+		var col = new Collection(obj);
 
 		for(var method in methods){
 			col[method] = methods[method];
 		}
+
+		return col;
 	};
 
 	Model.sync = function(){

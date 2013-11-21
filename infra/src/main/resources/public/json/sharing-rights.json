@@ -1,19 +1,23 @@
 {
 	"read": {
 		"priority": 0,
-		"default": true
+		"default": true,
+		"requires": []
 	},
 	"contrib": {
 		"priority": 1,
-		"default": false
+		"default": false,
+		"requires": ["read"]
 	},
 	"manager": {
 		"priority": 2,
-		"default": false
+		"default": false,
+		"requires": ["read", "contrib"]
 	},
 	"comment": {
 		"priority": 3,
-		"default": true
+		"default": true,
+		"requires": ["read"]
 	}
 
 }

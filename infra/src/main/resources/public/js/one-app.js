@@ -599,6 +599,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 				var actionId = action.displayName.split('.')[1];
 				if(actionsConfiguration[actionId]){
 					action.priority = actionsConfiguration[actionId].priority;
+					action.requires = actionsConfiguration[actionId].requires;
 				}
 			})
 
@@ -706,6 +707,24 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		var setPath = 'json';
 		if(!element.actions[action.displayName]){
 			setPath = 'remove';
+			_.filter($scope.sharing.actions, function(item){
+				return _.find(item.requires, function(dependency){
+					return action.displayName.indexOf(dependency) !== -1;
+				}) !== undefined
+			})
+			.forEach(function(item){
+				element.actions[item.displayName] = false;
+				$scope.saveRights(element, item);
+			})
+		}
+		else{
+			action.requires.forEach(function(required){
+				var action = _.find($scope.sharing.actions, function(action){
+					return action.displayName.indexOf(required) !== -1;
+				});
+				element.actions[action.displayName] = true;
+				$scope.saveRights(element, action);
+			});
 		}
 
 		http.put('/' + appPrefix + '/share/' + setPath + '/' + $scope.resources._id, http.serialize(data)).done(function(){
