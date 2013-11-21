@@ -222,7 +222,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
 				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addDocument'}).length > 0;
 			} },
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+		],
+		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } }
@@ -231,7 +233,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 		name: 'rack',
 		path: 'rack/documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+		],
+		contextualButtons: [
 			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true, allow: function(){ return true } }
 		]
@@ -239,7 +243,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 		name: 'trash',
 		path: 'documents/Trash',
 		filter: 'owner',
-		buttons: [
+		buttons: [],
+		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } }
 		]
@@ -248,7 +253,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
 		filter: 'shared',
 		path: 'documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } },
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+		],
+		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
 				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
 			} },

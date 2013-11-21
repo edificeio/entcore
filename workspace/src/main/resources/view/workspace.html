@@ -50,8 +50,6 @@
 				<nav class="contextual-buttons row">
 					<div class="action-buttons">
 						<div class="cell" ng-repeat="button in currentTree.buttons"><button
-
-								ng-disabled="button.contextual && selectedDocuments().length === 0"
 								ng-click="button.action(button.url)"
 								ng-if="button.allow()">
 							<i role="add" ng-if="button.icon"></i> [[translate(button.text)]]
@@ -79,6 +77,40 @@
 			<i role="close-2x"></i>
 		</div>
 		<div class="clear"></div>
+	</section>
+	<section ng-class="{'toggle-bottom': true, hide: selectedDocuments().length === 0 }">
+		<div class="toggle block-container">
+			<div class="row">
+				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
+					<button
+						ng-click="button.action(button.url)"
+						ng-if="button.allow()">
+					[[translate(button.text)]]
+					</button>
+				</div>
+				<button ng-click="openCommentView(selectedDocuments()[0])"
+						ng-if="selectedDocuments()[0].myRights.comment.post"
+						translate key="workspace.document.comment"
+						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
+				</button>
+				<button ng-click="openShareView(selectedDocuments()[0])"
+						translate key="workspace.share"
+						ng-if="selectedDocuments()[0].myRights.document.share"
+						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
+				</button>
+				<span class="contextual-link"
+					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0">
+					<a ng-if="!selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
+						[[translate('workspace.document.comment.show')]] ([[selectedDocuments()[0].comments.length]])
+					</a>
+					<a ng-if="selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
+						[[translate('workspace.document.comment.hide')]]
+					</a>
+				</span>
+			</div>
+			</div>
+
+		</div>
 	</section>
 	<section class="lightbox-backdrop"></section>
 	</body>

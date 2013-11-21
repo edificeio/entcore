@@ -704,6 +704,41 @@ table.list-view td img {
 .toggle-panel .toggle {
   width: 300px;
 }
+.toggle-bottom {
+  width: 960px;
+  left: 50%;
+  margin-left: -480px;
+  height: 60px;
+  bottom: 0;
+  position: fixed;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
+  z-index: 20;
+}
+.toggle-bottom button {
+  opacity: 1;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.toggle-bottom button.hide {
+  opacity: 0;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.toggle-bottom.hide {
+  height: 0px;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
+  overflow: hidden;
+}
 .toggle-panel.hide {
   overflow: hidden;
   width: 0;

@@ -704,6 +704,41 @@ table.list-view td img {
 .toggle-panel .toggle {
   width: 300px;
 }
+.toggle-bottom {
+  width: 960px;
+  left: 50%;
+  margin-left: -480px;
+  height: 60px;
+  bottom: 0;
+  position: fixed;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
+  z-index: 20;
+}
+.toggle-bottom button {
+  opacity: 1;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.toggle-bottom button.hide {
+  opacity: 0;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.toggle-bottom.hide {
+  height: 0px;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
+  overflow: hidden;
+}
 .toggle-panel.hide {
   overflow: hidden;
   width: 0;
@@ -1163,7 +1198,7 @@ body {
   min-height: 100%;
   width: 100%;
   background: none;
-  padding-bottom: 15px;
+  padding-bottom: 0px;
 }
 .container section.main {
   -webkit-box-sizing: border-box;
@@ -1308,6 +1343,18 @@ i[role=shared] {
   font-family: KGJune;
   text-transform: uppercase;
   font-size: 27px;
+}
+.toggle-bottom {
+  background: rgba(235, 244, 249, 0.8);
+  box-shadow: 0px -2px 6px rgba(20, 20, 20, 0.2);
+}
+.toggle-bottom .contextual-link {
+  position: absolute;
+  right: 10px;
+  top: 25px;
+}
+.toggle-bottom .contextual-link a {
+  color: #fd841c !important;
 }
 .loading-panel {
   opacity: 0.9;

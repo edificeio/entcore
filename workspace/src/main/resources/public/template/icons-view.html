@@ -8,7 +8,7 @@
 	</li>
 	<li data-ng-repeat="document in openedFolder.content">
 		<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]]-container">
-			<i role="[[document.metadata.contentType]]-large"  ng-if="document.metadata.contentType !== 'img'">
+			<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 			</i>
 			<div ng-if="document.metadata.contentType === 'img'">
 				<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />

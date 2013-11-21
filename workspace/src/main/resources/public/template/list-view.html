@@ -31,16 +31,7 @@
 	</tr>
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
 		<td colspan="5" class="container-cell">
-			<a ng-click="openCommentView(document)" ng-if="document.myRights.comment.post" class="small button cell" translate key="workspace.document.comment"></a>
-			<a ng-if="document.myRights.document.share" ng-click="openShareView(document)" class="small button cell" translate key="workspace.share"></a>
-				<span class="cell right-magnet action-cell" ng-if="document.comments.length > 0">
-					<a ng-if="!document.showComments" data-ng-click="toggleComments(document)">
-						[[translate('workspace.document.comment.show')]] ([[document.comments.length]])
-					</a>
-					<a ng-if="document.showComments" data-ng-click="toggleComments(document)">
-						[[translate('workspace.document.comment.hide')]]
-					</a>
-				</span>
+
 			<section class="row text-container" ng-if="document.showComments">
 				<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in document.comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>

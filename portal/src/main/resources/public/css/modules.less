@@ -271,7 +271,31 @@ table.list-view{
 	right: -15px;
 	overflow: hidden;
 	.run-transition(width);
+}
 
+.toggle-bottom{
+	width: 960px;
+	left: 50%;
+	margin-left: -(960px / 2);
+	height: 60px;
+	bottom: 0;
+	position: fixed;
+	.run-transition(height);
+	z-index: 20;
+	button{
+		opacity: 1;
+		.run-transition(opacity);
+	}
+	button.hide{
+		opacity: 0;
+		.run-transition(opacity);
+	}
+}
+
+.toggle-bottom.hide{
+	height: 0px;
+	.run-transition(height);
+	overflow: hidden;
 }
 
 .toggle-panel.hide{
