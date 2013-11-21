@@ -131,6 +131,21 @@ function MyAccount($scope, http, lang, date, notify, _){
 		One.get('api/edit-user-info-visibility', { info: info, state: $scope.account.visible[info] });
 	};
 
+	$scope.resetAvatar = function(){
+		// we get default file via request to convert it to blob type
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/directory/public/img/no-avatar.jpg', true);
+		xhr.responseType = 'blob';
+		xhr.onload = function(e) {
+			if (this.status == 200) {
+				var defaultAvatar = this.response;
+				$scope.account.photo = defaultAvatar;
+				$scope.updateAvatar();
+			}
+		};
+		xhr.send();
+	}
+
 	$scope.updateAvatar = function(){
 		var form = new FormData(),
 		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
