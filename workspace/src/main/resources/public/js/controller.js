@@ -41,7 +41,12 @@ var tools = (function(){
 	}
 }());
 
-function Workspace($scope, http, lang, date, ui, notify, _, $rootScope){
+function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
+	$scope.trees = model.trees;
+	model.on('trees.change', function(){
+		$scope.trees = model.trees;
+		$scope.$apply('trees');
+	})
 	$rootScope.$on('share-updated', function(){
 		$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name, $scope.currentTree);
 	})

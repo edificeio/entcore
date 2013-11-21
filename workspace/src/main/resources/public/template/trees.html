@@ -1,19 +1,20 @@
+<script type="text/ng-template" id="folders-tree">
+	<a
+			data-ng-class="{ selected: tree.folders.current === value }"
+			data-ng-click="openFolder(value, key)">[[folder.name]]</a>
+	<ul data-ng-class="{ selected: containsCurrentFolder(value), closed: !containsCurrentFolder(value) }" ng-if="containsCurrentFolder(value)">
+		<li data-ng-repeat="(key, value) in value"
+			data-ng-include="'folder-content'"
+				></li>
+	</ul>
+</script>
 <ul>
-	<li>
+	<li ng-repeat="tree in trees.all">
 		<a>
-			Mes documents
-			<ul ng-init="value=myDocuments.folders.all">
-				<li ng-include="'folders-content'"></li>
+			[[tree.displayName]]
+			<ul ng-init="folder=tree.folders.all">
+				<li ng-include="'folders-tree'"></li>
 			</ul>
 		</a>
-	</li>
-	<li>
-		<a>Mon casier</a>
-	</li>
-	<li>
-		<a>Dossiers partagés avec moi</a>
-	</li>
-	<li>
-		<a>Corbeille</a>
 	</li>
 </ul>

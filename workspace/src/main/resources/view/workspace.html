@@ -4,7 +4,8 @@
 		<title>{{#i18n}}workspace.title{{/i18n}}</title>
 		<meta charset="utf-8" />
 		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script src="{{#static}}js/workspace.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 
 		<script type="text/ng-template" id="folder-content">
 			<a data-ng-class="{ selected: openedFolder.folder === value }" data-ng-click="openFolder(value, key)">[[translate(key)]]</a>
