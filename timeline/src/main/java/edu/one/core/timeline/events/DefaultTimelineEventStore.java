@@ -70,6 +70,8 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			.putNumber("recipients.$", 1)
 			.putNumber("comments", 1)
 			.putNumber("event-type", 1)
+			.putNumber("resource", 1)
+			.putNumber("sub-resource", 1)
 			.putNumber("add-comment", 1);
 			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
 					offset, limit, 100, new Handler<Message<JsonObject>>() {
