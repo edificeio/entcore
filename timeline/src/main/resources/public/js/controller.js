@@ -4,41 +4,34 @@ function MainController($rootScope, $scope){
 	}
 }
 
-function Timeline($scope, date, http, model, lang){
-	$scope.model = model;
+function Timeline($scope, date, model, lang){
+	$scope.notifications = model.notifications;
+	$scope.notificationTypes = model.notificationTypes
 	$scope.translate = lang.translate;
 
-	model.on('change', function(e){
+	model.on('notifications.change, notificationTypes.change', function(e){
 		if(!$scope.$$phase){
-			$scope.$apply('model');
-			console.log($scope.model);
+			$scope.$apply('notifications');
+			$scope.$apply('notificationTypes');
 		}
-
 	})
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
 	};
 
-	$scope.setFilter = function(filter){
-		$scope.model.notificationsTypes.current = filter;
-	};
-
 	$scope.removeFilter = function(){
-		$scope.model.notificationsTypes.current = null;
+		Model.notificationTypes.removeFilter();
 	}
 }
 
-function Personalization($rootScope, $scope, http, ui){
-	http.get('/timeline/public/json/themes.json').done(function(data){
-		$scope.skins = data;
-		$scope.$apply();
-	})
+function Personalization($rootScope, $scope, model, ui){
+	$scope.skins = model.skins;
 
 	$scope.saveTheme = function(skin, $event){
 		$event.stopPropagation();
+		skin.setForUser();
 		ui.setStyle(skin.skinPath);
-		http.get('/userbook/api/edit-userbook-info?prop=theme&value=' + skin._id);
 	};
 
 	$scope.togglePanel = function($event){
@@ -46,37 +39,19 @@ function Personalization($rootScope, $scope, http, ui){
 		$event.stopPropagation();
 	};
 
-	$scope.create = {
-		comment: {
-			comment: ''
-		}
-	}
-
 	$rootScope.$on('close-panel', function(e){
 		$scope.showPanel = false;
 	})
 }
 
+function Widgets($scope, model, lang){
+	$scope.widgets = model.widgets;
 
-var LoadedWidgets = [];
-LoadedWidgets.findWidget = function(name){
-	return _.findWhere(LoadedWidgets, {name: name});
-}
-
-function Widgets($scope, http, _, lang){
-	$scope.widgets = LoadedWidgets;
-	LoadedWidgets.apply = function(){
-		if(!$scope.$$phase) {
+	model.on('widgets.change', function(){
+		if(!$scope.$$phase){
 			$scope.$apply('widgets');
 		}
-	}
-
-	http.get('/timeline/public/json/widgets.json').done(function(data){
-		data.forEach(function(widget){
-			LoadedWidgets.push(widget);
-			loader.loadFile(widget.js);
-		});
-	});
+	})
 
 	$scope.translate = lang.translate;
 }

@@ -9,5 +9,8 @@
 	"blog": "Blog",
 	"workspace": "Espace documentaire",
 	"userbook": "Utilisateurs",
-	"filters.all": "Tout"
+	"filters.all": "Tout",
+	"filters.title": "Voir les nouveautés du",
+	"comments.add": "Commenter",
+	"comments.show": "Afficher les commentaires"
 }

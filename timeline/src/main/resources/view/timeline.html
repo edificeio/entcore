@@ -8,13 +8,10 @@
 		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body ng-controller="MainController" ng-click="closePanel()">
-		<script type="text/ng-template" id="add-comment">
-			<button ng-click="navigate('comment', navigation.context)">Commenter</button>
-		</script>
 		<portal>
 			<div class="row">
 				<div class="four cell block-container" ng-controller="Widgets">
-					<div class="row" ng-repeat="widget in model.widgets.all">
+					<div class="row" ng-repeat="widget in widgets.all">
 						<div class="twelve cell" ng-include="widget.path"></div>
 					</div>
 				</div>
@@ -23,17 +20,17 @@
 						<article data-ng-controller="Timeline" class="twelve cell">
 							<div class="row line filters">
 								<ul>
-									<li class="legend">Voir les nouveautés du</li>
+									<li class="legend" translate key="filters.title"></li>
 
-									<li ng-repeat="type in types" ng-click="setFilter(type)">
-										<i role="[[type.toLowerCase()]]"></i>[[translate(type.toLowerCase())]]
+									<li ng-repeat="type in notificationTypes.all" ng-click="type.apply()">
+										<i role="[[type.data.toLowerCase()]]"></i>[[translate(type.data.toLowerCase())]]
 									</li>
 									<li ng-click="removeFilter()">
 										<i role="apps"></i>[[translate('filters.all')]]
 									</li>
 								</ul>
 							</div>
-							<div data-ng-repeat="notification in model.notifications.all" class="row line" path="/notification/default">
+							<div data-ng-repeat="notification in notifications.all" class="row line">
 								<div class="two cell fixed-block height-two">
 									<div class="fixed twelve cell text-container">
 										<div class="fluid twelve cell clip">
@@ -53,8 +50,15 @@
 											<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
 										</div>
 									</div>
-									<div class="row">
-									</div>
+									<view model="notification.resource" action="comment">
+										<div class="row">
+											<a translate key="comments.show"></a>
+										</div>
+										<div class="row">
+											<button translate key="comments.add"></button>
+										</div>
+									</view>
+
 								</div>
 								<div class="clear"></div>
 							</div>
@@ -71,7 +75,7 @@
 								<h2>Mes thèmes</h2>
 								<div class="twelve cell">
 									<ul class="list icons-view two-cols">
-										<li ng-repeat="skin in model.skins.all" ng-click="saveTheme(skin, $event)">
+										<li ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)">
 											<div class="photo-preview">
 												<img ng-src="[[skin.skinPath]]thumbnail.png" />
 											</div>

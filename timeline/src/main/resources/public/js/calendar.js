@@ -1,5 +1,5 @@
 (function(){
-	var Calendar = LoadedWidgets.findWidget('calendar');
+	var Calendar = Model.widgets.findWidget('calendar');
 
 	Calendar.today = function(format){
 		return moment().format(format);
@@ -54,5 +54,5 @@
 		}).name);
 	}
 
-	LoadedWidgets.apply();
+	Model.widgets.apply();
 }());

@@ -270,25 +270,45 @@ One = {
 
 var Model = {};
 (function(){
-	function Collection(){
+	function pluralizeName(obj){
+		return obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
+	}
+	function Collection(obj){
 		this.all = [];
 		this.current = null;
 		this.selected = [];
 		this.newItem = null;
+		this.model = obj;
 		this.sync = function(){
 
 		}
 	}
 
-	Collection.prototype.load = function(data){
-		this.all = data;
-		Model.trigger('change');
+	Collection.prototype.load = function(data, cb){
+		var that = this;
+		that.all = [];
+		data.forEach(function(item){
+			var newObj = new that.model(item);
+			that.all.push(newObj);
+			if(typeof item !== 'object'){
+				newObj.data = item;
+				return;
+			}
+			for(var property in item){
+				if(item.hasOwnProperty(property)){
+					newObj[property] = item[property];
+				}
+			}
+			if(typeof cb === 'function'){
+				cb(newObj);
+			}
+		})
+		Model.trigger(pluralizeName(this.model) + '.change');
 	}
 
 	Model.collection = function(obj, methods){
-		var plural = obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
-		Model[plural] = new Collection(obj);
-		var col = Model[plural];
+		Model[pluralizeName(obj)] = new Collection(obj);
+		var col = Model[pluralizeName(obj)];
 
 		for(var method in methods){
 			col[method] = methods[method];
@@ -297,8 +317,6 @@ var Model = {};
 
 	Model.sync = function(){
 		for(var col in Model){
-			console.log(col);
-			console.log(Model[col] instanceof Collection);
 			if(Model[col] instanceof Collection){
 				Model[col].sync();
 			}
@@ -306,13 +324,17 @@ var Model = {};
 	};
 
 	Model.on = function(event, cb){
-		if(!Model.callbacks){
-			Model.callbacks = {}
-		}
-		if(!Model.callbacks[event]){
-			Model.callbacks[event] = []
-		}
-		Model.callbacks[event].push(cb);
+		var events = event.split(',');
+		events.forEach(function(e){
+			var eventName = e.trim();
+			if(!Model.callbacks){
+				Model.callbacks = {}
+			}
+			if(!Model.callbacks[eventName]){
+				Model.callbacks[eventName] = []
+			}
+			Model.callbacks[eventName].push(cb);
+		});
 	};
 
 	Model.trigger = function(event){
@@ -323,5 +345,9 @@ var Model = {};
 			Model.callbacks[event][i]();
 		}
 	}
-}());
 
+	http().get('/auth/oauth2/userinfo').done(function(data){
+		Model.me = data;
+		Model.trigger('me.change');
+	});
+}());
