@@ -7,7 +7,7 @@ function buildModel(){
 		}
 	}
 
-	Model.notifications = Model.collection(Notification, {
+	Model.collection(Notification, {
 		sync: function(){
 			var params = {};
 			if(Model.notificationTypes.current){
@@ -26,7 +26,7 @@ function buildModel(){
 			Model.notifications.sync();
 		}
 	}
-	Model.notificationTypes = Model.collection(NotificationType, {
+	Model.collection(NotificationType, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/types').done(function(data){
@@ -40,7 +40,7 @@ function buildModel(){
 	})
 
 	function Widget(data){}
-	Model.widgets = Model.collection(Widget, {
+	Model.collection(Widget, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/public/json/widgets.json').done(function(data){
@@ -63,7 +63,7 @@ function buildModel(){
 		}
 	}
 
-	Model.skins = Model.collection(Skin, {
+	Model.collection(Skin, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/public/json/themes.json').done(function(data){
