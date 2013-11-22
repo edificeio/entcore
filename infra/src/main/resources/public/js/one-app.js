@@ -518,6 +518,19 @@ oneModule.directive('view', function($compile){
 	}
 });
 
+oneModule.directive('behaviour', function($compile){
+	return {
+		restrict: 'A',
+		scope: {
+			behaviour: '=',
+			resource: '='
+		},
+		link: function($scope, $element, $attributes){
+			console.log($scope);
+		}
+	}
+});
+
 oneModule.directive('sharePanel', function($compile){
 	return {
 		scope: {

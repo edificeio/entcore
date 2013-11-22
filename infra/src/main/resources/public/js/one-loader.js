@@ -65,6 +65,24 @@ var loader = (function(){
 			}
 		};
 		request.send(null);
+	};
+
+	var asyncLoadScript = function(path, callback){
+		var request = new XMLHttpRequest();
+		request.open('GET', path);
+		request.onload = function(){
+			if(request.status === 200){
+				var lib = new Function(request.responseText);
+				lib.name = path;
+				lib();
+
+				if(typeof callback === 'function'){
+					callback();
+				}
+				loadedScripts[path] = lib;
+			}
+		}
+		request.send(null);
 	}
 
 	var load = function(script){
@@ -97,6 +115,11 @@ var loader = (function(){
 		syncLoad: function(library){
 			if(!loadedScripts[library]){
 				syncLoadScript(libraries[library]);
+			}
+		},
+		asyncLoad: function(path, callback){
+			if(!loadedScripts[path]){
+				asyncLoadScript(path, callback);
 			}
 		}
 	}
