@@ -569,6 +569,11 @@ function Share($rootScope, $scope, http, ui, _, lang){
 	$scope.sharing = {};
 	$scope.edited = [];
 	$scope.found = [];
+	$scope.maxResults = 5;
+
+	$scope.addResults = function(){
+		$scope.maxResults += 5;
+	}
 
 	var actionsConfiguration = {};
 
