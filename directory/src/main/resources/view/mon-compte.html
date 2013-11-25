@@ -32,25 +32,25 @@
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>
 						<input type="text" class="six cell" data-complete-change="saveMail(account.email)" data-ng-model="account.email" />
-                        <i role="[[account.visible.email]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
+                        <i role="[[account.visible.email]]" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
                         <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.telephone{{/i18n}}</label></div>
 						<em class="six cell">[[account.tel]]</em>
-                        <i role="[[account.visible.phone]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
+                        <i role="[[account.visible.phone]]" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
                         <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>
 						<em class="six cell">[[account.address]]</em>
-                        <i role="[[account.visible.mail]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
+                        <i role="[[account.visible.mail]]" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
                         <div class="clear"></div>
 					</div>
 					<div class="row">
 						<div class="four cell"><label>{{#i18n}}userBook.profile.birthdate{{/i18n}}</label></div>
 						<em class="six cell">[[birthDate(account.birthdate)]]</em>
-                        <i role="[[account.visible.birthdate]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
+                        <i role="[[account.visible.birthdate]]" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
                         <div class="clear"></div>
 					</div>
 					<div class="row">
@@ -101,11 +101,12 @@
 				<div class="nine cell">
 					<input type="text" class="twelve cell inline-editing" complete-change="saveHobby(hobby)" ng-model="hobby.values" />
 				</div>
-				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
+				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
 				<div class="clear"></div>
 			</div>
 		</article>
-		<h1>{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
+		<div class="clear"></div>
+		<h1>{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
 			<article class="text-container">
 				<textarea data-ng-model="account.health" complete-change="saveProperty('health')"></textarea>
 			</article>

@@ -92,5 +92,7 @@
     "userBook.mood.sad":"Je suis triste",
     "change.password": "Modifier mon mot de passe",
     "mail.invalid": "Adresse e-mail invalide",
-	"loading": "Chargement"
+	"loading": "Chargement",
+	"prive": "Cette information n'est visible que de vous",
+	"public": "Cette information est visible par tous"
 }
