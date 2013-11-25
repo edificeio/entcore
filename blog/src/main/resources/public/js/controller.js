@@ -135,6 +135,7 @@ function Blog($scope, http, date, _, ui, lang){
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
 			$scope.currentBlog.posts = data;
 			$scope.currentView= views.displayBlog;
+			initMaxResults();
 			$scope.$apply();
 		});
 	};
@@ -278,6 +279,14 @@ function Blog($scope, http, date, _, ui, lang){
 			})
 		})
 	};
+
+	function initMaxResults(){
+		$scope.maxResults = 3;
+	}
+	initMaxResults();
+	$scope.addResults = function(){
+		$scope.maxResults += 3;
+	}
 
 	$scope.openConfirmView = function(action, args){
 		$scope.lightboxPath = '/blog/public/template/confirm.html';

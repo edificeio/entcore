@@ -61,13 +61,14 @@
 			</article>
 			<article class="text-container row" ng-if="blogs.length > 0 || currentView !== ''">
 				<section data-ng-include="currentView.path"></section>
-				<section data-ng-repeat="post in currentBlog.posts" class="row">
-					<div ng-include="postTemplate(post).path">
-
-					</div>
-
+				<section data-ng-repeat="post in currentBlog.posts | limitTo:maxResults" class="row">
+					<div ng-include="postTemplate(post).path"></div>
 					<hr class="solid">
 				</section>
+				<h3 ng-if="maxResults < currentBlog.posts.length">
+					<a ng-click="addResults()" class="right-magnet">[[translate('seemore')]]</a>
+					<div class="clear"></div>
+				</h3>
 			</article>
 		</div>
 		<div class="clear"></div>
