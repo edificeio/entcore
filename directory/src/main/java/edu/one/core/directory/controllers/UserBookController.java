@@ -397,9 +397,11 @@ public class UserBookController extends Controller {
 		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
 				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
 		String customReturn =
-				"WHERE has(visibles.ENTPersonDateNaissance) AND visibles.ENTPersonDateNaissance=~{regex}" +
+				"MATCH visibles-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->visibles " +
+				"WHERE has(visibles.ENTPersonDateNaissance) AND visibles.ENTPersonDateNaissance=~{regex} " +
+						"AND has(c.type) AND c.type = 'CLASSE' " +
 				"RETURN distinct visibles.id as id, visibles.ENTPersonNomAffichage as username, " +
-						"visibles.ENTPersonDateNaissance as birthDate";
+						"visibles.ENTPersonDateNaissance as birthDate, COLLECT(distinct c.ENTGroupeNom) as classes ";
 		JsonObject params = new JsonObject();
 		params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
 		UserUtils.findVisibleUsers(eb, request, customReturn, params, new Handler<JsonArray>() {
