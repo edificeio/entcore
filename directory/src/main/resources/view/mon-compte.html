@@ -106,7 +106,7 @@
 			</div>
 		</article>
 		<div class="clear"></div>
-		<h1>{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
+		<h1 class="block-container">{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
 			<article class="text-container">
 				<textarea data-ng-model="account.health" complete-change="saveProperty('health')"></textarea>
 			</article>
