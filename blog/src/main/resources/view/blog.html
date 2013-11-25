@@ -4,7 +4,8 @@
 		<title>{{#i18n}}blog.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script src="{{#static}}js/blog.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body data-ng-controller="Blog">
 	<portal>
@@ -61,54 +62,10 @@
 			<article class="text-container row" ng-if="blogs.length > 0 || currentView !== ''">
 				<section data-ng-include="currentView.path"></section>
 				<section data-ng-repeat="post in currentBlog.posts" class="row">
-					<div class="row">
-						<h2 class="seven cell">[[post.title]]</h2>
-						<a class="button right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">{{#i18n}}blog.edit.post{{/i18n}}</a>
-						<a class="button right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="currentBlog.myRights.post.remove">{{#i18n}}blog.delete.post{{/i18n}}</a>
-					</div>
-					<div class="row"><hr></div>
-					<h5 class="row">
-						{{#i18n}}blog.by{{/i18n}} <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> {{#i18n}}blog.on.date{{/i18n}} [[formatDate(post.created.$date)]]
-						<span data-ng-if="isCurrentView('lastPosts')">
-							{{#i18n}}blog.on.blog{{/i18n}} <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
-						</span>
-					</h5>
-					<div class="row" bind-html-unsafe="post.content"></div>
-					<div class="clear"></div>
-					<div class="row content-line">
-						<div class="two cell">
-							<a class="button" data-ng-click="showCommentPost(post)"
-							   data-ng-disabled="(commentFormPath !== '') && (currentPost == post)" ng-if="currentBlog.myRights.comment.post">
-								{{#i18n}}blog.comment.post{{/i18n}}
-							</a>
-						</div>
-						<div class="four cell right-magnet">
-							<a ng-click="switchComments(post)">
-								<span ng-if="!post.showComments && nbComments(post) > 0">Afficher les commentaires ([[nbComments(post)]])</span>
-								<span ng-if="post.showComments && nbComments(post) > 0">Masquer les commentaires ([[nbComments(post)]])</span>
-							</a>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="row">
-						<div data-ng-include="commentFormPath" data-ng-if="currentPost === post"></div>
-					</div>
-					<div class="row" ng-if="post.showComments">
-						<div class="row" ng-repeat="comment in post.comments">
-							<div class="twelve cell content-line">
-								<article class="comment text-container">
-									<a href="/userbook/annuaire#[[comment.author.userId]]">[[comment.author.username]]</a>
-									<em>[[formatDate(comment.created.$date)]]</em>
-									<a class="cell right-magnet"
-									   ng-click="removeComment(post, comment)"
-									   ng-if="currentBlog.myRights.comment.remove">Supprimer</a>
-									<p>[[comment.comment]]</p>
-								</article>
-							</div>
-						</div>
+					<div ng-include="postTemplate(post).path">
+
 					</div>
 
-					<div class="clear"></div>
 					<hr class="solid">
 				</section>
 			</article>

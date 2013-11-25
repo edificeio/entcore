@@ -15,6 +15,10 @@ var views = {
 		"path":"/blog/public/template/edit-post.html",
 		"allow":true
 	},
+	'viewPost': {
+		path: '/blog/public/template/view-post.html',
+		allow: true
+	},
 	"lastPosts":{},
 	"displayBlog":{}
 }
@@ -27,7 +31,9 @@ function resolveMyRights(me){
 	}
 }
 
-function Blog($scope, http, date, _, ui){
+function Blog($scope, http, date, _, ui, lang){
+	$scope.translate = lang.translate;
+
 	$scope.blogs = [];
 	$scope.currentBlog = undefined;
 	$scope.currentPost = {};
@@ -178,13 +184,21 @@ function Blog($scope, http, date, _, ui){
 				$scope.$apply();
 
 			});
+	};
+
+	$scope.postTemplate = function(post){
+		if(post === $scope.editPost){
+			return views.editPost;
+		}
+		return views.viewPost;
 	}
+
 	$scope.showEditPost = function(post){
 		$scope.currentPost = post;
 		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id)
 			.done(function(data){
 				$scope.currentPost = data;
-				$scope.currentView= views.editPost;
+				$scope.editPost = post;
 				$scope.$apply();
 			});
 	}
@@ -251,6 +265,7 @@ function Blog($scope, http, date, _, ui){
 	$scope.updatePost = function(){
 		http.put('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.currentPost).done(function(){
 			$scope.displayBlog($scope.currentBlog);
+			window.scrollTo(0, 0);
 		})
 	};
 
