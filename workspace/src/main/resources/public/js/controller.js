@@ -247,6 +247,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		name: 'documents',
 		path: 'documents',
 		filter: 'owner',
+		hierarchical: true,
 		buttons: [
 			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
 				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addDocument'}).length > 0;
@@ -284,6 +285,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}, {
 		name: 'shared',
 		filter: 'shared',
+		hierarchical: false,
 		path: 'documents',
 		buttons: [
 			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
@@ -293,12 +295,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
 				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
-			} },
-			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){
-				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.move === false }) === undefined;
-			} },
-			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){
-				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.move === false }) === undefined;
 			} }
 		]
 	}];
@@ -334,11 +330,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		}
 	};
 
-	//temporary hack before final sharing view
-	$('body').on('click', '.sharing input[type=submit]', function(){
-		ui.hideLightbox();
-	})
-
 	$scope.currentViews = {
 		lightbox: '',
 		documents: $scope.views.documents.list
@@ -360,11 +351,25 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			var tree = currentTree();
 		}
 
-		http.get(tree.path +  folderToString($scope.folders[tree.name], tree.name, folder, folderName), { hierarchical: true, filter: tree.filter }).done(function(documents){
+		var params = {
+			filter: tree.filter
+		};
+
+		if(tree.hierarchical){
+			params.hierarchical = true;
+		}
+
+		http.get(tree.path +  folderToString($scope.folders[tree.name], tree.name, folder, folderName), params).done(function(documents){
 			formatDocuments(documents, function(result){
 				$scope.openedFolder.content = result;
+				if(tree.name === 'shared'){
+					$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(document){
+						return document.folder === 'Trash';
+					})
+				}
 				$scope.$apply();
 			});
+
 		})
 	}
 
@@ -557,7 +562,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	function updateFolders(){
 		getFolders($scope.folders.documents, { filter: 'owner' });
 		getFolders($scope.editTree, { filter: 'owner' });
-		getFolders($scope.folders.shared, { filter: 'shared' });
 	}
 
 	$scope.move = function(){
