@@ -331,11 +331,12 @@ public class CommunicationController extends Controller {
 			case "visibleUsers":
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getObject("additionnalParams");
+				boolean itSelf = message.body().getBoolean("itself", false);
 				Map<String, Object> additionnalParams = null;
 				if (ap != null) {
 					additionnalParams = ap.toMap();
 				}
-				visibleUsers(userId, schoolId, expectedTypes, customReturn,
+				visibleUsers(userId, schoolId, expectedTypes, itSelf, customReturn,
 						additionnalParams, responseHandler);
 				break;
 			case "usersCanSeeMe":
@@ -345,9 +346,9 @@ public class CommunicationController extends Controller {
 				visibleProfilsGroups(userId, responseHandler);
 				break;
 			case "usersInProfilGroup":
-				boolean itSelf = message.body().getBoolean("itself", false);
+				boolean itSelf2 = message.body().getBoolean("itself", false);
 				String excludeUserId = message.body().getString("excludeUserId");
-				usersInProfilGroup(userId, itSelf, excludeUserId, responseHandler);
+				usersInProfilGroup(userId, itSelf2, excludeUserId, responseHandler);
 				break;
 			default:
 				message.reply(new JsonArray());
@@ -360,22 +361,25 @@ public class CommunicationController extends Controller {
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
 			final Handler<JsonArray> handler) {
-		visibleUsers(userId, schoolId, expectedTypes, null, null, handler);
+		visibleUsers(userId, schoolId, expectedTypes, false, null, null, handler);
 	}
 
-	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
+	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf,
 			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
 		StringBuilder query = new StringBuilder()
 			.append("START n = node:node_auto_index(id={userId})");
 		Map<String, Object> params = new HashMap<>();
+		String condition = itSelf ? "" : "AND m.id <> {userId} ";
 		if (schoolId != null && !schoolId.trim().isEmpty()) {
 			query.append(", s=node:node_auto_index(id={schoolId}) "
 					+ "MATCH n-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->s "); //TODO manage leaf
 			params.put("schoolId", schoolId);
 		} else {
-			query.append(" MATCH n-[:COMMUNIQUE*1..2]->l-[?:COMMUNIQUE]->m<-[?:COMMUNIQUE_DIRECT]-n ");
+			query.append(" MATCH p=n-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m ");
+			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
+					"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) ";
 		}
-		query.append("WHERE has(m.id) AND m.id <> {userId} ");
+		query.append("WHERE has(m.id) " + condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("AND has(m.type) AND m.type IN ")
 			.append(expectedTypes.encode().replaceAll("\"", "'"))
@@ -385,9 +389,9 @@ public class CommunicationController extends Controller {
 			query.append("WITH m as visibles ");
 			query.append(customReturn);
 		} else {
-			query.append("RETURN distinct m.id as id, m.name? as name, "
-				+ "m.ENTPersonLogin? as login, m.ENTPersonNomAffichage? as username, m.type as type, "
-				+ "m.ENTPersonNom? as lastName, m.ENTPersonPrenom? as firstName "
+			query.append("RETURN distinct m.id as id, m.name as name, "
+				+ "m.ENTPersonLogin as login, m.ENTPersonNomAffichage as username, m.type as type, "
+				+ "m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName "
 				+ "ORDER BY name, username ");
 		}
 		params.put("userId", userId);
@@ -410,10 +414,12 @@ public class CommunicationController extends Controller {
 	private void usersCanSeeMe(String userId, final Handler<JsonArray> handler) {
 		String query =
 				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH n<-[:COMMUNIQUE*1..2]-l<-[?:COMMUNIQUE]-m-[?:COMMUNIQUE_DIRECT]->n " +
-				"WHERE has(m.id) AND m.id <> {userId} AND has(m.ENTPersonLogin) " +
+				"MATCH p=n<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-m " +
+				"WHERE ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
+				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " +
+				"AND m.id <> {userId} AND NOT(m.ENTPersonLogin IS NULL) " +
 				"RETURN distinct m.id as id, m.ENTPersonLogin as login, " +
-				"m.ENTPersonNomAffichage? as username, m.type as type " +
+				"m.ENTPersonNomAffichage as username, m.type as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
@@ -462,8 +468,8 @@ public class CommunicationController extends Controller {
 				"START n = node:node_auto_index({group}) " +
 				"MATCH n<-[:APPARTIENT]-u " +
 				"WHERE has(u.type) AND u.type IN ['PERSRELELEVE','ELEVE','PERSEDUCNAT','ENSEIGNANT'] " + condition +
-				"RETURN distinct u.id as id, u.ENTPersonLogin? as login," +
-						" u.ENTPersonNomAffichage? as username, u.type as type " +
+				"RETURN distinct u.id as id, u.ENTPersonLogin as login," +
+						" u.ENTPersonNomAffichage as username, u.type as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("group", "id:" + profilGroupId + " AND type:GROUP_*");
