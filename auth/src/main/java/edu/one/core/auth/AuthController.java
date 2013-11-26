@@ -376,12 +376,12 @@ public class AuthController extends Controller {
 								trace.info("Activation du compte utilisateur " + login);
 								redirect(request, "/auth/login");
 							} else {
+								trace.info("Echec de l'activation : compte utilisateur " + login +
+										" introuvable ou déjà activé.");
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()
 								.putString("message", "activation.error"));
-								if (activationCode != null) {
-									error.putString("activationCode", activationCode);
-								}
+								error.putString("activationCode", activationCode);
 								renderView(request, error);
 							}
 						}
