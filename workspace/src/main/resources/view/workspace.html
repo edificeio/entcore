@@ -89,16 +89,17 @@
 					[[translate(button.text)]]
 					</button>
 				</div>
+				<button ng-click="openShareView(selectedDocuments()[0])"
+						translate key="workspace.share"
+						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share')"
+						ng-class="{ cell: true }">
+				</button>
 				<button ng-click="openCommentView(selectedDocuments()[0])"
 						ng-if="selectedDocuments()[0].myRights.comment.post"
 						translate key="workspace.document.comment"
 						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
 				</button>
-				<button ng-click="openShareView(selectedDocuments()[0])"
-						translate key="workspace.share"
-						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share')"
-						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
-				</button>
+
 				<span class="contextual-link"
 					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0">
 					<a ng-if="selectedDocuments()[0] !== documentComment" data-ng-click="toggleComments(selectedDocuments()[0])">

@@ -1,16 +1,19 @@
 		<div ng-controller="Share" class="share">
 			<div class="row line">
 				<h3>[[translate('share.title')]]</h3>
+				<div style="color: red" ng-if="varyingRights">
+					Droits variés
+				</div>
 				<table>
 					<thead>
 						<th></th>
-						<th ng-repeat="action in sharing.actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
+						<th ng-repeat="action in actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
 						<th></th>
 					</thead>
 					<tbody>
-						<tr ng-repeat="item in edited | orderBy:'index':true | limitTo:maxEdit">
+						<tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
-							<td ng-repeat="action in sharing.actions | orderBy:'priority'">
+							<td ng-repeat="action in actions | orderBy:'priority'">
 								<label>
 								<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
 								<span></span>
@@ -20,7 +23,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<a ng-click="displayMore()" ng-if="edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
+				<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
 			</div>
 			<div class="row">
 				<h3>[[translate('share.search.title')]]</h3>

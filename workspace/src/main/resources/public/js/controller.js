@@ -179,8 +179,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		return  Object.keys($scope.openedFolder.folder).length;
 	};
 
-	$scope.openShareView = function(document){
-		$scope.targetDocument = document;
+	$scope.openShareView = function(){
+		$scope.sharedDocuments = $scope.selectedDocuments();
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.share;
 	}

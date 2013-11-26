@@ -567,13 +567,17 @@ function Account($scope, http){
 
 function Share($rootScope, $scope, http, ui, _, lang){
 	$scope.sharing = {};
-	$scope.edited = [];
 	$scope.found = [];
 	$scope.maxResults = 5;
 
+	$scope.editResources = [];
+	$scope.sharingModel = {
+		edited: []
+	};
+
 	$scope.addResults = function(){
 		$scope.maxResults += 5;
-	}
+	};
 
 	var actionsConfiguration = {};
 
@@ -585,7 +589,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 
 	function actionToRights(item, action){
 		var actions = [];
-		_.where($scope.sharing.actions, { displayName: action.displayName }).forEach(function(item){
+		_.where($scope.actions, { displayName: action.displayName }).forEach(function(item){
 			item.name.forEach(function(i){
 				actions.push(i);
 			});
@@ -598,9 +602,9 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		var actions = {};
 
 		rights.forEach(function(right){
-			var action = _.find($scope.sharing.actions, function(action){
+			var action = _.find($scope.actions, function(action){
 				return action.name.indexOf(right) !== -1
-			})
+			});
 
 			if(!actions[action.displayName]){
 				actions[action.displayName] = true;
@@ -610,52 +614,126 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		return actions;
 	}
 
-	var feedData = function(){
-		http.get('/' + appPrefix + '/share/json/' + $scope.resources._id).done(function(data){
-			$scope.sharing = data;
-			$scope.sharing.actions.forEach(function(action){
-				var actionId = action.displayName.split('.')[1];
-				if(actionsConfiguration[actionId]){
-					action.priority = actionsConfiguration[actionId].priority;
-					action.requires = actionsConfiguration[actionId].requires;
-				}
-			})
-
-			function addToEdit(type){
-				for(var element in $scope.sharing[type].checked){
-					var rights = $scope.sharing[type].checked[element];
-					var groupActions = rightsToActions(rights);
-					var elementObj = _.findWhere($scope.sharing[type].visibles, {
-						id: element
-					});
-					elementObj.actions = groupActions;
-					$scope.edited.push(elementObj);
-					elementObj.index = $scope.edited.length;
-				}
+	function setActions(actions){
+		$scope.actions = actions;
+		$scope.actions.forEach(function(action){
+			var actionId = action.displayName.split('.')[1];
+			if(actionsConfiguration[actionId]){
+				action.priority = actionsConfiguration[actionId].priority;
+				action.requires = actionsConfiguration[actionId].requires;
 			}
-
-			addToEdit('groups');
-			addToEdit('users');
-			$scope.$apply('edited');
 		});
 	}
 
+	function dropRights(callback){
+		function drop(resource, type){
+			var done = 0;
+			for(var element in resource[type].checked){
+				var path = '/' + appPrefix + '/share/remove/' + resource._id;
+				var data = {};
+				if(type === 'users'){
+					data.userId = element;
+				}
+				else{
+					data.groupId = element;
+				}
+				http.put(path, http.serialize(data));
+			}
+		}
+		$scope.editResources.forEach(function(resource){
+			drop(resource, 'users');
+			drop(resource, 'groups');
+		});
+		callback();
+		$scope.varyingRights = false;
+	}
+
+	function differentRights(model1, model2){
+		var result = false;
+		function different(type){
+			for(var element in model1[type].checked){
+				if(!model2[type].checked[element]){
+					return true;
+				}
+
+				model1[type].checked[element].forEach(function(right){
+					result = result || model2[type].checked[element].indexOf(right) === -1
+				});
+			}
+
+			return result;
+		}
+
+		return different('users') || different('groups');
+	}
+
+	var feedData = function(){
+		var initModel = true;
+		$scope.resources.forEach(function(resource){
+			var id = resource._id;
+			http.get('/' + appPrefix + '/share/json/' + id).done(function(data){
+				if(initModel){
+					$scope.sharingModel = data;
+					$scope.sharingModel.edited = [];
+				}
+
+				data._id = resource._id;
+				$scope.editResources.push(data);
+				var editResource = $scope.editResources[$scope.editResources.length -1];
+				if(!$scope.sharing.actions){
+					setActions(data.actions);
+				}
+
+				function addToEdit(type){
+					for(var element in editResource[type].checked){
+						var rights = editResource[type].checked[element];
+
+						var groupActions = rightsToActions(rights);
+						var elementObj = _.findWhere(editResource[type].visibles, {
+							id: element
+						});
+						elementObj.actions = groupActions;
+						if(initModel){
+							$scope.sharingModel.edited.push(elementObj);
+						}
+
+						elementObj.index = $scope.sharingModel.edited.length;
+					}
+				}
+
+				addToEdit('groups');
+				addToEdit('users');
+
+				if(!initModel){
+					if(differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)){
+						$scope.varyingRights = true;
+						$scope.sharingModel.edited = [];
+					}
+				}
+				initModel = false;
+
+				$scope.$apply('sharingModel.edited');
+			});
+		})
+	};
+
 	$scope.$watch('resources', function(){
-		$scope.sharing = {};
-		$scope.edited = [];
+		$scope.actions = [];
+		$scope.sharingModel.edited = [];
 		$scope.search = '';
 		$scope.found = [];
+		$scope.varyingRights = false;
 		feedData();
 	})
 
 	$scope.addEdit = function(item){
 		item.actions = {};
-		$scope.edited.push(item);
-		item.index = $scope.edited.length;
+		$scope.sharingModel.edited.push(item);
+		item.index = $scope.sharingModel.edited.length;
 		$scope.found = [];
 		$scope.search = '';
 
-		$scope.sharing.actions.forEach(function(action){
+		$scope.actions.forEach(function(action){
 			var actionId = action.displayName.split('.')[1];
 			if(actionsConfiguration[actionId].default){
 				item.actions[action.displayName] = true;
@@ -667,23 +745,22 @@ function Share($rootScope, $scope, http, ui, _, lang){
 	$scope.findUserOrGroup = function(){
 		var searchTerm = lang.removeAccents($scope.search).toLowerCase();
 		$scope.found = _.union(
-			_.filter($scope.sharing.groups.visibles, function(group){
+			_.filter($scope.sharingModel.groups.visibles, function(group){
 				var testName = lang.removeAccents(group.name).toLowerCase();
 				return testName.indexOf(searchTerm) !== -1;
 			}),
-			_.filter($scope.sharing.users.visibles, function(user){
+			_.filter($scope.sharingModel.users.visibles, function(user){
 				var testName = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
 				var testNameReversed = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
 				return testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1;
 			})
 		);
 		$scope.found = _.filter($scope.found, function(element){
-			return $scope.edited.indexOf(element) === -1;
+			return $scope.sharingModel.edited.indexOf(element) === -1;
 		})
 	};
 
 	$scope.remove = function(element){
-		var path = '/' + appPrefix + '/share/remove/' + $scope.resources._id;
 		var data;
 		if(element.login !== undefined){
 			data = {
@@ -696,13 +773,16 @@ function Share($rootScope, $scope, http, ui, _, lang){
 			}
 		}
 
-		$scope.edited = _.reject($scope.edited, function(item){
+		$scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function(item){
 			return item.id === element.id;
 		});
 
-		http.put(path, http.serialize(data)).done(function(){
-			$rootScope.$broadcast('share-updated');
-		});
+		$scope.resources.forEach(function(resource){
+			var path = '/' + appPrefix + '/share/remove/' + resource._id;
+			http.put(path, http.serialize(data)).done(function(){
+				$rootScope.$broadcast('share-updated');
+			});
+		})
 	}
 
 	$scope.maxEdit = 5;
@@ -712,7 +792,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		$scope.maxEdit += displayMoreInc;
 	}
 
-	$scope.saveRights = function(element, action){
+	function applyRights(element, action){
 		var data;
 		if(element.login !== undefined){
 			data = { userId: element.id }
@@ -725,28 +805,39 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		var setPath = 'json';
 		if(!element.actions[action.displayName]){
 			setPath = 'remove';
-			_.filter($scope.sharing.actions, function(item){
+			_.filter($scope.actions, function(item){
 				return _.find(item.requires, function(dependency){
 					return action.displayName.indexOf(dependency) !== -1;
 				}) !== undefined
 			})
-			.forEach(function(item){
-				element.actions[item.displayName] = false;
-				$scope.saveRights(element, item);
-			})
+				.forEach(function(item){
+					element.actions[item.displayName] = false;
+				})
 		}
 		else{
 			action.requires.forEach(function(required){
-				var action = _.find($scope.sharing.actions, function(action){
+				var action = _.find($scope.actions, function(action){
 					return action.displayName.indexOf(required) !== -1;
 				});
 				element.actions[action.displayName] = true;
-				$scope.saveRights(element, action);
 			});
 		}
 
-		http.put('/' + appPrefix + '/share/' + setPath + '/' + $scope.resources._id, http.serialize(data)).done(function(){
-			$rootScope.$broadcast('share-updated');
+		$scope.resources.forEach(function(resource){
+			http.put('/' + appPrefix + '/share/' + setPath + '/' + resource._id, http.serialize(data)).done(function(){
+				$rootScope.$broadcast('share-updated');
+			});
 		});
+	}
+
+	$scope.saveRights = function(element, action){
+		if($scope.varyingRights){
+			dropRights(function(){
+				applyRights(element, action)
+			});
+		}
+		else{
+			applyRights(element, action);
+		}
 	};
 }
