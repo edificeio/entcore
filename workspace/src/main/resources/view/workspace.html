@@ -96,15 +96,15 @@
 				</button>
 				<button ng-click="openShareView(selectedDocuments()[0])"
 						translate key="workspace.share"
-						ng-if="selectedDocuments()[0].myRights.document.share"
+						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share')"
 						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
 				</button>
 				<span class="contextual-link"
 					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0">
-					<a ng-if="!selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
+					<a ng-if="selectedDocuments()[0] !== documentComment" data-ng-click="toggleComments(selectedDocuments()[0])">
 						[[translate('workspace.document.comment.show')]] ([[selectedDocuments()[0].comments.length]])
 					</a>
-					<a ng-if="selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
+					<a ng-if="selectedDocuments()[0] === documentComment" data-ng-click="toggleComments(selectedDocuments()[0])">
 						[[translate('workspace.document.comment.hide')]]
 					</a>
 				</span>

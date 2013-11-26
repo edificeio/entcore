@@ -5,9 +5,9 @@
 				<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
 			</th>
 			<th scope="col"></th>
-			<th scope="col" class="five" translate key="name"></th>
-			<th scope="col" class="four" translate key="owner"></th>
-			<th scope="col" class="two" translate key="modified"></th>
+			<th scope="col" class="five" translate key="name" ng-click="orderByField('name')"></th>
+			<th scope="col" class="four" translate key="owner" ng-click="orderByField('ownerName')"></th>
+			<th scope="col" class="two" translate key="modified" ng-click="orderByField('modified')"></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -17,7 +17,7 @@
 		<td colspan="2"><strong><a data-ng-click="openFolder(value, key)">[[key]]</a></strong></td>
 		<td></td>
 	</tr>
-	<tr data-ng-repeat-start="document in openedFolder.content" ng-class="{ overline: true, checked: document.selected }">
+	<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.field:order.desc" ng-class="{ overline: true, checked: document.selected }">
 		<td><input type="checkbox" data-ng-model="document.selected" /></td>
 		<td class="icon">
 			<div class="twelve cell">
@@ -32,7 +32,7 @@
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
 		<td colspan="5" class="container-cell">
 
-			<section class="row text-container" ng-if="document.showComments">
+			<section class="row text-container" ng-if="document === documentComment">
 				<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in document.comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 					<em>[[longDate(comment.posted)]]</em>

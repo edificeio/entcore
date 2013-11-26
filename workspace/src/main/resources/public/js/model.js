@@ -1,19 +1,28 @@
 function buildModel(){
-	function Tree(){
+	function RackDocument(data){
 
 	}
 
-	Model.collection(Tree, {
+	Model.collection(RackDocument, {
 		sync: function(){
-			this.load([{
-				displayName: 'Mes documents'
-			}, {
-				displayName: 'Mon casier'
-			}, {
-				displayName: 'Documents partagés avec moi'
-			}, {
-				displayName: 'Corbeille'
-			}])
+			var that = this;
+			http().get('/workspace/rack/documents').done(function(documents){
+				that.load(documents);
+			});
 		}
-	})
+	});
+
+	function Document(data){
+
+	}
+
+	Model.collection(Document, {
+		filter: 'owner',
+		sync: function(){
+			var that = this;
+			http().get('/workspace/documents').done(function(documents){
+				that.load(documents);
+			})
+		}
+	});
 }

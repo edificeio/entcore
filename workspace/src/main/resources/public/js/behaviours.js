@@ -28,8 +28,21 @@ var behaviours = {
 		}
 	},
 	root: {
-		create: function(){
-
+		documents: {
+			right: '',
+			behaviours: {
+				create: {
+					right: ''
+				}
+			}
+		},
+		rack: {
+			right: '',
+			behaviours: {
+				send: {
+					right: ''
+				}
+			}
 		}
 	}
 }
@@ -44,7 +57,7 @@ Behaviours.register('workspace', {
 
 		return resource;
 	},
-	root: function(){
+	workflow: function(){
 		return behaviours.root;
 	}
 });

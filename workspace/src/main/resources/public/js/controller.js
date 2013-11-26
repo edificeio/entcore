@@ -51,7 +51,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name, $scope.currentTree);
 	})
 
-	$scope.folders = { documents: {}, rack: {}, trash: {}, shared: {} };
+	$scope.folders = { documents: {}, trash: {}, shared: {} };
 	$scope.users = [];
 
 	var setDocumentRights = function(document){
@@ -142,6 +142,18 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		return '/' + folderString(tree, treeName)
 	}
 
+	$scope.inInterval = function(document, first, last){
+		if(first < 0){
+			first = 0;
+		}
+		for(var i = first; i <= last; i++){
+			if($scope.openedFolder.content[i] === document){
+				return true;
+			}
+		}
+		return false;
+	};
+
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
 		$scope.newFile = { name: $scope.translate('nofile'), file: null };
@@ -153,6 +165,18 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		$scope.targetDocument = document;
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
+	};
+
+	$scope.workflowRight = function(name){
+		var workflowRights = {
+			share: 'edu.one.core.workspace.service.WorkspaceService|shareJson'
+		}
+
+		return _.where($scope.me.authorizedActions, { name: workflowRights[name] }).length > 0;
+	}
+
+	$scope.nbFolders = function(){
+		return  Object.keys($scope.openedFolder.folder).length;
 	};
 
 	$scope.openShareView = function(document){
@@ -214,7 +238,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				comment: $scope.targetDocument.comment,
 				posted: new Date()
 			});
-			$scope.targetDocument.showComments = true;
+			$scope.documentComment = $scope.targetDocument;
 			$scope.$apply();
 		});
 	}
@@ -227,7 +251,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
 				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addDocument'}).length > 0;
 			} },
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
+				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+			} }
 		],
 		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } },
@@ -238,7 +264,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		name: 'rack',
 		path: 'rack/documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
+				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+			} }
 		],
 		contextualButtons: [
 			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
@@ -258,7 +286,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		filter: 'shared',
 		path: 'documents',
 		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){ return true } }
+			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
+				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+			} }
 		],
 		contextualButtons: [
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
@@ -350,7 +380,12 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 
 	$scope.toggleComments = function(document){
-		document.showComments = !document.showComments;
+		if($scope.documentComment === document){
+			$scope.documentComment = null;
+		}
+		else{
+			$scope.documentComment = document;
+		}
 	}
 
 	$scope.$watch('targetDocument', function(newVal){
@@ -483,6 +518,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		$scope.openFolder($scope.folders.documents, 'documents', trees[0]);
+		if(_.where($scope.me.authorizedActions, {name: 'edu.one.core.workspace.service.WorkspaceService|listRackDocuments' }).length > 0){
+			$scope.folders.rack = {};
+		}
 	});
 
 	$scope.boxes = { selectAll: false }
@@ -532,6 +570,19 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		});
 
 	};
+
+	$scope.order = {
+		field: 'name', desc: false
+	}
+	$scope.orderByField = function(fieldName){
+		if(fieldName === $scope.order.field){
+			$scope.order.desc = !$scope.order.desc;
+		}
+		else{
+			$scope.order.desc = false;
+			$scope.order.field = fieldName;
+		}
+	}
 
 	$scope.copy = function(){
 		ui.hideLightbox();

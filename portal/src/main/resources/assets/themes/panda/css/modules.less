@@ -834,6 +834,7 @@ h3{
 		height: 129px;
 		padding: 7px;
 		border: 1px solid #CCC;
+		background: #fff;
 		.rounded-corners(8px);
 		.border-box;
 
@@ -844,7 +845,14 @@ h3{
 		}
 	}
 
-	li a{
+	.element.selected{
+		background: @light-blue;
+		border: 1px solid #fff;
+		box-shadow: #eee 0px 0px 0px 1px;
+		border-radius: 5px;
+	}
+
+	.element a{
 		text-decoration: none;
 		color: #888;
 		font-size: 14px;
