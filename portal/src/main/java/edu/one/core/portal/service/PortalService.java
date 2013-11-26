@@ -146,7 +146,7 @@ public class PortalService extends Controller {
 					String query =
 							"START n=node:node_auto_index(id={id}) " +
 							"MATCH n-[:USERBOOK]->u " +
-							"RETURN u.theme? as theme";
+							"RETURN u.theme as theme";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
 					neo.send(query, params, new Handler<Message<JsonObject>>() {
