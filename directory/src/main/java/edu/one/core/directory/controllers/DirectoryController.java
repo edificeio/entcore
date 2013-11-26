@@ -108,7 +108,7 @@ public class DirectoryController extends Controller {
 		neo.send("START n=node:node_auto_index(id={classId}) "
 				+ "MATCH n<-[:APPARTIENT]-m "
 				+ "WHERE m.type IN [" + types + "] "
-				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode? as code, m.ENTPersonPrenom as firstName,"
+				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode as code, m.ENTPersonPrenom as firstName,"
 				+ "m.ENTPersonNom as lastName, n.id as classId", params, request.response());
 	}
 
@@ -118,7 +118,7 @@ public class DirectoryController extends Controller {
 		params.put("id",request.params().get("id"));
 		neo.send("START n=node:node_auto_index(id={id}) RETURN distinct "
 				+ "n.ENTPersonLogin as login, n.ENTPersonAdresse as address, "
-				+ "n.activationCode? as code;"
+				+ "n.activationCode as code;"
 			, params, request.response());
 	}
 

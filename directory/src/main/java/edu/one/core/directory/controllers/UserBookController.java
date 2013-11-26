@@ -79,13 +79,13 @@ public class UserBookController extends Controller {
 					}
 					String query =
 							"START n=node:node_auto_index(id={id}) " +
-							"MATCH n-[:COMMUNIQUE*1..2]->l-[?:COMMUNIQUE]->m<-[?:COMMUNIQUE_DIRECT]-n " +
-							"WITH m " +
-							"MATCH m-[?:USERBOOK]->u " +
-							"WHERE has(m.id) AND has(m.ENTPersonLogin) " +
-							"AND has(m.ENTPersonNomAffichage) " + filter +
+							"MATCH p=n-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m " +
+							"WHERE ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
+							"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " +
+							"AND NOT(m.ENTPersonLogin IS NULL) " + filter +
+							"OPTIONAL MATCH m-[:USERBOOK]->u " +
 							"RETURN distinct m.id as id, m.ENTPersonNomAffichage as displayName, " +
-							"u.mood? as mood, u.userid? as userId, u.picture? as photo, m.type as type " +
+							"u.mood as mood, u.userid as userId, u.picture as photo, m.type as type " +
 							"ORDER BY displayName";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
@@ -111,30 +111,33 @@ public class UserBookController extends Controller {
 						params.put("userId",user.getUserId());
 						hobbyVisibility = "PUBLIC|PRIVE";
 						personnalInfos =
-								"MATCH u-[r0?:SHOW_EMAIL]->(), u-[r1?:SHOW_BIRTHDATE]->(), " +
-								"u-[r2?:SHOW_PHONE]->(), u-[r3?:SHOW_MAIL]->(), " +
-								"u-[r4?:SHOW_HEALTH]->u " +
+								"OPTIONAL MATCH u-[r0:SHOW_EMAIL]->() " +
+								"OPTIONAL MATCH u-[r1:SHOW_BIRTHDATE]->() " +
+								"OPTIONAL MATCH u-[r2:SHOW_PHONE]->() " +
+								"OPTIONAL MATCH u-[r3:SHOW_MAIL]->() " +
+								"OPTIONAL MATCH u-[r4:SHOW_HEALTH]->u " +
 								"WITH DISTINCT h, c, n, v, u, n2, n.ENTPersonAdresse as address, " +
-								"n.ENTPersonMail? as email, u.health? as health, " +
-								"n.ENTPersonTelPerso? as tel, n.ENTPersonDateNaissance? as birthdate, " +
+								"n.ENTPersonMail as email, u.health as health, " +
+								"n.ENTPersonTelPerso as tel, n.ENTPersonDateNaissance as birthdate, " +
 								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4)]) as r ";
 					} else {
 						params.put("userId",request.params().get("id"));
 						hobbyVisibility = "PUBLIC";
-						personnalInfos = "MATCH u-[?:SHOW_EMAIL]->e, u-[?:SHOW_MAIL]->a, " +
-								"u-[?:SHOW_PHONE]->p, u-[?:SHOW_BIRTHDATE]->b, u-[?:SHOW_HEALTH]->s " +
-								"WITH h, c, n, v, u, n2, a.ENTPersonAdresse? as address, " +
-								"e.ENTPersonMail? as email, s.health? as health, " +
-								"p.ENTPersonTelPerso? as tel, b.ENTPersonDateNaissance? as birthdate, " +
+						personnalInfos = "OPTIONAL MATCH u-[:SHOW_EMAIL]->e " +
+								"OPTIONAL MATCH u-[:SHOW_MAIL]->a " +
+								"OPTIONAL MATCH u-[:SHOW_PHONE]->p " +
+								"OPTIONAL MATCH u-[:SHOW_BIRTHDATE]->b " +
+								"OPTIONAL MATCH u-[:SHOW_HEALTH]->s " +
+								"WITH h, c, n, v, u, n2, a.ENTPersonAdresse as address, " +
+								"e.ENTPersonMail as email, s.health as health, " +
+								"p.ENTPersonTelPerso as tel, b.ENTPersonDateNaissance as birthdate, " +
 								"COLLECT([]) as r ";
 					}
 					String query = "START n=node:node_auto_index(id={userId}) "
-								+ "MATCH "
-									+ "n-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->n "
-									+ "WHERE (c IS NULL) OR c.type='ETABEDUCNAT' WITH n, c "
-								+ "MATCH "
-									+ "(n)-[?:USERBOOK]->(u)-[v?:" + hobbyVisibility + "]->(h1), "
-									+ "(n)-[?:EN_RELATION_AVEC]-(n2) "
+								+ "MATCH n<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->c "
+								+ "WHERE (c IS NULL) OR c.type='ETABEDUCNAT' "
+								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u)-[v:" + hobbyVisibility + "]->(h1) "
+								+ "OPTIONAL MATCH (n)-[:EN_RELATION_AVEC]-(n2) "
 								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
 								+ personnalInfos
 								+ "RETURN DISTINCT "
@@ -146,18 +149,18 @@ public class UserBookController extends Controller {
 									+ "tel, "
 									+ "birthdate, "
 									+ "HEAD(r) as visibleInfos, "
-									+ "c.ENTStructureNomCourant? as schoolName, "
-									+ "n2.ENTPersonNomAffichage? as relatedName, "
-									+ "n2.id? as relatedId,"
+									+ "c.ENTStructureNomCourant as schoolName, "
+									+ "n2.ENTPersonNomAffichage as relatedName, "
+									+ "n2.id as relatedId,"
 									+ "n2.type as relatedType,"
-									+ "u.userid? as userId,"
-									+ "u.motto? as motto,"
-									+ "COALESCE(u.picture?, {defaultAvatar}) as photo,"
-									+ "COALESCE(u.mood?, {defaultMood}) as mood,"
+									+ "u.userid as userId,"
+									+ "u.motto as motto,"
+									+ "COALESCE(u.picture, {defaultAvatar}) as photo,"
+									+ "COALESCE(u.mood, {defaultMood}) as mood,"
 									+ "health,"
 									+ "COLLECT(type(v)) as visibility,"
-									+ "COLLECT(h.category?) as category,"
-									+ "COLLECT(h.values?) as values";
+									+ "COLLECT(h.category) as category,"
+									+ "COLLECT(h.values) as values";
 					params.put("defaultAvatar", userBookData.getString("default-avatar"));
 					params.put("defaultMood", userBookData.getString("default-mood"));
 
@@ -178,13 +181,15 @@ public class UserBookController extends Controller {
 				if (user != null) {
 					String query =
 							"START n=node:node_auto_index(id={id}) " +
-							"MATCH n-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->n " +
+							"MATCH n<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->c " +
+							"WHERE c.type = 'CLASSE' " +
 							"WITH c " +
-							"MATCH c<-[:APPARTIENT]-m-[?:USERBOOK]->u " +
-							"WHERE has(c.type) AND c.type = 'CLASSE' AND has(m.ENTPersonLogin) " +
+							"MATCH c<-[:APPARTIENT]-m " +
+							"WHERE NOT(m.ENTPersonLogin IS NULL) " +
+							"OPTIONAL MATCH m-[:USERBOOK]->u " +
 							"RETURN distinct m.type as type, m.id as id, " +
-							"m.ENTPersonNomAffichage as displayName, u.mood? as mood, " +
-							"u.userid? as userId, u.picture? as photo " +
+							"m.ENTPersonNomAffichage as displayName, u.mood as mood, " +
+							"u.userid as userId, u.picture as photo " +
 							"ORDER BY type DESC, displayName ";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
@@ -397,9 +402,8 @@ public class UserBookController extends Controller {
 		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
 				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
 		String customReturn =
-				"MATCH visibles-[?:APPARTIENT]->c<-[?:APPARTIENT]-e-[:EN_RELATION_AVEC*0..1]->visibles " +
-				"WHERE has(visibles.ENTPersonDateNaissance) AND visibles.ENTPersonDateNaissance=~{regex} " +
-						"AND has(c.type) AND c.type = 'CLASSE' " +
+				"MATCH visibles<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->c " +
+				"WHERE c.type = 'CLASSE' AND visibles.ENTPersonDateNaissance=~{regex} " +
 				"RETURN distinct visibles.id as id, visibles.ENTPersonNomAffichage as username, " +
 						"visibles.ENTPersonDateNaissance as birthDate, COLLECT(distinct c.ENTGroupeNom) as classes ";
 		JsonObject params = new JsonObject();
