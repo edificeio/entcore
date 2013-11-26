@@ -38,8 +38,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE has(n.activationCode) AND n.activationCode = {activationCode} " +
-				"AND n.ENTPersonMotDePasse? IS NULL " +
+				"WHERE n.activationCode = {activationCode} AND n.ENTPersonMotDePasse IS NULL " +
 				"SET n.ENTPersonMotDePasse = {password}, n.activationCode = null " +
 				"RETURN n.ENTPersonMotDePasse as password, n.id as id";
 		Map<String, Object> params = new HashMap<>();
@@ -87,16 +86,16 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE has(n.ENTPersonMail) " +
+				"WHERE NOT(n.ENTPersonMail IS NULL) " +
 				"SET n.resetCode = {resetCode} " +
-				"RETURN n.ENTPersonMail? as email";
+				"RETURN n.ENTPersonMail as email";
 		final String query2 =
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
 				"MATCH n-[:APPARTIENT]->m<-[:APPARTIENT]-p " +
-				"WHERE has(m.type) AND m.type = 'CLASSE' AND has(p.ENTPersonMail) " +
-				"AND has(p.type) AND p.type = 'ENSEIGNANT' " +
+				"WHERE m.type = 'CLASSE' AND NOT(p.ENTPersonMail IS NULL) " +
+				"AND p.type = 'ENSEIGNANT' " +
 				"SET n.resetCode = {resetCode} " +
-				"RETURN p.ENTPersonMail? as email";
+				"RETURN p.ENTPersonMail as email";
 		final Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		final String resetCode = UUID.randomUUID().toString();
