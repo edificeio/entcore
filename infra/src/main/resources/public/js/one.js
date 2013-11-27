@@ -147,7 +147,7 @@ var http = (function(){
 				that.events['request-started.' + requestName]();
 			}
 
-			$.ajax(params)
+			this.xhr = $.ajax(params)
 				.done(function(e, statusText, xhr){
 					if(typeof that.statusCallbacks.done === 'function'){
 						if(document.cookie === '' && typeof Http.prototype.events.disconnected === 'function'){

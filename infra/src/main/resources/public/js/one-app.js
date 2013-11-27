@@ -444,6 +444,35 @@ oneModule.directive('htmlEditor', function($compile){
 	}
 });
 
+oneModule.directive('loadingIcon', function($compile){
+	return {
+		restrict: 'E',
+		link: function($scope, $element, $attributes){
+			var addImage = function(){
+				var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
+				$('<img>')
+					.attr('src', loadingIllustrationPath)
+					.addClass('loading-icon')
+					.appendTo($element);
+			}
+			if($attributes.default=== 'loading'){
+				addImage();
+			}
+			http().bind('request-started.' + $attributes.request, function(e){
+				addImage();
+			});
+
+			http().bind('request-ended.' + $attributes.request, function(e){
+				var loadingDonePath = $('link').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
+				$element.find('.loading-icon').remove();
+				$('<img>')
+					.attr('src', loadingDonePath)
+					.appendTo($element);
+			});
+		}
+	}
+})
+
 oneModule.directive('loadingPanel', function($compile){
 	return {
 		restrict: 'A',

@@ -1,9 +1,12 @@
 		<div ng-controller="Share" class="share">
 			<div class="row line">
 				<h3>[[translate('share.title')]]</h3>
-				<div style="color: red" ng-if="varyingRights">
-					Droits variés
+				<div class="block">
+					<div class="warning" ng-if="varyingRights">
+						[[translate('share.varyingrights')]]
+					</div>
 				</div>
+
 				<table>
 					<thead>
 						<th></th>
