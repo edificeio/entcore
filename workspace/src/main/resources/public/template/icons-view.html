@@ -20,7 +20,8 @@
 			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
 	</div>
 	<section ng-repeat-end>
-		<section class="row text-container" ng-if="($index + nbFolders() + 1) % 4 === 0 && inInterval(documentComment, $index - 4, $index)">
+		<section class="row text-container" ng-if="(($index + nbFolders() + 1) % 4 === 0 && inInterval(documentComment, $index - 3, $index)) ||
+		($index === openedFolder.content.length - 1 && inInterval(documentComment, $index - (($index + nbFolders()) % 4), $index))">
 			<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in documentComment.comments">
 				<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 				<em>[[longDate(comment.posted)]]</em>

@@ -841,6 +841,10 @@ ul.icons-view.two-cols li {
 .icons-view div.element:nth-child(8n + 9) {
   clear: left;
 }
+.action-cell {
+  width: 30px;
+  height: 30px;
+}
 .enhanced-select {
   position: relative;
   margin-top: 15px;
@@ -2411,6 +2415,32 @@ i[role=tools] {
   float: left;
   vertical-align: middle;
 }
+i[role=cancel] {
+  height: 15px;
+  width: 15px;
+  background-image: url("../img/icons/cancel.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.warning {
+  color: #c60c17;
+  background: #FFE7E8;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
 .icons-tabs li {
   border: 2px solid #fff;
   -webkit-border-top-right-radius: 10px;
@@ -3028,18 +3058,10 @@ h3 {
 .icons-view .element a i,
 .icons-view .element a img {
   opacity: 1;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
 }
 .icons-view .element a i:hover,
 .icons-view .element a img:hover {
   opacity: 0.8;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
 }
 table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;
@@ -3322,6 +3344,9 @@ img[src=""] {
 .share input[type=text] {
   margin-left: 15px;
   margin-bottom: 15px;
+}
+.share .block {
+  padding: 15px;
 }
 .share .display-more {
   text-align: right;

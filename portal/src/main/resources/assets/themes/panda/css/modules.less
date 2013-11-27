@@ -394,6 +394,19 @@ i[role=tools]{
 	.icon(tools, 28px);
 }
 
+i[role=cancel]{
+	.icon(cancel, 15px);
+}
+
+.warning{
+	color: #c60c17;
+	background: #FFE7E8;
+	padding: 7px;
+	font-size: 12px;
+	text-align: center;
+	.rounded-corners(10px);
+}
+
 .icons-tabs{
 	li{
 		border: 2px solid #fff;
@@ -864,12 +877,10 @@ h3{
 
 		i, img{
 			opacity: 1;
-			.run-transition(opacity);
 		}
 
 		i:hover, img:hover{
 			opacity: 0.8;
-			.run-transition(opacity)
 		}
 	}
 }
@@ -1158,6 +1169,10 @@ img[src=""]{
 	input[type=text]{
 		margin-left: 15px;
 		margin-bottom: 15px;
+	}
+
+	.block{
+		padding: 15px;
 	}
 
 	.display-more{

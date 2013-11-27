@@ -841,6 +841,10 @@ ul.icons-view.two-cols li {
 .icons-view div.element:nth-child(8n + 9) {
   clear: left;
 }
+.action-cell {
+  width: 30px;
+  height: 30px;
+}
 .enhanced-select {
   position: relative;
   margin-top: 15px;

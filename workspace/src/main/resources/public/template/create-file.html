@@ -1,21 +1,34 @@
-<div class="fixed-block height-four">
-	<form id="upload-form" method="post" ng-submit="sendNewFile('document')" enctype="multipart/form-data" class="fixed twelve cell">
+	<form id="upload-form" method="post" ng-submit="sendNewFile('document')" enctype="multipart/form-data" class="twelve cell">
 		<div class="twelve fluid cell">
 			<h1 translate key="workspace.add.document"></h1>
+			<article>
+				<table class="list list-view">
+					<thead>
+						<tr>
+							<th colspan="2">Documents envoyés</th>
+						</tr>
+					</thead>
+					<tr ng-repeat="file in loadingFiles">
+						<td class="action-cell"><loading-icon request="file-upload-[[file.file.name]]-[[$index]]" default="loading" /></td>
+						<td>[[file.file.name]]</td>
+					</tr>
+					<tr ng-if="loadingFiles.length === 0">
+						<td colspan="2">Veuillez sélectionner un document</td>
+					</tr>
+				</table>
+			</article>
+
 			<div class="row">
-				<div class="eight cell select-file">
+				<div class="eight cell select-file block-container">
 					<div class="hidden-content">
 						<input type="file"  file-input-change="setFileName()" data-ng-model="newFile.file" />
 					</div>
 					<button class="file-button" translate key="choose"></button>
 					<input type="text" data-ng-model="newFile.name" data-display-file />
 				</div>
-			</div>
-			<div class="lightbox-buttons">
-				<input type="submit" translate-attr="value" value="import.file" ng-disabled="loading" />
-				<input class="cancel" type="button" translate-attr="value" value="cancel" />
-
+				<div class="four cell block-container">
+					<button ng-click="addLoadingFile()" class="right-magnet small button">Ajouter</button>
+				</div>
 			</div>
 		</div>
 	</form>
-</div>

@@ -373,6 +373,40 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		})
 	}
 
+	$scope.loadingFiles = [];
+
+	$scope.cancelRequest = function(file){
+		file.request.abort();
+	};
+	$scope.addLoadingFile = function(){
+		var formData = new FormData();
+		var index = $scope.loadingFiles.length;
+
+		if($scope.newFile.name){
+			formData.append('file', $scope.newFile.file, $scope.newFile.name + '.' + $scope.newFile.extension);
+		}
+		else{
+			formData.append('file', $scope.newFile.file);
+		}
+
+		var url = 'document';
+		var request = http.postFile(url + '?thumbnail=120x120',  formData, {
+			requestName: 'file-upload-' + $scope.newFile.file.name + '-' + index
+		})
+			.done(function(e){
+				$scope.openFolder($scope.openedFolder.folder, $scope.openedFolder.name, $scope.currentTree);
+				var path = folderToString($scope.folders[$scope.currentTree.name], $scope.currentTree.name, $scope.openedFolder.folder, $scope.openedFolder.name);
+				if(path !== ''){
+					http.put("documents/move/" + e._id + path);
+				}
+		}).xhr;
+
+		$scope.loadingFiles.push({
+			file: $scope.newFile.file,
+			request: request
+		});
+	}
+
 	$scope.translate = function(key){
 		return lang.translate(key);
 	};
