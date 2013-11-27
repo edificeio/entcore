@@ -1,12 +1,13 @@
 <header>&nbsp;</header>
 <div class="icons-view">
-	<div data-ng-repeat="(key, value) in openedFolder.folder" class="element">
+	<div data-ng-repeat-start="(key, value) in openedFolder.folder" class="element mini-block-container">
 		<a>
 			<i role="folder-large" data-ng-click="openFolder(value)"></i>
 		</a>
 		<a data-ng-click="openFolder(value)">[[key]]</a>
 	</div>
-	<div ng-repeat-start="document in openedFolder.content" ng-class="{ selected: document === documentComment, element: true }">
+	<section data-ng-repeat-end></section>
+	<div ng-repeat-start="document in openedFolder.content" ng-class="{ selected: document === documentComment, element: true, 'mini-block-container': true }">
 			<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]]-container">
 				<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>

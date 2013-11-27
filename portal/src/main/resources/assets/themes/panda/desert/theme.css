@@ -788,6 +788,9 @@ ul.icons-view.two-cols li {
     width: 100%;
   }
 }
+.mini-block-container {
+  padding: 7px;
+}
 .icons-view {
   padding-left: 0;
 }
@@ -800,7 +803,6 @@ ul.icons-view.two-cols li {
   display: block;
   width: 24%;
   margin: 2px;
-  padding: 10px;
   position: relative;
   list-style-type: none;
 }
@@ -836,7 +838,7 @@ ul.icons-view.two-cols li {
   width: 100%;
   position: relative;
 }
-.icons-view div.element:nth-child(8n + 5) {
+.icons-view div.element:nth-child(8n + 9) {
   clear: left;
 }
 .enhanced-select {
