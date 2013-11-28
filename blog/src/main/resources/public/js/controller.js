@@ -19,6 +19,9 @@ var views = {
 		path: '/blog/public/template/view-post.html',
 		allow: true
 	},
+	'viewSubmitted': {
+		path: '/blog/public/template/view-submitted.html'
+	},
 	"lastPosts":{},
 	"displayBlog":{}
 }
@@ -52,7 +55,8 @@ function Blog($scope, http, date, _, ui, lang){
 			post: {
 				post: true,
 				remove: true,
-				edit: true
+				edit: true,
+				publish: true
 			},
 			blog: {
 				edit: true
@@ -82,6 +86,7 @@ function Blog($scope, http, date, _, ui, lang){
 		blog.myRights.post.post = setRight('edu-one-core-blog-controllers-PostController|submit');
 		blog.myRights.post.edit = setRight('edu-one-core-blog-controllers-PostController|update');
 		blog.myRights.post.remove = setRight('edu-one-core-blog-controllers-PostController|delete');
+		blog.myRights.post.publish = setRight('edu-one-core-blog-controllers-PostController|publish');
 		blog.myRights.blog.edit = setRight('manager');
 	}
 
@@ -130,6 +135,13 @@ function Blog($scope, http, date, _, ui, lang){
 
 	$scope.defaultView();
 
+	$scope.publish = function(post){
+		http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + post._id).done(function(){
+			post.state = 'PUBLISHED';
+			$scope.$apply('currentBlog');
+		})
+	}
+
 	$scope.displayBlog = function(blog){
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
@@ -138,6 +150,12 @@ function Blog($scope, http, date, _, ui, lang){
 			initMaxResults();
 			$scope.$apply();
 		});
+
+		http.get('/blog/post/list/all/' + blog._id + '?state=SUBMITTED').done(function(data){
+			$scope.currentBlog.submitted = data;
+			initMaxResults();
+			$scope.$apply();
+		})
 	};
 
 	$scope.nbComments = function(post){
@@ -191,12 +209,15 @@ function Blog($scope, http, date, _, ui, lang){
 		if(post === $scope.editPost){
 			return views.editPost;
 		}
+		if(post.state === 'SUBMITTED'){
+			return views.viewSubmitted;
+		}
 		return views.viewPost;
 	}
 
 	$scope.showEditPost = function(post){
 		$scope.currentPost = post;
-		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id)
+		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
 			.done(function(data){
 				$scope.currentPost = data;
 				$scope.editPost = post;
@@ -216,12 +237,11 @@ function Blog($scope, http, date, _, ui, lang){
 	function resetScope(){
 		$scope.create = {
 			post: {
-				state: 'DRAFT'
+				state: 'SUBMITTED'
 			},
 			blog: {
 				thumbnail: '',
 				'comment-type': 'IMMEDIATE',
-				'publish-type': 'IMMEDIATE',
 				description: ''
 			},
 			comment: {

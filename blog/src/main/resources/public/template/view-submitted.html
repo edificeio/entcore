@@ -1,0 +1,22 @@
+<div class="row">
+	<h2 class="seven cell">
+		<span class="simple-text" ng-if="post.author.userId === me.userId">(Brouillon)</span>
+		<span class="simple-text" ng-if="post.author.userId !== me.userId">(A publier)</span>
+		[[post.title]]
+	</h2>
+	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">[[translate('blog.edit.post')]]</button>
+	<button class="right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="currentBlog.myRights.post.remove">
+		[[translate('blog.delete.post')]]
+	</button>
+</div>
+<div class="row"><hr></div>
+<h5 class="row">
+	[[translate('blog.by')]] <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> [[translate('blog.on.date')]] [[formatDate(post.created.$date)]]
+						<span data-ng-if="isCurrentView('lastPosts')">
+							[[translate('blog.on.blog')]] <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
+						</span>
+</h5>
+<div class="row" bind-html-unsafe="post.content"></div>
+<div class="row">
+	<button ng-click="publish(post)" ng-if="currentBlog.myRights.post.publish">Publier</button>
+</div>

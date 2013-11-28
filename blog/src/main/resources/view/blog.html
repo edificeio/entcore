@@ -57,13 +57,15 @@
 			<article class="text-container row" ng-if="blogs.length === 0 && currentView === ''">
 				{{#i18n}}noblog{{/i18n}}
 			</article>
-			<article class="text-container row" ng-if="blogs.length > 0 || currentView !== ''">
-				<section data-ng-include="currentView.path"></section>
-				<section data-ng-repeat="post in currentBlog.posts | limitTo:maxResults" class="row">
+			<article class="row" ng-if="blogs.length > 0 || currentView !== ''">
+				<section data-ng-include="currentView.path" class="row text-container"></section>
+				<section data-ng-repeat="post in currentBlog.submitted | limitTo:maxResults" ng-class="{ row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED'}">
 					<div ng-include="postTemplate(post).path"></div>
-					<hr class="solid">
 				</section>
-				<h3 ng-if="maxResults < currentBlog.posts.length">
+				<section data-ng-repeat="post in currentBlog.posts | limitTo:maxResults-currentBlog.submitted.length" class="row text-container line">
+					<div ng-include="postTemplate(post).path"></div>
+				</section>
+				<h3 ng-if="maxResults < currentBlog.posts.length + currentBlog.submitted.length" class="text-container">
 					<a ng-click="addResults()" class="right-magnet">[[translate('seemore')]]</a>
 					<div class="clear"></div>
 				</h3>

@@ -679,8 +679,29 @@ h4{
 
 }
 
+.greyed-out{
+	background: @ultra-light-grey;
+}
+
+.simple-text{
+	display: inline !important;
+	font-size: 12px !important;
+	font-weight: normal;
+	color: #000;
+	font-family: Arial;
+	background: none !important;
+}
+
 article.comment{
 	background: @ultra-light-grey;
+	em{
+		display: inline;
+		background: none;
+	}
+	em, a{
+		font-size: 12px;
+		line-height: 18px;
+	}
 }
 
 .box{
