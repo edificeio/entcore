@@ -419,12 +419,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 
 	$scope.toggleComments = function(document){
-		if($scope.documentComment === document){
-			$scope.documentComment = null;
-		}
-		else{
-			$scope.documentComment = document;
-		}
+		document.showComments = !document.showComments;
 	}
 
 	$scope.$watch('targetDocument', function(newVal){

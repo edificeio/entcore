@@ -102,10 +102,10 @@
 
 				<span class="contextual-link"
 					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0">
-					<a ng-if="selectedDocuments()[0] !== documentComment" data-ng-click="toggleComments(selectedDocuments()[0])">
+					<a ng-if="!selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
 						[[translate('workspace.document.comment.show')]] ([[selectedDocuments()[0].comments.length]])
 					</a>
-					<a ng-if="selectedDocuments()[0] === documentComment" data-ng-click="toggleComments(selectedDocuments()[0])">
+					<a ng-if="selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
 						[[translate('workspace.document.comment.hide')]]
 					</a>
 				</span>

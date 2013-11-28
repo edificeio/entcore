@@ -7,7 +7,7 @@
 		<a data-ng-click="openFolder(value)">[[key]]</a>
 	</div>
 	<section data-ng-repeat-end></section>
-	<div ng-repeat-start="document in openedFolder.content" ng-class="{ selected: document === documentComment, element: true, 'mini-block-container': true }">
+	<div ng-repeat-start="document in openedFolder.content" ng-class="{ selected: document.selected, element: true, 'mini-block-container': true }">
 			<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]]-container">
 				<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
@@ -16,13 +16,13 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			<a ng-href="[[documentPath(document)]]">[[document.name]]</a>
+			<a ng-href="[[documentPath(document)]]">[[document.name]] <span class="badge" ng-if="document.comments.length > 0">[[document.comments.length]]</span></a>
 			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
 	</div>
 	<section ng-repeat-end>
-		<section class="row text-container" ng-if="(($index + nbFolders() + 1) % 4 === 0 && inInterval(documentComment, $index - 3, $index)) ||
-		($index === openedFolder.content.length - 1 && inInterval(documentComment, $index - (($index + nbFolders()) % 4), $index))">
-			<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in documentComment.comments">
+		<section class="row text-container" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||
+		($index === openedFolder.content.length - 1 && inInterval(selectedDocuments()[0], $index - (($index + nbFolders()) % 4), $index))) && selectedDocuments()[0].showComments">
+			<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in selectedDocuments()[0].comments">
 				<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 				<em>[[longDate(comment.posted)]]</em>
 				<p>[[comment.comment]]</p>

@@ -7,6 +7,7 @@
 			<th scope="col"></th>
 			<th scope="col" class="five" translate key="name" ng-click="orderByField('name')"></th>
 			<th scope="col" class="four" translate key="owner" ng-click="orderByField('ownerName')"></th>
+			<th></th>
 			<th scope="col" class="two" translate key="modified" ng-click="orderByField('modified')"></th>
 		</tr>
 	</thead>
@@ -15,6 +16,7 @@
 		<td></td>
 		<td><i role="folder"></i></td>
 		<td colspan="2"><strong><a data-ng-click="openFolder(value, key)">[[key]]</a></strong></td>
+		<td></td>
 		<td></td>
 	</tr>
 	<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.field:order.desc" ng-class="{ overline: true, checked: document.selected }">
@@ -27,12 +29,13 @@
 		</td>
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
+		<td><span class="badge" ng-if="document.comments.length > 0">[[document.comments.length]]</span></td>
 		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
 	</tr>
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
-		<td colspan="5" class="container-cell">
+		<td colspan="6" class="container-cell">
 
-			<section class="row text-container" ng-if="document === documentComment">
+			<section class="row text-container" ng-if="document === selectedDocuments()[0] && document.showComments">
 				<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in document.comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 					<em>[[longDate(comment.posted)]]</em>
