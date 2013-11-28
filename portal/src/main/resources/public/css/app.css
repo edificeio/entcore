@@ -534,6 +534,10 @@ nav.horizontal a {
   vertical-align: bottom;
   margin-right: 10px;
 }
+.horizontal-spacing {
+  padding-left: 5px;
+  padding-right: 5px;
+}
 .calendar {
   box-sizing: content-box;
   height: 1px;
@@ -547,7 +551,7 @@ nav.horizontal a {
   position: relative;
   background-size: contain;
   background-repeat: no-repeat;
-  margin-bottom: 83px;
+  margin-bottom: 35.7%;
   padding-right: 1px;
   padding-bottom: 49.4% !important;
 }
@@ -584,7 +588,7 @@ nav.horizontal a {
   max-width: 100%;
 }
 .calendar .content {
-  margin-top: 73px;
+  margin-top: 25.7%;
   width: 1;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -627,15 +631,15 @@ nav.horizontal a {
 }
 .calendar .day {
   width: 14.2%;
-  height: 24px;
+  height: 17px;
   text-align: center;
-  padding-top: 4px;
+  padding-top: 3px;
 }
 .calendar .current-month-header {
   position: absolute;
   width: 100%;
   text-align: center;
-  top: 36px;
+  top: 26px;
 }
 i.liquid {
   max-width: 100% !important;
@@ -775,18 +779,9 @@ ul.icons-tabs li i {
   margin-right: auto;
   float: none;
 }
-ul.icons-view.two-cols li {
-  width: 1;
-}
-@media screen and (min-width: 720px) {
-  ul.icons-view.two-cols li {
-    width: 50%;
-  }
-}
-@media screen and (max-width: 720px) {
-  ul.icons-view.two-cols li {
-    width: 100%;
-  }
+ul.icons-view.two-cols li.element {
+  width: 45%;
+  margin: 2.5%;
 }
 .mini-block-container {
   padding: 7px;

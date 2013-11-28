@@ -10,12 +10,12 @@
 	<body ng-controller="MainController" ng-click="closePanel()">
 		<portal>
 			<div class="row">
-				<div class="four cell block-container" ng-controller="Widgets">
+				<div class="three cell block-container" ng-controller="Widgets">
 					<div class="row" ng-repeat="widget in widgets.all">
 						<div class="twelve cell" ng-include="widget.path"></div>
 					</div>
 				</div>
-				<div class="eight cell">
+				<div class="nine cell">
 						<h1><a data-reload><i role="notification"></i>{{#i18n}}timeline.title{{/i18n}}</a></h1>
 						<article data-ng-controller="Timeline" class="twelve cell">
 							<div class="row line filters">
@@ -31,22 +31,27 @@
 								</ul>
 							</div>
 							<div data-ng-repeat="notification in notifications.all" class="row line">
-								<div class="two cell fixed-block height-two">
-									<div class="fixed twelve cell text-container">
-										<div class="fluid twelve cell clip">
-											<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=82x82" />
-										</div>
-									</div>
-								</div>
-								<div class="ten cell text-container" ng-class="{
-									ten: true,
+
+								<div ng-class="{
+									twelve: true,
 									cell: true,
 									'text-container': true,
 									'unread': isUnRead(notification)
 								}">
 									<div class="row">
-										<div class="cell eight" data-ng-bind-html="notification.message"></div>
-										<div class="cell right-magnet">
+										<div class="cell nine">
+											<div class="row">
+												<div class="one cell fixed-block height-one">
+													<div class="fixed twelve cell">
+														<div class="fluid twelve cell clip">
+															<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=40x40" />
+														</div>
+													</div>
+												</div>
+												<div class="eleven cell horizontal-spacing" data-ng-bind-html="notification.message"></div>
+											</div>
+										</div>
+										<div class="cell right-magnet three">
 											<em class="low-importance">[[formatDate(notification.date.$date)]]</em>
 										</div>
 									</div>
@@ -67,7 +72,7 @@
 								<h2>Mes thèmes</h2>
 								<div class="twelve cell">
 									<ul class="list icons-view two-cols">
-										<li ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)">
+										<li ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)" class="element">
 											<div class="photo-preview">
 												<img ng-src="[[skin.skinPath]]thumbnail.png" />
 											</div>

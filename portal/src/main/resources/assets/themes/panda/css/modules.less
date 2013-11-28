@@ -842,6 +842,19 @@ h3{
 	.run-transition(box-shadow);
 }
 
+.badge{
+	.rounded-corners(10px);
+	background: @solid-blue;
+	color: #fff;
+	font-weight: bold;
+	padding: 1px;
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	text-align: center;
+	font-size: 12px;
+}
+
 .icons-view{
 	a.img-container{
 		height: 129px;
@@ -1030,7 +1043,10 @@ table{
 }
 
 em.low-importance{
-	font-size: 12px;
+	font-size: 12px !important;
+	height: 16px;
+	line-height: 16px;
+	text-align: right;
 }
 
 dl{
@@ -1245,22 +1261,22 @@ img[src=""]{
 		color: #FFF;
 		font-family: Arial;
 		font-weight: normal;
-		font-size: 18px;
+		font-size: 14px;
 	}
 
 	.current-day{
 		h1{
 			font-family: Arial;
 			color: #000;
-			font-size: 20px;
+			font-size: 14px;
 			text-align: center;
 			font-weight: normal;
 			margin-bottom: -10px;
-			margin-top: 15px;
+			margin-top: 5px;
 		}
 		h2{
 			font-family: Times New Roman;
-			font-size: 75px;
+			font-size: 60px;
 			color: #b11f1f;
 			margin: 0;
 			text-align: center;
@@ -1270,7 +1286,7 @@ img[src=""]{
 			font-family: Calibri;
 			font-weight: 100;
 			color: #666;
-			font-size: 18px;
+			font-size: 14px;
 			background: url(../img/illustrations/calendar-separator.png) no-repeat center top;
 			text-align: center;
 			margin-top: -10px;
@@ -1283,7 +1299,7 @@ img[src=""]{
 		.day{
 			color: #666;
 			font-weight: bold;
-			font-size: 12px;
+			font-size: 10px;
 			border-left: 1px solid #ccc;
 			border-bottom: 1px solid #ccc;
 		}
