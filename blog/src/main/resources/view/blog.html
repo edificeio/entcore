@@ -25,12 +25,12 @@
 			</nav>
 		</div>
 	</div>
-	<div class="row text-container">
+	<div class="row">
 		<div class="four cell">
 			<nav class="vertical">
 				<div data-ng-repeat="blog in blogs">
-					<section data-ng-class="{'fixed-block':true, 'cell':true,
-							 'height-four':true, 'row':true, 'clip': true,
+					<article data-ng-class="{'fixed-block':true, 'cell':true,
+							 'height-four':true, 'row':true, 'clip': true, 'lower-line': $index !== 0,
 							 'selected':isSelected(blog._id)}">
 						<div class="four cell fixed">
 							<div class="fluid twelve cell v-center-container">
@@ -45,15 +45,13 @@
 								<a ng-href="/userbook/annuaire#[[blog.author.userId]]"><h4>{{#i18n}}blog.by{{/i18n}} [[blog.author.username]]</h4></a>
 							</div>
 						</div>
-					</section>
+					</article>
 					<a data-ng-click="showEditBlog(blog)" ng-if="blog.myRights.blog.edit">{{#i18n}}blog.edit.title{{/i18n}}</a>
-					<a ng-if="!blog.myRights.blog.edit">&nbsp;</a>
-					<hr class="clear content-line" />
 				</div>
 				<h5><a data-ng-click="showCreateBlog()" ng-if="me.myRights.blog.post">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
 			</nav>
 	</div>
-	<div class="eight cell">
+	<div class="eight cell horizontal-spacing">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
 			<article class="text-container row" ng-if="blogs.length === 0 && currentView === ''">

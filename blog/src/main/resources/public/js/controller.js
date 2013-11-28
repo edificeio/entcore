@@ -301,17 +301,10 @@ function Blog($scope, http, date, _, ui, lang){
 	}
 
 	$scope.openSharingView = function(){
-		//$scope.lightboxPath = '/blog/share/' + $scope.currentBlog._id;
+		$scope.sharedResources = [$scope.currentBlog];
 		$scope.lightboxPath = '/blog/public/template/share.html'
 		ui.showLightbox();
-		//Small hack until we get final version
-		$('body').on('click.share', '.share input[type=submit]', function(e){
-			e.preventDefault();
-			http.post($('.share form').attr('action'), $('.share form').serialize()).done(function(){
-				ui.hideLightbox();
-			});
-			$('body').unbind('click.share');
-		})
+
 	};
 
 	$scope.removePost = function(post){
