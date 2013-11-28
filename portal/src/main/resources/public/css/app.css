@@ -633,7 +633,7 @@ nav.horizontal a {
   width: 14.2%;
   height: 17px;
   text-align: center;
-  padding-top: 3px;
+  padding-top: 2px;
 }
 .calendar .current-month-header {
   position: absolute;
@@ -992,6 +992,9 @@ article h2:first-child {
 }
 .content-line {
   margin-bottom: 15px;
+}
+.lower-line {
+  margin-top: 15px;
 }
 .clip {
   overflow: hidden;
