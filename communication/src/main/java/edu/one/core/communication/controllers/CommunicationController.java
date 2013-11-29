@@ -35,7 +35,7 @@ public class CommunicationController extends Controller {
 	private final Neo neo;
 	private final ProfilFactory pf;
 	private static final List<String> profils = Collections.unmodifiableList(
-			Arrays.asList("ADMINISTRATEUR", "ELEVE", "PERSRELELEVE", "PERSEDUCNAT", "ENSEIGNANT"));
+			Arrays.asList("SuperAdmin", "Student", "Relative", "Principal", "Teacher"));
 
 	public CommunicationController(Vertx vertx, Container container,
 			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -75,9 +75,12 @@ public class CommunicationController extends Controller {
 				if (profils != null) {
 					Set<String> gpId = new HashSet<>(Arrays.asList(Joiner.on("_").join(groupsProfils).split("_")));
 					neo.send(
-						"START n=node:node_auto_index('id:" + Joiner.on(" OR id:").join(gpId) + "') " +
-						"RETURN n.id as id, n.name as name, n.type as type",
-						null, new Handler<Message<JsonObject>>() {
+						"MATCH (n:ProfileGroup) " +
+						"WHERE n.id IN ['" + Joiner.on("','").join(gpId) + "'] " +
+						"RETURN n.id as id, n.name as name, " +
+						"HEAD(filter(x IN labels(m) WHERE x <> 'ProfileGroup' " +
+						"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type",
+						 new Handler<Message<JsonObject>>() {
 
 						@Override
 						public void handle(Message<JsonObject> res) {
@@ -158,7 +161,7 @@ public class CommunicationController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String schoolId = request.params().get("schoolId");
-					if ("SUPERADMIN".equals(user.getType())) {
+					if ("SuperAdmin".equals(user.getType())) {
 						eb.send("directory", new JsonObject().putString("action", "groups")
 								.putString("schoolId", schoolId),
 								new Handler<Message<JsonObject>>() {
@@ -197,9 +200,9 @@ public class CommunicationController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String schoolId = request.params().get("schoolId");
-					if ("SUPERADMIN".equals(user.getType())) {
+					if ("SuperAdmin".equals(user.getType())) {
 						eb.send("directory", new JsonObject().putString("action", "groups")
-								.putArray("types", new JsonArray().addString("GROUP_CLASSE_ELEVE"))
+								.putArray("types", new JsonArray().addString("ClassStudentGroup"))
 								.putString("schoolId", schoolId),
 								new Handler<Message<JsonObject>>() {
 							@Override
@@ -213,7 +216,7 @@ public class CommunicationController extends Controller {
 							}
 						});
 					} else {
-						visibleUsers(user.getUserId(), schoolId, new JsonArray().add("GROUP_CLASSE_ELEVE"),
+						visibleUsers(user.getUserId(), schoolId, new JsonArray().add("ClassStudentGroup"),
 								new Handler<JsonArray>() {
 							@Override
 							public void handle(JsonArray event) {
@@ -267,14 +270,16 @@ public class CommunicationController extends Controller {
 
 	private void listVisiblesSchools(String userId, String userType,
 			final Handler<JsonArray> handler) {
-		String query = "START n=node:node_auto_index(type='ETABEDUCNAT') ";
+		String query;
 		Map<String, Object> params = new HashMap<>();
-		if (!"SUPERADMIN".equals(userType)) {
-			query += ", m=node:node_auto_index(id={userId}) " +
-					 "MATCH m-[:COMMUNIQUE]->g-[:DEPENDS*1..2]->n ";
+		if (!"SuperAdmin".equals(userType)) {
+			query = "MATCH (m:User)-[:COMMUNIQUE]->g-[:DEPENDS*1..2]->(n:School) " +
+					"WHERE m.id = {userId} ";
 			params.put("userId", userId);
+		} else {
+			query = "MATCH (n:School) ";
 		}
-		query += "RETURN n.id as id, n.ENTStructureNomCourant as name, n.type as type";
+		query += "RETURN n.id as id, n.name as name, HEAD(labels(n)) as type";
 		neo.send(query, params, new Handler<Message<JsonObject>>() {
 
 			@Override
@@ -290,9 +295,7 @@ public class CommunicationController extends Controller {
 
 	private JsonArray allGroupsProfilsClasse() {
 		JsonArray gpc = new JsonArray();
-		for (String profil : profils) {
-			gpc.addString("GROUP_CLASSE_" + profil);
-		}
+		gpc.addString("ClassProfileGroup");
 		return gpc;
 	}
 
@@ -366,32 +369,37 @@ public class CommunicationController extends Controller {
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf,
 			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
-		StringBuilder query = new StringBuilder()
-			.append("START n = node:node_auto_index(id={userId})");
+		StringBuilder query = new StringBuilder();
 		Map<String, Object> params = new HashMap<>();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
 		if (schoolId != null && !schoolId.trim().isEmpty()) {
-			query.append(", s=node:node_auto_index(id={schoolId}) "
-					+ "MATCH n-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->s "); //TODO manage leaf
+			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:School {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", schoolId);
 		} else {
-			query.append(" MATCH p=n-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m ");
+			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 					"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) ";
 		}
-		query.append("WHERE has(m.id) " + condition);
+		query.append("WHERE n.id = {userId} ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
-			query.append("AND has(m.type) AND m.type IN ")
-			.append(expectedTypes.encode().replaceAll("\"", "'"))
-			.append(" ");
+			query.append("AND (");
+			StringBuilder types = new StringBuilder();
+			for (Object o: expectedTypes) {
+				if (!(o instanceof String)) continue;
+				String t = (String) o;
+				types.append(" OR m:").append(t);
+			}
+			query.append(types.substring(4)).append(") ");
 		}
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			query.append("WITH m as visibles ");
 			query.append(customReturn);
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
-				+ "m.ENTPersonLogin as login, m.ENTPersonNomAffichage as username, m.type as type, "
-				+ "m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName "
+				+ "m.login as login, m.displayName as username, "
+				+ "HEAD(filter(x IN labels(m) WHERE x <> 'User' AND x <> 'ProfileGroup' "
+				+ "AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type, "
+				+ "m.lastName as lastName, m.firstName as firstName "
 				+ "ORDER BY name, username ");
 		}
 		params.put("userId", userId);
@@ -413,17 +421,15 @@ public class CommunicationController extends Controller {
 
 	private void usersCanSeeMe(String userId, final Handler<JsonArray> handler) {
 		String query =
-				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH p=n<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-m " +
-				"WHERE ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " +
-				"AND m.id <> {userId} AND NOT(m.ENTPersonLogin IS NULL) " +
-				"RETURN distinct m.id as id, m.ENTPersonLogin as login, " +
-				"m.ENTPersonNomAffichage as username, m.type as type " +
+				"MATCH p=(n:User)<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-(m:User) " +
+				"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
+				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
+				"RETURN distinct m.id as id, m.login as login, " +
+				"m.displayName as username, HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
-		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
+		neo.send(query, params, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -438,17 +444,15 @@ public class CommunicationController extends Controller {
 
 	private void visibleProfilsGroups(String userId, final Handler<JsonArray> handler) {
 		String query =
-				"START n = node:node_auto_index(id={userId}) " +
-				"MATCH n-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-gp " +
-				"WHERE has(gp.type) AND gp.type IN ['GROUP_CLASSE_PERSRELELEVE','GROUP_CLASSE_ELEVE'," +
-						"'GROUP_CLASSE_PERSEDUCNAT','GROUP_CLASSE_ENSEIGNANT','GROUP_ETABEDUCNAT_PERSRELELEVE'," +
-						"'GROUP_ETABEDUCNAT_ELEVE','GROUP_ETABEDUCNAT_PERSEDUCNAT','GROUP_ETABEDUCNAT_ENSEIGNANT'," +
-						"'GROUP_ETABEDUCNAT_DIRECTEUR'] " +
-				"RETURN distinct gp.id as id, gp.name as name, gp.type as type " +
+				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:ProfileGroup) " +
+				"WHERE n.id = {userId} " +
+				"RETURN distinct gp.id as id, gp.name as name, " +
+				"HEAD(filter(x IN labels(gp) WHERE x <> 'ProfileGroup' " +
+				"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type " +
 				"ORDER BY type DESC, name ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
-		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
+		neo.send(query, params, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -465,18 +469,17 @@ public class CommunicationController extends Controller {
 			final Handler<JsonArray> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
 		String query =
-				"START n = node:node_auto_index({group}) " +
-				"MATCH n<-[:APPARTIENT]-u " +
-				"WHERE has(u.type) AND u.type IN ['PERSRELELEVE','ELEVE','PERSEDUCNAT','ENSEIGNANT'] " + condition +
-				"RETURN distinct u.id as id, u.ENTPersonLogin as login," +
-						" u.ENTPersonNomAffichage as username, u.type as type " +
+				"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"WHERE n.id = {groupId} " + condition +
+				"RETURN distinct u.id as id, u.login as login," +
+				" u.displayName as username, HEAD(filter(x IN labels(u) WHERE x <> 'User')) as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
-		params.put("group", "id:" + profilGroupId + " AND type:GROUP_*");
+		params.put("groupId", profilGroupId);
 		if (!itSelf && userId != null) {
 			params.put("userId", userId);
 		}
-		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
+		neo.send(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				JsonArray r = new JsonArray();
