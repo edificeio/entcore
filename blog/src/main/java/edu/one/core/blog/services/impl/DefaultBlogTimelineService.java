@@ -33,11 +33,6 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 	private final MongoDb mongo;
 	private final TimelineHelper notification;
 	private final Container container;
-	private static final String NEO_QUERY = "START n=node:node_auto_index({ids}) " +
-			"MATCH n<-[:APPARTIENT*0..1]-u " +
-			"WHERE has(u.type) AND u.type IN ['PERSRELELEVE'," +
-			"'ELEVE','PERSEDUCNAT','ENSEIGNANT'] AND has(u.id) AND u.id <> {userId} " +
-			"RETURN distinct u.id as id ";
 
 	public DefaultBlogTimelineService(EventBus eb, Container container, Neo neo, MongoDb mongo) {
 		this.neo = neo;
@@ -59,9 +54,8 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 						List<String> shareIds = getSharedIds(sharedArray);
 						if (!shareIds.isEmpty()) {
 							Map<String, Object> params = new HashMap<>();
-							params.put("ids", "id:" + Joiner.on(" OR id:").join(shareIds));
 							params.put("userId", user.getUserId());
-							neo.send(NEO_QUERY, params, new Handler<Message<JsonObject>>() {
+							neo.send(neoQuery(shareIds), params, new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> res) {
 									if ("ok".equals(res.body().getString("status"))) {
@@ -186,9 +180,8 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 						List<String> shareIds = getSharedIds(shared);
 						if (!shareIds.isEmpty()) {
 							Map<String, Object> params = new HashMap<>();
-							params.put("ids", "id:" + Joiner.on(" OR id:").join(shareIds));
 							params.put("userId", user.getUserId());
-							neo.send(NEO_QUERY, params, new Handler<Message<JsonObject>>() {
+							neo.send(neoQuery(shareIds), params, new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> res) {
 									if ("ok".equals(res.body().getString("status"))) {
@@ -234,6 +227,13 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 			}
 		}
 		return shareIds;
+	}
+
+	private String neoQuery(List<String> shareIds) {
+		return "MATCH n<-[:APPARTIENT*0..1]-(u:User) " +
+				"WHERE (n:User OR n:ProfileGroup) AND n.id IN ['" +
+				Joiner.on("','").join(shareIds) + "'] AND u.id <> {userId} " +
+				"RETURN distinct u.id as id ";
 	}
 
 }
