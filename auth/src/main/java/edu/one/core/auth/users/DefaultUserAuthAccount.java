@@ -37,10 +37,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void activateAccount(final String login, String activationCode, final String password,
 			final Handler<Boolean> handler) {
 		String query =
-				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE n.activationCode = {activationCode} AND n.ENTPersonMotDePasse IS NULL " +
-				"SET n.ENTPersonMotDePasse = {password}, n.activationCode = null " +
-				"RETURN n.ENTPersonMotDePasse as password, n.id as id";
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"SET n.password = {password}, n.activationCode = null " +
+				"RETURN n.password as password, n.id as id";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -60,9 +60,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					handler.handle(true);
 				} else {
 					String q =
-							"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-							"WHERE n.activationCode? IS NULL AND NOT(n.ENTPersonMotDePasse? IS NULL) " +
-							"RETURN n.ENTPersonMotDePasse as password";
+							"MATCH (n:User) " +
+							"WHERE n.login = {login} AND n.activationCode IS NULL " +
+							"AND NOT(n.password IS NULL) " +
+							"RETURN n.password as password";
 					Map<String, Object> p = new HashMap<>();
 					p.put("login", login);
 					neo.send(q, p, new Handler<Message<JsonObject>>() {
@@ -85,17 +86,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void forgotPassword(final HttpServerRequest request, String login,
 			final Handler<Boolean> handler) {
 		String query =
-				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE NOT(n.ENTPersonMail IS NULL) " +
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND NOT(n.ENTPersonMail IS NULL) " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN n.ENTPersonMail as email";
 		final String query2 =
-				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"MATCH n-[:APPARTIENT]->m<-[:APPARTIENT]-p " +
-				"WHERE m.type = 'CLASSE' AND NOT(p.ENTPersonMail IS NULL) " +
-				"AND p.type = 'ENSEIGNANT' " +
+				"MATCH (n:Student)-[:APPARTIENT]->(m:Class)<-[:APPARTIENT]-(p:Teacher) " +
+				"WHERE n.login = {login} AND NOT(p.email IS NULL) " +
 				"SET n.resetCode = {resetCode} " +
-				"RETURN p.ENTPersonMail as email";
+				"RETURN p.email as email";
 		final Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		final String resetCode = UUID.randomUUID().toString();
@@ -162,10 +161,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void resetPassword(String login, String resetCode, String password, final Handler<Boolean> handler) {
 		String query =
-				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE has(n.resetCode) AND n.resetCode = {resetCode} " +
-				"SET n.ENTPersonMotDePasse = {password}, n.resetCode = null " +
-				"RETURN n.ENTPersonMotDePasse as pw";
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"SET n.password = {password}, n.resetCode = null " +
+				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
@@ -175,10 +174,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void changePassword(String login, String password, final Handler<Boolean> handler) {
 		String query =
-				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE has(n.ENTPersonMotDePasse) " +
-				"SET n.ENTPersonMotDePasse = {password} " +
-				"RETURN n.ENTPersonMotDePasse as pw";
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND NOT(n.password IS NULL) " +
+				"SET n.password = {password} " +
+				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(handler, query, password, params);

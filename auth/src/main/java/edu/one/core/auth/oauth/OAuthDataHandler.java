@@ -38,12 +38,12 @@ public class OAuthDataHandler extends DataHandler {
 	public void validateClient(String clientId, String clientSecret,
 			String grantType, final Handler<Boolean> handler) {
 		String query =
-				"START n=node:node_auto_index({client}) " +
-				"WHERE has(n.secret) AND has(n.grantType) " +
+				"MATCH (n:Application) " +
+				"WHERE n.name = {clientId} " +
 				"AND n.secret = {secret} AND n.grantType = {grantType} " +
 				"RETURN count(n) as nb";
 		Map<String, Object> params = new HashMap<>();
-		params.put("client", "name:" + clientId + " AND type:APPLICATION");
+		params.put("clientId", clientId);
 		params.put("secret", clientSecret);
 		params.put("grantType", grantType);
 		neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
@@ -69,10 +69,10 @@ public class OAuthDataHandler extends DataHandler {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
-					"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-					"WHERE has(n.ENTPersonMotDePasse) " +
-					"RETURN n.id as userId, n.ENTPersonMotDePasse as password";
-			Map<String, Object> params = new HashMap<String, Object>();
+					"MATCH (n:User) " +
+					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
+					"RETURN n.id as userId, n.password as password";
+			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
 			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
@@ -212,10 +212,11 @@ public class OAuthDataHandler extends DataHandler {
 	public void validateClientById(String clientId, final Handler<Boolean> handler) {
 		if (clientId != null && !clientId.trim().isEmpty()) {
 			String query =
-					"START n=node:node_auto_index({client}) " +
+					"MATCH (n:Application) " +
+					"WHERE n.name = {clientId} " +
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
-			params.put("client", "name:" + clientId + " AND type:APPLICATION");
+			params.put("clientId", clientId);
 			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 				@Override
@@ -241,7 +242,8 @@ public class OAuthDataHandler extends DataHandler {
 	public void validateUserById(String userId, final Handler<Boolean> handler) {
 		if (userId != null && !userId.trim().isEmpty()) {
 			String query =
-					"START n=node:node_auto_index(id={userId}) " +
+					"MATCH (n:User) " +
+					"WHERE n.id = {userId} " +
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("userId", userId);
