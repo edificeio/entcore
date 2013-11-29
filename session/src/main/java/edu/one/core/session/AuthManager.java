@@ -19,7 +19,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 
-	private String address;
 	private long sessionTimeout;
 
 	private static final class LoginInfo {
@@ -35,7 +34,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	public void start() {
 		super.start();
 
-		this.address = getOptionalStringConfig("address", "wse.session");
+		final String address = getOptionalStringConfig("address", "wse.session");
 		Number timeout = config.getNumber("session_timeout");
 		if (timeout != null) {
 			if (timeout instanceof Long) {
@@ -182,24 +181,20 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		String query =
-				"START n=node:node_auto_index(id={id}) " +
+				"MATCH (n:User) " +
+				"WHERE n.id = {id} " +
 				"OPTIONAL MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WITH app, a, n " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->gp " +
+				"OPTIONAL MATCH n-[:APPARTIENT]->(gp:ProfileGroup) " +
 				"WITH app, a, n, gp " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->gpe-[:DEPENDS]->s " +
-				"WHERE (s IS NULL OR (has(s.type) AND s.type = 'ETABEDUCNAT')) AND " +
-				"(gp IS NULL OR (has(gp.type) AND gp.type IN ['GROUP_CLASSE_PERSRELELEVE','GROUP_CLASSE_ELEVE'," +
-						"'GROUP_CLASSE_PERSEDUCNAT','GROUP_CLASSE_ENSEIGNANT','GROUP_ETABEDUCNAT_PERSRELELEVE'," +
-						"'GROUP_ETABEDUCNAT_ELEVE','GROUP_ETABEDUCNAT_PERSEDUCNAT','GROUP_ETABEDUCNAT_ENSEIGNANT'," +
-						"'GROUP_ETABEDUCNAT_DIRECTEUR'])) " +
+				"OPTIONAL MATCH n-[:APPARTIENT]->gpe-[:DEPENDS]->(s:School) " +
 				"RETURN distinct a.name as name, a.displayName as displayName, " +
-				"a.type as type, n.ENTPersonClasses as classe, " +
-				"n.ENTPersonNom as lastname, n.ENTPersonPrenom as firstname, " +
-				"n.ENTPersonNomAffichage as username, n.type as userType, n.ENTEleveNiveau as level, " +
-				"n.ENTPersonLogin as login, app.name as appName, app.address as appAddress, " +
+				"a.type as type, HEAD(n.classes) as classe, " +
+				"n.lastName as lastname, n.firstName as firstname, " +
+				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'User')) as userType, " +
+				"n.level as level, n.login as login, app.name as appName, app.address as appAddress, " +
 				"app.icon as appIcon, app.target as appTarget, " +
-				"s.ENTStructureNomCourant as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
+				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
