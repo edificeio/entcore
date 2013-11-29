@@ -11,26 +11,26 @@ public class UserQueriesBuilder {
 
 	private final JsonArray queries = new JsonArray();
 
-	private static String createEntity(JsonObject json) {
+	private static String createEntity(JsonObject json, String type) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("CREATE (c { ");
+		sb.append("CREATE (c:").append(type).append(" { ");
 		for (String attr : json.getFieldNames()) {
-			sb.append(attr + ":{" + attr + "}, ");
+			sb.append(attr).append(":{").append(attr).append("}, ");
 		}
 		sb.delete(sb.lastIndexOf(","), sb.length());
 		return sb.toString() + "})";
 	}
 
-	public UserQueriesBuilder createUser(JsonObject row) {
+	public UserQueriesBuilder createUser(JsonObject row, String type) {
 		String id = row.getString("id");
-		String login = row.getString("ENTPersonLogin");
+		String login = row.getString("login");
 		if (id == null || login == null) {
 			throw new IllegalArgumentException("Invalid user : " + row.encode());
 		}
 		queries.add(new JsonObject()
-		.putString("query", createEntity(row))
+		.putString("query", createEntity(row, "User:" + type))
 		.putObject("params", row));
-		userLoginUnicity(id, login);
+		//userLoginUnicity(id, login);
 		return this;
 	}
 
@@ -48,9 +48,8 @@ public class UserQueriesBuilder {
 
 	public UserQueriesBuilder linkClass(String userId, String classId) {
 		String query =
-				"START n=node:node_auto_index(id={userId}), m=node:node_auto_index(id={classId}) " +
-				"WHERE has(n.type) AND has(m.type) AND " +
-				"m.type = 'CLASSE' AND n.type IN ['ENSEIGNANT', 'ELEVE'] " +
+				"MATCH (n), (m:Class) " +
+				"WHERE (n:Student OR n:Teacher) AND n.id = {userId} AND m.id = {classId} " +
 				"CREATE UNIQUE n-[:APPARTIENT]->m ";
 		queries.add(toJsonObject(query, new JsonObject()
 		.putString("userId", userId)
@@ -60,10 +59,8 @@ public class UserQueriesBuilder {
 
 	public UserQueriesBuilder linkSchool(String userId, String classId) {
 		String query =
-				"START n=node:node_auto_index(id={userId}), m=node:node_auto_index(id={classId}) " +
-				"MATCH m-[:APPARTIENT]->s " +
-				"WHERE has(n.type) AND has(s.type) AND " +
-				"s.type = 'ETABEDUCNAT' AND n.type IN ['ENSEIGNANT', 'ELEVE'] " +
+				"MATCH (m:Class)-[:APPARTIENT]->(s:School), (n) " +
+				"WHERE  (n:Student OR n:Teacher) AND n.id = {userId} AND m.id = {classId} " +
 				"CREATE UNIQUE n-[:APPARTIENT]->s ";
 		queries.add(toJsonObject(query, new JsonObject()
 		.putString("userId", userId)
@@ -73,62 +70,47 @@ public class UserQueriesBuilder {
 
 	public UserQueriesBuilder linkChildrens(String parentId, List<String> childrenIds) {
 		String query =
-				"START n=node:node_auto_index({childrenIds}), " +
-				"m=node:node_auto_index(id={parentId}) " +
-				"WHERE has(n.type) AND has(m.type) AND n.type = 'ELEVE' AND m.type = 'PERSRELELEVE' " +
+				"MATCH (n:Student), (m:Relative) " +
+				"WHERE m.id = {parentId} AND n.id IN ['" + Joiner.on("','").join(childrenIds) + "'] " +
 				"CREATE UNIQUE n-[:EN_RELATION_AVEC]->m ";
 		queries.add(toJsonObject(query, new JsonObject()
-		.putString("parentId", parentId)
-		.putString("childrenIds", "id:" + Joiner.on(" OR id:").join(childrenIds))));
+		.putString("parentId", parentId)));
 		return this;
 	}
 
 	public UserQueriesBuilder linkGroupProfils(String userId, String type) {
 		String parent = "";
-		if ("PERSRELELEVE".equals(type)) {
+		if ("Relative".equals(type)) {
 			parent = "<-[:EN_RELATION_AVEC]-e";
 		}
 		String query =
-				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH n" + parent + "-[:APPARTIENT]->c<-[:DEPENDS]-gp " +
-				"WHERE has(n.type) AND n.type = {type} AND has(c.type) AND c.type = 'CLASSE' " +
-				"AND has(gp.type) AND gp.type = {groupType} " +
+				"MATCH (n:" + type + ")" + parent + "-[:APPARTIENT]->(c:Class)<-[:DEPENDS]-(gp:Class"
+						+ type + "Group) " +
+				"WHERE n.id = {userId} " +
 				"CREATE UNIQUE n-[:APPARTIENT]->gp ";
 		queries.add(toJsonObject(query, new JsonObject()
-		.putString("userId", userId)
-		.putString("type", type)
-		.putString("groupType", "GROUP_CLASSE_" + type)));
+		.putString("userId", userId)));
 		String query2 =
-				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH n" + parent + "-[:APPARTIENT]->c<-[:DEPENDS]-gc-[:DEPENDS]->gp " +
-				"WHERE has(n.type) AND n.type = {type} AND has(c.type) AND c.type = 'CLASSE' " +
-				"AND has(gp.type) AND gp.type = {groupType} " +
+				"MATCH (n:" + type + ")" + parent + "-[:APPARTIENT]->(c:Class)<-[:DEPENDS]-(gc:ClassProfileGroup)" +
+						"-[:DEPENDS]->(gp:School"+ type + "Group) " +
+				"WHERE n.id = {userId} " +
 				"CREATE UNIQUE n-[:APPARTIENT]->gp ";
 		queries.add(toJsonObject(query2, new JsonObject()
-		.putString("userId", userId)
-		.putString("type", type)
-		.putString("groupType", "GROUP_ETABEDUCNAT_" + type)));
+		.putString("userId", userId)));
 		return this;
 	}
 
 	public UserQueriesBuilder defaultCommunication(String userId, String type) {
 		String query =
-				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH n-[:APPARTIENT]->gp " +
-				"WHERE has(n.type) AND n.type = {type} " +
-				"AND has(gp.type) AND (gp.type = {groupClassType} OR gp.type = {groupSchoolType}) " +
+				"MATCH (n:" + type + ")-[:APPARTIENT]->(gp) " +
+				"WHERE n.id = {userId} AND (gp:Class" + type + "Group OR gp:School" + type + "Group) " +
 				"CREATE UNIQUE n-[:COMMUNIQUE]->gp ";
 		String query2 =
-				"START n=node:node_auto_index(id={userId}) " +
-				"MATCH n-[:APPARTIENT]->gp " +
-				"WHERE has(n.type) AND n.type = {type} " +
-				"AND has(gp.type) AND (gp.type = {groupClassType} OR gp.type = {groupSchoolType}) " +
+				"MATCH (n:" + type + ")-[:APPARTIENT]->(gp) " +
+				"WHERE n.id = {userId} AND (gp:Class" + type + "Group OR gp:School" + type + "Group) " +
 				"CREATE UNIQUE n<-[:COMMUNIQUE]-gp ";
 		JsonObject params = new JsonObject()
-		.putString("userId", userId)
-		.putString("type", type)
-		.putString("groupClassType", "GROUP_CLASSE_" + type)
-		.putString("groupSchoolType", "GROUP_ETABEDUCNAT_" + type);
+		.putString("userId", userId);
 		queries.add(toJsonObject(query, params));
 		queries.add(toJsonObject(query2, params));
 		return this;

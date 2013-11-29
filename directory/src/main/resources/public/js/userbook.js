@@ -22,9 +22,9 @@ var userbook = function(){
 				d.result[obj].mood= 'default';
 				d.result[obj].photo= '';
 			}
-			if (d.result[obj].type === 'ELEVE'){
+			if (d.result[obj].type === 'Student'){
 				listStudents.push(d.result[obj]);
-			} else if (d.result[obj].type === 'ENSEIGNANT'){
+			} else if (d.result[obj].type === 'Teacher'){
 				listTeachers.push(d.result[obj]);
 			}
 		}
@@ -43,9 +43,9 @@ var userbook = function(){
 			if (d.result[obj].photo ==='' && d.result[obj].mood ==='' && d.result[obj].userId === ''){
 				d.result[obj].mood= 'default';
 			}
-			if (d.result[obj].type === 'ELEVE'){
+			if (d.result[obj].type === 'Student'){
 				listStudents.push(d.result[obj]);
-			} else if (d.result[obj].type === 'ENSEIGNANT'){
+			} else if (d.result[obj].type === 'Teacher'){
 				listTeachers.push(d.result[obj]);
 			} else {
 				listParents.push(d.result[obj]);
@@ -267,7 +267,7 @@ var userbook = function(){
 				$("#people .text-container.four").addClass('twelve').removeClass('four');
 				$("#people").addClass('four').removeClass('twelve');
 				$("#people .selected").removeClass('selected');
-				if (data.result[0].type !== 'PERSRELELEVE'){
+				if (data.result[0].type !== 'Relative'){
 					$('#' + data.result[0].id).addClass('selected');
 				}
 				$("#person").html(app.template.render('personne', personDataAdaptor(data)));

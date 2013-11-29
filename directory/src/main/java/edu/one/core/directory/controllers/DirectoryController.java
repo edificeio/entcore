@@ -80,19 +80,16 @@ public class DirectoryController extends Controller {
 
 	@SecuredAction("directory.authent")
 	public void school(HttpServerRequest request) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("type","ETABEDUCNAT");
-		neo.send("START n=node:node_auto_index(type={type}) RETURN distinct n.ENTStructureNomCourant as name, n.id as id", params, request.response());
+		neo.send("MATCH (n:School) RETURN distinct n.name as name, n.id as id", request.response());
 	}
 
 	@SecuredAction("directory.classes")
 	public void classes(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("id",request.params().get("id"));
-		neo.send("START n=node:node_auto_index(id={id}) " +
-				"MATCH n<-[:APPARTIENT]-m " +
-				"WHERE has(m.type) AND m.type = 'CLASSE' " +
-				"RETURN distinct m.ENTGroupeNom as name, m.id as classId, n.id as schoolId",
+		neo.send("MATCH (n:School)<-[:APPARTIENT]-(m:Class) " +
+				"WHERE n.id = {id} " +
+				"RETURN distinct m.name as name, m.id as classId, n.id as schoolId",
 				params, request.response());
 	}
 
@@ -101,25 +98,25 @@ public class DirectoryController extends Controller {
 		List<String> expectedTypes = request.params().getAll("type");
 		Map<String, Object> params = new HashMap<>();
 		params.put("classId",request.params().get("id"));
-		String types = "'ELEVE','ENSEIGNANT','PERSRELELEVE'";
+		String types = "";
 		if (expectedTypes != null && !expectedTypes.isEmpty()) {
-			types = "'" + Joiner.on(',').join(expectedTypes) + "'";
+			types = "AND (m:" + Joiner.on(" OR m:").join(expectedTypes) + ") ";
 		}
-		neo.send("START n=node:node_auto_index(id={classId}) "
-				+ "MATCH n<-[:APPARTIENT]-m "
-				+ "WHERE m.type IN [" + types + "] "
-				+ "RETURN distinct m.id as userId, m.type as type,  m.activationCode as code, m.ENTPersonPrenom as firstName,"
-				+ "m.ENTPersonNom as lastName, n.id as classId", params, request.response());
+		neo.send("MATCH (n:Class)<-[:APPARTIENT]-(m:User) "
+				+ "WHERE n.id = {classId} " + types
+				+ "RETURN distinct m.id as userId, HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type, "
+				+ "m.activationCode as code, m.firstName as firstName,"
+				+ "m.lastName as lastName, n.id as classId", params, request.response());
 	}
 
 	@SecuredAction("directory.authent")
 	public void details(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("id",request.params().get("id"));
-		neo.send("START n=node:node_auto_index(id={id}) RETURN distinct "
-				+ "n.ENTPersonLogin as login, n.ENTPersonAdresse as address, "
-				+ "n.activationCode as code;"
-			, params, request.response());
+		params.put("id", request.params().get("id"));
+		neo.send("MATCH (n:User) " +
+				"WHERE n.id = {id} " +
+				"RETURN distinct n.login as login, n.address as address, n.activationCode as code;"
+				, params, request.response());
 	}
 
 	@SecuredAction("directory.create.user")
@@ -133,42 +130,41 @@ public class DirectoryController extends Controller {
 				String firstname = request.formAttributes().get("firstname");
 				String lastname = request.formAttributes().get("lastname");
 				String type = request.formAttributes().get("type");
-				List<String> childrenIds =  request.formAttributes().getAll("childrenIds");
+				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				if (classId != null && !classId.trim().isEmpty() &&
 						firstname != null && !firstname.trim().isEmpty() &&
 						lastname != null && !lastname.trim().isEmpty() &&
 						type != null && !type.trim().isEmpty()) {
 					String userId = UUID.randomUUID().toString();
 					final JsonObject user = new JsonObject()
-					.putString("id", userId)
-					.putString("type", type)
-					.putString(ENTEleveCycle, "")
-					.putString(ENTEleveNiveau, "")
-					.putString(ENTPersonAdresse, "")
-					.putString(ENTPersonCivilite, "")
-					.putString(ENTPersonCodePostal, "")
-					.putString(ENTPersonMail, "")
-					.putString(ENTPersonNomPatro, "")
-					.putString(ENTPersonPays, "")
-					.putString(ENTPersonTelPerso, "")
-					.putString(ENTPersonVille, "")
-					.putString(ENTPersRelEleveTelMobile, "")
-					.putString(ENTPersonClasses, classId)
-					.putString(ENTPersonNom, lastname)
-					.putString(ENTPersonPrenom, firstname)
-					.putString(ENTPersonIdentifiant, idGenerator.generate())
-					.putString(ENTPersonLogin, loginGenerator.generate(firstname, lastname))
-					.putString(ENTPersonNomAffichage, displayNameGenerator.generate(firstname, lastname))
-					.putString("activationCode", activationGenerator.generate());
+							.putString("id", userId)
+							.putString(ENTEleveCycle, "")
+							.putString(ENTEleveNiveau, "")
+							.putString(ENTPersonAdresse, "")
+							.putString(ENTPersonCivilite, "")
+							.putString(ENTPersonCodePostal, "")
+							.putString(ENTPersonMail, "")
+							.putString(ENTPersonNomPatro, "")
+							.putString(ENTPersonPays, "")
+							.putString(ENTPersonTelPerso, "")
+							.putString(ENTPersonVille, "")
+							.putString(ENTPersRelEleveTelMobile, "")
+							.putString(ENTPersonClasses, classId)
+							.putString(ENTPersonNom, lastname)
+							.putString(ENTPersonPrenom, firstname)
+							.putString(ENTPersonIdentifiant, idGenerator.generate())
+							.putString(ENTPersonLogin, loginGenerator.generate(firstname, lastname))
+							.putString(ENTPersonNomAffichage, displayNameGenerator.generate(firstname, lastname))
+							.putString("activationCode", activationGenerator.generate());
 					UserQueriesBuilder uqb = new UserQueriesBuilder();
-					uqb.createUser(user)
-					.linkClass(userId, classId)
-					.linkSchool(userId, classId);
-					if ("PERSRELELEVE".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
+					uqb.createUser(user, type)
+							.linkClass(userId, classId)
+							.linkSchool(userId, classId);
+					if ("Relative".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
 						uqb.linkChildrens(userId, childrenIds);
 					}
 					uqb.linkGroupProfils(userId, type)
-					.defaultCommunication(userId, type);
+							.defaultCommunication(userId, type);
 					neo.sendBatch(uqb.build(), new Handler<Message<JsonObject>>() {
 
 						@Override
@@ -192,18 +188,16 @@ public class DirectoryController extends Controller {
 		String neoRequest = "";
 		Map<String, Object> params = new HashMap<>();
 		if (request.params().get("id").equals("all")){
-			neoRequest = "START m=node:node_auto_index(" +
-					"'type:ELEVE OR type:PERSEDUCNAT OR type:PERSRELELEVE OR type:ENSEIGNANT') " +
-					"WHERE has(m.activationCode) "
-					+ "RETURN distinct m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, "
-					+ "m.ENTPersonLogin as login, m.activationCode as activationCode, m.type as type "
+			neoRequest = "MATCH (m:User) " +
+					"WHERE NOT(m.activationCode IS NULL) "
+					+ "RETURN distinct m.lastName as lastName, m.firstName as firstName, "
+					+ "m.login as login, m.activationCode as activationCode, "
+					+ "HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type "
 					+ "ORDER BY type, login ";
 		} else if (request.params().get("id") != null) {
 			neoRequest =
-					"START n=node:node_auto_index(id={id}), m=node:node_auto_index(" +
-					"'type:ELEVE OR type:PERSEDUCNAT OR type:PERSRELELEVE OR type:ENSEIGNANT') " +
-					"MATCH m-[:APPARTIENT]->g-[:DEPENDS]->n " +
-					"WHERE has(m.activationCode) " +
+					"MATCH (m:User)-[:APPARTIENT]->g-[:DEPENDS]->n " +
+					"WHERE (n:School OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
 					"RETURN distinct m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, " +
 					"m.ENTPersonLogin as login, m.activationCode as activationCode, m.type as type " +
 					"ORDER BY type, login ";
@@ -235,44 +229,17 @@ public class DirectoryController extends Controller {
 		});
 	}
 
-	@SecuredAction("directory.authent")
-	public void groupProfile(final HttpServerRequest request) {
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
-
-			@Override
-			protected void handle() {
-				String profil = request.formAttributes().get("profil");
-				if (profil != null && !profil.trim().isEmpty()) {
-					p.createGroupProfil(profil, new Handler<JsonObject>() {
-
-						@Override
-						public void handle(JsonObject res) {
-							if ("ok".equals(res.getString("status"))) {
-								renderJson(request, res);
-							} else {
-								renderError(request, res);
-							}
-						}
-					});
-				} else {
-					badRequest(request);
-				}
-			}
-		});
-	}
-
 	public void createSuperAdmin(){
-		neo.send("START n=node:node_auto_index(id='" + admin.getString("id") + "') "
+		neo.send("MATCH (n:SuperAdmin) "
+			+ "WHERE n.id = '" + admin.getString("id") + "' "
 			+ "WITH count(*) AS exists "
 			+ "WHERE exists=0 "
-			+ "CREATE (m {id:'" + admin.getString("id") + "', "
-			+ "type:'" + admin.getString("type") + "',"
-			+ "ENTPersonNom:'"+ admin.getString("firstname") +"', "
-			+ "ENTPersonPrenom:'"+ admin.getString("lastname") +"', "
-			+ "ENTPersonLogin:'"+ admin.getString("login") +"', "
-			+ "ENTPersonNomAffichage:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
-			+ "ENTPersonMotDePasse:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})");
+			+ "CREATE (m:SuperAdmin:User {id:'" + admin.getString("id") + "', "
+			+ "lastName:'"+ admin.getString("firstname") +"', "
+			+ "firstName:'"+ admin.getString("lastname") +"', "
+			+ "login:'"+ admin.getString("login") +"', "
+			+ "displayName:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
+			+ "password:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})");
 	}
 
 	public void directoryHandler(final Message<JsonObject> message) {

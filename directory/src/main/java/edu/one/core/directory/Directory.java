@@ -38,8 +38,7 @@ public class Directory extends Server {
 				.get("/api/personnes", "people")
 				.get("/api/details", "details")
 				.post("/api/user", "createUser")
-				.get("/api/export", "export")
-				.post("/api/group-profil", "groupProfile");
+				.get("/api/export", "export");
 
 		userBookController.get("/mon-compte", "monCompte")
 				.get("/annuaire", "annuaire")
@@ -54,7 +53,6 @@ public class Directory extends Server {
 				.get("/api/edit-user-info-visibility", "editUserInfoVisibility")
 				.get("/avatar/:id", "getAvatar")
 				.get("/person/birthday", "personBirthday")
-				.postWithRegEx(".*", "proxyDocument")
 				.getWithRegEx(".*", "proxyDocument");
 
 		try {

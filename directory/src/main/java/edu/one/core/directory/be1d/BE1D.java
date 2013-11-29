@@ -31,8 +31,8 @@ public class BE1D {
 
 	public void importPorteur(final Handler<JsonArray> handler) {
 		neo.send(
-				"START n=node:node_auto_index(type='ETABEDUCNAT') " +
-				"RETURN n.ENTStructureNomCourant as name", new Handler<Message<JsonObject>>() {
+				"MATCH (n:School) " +
+				"RETURN n.name as name", new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {

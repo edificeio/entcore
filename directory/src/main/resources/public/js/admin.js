@@ -4,7 +4,7 @@ var admin = function(){
 	var personDataAdaptor = function (d) {
 		for (obj in d.result){
 			d.result[obj]['notActivated'] = d.result[obj].code === '' ? false : true;
-			d.result[obj]['isProfessor'] = d.result[obj].type === 'ENSEIGNANT' ? true : false;
+			d.result[obj]['isProfessor'] = d.result[obj].type === 'Teacher' ? true : false;
 		}
 		return {list : _.values(d.result)};
 	};
@@ -60,9 +60,9 @@ var admin = function(){
 				<input type="text" name="firstname" />\
 				<label>{{#i18n}}directory.admin.type{{/i18n}}</label>\
 				<select name="type">\
-					<option value="ENSEIGNANT">{{#i18n}}directory.admin.teacher{{/i18n}}</option>\
-					<option value="ELEVE">{{#i18n}}directory.admin.student{{/i18n}}</option>\
-					<option value="PERSRELELEVE">{{#i18n}}directory.admin.parent{{/i18n}}</option>\
+					<option value="Teacher">{{#i18n}}directory.admin.teacher{{/i18n}}</option>\
+					<option value="Student">{{#i18n}}directory.admin.student{{/i18n}}</option>\
+					<option value="Relative">{{#i18n}}directory.admin.parent{{/i18n}}</option>\
 				</select>\
 				<select name="childrenIds" multiple>\
 				{{#childrens}}\
@@ -118,7 +118,7 @@ var admin = function(){
 				app.template.getAndRender(o.url, 'personne', '#details', dataExtractor);
 			},
 			addUser : function(o) {
-				$.get("api/personnes?id=" + o.url + "&type=ELEVE")
+				$.get("api/personnes?id=" + o.url + "&type=Student")
 				.done(function(response) {
 					var childrens = [];
 					if (response.status === "ok") {
