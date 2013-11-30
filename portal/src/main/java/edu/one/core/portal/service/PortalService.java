@@ -144,8 +144,8 @@ public class PortalService extends Controller {
 							.putString("template", "/public/template/portal.html") // TODO configurable ?
 							.putString("logoutCallback", urls.getString("logoutCallback", ""));
 					String query =
-							"START n=node:node_auto_index(id={id}) " +
-							"MATCH n-[:USERBOOK]->u " +
+							"MATCH (n:User)-[:USERBOOK]->u " +
+							"WHERE n.id = {id} " +
 							"RETURN u.theme as theme";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
