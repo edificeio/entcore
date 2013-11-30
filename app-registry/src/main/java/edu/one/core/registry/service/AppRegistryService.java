@@ -54,12 +54,9 @@ public class AppRegistryService extends Controller {
 
 	@SecuredAction("app-registry.list.applications")
 	public void listApplications(HttpServerRequest request) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("type","APPLICATION");
 		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
+			"MATCH (n:Application) " +
 			"RETURN n.id as id, n.name as name",
-			params,
 			request.response()
 		);
 	}
@@ -68,11 +65,11 @@ public class AppRegistryService extends Controller {
 	public void listApplicationActions(HttpServerRequest request) {
 		String name = request.params().get("name");
 		if (name != null && !name.trim().isEmpty()) {
-			Map<String, Object> params = new HashMap<String, Object>();
+			Map<String, Object> params = new HashMap<>();
 			params.put("name", name);
 			neo.send(
-					"START n=node:node_auto_index(name={name}) " +
-					"MATCH n-[:PROVIDE]->a " +
+					"MATCH (n:Application)-[:PROVIDE]->a " +
+					"WHERE n.name = {name} " +
 					"RETURN a.name as name, a.displayName as displayName, a.type as type",
 				params,
 				request.response()
@@ -86,10 +83,9 @@ public class AppRegistryService extends Controller {
 	public void listApplicationsWithActions(HttpServerRequest request) {
 		String actionType = request.params().get("actionType");
 		String query =
-				"START n=node:node_auto_index(type={type}) " +
-				"OPTIONAL MATCH n-[r:PROVIDE]->a ";
+				"MATCH (n:Application) " +
+				"OPTIONAL MATCH n-[r:PROVIDE]->(a:Action) ";
 		Map<String, Object> params = new HashMap<>();
-		params.put("type","APPLICATION");
 		if (actionType != null &&
 				("WORKFLOW".equals(actionType) || "RESOURCE".equals(actionType))) {
 			query += "WHERE r IS NULL OR a.type = {actionType} ";
@@ -115,11 +111,11 @@ public class AppRegistryService extends Controller {
 					params.put("roleName", roleName);
 					params.put("id", UUID.randomUUID().toString());
 					neo.send(
-							"START n=node:node_auto_index(name={roleName}) "+
+							"MATCH (n:Role) " +
+							"WHERE n.name = {roleName} " +
 							"WITH count(*) AS exists " +
 							"WHERE exists=0 " +
-							"CREATE (m {id:{id}, " +
-							"type:'ROLE', " +
+							"CREATE (m:Role {id:{id}, " +
 							"name:{roleName}" +
 							"}) " +
 							"RETURN m.id as id",
@@ -128,12 +124,12 @@ public class AppRegistryService extends Controller {
 								@Override
 								public void handle(Message<JsonObject> event) {
 									if ("ok".equals(event.body().getString("status"))) {
-										Map<String, Object> params2 = new HashMap<String, Object>();
+										Map<String, Object> params2 = new HashMap<>();
 										params2.put("roleName", roleName);
 										neo.send(
-											"START n=node:node_auto_index('name:(\"" +
-											actions.replaceAll(",", "\" \"") + "\")'), " +
-											"m=node:node_auto_index(name={roleName}) " +
+											"MATCH (n:Action), (m:Role) " +
+											"WHERE m.name = {roleName} AND n.name IN ['"+
+													actions.replaceAll(",", "','") +"'] " +
 											"CREATE UNIQUE m-[:AUTHORIZE]->n",
 											params2, request.response()
 										);
@@ -158,13 +154,13 @@ public class AppRegistryService extends Controller {
 			protected void handle() {
 				List <String> roleIds = request.formAttributes().getAll("roleIds");
 				String groupId = request.formAttributes().get("groupId");
-				Map<String, Object> params = new HashMap<String, Object>();
+				Map<String, Object> params = new HashMap<>();
 				params.put("groupId", groupId);
 				if (roleIds != null && groupId != null && !groupId.trim().isEmpty()) {
 					String deleteQuery =
-							"START m=node:node_auto_index(id={groupId}) "
-							+ "MATCH m-[r:AUTHORIZED]-() "
-							+ "DELETE r";
+							"MATCH (m:ProfileGroup)-[r:AUTHORIZED]-() " +
+							"WHERE m.id = {groupId} " +
+							"DELETE r";
 					if (roleIds.isEmpty()) {
 						neo.send(deleteQuery, params, request.response());
 					} else {
@@ -173,28 +169,14 @@ public class AppRegistryService extends Controller {
 							.putString("query", deleteQuery)
 							.putObject("params", new JsonObject(params)));
 						String createQuery =
-								"START n=node:node_auto_index('id:(" + Joiner.on(' ').join(roleIds) + ")'), "
-								+ "m=node:node_auto_index(id={groupId}) "
-								+ "CREATE UNIQUE m-[ra:AUTHORIZED]->n";
+								"MATCH (n:Role), (m:ProfileGroup) " +
+								"WHERE m.id = {groupId} AND n.id IN ['" + Joiner.on("','").join(roleIds) + "'] " +
+								"CREATE UNIQUE m-[:AUTHORIZED]->n";
 						queries.addObject(new JsonObject()
 						.putString("query", createQuery)
 						.putObject("params", new JsonObject(params)));
 						neo.sendBatch(queries, request.response());
 					}
-					// TODO refactor with following commented code
-//					String query;
-//					if (roleIds.isEmpty()) {
-//						query = "START m=node:node_auto_index(id={groupId}) "
-//								+ "MATCH m-[r:AUTHORIZED]-() "
-//								+ "DELETE r";
-//					} else {
-//						query = "START n=node:node_auto_index('id:(" + Joiner.on(' ').join(roleIds) + ")'), "
-//								+ "m=node:node_auto_index(id={groupId}) "
-//								+ "MATCH m-[r:AUTHORIZED]-() "
-//								+ "CREATE m-[:AUTHORIZED]->n "
-//								+ "DELETE r ";
-//					}
-//					neo.send(query, params, request.response());
 				} else {
 					badRequest(request);
 				}
@@ -204,25 +186,19 @@ public class AppRegistryService extends Controller {
 
 	@SecuredAction("app-registry.list.roles")
 	public void listRoles(HttpServerRequest request) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("type","ROLE");
 		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
+			"MATCH (n:Role) " +
 			"RETURN n.id as id, n.name as name",
-			params,
 			request.response()
 		);
 	}
 
 	@SecuredAction("app-registry.list.roles.actions")
 	public void listRolesWithActions(HttpServerRequest request) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("type","ROLE");
 		neo.send(
-			"START n=node:node_auto_index(type={type}) " +
+			"MATCH (n:Role) " +
 			"OPTIONAL MATCH n-[r:AUTHORIZE]->a " +
 			"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions",
-			params,
 			request.response()
 		);
 	}
@@ -282,16 +258,16 @@ public class AppRegistryService extends Controller {
 	@SecuredAction("app-registry.list.groups.roles")
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String schoolId = request.params().get("schoolId");
-		String query = "START n=node:node_auto_index({type})";
+		String query;
 		Map<String, Object> params = new HashMap<>();
-		params.put("type","type:GROUP_*");
 		if (schoolId != null && !schoolId.trim().isEmpty()) {
 			params.put("schoolId", schoolId);
-			query += ", m=node:node_auto_index(id={schoolId}) " +
-					 "MATCH m<-[:DEPENDS*1..2]-n" +
-					 " OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
+			query = "MATCH (m:School)<-[:DEPENDS*1..2]-(n:ProfileGroup) " +
+					"WHERE m.id = {schoolId} " +
+					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		} else {
-			query += " OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
+			query = "MATCH (n:ProfileGroup) " +
+					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		}
 		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles";
 		neo.send(query, params, request.response());
@@ -304,7 +280,8 @@ public class AppRegistryService extends Controller {
 			Map<String, Object> params = new HashMap<>();
 			params.put("id", id);
 			neo.send(
-				"START n=node:node_auto_index(id={id}) " +
+				"MATCH (n:Application) " +
+				"WHERE n.id = {id} " +
 				"RETURN n.id as id, n.name as name, " +
 				"n.grantType as grantType, n.secret as secret, n.address as address, " +
 				"n.icon as icon, n.target as target",
@@ -331,7 +308,8 @@ public class AppRegistryService extends Controller {
 				String target = request.formAttributes().get("target");
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					String query =
-							"START n=node:node_auto_index(id={applicationId}) " +
+							"MATCH (n:Application) " +
+							"WHERE n.id = {applicationId} " +
 							"SET n.grantType = {grantType}, n.secret = {secret}, " +
 							"n.address = {address} , n.icon = {icon} , n.target = {target}";
 					Map<String, Object> params = new HashMap<>();
@@ -364,7 +342,7 @@ public class AppRegistryService extends Controller {
 					String address = request.formAttributes().get("address");
 					String icon = request.formAttributes().get("icon");
 					String target = request.formAttributes().get("target");
-					String query = "CREATE (c { id: {id}, type: 'APPLICATION', name: {name}, " +
+					String query = "CREATE (c:Application { id: {id}, name: {name}, " +
 							"grantType: {grantType}, address: {address} , icon: {icon} , target: {target} ";
 					if (secret != null && !secret.trim().isEmpty()) {
 						query += ", secret: {secret} })";
@@ -384,8 +362,9 @@ public class AppRegistryService extends Controller {
 					queries.addObject(Neo.toJsonObject(query, params));
 					if (address != null && !address.trim().isEmpty()) {
 						String query2 =
-								"START n=node:node_auto_index(id={id}) " +
-								"CREATE UNIQUE n-[r:PROVIDE]->(a {type: {type}, " +
+								"MATCH (n:Application) " +
+								"WHERE n.id = {id} " +
+								"CREATE UNIQUE n-[r:PROVIDE]->(a:Action:WorkflowAction {type: {type}, " +
 								"name:{name}, displayName:{displayName}}) " +
 								"RETURN a.name as name";
 						queries.addObject(Neo.toJsonObject(query2, new JsonObject()
@@ -408,11 +387,11 @@ public class AppRegistryService extends Controller {
 		final JsonArray securedActions = message.body().getArray("actions");
 		if (application != null && securedActions != null && !application.trim().isEmpty()) {
 			neo.send(
-				"START n=node:node_auto_index(name='" + application + "') "+
+				"MATCH (n:Application) " +
+				"WHERE n.name = '" + application + "' " +
 				"WITH count(*) AS exists " +
 				"WHERE exists=0 " +
-				"CREATE (m {id:'" + UUID.randomUUID().toString() + "', " +
-				"type:'APPLICATION', " +
+				"CREATE (m:Application {id:'" + UUID.randomUUID().toString() + "', " +
 				"address:'" + app.getString("address", "") + "', " +
 				"icon:'" + app.getString("icon", "") + "', " +
 				"name:'" + application +
@@ -426,9 +405,16 @@ public class AppRegistryService extends Controller {
 							for (Object o: securedActions) {
 								JsonObject json = (JsonObject) o;
 								JsonObject q = new JsonObject();
+								String type;
+								switch (json.getString("type", "WORKFLOW")) {
+									case "RESOURCE" : type = "Resource"; break;
+									case "AUTHENTICATED" : type = "Authenticated"; break;
+									default: type = "Workflow"; break;
+								}
 								q.putString("query",
-									"START n=node:node_auto_index(name={application}) " +
-									"CREATE UNIQUE n-[r:PROVIDE]->(a {type: {type}, " +
+									"MATCH (n:Application) " +
+									"WHERE n.name = {application} " +
+									"CREATE UNIQUE n-[r:PROVIDE]->(a:Action:" + type + "Action {type: {type}, " +
 									"name:{name}, displayName:{displayName}}) " +
 									"RETURN a.name as name"
 								);
