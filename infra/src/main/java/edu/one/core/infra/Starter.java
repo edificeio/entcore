@@ -1,18 +1,10 @@
 package edu.one.core.infra;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.UUID;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-
-import com.google.common.io.CharStreams;
 
 public class Starter extends Server {
 
@@ -32,8 +24,6 @@ public class Starter extends Server {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
-						initAutoIndex(config.getObject("neo4j-persistor")
-								.getObject("config", new JsonObject()));
 						deployModule(config.getObject("app-registry"), true,
 								new Handler<AsyncResult<String>>() {
 							@Override
@@ -90,15 +80,6 @@ public class Starter extends Server {
 			container.deployModule(module.getString("name"),
 					conf, module.getInteger("instances", 1));
 		}
-	}
-
-	private void initAutoIndex(JsonObject config) {
-		// FIXME poor hack to create auto index -> replace with equivalent : index --create node_auto_index -t Node
-		String query = "CREATE (n {id:'" + UUID.randomUUID().toString() + "'}) DELETE n";
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		Server.getEventBus(vertx).send(config.getString("address", "wse.neo4j.persistor"), jo);
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {
