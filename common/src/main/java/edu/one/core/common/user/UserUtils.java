@@ -17,11 +17,7 @@ public class UserUtils {
 
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String SESSION_ADDRESS = "wse.session";
-	private static final JsonArray usersTypes = new JsonArray()
-			.addString("PERSRELELEVE")
-			.addString("ELEVE")
-			.addString("PERSEDUCNAT")
-			.addString("ENSEIGNANT");
+	private static final JsonArray usersTypes = new JsonArray().addString("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.putString("action", "visibleProfilsGroups");
 
