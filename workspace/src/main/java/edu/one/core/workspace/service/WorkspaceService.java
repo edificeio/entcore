@@ -331,8 +331,9 @@ public class WorkspaceService extends Controller {
 					final String to = request.params().get("to");
 					if (to != null && !to.trim().isEmpty()) {
 						String query =
-								"START n=node:node_auto_index(id={id}) " +
-								"RETURN count(n) as nb, n.ENTPersonNomAffichage as username";
+								"MATCH (n:User) " +
+								"WHERE n.id = {id} " +
+								"RETURN count(n) as nb, n.displayName as username";
 						Map<String, Object> params = new HashMap<>();
 						params.put("id", to);
 						request.pause();
@@ -1344,7 +1345,7 @@ public class WorkspaceService extends Controller {
 		String customReturn =
 				"MATCH visibles-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
 				"WHERE has(a.name) AND a.name={action} " +
-				"RETURN distinct visibles.id as id, visibles.ENTPersonNomAffichage as username " +
+				"RETURN distinct visibles.id as id, visibles.displayName as username " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject()
 		.putString("action", "edu.one.core.workspace.service.WorkspaceService|listRackDocuments");
