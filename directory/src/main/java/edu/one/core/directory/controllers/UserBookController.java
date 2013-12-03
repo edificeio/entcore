@@ -447,4 +447,24 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "userbook.preferences", type = ActionType.AUTHENTICATED)
+	public void userPreferences(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					Map<String, Object> params = new HashMap<>();
+					params.put("id", user.getUserId());
+					String query =
+							"START n=node:node_auto_index(id={id}) " +
+							"MATCH n-[:USERBOOK]->u " +
+							"RETURN u.userPreferencesBirthdayClass? as userPreferencesBirthdayClass";
+					neo.send(query, params, request.response());
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 }

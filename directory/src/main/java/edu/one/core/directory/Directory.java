@@ -44,6 +44,7 @@ public class Directory extends Server {
 		userBookController.get("/mon-compte", "monCompte")
 				.get("/annuaire", "annuaire")
 				.get("/birthday", "birthday")
+				.get("/user-preferences", "userPreferences")
 				.get("/api/search","search")
 				.get("/api/person", "person")
 				.get("/api/class", "myClass")
