@@ -150,7 +150,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 		var form = new FormData(),
 		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
 		thumbs = "thumbnail=290x290&thumbnail=82x82&thumbnail=48x48";
-		form.append("image", $scope.account.photo, 'avatar');
+		form.append("image", $scope.account.photo);
 
 	if (uuidRegex.test($scope.account.picture)) {
     http.putFile("/workspace/document/" + $scope.account.picture + "?" + thumbs,
