@@ -5,29 +5,22 @@
 		return moment().format(format);
 	};
 
-	Calendar.previousMonth = [];
-	Calendar.nextMonth = [];
 	Calendar.month = [];
 	for(var i = 0; i < moment().daysInMonth(); i++){
 		Calendar.month[i] = moment().date(i + 1);
 	}
 
 	Calendar.previousMonth = [];
-	var currentDay = moment(Calendar.month[0]).date(Calendar.month[0].date() - 1);
-
-	while(currentDay.day() > 0){
+	var currentDay = moment().date(0);
+	while(currentDay.week() === moment().date(1).week()){
 		Calendar.previousMonth.push(currentDay);
 		currentDay = moment(currentDay).date(currentDay.date() - 1);
 	}
-
-	var firstWeek = currentDay.week();
 	Calendar.previousMonth.reverse();
 
-
-	currentDay = moment(Calendar.month[Calendar.month.length - 1])
-		.date(Calendar.month[Calendar.month.length - 1].date() + 1);
-
-	while(currentDay.week() <= firstWeek + 6){
+	Calendar.nextMonth = [];
+	currentDay = moment().date(moment().daysInMonth() + 1)
+	while(currentDay.week() ===  moment().date(moment().daysInMonth()).week()){
 		Calendar.nextMonth.push(currentDay);
 		currentDay = moment(currentDay).date(currentDay.date() + 1);
 	}
