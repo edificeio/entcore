@@ -441,7 +441,7 @@ nav.horizontal a {
   position: relative;
   background-size: contain;
   background-repeat: no-repeat;
-  margin-bottom: 57px;
+  margin-bottom: 45px;
   padding-right: 1px;
 }
 @media screen and (min-width: 720px) {
@@ -458,7 +458,7 @@ nav.horizontal a {
   max-width: 100%;
 }
 .birthday .content {
-  margin-top: 47px;
+  margin-top: 35px;
   width: 1;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -494,6 +494,19 @@ nav.horizontal a {
 .birthday .content img {
   max-width: 100%;
 }
+.birthday .content {
+  overflow: visible;
+}
+.birthday .content .enhanced-select {
+  margin-top: 5px;
+}
+.birthday .content .enhanced-select .current {
+  padding-top: 2px;
+  background-position: 5px 10px;
+}
+.birthday .content .enhanced-select .current span {
+  padding-top: 0px;
+}
 .birthday nav.vertical {
   padding: 0;
 }
@@ -516,13 +529,16 @@ nav.horizontal a {
 }
 @media screen and (min-width: 720px) {
   .birthday nav.vertical ul li a .user {
-    width: 58.333333333333336%;
+    width: 41.66666666666667%;
   }
 }
 @media screen and (max-width: 720px) {
   .birthday nav.vertical ul li a .user {
     width: 100%;
   }
+}
+.birthday nav.vertical ul li a .user p {
+  margin: 0;
 }
 .birthday nav.vertical ul li a .date {
   float: right !important;

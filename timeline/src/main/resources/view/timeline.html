@@ -48,7 +48,9 @@
 														</div>
 													</div>
 												</div>
-												<div class="eleven cell horizontal-spacing" data-ng-bind-html="notification.message"></div>
+												<div class="eleven cell horizontal-spacing">
+													<p data-ng-bind-html="notification.message"></p>
+												</div>
 											</div>
 										</div>
 										<div class="cell right-magnet three">
@@ -66,10 +68,10 @@
 			<div ng-controller="Personalization">
 				<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
 					<div class="toggle cell">
-						<h1>Personnalisation</h1>
+						<h1>{{#i18n}}panel.title{{/i18n}}</h1>
 						<div class="row">
 							<div class="twelve cell">
-								<h2>Mes thèmes</h2>
+								<h2>{{#i18n}}panel.themes{{/i18n}}</h2>
 								<div class="twelve cell">
 									<ul class="list icons-view two-cols">
 										<li ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)" class="element">

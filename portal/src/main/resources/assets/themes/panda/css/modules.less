@@ -1130,7 +1130,12 @@ img[src=""]{
 		span{
 			color: #fff;
 		}
+	}
+}
 
+.enhanced-select.one-col{
+	.option{
+		.twelve
 	}
 }
 
@@ -1228,7 +1233,21 @@ img[src=""]{
 	background-image: url(../img/illustrations/birthdays-header.png);
 
 	.content{
+		.select-class{
+			padding-right: 3px;
+		}
 		border-color: #e83314;
+		background: #eee;
+
+		.class-label{
+			font-size: 12px;
+			line-height: 29px;
+			padding-left: 5px;
+		}
+		.select{
+			margin-top: 4px;
+			margin-bottom: 4px;
+		}
 	}
 
 	nav.vertical{
@@ -1269,6 +1288,22 @@ img[src=""]{
 		}
 	}
 
+}
+
+.select{
+	padding-left: 18px;
+	overflow: hidden;
+	.border-box;
+	border-radius: 10px;
+	background: url(../img/icons/arrow-bottom.png) 7px no-repeat #FFF;
+	height: 23px;
+
+	select{
+		width: 100%;
+		border: none;
+		right: -18px;
+		position: absolute;
+	}
 }
 
 .birthday.fr{
@@ -1345,6 +1380,13 @@ img[src=""]{
 	}
 	a{
 		font-size: 16px;
+	}
+	p{
+		font-size: 14px;
+		margin: 0;
+		a{
+			font-size: 14px;
+		}
 	}
 }
 

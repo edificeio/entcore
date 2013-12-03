@@ -136,7 +136,21 @@ nav.horizontal{
 }
 
 .birthday{
-	.widget-container(47px);
+	.widget-container(35px);
+	.content{
+		overflow: visible;
+		.enhanced-select{
+			margin-top: 5px;
+			.current {
+				padding-top: 2px;
+				background-position: 5px 10px;
+				span{
+					padding-top: 0px;
+				}
+			}
+		}
+	}
+
 	nav.vertical{
 		padding: 0;
 
@@ -150,9 +164,12 @@ nav.horizontal{
 					margin: 0;
 					.user{
 						display: inline-block;
-						.seven;
+						.five;
 						height: 35px;
 						line-height: 100%;
+						p{
+							margin: 0;
+						}
 					}
 					.date{
 						.right-magnet;

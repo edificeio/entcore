@@ -441,7 +441,7 @@ nav.horizontal a {
   position: relative;
   background-size: contain;
   background-repeat: no-repeat;
-  margin-bottom: 57px;
+  margin-bottom: 45px;
   padding-right: 1px;
 }
 @media screen and (min-width: 720px) {
@@ -458,7 +458,7 @@ nav.horizontal a {
   max-width: 100%;
 }
 .birthday .content {
-  margin-top: 47px;
+  margin-top: 35px;
   width: 1;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -494,6 +494,19 @@ nav.horizontal a {
 .birthday .content img {
   max-width: 100%;
 }
+.birthday .content {
+  overflow: visible;
+}
+.birthday .content .enhanced-select {
+  margin-top: 5px;
+}
+.birthday .content .enhanced-select .current {
+  padding-top: 2px;
+  background-position: 5px 10px;
+}
+.birthday .content .enhanced-select .current span {
+  padding-top: 0px;
+}
 .birthday nav.vertical {
   padding: 0;
 }
@@ -516,13 +529,16 @@ nav.horizontal a {
 }
 @media screen and (min-width: 720px) {
   .birthday nav.vertical ul li a .user {
-    width: 58.333333333333336%;
+    width: 41.66666666666667%;
   }
 }
 @media screen and (max-width: 720px) {
   .birthday nav.vertical ul li a .user {
     width: 100%;
   }
+}
+.birthday nav.vertical ul li a .user p {
+  margin: 0;
 }
 .birthday nav.vertical ul li a .date {
   float: right !important;
@@ -3297,6 +3313,19 @@ img[src=""] {
 .enhanced-select .editing span {
   color: #fff;
 }
+.enhanced-select.one-col .option {
+  width: 1;
+}
+@media screen and (min-width: 720px) {
+  .enhanced-select.one-col .option {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 720px) {
+  .enhanced-select.one-col .option {
+    width: 100%;
+  }
+}
 .share table {
   width: 100%;
 }
@@ -3401,6 +3430,19 @@ img[src=""] {
 }
 .birthday .content {
   border-color: #e83314;
+  background: #eee;
+}
+.birthday .content .select-class {
+  padding-right: 3px;
+}
+.birthday .content .class-label {
+  font-size: 12px;
+  line-height: 29px;
+  padding-left: 5px;
+}
+.birthday .content .select {
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 .birthday nav.vertical ul li a {
   -webkit-border-radius: 0px;
@@ -3432,6 +3474,23 @@ img[src=""] {
 .birthday nav.vertical ul li a:hover h2,
 .birthday nav.vertical ul li a:hover h4 {
   color: #fff;
+}
+.select {
+  padding-left: 18px;
+  overflow: hidden;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: url(../img/icons/arrow-bottom.png) 7px no-repeat #ffffff;
+  height: 23px;
+}
+.select select {
+  width: 100%;
+  border: none;
+  right: -18px;
+  position: absolute;
 }
 .birthday.fr {
   background-image: url(../img/illustrations/birthdays-header-fr.png);
@@ -3501,6 +3560,13 @@ img[src=""] {
 }
 .line a {
   font-size: 16px;
+}
+.line p {
+  font-size: 14px;
+  margin: 0;
+}
+.line p a {
+  font-size: 14px;
 }
 .autocomplete em {
   color: #666;

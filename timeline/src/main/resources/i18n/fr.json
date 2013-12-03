@@ -12,5 +12,7 @@
 	"filters.all": "Tout",
 	"filters.title": "Voir les nouveautés du",
 	"comments.add": "Commenter",
-	"comments.show": "Afficher les commentaires"
+	"comments.show": "Afficher les commentaires",
+	"panel.title": "Personnalisation",
+	"panel.themes": "Mes thèmes"
 }
