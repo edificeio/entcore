@@ -1,18 +1,32 @@
 <div class="birthday" localized-class>
 	<div class="content">
-		<nav class="vertical">
-			<ul>
-				<li ng-repeat="birthday in widget.birthdays">
-					<a ng-href="/userbook/annuaire#[[birthday.id]]">
-						<img ng-src="/userbook/avatar/[[birthday.id]]?thumbnail=48x48" />
-						<div class="user"><p>[[birthday.username]]</p></div>
-						<div class="date">
-							<h2 class="day">[[widget.getDay(birthday.birthDate)]]</h2>
-							<h4 class="month">[[widget.getMonth(birthday.birthDate)]]</h4>
-						</div>
-					</a>
-				</li>
-			</ul>
-		</nav>
+		<div class="row class-select">
+			<div class="cell four class-label">
+				Ma classe
+			</div>
+			<div class="cell eight select">
+				<select ng-model="widget.currentClass" ng-change="widget.saveDefaultClass()">
+					<option ng-repeat="className in widget.classes">[[className]]</option>
+				</select>
+			</div>
+
+		</div>
+		<div class="row">
+			<nav class="vertical">
+				<ul>
+					<li ng-repeat="birthday in widget.birthdaysInClass()">
+						<a ng-href="/userbook/annuaire#[[birthday.id]]">
+							<img ng-src="/userbook/avatar/[[birthday.id]]?thumbnail=48x48" />
+							<div class="user"><p>[[birthday.username]]</p></div>
+							<div class="date">
+								<h2 class="day">[[widget.getDay(birthday.birthDate)]]</h2>
+								<h4 class="month">[[widget.getMonth(birthday.birthDate)]]</h4>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+
 	</div>
 </div>

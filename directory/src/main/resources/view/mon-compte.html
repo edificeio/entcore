@@ -71,8 +71,8 @@
 				</div>
 				<div class="row text-container">
 					<article class="twelve cell text-container centered">
-						<input type="button" value="Supprimer" ng-click="resetAvatar()" />
-						<form id="upload-form" method="post" action="document" enctype="multipart/form-data">
+						<input type="button" value="Supprimer" ng-click="resetAvatar()" class="cell" />
+						<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cell right-magnet">
 							<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
 							<div class="hidden-content">
 								<input type="file" name="file"  id="avatar" file-input-change="updateAvatar(file)" data-ng-model="account.photo"/>

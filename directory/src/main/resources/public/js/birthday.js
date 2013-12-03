@@ -1,13 +1,30 @@
 (function(){
-	var Birthday = LoadedWidgets.findWidget('birthday');
+	var Birthday = Model.widgets.findWidget('birthday');
+	Birthday.classes = [];
+	Birthday.currentClass = '';
 
 	Birthday.getDay = function(date){
 		return moment(date).date();
-	}
+	};
 
 	Birthday.getMonth = function(date){
 		return moment(date).format('MMMM');
-	}
+	};
+
+	Birthday.birthdaysInClass = function(){
+		return _.filter(Birthday.birthdays, function(birthday){
+			return birthday.classes.indexOf(Birthday.currentClass) !== -1;
+		});
+	};
+
+	Birthday.saveDefaultClass = function(){
+		One.get('/userbook/api/edit-userbook-info?prop=user-preferences-birthday-class&value=' + Birthday.currentClass);
+	};
+
+	One.get('/userbook/api/edit-userbook-info?prop=birthday-widget-default-class').done(function(defaultClass){
+		Birthday.currentClass = defaultClass;
+		Model.widgets.apply();
+	});
 
 	One.get('/userbook/person/birthday').done(function(birthdays){
 		Birthday.birthdays = _.filter(birthdays, function(birthday){
@@ -15,14 +32,21 @@
 		});
 
 		Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
-			return a.username.localeCompare(b.username);
-		});
-
-		Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
 			return moment(a.birthDate).date() - moment(b.birthDate).date()
 		});
-		LoadedWidgets.apply();
+
+		var classes = [];
+		classes = _.pluck(Birthday.birthdays, 'classes');
+		classes.forEach(function(classList){
+			classList.forEach(function(className){
+				if(Birthday.classes.indexOf(className) === -1){
+					Birthday.classes.push(className);
+				}
+			});
+		});
+
+		Birthday.currentClass = Birthday.classes[0];
+
+		Model.widgets.apply();
 	});
-
-
 }());
