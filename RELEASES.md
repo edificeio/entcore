@@ -1,6 +1,12 @@
 ONE : Notes de versions
 =======================
 
+# v1.2.1
+
+## Widgets
+
+* Calendrier : Correction de la boucle infinie qui se produisait au mois de décembre.
+
 # v1.2.0
 
 ## Portail
