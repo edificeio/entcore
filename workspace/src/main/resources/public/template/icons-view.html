@@ -1,10 +1,10 @@
 <header>&nbsp;</header>
 <div class="icons-view">
-	<div data-ng-repeat-start="(key, value) in openedFolder.folder" class="element mini-block-container">
+	<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container">
 		<a>
-			<i role="folder-large" data-ng-click="openFolder(value)"></i>
+			<i role="folder-large" data-ng-click="openFolder(folder)"></i>
 		</a>
-		<a data-ng-click="openFolder(value)">[[key]]</a>
+		<a data-ng-click="openFolder(value)">[[folder.name]]</a>
 	</div>
 	<section data-ng-repeat-end></section>
 	<div ng-repeat-start="document in openedFolder.content" ng-class="{ selected: document.selected, element: true, 'mini-block-container': true }">
@@ -16,7 +16,7 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			<a ng-href="[[documentPath(document)]]">[[document.name]] <span class="badge" ng-if="document.comments.length > 0">[[document.comments.length]]</span></a>
+			<a ng-href="[[documentPath(document)]]">[[document.name]] <span class="badge" ng-if="document.comments.length > 0" title="[[document.comments.length]] commentaire(s)">[[document.comments.length]]</span></a>
 			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
 	</div>
 	<section ng-repeat-end>

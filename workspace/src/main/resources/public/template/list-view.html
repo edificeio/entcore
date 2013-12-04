@@ -12,10 +12,10 @@
 		</tr>
 	</thead>
 	<tbody>
-	<tr data-ng-repeat="(key, value) in openedFolder.folder">
-		<td></td>
+	<tr data-ng-repeat="folder in openedFolder.folder.children">
+		<td><input type="checkbox" data-ng-model="folder.selected" /></td>
 		<td><i role="folder"></i></td>
-		<td colspan="2"><strong><a data-ng-click="openFolder(value, key)">[[key]]</a></strong></td>
+		<td colspan="2"><strong><a data-ng-click="openFolder(folder)">[[folder.name]]</a></strong></td>
 		<td></td>
 		<td></td>
 	</tr>
@@ -29,7 +29,7 @@
 		</td>
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
-		<td><span class="badge" ng-if="document.comments.length > 0">[[document.comments.length]]</span></td>
+		<td><span class="badge" ng-if="document.comments.length > 0" title="[[document.comments.length]] commentaire(s)">[[document.comments.length]]</span></td>
 		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
 	</tr>
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
