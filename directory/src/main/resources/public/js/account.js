@@ -132,18 +132,12 @@ function MyAccount($scope, http, lang, date, notify, _){
 	};
 
 	$scope.resetAvatar = function(){
-		// we get default file via request to convert it to blob type
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', '/directory/public/img/no-avatar.jpg', true);
-		xhr.responseType = 'blob';
-		xhr.onload = function(e) {
-			if (this.status == 200) {
-				var defaultAvatar = this.response;
-				$scope.account.photo = defaultAvatar;
-				$scope.updateAvatar();
-			}
-		};
-		xhr.send();
+        http.get('api/edit-userbook-info?prop=picture&value=');
+        http.delete('/workspace/document/' + $scope.account.picture);
+        $scope.account.picture = '';
+        $scope.pictureVersion = $scope.pictureVersion + 1;
+        $scope.apply();
+        ui.updateAvatar();
 	}
 
 	$scope.updateAvatar = function(){
