@@ -785,8 +785,18 @@ public class WorkspaceService extends Controller {
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
-	public void copyDocuments(HttpServerRequest request) {
-		copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION, null);
+	public void copyDocuments(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION, null, user);
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("workspace.rack.documents.copy")
@@ -796,7 +806,7 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
-					copyFiles(request, RackDao.RACKS_COLLECTION, user.getUserId());
+					copyFiles(request, RackDao.RACKS_COLLECTION, user.getUserId(), user);
 				} else {
 					unauthorized(request);
 				}
@@ -804,7 +814,8 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void copyFiles(final HttpServerRequest request, final String collection, final String owner) {
+	private void copyFiles(final HttpServerRequest request, final String collection,
+				final String owner, final UserInfos user) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
 		final String folder = request.params().get("folder");
 		if (ids != null && !ids.trim().isEmpty()) {
@@ -834,6 +845,10 @@ public class WorkspaceService extends Controller {
 								dest.removeField("from");
 								dest.removeField("toName");
 								dest.removeField("fromName");
+							} else if (user != null) {
+								dest.putString("owner", user.getUserId());
+								dest.putString("ownerName", user.getUsername());
+								dest.putArray("shared", new JsonArray());
 							}
 							dest.putString("created", now);
 							dest.putString("modified", now);
