@@ -46,7 +46,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		$scope.openFolder($scope.openedFolder.folder);
 	})
 
-	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'trash' }] };
+	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'trash', children: [] }] };
 	$scope.users = [];
 
 	var setDocumentRights = function(document){
@@ -204,6 +204,10 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			One.put(url + "/" + document._id);
 		});
 		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
+
+		$scope.folder.children[3].children = $scope.folder.children[3].children.concat(
+			_.where($scope.openedFolder.folder.children, { selected: true })
+		);
 		$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
 			return folder.selected;
 		});
@@ -259,7 +263,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			});
 
 			http.put('/workspace/folder/restore/' + folder._id);
-		})
+		});
+		updateFolders();
 	};
 
 	$scope.sendComment = function(){
@@ -507,6 +512,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		http.get('/workspace/folders/list', params).done(function(folders){
 			folders.forEach(function(folder){
 				if(folder.folder.indexOf('Trash') !== -1){
+					if(_.where($scope.folder.children[3].children, { folder: folder.folder }).length === 0){
+						$scope.folder.children[3].children.push(folder);
+					}
 					return;
 				}
 				var subFolders = folder.folder.split('_');
@@ -575,7 +583,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	function updateFolders(){
 		getFolders($scope.folder.children[0], { filter: 'owner' });
-		getFolders($scope.folder.children[3], { filter: 'owner' });
 	}
 
 	$scope.move = function(){
