@@ -34,11 +34,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void activateAccount(String login, String activationCode, String password,
+	public void activateAccount(final String login, String activationCode, String password,
 			final Handler<Boolean> handler) {
 		String query =
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
-				"WHERE n.activationCode = {activationCode} AND n.ENTPersonMotDePasse? IS NULL " +
+				"WHERE has(n.activationCode) AND n.activationCode = {activationCode} " +
+				"AND n.ENTPersonMotDePasse? IS NULL " +
 				"SET n.ENTPersonMotDePasse = {password}, n.activationCode = null " +
 				"RETURN n.ENTPersonMotDePasse as password, n.id as id";
 		Map<String, Object> params = new HashMap<>();
@@ -59,7 +60,22 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 							jo);
 					handler.handle(true);
 				} else {
-					handler.handle(false);
+					String q =
+							"START n=node:node_auto_index(ENTPersonLogin={login}) " +
+							"WHERE n.activationCode? IS NULL AND NOT(n.ENTPersonMotDePasse? IS NULL) " +
+							"RETURN count(n) as c";
+					Map<String, Object> p = new HashMap<>();
+					p.put("login", login);
+					neo.send(q, p, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							handler.handle(
+									"ok".equals(event.body().getString("status")) &&
+									event.body().getObject("result").getObject("0") != null &&
+									"1".equals(event.body().getObject("result").getObject("0").getString("c", ""))
+							);
+						}
+					});
 				}
 			}
 		});
