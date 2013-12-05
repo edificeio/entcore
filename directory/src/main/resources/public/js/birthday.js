@@ -18,11 +18,11 @@
 	};
 
 	Birthday.saveDefaultClass = function(){
-		One.get('/userbook/api/edit-userbook-info?prop=user-preferences-birthday-class&value=' + Birthday.currentClass);
+		One.get('/userbook/api/edit-userbook-info?prop=userPreferencesBirthdayClass&value=' + Birthday.currentClass);
 	};
 
-	One.get('/userbook/api/edit-userbook-info?prop=birthday-widget-default-class').done(function(defaultClass){
-		Birthday.currentClass = defaultClass;
+	One.get('/userbook/user-preferences').done(function(result){
+		Birthday.currentClass = result.result[0].userPreferencesBirthdayClass;
 		Model.widgets.apply();
 	});
 
@@ -44,8 +44,6 @@
 				}
 			});
 		});
-
-		Birthday.currentClass = Birthday.classes[0];
 
 		Model.widgets.apply();
 	});

@@ -494,9 +494,6 @@ nav.horizontal a {
 .birthday .content img {
   max-width: 100%;
 }
-.birthday .content {
-  overflow: visible;
-}
 .birthday .content .enhanced-select {
   margin-top: 5px;
 }

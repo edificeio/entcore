@@ -28,7 +28,7 @@ var personDataExtractor = function(d) {
 
 function MyAccount($scope, http, lang, date, notify, _){
 	$scope.account = {};
-	var moods = ['default','happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
+	var moods = ['happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	$scope.moods = [];
 
 	moods.forEach(function(mood){
