@@ -9,17 +9,17 @@
 
 		<script type="text/ng-template" id="folder-content">
 			<a data-ng-class="{ selected: openedFolder.folder === folder }" data-ng-click="openFolder(folder)">[[translate(folder.name)]]</a>
-			<ul data-ng-class="{ selected: containsCurrentFolder(folder), closed: !containsCurrentFolder(folder) }" ng-if="containsCurrentFolder(folder)">
+			<ul data-ng-class="{ selected: containsCurrentFolder(folder), closed: !containsCurrentFolder(folder) }" ng-if="containsCurrentFolder(folder) && folder.name !== 'trash'">
 				<li data-ng-repeat="folder in folder.children"
 					data-ng-include="'folder-content'"
 				></li>
 			</ul>
 		</script>
 		<script type="text/ng-template" id="folder-management">
-			<input type="radio" name="folder" ng-if="editMode === 'single'" ng-model="selectedFolder.name" ng-value="key" ng-change="setFolder(folder)" />
-			<input type="checkbox" ng-if="editMode === 'multiple'" ng-checked="isTargetFolder(folder)" ng-value="key" ng-click="switchTargetFolder(folder)" />
-			<a ng-class="{ selected: isTargetFolder(folder)}" ng-click="addTargetFolder(folder)"> [[translate(folder.name || 'documents')]] </a>
-			<ul class="row">
+			<a ng-class="{ selected: isTargetFolder(folder)}" ng-click="addTargetFolder(folder)" ng-if="!isInSelectedFolder(folder)">
+				[[translate(folder.name || 'documents')]]
+			</a>
+			<ul class="row" ng-if="!isInSelectedFolder(folder)">
 				<li data-ng-repeat="folder in folder.children"
 					data-ng-include="'folder-management'"
 				></li>
@@ -33,7 +33,7 @@
 		<div class="row">
 			<section class="four cell">
 				<h1><a data-reload><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
-				<nav class="vertical" ng-init="folder=folders">
+				<nav class="vertical">
 					<ul data-ng-include="'folder-content'"></ul>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'">Créer un nouveau dossier</a>
 				</nav>
@@ -70,7 +70,7 @@
 		</div>
 		<div class="clear"></div>
 	</section>
-	<section ng-class="{'toggle-bottom': true, hide: selectedDocuments().length === 0 }">
+	<section ng-class="{'toggle-bottom': true, hide: selectedDocuments().length + selectedFolders().length === 0 }">
 		<div class="toggle block-container">
 			<div class="row">
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">

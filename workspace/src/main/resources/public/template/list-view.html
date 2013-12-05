@@ -12,10 +12,15 @@
 		</tr>
 	</thead>
 	<tbody>
-	<tr data-ng-repeat="folder in openedFolder.folder.children">
+	<tr data-ng-repeat="folder in openedFolder.folder.children" ng-class="{ checked: folder.selected }">
 		<td><input type="checkbox" data-ng-model="folder.selected" /></td>
 		<td><i role="folder"></i></td>
-		<td colspan="2"><strong><a data-ng-click="openFolder(folder)">[[folder.name]]</a></strong></td>
+		<td colspan="2">
+			<strong>
+				<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
+				<a ng-if="currentTree.name === 'trash'">[[folder.name]]</a>
+			</strong>
+		</td>
 		<td></td>
 		<td></td>
 	</tr>

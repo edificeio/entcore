@@ -46,7 +46,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		$scope.openFolder($scope.openedFolder.folder);
 	})
 
-	$scope.folders = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'trash' }] };
+	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'trash' }] };
 	$scope.users = [];
 
 	var setDocumentRights = function(document){
@@ -177,20 +177,38 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 
 	$scope.nbFolders = function(){
-		return  Object.keys($scope.openedFolder.folder).length;
+		return $scope.openedFolder.folder.children.length;
 	};
 
 	$scope.openShareView = function(){
 		$scope.sharedDocuments = $scope.selectedDocuments();
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.share;
-	}
+	};
+
+	refreshFolders = function(){
+		var folder = $scope.openedFolder;
+		$scope.openedFolder = { folder: {} };
+
+		setTimeout(function(){
+			$scope.openedFolder = folder;
+			$scope.$apply('openedFolder');
+		}, 1);
+	};
 
 	$scope.toTrash = function(url){
+		$scope.selectedFolders().forEach(function(folder){
+			One.put('/workspace/folder/trash/' + folder._id);
+		})
 		$scope.selectedDocuments().forEach(function(document){
 			One.put(url + "/" + document._id);
 		});
 		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
+		$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
+			return folder.selected;
+		});
+
+		refreshFolders();
 		notify.info('workspace.removed.message');
 	};
 
@@ -200,6 +218,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	};
 
 	$scope.openMoveFileView = function(action){
+		$scope.newFolder = { name: '' };
 		if(action === 'copyFile'){
 			$scope.editMode = 'multiple'
 		}
@@ -217,6 +236,13 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			});
 			http.delete('document/' + document._id);
 		});
+
+		$scope.selectedFolders().forEach(function(folder){
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(item){
+				return item === folder;
+			});
+			http.delete('/workspace/folder/' + folder._id);
+		})
 	};
 
 	$scope.restore = function(){
@@ -226,6 +252,14 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			});
 			http.put('restore/document/' + document._id);
 		});
+
+		$scope.selectedFolders().forEach(function(folder){
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(item){
+				return item === folder;
+			});
+
+			http.put('/workspace/folder/restore/' + folder._id);
+		})
 	};
 
 	$scope.sendComment = function(){
@@ -295,6 +329,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			} }
 		],
 		contextualButtons: [
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
 				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
 			} }
@@ -303,6 +338,10 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.selectedDocuments = function(){
 		return _.where($scope.openedFolder.content, {selected: true});
+	};
+
+	$scope.selectedFolders = function(){
+		return _.where($scope.openedFolder.folder.children, { selected: true });
 	}
 
 	$scope.views = {
@@ -328,16 +367,16 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.switchView = function(view, value){
 		$scope.currentViews[view] = $scope.views[view][value];
-	}
-
-	$scope.openedFolder = {
-		folder: $scope.folders.documents,
-		content: {}
 	};
 
+	$scope.openedFolder = {};
 	$scope.openFolder = function(folder){
+		if(folder !== $scope.openedFolder.folder){
+			$scope.loadingFiles = [];
+		}
+
 		$scope.openedFolder.folder = folder;
-		if($scope.folders.children.indexOf(folder) !== -1){
+		if($scope.folder.children.indexOf(folder) !== -1){
 			currentTree();
 		}
 
@@ -390,10 +429,14 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			requestName: 'file-upload-' + $scope.newFile.file.name + '-' + index
 		})
 			.done(function(e){
-				$scope.openFolder($scope.openedFolder.folder);
 				var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 				if(path !== ''){
-					http.put("documents/move/" + e._id + '/' + path);
+					http.put("documents/move/" + e._id + '/' + path).done(function(){
+						$scope.openFolder($scope.openedFolder.folder);
+					});
+				}
+				else{
+					$scope.openFolder($scope.openedFolder.folder);
 				}
 		}).xhr;
 
@@ -447,7 +490,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	};
 
 	function currentTree(){
-		$scope.folders.children.forEach(function(tree){
+		$scope.folder.children.forEach(function(tree){
 			if($scope.containsCurrentFolder(tree)){
 				$scope.currentTree = _.findWhere(trees, { name: tree.name });
 				$scope.currentFolderTree = tree;
@@ -457,16 +500,16 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		return $scope.currentTree;
 	}
 	$scope.currentTree = trees[0];
-	$scope.currentFolderTree = $scope.folders.children[0];
-	$scope.openFolder($scope.folders.children[0]);
+	$scope.currentFolderTree = $scope.folder.children[0];
+	$scope.openFolder($scope.folder.children[0]);
 
 	var getFolders = function(tree, params){
-		http.get('folders', params).done(function(folders){
+		http.get('/workspace/folders/list', params).done(function(folders){
 			folders.forEach(function(folder){
-				if(folder === 'Trash'){
+				if(folder.folder.indexOf('Trash') !== -1){
 					return;
 				}
-				var subFolders = folder.split('_');
+				var subFolders = folder.folder.split('_');
 				var cursor = tree;
 				subFolders.forEach(function(subFolder){
 					if(cursor === undefined){
@@ -476,9 +519,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 						cursor.children = [];
 					}
 					if(_.where(cursor.children, {name: subFolder }).length === 0){
-						cursor.children.push({
-							name: subFolder
-						})
+						cursor.children.push(folder)
 					}
 					cursor = _.findWhere(cursor.children, { name: subFolder });
 				})
@@ -509,7 +550,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	var targetFolders = [];
 
 	$scope.addTargetFolder = function(folder){
-		if(targetFolders.indexOf(folder) !== -1){
+		if(targetFolders.indexOf(folder) !== -1 || $scope.selectedFolders().indexOf(folder) !== -1){
 			targetFolders = _.reject(targetFolders, function(el){
 				return el === folder;
 			});
@@ -533,20 +574,39 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	};
 
 	function updateFolders(){
-		getFolders($scope.folders.children[0], { filter: 'owner' });
+		getFolders($scope.folder.children[0], { filter: 'owner' });
+		getFolders($scope.folder.children[3], { filter: 'owner' });
 	}
 
 	$scope.move = function(){
 		ui.hideLightbox();
-		var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
-		var folderString = folderToString($scope.folders.children[0], targetFolders[0]);
+
+		var folderString = folderToString($scope.folder.children[0], targetFolders[0]);
 		var basePath = 'documents/move/' + selectedDocumentsIds;
 		if(folderString !== ''){
 			basePath += '/' + folderString;
 		}
-		http.put(basePath).done(function(){
-			updateFolders();
-		});
+
+		var data = {};
+		if(folderString !== ''){
+			data.path = folderString;
+		}
+
+		if($scope.selectedDocuments().length > 0){
+			var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
+			http.put(basePath).done(function(){
+				$scope.openFolder($scope.openedFolder);
+			});
+		}
+		$scope.selectedFolders().forEach(function(folder){
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(child){
+				return child._id === folder._id;
+			});
+			refreshFolders();
+			http.put('/workspace/folder/move/' + folder._id, data).done(function(){
+				updateFolders();
+			});
+		})
 	};
 
 	$scope.copy = function(){
@@ -558,13 +618,25 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				basePath = 'rack/' + basePath;
 			}
 			basePath += '/copy/' + selectedDocumentsIds;
-			var folderString = folderToString($scope.folders.children[0], folder);
+			var folderString = folderToString($scope.folder.children[0], folder);
 			if(folderString !== ''){
 				basePath += '/' + folderString;
 			}
-			http.post(basePath).done(function(){
-				updateFolders();
-			});
+
+			if(selectedDocumentsIds.length > 0){
+				http.post(basePath).done(function(){
+					updateFolders();
+				});
+			}
+			$scope.selectedFolders().forEach(function(folder){
+				var param = { name: folder.name };
+				if(folderString !== ''){
+					param.path = folderString;
+				}
+				http.put('/workspace/folder/copy/' + folder._id, param).done(function(){
+					updateFolders();
+				});
+			})
 		})
 	};
 
@@ -572,9 +644,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.me = { authorizedActions: [] };
 	http.get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
-		$scope.openFolder($scope.folders.children[0]);
+		$scope.openFolder($scope.folder.children[0]);
 		if(_.where($scope.me.authorizedActions, {name: 'edu.one.core.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
-			$scope.folders.children = _.reject($scope.folders.children, function(folder){
+			$scope.folder.children = _.reject($scope.folder.children, function(folder){
 				return folder.name === 'rack';
 			});
 		}
@@ -584,6 +656,10 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.switchSelectAll = function(){
 		$scope.openedFolder.content.forEach(function(document){
 			document.selected = $scope.boxes.selectAll;
+		});
+
+		$scope.openedFolder.folder.children.forEach(function(folder){
+			folder.selected = $scope.boxes.selectAll;
 		});
 	};
 
@@ -619,17 +695,60 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.createFolder = function(){
 		ui.hideLightbox();
 		var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
+		if(path !== ''){
+			$scope.newFolder.path = path;
+		}
 
 		http.post('/workspace/folder', $scope.newFolder).done(function(newFolder){
 			updateFolders();
 		});
 	};
 
+	$scope.isInSelectedFolder = function(folder){
+		var result = false;
+		var isInFolder = function(target){
+			if(folder === target){
+				return true;
+			}
+
+			if(!target.children){
+				return false;
+			}
+
+			var result  = false;
+			target.children.forEach(function(child){
+				result = result || isInFolder(child)
+			})
+		}
+		$scope.selectedFolders().forEach(function(targetFolder){
+			result = result || isInFolder(targetFolder);
+		});
+
+		return result;
+	}
+
+	$scope.createEditFolder = function(){
+		targetFolders.forEach(function(folder){
+			var path = folderToString($scope.folder.children[0], folder);
+			if(path !== ''){
+				$scope.newFolder.path = path;
+			}
+
+			http.post('/workspace/folder', $scope.newFolder).done(function(newFolder){
+				updateFolders();
+				$scope.newFolder = { name: '' };
+				targetFolders = []
+			});
+		});
+
+	}
+
 	$scope.to = {
 		id: ''
 	};
 
 	$scope.sendNewFile = function(context){
+		ui.hideLightbox();
 		var formData = new FormData();
 
 		if($scope.newFile.name){
@@ -648,21 +767,20 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		}
 		$scope.loading = $scope.translate('loading');
 		http.postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
-			ui.hideLightbox();
 			$scope.loading = '';
-			var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
-			if(context !== 'rack' && path !== ''){
-				http.put("documents/move/" + e._id + path).done(function(){
-					$scope.openFolder($scope.openedFolder.folder);
-				});
-			}
-			else{
-				$scope.openFolder($scope.openedFolder.folder);
-			}
+			$scope.openFolder($scope.openedFolder.folder);
 		});
 	};
 
 	http.get("users/available-rack").done(function(response){
 		$scope.users = response;
 	});
+
+	$scope.editFolder = function(){
+		$scope.newFolder.editing = true;
+	}
+
+	$scope.anyTargetFolder = function(){
+		return targetFolders.length > 0;
+	}
 };
