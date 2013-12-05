@@ -60,7 +60,8 @@ function Blog($scope, http, date, _, ui, lang){
 			},
 			blog: {
 				edit: true
-			}
+			},
+			manager: true
 		}
 		var ownerRights = _.where(blog.shared, { userId: $scope.me.userId, manager: true });
 
@@ -88,6 +89,7 @@ function Blog($scope, http, date, _, ui, lang){
 		blog.myRights.post.remove = setRight('edu-one-core-blog-controllers-PostController|delete');
 		blog.myRights.post.publish = setRight('edu-one-core-blog-controllers-PostController|publish');
 		blog.myRights.blog.edit = setRight('manager');
+		blog.myRights.manager = setRight('manager');
 	}
 
 	function refreshBlogList(callback){
