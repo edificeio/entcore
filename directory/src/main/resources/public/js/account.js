@@ -136,7 +136,7 @@ function MyAccount($scope, http, lang, date, notify, _){
         http.delete('/workspace/document/' + $scope.account.picture);
         $scope.account.picture = '';
         $scope.pictureVersion = $scope.pictureVersion + 1;
-        $scope.apply();
+        $scope.$apply();
         ui.updateAvatar();
 	}
 

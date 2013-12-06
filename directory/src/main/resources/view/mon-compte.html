@@ -2,6 +2,7 @@
 	<head>
 		<title>{{#i18n}}userBook.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="{{#static}}js/model.js{{/static}}"></script>
 		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/account.js{{/static}}" type="text/javascript"></script>
 	</head>
@@ -13,7 +14,7 @@
 		<div class="row fixed-block height-four">
 			<div class="cell fixed four text-container">
 				<div class="fluid twelve cell avatar" loading-panel="avatar">
-					<img data-ng-src="document/[[account.picture]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=[[account.pictureVersion]]&thumbnail=290x290" alt="user" class="avatar"/>
+					<img data-ng-src="document/[[account.picture]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=[[account.pictureVersion]]&thumbnail=290x290" alt="user" class="avatar file-selector" />
 				</div>
 			</div>
 			<div class="eight cell fixed right-magnet text-container">
@@ -60,7 +61,7 @@
 				</article>
 			</div>
 		</div>
-		<div class="row fixed-block height-two">
+		<div class="row fixed-block height-one-plus-half">
 			<div class="four cell fixed">
 				<div class="cell fixed twelve bottom-magnet">
 					<div class="twelve cell bottom-magnet text-container">
@@ -69,8 +70,8 @@
 						</enhanced-select>
 					</div>
 				</div>
-				<div class="row text-container">
-					<article class="twelve cell text-container centered">
+				<div class="row horizontal-spacing-twice">
+					<div class="twelve cell centered">
 						<input type="button" value="Supprimer" ng-click="resetAvatar()" class="cell" />
 						<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cell right-magnet">
 							<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
@@ -79,7 +80,7 @@
 							</div>
 							<button class="file-button" data-linked="avatar">{{#i18n}}userBook.profile.changeavatar{{/i18n}}</button>
 						</form>
-					</article>
+					</div>
 				</div>
 			</div>
 			<div class="eight cell right-magnet fixed text-container">
