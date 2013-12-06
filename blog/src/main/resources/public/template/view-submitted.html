@@ -1,7 +1,7 @@
 <div class="row">
 	<h2 class="seven cell">
-		<span class="simple-text" ng-if="post.author.userId === me.userId">(Brouillon)</span>
-		<span class="simple-text" ng-if="post.author.userId !== me.userId">(A publier)</span>
+		<span class="simple-text" ng-if="post.author.userId === me.userId && currentBlog.myRights.manager">(Brouillon)</span>
+		<span class="simple-text" ng-if="post.author.userId !== me.userId || !currentBlog.myRights.manager">(A publier)</span>
 		[[post.title]]
 	</h2>
 	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">[[translate('blog.edit.post')]]</button>
