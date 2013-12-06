@@ -8,11 +8,11 @@
 			<th scope="col" class="five" translate key="name" ng-click="orderByField('name')"></th>
 			<th scope="col" class="four" translate key="owner" ng-click="orderByField('ownerName')"></th>
 			<th></th>
-			<th scope="col" class="two" translate key="modified" ng-click="orderByField('modified')"></th>
+			<th scope="col" class="two" translate key="modified" ng-click="orderByField('created')"></th>
 		</tr>
 	</thead>
 	<tbody>
-	<tr data-ng-repeat="folder in openedFolder.folder.children" ng-class="{ checked: folder.selected }">
+	<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
 		<td><input type="checkbox" data-ng-model="folder.selected" /></td>
 		<td><i role="folder"></i></td>
 		<td colspan="2">
@@ -22,9 +22,9 @@
 			</strong>
 		</td>
 		<td></td>
-		<td></td>
+		<td>[[longDate(folder.created)]]</td>
 	</tr>
-	<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.field:order.desc" ng-class="{ overline: true, checked: document.selected }">
+	<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
 		<td><input type="checkbox" data-ng-model="document.selected" /></td>
 		<td class="icon">
 			<div class="twelve cell">
@@ -35,7 +35,7 @@
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
 		<td><span class="badge" ng-if="document.comments.length > 0" title="[[document.comments.length]] commentaire(s)">[[document.comments.length]]</span></td>
-		<td>[[longDate(document.modified)]][[longDate(document.sent)]]</td>
+		<td>[[longDate(document.created)]][[longDate(document.sent)]]</td>
 	</tr>
 	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
 		<td colspan="6" class="container-cell">

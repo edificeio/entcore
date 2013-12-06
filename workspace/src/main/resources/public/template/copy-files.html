@@ -1,6 +1,6 @@
 <form>
 	<div class="row">
-		<h1 translate key="workspace.copy"></h1>
+		<h2 translate key="workspace.copy"></h2>
 		<nav class="vertical">
 			<nav class="vertical" ng-init="folder=folder.children[0]">
 				<ul>
@@ -9,10 +9,9 @@
 			</nav>
 		</nav>
 		<a ng-if="anyTargetFolder() && !newFolder.editing" ng-click="editFolder()">Créer un nouveau dossier</a>
-		<div class="row" ng-if="newFolder.editing">
-			<label>Nouveau dossier</label>
-			<input type="text" ng-model="newFolder.name" />
-			<input type="button" ng-click="createEditFolder()" translate-attr="value" value="workspace.add.document" />
+		<div class="row input-block" ng-if="newFolder.editing">
+			<input type="text" required ng-model="newFolder.name" />
+			<button ng-click="createEditFolder()">[[translate('workspace.add.document')]]</button>
 		</div>
 		<div class="clear"></div>
 		<div class="lightbox-buttons fluid">

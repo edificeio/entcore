@@ -98,6 +98,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	function formatDocuments(documents, callback){
 		documents.forEach(function(item){
+			item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2)
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
 			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
@@ -177,6 +178,9 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 
 	$scope.nbFolders = function(){
+		if(!$scope.openedFolder.folder.children){
+			return 0;
+		}
 		return $scope.openedFolder.folder.children.length;
 	};
 
@@ -511,6 +515,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	var getFolders = function(tree, params){
 		http.get('/workspace/folders/list', params).done(function(folders){
 			folders.forEach(function(folder){
+				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
 					if(_.where($scope.folder.children[3].children, { folder: folder.folder }).length === 0){
 						$scope.folder.children[3].children.push(folder);
@@ -677,7 +682,14 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	};
 
 	$scope.order = {
-		field: 'name', desc: false
+		field: 'created', desc: true
+	}
+	$scope.order.order = function(item){
+		if($scope.order.field === 'created' && item.created){
+
+			return moment(item.created);
+		}
+		return item[$scope.order.field];
 	}
 	$scope.orderByField = function(fieldName){
 		if(fieldName === $scope.order.field){
