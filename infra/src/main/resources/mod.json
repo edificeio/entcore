@@ -5,7 +5,7 @@
   "auto-redeploy": true,
   "path-prefix": "infra",
   "app-registry": {
-    "name": "edu.one.core~app-registry~1.3.0-neo4j2"
+    "name": "edu.one.core~app-registry~1.4-SNAPSHOT"
   },
   "neo4j-persistor": {
     "name": "com.wse.neo4j~neo4jPersistor~1.1.0",
@@ -17,7 +17,7 @@
   },
   "one-modules": [
     {
-      "name": "edu.one.core~auth~1.3.0-neo4j2",
+      "name": "edu.one.core~auth~1.4-SNAPSHOT",
       "config": {
         "authenticationServer": {
           "loginURL": "http://localhost:8080/auth/login",
@@ -29,7 +29,7 @@
       }
     },
     {
-      "name": "edu.one.core~admin~1.3.0-neo4j2",
+      "name": "edu.one.core~admin~1.4-SNAPSHOT",
       "config": {
         "one-apps": [
           {
@@ -52,22 +52,22 @@
       }
     },
     {
-      "name": "edu.one.core~dataDictionary~1.3.0-neo4j2"
+      "name": "edu.one.core~dataDictionary~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~directory~1.3.0-neo4j2",
+      "name": "edu.one.core~directory~1.4-SNAPSHOT",
       "config": {
         "host": "http://localhost:8080"
       }
     },
     {
-      "name": "edu.one.core~history~1.3.0-neo4j2"
+      "name": "edu.one.core~history~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~sync~1.3.0-neo4j2"
+      "name": "edu.one.core~sync~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~workspace~1.3.0-neo4j2",
+      "name": "edu.one.core~workspace~1.4-SNAPSHOT",
       "config": {
         "host": "http://localhost:8080",
         "userbook-host": "http://localhost:8080",
@@ -76,7 +76,7 @@
       }
     },
     {
-      "name": "edu.one.core~blog~1.3.0-neo4j2",
+      "name": "edu.one.core~blog~1.4-SNAPSHOT",
       "config": {
         "host": "http://localhost:8080",
         "userbook-host": "http://localhost:8080",
@@ -84,16 +84,16 @@
       }
     },
     {
-      "name": "edu.one.core~session~1.3.0-neo4j2"
+      "name": "edu.one.core~session~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~communication~1.3.0-neo4j2"
+      "name": "edu.one.core~communication~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~timeline~1.3.0-neo4j2"
+      "name": "edu.one.core~timeline~1.4-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~portal~1.3.0-neo4j2",
+      "name": "edu.one.core~portal~1.4-SNAPSHOT",
       "config": {
         "urls": {
           "timeline": "http://localhost:8080/timeline",
