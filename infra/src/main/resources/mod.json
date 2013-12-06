@@ -103,6 +103,14 @@
           "logoutCallback": "http%3A%2F%2Flocalhost%3A8080"
         }
       }
+    },
+    {
+      "name": "edu.one.core~conversation~1.4-SNAPSHOT",
+      "config": {
+        "host": "http://localhost:8080",
+        "userbook-host": "http://localhost:8080",
+        "app-address": "http://localhost:8080/conversation/conversation"
+      }
     }
   ],
   "external-modules": [
@@ -196,6 +204,10 @@
           {
             "location": "/userbook",
             "proxy_pass": "http://localhost:8003"
+          },
+          {
+            "location": "/conversation",
+            "proxy_pass": "http://localhost:8019"
           }
         ]
       }

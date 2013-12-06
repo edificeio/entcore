@@ -1,0 +1,10 @@
+{
+	"main":"edu.one.core.conversation.Conversation",
+	"port": 8019,
+	"mode": "dev",
+	"auto-redeploy": true,
+    "host" : "http://localhost:8019",
+    "app-name" : "Conversation",
+    "app-address" : "http://localhost:8019/conversation/conversation",
+    "app-icon" : "conversation-large"
+}

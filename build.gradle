@@ -175,6 +175,15 @@ project(':workspace') {
   }
 }
 
+project(':conversation') {
+  dependencies {
+    provided project(':processor')
+    compile project(':common')
+    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "com.wse:mongodb-helper:$mongodbHelperVersion"
+  }
+}
+
 project(':tests') {
   apply plugin: 'scala'
 
