@@ -100,8 +100,11 @@ var ui = (function(){
 
 		$('.remove-fout').removeClass('remove-fout');
 
-		$('body').on('click', '.select-file input[type!="file"], button', function(e){
+		$('body').on('click', '.select-file input[type!="file"], button, .file-selector', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
+			if(inputFile.length === 0){
+				inputFile = $('input[type=file]');
+			}
 			if($(this).attr('type') === 'text'){
 				if(!$(this).data('changed')){
 					inputFile.click();

@@ -271,6 +271,9 @@ One = {
 var Model = {};
 (function(){
 	function pluralizeName(obj){
+		if(!obj.name){
+			obj.name = obj.toString().match(/^function\s*([^\s(]+)/)[1];
+		}
 		return obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
 	}
 	function Collection(obj){
