@@ -6,7 +6,7 @@ function MainController($rootScope, $scope){
 
 function Timeline($scope, date, model, lang){
 	$scope.notifications = model.notifications;
-	$scope.notificationTypes = model.notificationTypes
+	$scope.notificationTypes = model.notificationTypes;
 	$scope.translate = lang.translate;
 
 	model.on('notifications.change, notificationTypes.change', function(e){
