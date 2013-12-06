@@ -211,22 +211,6 @@
         "log-path": "/opt/one/history/",
         "address": "log.address"
       }
-    },
-    {
-      "name": "edu.one~wordpress~1.0.0",
-      "config": {
-        "bus-address": "wpconnector.address",
-        "host": "one",
-        "wp-plugin-url": "/wp_one/?api=1&method=one_",
-        "table-path": "table.json",
-        "log-file": "connector.log",
-        "token": "blabla",
-        "profile-groups": {
-          "PERSEDUCNAT": "730",
-          "PERSRELELEVE": "729",
-          "ELEVE": "728"
-        }
-      }
     }
   ]
 }

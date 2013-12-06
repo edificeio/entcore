@@ -238,15 +238,6 @@ public class BE1DImporter {
 						@Override
 						public void handle(Message<JsonObject> message) {
 							handler.handle(new JsonObject().putObject(schoolName, m.body()));
-							WordpressHelper wp = new WordpressHelper(Server.getEventBus(vertx), schoolId);
-							for (Object o: queries) {
-								wp.queryToEntity((JsonObject) o);
-							}
-							try {
-								wp.send();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
 						}
 					});
 				} else {

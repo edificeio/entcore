@@ -27,7 +27,6 @@ import edu.one.core.datadictionary.generation.DisplayNameGenerator;
 import edu.one.core.datadictionary.generation.IdGenerator;
 import edu.one.core.datadictionary.generation.LoginGenerator;
 import edu.one.core.directory.be1d.BE1D;
-import edu.one.core.directory.be1d.WordpressHelper;
 import edu.one.core.directory.profils.DefaultProfils;
 import edu.one.core.directory.profils.Profils;
 import edu.one.core.directory.users.UserQueriesBuilder;
@@ -175,7 +174,6 @@ public class DirectoryController extends Controller {
 						@Override
 						public void handle(Message<JsonObject> res) {
 							if ("ok".equals(res.body().getString("status"))) {
-								WordpressHelper.sendUser(eb, user);
 								renderJson(request, res.body());
 							} else {
 								renderError(request, res.body());
