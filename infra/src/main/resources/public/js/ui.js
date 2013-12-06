@@ -100,7 +100,7 @@ var ui = (function(){
 
 		$('.remove-fout').removeClass('remove-fout');
 
-		$('body').on('click', '.select-file input[type!="file"], button, .file-selector', function(e){
+		$('body').on('click', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
 			if(inputFile.length === 0){
 				inputFile = $('input[type=file]');
