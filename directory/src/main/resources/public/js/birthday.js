@@ -45,6 +45,10 @@
 			});
 		});
 
+		if(!Birthday.currentClass){
+			Birthday.currentClass = Birthday.classes[0];
+		}
+
 		Model.widgets.apply();
 	});
 }());
