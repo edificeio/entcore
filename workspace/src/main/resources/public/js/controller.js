@@ -592,12 +592,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.move = function(){
 		ui.hideLightbox();
-
 		var folderString = folderToString($scope.folder.children[0], targetFolders[0]);
-		var basePath = 'documents/move/' + selectedDocumentsIds;
-		if(folderString !== ''){
-			basePath += '/' + folderString;
-		}
 
 		var data = {};
 		if(folderString !== ''){
@@ -606,8 +601,13 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 		if($scope.selectedDocuments().length > 0){
 			var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
+			var basePath = 'documents/move/' + selectedDocumentsIds;
+			if(folderString !== ''){
+				basePath += '/' + folderString;
+			}
+
 			http.put(basePath).done(function(){
-				$scope.openFolder($scope.openedFolder);
+				$scope.openFolder($scope.openedFolder.folder);
 			});
 		}
 		$scope.selectedFolders().forEach(function(folder){
