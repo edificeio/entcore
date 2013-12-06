@@ -111,6 +111,11 @@
   }
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-one-plus-half {
+    padding-bottom: 12.5%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.left-one {
     left: 8.333333333333334%;
   }

@@ -111,6 +111,11 @@
   }
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-one-plus-half {
+    padding-bottom: 12.5%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.left-one {
     left: 8.333333333333334%;
   }
@@ -551,6 +556,10 @@ nav.horizontal a {
   padding-left: 5px;
   padding-right: 5px;
 }
+.horizontal-spacing-twice {
+  padding-left: 10px;
+  padding-right: 10px;
+}
 .calendar {
   box-sizing: content-box;
   height: 1px;
@@ -721,6 +730,9 @@ table.list-view td img {
 .toggle-panel .toggle {
   width: 300px;
 }
+.toggle-bottom-spacer {
+  margin-bottom: 50px;
+}
 .toggle-bottom {
   width: 960px;
   left: 50%;
@@ -826,8 +838,8 @@ ul.icons-view.two-cols li.element {
   max-width: 100%;
 }
 .icons-view .element i {
-  width: 129px;
-  height: 129px;
+  width: 117px;
+  height: 117px;
   background-size: auto 100%;
 }
 .icons-view .element input[type=checkbox] {
@@ -848,6 +860,9 @@ ul.icons-view.two-cols li.element {
 }
 .icons-view div.element:nth-child(8n + 9) {
   clear: left;
+}
+.file-selector {
+  cursor: pointer;
 }
 .action-cell {
   width: 30px;

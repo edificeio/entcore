@@ -111,6 +111,11 @@
   }
 }
 @media screen and (min-width: 720px) {
+  .fixed-block.height-one-plus-half {
+    padding-bottom: 12.5%;
+  }
+}
+@media screen and (min-width: 720px) {
   .fixed-block.left-one {
     left: 8.333333333333334%;
   }
@@ -551,6 +556,10 @@ nav.horizontal a {
   padding-left: 5px;
   padding-right: 5px;
 }
+.horizontal-spacing-twice {
+  padding-left: 10px;
+  padding-right: 10px;
+}
 .calendar {
   box-sizing: content-box;
   height: 1px;
@@ -721,6 +730,9 @@ table.list-view td img {
 .toggle-panel .toggle {
   width: 300px;
 }
+.toggle-bottom-spacer {
+  margin-bottom: 50px;
+}
 .toggle-bottom {
   width: 960px;
   left: 50%;
@@ -826,8 +838,8 @@ ul.icons-view.two-cols li.element {
   max-width: 100%;
 }
 .icons-view .element i {
-  width: 129px;
-  height: 129px;
+  width: 117px;
+  height: 117px;
   background-size: auto 100%;
 }
 .icons-view .element input[type=checkbox] {
@@ -848,6 +860,9 @@ ul.icons-view.two-cols li.element {
 }
 .icons-view div.element:nth-child(8n + 9) {
   clear: left;
+}
+.file-selector {
+  cursor: pointer;
 }
 .action-cell {
   width: 30px;
@@ -2768,15 +2783,57 @@ nav.vertical ul a:hover {
   line-height: 30px;
   height: 30px;
 }
+.input-block input[type=text] {
+  border: 1px solid #eee;
+  border-right: 0;
+  margin: 0;
+  height: 25px;
+  line-height: 25px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.input-block input[type=submit],
+.input-block button {
+  border: 1px solid #eee;
+  border-left: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  font-family: Arial;
+  line-height: 25px;
+  height: 25px;
+  font-size: 16px;
+  border: 0;
+}
 .search input[type=text] {
   border: 1px solid #eee;
   border-right: 0;
+  margin: 0;
+  height: 25px;
+  line-height: 25px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
-.search input[type=submit] {
+.search input[type=submit],
+.search button {
   border: 1px solid #eee;
   border-left: 0;
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  font-family: Arial;
+  line-height: 25px;
+  height: 25px;
+  font-size: 16px;
+  border: 0;
 }
 button.cancel,
 input[type=button].cancel,
@@ -3095,12 +3152,13 @@ h3 {
 }
 .icons-view .element a {
   text-decoration: none;
-  color: #888;
-  font-size: 14px;
+  color: #666;
+  font-size: 16px;
 }
 .icons-view .element a strong {
   color: #2f8cc9;
   font-weight: normal;
+  font-size: 14px;
 }
 .icons-view .element a i,
 .icons-view .element a img {
@@ -3128,6 +3186,7 @@ textarea {
   overflow: visible;
   color: #666;
   font-size: 14px;
+  max-width: 100%;
 }
 table {
   -webkit-border-radius: 10px;

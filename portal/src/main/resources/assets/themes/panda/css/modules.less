@@ -652,17 +652,29 @@ nav.vertical{
 	}
 }
 
-.search{
+.input-block{
 	input[type=text]{
 		border: 1px solid #eee;
 		border-right: 0;
+		margin: 0;
+		height: 25px;
+		line-height: 25px;
+		.border-box;
 	}
-	input[type=submit]{
+	input[type=submit], button{
 		border: 1px solid #eee;
 		border-left: 0;
-		border-bottom-left-radius: 0;
-		border-top-left-radius: 0;
+		.rounded-corners(0);
+		font-family: Arial;
+		line-height: 25px;
+		height: 25px;
+		font-size: 16px;
+		border: 0;
 	}
+}
+
+.search{
+	.input-block;
 }
 
 button.cancel, input[type=button].cancel, a.cancel{
@@ -901,12 +913,13 @@ h3{
 
 	.element a{
 		text-decoration: none;
-		color: #888;
-		font-size: 14px;
+		color: #666;
+		font-size: 16px;
 
 		strong{
 			color: @medium-blue;
 			font-weight: normal;
+			font-size: 14px;
 		}
 
 		i, img{
@@ -945,6 +958,7 @@ textarea{
 	overflow: visible;
 	color: #666;
 	font-size: 14px;
+	max-width: 100%;
 }
 
 table{
