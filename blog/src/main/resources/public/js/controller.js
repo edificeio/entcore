@@ -149,6 +149,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	$scope.displayBlog = function(blog){
+		resetScope();
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
 			$scope.currentBlog.posts = data;
@@ -189,7 +190,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.switchComments = function(post){
 		post.showComments = !post.showComments;
-	}
+	};
 
 	$scope.showCreatePost = function(){
 		resetScope();
@@ -222,6 +223,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	$scope.showEditPost = function(post){
+		$scope.currentView = '';
 		$scope.currentPost = post;
 		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
 			.done(function(data){
@@ -253,12 +255,17 @@ function Blog($scope, http, date, _, ui, lang, notify){
 			comment: {
 				comment: ''
 			}
-		}
+		};
+		$scope.editPost = undefined;
 	}
 	resetScope();
 
 	$scope.formatDate = function(dateString){
 		return date.format(dateString, 'dddd LL')
+	}
+
+	$scope.isEditing = function(){
+		return $scope.editPost || ($scope.create.post && $scope.currentView === views.createPost);
 	}
 
 	$scope.createPost = function(){
