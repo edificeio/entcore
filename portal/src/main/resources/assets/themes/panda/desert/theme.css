@@ -1963,6 +1963,20 @@ i[role=doc] {
   float: left;
   vertical-align: middle;
 }
+i[role=unknown] {
+  height: 25px;
+  width: 25px;
+  background-image: url("../img/icons/unknown.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=img] {
   height: 25px;
   width: 25px;
