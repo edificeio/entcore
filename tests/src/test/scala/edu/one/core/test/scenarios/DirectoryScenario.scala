@@ -29,7 +29,7 @@ object DirectoryScenario {
 		.check(status.is(200), jsonPath("status").is("ok"),
       jsonPath("$.result.0.classId").find.saveAs("classId")))
     .exec(http("List students in class")
-      .get("""/directory/api/personnes?id=${classId}&type=ELEVE""")
+      .get("""/directory/api/personnes?id=${classId}&type=Student""")
     .check(status.is(200), jsonPath("status").is("ok"),
       jsonPath("$.result.0.userId").find.saveAs("childrenId")))
 		.exec(http("Create manual teacher")
@@ -37,21 +37,21 @@ object DirectoryScenario {
 			.param("""classId""", """${classId}""")
 			.param("""lastname""", "Devost")
 			.param("""firstname""", """Julie""")
-			.param("""type""", """ENSEIGNANT""")
+			.param("""type""", """Teacher""")
 		.check(status.is(200), jsonPath("status").is("ok")))
     .exec(http("Create manual student")
       .post("""/directory/api/user""")
       .param("""classId""", """${classId}""")
       .param("""lastname""", "Monjeau")
       .param("""firstname""", """Lundy""")
-      .param("""type""", """ELEVE""")
+      .param("""type""", """Student""")
     .check(status.is(200), jsonPath("status").is("ok")))
     .exec(http("Create manual parent")
       .post("""/directory/api/user""")
       .param("""classId""", """${classId}""")
       .param("""lastname""", "Bondy")
       .param("""firstname""", """Astrid""")
-      .param("""type""", """PERSRELELEVE""")
+      .param("""type""", """Relative""")
       .param("""childrenIds""", """${childrenId}""")
     .check(status.is(200), jsonPath("status").is("ok")))
     .exec(http("List persons in class")
@@ -70,7 +70,7 @@ object DirectoryScenario {
       })).saveAs("createdUserIds")))
     .exec{session =>
       val uIds = session("createdUserIds").as[Map[String, String]]
-      session.set("teacherId", uIds.get("ENSEIGNANT").get).set("studentId", uIds.get("ELEVE").get)
+      session.set("teacherId", uIds.get("Teacher").get).set("studentId", uIds.get("Student").get)
     }
     .exec(http("Teacher details")
       .get("""/directory/api/details?id=${teacherId}""")
