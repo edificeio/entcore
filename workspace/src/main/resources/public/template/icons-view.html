@@ -16,7 +16,7 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			<a ng-href="[[documentPath(document)]]">[[document.name]] <span class="badge" ng-if="document.comments.length > 0" title="[[document.comments.length]] commentaire(s)">[[document.comments.length]]</span></a>
+			<a ng-href="[[documentPath(document)]]">[[document.name]] <span class="badge" ng-if="document.comments.length > 0" title="[[document.comments.length]] commentaire(s)" ng-click="showComments(document, $event)">[[document.comments.length]]</span></a>
 			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
 	</div>
 	<section ng-repeat-end>

@@ -414,7 +414,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				if($scope.currentTree.name === 'shared'){
 					$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(document){
 						return document.folder === 'Trash';
-					})
+					});
 				}
 				$scope.$apply();
 			});
@@ -473,6 +473,20 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.toggleComments = function(document){
 		document.showComments = !document.showComments;
+	};
+
+	$scope.showComments = function(document, $event){
+		if($event){
+			$event.preventDefault();
+		}
+		$scope.selectedDocuments().forEach(function(document){
+			document.selected = false;
+			document.showComments = false;
+		});
+
+		document.selected = true;
+		document.showComments = true;
+
 	}
 
 	$scope.$watch('targetDocument', function(newVal){
@@ -715,7 +729,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
 		var name = $scope.newFile.file.name.split('.')[0];
-		var extension = $scope.newFile.file.name.split('.')[1];
+		var splitList = $scope.newFile.file.name.split('.');
+		var extension = splitList[splitList.length - 1];
 		$scope.newFile.name = name;
 		$scope.newFile.extension = extension;
 	};
