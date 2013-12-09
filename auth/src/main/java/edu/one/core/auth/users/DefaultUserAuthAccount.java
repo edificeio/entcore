@@ -34,7 +34,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void activateAccount(final String login, String activationCode, String password,
+	public void activateAccount(final String login, String activationCode, final String password,
 			final Handler<Boolean> handler) {
 		String query =
 				"START n=node:node_auto_index(ENTPersonLogin={login}) " +
@@ -63,7 +63,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					String q =
 							"START n=node:node_auto_index(ENTPersonLogin={login}) " +
 							"WHERE n.activationCode? IS NULL AND NOT(n.ENTPersonMotDePasse? IS NULL) " +
-							"RETURN count(n) as c";
+							"RETURN n.ENTPersonMotDePasse as password";
 					Map<String, Object> p = new HashMap<>();
 					p.put("login", login);
 					neo.send(q, p, new Handler<Message<JsonObject>>() {
@@ -72,7 +72,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 							handler.handle(
 									"ok".equals(event.body().getString("status")) &&
 									event.body().getObject("result").getObject("0") != null &&
-									"1".equals(event.body().getObject("result").getObject("0").getString("c", ""))
+									BCrypt.checkpw(password, event.body().getObject("result").getObject("0")
+											.getString("password", ""))
 							);
 						}
 					});
