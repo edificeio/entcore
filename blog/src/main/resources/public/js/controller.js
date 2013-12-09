@@ -107,7 +107,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 					}
 					else if(sp.length > 1 && !_.where($scope.blogs, { _id: sp[1] }).length){
 						$scope.currentBlog = $scope.blogs[0];
-						notify.error('e404');
+						notify.error('notfound');
 					}
 					else{
 						$scope.currentBlog = $scope.blogs[0];
