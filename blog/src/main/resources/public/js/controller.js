@@ -34,7 +34,7 @@ function resolveMyRights(me){
 	}
 }
 
-function Blog($scope, http, date, _, ui, lang){
+function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.translate = lang.translate;
 
 	$scope.blogs = [];
@@ -102,8 +102,12 @@ function Blog($scope, http, date, _, ui, lang){
 				}
 				var sp = window.location.href.split('blog=');
 				if(!$scope.currentBlog && $scope.blogs.length > 0){
-					if(sp.length > 1){
+					if(sp.length > 1 && _.where($scope.blogs, { _id: sp[1] }).length > 0){
 						$scope.currentBlog = _.where($scope.blogs, { _id: sp[1] })[0];
+					}
+					else if(sp.length > 1 && !_.where($scope.blogs, { _id: sp[1] }).length){
+						$scope.currentBlog = $scope.blogs[0];
+						notify.error('e404');
 					}
 					else{
 						$scope.currentBlog = $scope.blogs[0];
