@@ -1,7 +1,7 @@
 package edu.one.core.workspace.service;
 
 import edu.one.core.infra.Either;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;

@@ -5,7 +5,7 @@ import edu.one.core.directory.controllers.UserBookController;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.http.Renders;
-import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;

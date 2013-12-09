@@ -1,7 +1,7 @@
 package edu.one.core.registry;
 
 import edu.one.core.infra.Server;
-import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.registry.service.AppRegistryService;
 

@@ -8,8 +8,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.http.Binding;
-import edu.one.core.infra.security.resources.ResourcesProvider;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.http.filter.ResourcesProvider;
+import edu.one.core.common.user.UserInfos;
 import edu.one.core.workspace.dao.DocumentDao;
 import edu.one.core.workspace.service.WorkspaceService;
 

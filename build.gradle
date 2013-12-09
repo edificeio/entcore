@@ -66,6 +66,7 @@ project(':common') {
 project(':admin') {
   dependencies {
     provided project(':processor')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -119,6 +120,7 @@ project(':directory') {
 project(':history') {
   dependencies {
     provided project(':processor')
+    compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
   }
 }

@@ -1,6 +1,6 @@
 package edu.one.core.blog.services;
 
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 

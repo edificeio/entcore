@@ -22,7 +22,7 @@ import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
 import edu.one.core.common.user.UserUtils;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import edu.one.core.security.SecuredAction;
 
 public class UserBookController extends Controller {

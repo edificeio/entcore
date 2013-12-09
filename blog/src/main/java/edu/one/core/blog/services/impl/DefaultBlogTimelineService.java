@@ -7,7 +7,7 @@ import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.MongoQueryBuilder;
 import edu.one.core.common.neo4j.Neo;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;

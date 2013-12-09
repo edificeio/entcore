@@ -2,7 +2,7 @@ package edu.one.core.history;
 
 import edu.one.core.history.controllers.HistoryController;
 import edu.one.core.infra.Server;
-import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 
 public class History extends Server {

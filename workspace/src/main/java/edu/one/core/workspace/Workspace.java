@@ -2,7 +2,7 @@ package edu.one.core.workspace;
 
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.Server;
-import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.workspace.security.WorkspaceResourcesProvider;
 import edu.one.core.workspace.service.WorkspaceService;

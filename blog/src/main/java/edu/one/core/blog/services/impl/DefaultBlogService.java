@@ -4,7 +4,7 @@ import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogService;
 import edu.one.core.infra.*;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;

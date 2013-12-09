@@ -4,7 +4,7 @@ import static edu.one.core.workspace.dao.DocumentDao.DOCUMENTS_COLLECTION;
 
 import com.mongodb.QueryBuilder;
 import edu.one.core.infra.*;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import edu.one.core.workspace.service.FolderService;
 import edu.one.core.workspace.service.WorkspaceService;
 import org.vertx.java.core.Handler;

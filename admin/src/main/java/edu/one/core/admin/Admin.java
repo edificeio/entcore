@@ -2,7 +2,7 @@ package edu.one.core.admin;
 
 import edu.one.core.admin.controllers.AdminController;
 import edu.one.core.infra.Server;
-import edu.one.core.infra.request.filter.ActionFilter;
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
 
 public class Admin extends Server {

@@ -3,7 +3,6 @@ package edu.one.core.common.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
-import edu.one.core.infra.security.resources.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;

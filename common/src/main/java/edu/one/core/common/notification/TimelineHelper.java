@@ -1,7 +1,7 @@
 package edu.one.core.common.notification;
 
 import edu.one.core.infra.http.Renders;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;

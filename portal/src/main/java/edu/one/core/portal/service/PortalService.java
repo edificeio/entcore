@@ -4,7 +4,7 @@ import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.http.StaticResource;
 import edu.one.core.common.user.UserUtils;
-import edu.one.core.infra.security.resources.UserInfos;
+import edu.one.core.common.user.UserInfos;
 import edu.one.core.portal.mustache.AssetResourceTemplateFunction;
 import edu.one.core.portal.utils.ThemeUtils;
 import edu.one.core.security.ActionType;
