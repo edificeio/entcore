@@ -98,7 +98,12 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	function formatDocuments(documents, callback){
 		documents.forEach(function(item){
-			item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2)
+			if(item.created){
+				item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
+			}
+			else{
+				item.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
+			}
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
 			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
@@ -691,7 +696,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 	$scope.order.order = function(item){
 		if($scope.order.field === 'created' && item.created){
-
 			return moment(item.created);
 		}
 		return item[$scope.order.field];
