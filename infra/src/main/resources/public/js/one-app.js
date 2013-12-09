@@ -575,6 +575,9 @@ oneModule.directive('sharePanel', function($compile){
 
 $(document).ready(function(){
 	angular.bootstrap($('html'), ['one']);
+	if(!window.Model){
+		Model = {};
+	}
 	buildModel();
 	Model.sync();
 })
