@@ -3,8 +3,9 @@
 	<head>
 		<title>{{#i18n}}timeline.title{{/i18n}}</title>
 		<meta charset="utf-8" />
-		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
+
 		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body ng-controller="MainController" ng-click="closePanel()">
@@ -49,7 +50,7 @@
 													</div>
 												</div>
 												<div class="eleven cell horizontal-spacing">
-													<p data-ng-bind-html="notification.message"></p>
+													<p bind-html-unsafe="notification.message"></p>
 												</div>
 											</div>
 										</div>

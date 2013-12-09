@@ -34,7 +34,7 @@ function resolveMyRights(me){
 	}
 }
 
-function Blog($scope, http, date, _, ui, lang){
+function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.translate = lang.translate;
 
 	$scope.blogs = [];
@@ -102,8 +102,12 @@ function Blog($scope, http, date, _, ui, lang){
 				}
 				var sp = window.location.href.split('blog=');
 				if(!$scope.currentBlog && $scope.blogs.length > 0){
-					if(sp.length > 1){
+					if(sp.length > 1 && _.where($scope.blogs, { _id: sp[1] }).length > 0){
 						$scope.currentBlog = _.where($scope.blogs, { _id: sp[1] })[0];
+					}
+					else if(sp.length > 1 && !_.where($scope.blogs, { _id: sp[1] }).length){
+						$scope.currentBlog = $scope.blogs[0];
+						notify.error('notfound');
 					}
 					else{
 						$scope.currentBlog = $scope.blogs[0];
@@ -145,6 +149,7 @@ function Blog($scope, http, date, _, ui, lang){
 	}
 
 	$scope.displayBlog = function(blog){
+		resetScope();
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
 			$scope.currentBlog.posts = data;
@@ -185,7 +190,7 @@ function Blog($scope, http, date, _, ui, lang){
 
 	$scope.switchComments = function(post){
 		post.showComments = !post.showComments;
-	}
+	};
 
 	$scope.showCreatePost = function(){
 		resetScope();
@@ -218,6 +223,7 @@ function Blog($scope, http, date, _, ui, lang){
 	}
 
 	$scope.showEditPost = function(post){
+		$scope.currentView = '';
 		$scope.currentPost = post;
 		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
 			.done(function(data){
@@ -249,12 +255,17 @@ function Blog($scope, http, date, _, ui, lang){
 			comment: {
 				comment: ''
 			}
-		}
+		};
+		$scope.editPost = undefined;
 	}
 	resetScope();
 
 	$scope.formatDate = function(dateString){
 		return date.format(dateString, 'dddd LL')
+	}
+
+	$scope.isEditing = function(){
+		return $scope.editPost || ($scope.create.post && $scope.currentView === views.createPost);
 	}
 
 	$scope.createPost = function(){

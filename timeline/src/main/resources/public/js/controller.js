@@ -44,7 +44,7 @@ function Personalization($rootScope, $scope, model, ui){
 	})
 }
 
-function Widgets($scope, model, lang){
+function Widgets($scope, model, lang, date){
 	$scope.widgets = model.widgets;
 
 	model.on('widgets.change', function(){

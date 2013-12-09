@@ -98,7 +98,12 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	function formatDocuments(documents, callback){
 		documents.forEach(function(item){
-			item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2)
+			if(item.created){
+				item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
+			}
+			else{
+				item.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
+			}
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
 			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
@@ -209,7 +214,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		});
 		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
 
-		$scope.folder.children[3].children = $scope.folder.children[3].children.concat(
+		$scope.folder.children[$scope.folder.children.length - 1].children = $scope.folder.children[$scope.folder.children.length - 1].children.concat(
 			_.where($scope.openedFolder.folder.children, { selected: true })
 		);
 		$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
@@ -409,7 +414,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				if($scope.currentTree.name === 'shared'){
 					$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(document){
 						return document.folder === 'Trash';
-					})
+					});
 				}
 				$scope.$apply();
 			});
@@ -468,6 +473,20 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.toggleComments = function(document){
 		document.showComments = !document.showComments;
+	};
+
+	$scope.showComments = function(document, $event){
+		if($event){
+			$event.preventDefault();
+		}
+		$scope.selectedDocuments().forEach(function(document){
+			document.selected = false;
+			document.showComments = false;
+		});
+
+		document.selected = true;
+		document.showComments = true;
+
 	}
 
 	$scope.$watch('targetDocument', function(newVal){
@@ -517,8 +536,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			folders.forEach(function(folder){
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
-					if(_.where($scope.folder.children[3].children, { folder: folder.folder }).length === 0){
-						$scope.folder.children[3].children.push(folder);
+					if(_.where($scope.folder.children[$scope.folder.children.length - 1].children, { folder: folder.folder }).length === 0){
+						$scope.folder.children[$scope.folder.children.length - 1].children.push(folder);
 					}
 					return;
 				}
@@ -592,12 +611,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.move = function(){
 		ui.hideLightbox();
-
 		var folderString = folderToString($scope.folder.children[0], targetFolders[0]);
-		var basePath = 'documents/move/' + selectedDocumentsIds;
-		if(folderString !== ''){
-			basePath += '/' + folderString;
-		}
 
 		var data = {};
 		if(folderString !== ''){
@@ -606,8 +620,13 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 		if($scope.selectedDocuments().length > 0){
 			var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
+			var basePath = 'documents/move/' + selectedDocumentsIds;
+			if(folderString !== ''){
+				basePath += '/' + folderString;
+			}
+
 			http.put(basePath).done(function(){
-				$scope.openFolder($scope.openedFolder);
+				$scope.openFolder($scope.openedFolder.folder);
 			});
 		}
 		$scope.selectedFolders().forEach(function(folder){
@@ -662,6 +681,11 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				return folder.name === 'rack';
 			});
 		}
+		else{
+			http.get("users/available-rack").done(function(response){
+				$scope.users = response;
+			});
+		}
 	});
 
 	$scope.boxes = { selectAll: false }
@@ -686,7 +710,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	}
 	$scope.order.order = function(item){
 		if($scope.order.field === 'created' && item.created){
-
 			return moment(item.created);
 		}
 		return item[$scope.order.field];
@@ -706,7 +729,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
 		var name = $scope.newFile.file.name.split('.')[0];
-		var extension = $scope.newFile.file.name.split('.')[1];
+		var splitList = $scope.newFile.file.name.split('.');
+		var extension = splitList[splitList.length - 1];
 		$scope.newFile.name = name;
 		$scope.newFile.extension = extension;
 	};
@@ -791,9 +815,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		});
 	};
 
-	http.get("users/available-rack").done(function(response){
-		$scope.users = response;
-	});
+
 
 	$scope.editFolder = function(){
 		$scope.newFolder.editing = true;

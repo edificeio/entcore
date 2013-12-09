@@ -8,6 +8,7 @@ var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice(
 var loader = (function(){
 	var configurations = {
 		'portal': [
+			{ path: 'moment+langs.js', async: true },
 			{ path: 'jquery-1.9.1.js', async: true },
 			{ path: 'angular.min.js', async: true },
 			{ path: 'angular-sanitize.min.js', async: true },

@@ -43,7 +43,7 @@ public class UserUtils {
 
 	private static void findUsers(final EventBus eb, String userId,
 						  final JsonObject query, final Handler<JsonArray> handler) {
-		if ("userId" != null && !userId.trim().isEmpty()) {
+		if (userId != null && !userId.trim().isEmpty()) {
 			query.putString("userId", userId);
 			eb.send(COMMUNICATION_USERS, query, new Handler<Message<JsonArray>>() {
 
@@ -109,11 +109,13 @@ public class UserUtils {
 		findUsers(eb, userId, QUERY_VISIBLE_PROFILS_GROUPS, handler);
 	}
 
-	public static void findUsersInProfilsGroups(String groupId, final EventBus eb,
-												final Handler<JsonArray> handler) {
+	public static void findUsersInProfilsGroups(String groupId, final EventBus eb, String userId,
+			boolean itSelf, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 				.putString("action", "usersInProfilGroup")
-				.putString("userId", groupId);
+				.putString("userId", groupId)
+				.putBoolean("itself", itSelf)
+				.putString("excludeUserId", userId);
 		eb.send(COMMUNICATION_USERS, m, new Handler<Message<JsonArray>>() {
 			@Override
 			public void handle(Message<JsonArray> res) {

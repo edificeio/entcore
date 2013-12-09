@@ -65,6 +65,7 @@
     "userBook.password.change" : "Modifier le mot de passe",
     "userBook.profile.return" : "Annuler",
     "userBook.search" : "Recherche",
+	"userBook.remove" : "Supprimer",
     "e400": "Le client a rencontré une erreur",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
     "e403": "Le serveur a refusé votre requête",

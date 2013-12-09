@@ -345,7 +345,9 @@ public class CommunicationController extends Controller {
 				visibleProfilsGroups(userId, responseHandler);
 				break;
 			case "usersInProfilGroup":
-				usersInProfilGroup(userId, responseHandler);
+				boolean itSelf = message.body().getBoolean("itself", false);
+				String excludeUserId = message.body().getString("excludeUserId");
+				usersInProfilGroup(userId, itSelf, excludeUserId, responseHandler);
 				break;
 			default:
 				message.reply(new JsonArray());
@@ -453,16 +455,21 @@ public class CommunicationController extends Controller {
 		});
 	}
 
-	private void usersInProfilGroup(String profilGroupId, final Handler<JsonArray> handler) {
+	private void usersInProfilGroup(String profilGroupId, boolean itSelf, String userId,
+			final Handler<JsonArray> handler) {
+		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
 		String query =
 				"START n = node:node_auto_index({group}) " +
 				"MATCH n<-[:APPARTIENT]-u " +
-				"WHERE has(u.type) AND u.type IN ['PERSRELELEVE','ELEVE','PERSEDUCNAT','ENSEIGNANT'] " +
+				"WHERE has(u.type) AND u.type IN ['PERSRELELEVE','ELEVE','PERSEDUCNAT','ENSEIGNANT'] " + condition +
 				"RETURN distinct u.id as id, u.ENTPersonLogin? as login," +
 						" u.ENTPersonNomAffichage? as username, u.type as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("group", "id:" + profilGroupId + " AND type:GROUP_*");
+		if (!itSelf && userId != null) {
+			params.put("userId", userId);
+		}
 		neo.send(query.toString(), params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
