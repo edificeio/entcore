@@ -242,7 +242,7 @@ public class WorkspaceService extends Controller {
 			} else {
 				String groupId = json.getString("groupId");
 				if (groupId != null) {
-					UserUtils.findUsersInProfilsGroups(groupId, eb, new Handler<JsonArray>() {
+					UserUtils.findUsersInProfilsGroups(groupId, eb, user.getUserId(), false, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray event) {
 							if (event != null) {
