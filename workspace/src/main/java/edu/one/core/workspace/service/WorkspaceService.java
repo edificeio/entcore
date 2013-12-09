@@ -245,7 +245,6 @@ public class WorkspaceService extends Controller {
 					UserUtils.findUsersInProfilsGroups(groupId, eb, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray event) {
-							log.debug(event.encode());
 							if (event != null) {
 								for(Object o: event) {
 									if (!(o instanceof JsonObject)) continue;
@@ -268,19 +267,31 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
-	private void sendNotify(HttpServerRequest request, String resource, UserInfos user, List<String> recipients) {
-		JsonObject params = new JsonObject()
+	private void sendNotify(final HttpServerRequest request, final String resource,
+			final UserInfos user, final List<String> recipients) {
+		final JsonObject params = new JsonObject()
 		.putString("uri", container.config().getString("userbook-host") +
 				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 		.putString("username", user.getUsername())
 		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
 				pathPrefix + "/document/" + resource);
-		try {
-			notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-					recipients, resource, "notify-share.html", params);
-		} catch (IOException e) {
-			log.error("Unable to send timeline notification", e);
-		}
+		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
+				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+					params.putString("resourceName", event.body().getObject("result").getString("name", ""));
+					try {
+						notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
+								recipients, resource, "notify-share.html", params);
+					} catch (IOException e) {
+						log.error("Unable to send timeline notification", e);
+					}
+				} else {
+					log.error("Unable to send timeline notification : missing name on resource " + resource);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("workspace.document.add")
