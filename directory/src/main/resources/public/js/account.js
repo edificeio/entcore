@@ -140,6 +140,11 @@ function MyAccount($scope, http, lang, date, notify, _){
         ui.updateAvatar();
 	}
 
+    $scope.hasAvatar = function() {
+        var uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test($scope.account.picture);
+    }
+
 	$scope.updateAvatar = function(){
 		var form = new FormData(),
 		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
