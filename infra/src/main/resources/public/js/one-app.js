@@ -841,6 +841,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 			})
 				.forEach(function(item){
 					element.actions[item.displayName] = false;
+					data.actions = data.actions.concat(actionToRights(element, item));
 				})
 		}
 		else{
@@ -849,6 +850,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 					return action.displayName.indexOf(required) !== -1;
 				});
 				element.actions[action.displayName] = true;
+				data.actions = data.actions.concat(actionToRights(element, action));
 			});
 		}
 
