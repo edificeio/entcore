@@ -795,7 +795,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void copyDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
