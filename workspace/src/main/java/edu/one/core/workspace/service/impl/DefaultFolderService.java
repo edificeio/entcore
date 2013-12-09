@@ -39,11 +39,11 @@ public class DefaultFolderService implements FolderService {
 	public void create(String name, String path, String application,
 			UserInfos owner, final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (name == null || name.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.folder.name"));
 			return;
 		}
 		final JsonObject doc = new JsonObject();
@@ -75,7 +75,7 @@ public class DefaultFolderService implements FolderService {
 						}
 					});
 				} else {
-					result.handle(new Either.Left<String, JsonObject>("Folder already exists."));
+					result.handle(new Either.Left<String, JsonObject>("workspace.folder.already.exists"));
 				}
 			}
 		});
@@ -85,11 +85,11 @@ public class DefaultFolderService implements FolderService {
 	public void move(String id, final String path, final UserInfos owner,
 			final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (id == null || id.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
@@ -103,12 +103,33 @@ public class DefaultFolderService implements FolderService {
 				if ("ok".equals(event.body().getString("status")) &&
 						folder != null && !folder.trim().isEmpty() && name != null && !name.trim().isEmpty()) {
 					if (path != null && path.startsWith(folder)) {
-						result.handle(new Either.Left<String, JsonObject>("Forbidden to move the folder in itself."));
+						result.handle(new Either.Left<String, JsonObject>(
+								"workspace.forbidden.move.folder.in.itself"));
 					} else {
-						recursiveMove(folder, name, owner, path, result);
+						String dest;
+						if (path != null && !path.trim().isEmpty()) {
+							dest = path + "_" + name;
+						} else {
+							dest = name;
+						}
+						QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId())
+								.put("folder").is(dest);
+						mongo.count(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
+								new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								if ("ok".equals(event.body().getString("status")) &&
+										event.body().getInteger("count") == 0) {
+									recursiveMove(folder, name, owner, path, result);
+								} else {
+									result.handle(new Either.Left<String, JsonObject>(
+											"workspace.folder.already.exists"));
+								}
+							}
+						});
 					}
 				} else {
-					result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+					result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 				}
 			}
 		});
@@ -153,7 +174,7 @@ public class DefaultFolderService implements FolderService {
 						});
 					}
 				} else {
-					result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+					result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 				}
 			}
 		});
@@ -163,11 +184,11 @@ public class DefaultFolderService implements FolderService {
 	public void copy(String id, final String n, final String path, final UserInfos owner,
 			final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (id == null || id.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
@@ -237,7 +258,7 @@ public class DefaultFolderService implements FolderService {
 									}
 								});
 							} else {
-								result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+								result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 							}
 						}
 
@@ -254,7 +275,7 @@ public class DefaultFolderService implements FolderService {
 						}
 					});
 				} else {
-					result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+					result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 				}
 			}
 		});
@@ -263,11 +284,11 @@ public class DefaultFolderService implements FolderService {
 	@Override
 	public void trash(String id, final UserInfos owner, final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (id == null || id.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
@@ -291,12 +312,12 @@ public class DefaultFolderService implements FolderService {
 									if ("ok".equals(e.body().getString("status"))) {
 										recursiveMove(folder, name, owner, "Trash", result);
 									} else {
-										result.handle(new Either.Left<String, JsonObject>("Update error."));
+										result.handle(new Either.Left<String, JsonObject>("workspace.trash.error"));
 									}
 								}
 							});
 						} else {
-							result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+							result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 						}
 					}
 				});
@@ -305,11 +326,11 @@ public class DefaultFolderService implements FolderService {
 	@Override
 	public void delete(String id, final UserInfos owner, final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (id == null || id.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
@@ -330,7 +351,7 @@ public class DefaultFolderService implements FolderService {
 								}
 							});
 				} else {
-					result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+					result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 				}
 			}
 		});
@@ -340,7 +361,7 @@ public class DefaultFolderService implements FolderService {
 	public void list(String path, UserInfos owner, boolean hierarchical,
 			final Handler<Either<String, JsonArray>> results) {
 		if (owner == null) {
-			results.handle(new Either.Left<String, JsonArray>("Invalid user."));
+			results.handle(new Either.Left<String, JsonArray>("workspace.invalid.user"));
 			return;
 		}
 		QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("file").exists(false)
@@ -365,11 +386,11 @@ public class DefaultFolderService implements FolderService {
 	@Override
 	public void restore(String id, final UserInfos owner, final Handler<Either<String, JsonObject>> result) {
 		if (owner == null) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid user."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
 			return;
 		}
 		if (id == null || id.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("Invalid parameter."));
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
@@ -393,7 +414,7 @@ public class DefaultFolderService implements FolderService {
 								}
 							});
 						} else {
-							result.handle(new Either.Left<String, JsonObject>("Folder not found."));
+							result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 						}
 					}
 				});

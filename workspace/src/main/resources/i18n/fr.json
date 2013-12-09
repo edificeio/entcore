@@ -71,5 +71,11 @@
 	"share.search.title": "Rechercher des utilisateurs et des groupes",
 	"share.search.placeholder": "Ex : Sabine, Dupont, Enseignants de l'école...",
 	"seemore": "Voir la suite",
-	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés"
+	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés",
+	"workspace.invalid.user" : "Utilisateur invalide",
+	"workspace.folder.not.found" : "Dossier introuvable",
+    "workspace.invalid.folder.name" : "Nom de dossier invalide",
+    "workspace.trash.error" : "Erreur lors de la mise à la corbeille",
+    "workspace.forbidden.move.folder.in.itself" : "Interdit de déplacer un dossier dans lui-même.",
+    "workspace.folder.already.exists" : "Le dossier existe déjà."
 }
