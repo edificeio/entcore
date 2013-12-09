@@ -209,7 +209,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		});
 		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
 
-		$scope.folder.children[3].children = $scope.folder.children[3].children.concat(
+		$scope.folder.children[$scope.folder.children.length - 1].children = $scope.folder.children[$scope.folder.children.length - 1].children.concat(
 			_.where($scope.openedFolder.folder.children, { selected: true })
 		);
 		$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
@@ -517,8 +517,8 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			folders.forEach(function(folder){
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
-					if(_.where($scope.folder.children[3].children, { folder: folder.folder }).length === 0){
-						$scope.folder.children[3].children.push(folder);
+					if(_.where($scope.folder.children[$scope.folder.children.length - 1].children, { folder: folder.folder }).length === 0){
+						$scope.folder.children[$scope.folder.children.length - 1].children.push(folder);
 					}
 					return;
 				}
@@ -662,6 +662,11 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				return folder.name === 'rack';
 			});
 		}
+		else{
+			http.get("users/available-rack").done(function(response){
+				$scope.users = response;
+			});
+		}
 	});
 
 	$scope.boxes = { selectAll: false }
@@ -791,9 +796,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		});
 	};
 
-	http.get("users/available-rack").done(function(response){
-		$scope.users = response;
-	});
+
 
 	$scope.editFolder = function(){
 		$scope.newFolder.editing = true;
