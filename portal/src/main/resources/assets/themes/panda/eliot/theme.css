@@ -309,6 +309,12 @@
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+.content-box {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  -o-box-sizing: content-box;
+  box-sizing: content-box;
+}
 a,
 button,
 input[type=button],
@@ -2105,7 +2111,8 @@ i[role=userbook] {
   margin-top: 3px;
   margin-right: 7px;
 }
-i[role=angry-panda] {
+i[role=angry-panda],
+i[role=angry] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/angry-panda.png");
@@ -2133,7 +2140,8 @@ i[role=default-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=dreamy-panda] {
+i[role=dreamy-panda],
+i[role=dreamy] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/dreamy-panda.png");
@@ -2147,7 +2155,8 @@ i[role=dreamy-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=happy-panda] {
+i[role=happy-panda],
+i[role=happy] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/happy-panda.png");
@@ -2161,7 +2170,8 @@ i[role=happy-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=joker-panda] {
+i[role=joker-panda],
+i[role=joker] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/joker-panda.png");
@@ -2175,7 +2185,8 @@ i[role=joker-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=love-panda] {
+i[role=love-panda],
+i[role=love] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/love-panda.png");
@@ -2189,7 +2200,8 @@ i[role=love-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=proud-panda] {
+i[role=proud-panda],
+i[role=proud] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/proud-panda.png");
@@ -2203,7 +2215,8 @@ i[role=proud-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=sad-panda] {
+i[role=sad-panda],
+i[role=sad] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/sad-panda.png");
@@ -2217,7 +2230,8 @@ i[role=sad-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=sick-panda] {
+i[role=sick-panda],
+i[role=sick] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/sick-panda.png");
@@ -2231,7 +2245,8 @@ i[role=sick-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=tired-panda] {
+i[role=tired-panda],
+i[role=tired] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/tired-panda.png");
@@ -2245,7 +2260,8 @@ i[role=tired-panda] {
   float: left;
   vertical-align: middle;
 }
-i[role=worried-panda] {
+i[role=worried-panda],
+i[role=worried] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/worried-panda.png");
@@ -2480,6 +2496,12 @@ i[role=cancel] {
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
   border-radius: 10px;
+}
+p i {
+  display: inline-block !important;
+  height: 25px !important;
+  width: 25px !important;
+  float: none !important;
 }
 .icons-tabs li {
   border: 2px solid #fff;
@@ -3556,7 +3578,13 @@ img[src=""] {
   width: 100%;
   border: none;
   right: -18px;
+  padding-left: 18px;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  -o-box-sizing: content-box;
+  box-sizing: content-box;
   position: absolute;
+  background: transparent;
 }
 .birthday.fr {
   background-image: url(../img/illustrations/birthdays-header-fr.png);

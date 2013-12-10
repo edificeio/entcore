@@ -298,7 +298,7 @@ i[role=userbook]{
 	margin-right: 7px;
 }
 
-i[role=angry-panda]{
+i[role=angry-panda], i[role=angry]{
 	.icon(angry-panda, 50px);
 }
 
@@ -306,39 +306,39 @@ i[role=default-panda]{
 	.icon(default-panda-60px, 50px);
 }
 
-i[role=dreamy-panda]{
+i[role=dreamy-panda], i[role=dreamy]{
 	.icon(dreamy-panda, 50px);
 }
 
-i[role=happy-panda]{
+i[role=happy-panda], i[role=happy]{
 	.icon(happy-panda, 50px);
 }
 
-i[role=joker-panda]{
+i[role=joker-panda], i[role=joker]{
 	.icon(joker-panda, 50px);
 }
 
-i[role=love-panda]{
+i[role=love-panda], i[role=love]{
 	.icon(love-panda, 50px);
 }
 
-i[role=proud-panda]{
+i[role=proud-panda], i[role=proud]{
 	.icon(proud-panda, 50px);
 }
 
-i[role=sad-panda]{
+i[role=sad-panda], i[role=sad]{
 	.icon(sad-panda, 50px);
 }
 
-i[role=sick-panda]{
+i[role=sick-panda], i[role=sick]{
 	.icon(sick-panda, 50px);
 }
 
-i[role=tired-panda]{
+i[role=tired-panda], i[role=tired]{
 	.icon(tired-panda, 50px);
 }
 
-i[role=worried-panda]{
+i[role=worried-panda], i[role=worried]{
 	.icon(worried-panda, 50px);
 }
 
@@ -409,6 +409,15 @@ i[role=cancel]{
 	font-size: 12px;
 	text-align: center;
 	.rounded-corners(10px);
+}
+
+p{
+	i{
+		display: inline-block !important;
+		height: 25px !important;
+		width: 25px !important;
+		float: none !important;
+	}
 }
 
 .icons-tabs{
@@ -1317,7 +1326,10 @@ img[src=""]{
 		width: 100%;
 		border: none;
 		right: -18px;
+		padding-left: 18px;
+		.content-box;
 		position: absolute;
+		background: transparent;
 	}
 }
 
