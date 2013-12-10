@@ -1,6 +1,7 @@
-var appPrefix = '';
-if(window.location.pathname.split('/').length > 0){
-	appPrefix = window.location.pathname.split('/')[1]
+if(window.appPrefix === undefined){
+	if(window.location.pathname.split('/').length > 0){
+		window.appPrefix = window.location.pathname.split('/')[1]
+	}
 }
 
 var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );

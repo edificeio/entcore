@@ -1,3 +1,5 @@
+appPrefix = '.';
+
 function buildModel(){
 
 }
