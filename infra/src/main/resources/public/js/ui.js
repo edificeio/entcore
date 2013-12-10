@@ -94,6 +94,10 @@ var ui = (function(){
 			$(this).addClass('selected');
 		});
 
+		$('body').on('click', '[data-reload]', function(){
+			window.location.href = window.location.href;
+		})
+
 		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel', function(){
 			ui.hideLightbox();
 		});
