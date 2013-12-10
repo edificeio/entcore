@@ -1200,7 +1200,8 @@ public class WorkspaceService extends Controller {
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
 					} else if ("shared".equals(filter)) {
-						query += "\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
+						query += "\"owner\": { \"$ne\":\"" + user.getUserId() +
+								"\"},\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
 					} else {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
