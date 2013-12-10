@@ -636,9 +636,16 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 				return child._id === folder._id;
 			});
 			refreshFolders();
-			http.put('/workspace/folder/move/' + folder._id, data).done(function(){
-				updateFolders();
-			});
+			http.put('/workspace/folder/move/' + folder._id, data)
+				.done(function(){
+					updateFolders();
+				})
+				.e400(function(e){
+					var error = JSON.parse(e.responseText);
+					notify.error(error.error);
+					$scope.openedFolder.folder.children.push(folder);
+					refreshFolders();
+				});
 		})
 	};
 
