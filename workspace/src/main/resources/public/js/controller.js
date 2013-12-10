@@ -15,7 +15,8 @@ var tools = (function(){
 					return type.indexOf('pdf') !== -1;
 				},
 				'ppt': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1;
+					console.log(type);
+					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
 				},
 				'video': function(type){
 					return type.indexOf('video') !== -1;
