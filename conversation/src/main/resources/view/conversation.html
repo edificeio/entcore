@@ -1,1 +1,64 @@
-<html><body>Conversation</body></html>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{#i18n}}conversation.title{{/i18n}}</title>
+	<meta charset="utf-8" />
+	<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
+</head>
+<body data-ng-controller="Conversation">
+<portal>
+	<div class="row">
+		<section class="four cell">
+			<h1><a data-reload><i role="conversation"></i>Messagerie</a></h1>
+			<h5>Messages</h5>
+			<nav class="vertical">
+				<ul>
+					<li>
+						<a>Boîte de réception</a>
+					</li>
+					<li>
+						<a>Messages envoyés</a>
+					</li>
+					<li>
+						<a>Brouillons</a>
+					</li>
+					<li>
+						<a>Corbeille</a>
+					</li>
+				</ul>
+			</nav>
+		</section>
+		<section class="eight cell">
+			<nav class="contextual-buttons row">
+				<div class="action-buttons">
+					<button class="cell"><i role="create"></i>Créer</button>
+				</div>
+			</nav>
+			<article class="list list-view row">
+				<table class="row">
+					<thead>
+						<tr>
+							<th><input type="checkbox" /></th>
+							<th>De</th>
+							<th>Objet</th>
+							<th></th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>[[mail.from.displayName]]</td>
+							<td>[[mail.subject]]</td>
+							<td><i role="attachment"></i></td>
+							<td>12 décembre 2013</td>
+						</tr>
+					</tbody>
+				</table>
+			</article>
+		</section>
+	</div>
+</portal>
+</body>
+</html>
