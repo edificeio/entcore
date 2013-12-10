@@ -700,6 +700,9 @@ table.list-view td h2 {
 table.list-view td img {
   vertical-align: middle;
 }
+table.list-view td a {
+  word-break: break-word;
+}
 .v-center-container {
   display: table;
 }
@@ -863,6 +866,7 @@ ul.icons-view.two-cols li.element {
   margin-top: 5px;
   width: 100%;
   position: relative;
+  word-break: break-word;
 }
 .icons-view div.element:nth-child(8n + 9) {
   clear: left;
