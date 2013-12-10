@@ -743,8 +743,12 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		}
 
 		http.post('/workspace/folder', $scope.newFolder).done(function(newFolder){
-			updateFolders();
-		});
+				updateFolders();
+			})
+			.e400(function(e){
+				var error = JSON.parse(e.responseText);
+				notify.error(error.error);
+			});
 	};
 
 	$scope.isInSelectedFolder = function(folder){
