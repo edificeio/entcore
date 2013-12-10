@@ -106,9 +106,10 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			}
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
 			var fileNameSplit = item.metadata.filename.split('.');
-			item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
+			item.metadata.extension = '';
 			if(item.name.split('.').length > 1){
-				item.name = item.name.split('.')[0];
+				item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
+				item.name = item.name.split('.' + item.metadata.extension)[0];
 			}
 
 			if(item.from){
@@ -728,11 +729,15 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.newFile = { name: $scope.translate('nofile'), file: null };
 	$scope.setFileName = function(){
-		var name = $scope.newFile.file.name.split('.')[0];
 		var splitList = $scope.newFile.file.name.split('.');
 		var extension = splitList[splitList.length - 1];
-		$scope.newFile.name = name;
-		$scope.newFile.extension = extension;
+		$scope.newFile.name = $scope.newFile.file.name.split('.' + extension)[0];
+		if(splitList.length > 1){
+			$scope.newFile.extension = extension;
+		}
+		else{
+			$scope.newFile.extension = '';
+		}
 	};
 
 	$scope.createFolder = function(){
