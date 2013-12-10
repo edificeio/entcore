@@ -682,6 +682,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			$scope.folder.children = _.reject($scope.folder.children, function(folder){
 				return folder.name === 'rack';
 			});
+			refreshFolders();
 		}
 		else{
 			http.get("users/available-rack").done(function(response){
