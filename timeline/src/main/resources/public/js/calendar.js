@@ -39,6 +39,7 @@
 
 	Calendar.getSeason = function(){
 		var currentYear = moment().year() + '-';
+		var nextYear = (moment().year() + 1) + '-';
 		var seasons = [ {
 			start: moment(currentYear + '03-21'), end: moment(currentYear + '06-20'), name: 'calendar.spring'
 		}, {
@@ -47,6 +48,8 @@
 			name: 'calendar.fall', start: moment(currentYear + '09-23'), end: moment(currentYear + '12-20')
 		}, {
 			name: 'calendar.winter', start: moment(currentYear + '12-21'), end: moment(currentYear + '03-20')
+		}, {
+			name: 'calendar.winter', start: moment(nextYear + '01-01'), end: moment(nextYear + '06-20')
 		} ]
 
 		return lang.translate(_.find(seasons, function(season){
