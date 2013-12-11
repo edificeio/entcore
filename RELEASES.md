@@ -1,6 +1,56 @@
 ONE : Notes de versions
 =======================
 
+# v1.3.0
+
+## Activation et connexion
+
+* #675 Ne pas afficher d'erreur lors de la tentative d'activation d'un compte déjà activé (e.g. double clic)
+
+## Portail
+
+* #652 Police dans la liste des applications
+* #644 Taille des widgets
+* #601 [widget][Calendrier] Erreur quand on clique sur le nom d'une personne
+* [widget] Ajout du widget Anniversaire
+
+## Fil de nouveauté
+
+* #646 Style des notifications
+* #633 Ajouter un type par événement
+
+## Mon Compte
+
+* #655 Changer ma photo : appliquer le clic à l'avatar
+* #625 Possibilité de supprimer la photo après un premier ajout
+* #57 Afficher d'infos-bulles sur sur les icônes de gestion des droits de visibilité
+
+## Espace Documentaire
+
+* #624, #673, #672 :  api de gestion des dossiers (création , copie, copie depuis "documents partagés avec moi", déplacement, déplacement dans la corbeille)
+* #632 Copier un document partagé vers ses documents personnels
+* #654, #637 Trier les documents par date (choix par défaut), par titre, par propriétaire
+* #647, #631 Action en lot sur les documents : Chargement, partage copie et déplacement
+* #629 [ergonomie] Affichage des actions contextuelles à une ressource via une barre de boutons en bas de l'écran. (résout en même temps #37)
+* #626 Ne pas faire apparaitre les boutons d'action en fonction des habilitations
+* #56 Faire apparaître le nom du document partagé lors de la publication sur le fil de nouveauté
+
+# Blog
+
+* #645 Ajouter un bord gris à la liste des blogs
+* #627 [partage] le rôle "consulter" est conditionne l'activation du rôle "commenter"
+* Gestion de la pagination
+
+## Opération techniques
+
+* #676 [alimentation] Supprimer tous les envois à wordpress
+
+# v1.2.1
+
+## Widgets
+
+* Calendrier : Correction de la boucle infinie qui se produisait au mois de décembre.
+
 # v1.2.0
 
 ## Portail
