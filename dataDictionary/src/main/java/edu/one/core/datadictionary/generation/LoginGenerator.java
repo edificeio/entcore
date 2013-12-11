@@ -20,17 +20,22 @@ public class LoginGenerator extends FieldGenerator {
 		if (in.length > 0) {
 			String firstName = in[0];
 			String lastName = in[1];
-			String login = removeAccents(firstName).replaceAll(" ", "-").toLowerCase()
-					+ "." + removeAccents(lastName).replaceAll(" ", "-").toLowerCase();
+			String login = (removeAccents(firstName).replaceAll("\\s+", "-").toLowerCase()
+					+ "." + removeAccents(lastName).replaceAll("\\s+", "-").toLowerCase())
+					.replaceAll("'", "");
 			int i = 2;
 			String l = login + "";
 			while (!s.add(l)) {
 				l = login + i++;
 			}
-			return l.replaceAll("'", "");
+			return l;
 		} else {
 			return "";
 		}
+	}
+
+	public static void setUsedLogin(Set<String> login) {
+		s.addAll(login);
 	}
 
 }

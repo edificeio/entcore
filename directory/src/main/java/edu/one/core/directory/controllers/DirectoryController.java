@@ -3,10 +3,7 @@ package edu.one.core.directory.controllers;
 import static edu.one.core.directory.be1d.BE1DConstants.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -60,7 +57,25 @@ public class DirectoryController extends Controller {
 			activationGenerator = new ActivationCodeGenerator();
 			idGenerator = new IdGenerator();
 			displayNameGenerator = new DisplayNameGenerator();
+			loadUsedLogin();
 		}
+
+	private void loadUsedLogin() {
+		String query = "MATCH (u:User) RETURN u.login as login";
+		neo.send(query, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+					Set<String> login = new HashSet<>();
+					JsonObject res = event.body().getObject("result");
+					for (String attr : res.getFieldNames()) {
+						login.add(res.getObject(attr).getString("login", ""));
+					}
+					LoginGenerator.setUsedLogin(login);
+				}
+			}
+		});
+	}
 
 	@SecuredAction("directory.view")
 	public void directory(HttpServerRequest request) {
@@ -70,12 +85,12 @@ public class DirectoryController extends Controller {
 	@SecuredAction("directory.be1d")
 	public void testBe1d(final HttpServerRequest r) {
 		new BE1D(vertx, container, config.getString("test-be1d-folder","/opt/one/be1d")).importPorteur(
-			new Handler<JsonArray>() {
-				@Override
-				public void handle(JsonArray m) {
-					renderJson(r, m);
-				}
-			});
+				new Handler<JsonArray>() {
+					@Override
+					public void handle(JsonArray m) {
+						renderJson(r, m);
+					}
+				});
 	}
 
 	@SecuredAction("directory.authent")
