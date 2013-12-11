@@ -8,15 +8,11 @@
     "name": "edu.one.core~app-registry~1.3.0"
   },
   "neo4j-persistor": {
-    "name": "com.wse.neo4j~neo4jPersistor~1.0.0",
+    "name": "com.wse.neo4j~neo4jPersistor~1.1.0",
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",
-      "datastore-path": "./data/tests/neo4j",
-      "neo4j": {
-        "node_keys_indexable": "id,name,type,ENTPersonLogin",
-        "node_auto_indexing": "true"
-      }
+      "datastore-path": "./data/tests/neo4j"
     }
   },
   "one-modules": [
