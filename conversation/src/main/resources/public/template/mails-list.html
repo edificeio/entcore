@@ -1,0 +1,27 @@
+<nav class="contextual-buttons row">
+	<div class="action-buttons">
+		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i>Créer</button>
+	</div>
+</nav>
+<article class="list list-view row">
+	<table class="row">
+		<thead>
+		<tr>
+			<th><input type="checkbox" /></th>
+			<th>De</th>
+			<th>Objet</th>
+			<th></th>
+			<th>Date</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="mail in mails.all">
+			<td><input type="checkbox" /></td>
+			<td>[[mail.sender.displayName]]</td>
+			<td>[[mail.subject]]</td>
+			<td><i role="attachment"></i></td>
+			<td>[[longDate(mail.sent.$date)]]</td>
+		</tr>
+		</tbody>
+	</table>
+</article>

@@ -16,10 +16,10 @@
 			<nav class="vertical">
 				<ul>
 					<li>
-						<a>Boîte de réception</a>
+						<a ng-click="openInbox()">Boîte de réception</a>
 					</li>
 					<li>
-						<a>Messages envoyés</a>
+						<a ng-click="openOutbox()">Messages envoyés</a>
 					</li>
 					<li>
 						<a>Brouillons</a>
@@ -30,33 +30,8 @@
 				</ul>
 			</nav>
 		</section>
-		<section class="eight cell">
-			<nav class="contextual-buttons row">
-				<div class="action-buttons">
-					<button class="cell"><i role="create"></i>Créer</button>
-				</div>
-			</nav>
-			<article class="list list-view row">
-				<table class="row">
-					<thead>
-						<tr>
-							<th><input type="checkbox" /></th>
-							<th>De</th>
-							<th>Objet</th>
-							<th></th>
-							<th>Date</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>[[mail.from.displayName]]</td>
-							<td>[[mail.subject]]</td>
-							<td><i role="attachment"></i></td>
-							<td>12 décembre 2013</td>
-						</tr>
-					</tbody>
-				</table>
-			</article>
+		<section class="eight cell" ng-include="containers.main">
+
 		</section>
 	</div>
 </portal>
