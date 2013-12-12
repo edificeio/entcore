@@ -281,7 +281,7 @@ var Model = {};
 		this.current = null;
 		this.selected = [];
 		this.newItem = null;
-		this.model = obj;
+		this.obj = obj;
 		this.sync = function(){
 
 		}
@@ -289,7 +289,7 @@ var Model = {};
 
 	Collection.prototype = {
 		trigger: function(event){
-			Model.trigger(pluralizeName(this.model) + '.' + event);
+			Model.trigger(pluralizeName(this.obj) + '.' + event);
 		},
 		push: function(element, notify){
 			this.all.push(element);
@@ -316,7 +316,7 @@ var Model = {};
 			var that = this;
 			that.all = [];
 			data.forEach(function(item){
-				var newObj = new that.model(item);
+				var newObj = new that.obj(item);
 				that.push(newObj, false);
 				if(typeof item !== 'object'){
 					newObj.data = item;
@@ -334,49 +334,52 @@ var Model = {};
 			if(notify === false){
 				return;
 			}
-			this.trigger('change');
+			this.model.trigger(pluralizeName(this.obj) + '.change');
 		}
 	}
 
 	Model.collection = function(obj, methods){
 		var col = new Collection(obj);
-		Model[pluralizeName(obj)] = col;
+		this[pluralizeName(obj)] = col;
 
 		for(var method in methods){
 			col[method] = methods[method];
 		}
 
+		obj.prototype = Model;
+		col.model = this;
 		return col;
 	};
 
 	Model.sync = function(){
-		for(var col in Model){
-			if(Model[col] instanceof Collection){
-				Model[col].sync();
+		for(var col in this){
+			if(this[col] instanceof Collection){
+				this[col].sync();
 			}
 		}
 	};
 
 	Model.on = function(event, cb){
 		var events = event.split(',');
+		var that = this;
 		events.forEach(function(e){
 			var eventName = e.trim();
-			if(!Model.callbacks){
-				Model.callbacks = {}
+			if(!that.callbacks){
+				that.callbacks = {}
 			}
-			if(!Model.callbacks[eventName]){
-				Model.callbacks[eventName] = []
+			if(!that.callbacks[eventName]){
+				that.callbacks[eventName] = []
 			}
-			Model.callbacks[eventName].push(cb);
+			that.callbacks[eventName].push(cb);
 		});
 	};
 
 	Model.trigger = function(event){
-		if(!Model.callbacks || !Model.callbacks[event]){
+		if(!this.callbacks || !this.callbacks[event]){
 			return;
 		}
-		for(var i = 0; i < Model.callbacks[event].length; i++){
-			Model.callbacks[event][i]();
+		for(var i = 0; i < this.callbacks[event].length; i++){
+			this.callbacks[event][i]();
 		}
 	}
 
