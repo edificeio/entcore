@@ -15,12 +15,15 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="mail in mails.all">
-			<td><input type="checkbox" /></td>
+		<tr ng-repeat="mail in inbox.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
+			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>[[mail.sender.displayName]]</td>
 			<td>[[mail.subject]]</td>
 			<td><i role="attachment"></i></td>
-			<td>[[longDate(mail.sent.$date)]]</td>
+			<td>[[mail.sentDate()]]</td>
+		</tr>
+		<tr>
+			<td colspan="5">[[mail.preview]]</td>
 		</tr>
 		</tbody>
 	</table>

@@ -1,6 +1,8 @@
 function buildModel(){
 	function Mail(){
-
+		this.sentDate = function(){
+			return moment(this.sent.$date).calendar();
+		}
 	}
 
 	function Folder(api){
@@ -9,7 +11,6 @@ function buildModel(){
 				var that = this;
 				http().get(this.api.get).done(function(data){
 					that.load(data);
-					that.trigger('change');
 				})
 			},
 			api: api
@@ -26,9 +27,11 @@ function buildModel(){
 		},
 		openInbox: function(){
 			this.current = this.inbox;
+			this.current.mails.sync();
 		},
 		openOutbox: function(){
 			this.current = this.outbox;
+			this.current.mails.sync();
 		}
 	});
 

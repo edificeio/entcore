@@ -1,5 +1,5 @@
 function Conversation($scope, date){
-	$scope.containers = {};
+
 
 	Model.folders.inbox.on('mails.change', function(e){
 		console.log('inbox update');
@@ -13,26 +13,24 @@ function Conversation($scope, date){
 		$scope.openInbox();
 	};
 
-	$scope.openView = function(view, container){
+	$scope.viewsContainers = {};
+	$scope.openView = function(view, name){
 		var viewsPath = '/conversation/public/template/';
-		$scope.containers[container] = viewsPath + view + '.html';
+		$scope.viewsContainers[name] = viewsPath + view + '.html';
 	};
 
 	$scope.openInbox = function(){
 		Model.folders.openInbox();
-		$scope.openView('mails-list', 'main');
+		$scope.openView('inbox', 'main');
 	};
 
 	$scope.openOutbox = function(){
 		Model.folders.openOutbox();
-		$scope.openView('mails-list', 'main');
+		$scope.openView('outbox', 'main');
 	};
 
-	$scope.longDate = function(dateString){
-		return date.calendar(dateString);
-	};
+	$scope.inbox = Model.folders.inbox;
+	$scope.outbox = Model.folders.outbox;
 
-	$scope.mails = Model.folders.current.mails;
-
-	$scope.resetScope();
+	$scope.openView('inbox', 'main');
 }

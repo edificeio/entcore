@@ -1,0 +1,30 @@
+<nav class="contextual-buttons row">
+	<div class="action-buttons">
+		<button class="cell"></button>
+	</div>
+</nav>
+<article class="list list-view row">
+	<table class="row">
+		<thead>
+		<tr>
+			<th><input type="checkbox" /></th>
+			<th>A</th>
+			<th>Objet</th>
+			<th></th>
+			<th>Date</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="mail in outbox.mails.all" ng-class="{ checked: mail.selected }">
+			<td><input type="checkbox" ng-model="mail.selected" /></td>
+			<td>[[mail.receiver.displayName]]</td>
+			<td>[[mail.subject]]</td>
+			<td><i role="attachment"></i></td>
+			<td>[[mail.sentDate()]]</td>
+		</tr>
+		<tr>
+			<td colspan="5">[[mail.preview]]</td>
+		</tr>
+		</tbody>
+	</table>
+</article>
