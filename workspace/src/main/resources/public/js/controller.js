@@ -159,6 +159,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
+		$scope.loadingFiles = [];
 		$scope.newFile = { name: $scope.translate('nofile'), file: null };
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
 	};
