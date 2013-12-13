@@ -234,12 +234,6 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.openMoveFileView = function(action){
 		$scope.newFolder = { name: '' };
-		if(action === 'copyFile'){
-			$scope.editMode = 'multiple'
-		}
-		else{
-			$scope.editMode = 'single'
-		}
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox[action];
 	};
@@ -590,9 +584,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			});
 		}
 		else{
-			if($scope.editMode === 'single'){
-				targetFolders = [];
-			}
+			targetFolders = [];
 			targetFolders.push(folder);
 		}
 	};
