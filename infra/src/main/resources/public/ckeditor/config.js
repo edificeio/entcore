@@ -6,7 +6,7 @@
 CKEDITOR.editorConfig = function(config){
 	config.removePlugins = 'magicline';
 	config.allowedContent = true;
-	config.extraPlugins = 'upload';
+	config.extraPlugins = 'upload,audio';
 	config.toolbar = [
 		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
 		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Undo', 'Redo' ] },
@@ -15,28 +15,9 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Link', 'Unlink'] },
-		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload'] },
+		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload', 'Audio'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }
-	];
-
-// Toolbar groups configuration.
-	config.toolbarGroups = [
-		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
-		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
-		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ] },
-		{ name: 'forms' },
-		'/',
-		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ] },
-		{ name: 'links' },
-		{ name: 'insert' },
-		'/',
-		{ name: 'styles' },
-		{ name: 'colors' },
-		{ name: 'tools' },
-		{ name: 'others' },
-		{ name: 'about' }
 	];
 
 	config.allowedContent = true;

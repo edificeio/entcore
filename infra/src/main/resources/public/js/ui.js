@@ -48,7 +48,7 @@ var ui = (function(){
 		}
 	}
 
-	var ui = {
+	var uiInterface = {
 		showLightbox: function(){
 			if(parent !== window){
 				iframeLightbox.show();
@@ -94,9 +94,19 @@ var ui = (function(){
 			$(this).addClass('selected');
 		});
 
+
+		var resizeTextarea = function(){
+			$(this).height(1);
+			$(this).height(this.scrollHeight - 1);
+		}
+
+		$('body').on('keydown', 'textarea.inline-editing', resizeTextarea);
+		$('body').on('keyup', 'textarea.inline-editing', resizeTextarea);
+		$('body').on('focus', 'textarea.inline-editing', resizeTextarea);
+
 		$('body').on('click', '[data-reload]', function(){
 			window.location.href = window.location.href;
-		})
+		});
 
 		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel', function(){
 			ui.hideLightbox();
@@ -167,7 +177,7 @@ var ui = (function(){
 		});
 	});
 
-	return ui;
+	return uiInterface;
 }());
 
 

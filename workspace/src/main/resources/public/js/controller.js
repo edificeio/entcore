@@ -233,6 +233,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	};
 
 	$scope.openMoveFileView = function(action){
+		targetFolders = [$scope.folder.children[0]];
 		$scope.newFolder = { name: '' };
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox[action];

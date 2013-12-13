@@ -220,6 +220,13 @@ oneModule.directive('completeChange', function() {
 		link: function($scope, $linkElement, $attributes) {
 			$scope.$watch('field', function(newVal) {
 				$linkElement.val(newVal);
+				if($linkElement[0].type === 'textarea' && $linkElement.hasClass('inline-editing')){
+					setTimeout(function(){
+						$linkElement.height(1);
+						$linkElement.height($linkElement[0].scrollHeight - 1);
+					}, 500);
+
+				}
 			});
 
 			$linkElement.bind('change', function() {
@@ -343,7 +350,15 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 		},
 		link: function($scope, $element){
 			$scope.$watch('bindHtmlUnsafe', function(newVal){
-				$element.html(newVal)
+				$element.html(newVal);
+				//weird browser bug with audio tags
+				$element.find('audio').each(function(index, item){
+					var parent = $(item).parent();
+					$(item)
+						.attr("src", item.src)
+						.detach()
+						.appendTo(parent);
+				});
 			});
 		}
 	}
@@ -432,6 +447,14 @@ oneModule.directive('htmlEditor', function($compile){
 				$scope.$watch('ngModel', function(newValue){
 					if(editor.html() !== newValue){
 						editor.html(newValue);
+						//weird browser bug with audio tags
+						editor.find('audio').each(function(index, item){
+							var parent = $(item).parent();
+							$(item)
+								.attr("src", item.src)
+								.detach()
+								.appendTo(parent);
+						});
 					}
 				});
 
