@@ -28,7 +28,7 @@ var personDataExtractor = function(d) {
 
 function MyAccount($scope, http, lang, date, notify, _){
 	$scope.account = {};
-	var moods = ['happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
+	var moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	$scope.moods = [];
 
 	moods.forEach(function(mood){
@@ -38,6 +38,10 @@ function MyAccount($scope, http, lang, date, notify, _){
 			id: mood
 		})
 	});
+
+	$scope.availableMoods = _.reject($scope.moods, function(mood){
+			return mood.id === 'default';
+		});
 
 	$scope.resetPasswordPath = '/auth/reset/password';
 
@@ -162,9 +166,9 @@ function MyAccount($scope, http, lang, date, notify, _){
 					}
 				});
 		} else {
-      http.postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
-          form, { requestName: 'avatar'})
-        .done(function (data) {
+			http.postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
+					form, { requestName: 'avatar'})
+				.done(function (data) {
 					if (data.status == "ok") {
 						$scope.account.picture = data._id;
 						$scope.saveProperty('picture');
