@@ -6,7 +6,29 @@
 	</div>
 </nav>
 
-<article class="row">
+<article class="row solid">
+	<form class="row block-container">
+		<div class="twelve cell">
+			<div class="row">
+				<label class="two cell">
+					A
+				</label>
+				<input type="text" class="ten cell" />
+			</div>
+			<div class="row">
+				<label class="two cell">
+					Copie
+				</label>
+				<input type="text" class="ten cell" />
+			</div>
+			<div class="row">
+				<label class="two cell">
+					Objet
+				</label>
+				<input type="text" class="ten cell" />
+			</div>
+		</div>
+	</form>
 	<html-editor ng-model="outbox.mails.newItem.content"></html-editor>
 	<div class="clear"></div>
 </article>

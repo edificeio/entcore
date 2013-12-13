@@ -16,16 +16,16 @@
 			<nav class="vertical">
 				<ul>
 					<li>
-						<a ng-click="openInbox()">Boîte de réception</a>
+						<a ng-click="openInbox()" ng-class="{ selected: containsView('main', 'inbox') }">Boîte de réception</a>
 					</li>
 					<li>
-						<a ng-click="openOutbox()">Messages envoyés</a>
+						<a ng-click="openOutbox()" ng-class="{ selected: containsView('main', 'outbox') }">Messages envoyés</a>
 					</li>
 					<li>
-						<a>Brouillons</a>
+						<a ng-click="openDrafts()" ng-class="{ selected: containsView('main', 'drafts') }">Brouillons</a>
 					</li>
 					<li>
-						<a>Corbeille</a>
+						<a ng-click="openTrash()" ng-class="{ selected: containsView('main', 'trash') }">Corbeille</a>
 					</li>
 				</ul>
 			</nav>
