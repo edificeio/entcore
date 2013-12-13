@@ -14,6 +14,7 @@ public class AppRegistry extends Server {
 		AppRegistryService service = new AppRegistryService(vertx, container, rm, securedActions);
 		try {
 			service.registerMethod(config.getString("address"), "collectApps");
+			service.registerMethod(config.getString("address") + ".applications", "applications");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}

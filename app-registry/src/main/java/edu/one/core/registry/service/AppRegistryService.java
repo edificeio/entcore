@@ -457,4 +457,52 @@ public class AppRegistryService extends Controller {
 		}
 	}
 
+	public void applications(final Message<JsonObject> message) {
+		String application = message.body().getString("application");
+		if (application != null && !application.trim().isEmpty()) {
+			String action = message.body().getString("action", "");
+			Handler<Message<JsonObject>> responseHandler = new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> res) {
+					if ("ok".equals(res.body().getString("status"))) {
+						message.reply(res.body().getArray("result"));
+					} else {
+						message.reply(new JsonArray());
+					}
+				}
+			};
+			switch (action) {
+				case "allowedUsers":
+					applicationAllowedUsers(application, responseHandler);
+					break;
+				case "allowedProfileGroups":
+					applicationAllowedProfileGroups(application, responseHandler);
+					break;
+				default:
+					message.reply(new JsonArray());
+					break;
+			}
+		} else {
+			message.reply(new JsonArray());
+		}
+	}
+
+	private void applicationAllowedUsers(String application, Handler<Message<JsonObject>> handler) {
+		String query =
+				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
+				"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"WHERE app.name = {application} " +
+				"RETURN u.id as id";
+		neo.execute(query, new JsonObject().putString("application", application), handler);
+	}
+
+	private void applicationAllowedProfileGroups(String application, Handler<Message<JsonObject>> handler) {
+		String query =
+				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
+				"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
+				"WHERE app.name = {application} " +
+				"RETURN pg.id as id";
+		neo.execute(query, new JsonObject().putString("application", application), handler);
+	}
+
 }
