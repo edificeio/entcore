@@ -407,10 +407,14 @@ oneModule.directive('htmlEditor', function($compile){
 						'left:' + editor.offset().left + 'px !important;' +
 						'position: absolute !important' +
 						'}').appendTo('head');
+
 				};
 
 				CKEDITOR.on('instanceReady', function(){
 					editor.html($scope.ngModel);
+					setTimeout(function(){
+						$('input').first().focus();
+					}, 500);
 
 					if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
 						$('img').on('load', positionning);
@@ -420,8 +424,8 @@ oneModule.directive('htmlEditor', function($compile){
 					}
 					editor.on('focus', function(){
 						positionning();
-					})
-				})
+					});
+				});
 
 
 

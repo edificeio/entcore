@@ -1,5 +1,5 @@
 <form data-ng-submit="createPost()">
-	<input type="text" data-ng-model="create.post.title" placeholder="Entrez le titre de votre billet" autofocus required class="twelve cell" />
+	<input type="text" data-ng-model="create.post.title" placeholder="Entrez le titre de votre billet" required class="twelve cell" />
 	<html-editor
 		ng-model="create.post.content"
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"></html-editor>
