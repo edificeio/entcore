@@ -1,5 +1,7 @@
 package edu.one.core.registry.service;
 
+import static edu.one.core.common.appregistry.AppRegistryEvents.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +164,13 @@ public class AppRegistryService extends Controller {
 							"WHERE m.id = {groupId} " +
 							"DELETE r";
 					if (roleIds.isEmpty()) {
-						neo.send(deleteQuery, params, request.response());
+						neo.execute(deleteQuery, params, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								request.response().end(event.body().encode());
+								updatedProfileGroupActions();
+							}
+						});
 					} else {
 						JsonArray queries = new JsonArray();
 						queries.addObject(new JsonObject()
@@ -175,13 +183,23 @@ public class AppRegistryService extends Controller {
 						queries.addObject(new JsonObject()
 						.putString("query", createQuery)
 						.putObject("params", new JsonObject(params)));
-						neo.sendBatch(queries, request.response());
+						neo.executeBatch(queries, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								request.response().end(event.body().encode());
+								updatedProfileGroupActions();
+							}
+						});
 					}
 				} else {
 					badRequest(request);
 				}
 			}
 		});
+	}
+
+	private void updatedProfileGroupActions() {
+		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, new JsonObject().putString("type", PROFILE_GROUP_ACTIONS_UPDATED));
 	}
 
 	@SecuredAction("app-registry.list.roles")
