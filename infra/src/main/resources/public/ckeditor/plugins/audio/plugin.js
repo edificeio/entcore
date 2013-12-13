@@ -19,12 +19,13 @@ CKEDITOR.plugins.add('audio', {
 							requestName: 'ckeditor-image'
 						})
 						.done(function(e){
-						var sound = editor.document.createElement('audio');
+							var sound = editor.document.createElement('audio');
 
-						sound.setAttribute('src', '/workspace/document/' + e._id);
-						sound.setAttribute('controls', 'controls');
-						fileSelector.remove();
-						editor.insertElement(sound);
+							sound.setAttribute('src', '/workspace/document/' + e._id);
+							sound.setAttribute('controls', 'controls');
+
+							fileSelector.remove();
+							editor.insertElement(sound);
 					});
 				});
 				fileSelector.click();

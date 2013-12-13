@@ -722,7 +722,7 @@ table.list-view td a {
 .cke_tpl_list {
   height: 312px !important;
 }
-#cke_61_uiElement {
+#cke_168_uiElement {
   display: none;
 }
 .toggle-panel {
@@ -1683,6 +1683,21 @@ i[role=configuration] {
   height: 37px;
   width: 37px;
   background-image: url("../img/icons/configuration.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+i[role=refresh] {
+  height: 37px;
+  width: 37px;
+  background-image: url("../img/icons/refresh.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -2805,6 +2820,11 @@ nav.vertical ul a:hover {
   border-bottom: 1px solid #ccc !important;
   border-radius: 0 !important;
 }
+textarea.inline-editing {
+  height: 28px;
+  line-height: 28px;
+  overflow: hidden;
+}
 .select-file input[type=text] {
   border: 1px solid #eee;
   border-right: 0;
@@ -3007,6 +3027,9 @@ tr.selected td {
   color: #fff;
   background: #3889c1;
 }
+article.solid {
+  background: #f6f6f6;
+}
 article {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -3076,7 +3099,7 @@ article em {
 .navbar .welcome-message {
   color: #2f8cc9;
   font-family: KGJune;
-  font-size: 24px;
+  font-size: 22px;
   padding-right: 10px;
 }
 nav.horizontal a {
@@ -3492,6 +3515,11 @@ img[src=""] {
 .share td label input[type=checkbox]:checked + span,
 .share th label input[type=checkbox]:checked + span {
   background: url(../img/icons/checkbox-checked.png) no-repeat;
+}
+.share td label input[type=checkbox][disabled]:checked + span,
+.share th label input[type=checkbox][disabled]:checked + span {
+  background: url(../img/icons/checkbox-checked-disabled.png) no-repeat;
+  cursor: forbidden;
 }
 .share tr {
   border: 1px solid transparent;

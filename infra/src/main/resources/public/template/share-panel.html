@@ -14,6 +14,12 @@
 						<th></th>
 					</thead>
 					<tbody>
+						<tr>
+							<td>moi</td>
+							<td ng-repeat="action in actions | orderBy:'priority'">
+								<label><input type="checkbox" checked disabled /><span></span></label>
+							</td>
+						</tr>
 						<tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
 							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
 							<td ng-repeat="action in actions | orderBy:'priority'">

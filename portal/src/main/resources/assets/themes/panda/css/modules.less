@@ -177,6 +177,11 @@ i[role=configuration]{
 	cursor: pointer;
 }
 
+i[role=refresh]{
+	.icon(refresh, 37px);
+	cursor: pointer;
+}
+
 i[role=user]{
 	.icon(user, 30px);
 }
@@ -650,6 +655,12 @@ nav.vertical{
 	border-radius: 0 !important;
 }
 
+textarea.inline-editing{
+	height: 28px;
+	line-height: 28px;
+	overflow: hidden;
+}
+
 .select-file{
 	input[type=text]{
 		border: 1px solid #eee;
@@ -787,10 +798,14 @@ tr.selected{
 	}
 }
 
+article.solid{
+	background: @ultra-light-grey;
+}
+
 article{
-  .rounded-corners(10px);
-  background: @light-grey-background;
-  border: 1px solid @medium-grey;
+	.rounded-corners(10px);
+	background: @light-grey-background;
+	border: 1px solid @medium-grey;
 
   header, thead{
     .vertical-gradient(@blue-top-gradient, @blue-bottom-gradient);
@@ -824,7 +839,7 @@ article{
   .welcome-message{
     color: @medium-blue;
     font-family: KGJune;
-    font-size: 24px;
+    font-size: 22px;
     padding-right: 10px;
   }
 }
@@ -1212,6 +1227,11 @@ img[src=""]{
 
 			input[type=checkbox]:checked + span {
 				background:url(../img/icons/checkbox-checked.png) no-repeat;
+			}
+
+			input[type=checkbox][disabled]:checked + span {
+				background:url(../img/icons/checkbox-checked-disabled.png) no-repeat;
+				cursor: forbidden;
 			}
 		}
 	}
