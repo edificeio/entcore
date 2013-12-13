@@ -98,7 +98,8 @@
 			<div class="row line" data-ng-repeat="hobby in account.hobbies">
 				<div class="two cell"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
 				<div class="nine cell">
-					<input type="text" class="twelve cell inline-editing" complete-change="saveHobby(hobby)" ng-model="hobby.values" />
+					<textarea complete-change="saveHobby(hobby)" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
+
 				</div>
 				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
 				<div class="clear"></div>
