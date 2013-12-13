@@ -16,7 +16,7 @@ public class ConversationController extends Controller {
 		super(vertx, container, rm, securedActions);
 	}
 
-	@edu.one.core.security.SecuredAction("blog.view")
+	@edu.one.core.security.SecuredAction("conversation.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
