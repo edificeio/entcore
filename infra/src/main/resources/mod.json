@@ -8,7 +8,7 @@
     "name": "edu.one.core~app-registry~1.4-SNAPSHOT"
   },
   "neo4j-persistor": {
-    "name": "com.wse.neo4j~neo4jPersistor~1.1.0",
+    "name": "com.wse.neo4j~neo4jPersistor~1.2.0",
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",

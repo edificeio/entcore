@@ -1,9 +1,7 @@
 package edu.one.core.session;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.vertx.java.busmods.BusModBase;
@@ -188,12 +186,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[:APPARTIENT]->(gp:ProfileGroup) " +
 				"WITH app, a, n, gp " +
 				"OPTIONAL MATCH n-[:APPARTIENT]->gpe-[:DEPENDS]->(s:School) " +
-				"RETURN distinct a.name as name, a.displayName as displayName, " +
-				"a.type as type, HEAD(n.classes) as classe, " +
-				"n.lastName as lastname, n.firstName as firstname, " +
-				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'User')) as userType, " +
-				"n.level as level, n.login as login, app.name as appName, app.address as appAddress, " +
-				"app.icon as appIcon, app.target as appTarget, " +
+				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
+				"HEAD(n.classes) as classId, n.level as level, n.login as login, " +
+				"n.lastName as lastName, n.firstName as firstName, " +
+				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'User')) as type, " +
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target]) as apps, " +
 				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
@@ -201,57 +198,33 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 			@Override
 			public void handle(Message<JsonObject> message) {
-				JsonObject result = message.body().getObject("result");
-				if ("ok".equals(message.body().getString("status")) && result != null &&
-						!result.getFieldNames().isEmpty()) {
-					JsonObject j = message.body().getObject("result").getObject("0");
-					JsonArray apps = new JsonArray();
-					Set<String> appsNames = new HashSet<>();
-					JsonObject infos = new JsonObject()
-						.putString("userId", userId)
-						.putString("firstName", j.getString("firstname"))
-						.putString("lastName", j.getString("lastname"))
-						.putString("username", j.getString("username"))
-						.putString("classId", j.getString("classe"))
-						.putString("login", j.getString("login"))
-						.putString("level", j.getString("level"))
-						.putString("schoolName", j.getString("schoolName"))
-						.putString("uai", j.getString("uai"))
-						.putArray("profilGroupsIds", j.getArray("profilGroupsIds"))
-						.putString("type", j.getString("userType"));
+				JsonArray result = message.body().getArray("result");
+				if ("ok".equals(message.body().getString("status")) && result != null && result.size() > 0) {
+					JsonObject j = result.get(0);
+					j.putString("userId", userId);
 					JsonArray actions = new JsonArray();
-					for (String attr : result.getFieldNames()) {
-						JsonObject json = result.getObject(attr);
-						json.removeField("firstname");
-						json.removeField("lastname");
-						json.removeField("username");
-						json.removeField("classe");
-						json.removeField("login");
-						json.removeField("level");
-						json.removeField("schoolName");
-						json.removeField("uai");
-						json.removeField("profilGroupsIds");
-						json.removeField("userType");
-						String appName = json.getString("appName");
-						String appAddress = json.getString("appAddress");
-						String appIcon = json.getString("appIcon");
-						String appTarget = json.getString("appTarget");
-						json.removeField("appName");
-						json.removeField("appAddress");
-						json.removeField("appIcon");
-						json.removeField("appTarget");
-						if (!appsNames.contains(appName)) {
-							appsNames.add(appName);
-							apps.addObject(new JsonObject()
-							.putString("name", appName)
-							.putString("address", appAddress)
-							.putString("icon", appIcon)
-							.putString("target", appTarget));
-						}
-						actions.add(json);
+					JsonArray apps = new JsonArray();
+					for (Object o : j.getArray("authorizedActions", new JsonArray())) {
+						if (!(o instanceof JsonArray)) continue;
+						JsonArray a = (JsonArray) o;
+						actions.addObject(new JsonObject()
+								.putString("name", (String) a.get(0))
+								.putString("displayName", (String) a.get(1))
+								.putString("type", (String) a.get(2)));
 					}
-					infos.putArray("apps", apps);
-					handler.handle(infos.putArray("authorizedActions", actions));
+					for (Object o : j.getArray("apps", new JsonArray())) {
+						if (!(o instanceof JsonArray)) continue;
+						JsonArray a = (JsonArray) o;
+						apps.addObject(new JsonObject()
+								.putString("name", (String) a.get(0))
+								.putString("address", (String) a.get(1))
+								.putString("icon", (String) a.get(2))
+								.putString("target", (String) a.get(3))
+						);
+					}
+					j.putArray("authorizedActions", actions);
+					j.putArray("apps", apps);
+					handler.handle(j);
 				} else {
 					handler.handle(null);
 				}
