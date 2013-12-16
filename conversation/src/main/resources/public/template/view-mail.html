@@ -8,6 +8,19 @@
 
 <article class="row block-container">
 	<div class="row">
+		<a class="eight cell"><strong class="small-header">[[mail.sender.displayName]]</strong></a>
+		<span class="four cell floating-badge">
+			[[mail.sentDate()]]
+		</span>
+	</div>
+	<div class="row">
+		<em class="medium-importance">
+			à
+			<span ng-repeat="receiver in mail.receivers">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
+			</span>
+		</em>
+	</div>
+	<div class="row">
 		<div class="twelve cell" bind-html-unsafe="mail.content"></div>
 	</div>
 	<div class="clear"></div>
