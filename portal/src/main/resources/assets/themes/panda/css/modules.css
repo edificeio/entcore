@@ -1148,6 +1148,9 @@ dl dt {
 .share {
   width: 100%;
 }
+.share .sharing-option {
+  padding: 15px;
+}
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
 .flowing.sharing td:nth-child(4),
@@ -2697,7 +2700,7 @@ hr.solid {
 nav.vertical h2 {
   color: #000;
   text-transform: uppercase;
-  font-size: 18px;
+  font-size: 16px;
 }
 nav.vertical i {
   margin-right: 5px;
@@ -2924,11 +2927,6 @@ h3 {
   color: #2f8cc9;
   font-weight: normal;
   font-size: 18px;
-}
-h5 {
-  text-transform: uppercase;
-  margin: 10px;
-  font-size: 16px;
 }
 .greyed-out {
   background: #f6f6f6;
@@ -3191,6 +3189,17 @@ h3 {
   -webkit-transition: box-shadow 250ms ease;
   transition: box-shadow 250ms ease;
 }
+a strong.small-header {
+  font-weight: normal;
+  font-size: 16px;
+}
+.warning-text-badge {
+  color: #fd841c;
+  font-weight: bold;
+  font-size: 12px !important;
+  display: inline !important;
+  background: transparent !important;
+}
 .badge {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -3206,6 +3215,10 @@ h3 {
   height: 15px;
   text-align: center;
   font-size: 12px;
+}
+.floating-badge {
+  text-align: right;
+  font-size: 14px;
 }
 .icons-view a.img-container {
   height: 129px;
@@ -3383,6 +3396,9 @@ em.low-importance {
   line-height: 16px;
   text-align: right;
 }
+em.medium-importance {
+  font-style: normal;
+}
 dl dd {
   line-height: 30px;
 }
@@ -3461,6 +3477,9 @@ img[src=""] {
   .enhanced-select.one-col .option {
     width: 100%;
   }
+}
+h5.subtitle {
+  margin-top: 0;
 }
 .share table {
   width: 100%;
@@ -3696,6 +3715,9 @@ img[src=""] {
 .calendar .content .day.next-month {
   color: #CCC;
 }
+.upper-title {
+  margin-bottom: 0;
+}
 .line em,
 .line span {
   font-size: 14px;
@@ -3704,6 +3726,9 @@ img[src=""] {
 .line em[contenteditable=true],
 .line span[contenteditable=true] {
   background: #fff;
+}
+.line h5 a {
+  font-size: 12px;
 }
 .line a {
   font-size: 16px;

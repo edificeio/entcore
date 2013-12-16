@@ -1148,6 +1148,9 @@ dl dt {
 .share {
   width: 100%;
 }
+.share .sharing-option {
+  padding: 15px;
+}
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
 .flowing.sharing td:nth-child(4),

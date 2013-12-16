@@ -1,10 +1,11 @@
-<form data-ng-submit="createPost()">
+<form data-ng-submit="savePost()">
 	<input type="text" data-ng-model="create.post.title" placeholder="Entrez le titre de votre billet" required class="twelve cell" />
 	<html-editor
 		ng-model="create.post.content"
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"></html-editor>
-	<input type="submit" class="button right-magnet" value="Valider">
-	<input type="button" class="button right-magnet cancel" data-ng-click="currentBlogView()" value="Annuler">
+	<input type="submit" class="right-magnet" value="Publier" />
+	<input type="button" class="right-magnet" value="Enregistrer" ng-click="saveDraft()" />
+	<input type="button" class="right-magnet cancel" data-ng-click="currentBlogView()" value="Annuler" />
 </form>
 <div class="clear"></div>
 <hr class="solid">

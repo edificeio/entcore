@@ -142,11 +142,26 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.defaultView();
 
 	$scope.publish = function(post){
-		http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + post._id).done(function(){
+		if($scope.currentBlog.myRights.manager){
 			post.state = 'PUBLISHED';
-			$scope.$apply('currentBlog');
-		})
-	}
+			http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + post._id);
+		}
+		else{
+			$scope.submit(post);
+		}
+	};
+
+	$scope.saveAndSubmit = function(post){
+		$scope.updatePost(post);
+		$scope.publish(post);
+
+		$scope.displayBlog($scope.currentBlog);
+	};
+
+	$scope.submit = function(post){
+		post.state = 'SUBMITTED';
+		http.put('/blog/post/submit/' + $scope.currentBlog._id + '/' + post._id);
+	};
 
 	$scope.displayBlog = function(blog){
 		resetScope();
@@ -162,7 +177,13 @@ function Blog($scope, http, date, _, ui, lang, notify){
 			$scope.currentBlog.submitted = data;
 			initMaxResults();
 			$scope.$apply();
-		})
+		});
+
+		http.get('/blog/post/list/all/' + blog._id + '?state=DRAFT').done(function(data){
+			$scope.currentBlog.drafts = data;
+			initMaxResults();
+			$scope.$apply();
+		});
 	};
 
 	$scope.nbComments = function(post){
@@ -216,7 +237,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		if(post === $scope.editPost){
 			return views.editPost;
 		}
-		if(post.state === 'SUBMITTED'){
+		if(post.state === 'SUBMITTED' || post.state === 'DRAFT'){
 			return views.viewSubmitted;
 		}
 		return views.viewPost;
@@ -268,13 +289,32 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		return $scope.editPost || ($scope.create.post && $scope.currentView === views.createPost);
 	}
 
-	$scope.createPost = function(){
-		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(newPost){
-			http.put('/blog/post/submit/' + $scope.currentBlog._id + '/' + newPost._id).done(function(){
+	$scope.saveDraft = function(){
+		$scope.create.post.state = 'DRAFT';
+		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(createdPost){
+			$scope.create.post._id = createdPost._id;
+		});
+		notify.info('Brouillon enregistré');
+	};
+
+	$scope.savePost = function(){
+		$scope.create.post.state = 'SUBMITTED';
+		if($scope.create.post._id !== undefined){
+			$scope.publish($scope.create.post);
+			$scope.displayBlog($scope.currentBlog);
+		}
+		else{
+			$scope.createPost(function(newPost){
+				$scope.create.post._id = newPost._id;
+				$scope.publish($scope.create.post);
 				$scope.displayBlog($scope.currentBlog);
-				$scope.$apply();
-			})
-		})
+			});
+		}
+
+	};
+
+	$scope.createPost = function(callback){
+		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(callback)
 	};
 
 	$scope.blogThumbnail = function(blog){
@@ -319,6 +359,20 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	initMaxResults();
 	$scope.addResults = function(){
 		$scope.maxResults += 3;
+	};
+
+	$scope.nbResults = function(postState){
+		var remainingSlots = $scope.maxResults;
+		if((postState === 'posts' || postState === 'submitted') && $scope.currentBlog.drafts){
+			remainingSlots -= $scope.currentBlog.drafts.length;
+		}
+		if((postState === 'posts') && $scope.currentBlog.submitted){
+			remainingSlots -= $scope.currentBlog.submitted.length;
+		}
+		if(remainingSlots < 0){
+			remainingSlots = 0;
+		}
+		return remainingSlots;
 	}
 
 	$scope.openConfirmView = function(action, args){
@@ -339,6 +393,10 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		ui.showLightbox();
 
 	};
+
+	$scope.updatePublishType = function(){
+		http.put('/blog/' + $scope.currentBlog._id, { 'publish-type': $scope.currentBlog['publish-type'] });
+	}
 
 	$scope.removePost = function(post){
 		http.delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){

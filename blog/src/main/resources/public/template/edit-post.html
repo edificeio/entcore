@@ -3,8 +3,9 @@
 	<html-editor
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog._id + '&protected=true'"
 		ng-model="currentPost.content"></html-editor>
-	<input type="submit" class="button right-magnet" value="Valider">
-	<input type="button" class="button right-magnet cancel" data-ng-click="currentBlogView()" value="Annuler">
+
+	<input type="button" class="right-magnet" value="Publier" ng-if="currentPost.state === 'DRAFT'" ng-click="saveAndSubmit(currentPost)" />
+	<input type="submit" class="right-magnet" value="Enregistrer" />
+	<input type="button" class="right-magnet cancel" data-ng-click="currentBlogView()" value="Annuler" />
 </form>
-<div class="clear"></div>
-<hr class="solid">
+<div class="row"><hr /></div>

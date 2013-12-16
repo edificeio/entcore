@@ -555,7 +555,7 @@ nav.vertical{
 	h2{
 		color: #000;
 		text-transform: uppercase;
-		font-size: 18px;
+		font-size: 16px;
 	}
 	i{
 		margin-right: 5px;
@@ -714,12 +714,6 @@ h3{
 	color: @medium-blue;
 	font-weight: normal;
 	font-size: 18px;
-}
-
-h5{
-	text-transform: uppercase;
-	margin: 10px;
-	font-size: 16px;
 }
 
 .greyed-out{
@@ -910,6 +904,21 @@ h3{
 	.run-transition(box-shadow);
 }
 
+a{
+	strong.small-header{
+		font-weight: normal;
+		font-size: 16px;
+	}
+}
+
+.warning-text-badge{
+	color: @orange;
+	font-weight: bold;
+	font-size: 12px !important;
+	display: inline !important;
+	background: transparent !important;
+}
+
 .badge{
 	.rounded-corners(10px);
 	background: @solid-blue;
@@ -921,6 +930,11 @@ h3{
 	height: 15px;
 	text-align: center;
 	font-size: 12px;
+}
+
+.floating-badge{
+	text-align: right;
+	font-size: 14px;
 }
 
 .icons-view{
@@ -1117,6 +1131,10 @@ em.low-importance{
 	text-align: right;
 }
 
+em.medium-importance{
+	font-style: normal;
+}
+
 dl{
 	dd{
 		line-height: 30px;
@@ -1184,6 +1202,10 @@ img[src=""]{
 	.option{
 		.twelve
 	}
+}
+
+h5.subtitle{
+	margin-top: 0;
 }
 
 .share{
@@ -1425,6 +1447,10 @@ img[src=""]{
 	}
 }
 
+.upper-title{
+	margin-bottom:0;
+}
+
 .line{
 	em, span{
 		font-size: 14px;
@@ -1432,6 +1458,11 @@ img[src=""]{
 	}
 	em[contenteditable=true], span[contenteditable=true]{
 		background: #fff;
+	}
+	h5{
+		a{
+			font-size: 12px;
+		}
 	}
 	a{
 		font-size: 16px;

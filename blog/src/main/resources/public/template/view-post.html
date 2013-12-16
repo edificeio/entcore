@@ -1,23 +1,24 @@
 <div class="row">
-	<h2 class="seven cell">[[post.title]]</h2>
+	<h2 class="seven cell upper-title">[[post.title]]</h2>
 	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="(currentBlog.myRights.post.edit && post.author.userId === me.userId) || currentBlog.myRights.manager">[[translate('blog.edit.post')]]</button>
 	<button class="right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="(currentBlog.myRights.post.remove && post.author.userId === me.userId) || currentBlog.myRights.manager">
 		[[translate('blog.delete.post')]]
 	</button>
 </div>
-<div class="row"><hr></div>
-<h5 class="row">
+
+<h5 class="seven cell subtitle">
 	[[translate('blog.by')]] <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> [[translate('blog.on.date')]] [[formatDate(post.created.$date)]]
 						<span data-ng-if="isCurrentView('lastPosts')">
 							[[translate('blog.on.blog')]] <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
 						</span>
 </h5>
+<div class="row"><hr></div>
 <div class="row" bind-html-unsafe="post.content"></div>
-<div class="clear"></div>
+<div class="row"><hr></div>
 <div class="row content-line">
 	<div class="two cell">
 		<button data-ng-click="showCommentPost(post)"
-		   data-ng-disabled="(commentFormPath !== '') && (currentPost == post)" ng-if="currentBlog.myRights.comment.post">
+		   data-ng-disabled="(commentFormPath !== '') && (currentPost === post)" ng-if="currentBlog.myRights.comment.post">
 			[[translate('blog.comment.post')]]
 		</button>
 	</div>
