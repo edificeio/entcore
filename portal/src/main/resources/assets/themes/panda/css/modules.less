@@ -313,7 +313,7 @@ i[role=angry-panda], i[role=angry]{
 	.icon(angry-panda, 50px);
 }
 
-i[role=default-panda]{
+i[role=default-panda], i[role=default]{
 	.icon(default-panda-60px, 50px);
 }
 
@@ -1301,8 +1301,6 @@ h5.subtitle{
 	}
 }
 
-
-
 .birthday{
 	background-image: url(../img/illustrations/birthdays-header.png);
 
@@ -1361,7 +1359,6 @@ h5.subtitle{
 
 		}
 	}
-
 }
 
 .select{
@@ -1385,6 +1382,43 @@ h5.subtitle{
 
 .birthday.fr{
 	background-image: url(../img/illustrations/birthdays-header-fr.png)
+}
+
+.mood-widget{
+	background: #46afe6;
+	.rounded-corners(5px);
+
+	h1{
+		font-size: 26px;
+		color: white;
+	}
+
+	.enhanced-select{
+		border: none;
+		background: transparent;
+
+		.editing{
+			background: transparent;
+		}
+
+		.option, .current{
+			span{
+				font-family: Arial;
+				font-size: 12px;
+			}
+		}
+
+		.current {
+			background-position: 185px 5px;
+			span{
+				color: black;
+				background: url(../img/icons/arrow-bottom.png) white no-repeat 127px 8px;
+				.rounded-corners(10px);
+			}
+		}
+
+
+	}
 }
 
 .calendar{

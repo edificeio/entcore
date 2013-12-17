@@ -454,6 +454,7 @@ nav.horizontal a {
   background-repeat: no-repeat;
   margin-bottom: 45px;
   padding-right: 1px;
+  margin-bottom: 25px;
 }
 @media screen and (min-width: 720px) {
   .birthday {
@@ -668,6 +669,39 @@ nav.horizontal a {
   width: 100%;
   text-align: center;
   top: 26px;
+}
+.mood-widget {
+  padding-top: 25px;
+  margin-bottom: 25px;
+  height: 45px;
+}
+.mood-widget h1 {
+  position: absolute;
+  left: 65px;
+  top: 9px;
+}
+.mood-widget .enhanced-select .options-list {
+  top: 25px;
+  width: 200%;
+}
+.mood-widget .enhanced-select .current i {
+  max-height: 55px;
+  height: 55px;
+  width: 55px;
+  position: absolute;
+  top: -30px;
+  left: 4px;
+}
+.mood-widget .enhanced-select .current span {
+  position: absolute;
+  top: 0px;
+  left: 65px;
+  height: 20px;
+  width: 138px;
+  text-align: left;
+  padding-left: 5px;
+  padding-top: 0px;
+  padding-bottom: 3px;
 }
 i.liquid {
   max-width: 100% !important;
@@ -2164,7 +2198,8 @@ i[role=angry] {
   float: left;
   vertical-align: middle;
 }
-i[role=default-panda] {
+i[role=default-panda],
+i[role=default] {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/default-panda-60px.png");
@@ -3660,6 +3695,42 @@ h5.subtitle {
 }
 .birthday.fr {
   background-image: url(../img/illustrations/birthdays-header-fr.png);
+}
+.mood-widget {
+  background: #46afe6;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+.mood-widget h1 {
+  font-size: 26px;
+  color: white;
+}
+.mood-widget .enhanced-select {
+  border: none;
+  background: transparent;
+}
+.mood-widget .enhanced-select .editing {
+  background: transparent;
+}
+.mood-widget .enhanced-select .option span,
+.mood-widget .enhanced-select .current span {
+  font-family: Arial;
+  font-size: 12px;
+}
+.mood-widget .enhanced-select .current {
+  background-position: 185px 5px;
+}
+.mood-widget .enhanced-select .current span {
+  color: black;
+  background: url(../img/icons/arrow-bottom.png) #ffffff no-repeat 127px 8px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
 }
 .calendar {
   background-image: url(../img/illustrations/calendar-header.png);

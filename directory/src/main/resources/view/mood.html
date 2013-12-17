@@ -1,8 +1,9 @@
-<div class="mood">
-	<div class="content">
-		mood
-	</div>
-	<div class="row">
-
-	</div>
+<div class="mood-widget">
+	<h1>Mon humeur</h1>
+		<enhanced-select
+				class="enhanced-select cell twelve fixed-block height-two"
+				current="widget.mood"
+				options="widget.moods"
+				change="widget.updateMood()">
+		</enhanced-select>
 </div>
