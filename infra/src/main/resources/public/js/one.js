@@ -96,6 +96,17 @@ var lang = (function(){
 		translate: function(key){
 			return bundle[key] === undefined ? key : bundle[key];
 		},
+		addBundle: function(path, callback){
+			$.get(path, function(newBundle){
+				for(var property in newBundle){
+					bundle[property] = newBundle[property];
+				}
+
+				if(typeof callback === "function"){
+					callback();
+				}
+			})
+		},
 		removeAccents: function(str){
 			for(var i=0; i<defaultDiacriticsRemovalMap.length; i++) {
 				str = str.replace(defaultDiacriticsRemovalMap[i].letters, defaultDiacriticsRemovalMap[i].base);
