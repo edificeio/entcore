@@ -1,27 +1,34 @@
-<nav class="contextual-buttons row">
-	<div class="action-buttons">
-		<button class="cell">Répondre</button>
-		<button class="cell">Répondre à tous</button>
-		<button class="cell">Transférer</button>
-	</div>
-</nav>
+<div class="fixed-block height-one"></div>
 
-<article class="row block-container">
+<article class="row">
 	<div class="row">
-		<a class="eight cell"><strong class="small-header">[[mail.sender.displayName]]</strong></a>
-		<span class="four cell floating-badge">
-			[[mail.sentDate()]]
-		</span>
+		<div class="twelve cell line block-container">
+			<div class="row">
+				<a class="eight cell"><strong class="small-header">[[mail.sender.displayName]]</strong></a>
+				<span class="four cell floating-badge">
+					[[mail.sentDate()]]
+				</span>
+			</div>
+			<div class="row">
+				<em class="medium-importance">
+					à
+					<span ng-repeat="receiver in mail.receivers">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
+					</span>
+				</em>
+			</div>
+			<div class="row">
+				<hr />
+			</div>
+			<div class="row">
+				<div class="twelve cell" bind-html-unsafe="mail.content"></div>
+			</div>
+			<div class="row">
+				<hr />
+			</div>
+		</div>
 	</div>
-	<div class="row">
-		<em class="medium-importance">
-			à
-			<span ng-repeat="receiver in mail.receivers">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
-			</span>
-		</em>
+	<div class="row block-container medium-text">
+		Cliquez ici pour <a>répondre</a>, <a>répondre à tous</a>, <a>transférer</a>,
+		<a>déplacer</a> ou <a>supprimer</a> le message
 	</div>
-	<div class="row">
-		<div class="twelve cell" bind-html-unsafe="mail.content"></div>
-	</div>
-	<div class="clear"></div>
 </article>

@@ -413,13 +413,6 @@ nav.horizontal a {
   margin: 0;
   float: left;
 }
-.line em,
-.line span {
-  display: block;
-  width: 100%;
-  line-height: 30px;
-  height: 30px;
-}
 .filters h5 {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
