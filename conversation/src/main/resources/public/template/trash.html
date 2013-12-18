@@ -1,13 +1,14 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
-		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i>Créer</button>
+		<button class="cell" ng-click="removeSelection()">Supprimer</button>
+		<button class="cell" ng-click="restore()">Restaurer</button>
 	</div>
 </nav>
 <article class="list list-view row">
 	<table class="row">
 		<thead>
 		<tr>
-			<th><input type="checkbox" /></th>
+			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 			<th>De</th>
 			<th>Objet</th>
 			<th></th>
@@ -15,7 +16,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="mail in inbox.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
+		<tr ng-repeat="mail in trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>[[mail.sender.displayName]]</td>
 			<td>[[mail.subject]]</td>

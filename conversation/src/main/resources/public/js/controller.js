@@ -36,8 +36,21 @@ function Conversation($scope){
 	};
 
 	$scope.openTrash = function(){
-		Model.folders.openOTrash();
+		Model.folders.openTrash();
 		$scope.openView('trash', 'main');
+	};
+
+	$scope.selection = {
+		selectAll: false
+	};
+
+	$scope.switchSelectAll = function(){
+		if($scope.selection.selectAll){
+			Model.folders.current.mails.selectAll();
+		}
+		else{
+			Model.folders.current.mails.deselectAll();
+		}
 	};
 
 	$scope.viewMail = function(mail){
@@ -46,9 +59,22 @@ function Conversation($scope){
 		$scope.openView('view-mail', 'main');
 	};
 
+	$scope.saveDraft = function(){
+
+	};
+
+	$scope.sendMail = function(){
+
+	};
+
+	$scope.removeSelection = function(){
+
+	};
+
 	$scope.inbox = Model.folders.inbox;
 	$scope.outbox = Model.folders.outbox;
-
+	$scope.drafts = Model.folders.drafts;
+	$scope.trash = Model.folders.trash;
 
 	$scope.openView('inbox', 'main');
 }

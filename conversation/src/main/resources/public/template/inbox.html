@@ -1,6 +1,7 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
 		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i>Créer</button>
+		<button class="cell" ng-click="removeSelection()">Supprimer</button>
 	</div>
 	<div class="display-buttons">
 		<i role="refresh" ng-click="refresh()"></i>
@@ -10,7 +11,7 @@
 	<table class="row">
 		<thead>
 		<tr>
-			<th><input type="checkbox" /></th>
+			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 			<th>De</th>
 			<th>Objet</th>
 			<th></th>

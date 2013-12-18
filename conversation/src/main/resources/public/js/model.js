@@ -32,6 +32,14 @@ function buildModel(){
 		openOutbox: function(){
 			this.current = this.outbox;
 			this.current.mails.sync();
+		},
+		openDrafts: function(){
+			this.current = this.drafts;
+			this.current.mails.sync();
+		},
+		openTrash: function(){
+			this.current = this.trash;
+			this.current.mails.sync();
 		}
 	});
 
@@ -40,5 +48,11 @@ function buildModel(){
 	});
 	Model.folders.outbox = new Folder({
 		get: '/conversation/public/mocks/outbox.json'
+	});
+	Model.folders.drafts = new Folder({
+		get: '/conversation/public/mocks/drafts.json'
+	});
+	Model.folders.trash = new Folder({
+		get: '/conversation/public/mocks/trash.json'
 	});
 }

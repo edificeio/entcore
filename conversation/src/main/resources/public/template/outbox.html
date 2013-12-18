@@ -1,13 +1,13 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
-		<button class="cell"></button>
+		<button class="cell" ng-click="removeSelection()">Supprimer</button>
 	</div>
 </nav>
 <article class="list list-view row">
 	<table class="row">
 		<thead>
 		<tr>
-			<th><input type="checkbox" /></th>
+			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 			<th>A</th>
 			<th>Objet</th>
 			<th></th>
