@@ -678,7 +678,7 @@ nav.horizontal a {
 .mood-widget h1 {
   position: absolute;
   left: 65px;
-  top: 9px;
+  top: 16px;
   white-space: nowrap;
 }
 .mood-widget .enhanced-select .options-list {
