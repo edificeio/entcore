@@ -9,6 +9,7 @@
 	};
 
 	lang.addBundle('/directory/i18n', function(){
+		Mood.title = lang.translate('userBook.mymood');
 		Mood.moods = [];
 		availableMoods.forEach(function(mood){
 			Mood.moods.push({

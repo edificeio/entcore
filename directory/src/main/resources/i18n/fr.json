@@ -91,6 +91,7 @@
     "userBook.mood.sick":"Je suis malade",
     "userBook.mood.joker":"Je suis farceur(se)",
     "userBook.mood.sad":"Je suis triste",
+	"userBook.mymood": "Mon humeur",
     "change.password": "Modifier mon mot de passe",
     "mail.invalid": "Adresse e-mail invalide",
 	"loading": "Chargement",

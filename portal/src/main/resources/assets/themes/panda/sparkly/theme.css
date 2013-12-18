@@ -679,10 +679,11 @@ nav.horizontal a {
   position: absolute;
   left: 65px;
   top: 9px;
+  white-space: nowrap;
 }
 .mood-widget .enhanced-select .options-list {
   top: 25px;
-  width: 200%;
+  width: 210%;
 }
 .mood-widget .enhanced-select .current i {
   max-height: 55px;
@@ -697,9 +698,9 @@ nav.horizontal a {
   top: 0px;
   left: 65px;
   height: 20px;
-  width: 138px;
+  width: 128px;
   text-align: left;
-  padding-left: 5px;
+  padding-left: 15px;
   padding-top: 0px;
   padding-bottom: 3px;
 }
@@ -3705,7 +3706,7 @@ h5.subtitle {
   border-radius: 5px;
 }
 .mood-widget h1 {
-  font-size: 26px;
+  font-size: 24px;
   color: white;
 }
 .mood-widget .enhanced-select {
@@ -3725,7 +3726,7 @@ h5.subtitle {
 }
 .mood-widget .enhanced-select .current span {
   color: black;
-  background: url(../img/icons/arrow-bottom.png) #ffffff no-repeat 127px 8px;
+  background: url(../img/icons/arrow-bottom.png) #ffffff no-repeat 4px 8px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;

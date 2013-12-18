@@ -4,12 +4,12 @@
 		"path": "/timeline/calendar",
 		"js": "/timeline/public/js/calendar.js"
 	}, {
-		"name": "birthday",
-		"path": "/userbook/birthday",
-		"js": "/directory/public/js/birthday.js"
-	}, {
 		"name": "mood",
 		"path": "/userbook/mood",
 		"js": "/directory/public/js/mood.js"
+	}, {
+		"name": "birthday",
+		"path": "/userbook/birthday",
+		"js": "/directory/public/js/birthday.js"
 	}
 ]
