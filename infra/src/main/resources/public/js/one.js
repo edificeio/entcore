@@ -302,6 +302,26 @@ var Model = {};
 		trigger: function(event){
 			Model.trigger(pluralizeName(this.obj) + '.' + event);
 		},
+		select: function(predicate){
+			_.find(this.all, predicate).forEach(function(item){
+				item.selected = true;
+			});
+		},
+		deselect: function(predicate){
+			_.find(this.all, predicate).forEach(function(item){
+				item.selected = false;
+			});
+		},
+		selectAll: function(){
+			this.all.forEach(function(item){
+				item.selected = true;
+			});
+		},
+		deselectAll: function(){
+			this.all.forEach(function(item){
+				item.selected = false;
+			});
+		},
 		push: function(element, notify){
 			this.all.push(element);
 			if(notify === false){
@@ -319,9 +339,12 @@ var Model = {};
 			this.current = item;
 			this.trigger('change');
 		},
-		select: function(item){
-			this.selected.push(item);
+		selectItem: function(item){
+			item.selected = true;
 			this.trigger('change');
+		},
+		selection: function(){
+			return _.findWhere(this.all, { selected: true }) || [];
 		},
 		load: function(data, cb, notify){
 			var that = this;
