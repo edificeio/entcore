@@ -57,7 +57,7 @@
 			<article class="text-container row" ng-if="blogs.length === 0 && currentView === ''">
 				{{#i18n}}noblog{{/i18n}}
 			</article>
-			<article class="row" ng-if="blogs.length > 0 || currentView !== ''">
+			<article class="row clip" ng-if="blogs.length > 0 || currentView !== ''">
 				<section data-ng-include="currentView.path" class="row text-container"></section>
 				<section data-ng-repeat="post in currentBlog.drafts | limitTo:nbResults('drafts')"
 						 ng-class="{row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED' }">
