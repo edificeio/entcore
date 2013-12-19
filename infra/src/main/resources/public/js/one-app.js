@@ -574,6 +574,22 @@ oneModule.directive('behaviour', function($compile){
 	}
 });
 
+oneModule.directive('bottomScroll', function($compile){
+	return {
+		restrict: 'A',
+		scope: {
+			bottomScroll: '&'
+		},
+		link: function($scope, $element, $attributes){
+			$(window).scroll(function(){
+				if($(document).height() - $(window).height() === window.scrollY){
+					$scope.$eval($scope.bottomScroll);
+				}
+			})
+		}
+	}
+})
+
 oneModule.directive('sharePanel', function($compile){
 	return {
 		scope: {

@@ -18,15 +18,32 @@ function buildModel(){
 	}
 
 	function Folder(api){
+		this.pageNumber = 0;
+
 		this.collection(Mail, {
-			sync: function(){
+			sync: function(pageNumber, emptyList){
 				var that = this;
-				http().get(this.api.get).done(function(data){
-					that.load(data);
-				})
+				http().get(this.api.get + '?page=' + pageNumber).done(function(data){
+					if(emptyList === false){
+						that.addRange(data);
+						if(data.length === 0){
+							that.full = true;
+						}
+					}
+					else{
+						that.load(data);
+					}
+				});
 			},
 			api: api
 		});
+
+		this.nextPage = function(){
+			if(!this.mails.full){
+				this.pageNumber++;
+				this.mails.sync(this.pageNumber, false);
+			}
+		};
 	}
 
 	Model.collection(Folder, {
@@ -35,7 +52,7 @@ function buildModel(){
 				this.current = this.inbox;
 			}
 
-			this.current.mails.sync();
+			this.current.mails.sync(this.pageNumber);
 		},
 		openFolder: function(folderName){
 			this.current = this[folderName]

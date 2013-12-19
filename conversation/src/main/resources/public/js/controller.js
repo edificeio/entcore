@@ -3,7 +3,6 @@ function Conversation($scope, date){
 		Model.folders[folderName].on('mails.change', function(e){
 			$scope.$apply(folderName);
 			$scope.$apply('newItem');
-			console.log('model update');
 		});
 	});
 
@@ -13,6 +12,8 @@ function Conversation($scope, date){
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){
+		$scope.newItem = {};
+		$scope.selection.selectAll = false;
 		var viewsPath = '/conversation/public/template/';
 		$scope.viewsContainers[name] = viewsPath + view + '.html';
 	};
@@ -26,6 +27,10 @@ function Conversation($scope, date){
 		Model.folders.openFolder(folderName);
 		$scope.openView(folderName, 'main');
 	};
+
+	$scope.nextPage = function(){
+		Model.folders.current.nextPage();
+	}
 
 	$scope.selection = {
 		selectAll: false
@@ -41,15 +46,15 @@ function Conversation($scope, date){
 	};
 
 	$scope.viewMail = function(mail){
-		Model.folders.current.mails.current = mail;
-		$scope.mail = Model.folders.current.mails.current;
 		$scope.openView('view-mail', 'main');
+		Model.folders.current.mails.current = mail;
+		mail.open();
 	};
 
 	$scope.editDraft = function(draft){
+		$scope.openView('write-mail', 'main');
 		draft.open();
 		$scope.newItem = draft;
-		$scope.openView('write-mail', 'main');
 	};
 
 	$scope.saveDraft = function(){

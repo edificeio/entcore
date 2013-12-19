@@ -353,9 +353,8 @@ var Model = {};
 		selection: function(){
 			return _.findWhere(this.all, { selected: true }) || [];
 		},
-		load: function(data, cb, notify){
+		addRange: function(data, cb, notify){
 			var that = this;
-			that.all = [];
 			data.forEach(function(item){
 				var newObj = Model.create(that.obj, item);
 				that.push(newObj, false);
@@ -367,8 +366,12 @@ var Model = {};
 				return;
 			}
 			this.model.trigger(pluralizeName(this.obj) + '.change');
+		},
+		load: function(data, cb, notify){
+			this.all = [];
+			this.addRange(data, cb, notify);
 		}
-	}
+	};
 
 	Model.collection = function(obj, methods){
 		var col = new Collection(obj);
