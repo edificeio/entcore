@@ -1,8 +1,10 @@
-function Conversation($scope){
-	Model.folders.inbox.on('mails.change', function(e){
-	});
-
-	Model.folders.outbox.on('mails.change', function(e){
+function Conversation($scope, date){
+	Model.folders.systemFolders.forEach(function(folderName){
+		Model.folders[folderName].on('mails.change', function(e){
+			$scope.$apply(folderName);
+			$scope.$apply('newItem');
+			console.log('model update');
+		});
 	});
 
 	$scope.resetScope = function(){
@@ -20,24 +22,9 @@ function Conversation($scope){
 		return $scope.viewsContainers[name] === viewsPath + view + '.html';
 	};
 
-	$scope.openInbox = function(){
-		Model.folders.openInbox();
-		$scope.openView('inbox', 'main');
-	};
-
-	$scope.openOutbox = function(){
-		Model.folders.openOutbox();
-		$scope.openView('outbox', 'main');
-	};
-
-	$scope.openDrafts = function(){
-		Model.folders.openDrafts();
-		$scope.openView('drafts', 'main');
-	};
-
-	$scope.openTrash = function(){
-		Model.folders.openTrash();
-		$scope.openView('trash', 'main');
+	$scope.openFolder = function(folderName){
+		Model.folders.openFolder(folderName);
+		$scope.openView(folderName, 'main');
 	};
 
 	$scope.selection = {
@@ -59,8 +46,14 @@ function Conversation($scope){
 		$scope.openView('view-mail', 'main');
 	};
 
-	$scope.saveDraft = function(){
+	$scope.editDraft = function(draft){
+		draft.open();
+		$scope.newItem = draft;
+		$scope.openView('write-mail', 'main');
+	};
 
+	$scope.saveDraft = function(){
+		Model.folders.draft.saveDraft($scope.newItem);
 	};
 
 	$scope.sendMail = function(){
@@ -73,8 +66,10 @@ function Conversation($scope){
 
 	$scope.inbox = Model.folders.inbox;
 	$scope.outbox = Model.folders.outbox;
-	$scope.drafts = Model.folders.drafts;
+	$scope.draft = Model.folders.draft;
 	$scope.trash = Model.folders.trash;
+
+	$scope.newItem = {};
 
 	$scope.openView('inbox', 'main');
 }

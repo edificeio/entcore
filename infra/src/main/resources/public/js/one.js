@@ -202,6 +202,14 @@ var http = (function(){
 
 	var requestTypes = ['get', 'post', 'put', 'delete'];
 	requestTypes.forEach(function(type){
+		Http.prototype[type + 'Json'] = function(url, data, params, requestName){
+			if(!params){
+				params = {};
+			}
+			params.data = JSON.stringify(data);
+			params.type = type.toUpperCase();
+			return this.request(url, params, requestName);
+		}
 		Http.prototype[type] = function(url, data, params, requestName){
 			var that = this;
 
@@ -291,7 +299,6 @@ var Model = {};
 		this.all = [];
 		this.current = null;
 		this.selected = [];
-		this.newItem = null;
 		this.obj = obj;
 		this.sync = function(){
 
@@ -350,17 +357,8 @@ var Model = {};
 			var that = this;
 			that.all = [];
 			data.forEach(function(item){
-				var newObj = new that.obj(item);
+				var newObj = Model.create(that.obj, item);
 				that.push(newObj, false);
-				if(typeof item !== 'object'){
-					newObj.data = item;
-					return;
-				}
-				for(var property in item){
-					if(item.hasOwnProperty(property)){
-						newObj[property] = item[property];
-					}
-				}
 				if(typeof cb === 'function'){
 					cb(newObj);
 				}
@@ -393,6 +391,36 @@ var Model = {};
 		}
 	};
 
+	Model.updateData = function(newData){
+		this.data = newData;
+		if(typeof newData !== 'object'){
+			return this;
+		}
+
+		for(var property in newData){
+			if(newData.hasOwnProperty(property)){
+				this[property] = newData[property];
+			}
+		}
+
+		this.trigger('change');
+	};
+
+	Model.create = function(func, data){
+		var newItem = new func();
+		newItem.data = data;
+		if(typeof data !== 'object'){
+			return newItem;
+		}
+
+		for(var property in data){
+			if(data.hasOwnProperty(property)){
+				newItem[property] = data[property];
+			}
+		}
+		return newItem;
+	};
+
 	Model.on = function(event, cb){
 		var events = event.split(',');
 		var that = this;
@@ -415,7 +443,7 @@ var Model = {};
 		for(var i = 0; i < this.callbacks[event].length; i++){
 			this.callbacks[event][i]();
 		}
-	}
+	};
 
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		Model.me = data;

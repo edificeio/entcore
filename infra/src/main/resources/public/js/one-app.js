@@ -387,6 +387,95 @@ oneModule.directive('localizedClass', function($compile){
 			$element.$addClass(currentLanguage);
 		}
 	}
+});
+
+function createCKEditorInstance(editor, $scope){
+	var positionning = function(){
+		$('.cke_chrome').width(editor.width());
+		$('.cke_chrome').offset({
+			top: editor.offset().top - $('.cke_chrome').height(),
+			left: editor.offset().left
+		});
+		$('<style></style>').text('.cke_chrome{' +
+			'top:' + (editor.offset().top - $('.cke_chrome').height()) + 'px !important;' +
+			'left:' + editor.offset().left + 'px !important;' +
+			'position: absolute !important' +
+			'}').appendTo('head');
+
+	};
+
+	CKEDITOR.on('instanceReady', function(ck){
+		ck.editor.removeMenuItem('Upload');
+		ck.editor.removeMenuItem('Audio');
+		editor.html($scope.ngModel);
+		setTimeout(function(){
+			$('input').first().focus();
+		}, 500);
+
+		if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
+			$('img').on('load', positionning);
+		}
+		else{
+			positionning();
+		}
+		editor.on('focus', function(){
+			positionning();
+		});
+	});
+
+	$scope.$watch('ngModel', function(newValue){
+		if(editor.html() !== newValue){
+			editor.html(newValue);
+			//weird browser bug with audio tags
+			editor.find('audio').each(function(index, item){
+				var parent = $(item).parent();
+				$(item)
+					.attr("src", item.src)
+					.detach()
+					.appendTo(parent);
+			});
+		}
+	});
+
+	editor.on('blur', function(e) {
+		$scope.ngModel = editor.html();
+		$scope.$apply();
+	});
+}
+
+oneModule.directive('richTextEditor', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		scope: {
+			ngModel: '='
+		},
+		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
+			'</div><div class="clear"></div></div>',
+		compile: function($element, $attributes, $transclude){
+			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			if(window.CKEDITOR === undefined){
+				loader.syncLoad('ckeditor');
+				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+			}
+			return function($scope, $element, $attributes){
+				CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
+				var editor = $('[contenteditable=true]');
+				CKEDITOR.inline(editor[0],
+					{ customConfig: '/infra/public/ckeditor/rich-text-config.js' }
+				);
+
+				createCKEditorInstance(editor, $scope);
+				$element.on('removed', function(){
+					for(var instance in CKEDITOR.instances){
+						CKEDITOR.instances[instance].destroy()
+					}
+					$('.cke').remove();
+				})
+			}
+		}
+	}
 })
 
 oneModule.directive('htmlEditor', function($compile){
@@ -411,59 +500,12 @@ oneModule.directive('htmlEditor', function($compile){
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 
-				var positionning = function(){
-					$('.cke_chrome').width(editor.width());
-					$('.cke_chrome').offset({
-						top: editor.offset().top - $('.cke_chrome').height(),
-						left: editor.offset().left
-					});
-					$('<style></style>').text('.cke_chrome{' +
-						'top:' + (editor.offset().top - $('.cke_chrome').height()) + 'px !important;' +
-						'left:' + editor.offset().left + 'px !important;' +
-						'position: absolute !important' +
-						'}').appendTo('head');
-
-				};
-
-				CKEDITOR.on('instanceReady', function(){
-					editor.html($scope.ngModel);
-					setTimeout(function(){
-						$('input').first().focus();
-					}, 500);
-
-					if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
-						$('img').on('load', positionning);
-					}
-					else{
-						positionning();
-					}
-					editor.on('focus', function(){
-						positionning();
-					});
-				});
-
-
-
-				$scope.$watch('ngModel', function(newValue){
-					if(editor.html() !== newValue){
-						editor.html(newValue);
-						//weird browser bug with audio tags
-						editor.find('audio').each(function(index, item){
-							var parent = $(item).parent();
-							$(item)
-								.attr("src", item.src)
-								.detach()
-								.appendTo(parent);
-						});
-					}
-				});
-
-				editor.on('blur', function(e) {
-					$scope.ngModel = editor.html();
-					$scope.$apply();
-				});
+				createCKEditorInstance(editor, $scope);
 
 				$element.on('removed', function(){
+					for(var instance in CKEDITOR.instances){
+						CKEDITOR.instances[instance].destroy()
+					}
 					$('.cke').remove();
 				})
 			}
@@ -515,61 +557,6 @@ oneModule.directive('loadingPanel', function($compile){
 			http().bind('request-ended.' + $attributes.loadingPanel, function(e){
 				$element.find('.loading-panel').remove();
 			})
-		}
-	}
-});
-
-oneModule.directive('navigationContext', function($compile){
-	return {
-		scope: {
-			ngModel: '=',
-			parentContext: '@',
-			path: '@'
-		},
-		restrict: 'E',
-		transclude: true,
-		template: '<div ng-transclude></div>',
-		link: function($scope, $element, $attribute){
-			var newContext = navigation.addContext($scope.parentContext);
-			$scope.ngModel = newContext;
-			navigation.navigate(newContext, $scope.path);
-
-			navigation.listen(function(){
-				$element.trigger('navigation-changed');
-			}, newContext);
-			navigation.listen(function(){
-				console.log('test');
-			});
-		}
-	}
-})
-
-oneModule.directive('view', function($compile){
-	return {
-		template: '<div ng-include="view"></div>',
-		compile: function($element, $attributes){
-			return function($scope, $element, $attributes){
-				var viewName = $attributes.view;
-
-				var updateView = function(){
-					var currentViews = navigation.views();
-					$scope.view = currentViews[viewName];
-
-					if(!$scope.$$phase) {
-						$scope.$apply('view');
-					}
-				};
-
-				var parentContext = $element.parents('navigation-context');
-				if(parentContext.length === 0){
-					navigation.listen(updateView);
-				}
-				else{
-					parentContext.on('navigation-changed', function(){
-						updateView();
-					});
-				}
-			}
 		}
 	}
 });

@@ -750,9 +750,6 @@ table.list-view td a {
 .cke_tpl_list {
   height: 312px !important;
 }
-#cke_168_uiElement {
-  display: none;
-}
 .toggle-panel {
   width: 300px;
   position: absolute;

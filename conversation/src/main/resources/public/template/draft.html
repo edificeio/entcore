@@ -16,10 +16,10 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="mail in drafts.mails.all" ng-class="{ checked: mail.selected }">
+		<tr ng-repeat="mail in draft.mails.all" ng-class="{ checked: mail.selected }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>[[mail.receiver.displayName]]</td>
-			<td>[[mail.subject]]</td>
+			<td ng-click="editDraft(mail)">[[mail.subject]]</td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>

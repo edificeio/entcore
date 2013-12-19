@@ -1,10 +1,4 @@
-<nav class="contextual-buttons row">
-	<div class="action-buttons">
-		<button class="cell">Envoyer</button>
-		<button class="cell">Enregistrer</button>
-		<button class="cell">Supprimer</button>
-	</div>
-</nav>
+<div class="fixed-block height-one"></div>
 
 <article class="row solid">
 	<form class="row block-container">
@@ -25,10 +19,22 @@
 				<label class="two cell">
 					Objet
 				</label>
-				<input type="text" class="ten cell" />
+				<input type="text" class="ten cell" ng-model="newItem.subject" />
 			</div>
 		</div>
 	</form>
-	<html-editor ng-model="outbox.mails.newItem.content"></html-editor>
-	<div class="clear"></div>
+	<div class="row">
+		<rich-text-editor ng-model="newItem.body"></rich-text-editor>
+	</div>
+	<div class="row">
+		<div class="twelve cell block-container">
+			<button class="cell right-magnet" ng-click="sendMail()">Envoyer</button>
+			<button class="cell right-magnet" ng-click="saveDraft()">Enregistrer</button>
+			<button class="cancel cell right-magnet" ng-click="openFolder('inbox')">Annuler</button>
+		</div>
+
+	</div>
+	<div class="row">
+		<hr />
+	</div>
 </article>

@@ -1,7 +1,19 @@
 function buildModel(){
 	function Mail(){
 		this.sentDate = function(){
-			return moment(this.sent.$date).calendar();
+			return moment(parseInt(this.date)).calendar();
+		};
+
+		this.saveAsDraft = function(){
+			http().postJson('/conversation/draft', this.data);
+		};
+
+		this.open = function(){
+			var that = this;
+			http().getJson('/conversation/message/' + this.id).done(function(data){
+				that.updateData(data);
+				Model.folders.current.trigger('mails.change');
+			})
 		}
 	}
 
@@ -25,34 +37,22 @@ function buildModel(){
 
 			this.current.mails.sync();
 		},
-		openInbox: function(){
-			this.current = this.inbox;
+		openFolder: function(folderName){
+			this.current = this[folderName]
 			this.current.mails.sync();
 		},
-		openOutbox: function(){
-			this.current = this.outbox;
-			this.current.mails.sync();
-		},
-		openDrafts: function(){
-			this.current = this.drafts;
-			this.current.mails.sync();
-		},
-		openTrash: function(){
-			this.current = this.trash;
-			this.current.mails.sync();
-		}
+		systemFolders: ['inbox', 'draft', 'outbox', 'trash']
 	});
 
-	Model.folders.inbox = new Folder({
-		get: '/conversation/public/mocks/inbox.json'
+	Model.folders.systemFolders.forEach(function(folderName){
+		Model.folders[folderName] = new Folder({
+			get: '/conversation/list/' + folderName.toUpperCase()
+		});
 	});
-	Model.folders.outbox = new Folder({
-		get: '/conversation/public/mocks/outbox.json'
-	});
-	Model.folders.drafts = new Folder({
-		get: '/conversation/public/mocks/drafts.json'
-	});
-	Model.folders.trash = new Folder({
-		get: '/conversation/public/mocks/trash.json'
-	});
+
+	Model.folders.draft.saveDraft = function(mailData){
+		var draft = Model.create(Mail, mailData);
+		draft.saveAsDraft();
+		this.mails.push(draft);
+	}
 }
