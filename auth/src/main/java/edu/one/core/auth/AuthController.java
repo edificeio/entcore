@@ -11,6 +11,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import edu.one.core.auth.adapter.ResponseAdapterFactory;
+import edu.one.core.auth.adapter.UserInfoAdapter;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -33,7 +35,6 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -270,41 +271,21 @@ public class AuthController extends Controller {
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
+					JsonObject info;
+					UserInfoAdapter adapter = ResponseAdapterFactory.getUserInfoAdapter(request);
 					if (request instanceof SecureHttpServerRequest) {
 						SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
 						String clientId = sr.getAttribute("client_id");
-						if (clientId != null && !clientId.trim().isEmpty()) {
-							JsonObject filteredInfos = filterSessionByClientId(infos, clientId);
-							renderJson(request, filteredInfos);
-						} else {
-							renderJson(request, infos);
-						}
+						info = adapter.getInfo(infos, clientId);
 					} else {
-						renderJson(request, infos);
+						info = adapter.getInfo(infos, null);
 					}
+					renderJson(request, info);
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
-	}
-
-	private JsonObject filterSessionByClientId(JsonObject infos, String clientId) {
-		JsonObject filteredInfos = infos.copy();
-		filteredInfos.removeField("apps");
-		filteredInfos.removeField("authorizedActions");
-		JsonArray authorizedActions = new JsonArray();
-		for (Object o: infos.getArray("authorizedActions")) {
-			JsonObject j = (JsonObject) o;
-			String name = j.getString("name");
-			if (name != null && name.startsWith(clientId + "|")) {
-				authorizedActions.addObject(j);
-			}
-		}
-		if (authorizedActions.size() > 0) {
-			filteredInfos.putArray("authorizedActions", authorizedActions);
-		}
-		return filteredInfos;
 	}
 
 	public void oauthResourceServer(final Message<JsonObject> message) {

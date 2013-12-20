@@ -24,7 +24,7 @@ public class Auth extends Server {
 
 		auth.post("/oauth2/token", "token");
 
-		auth.get("/oauth2/userinfo", "userInfo"); // TODO support version (api required version in headers)
+		auth.get("/oauth2/userinfo", "userInfo");
 
 		auth.get("/activation", "activeAccount");
 
