@@ -213,8 +213,9 @@ public class DirectoryController extends Controller {
 			neoRequest =
 					"MATCH (m:User)-[:APPARTIENT]->g-[:DEPENDS]->n " +
 					"WHERE (n:School OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
-					"RETURN distinct m.ENTPersonNom as lastName, m.ENTPersonPrenom as firstName, " +
-					"m.ENTPersonLogin as login, m.activationCode as activationCode, m.type as type " +
+					"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
+					"m.login as login, m.activationCode as activationCode, " +
+					"HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type " +
 					"ORDER BY type, login ";
 			params.put("id", request.params().get("id"));
 		} else {
