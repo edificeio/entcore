@@ -700,6 +700,12 @@ nav.horizontal a {
   padding-top: 0px;
   padding-bottom: 3px;
 }
+.autocomplete ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+  padding-left: 20px;
+}
 i.liquid {
   max-width: 100% !important;
   height: auto;
@@ -3301,6 +3307,9 @@ table.monoline tbody tr:nth-child(even) {
   background: #ebf4f9;
 }
 table.monoline tbody tr:nth-child(odd) {
+  background: #f6f6f6;
+}
+.autocomplete {
   background: #f6f6f6;
 }
 em[contenteditable=true].multiline {

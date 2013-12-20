@@ -441,7 +441,13 @@ function createCKEditorInstance(editor, $scope){
 		$scope.ngModel = editor.html();
 		$scope.$apply();
 	});
+
+	return positionning;
 }
+
+oneModule.directive('dropDown', function($compile){
+
+})
 
 oneModule.directive('richTextEditor', function($compile){
 	return {
@@ -466,7 +472,7 @@ oneModule.directive('richTextEditor', function($compile){
 					{ customConfig: '/infra/public/ckeditor/rich-text-config.js' }
 				);
 
-				createCKEditorInstance(editor, $scope);
+				var positionning = createCKEditorInstance(editor, $scope);
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						CKEDITOR.instances[instance].destroy()

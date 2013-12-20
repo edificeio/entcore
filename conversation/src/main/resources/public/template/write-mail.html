@@ -7,8 +7,16 @@
 				<label class="two cell">
 					A
 				</label>
-				<input type="text" class="ten cell" />
+				<input type="text" class="ten cell" ng-model="users.search" ng-change="updateFoundUsers()" />
 			</div>
+			<drop-down>
+				<div class="autocomplete">
+					<ul class="ten cell right-magnet">
+						<li ng-repeat="user in users.found | limitTo:5" ng-click="addUser(user)">[[user.username]][[user.name]]</li>
+					</ul>
+				</div>
+			</drop-down>
+
 			<div class="row">
 				<label class="two cell">
 					Copie
@@ -20,6 +28,9 @@
 					Objet
 				</label>
 				<input type="text" class="ten cell" ng-model="newItem.subject" />
+			</div>
+			<div class="row">
+				<hr />
 			</div>
 		</div>
 	</form>

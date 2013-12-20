@@ -62,17 +62,30 @@ function Conversation($scope, date){
 	};
 
 	$scope.sendMail = function(){
-
+		$scope.newItem.send();
 	};
 
 	$scope.removeSelection = function(){
 
 	};
 
+	$scope.updateFoundUsers = function(){
+		$scope.users.found = Model.users.find($scope.users.search, []);
+	};
+
+	$scope.addUser = function(user){
+		if(!$scope.newItem.to){
+			$scope.newItem.to = [];
+		}
+		$scope.newItem.to.push(user);
+	};
+
 	$scope.inbox = Model.folders.inbox;
 	$scope.outbox = Model.folders.outbox;
 	$scope.draft = Model.folders.draft;
 	$scope.trash = Model.folders.trash;
+
+	$scope.users = { list: Model.users, search: '', found: [] };
 
 	$scope.newItem = {};
 
