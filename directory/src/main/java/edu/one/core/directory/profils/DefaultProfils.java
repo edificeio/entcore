@@ -39,7 +39,7 @@ public class DefaultProfils implements Profils {
 					"WHERE (" + typesProfileGroup + ") AND m.id = {schoolId} ";
 		}
 		query += "RETURN distinct n.name as name, n.id as id, " +
-				"HEAD(filter(x IN labels(m) WHERE x <> 'ProfileGroup' " +
+				"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
 				"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type";
 		neo.send(query, params, new Handler<Message<JsonObject>>() {
 

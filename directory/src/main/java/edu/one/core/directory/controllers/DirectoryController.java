@@ -119,7 +119,7 @@ public class DirectoryController extends Controller {
 		}
 		neo.send("MATCH (n:Class)<-[:APPARTIENT]-(m:User) "
 				+ "WHERE n.id = {classId} " + types
-				+ "RETURN distinct m.id as userId, HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type, "
+				+ "RETURN distinct m.id as userId, HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, "
 				+ "m.activationCode as code, m.firstName as firstName,"
 				+ "m.lastName as lastName, n.id as classId", params, request.response());
 	}
@@ -207,7 +207,7 @@ public class DirectoryController extends Controller {
 					"WHERE NOT(m.activationCode IS NULL) "
 					+ "RETURN distinct m.lastName as lastName, m.firstName as firstName, "
 					+ "m.login as login, m.activationCode as activationCode, "
-					+ "HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type "
+					+ "HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type "
 					+ "ORDER BY type, login ";
 		} else if (request.params().get("id") != null) {
 			neoRequest =

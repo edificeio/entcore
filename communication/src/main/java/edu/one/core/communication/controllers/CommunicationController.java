@@ -78,7 +78,7 @@ public class CommunicationController extends Controller {
 						"MATCH (n:ProfileGroup) " +
 						"WHERE n.id IN ['" + Joiner.on("','").join(gpId) + "'] " +
 						"RETURN n.id as id, n.name as name, " +
-						"HEAD(filter(x IN labels(m) WHERE x <> 'ProfileGroup' " +
+						"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
 						"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type",
 						 new Handler<Message<JsonObject>>() {
 
@@ -397,7 +397,7 @@ public class CommunicationController extends Controller {
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
 				+ "m.login as login, m.displayName as username, "
-				+ "HEAD(filter(x IN labels(m) WHERE x <> 'User' AND x <> 'ProfileGroup' "
+				+ "HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User' AND x <> 'ProfileGroup' "
 				+ "AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type, "
 				+ "m.lastName as lastName, m.firstName as firstName "
 				+ "ORDER BY name, username ");
@@ -425,7 +425,7 @@ public class CommunicationController extends Controller {
 				"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
 				"RETURN distinct m.id as id, m.login as login, " +
-				"m.displayName as username, HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type " +
+				"m.displayName as username, HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
@@ -447,7 +447,7 @@ public class CommunicationController extends Controller {
 				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:ProfileGroup) " +
 				"WHERE n.id = {userId} " +
 				"RETURN distinct gp.id as id, gp.name as name, " +
-				"HEAD(filter(x IN labels(gp) WHERE x <> 'ProfileGroup' " +
+				"HEAD(filter(x IN labels(gp) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
 				"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type " +
 				"ORDER BY type DESC, name ";
 		Map<String, Object> params = new HashMap<>();
@@ -472,7 +472,7 @@ public class CommunicationController extends Controller {
 				"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
 				"WHERE n.id = {groupId} " + condition +
 				"RETURN distinct u.id as id, u.login as login," +
-				" u.displayName as username, HEAD(filter(x IN labels(u) WHERE x <> 'User')) as type " +
+				" u.displayName as username, HEAD(filter(x IN labels(u) WHERE x <> 'Visible' AND x <> 'User')) as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("groupId", profilGroupId);

@@ -28,7 +28,7 @@ public class UserQueriesBuilder {
 			throw new IllegalArgumentException("Invalid user : " + row.encode());
 		}
 		queries.add(new JsonObject()
-		.putString("query", createEntity(row, "User:" + type))
+		.putString("query", createEntity(row, "User:Visible:" + type))
 		.putObject("params", row));
 		//userLoginUnicity(id, login);
 		return this;

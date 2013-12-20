@@ -84,7 +84,7 @@ public class UserBookController extends Controller {
 							"OPTIONAL MATCH m-[:USERBOOK]->u " +
 							"RETURN distinct m.id as id, m.displayName as displayName, " +
 							"u.mood as mood, u.userid as userId, u.picture as photo, " +
-							"HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type " +
+							"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
 							"ORDER BY displayName";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
@@ -185,7 +185,7 @@ public class UserBookController extends Controller {
 							"MATCH c<-[:APPARTIENT]-m " +
 							"WHERE NOT(m.login IS NULL) " +
 							"OPTIONAL MATCH m-[:USERBOOK]->u " +
-							"RETURN distinct HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type, m.id as id, " +
+							"RETURN distinct HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, m.id as id, " +
 							"m.displayName as displayName, u.mood as mood, " +
 							"u.userid as userId, u.picture as photo " +
 							"ORDER BY type DESC, displayName ";

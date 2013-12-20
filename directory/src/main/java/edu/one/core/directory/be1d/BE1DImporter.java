@@ -65,9 +65,9 @@ public class BE1DImporter {
 			"CREATE (c:Class { id: {id}, name: {name} })";
 	private static String createGroupProfil(String type) {
 		if (type != null && type.startsWith("Class")) {
-			return "CREATE (c:ProfileGroup:ClassProfileGroup:"+type+" { id: {id}, name: {name} })";
+			return "CREATE (c:ProfileGroup:Visible:ClassProfileGroup:"+type+" { id: {id}, name: {name} })";
 		} else {
-			return "CREATE (c:ProfileGroup:SchoolProfileGroup:"+type+" { id: {id}, name: {name} })";
+			return "CREATE (c:ProfileGroup:Visible:SchoolProfileGroup:"+type+" { id: {id}, name: {name} })";
 		}
 	}
 	private static final String createRelEN_RELATION_AVEC =
@@ -522,7 +522,7 @@ public class BE1DImporter {
 			throw new IllegalArgumentException("Invalid user : " + row.encode());
 		}
 		queries.add(new JsonObject()
-		.putString("query", createEntity(row, type))
+		.putString("query", createEntity(row, "Visible:" + type))
 		.putObject("params", row));
 		//userLoginUnicity(id, login);
 	}

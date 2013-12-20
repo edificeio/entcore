@@ -189,7 +189,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, " +
 				"n.lastName as lastName, n.firstName as firstName, " +
-				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'User')) as type, " +
+				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'Visible' AND x <> 'User')) as type, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target]) as apps, " +
 				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
