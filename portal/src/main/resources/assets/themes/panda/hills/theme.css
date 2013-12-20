@@ -434,6 +434,9 @@ nav.horizontal a {
   display: inline-block;
   list-style-type: none;
 }
+.user-content {
+  white-space: pre-line;
+}
 .birthday {
   width: 1;
   -webkit-box-sizing: border-box;
@@ -3299,9 +3302,6 @@ table.monoline tbody tr:nth-child(even) {
 }
 table.monoline tbody tr:nth-child(odd) {
   background: #f6f6f6;
-}
-.user-content {
-  white-space: pre-line;
 }
 em[contenteditable=true].multiline {
   min-height: 35px;

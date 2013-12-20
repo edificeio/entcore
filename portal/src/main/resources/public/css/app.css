@@ -434,6 +434,9 @@ nav.horizontal a {
   display: inline-block;
   list-style-type: none;
 }
+.user-content {
+  white-space: pre-line;
+}
 .birthday {
   width: 1;
   -webkit-box-sizing: border-box;

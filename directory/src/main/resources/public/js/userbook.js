@@ -224,8 +224,8 @@ var userbook = function(){
 				<article class="text-container">\
 					{{#hobbies}}\
 					<div class="row line">\
-						<div class="three cell">{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</div>\
-						<div class="eight cell"><em>{{values}}</em></div>\
+						<div class="three cell mini-block-container">{{#i18n}}userBook.hobby.{{category}}{{/i18n}}</div>\
+						<div class="eight cell mini-block-container user-content"><em>{{values}}</em></div>\
 						<div class="one cell"></div>\
 						<div class="clear"></div>\
 					</div>\
