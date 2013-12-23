@@ -20,15 +20,17 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 
 	private final EventBus eb;
 	private final Neo neo;
+	private final String applicationName;
 
-	public ConversationServiceManager(Vertx vertx) {
+	public ConversationServiceManager(Vertx vertx, String applicationName) {
 		eb = vertx.eventBus();
 		neo = new Neo(eb, LoggerFactory.getLogger(Neo.class));
+		this.applicationName = applicationName;
 	}
 
 	@Override
 	public void authorizedActionsUpdated() {
-		ApplicationUtils.applicationAllowedUsers(eb, Conversation.class.getSimpleName(), new Handler<JsonArray>() {
+		ApplicationUtils.applicationAllowedUsers(eb, applicationName, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray users) {
 				Set<String> userIds = new HashSet<>();
