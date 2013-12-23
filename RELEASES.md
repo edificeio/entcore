@@ -1,6 +1,10 @@
 ONE : Notes de versions
 =======================
 
+# v1.3.0-neo4j2
+
+* Migration de la base données neo4j de la version 1.9.2 à 2.0.0
+
 # v1.3.0
 
 ## Activation et connexion
