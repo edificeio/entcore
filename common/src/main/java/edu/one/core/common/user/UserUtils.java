@@ -100,6 +100,28 @@ public class UserUtils {
 		return m;
 	}
 
+	public static void findVisibles(EventBus eb, String userId, String customReturn,
+			JsonObject additionnalParams, boolean itSelf, boolean myGroup, final Handler<JsonArray> handler) {
+		JsonObject m = new JsonObject()
+				.putBoolean("itself", itSelf)
+				.putBoolean("mygroup", myGroup)
+				.putString("action", "visibleUsers");
+		if (customReturn != null) {
+			m.putString("customReturn", customReturn);
+		}
+		if (additionnalParams != null) {
+			m.putObject("additionnalParams", additionnalParams);
+		}
+		m.putString("userId", userId);
+		eb.send(COMMUNICATION_USERS, m, new Handler<Message<JsonArray>>() {
+
+			@Override
+			public void handle(Message<JsonArray> res) {
+				handler.handle(res.body());
+			}
+		});
+	}
+
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,
 										 final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()

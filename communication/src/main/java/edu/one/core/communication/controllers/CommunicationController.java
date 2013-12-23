@@ -335,11 +335,12 @@ public class CommunicationController extends Controller {
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
+				boolean myGroup = message.body().getBoolean("mygroup", false);
 				Map<String, Object> additionnalParams = null;
 				if (ap != null) {
 					additionnalParams = ap.toMap();
 				}
-				visibleUsers(userId, schoolId, expectedTypes, itSelf, customReturn,
+				visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup, customReturn,
 						additionnalParams, responseHandler);
 				break;
 			case "usersCanSeeMe":
@@ -369,6 +370,11 @@ public class CommunicationController extends Controller {
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf,
 			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
+		visibleUsers(userId, schoolId, expectedTypes, itSelf, false, customReturn, additionnalParams, handler);
+	}
+
+	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
+			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
 		StringBuilder query = new StringBuilder();
 		Map<String, Object> params = new HashMap<>();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
@@ -376,9 +382,10 @@ public class CommunicationController extends Controller {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:School {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", schoolId);
 		} else {
+			String l = (myGroup) ? "" : " AND length(p) >= 2";
 			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-					"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) ";
+					"XOR (type(r) = 'COMMUNIQUE'"+ l + ")) ";
 		}
 		query.append("WHERE n.id = {userId} ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
@@ -392,7 +399,7 @@ public class CommunicationController extends Controller {
 			query.append(types.substring(4)).append(") ");
 		}
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
-			query.append("WITH m as visibles ");
+			query.append("WITH DISTINCT m as visibles ");
 			query.append(customReturn);
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
