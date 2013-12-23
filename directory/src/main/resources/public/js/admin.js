@@ -46,7 +46,8 @@ var admin = function(){
 			,
 			personne : '\
 				{{#list}}{{#i18n}}directory.admin.login{{/i18n}} : {{login}} / {{code}} - \
-				{{#i18n}}directory.admin.address{{/i18n}} : {{address}}{{/list}}'
+				{{#i18n}}directory.admin.address{{/i18n}} : {{address}} - \
+				<a call="sendResetPassword" href="{{login}}">{{#i18n}}directory.admin.reset.password{{/i18n}}</a> {{/list}}'
 			,
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
@@ -70,7 +71,15 @@ var admin = function(){
 				{{/childrens}}\
 				</select>\
 				<input call="addUserSubmit" type="button" value="{{#i18n}}directory.admin.create{{/i18n}}" />\
-			</form>'
+			</form>',
+			sendResetPassword : '\
+			    <form action="/auth/sendResetPassword">\
+			        <label>{{login}}</label>\
+                    <input type="hidden" name="login" value="{{login}}" />\
+                    <label>{{#i18n}}directory.admin.email{{/i18n}}</label>\
+                    <input type="text" name="email" />\
+                    <input call="sendResetPasswordSubmit" type="button" value="{{#i18n}}directory.admin.send{{/i18n}}" />\
+            	</form>'
 		},
 		action : {
 			ecole : function(o) {
@@ -142,7 +151,20 @@ var admin = function(){
 					}
 				})
 				.error(function(data) {app.notify.error(data)});
-			}
+			},
+			sendResetPassword : function(o) {
+			    $('#details').html(app.template.render("sendResetPassword", { login : o.url }));
+			},
+            sendResetPasswordSubmit : function(o) {
+                var form = $(o.target).parents("form");
+                $.post(form.attr("action"), form.serialize())
+                .done(function(response) {
+                    app.notify.done(app.i18n.bundle["directory.admin.reset.code.sent"]);
+                })
+                .error(function(data) {
+                    app.notify.error(app.i18n.bundle["directory.admin.reset.code.send.error"]);
+                });
+            }
 		}
 	})
 	return app;

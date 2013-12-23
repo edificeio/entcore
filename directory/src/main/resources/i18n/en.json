@@ -7,5 +7,10 @@
     "userBook.header": "My account",
     "userBook.interests": "My interests",
     "userBook.health": "Health",
-    "userBook.search" : "Search"
+    "userBook.search" : "Search",
+    "directory.admin.reset.password":"send reset password code",
+    "directory.admin.email" : "email",
+    "directory.admin.send" : "send",
+    "directory.admin.reset.code.sent" : "reset code sent",
+    "directory.admin.reset.code.send.error" : "error sending reset code"
 }
