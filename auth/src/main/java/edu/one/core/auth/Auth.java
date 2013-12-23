@@ -1,5 +1,6 @@
 package edu.one.core.auth;
 
+import edu.one.core.common.http.filter.ActionFilter;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.request.filter.SecurityHandler;
@@ -38,6 +39,8 @@ public class Auth extends Server {
 
 		auth.post("/reset", "resetPasswordSubmit");
 
+		auth.post("/sendResetPassword", "adminSendResetPassword");
+
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
@@ -47,6 +50,7 @@ public class Auth extends Server {
 		SecurityHandler.clearFilters();
 		SecurityHandler.addFilter(
 				new UserAuthFilter(new DefaultOAuthResourceProvider(Server.getEventBus(vertx))));
+		SecurityHandler.addFilter(new ActionFilter(auth.securedUriBinding(), getEventBus(vertx)));
 	}
 
 }

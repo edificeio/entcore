@@ -10,6 +10,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -87,12 +88,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND NOT(n.ENTPersonMail IS NULL) " +
+				"WHERE n.login = {login} AND NOT(n.email IS NULL) AND n.activationCode IS NULL " +
 				"SET n.resetCode = {resetCode} " +
-				"RETURN n.ENTPersonMail as email";
+				"RETURN n.email as email";
 		final String query2 =
 				"MATCH (n:Student)-[:APPARTIENT]->(m:Class)<-[:APPARTIENT]-(p:Teacher) " +
-				"WHERE n.login = {login} AND NOT(p.email IS NULL) " +
+				"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN p.email as email";
 		final Map<String, Object> params = new HashMap<>();
@@ -137,6 +138,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	private void sendResetPasswordLink(HttpServerRequest request, String email, String resetCode,
 			final Handler<Boolean> handler) {
+		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
+			handler.handle(false);
+			return;
+		}
 		JsonObject json = new JsonObject()
 		.putString("resetUri", container.config()
 				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode);
@@ -181,6 +186,30 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(handler, query, password, params);
+	}
+
+	@Override
+	public void sendResetCode(final HttpServerRequest request, String login, final String email,
+			final Handler<Boolean> handler) {
+		String query =
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND n.activationCode IS NULL " +
+				"SET n.resetCode = {resetCode} " +
+				"RETURN count(n) as nb";
+		final String code = UUID.randomUUID().toString();
+		JsonObject params = new JsonObject().putString("login", login).putString("resetCode", code);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) &&
+						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
+						"1".equals(((JsonObject) event.body().getArray("result").get(0)).getString("nb"))) {
+					sendResetPasswordLink(request, email, code, handler);
+				} else {
+					handler.handle(false);
+				}
+			}
+		});
 	}
 
 	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {

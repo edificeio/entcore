@@ -13,6 +13,8 @@ import java.util.Map;
 
 import edu.one.core.auth.adapter.ResponseAdapterFactory;
 import edu.one.core.auth.adapter.UserInfoAdapter;
+import edu.one.core.common.validation.StringValidation;
+import edu.one.core.security.ActionType;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -54,7 +56,6 @@ import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
 import edu.one.core.common.user.UserUtils;
 import edu.one.core.common.user.UserInfos;
-import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
 
 public class AuthController extends Controller {
@@ -264,7 +265,7 @@ public class AuthController extends Controller {
 		}
 	}
 
-	@SecuredAction(value = "userinfo", type = ActionType.RESOURCE)
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
 	public void userInfo(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new org.vertx.java.core.Handler<JsonObject>() {
 
@@ -412,6 +413,33 @@ public class AuthController extends Controller {
 				.putObject("error", new JsonObject()
 				.putString("message", message));
 				renderView(request, error);
+			}
+		});
+	}
+
+	@SecuredAction("auth.admin.send.reset.password")
+	public void adminSendResetPassword(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+
+			@Override
+			protected void handle() {
+				String login = request.formAttributes().get("login");
+				String email = request.formAttributes().get("email");
+				if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
+					badRequest(request);
+					return;
+				}
+				userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean sent) {
+						if (Boolean.TRUE.equals(sent)) {
+							renderJson(request, new JsonObject());
+						} else {
+							badRequest(request);
+						}
+				  }
+				});
 			}
 		});
 	}

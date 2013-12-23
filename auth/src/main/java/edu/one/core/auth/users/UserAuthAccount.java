@@ -13,4 +13,7 @@ public interface UserAuthAccount {
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
+
+	void sendResetCode(HttpServerRequest request, String login, String email, Handler<Boolean> handler);
+
 }
