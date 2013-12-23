@@ -134,7 +134,8 @@ public class UserBookController extends Controller {
 					}
 					String query = "MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->c "
 								+ "WHERE n.id = {userId} AND ((c IS NULL) OR 'School' IN labels(c)) "
-								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u)-[v:" + hobbyVisibility + "]->(h1) "
+								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
+								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
 								+ "OPTIONAL MATCH (n)-[:EN_RELATION_AVEC]-(n2) "
 								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
 								+ personnalInfos
