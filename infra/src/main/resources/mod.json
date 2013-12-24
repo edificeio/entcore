@@ -3,6 +3,7 @@
   "port": 8001,
   "mode": "dev",
   "auto-redeploy": true,
+  "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "app-registry": {
     "name": "edu.one.core~app-registry~1.4-SNAPSHOT"
