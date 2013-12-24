@@ -34,7 +34,7 @@ public class PostController extends Controller {
 						  MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
 		this.post = new DefaultPostService(mongo);
-		this.timelineService = new DefaultBlogTimelineService(eb, container, new Neo(eb, log), mongo);
+		this.timelineService = new DefaultBlogTimelineService(vertx, eb, container, new Neo(eb, log), mongo);
 	}
 
 	// TODO improve fields matcher and validater

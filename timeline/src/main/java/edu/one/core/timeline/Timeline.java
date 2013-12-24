@@ -13,7 +13,7 @@ public class Timeline extends Server {
 		timeline.get("/timeline", "view");
 		timeline.get("/calendar", "calendar");
 		timeline.get("/lastNotifications", "lastEvents");
-
+		timeline.get("/i18nNotifications", "i18n");
 		timeline.get("/types", "listTypes");
 
 		try {

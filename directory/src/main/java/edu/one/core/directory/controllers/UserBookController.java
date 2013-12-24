@@ -47,7 +47,7 @@ public class UserBookController extends Controller {
 							.setPort(config.getInteger("workspace-port"))
 							.setMaxPoolSize(16)
 							.setKeepAlive(false);
-			notification = new TimelineHelper(eb, container);
+			notification = new TimelineHelper(vertx, eb, container);
 		}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)

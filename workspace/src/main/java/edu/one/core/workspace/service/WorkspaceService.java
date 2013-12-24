@@ -68,7 +68,7 @@ public class WorkspaceService extends Controller {
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
 		neo = new Neo(eb, log);
-		notification = new TimelineHelper(eb, container);
+		notification = new TimelineHelper(vertx, eb, container);
 		this.trace = trace;
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);

@@ -9,6 +9,7 @@ import edu.one.core.infra.MongoQueryBuilder;
 import edu.one.core.common.neo4j.Neo;
 import edu.one.core.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -34,10 +35,10 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 	private final TimelineHelper notification;
 	private final Container container;
 
-	public DefaultBlogTimelineService(EventBus eb, Container container, Neo neo, MongoDb mongo) {
+	public DefaultBlogTimelineService(Vertx vertx, EventBus eb, Container container, Neo neo, MongoDb mongo) {
 		this.neo = neo;
 		this.mongo = mongo;
-		this.notification = new TimelineHelper(eb, container);
+		this.notification = new TimelineHelper(vertx, eb, container);
 		this.container = container;
 	}
 

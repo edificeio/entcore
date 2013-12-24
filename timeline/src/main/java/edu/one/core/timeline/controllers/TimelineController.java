@@ -2,7 +2,9 @@ package edu.one.core.timeline.controllers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
+import edu.one.core.infra.Utils;
 import edu.one.core.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -23,16 +25,28 @@ import edu.one.core.timeline.events.TimelineEventStore;
 public class TimelineController extends Controller {
 
 	private TimelineEventStore store;
+	private final ConcurrentMap<String, String> eventsI18n;
 
 	public TimelineController(Vertx vertx, Container container,
 			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		store = new DefaultTimelineEventStore(vertx, container);
+		eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
 	}
 
 	@SecuredAction("timeline.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
+	}
+
+	@SecuredAction("timeline.i18n")
+	public void i18n(HttpServerRequest request) {
+		String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
+		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+		if (i18n == null) {
+			i18n = eventsI18n.get("fr");
+		}
+		renderJson(request, new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}"));
 	}
 	
 	@SecuredAction("timeline.calendar")
