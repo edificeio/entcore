@@ -47,7 +47,7 @@
 		}, {
 			name: 'calendar.fall', start: moment(currentYear + '09-23'), end: moment(currentYear + '12-20')
 		}, {
-			name: 'calendar.winter', start: moment(currentYear + '12-21'), end: moment(currentYear + '03-20')
+			name: 'calendar.winter', start: moment(currentYear + '12-21'), end: moment(currentYear + '12-31')
 		}, {
 			name: 'calendar.winter', start: moment(nextYear + '01-01'), end: moment(nextYear + '06-20')
 		} ]
