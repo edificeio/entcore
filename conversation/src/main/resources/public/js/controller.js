@@ -3,6 +3,7 @@ function Conversation($scope, date){
 		Model.folders[folderName].on('mails.change', function(e){
 			$scope.$apply(folderName);
 			$scope.$apply('newItem');
+			$scope.$apply('mail');
 		});
 	});
 
@@ -12,7 +13,7 @@ function Conversation($scope, date){
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){
-		$scope.newItem = {};
+		$scope.newItem = new Mail();
 		$scope.selection.selectAll = false;
 		var viewsPath = '/conversation/public/template/';
 		$scope.viewsContainers[name] = viewsPath + view + '.html';
@@ -49,6 +50,7 @@ function Conversation($scope, date){
 		$scope.openView('view-mail', 'main');
 		Model.folders.current.mails.current = mail;
 		mail.open();
+		$scope.mail = mail;
 	};
 
 	$scope.editDraft = function(draft){
@@ -96,7 +98,7 @@ function Conversation($scope, date){
 
 	$scope.users = { list: Model.users, search: '', found: [] };
 
-	$scope.newItem = {};
+	$scope.newItem = new Mail();
 
 	$scope.openView('inbox', 'main');
 }

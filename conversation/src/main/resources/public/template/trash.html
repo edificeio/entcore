@@ -19,7 +19,7 @@
 		<tr ng-repeat="mail in trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>[[mail.sender.displayName]]</td>
-			<td>[[mail.subject]]</td>
+			<td ng-click="viewMail(mail)">[[mail.subject]]</td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>

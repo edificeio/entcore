@@ -4,7 +4,7 @@
 	<div class="row">
 		<div class="twelve cell line block-container">
 			<div class="row">
-				<a class="eight cell"><strong class="small-header">[[mail.sender.displayName]]</strong></a>
+				<a class="eight cell"><strong class="small-header">[[mail.from]]</strong></a>
 				<span class="four cell floating-badge">
 					[[mail.sentDate()]]
 				</span>
@@ -12,7 +12,7 @@
 			<div class="row">
 				<em class="medium-importance">
 					à
-					<span ng-repeat="receiver in mail.receivers">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
+					<span ng-repeat="receiver in mail.to">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
 					</span>
 				</em>
 			</div>
@@ -20,7 +20,7 @@
 				<hr />
 			</div>
 			<div class="row">
-				<div class="twelve cell" bind-html-unsafe="mail.content"></div>
+				<div class="twelve cell" bind-html-unsafe="mail.body"></div>
 			</div>
 			<div class="row">
 				<hr />

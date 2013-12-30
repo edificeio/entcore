@@ -1,10 +1,76 @@
-function buildModel(){
-	function User(){
-		this.toString = function(){
-			return (this.displayName || '') + (this.name || '');
-		}
+function User(){
+	this.toString = function(){
+		return (this.displayName || '') + (this.name || '');
 	}
+}
 
+function Mail(){
+	this.sentDate = function(){
+		return moment(parseInt(this.date)).calendar();
+	};
+
+	this.saveAsDraft = function(){
+		var that = this;
+		var data = { subject: this.subject, body: this.body };
+		data.to = _.pluck(this.to, 'id');
+		http().postJson('/conversation/draft', data);
+		Model.folders.draft.mails.refresh();
+	};
+
+	this.send = function(){
+		var data = { subject: this.subject, body: this.body };
+		data.to = _.pluck(this.to, 'id');
+		var path = '/conversation/send';
+		if(this.id){
+			path += '?id=' + this.id;
+		}
+		http().postJson(path, data);
+		Model.folders.outbox.mails.push(this);
+	};
+
+	this.open = function(){
+		var that = this;
+		http().getJson('/conversation/message/' + this.id).done(function(data){
+			that.updateData(data);
+			Model.folders.current.trigger('mails.change');
+		});
+	};
+}
+
+function Folder(api){
+	this.pageNumber = 0;
+
+	this.collection(Mail, {
+		refresh: function(){
+			this.pageNumber = 0;
+			this.sync();
+		},
+		sync: function(pageNumber, emptyList){
+			var that = this;
+			http().get(this.api.get + '?page=' + pageNumber).done(function(data){
+				if(emptyList === false){
+					that.addRange(data);
+					if(data.length === 0){
+						that.full = true;
+					}
+				}
+				else{
+					that.load(data);
+				}
+			});
+		},
+		api: api
+	});
+
+	this.nextPage = function(){
+		if(!this.mails.full){
+			this.pageNumber++;
+			this.mails.sync(this.pageNumber, false);
+		}
+	};
+}
+
+function buildModel(){
 	Model.collection(User, {
 		sync: function(){
 			var that = this;
@@ -39,60 +105,6 @@ function buildModel(){
 			});
 		}
 	});
-
-	function Mail(){
-		this.sentDate = function(){
-			return moment(parseInt(this.date)).calendar();
-		};
-
-		this.saveAsDraft = function(){
-			http().postJson('/conversation/draft', this.data);
-		};
-
-		this.send = function(){
-			var data = { subject: this.subject, body: this.body };
-			data.to = _.pluck(this.to, 'id');
-			http().postJson('/conversation/send?id=' + this.data.id, data);
-			Model.folders.outbox.mails.push(this);
-		}
-
-		this.open = function(){
-			var that = this;
-			http().getJson('/conversation/message/' + this.id).done(function(data){
-				that.updateData(data);
-				Model.folders.current.trigger('mails.change');
-			})
-		}
-	}
-
-	function Folder(api){
-		this.pageNumber = 0;
-
-		this.collection(Mail, {
-			sync: function(pageNumber, emptyList){
-				var that = this;
-				http().get(this.api.get + '?page=' + pageNumber).done(function(data){
-					if(emptyList === false){
-						that.addRange(data);
-						if(data.length === 0){
-							that.full = true;
-						}
-					}
-					else{
-						that.load(data);
-					}
-				});
-			},
-			api: api
-		});
-
-		this.nextPage = function(){
-			if(!this.mails.full){
-				this.pageNumber++;
-				this.mails.sync(this.pageNumber, false);
-			}
-		};
-	}
 
 	Model.collection(Folder, {
 		sync: function(){

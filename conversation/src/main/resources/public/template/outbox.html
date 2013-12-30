@@ -17,8 +17,8 @@
 		<tbody>
 		<tr ng-repeat="mail in outbox.mails.all" ng-class="{ checked: mail.selected }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td>[[mail.receiver.displayName]]</td>
-			<td>[[mail.subject]]</td>
+			<td><span ng-repeat="receiver in mail.to">[[receiver]]</span></td>
+			<td ng-click="viewMail(mail)">[[mail.subject]]</td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
