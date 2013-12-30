@@ -502,16 +502,6 @@ nav.horizontal a {
 .birthday .content img {
   max-width: 100%;
 }
-.birthday .content .enhanced-select {
-  margin-top: 5px;
-}
-.birthday .content .enhanced-select .current {
-  padding-top: 2px;
-  background-position: 5px 10px;
-}
-.birthday .content .enhanced-select .current span {
-  padding-top: 0px;
-}
 .birthday nav.vertical {
   padding: 0;
 }
@@ -677,11 +667,11 @@ nav.horizontal a {
   top: 16px;
   white-space: nowrap;
 }
-.mood-widget .enhanced-select .options-list {
+.mood-widget .icons-select .options-list {
   top: 25px;
   width: 210%;
 }
-.mood-widget .enhanced-select .current i {
+.mood-widget .icons-select .current i {
   max-height: 55px;
   height: 55px;
   width: 55px;
@@ -689,7 +679,7 @@ nav.horizontal a {
   top: -30px;
   left: 4px;
 }
-.mood-widget .enhanced-select .current span {
+.mood-widget .icons-select .current span {
   position: absolute;
   top: 0px;
   left: 65px;
@@ -912,12 +902,12 @@ ul.icons-view.two-cols li.element {
   width: 30px;
   height: 30px;
 }
-.enhanced-select {
+.icons-select {
   position: relative;
   margin-top: 15px;
   z-index: 5;
 }
-.enhanced-select .options-list {
+.icons-select .options-list {
   display: none;
   position: absolute;
   width: 175%;
@@ -927,26 +917,26 @@ ul.icons-view.two-cols li.element {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
-.enhanced-select .option,
-.enhanced-select .current {
+.icons-select .option,
+.icons-select .current {
   cursor: pointer;
 }
-.enhanced-select span {
+.icons-select span {
   display: block;
   line-height: 26px;
   float: left;
 }
-.enhanced-select .current {
+.icons-select .current {
   padding: 5px;
   padding-left: 20px;
 }
-.enhanced-select .current i {
+.icons-select .current i {
   vertical-align: middle;
   max-height: 100%;
   background-size: auto 100%;
   transform: rotate(0.0001deg);
 }
-.enhanced-select .current span {
+.icons-select .current span {
   clear: none;
   padding-top: 10px;
   width: auto;

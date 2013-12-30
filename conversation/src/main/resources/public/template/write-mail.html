@@ -4,18 +4,18 @@
 	<form class="row block-container">
 		<div class="twelve cell">
 			<div class="row">
+				<div class="label-badge" ng-repeat="user in newItem.to">[[user.toString()]]
+					<span class="close" ng-click="removeUser(user)">x</span>
+				</div>
+			</div>
+			<div class="row">
 				<label class="two cell">
 					A
 				</label>
-				<input type="text" class="ten cell" ng-model="users.search" ng-change="updateFoundUsers()" />
+				<input type="text" class="ten cell" ng-model="users.search"
+					   ng-change="updateFoundUsers()" />
 			</div>
-			<drop-down>
-				<div class="autocomplete">
-					<ul class="ten cell right-magnet">
-						<li ng-repeat="user in users.found | limitTo:5" ng-click="addUser(user)">[[user.username]][[user.name]]</li>
-					</ul>
-				</div>
-			</drop-down>
+			<drop-down options="users.found" change="addUser()" current="newItem.currentReceiver"></drop-down>
 
 			<div class="row">
 				<label class="two cell">

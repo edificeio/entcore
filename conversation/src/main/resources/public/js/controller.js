@@ -69,6 +69,11 @@ function Conversation($scope, date){
 
 	};
 
+	$scope.clearSearch = function(){
+		$scope.users.found = [];
+		$scope.users.search = '';
+	}
+
 	$scope.updateFoundUsers = function(){
 		$scope.users.found = Model.users.find($scope.users.search, []);
 	};
@@ -77,7 +82,11 @@ function Conversation($scope, date){
 		if(!$scope.newItem.to){
 			$scope.newItem.to = [];
 		}
-		$scope.newItem.to.push(user);
+		$scope.newItem.to.push($scope.newItem.currentReceiver);
+	};
+
+	$scope.removeUser = function(user){
+		$scope.newItem.to = _.reject($scope.newItem.to, function(item){ return item === user; });
 	};
 
 	$scope.inbox = Model.folders.inbox;

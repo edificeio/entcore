@@ -259,7 +259,7 @@ oneModule.directive('fileInputChange', function($compile){
 	}
 })
 
-oneModule.directive('enhancedSelect', function($compile) {
+oneModule.directive('iconsSelect', function($compile) {
 	return {
 		restrict: 'E',
 		scope:{
@@ -445,8 +445,41 @@ function createCKEditorInstance(editor, $scope){
 	return positionning;
 }
 
-oneModule.directive('dropDown', function($compile){
+oneModule.directive('dropDown', function($compile, $timeout){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		scope: {
+			options: '=',
+			change: '&',
+			current: '='
+		},
+		template: '<div data-drop-down style="position: absolute; z-index: 10000">\
+						<div>\
+							<ul class="ten cell right-magnet">\
+								<li ng-repeat="option in options | limitTo:5" ng-model="option">[[option.toString()]]</li>\
+							</ul>\
+						</div>\
+			</div>',
+		link: function($scope, $element, $attributes){
+			var pos = $element.parent().offset();
+			$element.parent().on('remove', function(){
+				$element.remove();
+			})
+			$element.detach().appendTo('body');
+			$element.offset(pos);
 
+			$element.on('click', 'li', function(e){
+				$scope.current = $(this).scope().option;
+				$scope.$apply('current');
+				$scope.$eval($scope.change);
+				$scope.$apply('current');
+			});
+			$element.attr('data-opened-drop-down', true);
+
+		}
+	}
 })
 
 oneModule.directive('richTextEditor', function($compile){

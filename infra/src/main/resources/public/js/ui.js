@@ -153,7 +153,7 @@ var ui = (function(){
 			$(this).val(' ');
 		})
 
-		$('body').on('mousedown', '.enhanced-select .current', function(e){
+		$('body').on('mousedown', '.icons-select .current', function(e){
 			var select = $(this).parent();
 			var optionsList = select.children('.options-list');
 

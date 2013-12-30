@@ -1,5 +1,8 @@
 function buildModel(){
 	function User(){
+		this.toString = function(){
+			return (this.displayName || '') + (this.name || '');
+		}
 	}
 
 	Model.collection(User, {
@@ -12,15 +15,24 @@ function buildModel(){
 		},
 		find: function(search, exclude){
 			var searchTerm = lang.removeAccents(search).toLowerCase();
+			if(!searchTerm){
+				return [];
+			}
 			var found = _.filter(this.all, function(user){
-				if(user.login){
-					var testName = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
-					var testNameReversed = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-					var testDisplayName = lang.removeAccents(user.name).toLowerCase();
-					return testName.indexOf(searchTerm) !== -1 ||
-						testNameReversed.indexOf(searchTerm) !== -1 ||
-						testDisplayName.indexOf(searchTerm) !== -1;
+				var testDisplayName = '', testNameReversed = '';
+				if(user.displayName){
+					testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
+					testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
+						+ user.displayName.split(' ')[0]).toLowerCase();
 				}
+				var testName = '';
+				if(user.name){
+					testName = lang.removeAccents(user.name).toLowerCase();
+				}
+
+				return testDisplayName.indexOf(searchTerm) !== -1 ||
+					testNameReversed.indexOf(searchTerm) !== -1 ||
+					testName.indexOf(searchTerm) !== -1;
 			});
 			return _.reject(found, function(element){
 				return exclude.indexOf(element) !== -1;
