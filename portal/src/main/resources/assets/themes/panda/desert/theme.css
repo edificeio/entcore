@@ -1328,12 +1328,12 @@ html.app body {
   src: url(../fonts/KGJuneBug.ttf);
 }
 @font-face {
-  font-family: Satellite;
-  src: url(../fonts/Satellite.otf);
+  font-family: BDCartoonShout;
+  src: url(../fonts/BDCartoonShout.ttf) format('truetype');
 }
 @font-face {
-  font-family: BDCartoonShout;
-  src: url(../fonts/BD_Cartoon_Shout.ttf);
+  font-family: Satellite;
+  src: url(../fonts/Satellite.otf);
 }
 body {
   cursor: default !important;
@@ -3701,9 +3701,14 @@ h5.subtitle {
   -o-border-radius: 5px;
   border-radius: 5px;
 }
+.mood-widget h1.fr {
+  background: url(../img/illustrations/mood-header-fr.png);
+  width: 140px;
+  height: 21px;
+}
 .mood-widget h1 {
   font-size: 17px;
-  color: white;
+  color: transparent;
   font-family: BDCartoonShout;
   font-weight: normal;
 }

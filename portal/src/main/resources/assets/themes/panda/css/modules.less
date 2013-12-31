@@ -8,14 +8,16 @@
 }
 
 @font-face {
+	font-family: BDCartoonShout;
+	src: url(../fonts/BDCartoonShout.ttf) format('truetype')
+}
+
+@font-face {
 	font-family: Satellite;
 	src: url(../fonts/Satellite.otf);
 }
 
-@font-face {
-	font-family: BDCartoonShout;
-	src: url(../fonts/BD_Cartoon_Shout.ttf)
-}
+
 
 body{
 	cursor: default !important;
@@ -1396,12 +1398,19 @@ h5.subtitle{
 .mood-widget{
 	background: #46afe6;
 	.rounded-corners(5px);
+	//Font used for this widget crashes in IE : replaced by an image
+	h1.fr{
+		background: url(../img/illustrations/mood-header-fr.png);
+		width: 140px;
+		height: 21px;
+	}
 
 	h1{
 		font-size: 17px;
-		color: white;
+		color: transparent;
 		font-family: BDCartoonShout;
 		font-weight: normal;
+
 	}
 
 	.icons-select{
