@@ -25,6 +25,9 @@ function Conversation($scope, date){
 	};
 
 	$scope.openFolder = function(folderName){
+		if(!folderName){
+			folderName = Model.folders.current.folderName;
+		}
 		Model.folders.openFolder(folderName);
 		$scope.openView(folderName, 'main');
 	};
@@ -46,11 +49,23 @@ function Conversation($scope, date){
 		}
 	};
 
+	function setCurrentMail(mail){
+		Model.folders.current.mails.current = mail;
+		Model.folders.current.mails.deselectAll();
+		Model.folders.current.mails.current.selected = true;
+		$scope.mail = mail;
+	}
+
 	$scope.viewMail = function(mail){
 		$scope.openView('view-mail', 'main');
-		Model.folders.current.mails.current = mail;
+		setCurrentMail(mail);
 		mail.open();
-		$scope.mail = mail;
+	};
+
+	$scope.readMail = function(mail){
+		$scope.openView('read-mail', 'main');
+		setCurrentMail(mail);
+		mail.open();
 	};
 
 	$scope.editDraft = function(draft){
@@ -65,10 +80,11 @@ function Conversation($scope, date){
 
 	$scope.sendMail = function(){
 		$scope.newItem.send();
+		$scope.openFolder();
 	};
 
 	$scope.removeSelection = function(){
-
+		Model.folders.current.mails.removeMails();
 	};
 
 	$scope.clearSearch = function(){

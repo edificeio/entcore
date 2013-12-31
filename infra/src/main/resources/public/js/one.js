@@ -140,7 +140,6 @@ var http = (function(){
 				}
 			}
 
-
 			return str.join("&");
 		},
 		events: {
@@ -298,7 +297,6 @@ var Model = {};
 	function Collection(obj){
 		this.all = [];
 		this.current = null;
-		this.selected = [];
 		this.obj = obj;
 		this.sync = function(){
 
@@ -351,7 +349,10 @@ var Model = {};
 			this.trigger('change');
 		},
 		selection: function(){
-			return _.findWhere(this.all, { selected: true }) || [];
+			return _.where(this.all, { selected: true }) || [];
+		},
+		removeSelection: function(){
+			this.all = _.reject(this.all, function(item){ return item.selected });
 		},
 		addRange: function(data, cb, notify){
 			var that = this;

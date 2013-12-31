@@ -59,6 +59,10 @@ function Folder(api){
 				}
 			});
 		},
+		removeMails: function(){
+			http().put('/conversation/trash?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
+			this.removeSelection();
+		},
 		api: api
 	});
 
@@ -127,11 +131,17 @@ function buildModel(){
 		Model.folders[folderName] = new Folder({
 			get: '/conversation/list/' + folderName.toUpperCase()
 		});
+		Model.folders[folderName].folderName = folderName;
 	});
 
 	Model.folders.draft.saveDraft = function(mailData){
 		var draft = Model.create(Mail, mailData);
 		draft.saveAsDraft();
 		this.mails.push(draft);
+	};
+
+	Model.folders.trash.mails.removeMails = function(){
+		http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
+		this.removeSelection();
 	}
 }

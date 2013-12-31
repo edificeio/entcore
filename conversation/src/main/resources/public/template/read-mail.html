@@ -28,6 +28,16 @@
 		</div>
 	</div>
 	<div class="row block-container medium-text">
-		Cliquez ici pour <a>déplacer</a> ou <a ng-click="removeSelection(); openFolder()">supprimer</a> le message
+		Cliquez ici pour
+		<a ng-click="openView('write-mail', 'reply')">répondre</a>,
+		<a ng-click="openView('write-mail', 'reply')">répondre à tous</a>,
+		<a ng-click="openView('write-mail', 'reply')">transférer</a>,
+		<a ng-click="openView('write-mail', 'reply')">déplacer</a> ou
+		<a ng-click="removeSelection(); openFolder()">supprimer</a> le message
+	</div>
+	<div class="row">
+		<div class="twelve cell" ng-include="viewsContainers.reply">
+
+		</div>
 	</div>
 </article>
