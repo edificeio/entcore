@@ -1,6 +1,6 @@
 {
-	"communication.title": "Communication",
-	"communication.header": "Communication",
+	"communication.title" : "Communication",
+	"communication.header" : "Communication",
 	"communication.conf.profils" : "Communication settings",
 	"communication.rule.enabled" : "Communication rule enabled"
 }

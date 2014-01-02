@@ -1,6 +1,6 @@
 {
-	"app.registry.title": "Applications registry",
-	"app.registry.header": "Applications registry",
+	"app.registry.title" : "Applications registry",
+	"app.registry.header" : "Applications registry",
 	"app.registry.applications" : "Applications list",
 	"app.registry.roles" : "Roles list",
 	"app.registry.authorisations" : "Authorisations list",
@@ -12,12 +12,12 @@
 	"app.registry.actions" : "Actions",
 	"app.registry.role.name" : "Role name",
 	"app.registry.valid" : "Valid",
-	"app.registry.groups.authorize" : "Link groups to roles",
-	"app.registry.groups.authorized" : "Roles linked",
+	"app.registry.groups.authorize" : "Assign groups to roles",
+	"app.registry.groups.authorized" : "Assigned roles",
 	"app.registry.application.conf.updated" : "Configuration updated",
 	"app.registry.application.secret" : "Secret",
 	"app.registry.application.address" : "Address",
 	"app.registry.application.target" : "Target",
 	"app.registry.application.icon" : "Icon",
-	"app.registry.createExternalApp" : "External application create"
+	"app.registry.createExternalApp" : "Create an external application"
 }

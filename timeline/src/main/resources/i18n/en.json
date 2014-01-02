@@ -1,4 +1,18 @@
 {
-	"timeline.title": "Timeline",
-	"timeline.header": "Timeline"
+	"timeline.title" : "Timeline",
+	"timeline.header" : "Timeline",
+	"timeline.nothingnew" : "Nothing new yet!",
+	"calendar.spring" : "Spring",
+	"calendar.summer" : "Summer",
+	"calendar.fall" : "Fall",
+	"calendar.winter" : "Winter",
+	"blog" : "Blog",
+	"workspace" : "Workspace",
+	"userbook" : "Userbook",
+	"filters.all" : "All",
+	"filters.title" : "See news of",
+	"comments.add" : "Comment",
+	"comments.show" : "Show comments",
+	"panel.title" : "Customization",
+	"panel.themes" : "My themes"
 }

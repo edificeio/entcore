@@ -1,3 +1,16 @@
 {
-	"portal.title":"One"
+	"portal.title" : "One",
+	"portal.header.navigation.whatsnew" : "What's new?",
+	"portal.header.navigation.classMembers" : "Class",
+	"portal.header.navigation.myapps" : "My apps",
+	"e400" : "Bad Request",
+	"e401" : "You don't have the permission to acces this content",
+	"e403" : "Forbidden",
+	"e404" : "Not Found",
+	"e408" : "Request Time-out",
+	"e500" : "Internal Server Error",
+	"blog.read" : "Read",
+	"blog.contrib" : "Contribute",
+	"blog.comment" : "Comment",
+	"blog.manager" : "Manage"
 }

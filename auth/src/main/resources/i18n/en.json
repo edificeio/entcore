@@ -1,5 +1,6 @@
 {
-	"auth.title":"One : Authentication",
+	"auth.title" : "One : Authentication",
+	"auth.header" : "CONNECTION",
 	"auth.activation.title" : "Account activation",
 	"auth.activation.header" : "Account activation",
 	"activation.error" : "Activation error",
@@ -7,7 +8,7 @@
 	"auth.activation.code" : "Activation code",
 	"auth.activation.password" : "Password",
 	"auth.activation.confirm.password" : "Confirm password",
-	"auth.activation.invalid.argument" : "Form errors",
+	"auth.activation.invalid.argument" : "Form contains errors",
 	"auth.reset" : "Reset",
 	"auth.reset.header" : "Password reset",
 	"auth.reset.title" : "Password reset",
@@ -23,11 +24,19 @@
 	"missing.password" : "Missing password",
 	"auth.email" : "Login",
 	"auth.password" : "Password",
+	"auth.activateAccount" : "Activate my account",
+	"auth.error.authenticationFailed" : "Invalid login or password",
+	"forgot.error" : "Unknown user",
 	"auth.old.password" : "Old password",
-	"auth.error.authenticationFailed": "Invalid login or password",
+	"auth.cancel" : "Cancel",
+	"auth.welcome" : "Welcome!",
+	"mail.reset.pw.subject" : "Reset password",
 	"email.hi" : "Hello,",
 	"email.click.to.reset" : "\nYou asked for resetting a password. \nTo perform the reset, click on the link below.\n",
 	"email.reset.infos" : "\nIf you aren't at the origin of this request, you can ignore this email.\n",
 	"email.regards" : "Best regards.",
-	"mail.reset.pw.subject" : "Reset password"
+	"auth.welcome.p1" : "Welcom on One, the Virtual Learning Environment for the primary degre!",
+	"auth.welcome.p2" : "Pupils, teachers, staff and parents, this VLE  is addressed to each of you and allows you to easily access to information and collaborative tools. This version is very simple and will evolve during the school year with new services and new features.",
+	"auth.welcome.p3" : "To log in, please have your username and password gievn by your school.",
+	"cancel" : "Cancel"
 }
