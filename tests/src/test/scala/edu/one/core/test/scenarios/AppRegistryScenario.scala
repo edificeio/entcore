@@ -35,6 +35,10 @@ object AppRegistryScenario {
                 action.toLowerCase.contains("share") || action.toLowerCase.contains("rack"))
               val tws = List("workspace-eleves-" + now, fa.mkString(","))
               twt :: tws :: acc
+            case "Messagerie" =>
+              val tmt = List("conversation-enseignants-" + now, actions.mkString(","))
+              val tms = List("conversation-eleves-" + now, actions.mkString(","))
+              tmt :: tms :: acc
             case _ => acc
           }
         }

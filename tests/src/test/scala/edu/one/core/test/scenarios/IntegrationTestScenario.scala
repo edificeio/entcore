@@ -20,5 +20,8 @@ object IntegrationTestScenario {
   .group("Blog Scenario") {
     BlogScenario.scn
   }
+  .group("Conversation Scenario") {
+    ConversationScenario.scn
+  }
 
 }
