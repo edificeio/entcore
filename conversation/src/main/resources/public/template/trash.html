@@ -1,7 +1,7 @@
-<nav class="contextual-buttons row">
+<nav class="contextual-buttons row fixed-block height-one">
 	<div class="action-buttons">
-		<button class="cell" ng-click="removeSelection()">Supprimer</button>
-		<button class="cell" ng-click="restore()">Restaurer</button>
+		<button class="cell" ng-click="removeSelection()" translate key="remove" ng-if="folders.current.mails.selection().length"></button>
+		<button class="cell" ng-click="restore()" translate key="restore" ng-if="folders.current.mails.selection().length"></button>
 	</div>
 </nav>
 <article class="list list-view row">
@@ -9,19 +9,23 @@
 		<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
-			<th>De</th>
-			<th>Objet</th>
+			<th translate key="from"></th>
+			<th translate key="subject"></th>
 			<th></th>
-			<th>Date</th>
+			<th translate key="date"></th>
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="mail in trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
+		<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td>[[mail.sender.displayName]]</td>
-			<td ng-click="viewMail(mail)">[[mail.subject]]</td>
+			<td><a ng-click="viewMail(mail)">[[mail.sender.displayName]]</a></td>
+			<td><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
+		</tr>
+		<tr ng-if="folders.current.mails.empty()">
+			<td colspan="5" translate key="folder.empty">
+			</td>
 		</tr>
 		</tbody>
 	</table>

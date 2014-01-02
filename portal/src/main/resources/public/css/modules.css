@@ -749,6 +749,36 @@ table.list-view td a {
 .cke_tpl_list {
   height: 312px !important;
 }
+.cke_editable {
+  padding: 4px;
+}
+.drop-down.hidden {
+  height: 0px;
+}
+.drop-down {
+  overflow: hidden;
+  position: absolute;
+  z-index: 10000;
+  height: 150px;
+  background: #fff;
+  cursor: pointer;
+  -o-transition: height 200ms ease-in-out;
+  -moz-transition: height 200ms ease-in-out;
+  -webkit-transition: height 200ms ease-in-out;
+  transition: height 200ms ease-in-out;
+}
+.drop-down ul {
+  padding: 0px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin: 0px;
+  background: #fff;
+  width: 100%;
+}
+.drop-down ul li {
+  padding-left: 10px;
+  line-height: 25px;
+}
 .toggle-panel {
   width: 300px;
   position: absolute;
@@ -1017,8 +1047,6 @@ button {
 }
 button span {
   display: block;
-  margin-top: 2px;
-  margin-left: 5px;
   float: left;
 }
 header h2 {
@@ -1028,6 +1056,9 @@ header h2 {
 }
 .clear {
   clear: both;
+}
+.label-badge {
+  display: inline-block;
 }
 .lightbox-window form {
   padding: 15px;

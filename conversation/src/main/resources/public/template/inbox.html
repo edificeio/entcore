@@ -1,7 +1,7 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
-		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i>Créer</button>
-		<button class="cell" ng-click="removeSelection()">Supprimer</button>
+		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i><span translate key="create"></span></button>
+		<button class="cell" ng-click="removeSelection()" ng-if="folders.current.mails.selection().length" translate key="remove"></button>
 	</div>
 	<div class="display-buttons">
 		<i role="refresh" ng-click="refresh()"></i>
@@ -12,25 +12,26 @@
 		<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
-			<th>De</th>
-			<th>Objet</th>
+			<th translate key="from"></th>
+			<th translate key="subject"></th>
 			<th></th>
-			<th>Date</th>
+			<th translate key="date"></th>
 		</tr>
 		</thead>
 		<tbody>
 		<tr
-				ng-repeat="mail in inbox.mails.all"
+				ng-repeat="mail in folders.inbox.mails.all"
 				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
 		>
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td>[[mail.from]]</td>
-			<td ng-click="readMail(mail)">[[mail.subject]]</td>
+			<td><a ng-click="readMail(mail)">[[mail.sender().displayName]]</a></td>
+			<td><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
-		<tr>
-			<td colspan="5">[[mail.preview]]</td>
+		<tr ng-if="folders.current.mails.empty()">
+			<td colspan="5" translate key="folder.empty">
+			</td>
 		</tr>
 		</tbody>
 	</table>

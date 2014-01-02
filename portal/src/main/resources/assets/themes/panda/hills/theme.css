@@ -749,6 +749,36 @@ table.list-view td a {
 .cke_tpl_list {
   height: 312px !important;
 }
+.cke_editable {
+  padding: 4px;
+}
+.drop-down.hidden {
+  height: 0px;
+}
+.drop-down {
+  overflow: hidden;
+  position: absolute;
+  z-index: 10000;
+  height: 150px;
+  background: #fff;
+  cursor: pointer;
+  -o-transition: height 200ms ease-in-out;
+  -moz-transition: height 200ms ease-in-out;
+  -webkit-transition: height 200ms ease-in-out;
+  transition: height 200ms ease-in-out;
+}
+.drop-down ul {
+  padding: 0px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin: 0px;
+  background: #fff;
+  width: 100%;
+}
+.drop-down ul li {
+  padding-left: 10px;
+  line-height: 25px;
+}
 .toggle-panel {
   width: 300px;
   position: absolute;
@@ -1017,8 +1047,6 @@ button {
 }
 button span {
   display: block;
-  margin-top: 2px;
-  margin-left: 5px;
   float: left;
 }
 header h2 {
@@ -1028,6 +1056,9 @@ header h2 {
 }
 .clear {
   clear: both;
+}
+.label-badge {
+  display: inline-block;
 }
 .lightbox-window form {
   padding: 15px;
@@ -2564,6 +2595,13 @@ i[role=cancel] {
   -o-border-radius: 10px;
   border-radius: 10px;
 }
+blockquote {
+  background: #f6f6f6;
+  color: #666;
+  border-left: 1px solid;
+  padding: 7px;
+  margin: 5px;
+}
 p i {
   display: inline-block !important;
   height: 25px !important;
@@ -3057,6 +3095,10 @@ tr.selected td {
 article.solid {
   background: #f6f6f6;
 }
+article.unstyled {
+  background: none;
+  border: none;
+}
 article {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -3223,7 +3265,35 @@ a strong.small-header {
   font-size: 16px;
 }
 .label-badge {
-  background: #ebf4f9;
+  background: #efefef;
+  padding: 3px;
+  margin: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #666;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+.label-badge .close {
+  color: #fd841c;
+  font-size: 16px;
+  font-weight: bold;
+}
+.label-badge:hover {
+  background: #fff;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 .warning-text-badge {
   color: #fd841c;
@@ -3394,9 +3464,6 @@ table tr td h2 {
 }
 table tr td h2 i {
   cursor: pointer;
-}
-table tr td a {
-  margin: 5px;
 }
 table tr td .comment a {
   margin-left: 0;
@@ -3796,7 +3863,6 @@ h5.subtitle {
 .line em,
 .line span {
   font-size: 14px;
-  background: #fefefe;
 }
 .line em[contenteditable=true],
 .line span[contenteditable=true] {
@@ -3814,6 +3880,34 @@ h5.subtitle {
 }
 .line p a {
   font-size: 14px;
+}
+.drop-down.hidden {
+  box-shadow: none;
+  border: none;
+}
+.drop-down {
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.3);
+  -webkit-border-bottom-left-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-bottom-left-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  -ms-border-bottom-left-radius: 5px;
+  -ms-border-bottom-right-radius: 5px;
+  -o-border-bottom-left-radius: 5px;
+  -o-border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border: 1px solid #3889c1;
+}
+.drop-down ul {
+  color: #3889c1;
+}
+.drop-down ul li {
+  list-style-type: none;
+}
+.drop-down ul li:hover {
+  background: #3889c1;
+  color: #fff;
 }
 .small-text {
   font-size: 12px;

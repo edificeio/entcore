@@ -1,9 +1,7 @@
 <div class="birthday" localized-class>
 	<div class="content">
 		<div class="row class-select" ng-if="widget.classes.length > 1">
-			<div class="cell four class-label">
-				Ma classe
-			</div>
+			<div class="cell four class-label" translate key="birthday.class"></div>
 			<div class="cell eight select">
 				<select ng-model="widget.currentClass" ng-change="widget.saveDefaultClass()">
 					<option ng-repeat="className in widget.classes">[[className]]</option>

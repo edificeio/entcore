@@ -1,4 +1,4 @@
-function Conversation($scope, date){
+function Conversation($scope, date, notify){
 	Model.folders.systemFolders.forEach(function(folderName){
 		Model.folders[folderName].on('mails.change', function(e){
 			$scope.$apply(folderName);
@@ -28,6 +28,8 @@ function Conversation($scope, date){
 		if(!folderName){
 			folderName = Model.folders.current.folderName;
 		}
+		$scope.openView('', 'reply');
+		$scope.mail = undefined;
 		Model.folders.openFolder(folderName);
 		$scope.openView(folderName, 'main');
 	};
@@ -62,10 +64,66 @@ function Conversation($scope, date){
 		mail.open();
 	};
 
+	$scope.refresh = function(){
+		Model.folders.current.mails.refresh();
+	}
+
 	$scope.readMail = function(mail){
 		$scope.openView('read-mail', 'main');
 		setCurrentMail(mail);
 		mail.open();
+	};
+
+	var format = {
+		reply: {
+			prefix: 'Re : '
+		},
+		transfer: {
+			prefix: 'Tr : '
+		}
+	};
+
+	http().get('/conversation/public/template/mail-content/transfer.html').done(function(content){
+		format.transfer.content = content;
+	});
+
+	http().get('/conversation/public/template/mail-content/reply.html').done(function(content){
+		format.reply.content = content;
+	});
+
+	function setMailContent(mailType){
+		if($scope.mail.subject.indexOf(format[mailType].prefix) !== -1){
+			$scope.newItem.subject = format[mailType].prefix + $scope.mail.subject;
+		}
+		else{
+			$scope.newItem.subject = $scope.mail.subject;
+		}
+
+		$scope.newItem.body = format[mailType].content + '<blockquote>' + $scope.mail.body + '</blockquote>';
+	}
+
+	$scope.transfer = function(){
+		$scope.openView('write-mail', 'reply');
+		setMailContent('transfer');
+	};
+
+	$scope.reply = function(){
+		$scope.openView('write-mail', 'reply');
+		$scope.newItem.parentConversation = $scope.mail;
+		$scope.addUser($scope.mail.sender());
+		setMailContent('reply');
+	};
+
+	$scope.replyAll = function(){
+		$scope.openView('write-mail', 'reply');
+		$scope.newItem.parentConversation = $scope.mail;
+		setMailContent('reply');
+		$scope.mail.displayNames.forEach(function(user){
+			if(user[0] === Model.me.userId){
+				return;
+			}
+			$scope.addUser(new User({ id: user[0], displayName: user[1] }));
+		});
 	};
 
 	$scope.editDraft = function(draft){
@@ -79,7 +137,17 @@ function Conversation($scope, date){
 	};
 
 	$scope.sendMail = function(){
-		$scope.newItem.send();
+		$scope.newItem.send(function(result){
+			if(parseInt(result.sent) > 0){
+				notify.info('Message envoyé');
+			}
+			result.inactive.forEach(function(name){
+				notify.info(name + lang.translate('invalid'));
+			});
+			result.undelivered.forEach(function(name){
+				notify.error(name + lang.translate('undelivered'));
+			});
+		});
 		$scope.openFolder();
 	};
 
@@ -89,16 +157,39 @@ function Conversation($scope, date){
 
 	$scope.clearSearch = function(){
 		$scope.users.found = [];
+		$scope.users.foundCC = [];
 		$scope.users.search = '';
+		$scope.users.searchCC = '';
 	}
 
+	$scope.updateFoundCCUsers = function(){
+		var include = [];
+		var exclude = $scope.newItem.cc || [];
+		if($scope.mail){
+			include = _.map($scope.mail.displayNames, function(item){
+				return new User({ id: item[0], displayName: item[1] });
+			});
+		}
+		$scope.users.foundCC = Model.users.find($scope.users.searchCC, include, exclude);
+	};
+
 	$scope.updateFoundUsers = function(){
-		$scope.users.found = Model.users.find($scope.users.search, []);
+		var include = [];
+		var exclude = $scope.newItem.to || [];
+		if($scope.mail){
+			include = _.map($scope.mail.displayNames, function(item){
+				return new User({ id: item[0], displayName: item[1] });
+			});
+		}
+		$scope.users.found = Model.users.find($scope.users.search, include, exclude);
 	};
 
 	$scope.addUser = function(user){
 		if(!$scope.newItem.to){
 			$scope.newItem.to = [];
+		}
+		if(user){
+			$scope.newItem.currentReceiver = user;
 		}
 		$scope.newItem.to.push($scope.newItem.currentReceiver);
 	};
@@ -107,12 +198,23 @@ function Conversation($scope, date){
 		$scope.newItem.to = _.reject($scope.newItem.to, function(item){ return item === user; });
 	};
 
-	$scope.inbox = Model.folders.inbox;
-	$scope.outbox = Model.folders.outbox;
-	$scope.draft = Model.folders.draft;
-	$scope.trash = Model.folders.trash;
+	$scope.addCCUser = function(user){
+		if(!$scope.newItem.cc){
+			$scope.newItem.cc = [];
+		}
+		if(user){
+			$scope.newItem.currentCCReceiver = user;
+		}
+		$scope.newItem.cc.push($scope.newItem.currentCCReceiver);
+	};
 
-	$scope.users = { list: Model.users, search: '', found: [] };
+	$scope.removeCCUser = function(user){
+		$scope.newItem.cc = _.reject($scope.newItem.cc, function(item){ return item === user; });
+	};
+
+	$scope.lang = lang;
+	$scope.folders = Model.folders;
+	$scope.users = { list: Model.users, search: '', found: [], foundCC: [] };
 
 	$scope.newItem = new Mail();
 

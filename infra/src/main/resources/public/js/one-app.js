@@ -294,12 +294,8 @@ oneModule.directive('iconsSelect', function($compile) {
 oneModule.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
-		compile: function compile($element, $attributes, transclude) {
-			$element.text(lang.translate($attributes.key));
-			return {
-				pre: function preLink(scope, $element, $attributes, controller) {},
-				post: function postLink(scope, $element, $attributes, controller) {}
-			};
+		link: function ($scope, $element, $attributes) {
+			$element.html($compile('<span>' + lang.translate($attributes.key) + '</span>')($scope));
 		}
 	};
 });
@@ -350,7 +346,7 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 		},
 		link: function($scope, $element){
 			$scope.$watch('bindHtmlUnsafe', function(newVal){
-				$element.html(newVal);
+				$element.html($compile(newVal)($scope.$parent));
 				//weird browser bug with audio tags
 				$element.find('audio').each(function(index, item){
 					var parent = $(item).parent();
@@ -389,9 +385,66 @@ oneModule.directive('localizedClass', function($compile){
 	}
 });
 
-function createCKEditorInstance(editor, $scope){
+oneModule.directive('dropDown', function($compile, $timeout){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		scope: {
+			options: '=',
+			change: '&',
+			current: '='
+		},
+		template: '<div data-drop-down class="drop-down">\
+						<div>\
+							<ul class="ten cell right-magnet">\
+								<li ng-repeat="option in options | limitTo:5" ng-model="option">[[option.toString()]]</li>\
+							</ul>\
+						</div>\
+			</div>',
+		link: function($scope, $element, $attributes){
+			$scope.$watchCollection('options', function(newValue){
+				if($scope.options.length === 0){
+					$element.addClass('hidden');
+					return;
+				}
+				$element.removeClass('hidden');
+				var linkedInput = $('#' + $attributes.for);
+				var pos = linkedInput.offset();
+				var width = linkedInput.width() +
+					parseInt(linkedInput.css('padding-right')) +
+					parseInt(linkedInput.css('padding-left')) +
+					parseInt(linkedInput.css('border-width') || 1) * 2;
+				var height = linkedInput.height() +
+					parseInt(linkedInput.css('padding-top')) +
+					parseInt(linkedInput.css('padding-bottom')) +
+					parseInt(linkedInput.css('border-height') || 1) * 2;
+
+				pos.top = pos.top + height;
+				$element.offset(pos);
+				$element.width(width);
+			})
+			$element.parent().on('remove', function(){
+				$element.remove();
+			})
+			$element.detach().appendTo('body');
+
+
+			$element.on('click', 'li', function(e){
+				$scope.current = $(this).scope().option;
+				$scope.$apply('current');
+				$scope.$eval($scope.change);
+				$scope.$apply('current');
+			});
+			$element.attr('data-opened-drop-down', true);
+
+		}
+	}
+})
+
+function createCKEditorInstance(editor, $scope, $compile){
 	var positionning = function(){
-		$('.cke_chrome').width(editor.width());
+		$('.cke_chrome').width(editor.width() + 2 + parseInt(editor.css('padding') || 4) * 2);
 		$('.cke_chrome').offset({
 			top: editor.offset().top - $('.cke_chrome').height(),
 			left: editor.offset().left
@@ -405,9 +458,9 @@ function createCKEditorInstance(editor, $scope){
 	};
 
 	CKEDITOR.on('instanceReady', function(ck){
-		ck.editor.removeMenuItem('Upload');
-		ck.editor.removeMenuItem('Audio');
-		editor.html($scope.ngModel);
+		editor.focus();
+		editor.html($compile($scope.ngModel)($scope.$parent));
+		$scope.$parent.$apply();
 		setTimeout(function(){
 			$('input').first().focus();
 		}, 500);
@@ -425,7 +478,7 @@ function createCKEditorInstance(editor, $scope){
 
 	$scope.$watch('ngModel', function(newValue){
 		if(editor.html() !== newValue){
-			editor.html(newValue);
+			editor.html($compile(newValue)($scope.$parent));
 			//weird browser bug with audio tags
 			editor.find('audio').each(function(index, item){
 				var parent = $(item).parent();
@@ -443,54 +496,16 @@ function createCKEditorInstance(editor, $scope){
 	});
 
 	return positionning;
-}
-
-oneModule.directive('dropDown', function($compile, $timeout){
-	return {
-		restrict: 'E',
-		transclude: true,
-		replace: true,
-		scope: {
-			options: '=',
-			change: '&',
-			current: '='
-		},
-		template: '<div data-drop-down style="position: absolute; z-index: 10000">\
-						<div>\
-							<ul class="ten cell right-magnet">\
-								<li ng-repeat="option in options | limitTo:5" ng-model="option">[[option.toString()]]</li>\
-							</ul>\
-						</div>\
-			</div>',
-		link: function($scope, $element, $attributes){
-			var pos = $element.parent().offset();
-			$element.parent().on('remove', function(){
-				$element.remove();
-			})
-			$element.detach().appendTo('body');
-			$element.offset(pos);
-
-			$element.on('click', 'li', function(e){
-				$scope.current = $(this).scope().option;
-				$scope.$apply('current');
-				$scope.$eval($scope.change);
-				$scope.$apply('current');
-			});
-			$element.attr('data-opened-drop-down', true);
-
-		}
-	}
-})
+};
 
 oneModule.directive('richTextEditor', function($compile){
 	return {
 		restrict: 'E',
-		transclude: true,
-		replace: true,
 		scope: {
-			ngModel: '='
+			ngModel: '=',
+			watchCollection: '@'
 		},
-		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
+		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
@@ -499,13 +514,18 @@ oneModule.directive('richTextEditor', function($compile){
 				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
 			}
 			return function($scope, $element, $attributes){
-				CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
 				var editor = $('[contenteditable=true]');
 				CKEDITOR.inline(editor[0],
 					{ customConfig: '/infra/public/ckeditor/rich-text-config.js' }
 				);
 
-				var positionning = createCKEditorInstance(editor, $scope);
+				var positionning = createCKEditorInstance(editor, $scope, $compile);
+				$scope.$eval($scope.watchCollection).forEach(function(col){
+					$scope.$parent.$watchCollection(col, function(){
+						positionning();
+					});
+				})
+
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						CKEDITOR.instances[instance].destroy()
@@ -539,7 +559,7 @@ oneModule.directive('htmlEditor', function($compile){
 				CKEDITOR.inlineAll();
 				var editor = $('[contenteditable=true]');
 
-				createCKEditorInstance(editor, $scope);
+				createCKEditorInstance(editor, $scope, $compile);
 
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
@@ -616,13 +636,10 @@ oneModule.directive('behaviour', function($compile){
 oneModule.directive('bottomScroll', function($compile){
 	return {
 		restrict: 'A',
-		scope: {
-			bottomScroll: '&'
-		},
 		link: function($scope, $element, $attributes){
 			$(window).scroll(function(){
 				if($(document).height() - $(window).height() === window.scrollY){
-					$scope.$eval($scope.bottomScroll);
+					$scope.$eval($attributes.bottomScroll);
 				}
 			})
 		}

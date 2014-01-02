@@ -1,32 +1,47 @@
-<div class="fixed-block height-one"></div>
-
-<article class="row solid">
+<article class="row solid" ng-class="{ row: true, solid: containsView('main', 'write-mail'), unstyled: !containsView('main', 'write-mail')}">
 	<form class="row block-container">
 		<div class="twelve cell">
 			<div class="row">
-				<div class="label-badge" ng-repeat="user in newItem.to">[[user.toString()]]
-					<span class="close" ng-click="removeUser(user)">x</span>
+				<div class="ten cell right-magnet">
+					<div class="label-badge" ng-repeat="user in newItem.to" ng-click="removeUser(user)">
+						<span class="close">x</span>
+						[[user.toString()]]
+					</div>
+				</div>
+
+			</div>
+			<div class="row">
+				<label class="two cell" translate key="to"></label>
+				<input type="text" class="ten cell" ng-model="users.search"
+					   ng-change="updateFoundUsers()" id="to-users" />
+			</div>
+			<drop-down
+					options="users.found"
+					change="addUser()"
+					current="newItem.currentReceiver"
+					for="to-users">
+			</drop-down>
+			<div class="row">
+				<div class="ten cell right-magnet">
+					<div class="label-badge" ng-repeat="user in newItem.cc" ng-click="removeCCUser(user)">
+						<span class="close">x</span>
+						[[user.toString()]]
+					</div>
 				</div>
 			</div>
 			<div class="row">
-				<label class="two cell">
-					A
-				</label>
-				<input type="text" class="ten cell" ng-model="users.search"
-					   ng-change="updateFoundUsers()" />
+				<label class="two cell" translate key="copy"></label>
+				<input type="text" class="ten cell" ng-model="users.searchCC"
+					   ng-change="updateFoundCCUsers()" id="cc-users" />
 			</div>
-			<drop-down options="users.found" change="addUser()" current="newItem.currentReceiver"></drop-down>
-
+			<drop-down
+					options="users.foundCC"
+					change="addCCUser()"
+					current="newItem.currentCCReceiver"
+					for="cc-users">
+			</drop-down>
 			<div class="row">
-				<label class="two cell">
-					Copie
-				</label>
-				<input type="text" class="ten cell" />
-			</div>
-			<div class="row">
-				<label class="two cell">
-					Objet
-				</label>
+				<label class="two cell" translate key="subject"></label>
 				<input type="text" class="ten cell" ng-model="newItem.subject" />
 			</div>
 			<div class="row">
@@ -35,13 +50,13 @@
 		</div>
 	</form>
 	<div class="row">
-		<rich-text-editor ng-model="newItem.body"></rich-text-editor>
+		<rich-text-editor ng-model="newItem.body" watch-collection="['newItem.to', 'newItem.cc']"></rich-text-editor>
 	</div>
 	<div class="row">
 		<div class="twelve cell block-container">
-			<button class="cell right-magnet" ng-click="sendMail()">Envoyer</button>
-			<button class="cell right-magnet" ng-click="saveDraft()">Enregistrer</button>
-			<button class="cancel cell right-magnet" ng-click="openFolder()">Annuler</button>
+			<button class="cell right-magnet" ng-click="sendMail()" translate key="submit"></button>
+			<button class="cell right-magnet" ng-click="saveDraft()" translate key="save"></button>
+			<button class="cancel cell right-magnet" ng-click="openFolder()" translate key="cancel"></button>
 		</div>
 
 	</div>

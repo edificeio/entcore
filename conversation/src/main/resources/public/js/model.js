@@ -1,35 +1,80 @@
-function User(){
+function User(data){
+	if(data){
+		this.updateData(data);
+	}
+
 	this.toString = function(){
 		return (this.displayName || '') + (this.name || '');
-	}
+	};
+
+	this.receivers = function(){
+		var that = this;
+		return _map(this.to, function(id){
+			return new User({ id: id, displayName: that.displayNames})
+		})
+	};
 }
+
+User.prototype.mapUser = function(displayNames, id){
+	return _.map(_.filter(displayNames, function(user){
+		return user[0] === id;
+	}), function(user){
+		return new User({ id: user[0], displayName: user[1] });
+	})[0];
+};
 
 function Mail(){
 	this.sentDate = function(){
 		return moment(parseInt(this.date)).calendar();
 	};
 
+	this.longDate = function(){
+		return moment(parseInt(this.date)).format('dddd DD MMMM YYYY')
+	};
+
+	this.sender = function(){
+		var that = this;
+		return User.prototype.mapUser(this.displayNames, this.from);
+	};
+
+	this.map = function(id){
+		return User.prototype.mapUser(this.displayNames, id);
+	};
+
 	this.saveAsDraft = function(){
 		var that = this;
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
-		http().postJson('/conversation/draft', data);
-		Model.folders.draft.mails.refresh();
+		data.cc = _.pluck(this.cc, 'id');
+		http().postJson('/conversation/draft', data).done(function(newData){
+			that.updateData(newData);
+			Model.folders.draft.mails.refresh();
+		});
 	};
 
-	this.send = function(){
+	this.send = function(cb){
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
-		var path = '/conversation/send';
+		data.cc = _.pluck(this.cc, 'id');
+		var path = '/conversation/send?';
 		if(this.id){
-			path += '?id=' + this.id;
+			path += 'id=' + this.id + '&';
 		}
-		http().postJson(path, data);
-		Model.folders.outbox.mails.push(this);
+		if(this.parentConversation){
+			path += 'In-Reply-To=' + this.parentConversation.id;
+		}
+		http().postJson(path, data).done(function(result){
+			Model.folders.outbox.mails.refresh();
+			Model.folders.draft.mails.refresh();
+			if(typeof cb === 'function'){
+				cb(result);
+			}
+		});
 	};
 
 	this.open = function(){
 		var that = this;
+		this.unread = false;
 		http().getJson('/conversation/message/' + this.id).done(function(data){
 			that.updateData(data);
 			Model.folders.current.trigger('mails.change');
@@ -46,8 +91,12 @@ function Folder(api){
 			this.sync();
 		},
 		sync: function(pageNumber, emptyList){
+			if(!pageNumber){
+				pageNumber = 0;
+			}
 			var that = this;
 			http().get(this.api.get + '?page=' + pageNumber).done(function(data){
+				data.sort(function(a, b){ return b.date - a.date})
 				if(emptyList === false){
 					that.addRange(data);
 					if(data.length === 0){
@@ -83,12 +132,12 @@ function buildModel(){
 				that.addRange(data.users);
 			});
 		},
-		find: function(search, exclude){
+		find: function(search, include, exclude){
 			var searchTerm = lang.removeAccents(search).toLowerCase();
 			if(!searchTerm){
 				return [];
 			}
-			var found = _.filter(this.all, function(user){
+			var found = _.filter(this.all.concat(include), function(user){
 				var testDisplayName = '', testNameReversed = '';
 				if(user.displayName){
 					testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
@@ -134,8 +183,7 @@ function buildModel(){
 		Model.folders[folderName].folderName = folderName;
 	});
 
-	Model.folders.draft.saveDraft = function(mailData){
-		var draft = Model.create(Mail, mailData);
+	Model.folders.draft.saveDraft = function(draft){
 		draft.saveAsDraft();
 		this.mails.push(draft);
 	};

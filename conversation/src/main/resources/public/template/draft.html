@@ -1,7 +1,9 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
-		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i>Créer</button>
-		<button class="cell" ng-click="removeSelection()">Supprimer</button>
+		<button class="cell" ng-click="openView('write-mail', 'main')">
+			<i role="add"></i><span translate key="create"></span>
+		</button>
+		<button class="cell" ng-click="removeSelection()" translate key="remove" ng-if="folders.current.mails.selection().length"></button>
 	</div>
 </nav>
 <article class="list list-view row">
@@ -9,22 +11,28 @@
 		<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
-			<th>A</th>
-			<th>Objet</th>
+			<th translate key="to"></th>
+			<th translate key="subject"></th>
 			<th></th>
-			<th>Date</th>
+			<th translate key="date"></th>
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="mail in draft.mails.all" ng-class="{ checked: mail.selected }">
+		<tr ng-repeat="mail in folders.draft.mails.all" ng-class="{ checked: mail.selected }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td>[[mail.receiver.displayName]]</td>
-			<td ng-click="editDraft(mail)">[[mail.subject]]</td>
+			<td>
+				<a ng-repeat="receiver in mail.to" ng-click="editDraft(mail)">
+					[[mail.map(receiver).displayName]]<span ng-if="$index < 2 && mail.to.length > 1">,</span>
+				</a>
+				<span ng-if="mail.to.length > 2">...</span>
+			</td>
+			<td><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
 			<td><i role="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
-		<tr>
-			<td colspan="5">[[mail.preview]]</td>
+		<tr ng-if="folders.current.mails.empty()">
+			<td colspan="5" translate key="folder.empty">
+			</td>
 		</tr>
 		</tbody>
 	</table>

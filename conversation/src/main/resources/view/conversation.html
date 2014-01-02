@@ -7,26 +7,34 @@
 	<script src="{{#infra}}js/one-loader.js{{/infra}}" type="text/javascript" id="context"></script>
 	<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 </head>
-<body data-ng-controller="Conversation" bottom-scroll="nextPage()" ng-click="clearSearch()">
+<body data-ng-controller="Conversation" ng-click="clearSearch()">
 <portal>
 	<div class="row">
-		<section class="four cell">
+		<section class="four cell" bottom-scroll="nextPage()">
 			<h1><a data-reload><i role="conversation"></i>Messagerie</a></h1>
 
 			<nav class="vertical">
 				<h2>Messages</h2>
 				<ul>
 					<li>
-						<a ng-click="openFolder('inbox')" ng-class="{ selected: containsView('main', 'inbox') }">Boîte de réception</a>
+						<a ng-click="openFolder('inbox')" ng-class="{ selected: folders.current.folderName === 'inbox' }">
+							[[lang.translate('inbox')]]
+						</a>
 					</li>
 					<li>
-						<a ng-click="openFolder('outbox')" ng-class="{ selected: containsView('main', 'outbox') }">Messages envoyés</a>
+						<a ng-click="openFolder('outbox')" ng-class="{ selected: folders.current.folderName === 'outbox' }">
+							[[lang.translate('outbox')]]
+						</a>
 					</li>
 					<li>
-						<a ng-click="openFolder('draft')" ng-class="{ selected: containsView('main', 'draft') }">Brouillons</a>
+						<a ng-click="openFolder('draft')" ng-class="{ selected: folders.current.folderName === 'draft' }">
+							[[lang.translate('draft')]]
+						</a>
 					</li>
 					<li>
-						<a ng-click="openFolder('trash')" ng-class="{ selected: containsView('main', 'trash') }">Corbeille</a>
+						<a ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }">
+							[[lang.translate('trash')]]
+						</a>
 					</li>
 				</ul>
 			</nav>

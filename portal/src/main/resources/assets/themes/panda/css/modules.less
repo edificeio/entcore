@@ -429,6 +429,14 @@ i[role=cancel]{
 	.rounded-corners(10px);
 }
 
+blockquote{
+	background: @ultra-light-grey;
+	color: #666;
+	border-left: 1px solid;
+	padding: 7px;
+	margin: 5px;
+}
+
 p{
 	i{
 		display: inline-block !important;
@@ -803,6 +811,11 @@ article.solid{
 	background: @ultra-light-grey;
 }
 
+article.unstyled{
+	background: none;
+	border: none;
+}
+
 article{
 	.rounded-corners(10px);
 	background: @light-grey-background;
@@ -919,7 +932,26 @@ a{
 }
 
 .label-badge{
-	background: @light-blue;
+	background: #efefef;
+	padding: 3px;
+	margin: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+	color: #666;
+	border: 1px solid #ccc;
+	.rounded-corners(5px);
+	font-size: 12px;
+	.close{
+		color: @orange;
+		font-size: 16px;
+		font-weight: bold;
+	}
+	.run-transition(background);
+}
+
+.label-badge:hover{
+	background: #fff;
+	.run-transition(background);
 }
 
 .warning-text-badge{
@@ -1094,10 +1126,6 @@ table{
 				i{
 					cursor: pointer;
 				}
-			}
-
-			a{
-				margin: 5px;
 			}
 
 			.comment{
@@ -1508,7 +1536,6 @@ h5.subtitle{
 .line{
 	em, span{
 		font-size: 14px;
-		background: #fefefe;
 	}
 	em[contenteditable=true], span[contenteditable=true]{
 		background: #fff;
@@ -1526,6 +1553,27 @@ h5.subtitle{
 		margin: 0;
 		a{
 			font-size: 14px;
+		}
+	}
+}
+
+.drop-down.hidden{
+	box-shadow: none;
+	border: none;
+}
+
+.drop-down{
+	box-shadow: 0px 5px 5px rgba(0,0,0,0.3);
+	.rounded-corners-bottom(5px);
+	border: 1px solid @solid-blue;
+	ul{
+		color: @solid-blue;
+		li{
+			list-style-type: none;
+		}
+		li:hover{
+			background: @solid-blue;
+			color: #fff;
 		}
 	}
 }

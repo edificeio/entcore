@@ -371,6 +371,9 @@ var Model = {};
 		load: function(data, cb, notify){
 			this.all = [];
 			this.addRange(data, cb, notify);
+		},
+		empty: function(){
+			return this.all.length === 0;
 		}
 	};
 
@@ -382,7 +385,11 @@ var Model = {};
 			col[method] = methods[method];
 		}
 
-		obj.prototype = Model;
+		for(var prop in Model){
+			if(Model.hasOwnProperty(prop)){
+				obj.prototype[prop] = Model[prop];
+			}
+		}
 		col.model = this;
 		return col;
 	};

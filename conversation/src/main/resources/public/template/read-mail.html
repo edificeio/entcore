@@ -1,19 +1,25 @@
-<div class="fixed-block height-one"></div>
-
 <article class="row">
 	<div class="row">
 		<div class="twelve cell line block-container">
 			<div class="row">
-				<a class="eight cell"><strong class="small-header">[[mail.from]]</strong></a>
+				<a class="eight cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
 				<span class="four cell floating-badge">
 					[[mail.sentDate()]]
 				</span>
 			</div>
 			<div class="row">
-				<em class="medium-importance">
-					à
-					<span ng-repeat="receiver in mail.to">[[receiver.displayName]]<span ng-if="$index !== mail.receivers.length - 1">,</span>
-					</span>
+				<em class="medium-importance medium-text">
+					<span translate key="to"></span>
+					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+					</a>
+				</em>
+			</div>
+			<div class="row">
+				<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
+					<span translate key="cc"></span>
+					<a ng-repeat="receiver in mail.cc" href="/userbook/annuaire#[[mail.map(receiver).id]]">
+						[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+					</a>
 				</em>
 			</div>
 			<div class="row">
@@ -27,17 +33,16 @@
 			</div>
 		</div>
 	</div>
-	<div class="row block-container medium-text">
-		Cliquez ici pour
-		<a ng-click="openView('write-mail', 'reply')">répondre</a>,
-		<a ng-click="openView('write-mail', 'reply')">répondre à tous</a>,
-		<a ng-click="openView('write-mail', 'reply')">transférer</a>,
-		<a ng-click="openView('write-mail', 'reply')">déplacer</a> ou
-		<a ng-click="removeSelection(); openFolder()">supprimer</a> le message
+	<div class="row block-container medium-text" ng-if="!containsView('reply', 'write-mail')">
+		<span translate key="clickhere"></span>
+		<a ng-click="reply()" translate key="reply"></a>,
+		<a ng-click="replyAll()" translate key="replyall"></a>,
+		<a ng-click="transfer()" translate key="transfer"></a>,
+		<a ng-click="removeSelection(); openFolder()" translate key="remove"></a> <span translate key="message"></span>
 	</div>
-	<div class="row">
+	<div class="row" ng-if="containsView('reply', 'write-mail')">
 		<div class="twelve cell" ng-include="viewsContainers.reply">
-
 		</div>
+		<div class="row clear">&nbsp;</div>
 	</div>
 </article>

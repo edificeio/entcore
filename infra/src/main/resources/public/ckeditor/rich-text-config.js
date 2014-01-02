@@ -6,7 +6,6 @@
 CKEDITOR.editorConfig = function(config){
 	config.removePlugins = 'magicline';
 	config.allowedContent = true;
-	config.extraPlugins = 'upload,audio';
 	config.toolbar = [
 		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
 		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Undo', 'Redo' ] },

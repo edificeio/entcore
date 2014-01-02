@@ -101,5 +101,6 @@
 	"directory.admin.email" : "email",
 	"directory.admin.send" : "envoyer",
 	"directory.admin.reset.code.sent" : "code de réinitialisation envoyé",
-	"directory.admin.reset.code.send.error" : "erreur lors de l'envoi du code de réinitialisation"
+	"directory.admin.reset.code.send.error" : "erreur lors de l'envoi du code de réinitialisation",
+	"birthday.class": "Ma classe"
 }
