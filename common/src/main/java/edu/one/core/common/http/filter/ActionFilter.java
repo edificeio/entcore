@@ -96,7 +96,6 @@ public class ActionFilter implements Filter {
 	private void authorizeWorkflowAction(JsonObject session, Binding binding,
 										 Handler<Boolean> handler) {
 		JsonArray actions = session.getArray("authorizedActions");
-		System.out.println(actions.encode());
 		if (binding != null && binding.getServiceMethod() != null
 				&& actions != null && actions.size() > 0) {
 			for (Object a: actions) {

@@ -446,7 +446,7 @@ public class AppRegistryService extends Controller {
 
 								@Override
 								public void handle(Message<JsonObject> res) {
-									log.info(res.body());
+									log.debug(res.body());
 									message.reply(res.body());
 								}
 							});
