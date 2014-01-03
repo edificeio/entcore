@@ -3,7 +3,9 @@ package edu.one.core.directory.be1d;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -21,6 +23,7 @@ public class BE1D {
 	private final Container container;
 	private final String porteurFolder;
 	private final Neo neo;
+	private static final Set<String> existingSchools = new HashSet<>();
 
 	public BE1D(Vertx vertx, Container container, String porteurFolder) {
 		this.vertx = vertx;
@@ -30,17 +33,17 @@ public class BE1D {
 	}
 
 	public void importPorteur(final Handler<JsonArray> handler) {
-		neo.send(
+		neo.execute(
 				"MATCH (n:School) " +
-				"RETURN n.name as name", new Handler<Message<JsonObject>>() {
+				"RETURN n.name as name", new JsonObject(), new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
-					JsonObject j = res.body().getObject("result");
-					List<String> existingSchools = new ArrayList<>();
-					for (String attr: j.getFieldNames()) {
-						existingSchools.add(attr);
+					for (Object o: res.body().getArray("result")) {
+						if (!(o instanceof JsonObject)) continue;
+						JsonObject j = (JsonObject) o;
+						existingSchools.add(j.getString("name"));
 					}
 					File [] folders = new File(porteurFolder).listFiles(new  FileFilter() {
 						@Override
@@ -48,6 +51,14 @@ public class BE1D {
 							return f.isDirectory();
 						}
 					});
+					List<String> fName = new ArrayList<>();
+					for (File folder: folders) {
+						fName.add(folder.getName());
+					}
+					if (fName.isEmpty() || existingSchools.containsAll(fName)) {
+						handler.handle(new JsonArray());
+						return;
+					}
 					final JsonArray imports = new JsonArray();
 					final List<Handler<JsonObject>> handlers = new ArrayList<>();
 					handlers.add(new Handler<JsonObject>() {
@@ -61,6 +72,7 @@ public class BE1D {
 					for (File folder :folders) {
 						final File f = folder;
 						if (!existingSchools.contains(f.getName())) {
+							existingSchools.add(f.getName());
 							handlers.add(new Handler<JsonObject>() {
 
 								@Override
