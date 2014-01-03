@@ -398,21 +398,40 @@ public class UserBookController extends Controller {
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void personBirthday(final HttpServerRequest request) {
-		Calendar c = Calendar.getInstance();
-		int month = c.get(Calendar.MONTH);
-		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
-				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
-		String customReturn =
-				"MATCH visibles<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->(c:Class) " +
-				"WHERE visibles.birthDate=~{regex} " +
-				"RETURN distinct visibles.id as id, visibles.displayName as username, " +
-						"visibles.birthDate as birthDate, COLLECT(distinct c.name) as classes ";
-		JsonObject params = new JsonObject();
-		params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
-		UserUtils.findVisibleUsers(eb, request, customReturn, params, new Handler<JsonArray>() {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>(){
 			@Override
-			public void handle(JsonArray users) {
-				renderJson(request, users);
+			public void handle(UserInfos user) {
+				if (user != null) {
+					Calendar c = Calendar.getInstance();
+					int month = c.get(Calendar.MONTH);
+					String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
+							"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
+					String query =
+							"MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->(c:Class) " +
+							"WHERE n.id = {id} " +
+							"WITH c " +
+							"MATCH c<-[:APPARTIENT]-(m:Student) " +
+							"WHERE m.birthDate=~{regex} " +
+							"RETURN distinct m.id as id, m.displayName as username, " +
+							"m.birthDate as birthDate, COLLECT(distinct c.name) as classes ";
+					JsonObject params = new JsonObject();
+					params.putString("id", user.getUserId());
+					params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
+					neo.execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							JsonArray res;
+							if ("ok".equals(event.body().getString("status"))) {
+								res = event.body().getArray("result", new JsonArray());
+							} else {
+								res = new JsonArray();
+							}
+							renderJson(request, res);
+						}
+					});
+				} else {
+					badRequest(request);
+				}
 			}
 		});
 	}
