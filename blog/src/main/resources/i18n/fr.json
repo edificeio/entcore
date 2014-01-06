@@ -42,9 +42,9 @@
 	"submitted": "(Billet soumis)",
 	"e404": "Adresse introuvable",
 	"notfound": "Le blog n'existe pas",
-	"submitted": "Soumis ([[currentBlog.submitted.length]])",
-	"published": "Publiés",
-	"drafts": "Brouillons",
-	"all": "Tous",
+	"filters.submitted": "Soumis ([[currentBlog.submitted.length]])",
+	"filters.published": "Publiés",
+	"filters.drafts": "Brouillons",
+	"filters.all": "Tous",
 	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés"
 }

@@ -2,6 +2,7 @@
 	var Birthday = Model.widgets.findWidget('birthday');
 	Birthday.classes = [];
 	Birthday.currentClass = '';
+	Birthday.emptyList = '';
 
 	Birthday.getDay = function(date){
 		return moment(date).date();
@@ -27,28 +28,31 @@
 	});
 
 	One.get('/userbook/person/birthday').done(function(birthdays){
-		Birthday.birthdays = _.filter(birthdays, function(birthday){
-			return moment(birthday.birthDate).month() === moment().month();
-		});
-
-		Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
-			return moment(a.birthDate).date() - moment(b.birthDate).date()
-		});
-
-		var classes = [];
-		classes = _.pluck(Birthday.birthdays, 'classes');
-		classes.forEach(function(classList){
-			classList.forEach(function(className){
-				if(Birthday.classes.indexOf(className) === -1){
-					Birthday.classes.push(className);
-				}
+		lang.addBundle('/directory/i18n', function(){
+			Birthday.emptyList = lang.translate('nobirthday');
+			Birthday.birthdays = _.filter(birthdays, function(birthday){
+				return moment(birthday.birthDate).month() === moment().month();
 			});
+
+			Birthday.birthdays = Birthday.birthdays.sort(function(a, b){
+				return moment(a.birthDate).date() - moment(b.birthDate).date()
+			});
+
+			var classes = [];
+			classes = _.pluck(Birthday.birthdays, 'classes');
+			classes.forEach(function(classList){
+				classList.forEach(function(className){
+					if(Birthday.classes.indexOf(className) === -1){
+						Birthday.classes.push(className);
+					}
+				});
+			});
+
+			if(!Birthday.currentClass){
+				Birthday.currentClass = Birthday.classes[0];
+			}
+
+			Model.widgets.apply();
 		});
-
-		if(!Birthday.currentClass){
-			Birthday.currentClass = Birthday.classes[0];
-		}
-
-		Model.widgets.apply();
 	});
 }());

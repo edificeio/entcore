@@ -10,6 +10,9 @@
 
 		</div>
 		<div class="row">
+			<div ng-if="widget.birthdaysInClass().length === 0" class="text-container">
+				<em>[[widget.emptyList]]</em>
+			</div>
 			<nav class="vertical">
 				<ul>
 					<li ng-repeat="birthday in widget.birthdaysInClass()">

@@ -5,7 +5,7 @@ function MainController($rootScope, $scope){
 }
 
 function Timeline($scope, date, model, lang){
-	$scope.notifications = model.notifications;
+	$scope.notifications = []
 	$scope.notificationTypes = model.notificationTypes;
 	$scope.translate = lang.translate;
 
@@ -14,7 +14,12 @@ function Timeline($scope, date, model, lang){
 			$scope.$apply('notifications');
 			$scope.$apply('notificationTypes');
 		}
-	})
+	});
+
+	lang.addBundle('/timeline/i18nNotifications', function(){
+		$scope.notifications = model.notifications;
+		$scope.$apply('notifications');
+	});
 
 	$scope.formatDate = function(dateString){
 		return date.calendar(dateString);
