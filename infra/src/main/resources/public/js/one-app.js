@@ -346,7 +346,7 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 		},
 		link: function($scope, $element){
 			$scope.$watch('bindHtmlUnsafe', function(newVal){
-				$element.html($compile(newVal)($scope.$parent));
+				$element.html($compile('<div>' + newVal + '</div>')($scope.$parent));
 				//weird browser bug with audio tags
 				$element.find('audio').each(function(index, item){
 					var parent = $(item).parent();
