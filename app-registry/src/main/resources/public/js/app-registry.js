@@ -205,7 +205,8 @@ var appRegistry = function(){
 			authorizeGroupsSubmit : function(o) {
 				var form = $(o.target).parents("form");
 				$.post(form.attr("action"), form.serialize())
-				.done(function(response) {
+				.done(function(r) {
+				    var response = JSON.parse(r);
 					if (response.status === "ok") {
 						app.notify.done(app.i18n.bundle["app.registry.groups.authorized"]);
 					} else {
