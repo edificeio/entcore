@@ -3,14 +3,11 @@
 	"portal.header.navigation.whatsnew": "Quoi de neuf ?",
 	"portal.header.navigation.classMembers": "La classe",
 	"portal.header.navigation.myapps": "Mes applis",
+	"welcome": "Bonjour [[username]], bienvenue !",
 	"e400": "Le client a rencontré une erreur",
 	"e401": "Vous n'avez pas les droits d'accès pour ce contenu",
 	"e403": "Le serveur a refusé votre requête",
 	"e404": "Adresse introuvable",
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
-	"e500": "Le serveur a rencontré une erreur",
-	"blog.read": "Consultation",
-	"blog.contrib": "Contribution",
-	"blog.comment": "Commentaires",
-	"blog.manager": "Gestion"
+	"e500": "Le serveur a rencontré une erreur"
 }

@@ -97,10 +97,23 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		blog.myRights.manager = setRight('manager');
 	}
 
+	function shortenedTitle(title){
+
+		var shortened = title || '';
+		console.log(shortened);
+		if(shortened.length > 40){
+			shortened = shortened.substr(0, 38) + '...';
+		}
+		return shortened;
+	}
+
 	function refreshBlogList(callback){
 		http.get('blog/list/all')
 			.done(function(data){
-				data.forEach(blogRights);
+				data.forEach(function(blog){
+					blogRights(blog);
+					blog.shortened = shortenedTitle(blog.title);
+				});
 				$scope.blogs = data;
 				if(typeof callback === 'function'){
 					callback(data);
@@ -146,6 +159,9 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.seeMore = function(){
 		var slots = 0;
+		if(!$scope.currentBlog){
+			return false;
+		}
 		if($scope.currentBlog.posts && ($scope.displayOptions.showAll || $scope.displayOptions.showPosts)){
 			slots += $scope.currentBlog.posts.length;
 		}
@@ -383,6 +399,9 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.nbResults = function(postState){
 		var remainingSlots = $scope.maxResults;
+		if(!$scope.currentBlog){
+			return 0;
+		}
 		if((postState === 'posts' || postState === 'submitted') &&
 			($scope.currentBlog.drafts && ($scope.displayOptions.showDrafts || $scope.displayOptions.showAll))){
 			remainingSlots -= $scope.currentBlog.drafts.length;
