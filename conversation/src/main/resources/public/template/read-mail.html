@@ -10,7 +10,7 @@
 			<div class="row">
 				<em class="medium-importance medium-text">
 					<span translate key="to"></span>
-					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
 					</a>
 				</em>
 			</div>
@@ -18,7 +18,7 @@
 				<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
 					<span translate key="cc"></span>
 					<a ng-repeat="receiver in mail.cc" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-						[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+						[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
 					</a>
 				</em>
 			</div>

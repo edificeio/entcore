@@ -6,13 +6,6 @@ function User(data){
 	this.toString = function(){
 		return (this.displayName || '') + (this.name || '');
 	};
-
-	this.receivers = function(){
-		var that = this;
-		return _map(this.to, function(id){
-			return new User({ id: id, displayName: that.displayNames})
-		})
-	};
 }
 
 User.prototype.mapUser = function(displayNames, id){
@@ -38,6 +31,9 @@ function Mail(){
 	};
 
 	this.map = function(id){
+		if(id instanceof User){
+			return id;
+		}
 		return User.prototype.mapUser(this.displayNames, id);
 	};
 
@@ -46,10 +42,19 @@ function Mail(){
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
 		data.cc = _.pluck(this.cc, 'id');
-		http().postJson('/conversation/draft', data).done(function(newData){
-			that.updateData(newData);
-			Model.folders.draft.mails.refresh();
-		});
+		var path = '/conversation/draft';
+		if(this.id){
+			http().putJson(path + '/' + this.id, data).done(function(newData){
+				that.updateData(newData);
+				Model.folders.draft.mails.refresh();
+			});
+		}
+		else{
+			http().postJson(path, data).done(function(newData){
+				that.updateData(newData);
+				Model.folders.draft.mails.refresh();
+			});
+		}
 	};
 
 	this.send = function(cb){
@@ -77,6 +82,14 @@ function Mail(){
 		this.unread = false;
 		http().getJson('/conversation/message/' + this.id).done(function(data){
 			that.updateData(data);
+			that.to = _.map(that.to, function(user){
+				return new User({
+					id: user,
+					displayName: _.find(that.displayNames, function(name){
+						return name[0] === user;
+					})[1]
+				})
+			});
 			Model.folders.current.trigger('mails.change');
 		});
 	};
