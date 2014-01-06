@@ -3595,50 +3595,6 @@ h5.subtitle {
   width: 100px;
   text-align: center;
 }
-.share td input[type=checkbox],
-.share th input[type=checkbox] {
-  display: none;
-}
-.share td label:hover,
-.share th label:hover {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-  -o-transition: background 250ms ease;
-  -moz-transition: background 250ms ease;
-  -webkit-transition: background 250ms ease;
-  transition: background 250ms ease;
-}
-.share td label,
-.share th label {
-  cursor: pointer;
-  float: none;
-  display: block;
-  -o-transition: background 250ms ease;
-  -moz-transition: background 250ms ease;
-  -webkit-transition: background 250ms ease;
-  transition: background 250ms ease;
-}
-.share td label span,
-.share th label span {
-  display: inline-block;
-  width: 19px;
-  height: 19px;
-  margin: -1px 4px 0 0;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.share td label input[type=checkbox]:checked + span,
-.share th label input[type=checkbox]:checked + span {
-  background: url(../img/icons/checkbox-checked.png) no-repeat;
-}
-.share td label input[type=checkbox][disabled]:checked + span,
-.share th label input[type=checkbox][disabled]:checked + span {
-  background: url(../img/icons/checkbox-checked-disabled.png) no-repeat;
-  cursor: forbidden;
-}
 .share tr {
   border: 1px solid transparent;
   -webkit-border-radius: 0px;
@@ -3733,6 +3689,51 @@ h5.subtitle {
 .birthday nav.vertical ul li a:hover h2,
 .birthday nav.vertical ul li a:hover h4 {
   color: #fff;
+}
+label.checkbox:hover {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+label.checkbox {
+  cursor: pointer;
+  float: none;
+  display: block;
+}
+label.checkbox span {
+  display: inline-block;
+  margin: -1px 4px 0 0;
+  cursor: pointer;
+}
+label.checkbox input[type=checkbox] {
+  display: none;
+}
+label.checkbox input[type=checkbox] + span {
+  background: url(../img/icons/checkbox-unchecked.png) no-repeat center left;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+  padding-left: 21px;
+  height: 20px;
+  line-height: 20px;
+}
+label.checkbox input[type=checkbox][disabled] + span {
+  background: url(../img/icons/checkbox-unchecked-disabled.png) no-repeat;
+  cursor: forbidden;
+}
+label.checkbox input[type=checkbox]:checked + span {
+  background: url(../img/icons/checkbox-checked.png) no-repeat;
+}
+label.checkbox input[type=checkbox][disabled]:checked + span {
+  background: url(../img/icons/checkbox-checked-disabled.png) no-repeat;
+  cursor: forbidden;
 }
 .select {
   padding-left: 18px;
@@ -3860,19 +3861,12 @@ h5.subtitle {
 .upper-title {
   margin-bottom: 0;
 }
-.line em,
-.line span {
-  font-size: 14px;
-}
 .line em[contenteditable=true],
 .line span[contenteditable=true] {
   background: #fff;
 }
 .line h5 a {
   font-size: 12px;
-}
-.line a {
-  font-size: 16px;
 }
 .line p {
   font-size: 14px;

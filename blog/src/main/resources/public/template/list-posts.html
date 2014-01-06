@@ -1,0 +1,51 @@
+<div class="row line filters">
+	<ul>
+		<li><em class="medium-importance">Voir les billets</em></li>
+		<li>
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showAll" />
+				<span translate key="all"></span>
+			</label>
+		</li>
+		<li>
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showPosts" />
+				<span translate key="published"></span>
+			</label>
+		</li>
+		<li>
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showDrafts" />
+				<span translate key="drafts"></span>
+			</label>
+		</li>
+		<li>
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showSubmitted" />
+				<span translate key="submitted"></span>
+			</label>
+		</li>
+	</ul>
+</div>
+
+<article class="text-container row" ng-if="blogs.length === 0">
+	{{#i18n}}noblog{{/i18n}}
+</article>
+<div ng-if="displayOptions.showAll || displayOptions.showDrafts">
+	<section data-ng-repeat="post in currentBlog.drafts | limitTo:nbResults('drafts')"
+			ng-class="{row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED' }">
+		<div ng-include="postTemplate(post).path"></div>
+	</section>
+</div>
+<div ng-if="displayOptions.showAll || displayOptions.showSubmitted">
+	<section data-ng-repeat="post in currentBlog.submitted | limitTo:nbResults('submitted')"
+			ng-class="{row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED' }">
+		<div ng-include="postTemplate(post).path"></div>
+	</section>
+</div>
+<div ng-if="displayOptions.showAll || displayOptions.showPosts">
+	<section data-ng-repeat="post in currentBlog.posts | limitTo:nbResults('posts')"
+			class="row text-container line">
+		<div ng-include="postTemplate(post).path"></div>
+	</section>
+</div>
+<h3 ng-if="seeMore()" class="text-container">
+	<a ng-click="addResults()" class="right-magnet">[[translate('seemore')]]</a>
+	<div class="clear"></div>
+</h3>

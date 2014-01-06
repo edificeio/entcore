@@ -23,7 +23,7 @@
 		</button>
 	</div>
 	<div class="four cell right-magnet">
-		<a ng-click="switchComments(post)">
+		<a ng-click="switchComments(post)" class="medium-text">
 			<span ng-if="!post.showComments && nbComments(post) > 0">Afficher les commentaires ([[nbComments(post)]])</span>
 			<span ng-if="post.showComments && nbComments(post) > 0">Masquer les commentaires ([[nbComments(post)]])</span>
 		</a>

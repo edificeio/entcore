@@ -54,27 +54,9 @@
 	<div class="eight cell horizontal-spacing">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
-			<article class="text-container row" ng-if="blogs.length === 0 && currentView === ''">
-				{{#i18n}}noblog{{/i18n}}
-			</article>
-			<article class="row clip" ng-if="blogs.length > 0 || currentView !== ''">
-				<section data-ng-include="currentView.path" class="row text-container"></section>
-				<section data-ng-repeat="post in currentBlog.drafts | limitTo:nbResults('drafts')"
-						 ng-class="{row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED' }">
-					<div ng-include="postTemplate(post).path"></div>
-				</section>
-				<section data-ng-repeat="post in currentBlog.submitted | limitTo:nbResults('submitted')"
-						 ng-class="{row: true, 'text-container': true, line: true, 'greyed-out': post.state !== 'PUBLISHED' }">
-					<div ng-include="postTemplate(post).path"></div>
-				</section>
-				<section data-ng-repeat="post in currentBlog.posts | limitTo:nbResults('posts')"
-						 class="row text-container line">
-					<div ng-include="postTemplate(post).path"></div>
-				</section>
-				<h3 ng-if="maxResults < currentBlog.posts.length + currentBlog.submitted.length + currentBlog.drafts.length" class="text-container">
-					<a ng-click="addResults()" class="right-magnet">[[translate('seemore')]]</a>
-					<div class="clear"></div>
-				</h3>
+
+			<article class="row clip">
+				<section data-ng-include="currentView.path" class="row"></section>
 			</article>
 		</div>
 		<div class="clear"></div>

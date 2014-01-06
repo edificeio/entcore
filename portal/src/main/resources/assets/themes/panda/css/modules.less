@@ -1261,40 +1261,6 @@ h5.subtitle{
 	td, th{
 		width: 100px;
 		text-align: center;
-
-		input[type=checkbox]{
-			display: none;
-		}
-
-		label:hover{
-			.rounded-corners(5px);
-			.run-transition(background);
-		}
-
-		label{
-			cursor: pointer;
-			float: none;
-			display: block;
-			.run-transition(background);
-
-			span{
-				display:inline-block;
-				width:19px;
-				height:19px;
-				margin:-1px 4px 0 0;
-				vertical-align:middle;
-				cursor: pointer;
-			}
-
-			input[type=checkbox]:checked + span {
-				background:url(../img/icons/checkbox-checked.png) no-repeat;
-			}
-
-			input[type=checkbox][disabled]:checked + span {
-				background:url(../img/icons/checkbox-checked-disabled.png) no-repeat;
-				cursor: forbidden;
-			}
-		}
 	}
 	tr{
 		border: 1px solid transparent;
@@ -1397,6 +1363,50 @@ h5.subtitle{
 			}
 
 		}
+	}
+}
+
+label.checkbox:hover{
+	.rounded-corners(5px);
+	.run-transition(background);
+}
+
+label.checkbox{
+	cursor: pointer;
+	float: none;
+	display: block;
+
+
+	span{
+		display:inline-block;
+		margin:-1px 4px 0 0;
+		cursor: pointer;
+	}
+
+	input[type=checkbox]{
+		display: none;
+	}
+
+	input[type=checkbox] + span {
+		background:url(../img/icons/checkbox-unchecked.png) no-repeat center left;
+		.run-transition(background);
+		padding-left: 21px;
+		height: 20px;
+		line-height: 20px;
+	}
+
+	input[type=checkbox][disabled] + span {
+		background:url(../img/icons/checkbox-unchecked-disabled.png) no-repeat;
+		cursor: forbidden;
+	}
+
+	input[type=checkbox]:checked + span {
+		background:url(../img/icons/checkbox-checked.png) no-repeat;
+	}
+
+	input[type=checkbox][disabled]:checked + span {
+		background:url(../img/icons/checkbox-checked-disabled.png) no-repeat;
+		cursor: forbidden;
 	}
 }
 
@@ -1534,9 +1544,6 @@ h5.subtitle{
 }
 
 .line{
-	em, span{
-		font-size: 14px;
-	}
 	em[contenteditable=true], span[contenteditable=true]{
 		background: #fff;
 	}
@@ -1544,9 +1551,6 @@ h5.subtitle{
 		a{
 			font-size: 12px;
 		}
-	}
-	a{
-		font-size: 16px;
 	}
 	p{
 		font-size: 14px;

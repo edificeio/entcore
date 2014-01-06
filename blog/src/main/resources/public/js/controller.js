@@ -1,23 +1,21 @@
 var views = {
 	"createBlog":{
-		"path":"/blog/public/template/create-blog.html",
-		"allow":true
+		"path":"/blog/public/template/create-blog.html"
+	},
+	"listPosts": {
+		path: "/blog/public/template/list-posts.html"
 	},
 	"editBlog":{
-		"path":"/blog/public/template/edit-blog.html",
-		"allow":true
+		"path":"/blog/public/template/edit-blog.html"
 	},
 	"createPost":{
-		"path":"/blog/public/template/create-post.html",
-		"allow":true
+		"path":"/blog/public/template/create-post.html"
 	},
 	"editPost":{
-		"path":"/blog/public/template/edit-post.html",
-		"allow":true
+		"path":"/blog/public/template/edit-post.html"
 	},
 	'viewPost': {
-		path: '/blog/public/template/view-post.html',
-		allow: true
+		path: '/blog/public/template/view-post.html'
 	},
 	'viewSubmitted': {
 		path: '/blog/public/template/view-submitted.html'
@@ -45,6 +43,13 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.currentView = '';
 	$scope.commentFormPath = '';
+
+	$scope.displayOptions = {
+		showAll: false,
+		showPosts: true,
+		showSubmitted: false,
+		showDrafts: false
+	};
 
 	function blogRights(blog){
 		blog.myRights = {
@@ -126,7 +131,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	})
 
 	$scope.defaultView = function(){
-		$scope.currentView = '';
+		$scope.currentView = views.listPosts;
 		refreshBlogList();
 	};
 
@@ -138,6 +143,20 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		$scope.currentView = '';
 		$scope.displayBlog($scope.currentBlog);
 	}
+
+	$scope.seeMore = function(){
+		var slots = 0;
+		if($scope.currentBlog.posts && ($scope.displayOptions.showAll || $scope.displayOptions.showPosts)){
+			slots += $scope.currentBlog.posts.length;
+		}
+		if($scope.currentBlog.drafts && ($scope.displayOptions.showAll || $scope.displayOptions.showDrafts)){
+			slots += $scope.currentBlog.drafts.length;
+		}
+		if($scope.currentBlog.submitted && ($scope.displayOptions.showAll || $scope.displayOptions.showSubmitted)){
+			slots += $scope.currentBlog.submitted.length;
+		}
+		return $scope.maxResults < slots;
+	};
 
 	$scope.defaultView();
 
@@ -168,7 +187,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){
 			$scope.currentBlog.posts = data;
-			$scope.currentView= views.displayBlog;
+			$scope.currentView= views.listPosts;
 			initMaxResults();
 			$scope.$apply();
 		});
@@ -226,6 +245,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.showEditBlog = function(blog){
 		http.get('/blog/' + blog._id)
 			.done(function(data){
+				blogRights(data);
 				$scope.currentBlog = data;
 				$scope.currentView= views.editBlog;
 				$scope.$apply();
@@ -244,7 +264,6 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	$scope.showEditPost = function(post){
-		$scope.currentView = '';
 		$scope.currentPost = post;
 		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
 			.done(function(data){
@@ -252,7 +271,8 @@ function Blog($scope, http, date, _, ui, lang, notify){
 				$scope.editPost = post;
 				$scope.$apply();
 			});
-	}
+	};
+
 	$scope.showCommentPost = function(post){
 		post.showComments = true;
 		$scope.commentFormPath = "/blog/public/template/comment-post.html";
@@ -363,10 +383,11 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.nbResults = function(postState){
 		var remainingSlots = $scope.maxResults;
-		if((postState === 'posts' || postState === 'submitted') && $scope.currentBlog.drafts){
+		if((postState === 'posts' || postState === 'submitted') &&
+			($scope.currentBlog.drafts && ($scope.displayOptions.showDrafts || $scope.displayOptions.showAll))){
 			remainingSlots -= $scope.currentBlog.drafts.length;
 		}
-		if((postState === 'posts') && $scope.currentBlog.submitted){
+		if((postState === 'posts') && ($scope.currentBlog.submitted && ($scope.displayOptions.showAll || $scope.displayOptions.showSubmitted))){
 			remainingSlots -= $scope.currentBlog.submitted.length;
 		}
 		if(remainingSlots < 0){
