@@ -38,7 +38,7 @@
 	"sent": "Date d'envoi",
 	"name": "Titre",
 	"modified": "Date",
-	"choose": "Choisir",
+	"choose": "Parcourir",
 	"nofile": "Aucun fichier",
 	"send": "Envoyer",
 	"cancel": "Annuler",
@@ -77,5 +77,8 @@
     "workspace.invalid.folder.name" : "Nom de dossier invalide",
     "workspace.trash.error" : "Erreur lors de la mise à la corbeille",
     "workspace.forbidden.move.folder.in.itself" : "Interdit de déplacer un dossier dans lui-même.",
-    "workspace.folder.already.exists" : "Le dossier existe déjà."
+    "workspace.folder.already.exists" : "Le dossier existe déjà.",
+	"files.select": "Sélectionner les fichiers",
+	"files.select.please": "Veuillez sélectionner un document",
+	"files.header": "Charger plusieurs fichiers"
 }

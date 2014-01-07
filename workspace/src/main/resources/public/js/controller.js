@@ -160,7 +160,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
 		$scope.loadingFiles = [];
-		$scope.newFile = { name: $scope.translate('nofile'), file: null };
+		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
 	};
 
@@ -230,6 +230,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	$scope.openSendRackView = function(){
 		ui.showLightbox();
+		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
 		$scope.currentViews.lightbox = $scope.views.lightbox.sendRack;
 	};
 
@@ -425,37 +426,41 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 	$scope.cancelRequest = function(file){
 		file.request.abort();
 	};
-	$scope.addLoadingFile = function(){
-		var formData = new FormData();
-		var index = $scope.loadingFiles.length;
+	$scope.addLoadingFiles = function(){
+		var chosenNames = $scope.newFile.name.split(', ');
+		$scope.newFile.chosenFiles.forEach(function(file, i){
+			var formData = new FormData();
+			var index = $scope.loadingFiles.length;
 
-		if($scope.newFile.name){
-			formData.append('file', $scope.newFile.file, $scope.newFile.name + '.' + $scope.newFile.extension);
-		}
-		else{
-			formData.append('file', $scope.newFile.file);
-		}
+			if(chosenNames[i]){
+				formData.append('file', file.file, chosenNames[i] + '.' + file.extension);
+			}
+			else{
+				formData.append('file', file.file);
+			}
 
-		var url = 'document';
-		var request = http.postFile(url + '?thumbnail=120x120',  formData, {
-			requestName: 'file-upload-' + $scope.newFile.file.name + '-' + index
-		})
-			.done(function(e){
-				var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
-				if(path !== ''){
-					http.put("documents/move/" + e._id + '/' + path).done(function(){
+			var url = 'document';
+			var request = http.postFile(url + '?thumbnail=120x120',  formData, {
+				requestName: 'file-upload-' + file.file.name + '-' + index
+			})
+				.done(function(e){
+					var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
+					if(path !== ''){
+						http.put("documents/move/" + e._id + '/' + path).done(function(){
+							$scope.openFolder($scope.openedFolder.folder);
+						});
+					}
+					else{
 						$scope.openFolder($scope.openedFolder.folder);
-					});
-				}
-				else{
-					$scope.openFolder($scope.openedFolder.folder);
-				}
-		}).xhr;
+					}
+				}).xhr;
 
-		$scope.loadingFiles.push({
-			file: $scope.newFile.file,
-			request: request
+			$scope.loadingFiles.push({
+				file: file.file,
+				request: request
+			});
 		});
+
 	}
 
 	$scope.translate = function(key){
@@ -730,16 +735,26 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 	updateFolders();
 
-	$scope.newFile = { name: $scope.translate('nofile'), file: null };
-	$scope.setFileName = function(){
-		var splitList = $scope.newFile.file.name.split('.');
-		var extension = splitList[splitList.length - 1];
-		$scope.newFile.name = $scope.newFile.file.name.split('.' + extension)[0];
-		if(splitList.length > 1){
-			$scope.newFile.extension = extension;
-		}
-		else{
-			$scope.newFile.extension = '';
+	$scope.setFilesName = function(){
+		$scope.newFile.name = '';
+		$scope.newFile.chosenFiles = [];
+		for(var i = 0; i < $scope.newFile.files.length ; i++){
+			var file = $scope.newFile.files[i];
+			var splitList = file.name.split('.');
+			var extension = splitList[splitList.length - 1];
+
+			var newFile = { file: file, name: file.name.split('.' + extension)[0] };
+			if($scope.newFile.name !== ''){
+				$scope.newFile.name = $scope.newFile.name + ', ';
+			}
+			$scope.newFile.name = $scope.newFile.name + file.name.split('.' + extension)[0];
+			if(splitList.length > 1){
+				newFile.extension = extension;
+			}
+			else{
+				newFile.extension = '';
+			}
+			$scope.newFile.chosenFiles.push(newFile);
 		}
 	};
 
@@ -802,29 +817,20 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 		id: ''
 	};
 
-	$scope.sendNewFile = function(context){
-		ui.hideLightbox();
-		var formData = new FormData();
+	$scope.sendRackFiles = function(){
+		for(var i = 0; i < $scope.newFile.files.length; i++){
+			var formData = new FormData();
 
-		if($scope.newFile.name){
-			formData.append('file', $scope.newFile.file, $scope.newFile.name + '.' + $scope.newFile.extension);
-		}
-		else{
-			formData.append('file', $scope.newFile.file);
-		}
+			formData.append('file', $scope.newFile.files[i]);
 
-		var url = '';
-		if (context === 'rack') {
-			url = 'rack/' + $scope.to.id;
+			var url = 'rack/' + $scope.to.id;
+			$scope.loading = $scope.translate('loading');
+			http.postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
+				ui.hideLightbox();
+				$scope.loading = '';
+				$scope.openFolder($scope.openedFolder.folder);
+			});
 		}
-		else{
-			url = 'document'
-		}
-		$scope.loading = $scope.translate('loading');
-		http.postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
-			$scope.loading = '';
-			$scope.openFolder($scope.openedFolder.folder);
-		});
 	};
 
 

@@ -1,28 +1,35 @@
-	<form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
-		<div class="twelve fluid cell">
-			<h2 translate key="workspace.add.document"></h2>
-				<table class="list list-view">
-					<tr ng-repeat="file in loadingFiles">
-						<td>[[file.file.name]]</td>
-						<td class="action-cell"><loading-icon request="file-upload-[[file.file.name]]-[[$index]]" default="loading" /></td>
+<div class="twelve cell block-container">
+   <h4 translate key="files.header" class="subtitle"></h4>
+   <table class="twelve unstyled">
+	   <tr ng-repeat="file in loadingFiles">
+		   <td>[[file.file.name]]</td>
+		   <td class="action-cell">
+			   <loading-icon class="right-magnet" request="file-upload-[[file.file.name]]-[[$index]]" default="loading" />
+		   </td>
 
-					</tr>
-					<tr ng-if="loadingFiles.length === 0">
-						<td colspan="2">Veuillez sélectionner un document</td>
-					</tr>
-				</table>
+	   </tr>
+	   <tr ng-if="loadingFiles.length === 0">
+		   <td colspan="2" translate key="files.select.please"></td>
+	   </tr>
+   </table>
+</div>
 
-			<div class="row">
-				<div class="eight cell select-file block-container input-block">
-					<div class="hidden-content">
-						<input type="file"  file-input-change="setFileName()" data-ng-model="newFile.file" />
-					</div>
-					<button class="file-button" translate key="choose"></button>
-					<input type="text" data-ng-model="newFile.name" data-display-file />
-				</div>
-				<div class="four cell block-container">
-					<button ng-click="addLoadingFile()" class="right-magnet small button">Ajouter</button>
-				</div>
+<hr class="solid row" />
+<form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
+	<div class="row fixed-block height-three">
+		<h4 translate key="files.select" class="subtitle"></h4>
+		<div class="eight cell select-file block-container input-block">
+			<div class="hidden-content">
+				<input type="file" multiple  files-input-change="setFilesName()" ng-model="newFile.files" />
 			</div>
+			<button class="file-button" translate key="choose"></button>
+			<input type="text" data-ng-model="newFile.name" data-display-file />
 		</div>
-	</form>
+	</div>
+	<div class="row lightbox-buttons">
+		<div class="twelve cell block-container">
+			<button ng-click="addLoadingFiles()" class="right-magnet" translate key="import.file"></button>
+			<button class="cancel right-magnet" translate key="cancel"></button>
+		</div>
+	</div>
+</form>

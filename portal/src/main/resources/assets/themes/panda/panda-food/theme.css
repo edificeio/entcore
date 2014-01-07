@@ -1061,7 +1061,7 @@ header h2 {
   display: inline-block;
 }
 .lightbox-window form {
-  padding: 15px;
+  padding: 10px;
 }
 .lightbox-window form input,
 .lightbox-window form label {
@@ -1167,38 +1167,6 @@ dl dt {
 .large-box {
   min-width: 300px;
   min-height: 150px;
-}
-.flowing {
-  height: 100%;
-  padding: 15px;
-}
-.flowing section,
-.flowing div,
-.flowing form {
-  height: 100%;
-}
-.flowing thead {
-  display: block;
-}
-.flowing tbody {
-  overflow-y: auto;
-  height: 200px;
-  margin-bottom: 10px;
-  display: block;
-}
-.flowing form {
-  padding: 0;
-}
-.flowing .cancel-flow thead,
-.flowing .cancel-flow tbody,
-.flowing .cancel-flow table {
-  display: table;
-  height: auto;
-}
-.flowing .cancel-flow section,
-.flowing .cancel-flow div,
-.flowing .cancel-flow form {
-  height: auto;
 }
 .share {
   width: 100%;
@@ -2765,12 +2733,20 @@ h2 {
   font-size: 20px;
   color: #2f8cc9;
 }
+h4 {
+  color: #2f8cc9;
+  font-size: 18px;
+  margin-bottom: 7px;
+}
 a {
   color: #2f8cc9;
   text-decoration: none;
 }
 hr.solid {
   border-bottom: 1px solid #cccccc;
+  margin: 7px;
+  margin-left: 0;
+  margin-right: 0;
 }
 nav.vertical h2 {
   color: #000;
@@ -2935,6 +2911,8 @@ textarea.inline-editing {
   border-bottom-right-radius: 3px;
   line-height: 30px;
   height: 30px;
+  text-transform: none;
+  font-weight: bold;
 }
 .input-block input[type=text] {
   border: 1px solid #eee;
@@ -3394,6 +3372,12 @@ textarea {
   font-size: 14px;
   max-width: 100%;
 }
+table.unstyled tr {
+  border: none !important;
+}
+table.unstyled tr td {
+  border: none !important;
+}
 table {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -3586,7 +3570,7 @@ img[src=""] {
     width: 100%;
   }
 }
-h5.subtitle {
+.subtitle {
   margin-top: 0;
 }
 .share table {

@@ -1061,7 +1061,7 @@ header h2 {
   display: inline-block;
 }
 .lightbox-window form {
-  padding: 15px;
+  padding: 10px;
 }
 .lightbox-window form input,
 .lightbox-window form label {
@@ -1167,38 +1167,6 @@ dl dt {
 .large-box {
   min-width: 300px;
   min-height: 150px;
-}
-.flowing {
-  height: 100%;
-  padding: 15px;
-}
-.flowing section,
-.flowing div,
-.flowing form {
-  height: 100%;
-}
-.flowing thead {
-  display: block;
-}
-.flowing tbody {
-  overflow-y: auto;
-  height: 200px;
-  margin-bottom: 10px;
-  display: block;
-}
-.flowing form {
-  padding: 0;
-}
-.flowing .cancel-flow thead,
-.flowing .cancel-flow tbody,
-.flowing .cancel-flow table {
-  display: table;
-  height: auto;
-}
-.flowing .cancel-flow section,
-.flowing .cancel-flow div,
-.flowing .cancel-flow form {
-  height: auto;
 }
 .share {
   width: 100%;

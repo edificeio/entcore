@@ -257,6 +257,24 @@ oneModule.directive('fileInputChange', function($compile){
 			})
 		}
 	}
+});
+
+oneModule.directive('filesInputChange', function($compile){
+	return {
+		restrict: 'A',
+		scope: {
+			filesInputChange: '&',
+			file: '=ngModel'
+		},
+		link: function($scope, $element){
+			$element.bind('change', function(){
+				$scope.file = $element[0].files;
+				$scope.$apply();
+				$scope.filesInputChange();
+				$scope.$apply();
+			})
+		}
+	}
 })
 
 oneModule.directive('iconsSelect', function($compile) {
@@ -580,6 +598,7 @@ oneModule.directive('loadingIcon', function($compile){
 				var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
 				$('<img>')
 					.attr('src', loadingIllustrationPath)
+					.attr('class', $attributes.class)
 					.addClass('loading-icon')
 					.appendTo($element);
 			}

@@ -564,6 +564,12 @@ h2{
 	color: @medium-blue;
 }
 
+h4{
+	color: @medium-blue;
+	font-size: 18px;
+	margin-bottom: 7px;
+}
+
 a{
 	color: @medium-blue;
 	text-decoration: none;
@@ -571,6 +577,9 @@ a{
 
 hr.solid{
 	border-bottom: 1px solid @medium-grey;
+	margin: 7px;
+	margin-left: 0;
+	margin-right: 0;
 }
 
 nav.vertical{
@@ -700,6 +709,8 @@ textarea.inline-editing{
 		.rounded-corners-right(3px);
 		line-height: 30px;
 		height: 30px;
+		text-transform: none;
+		font-weight: bold;
 	}
 }
 
@@ -1060,6 +1071,15 @@ textarea{
 	max-width: 100%;
 }
 
+table.unstyled{
+	tr{
+		border: none !important;
+		td{
+			border: none !important;
+		}
+	}
+}
+
 table{
 	.rounded-corners(10px);
 	border-collapse: collapse;
@@ -1251,7 +1271,7 @@ img[src=""]{
 	}
 }
 
-h5.subtitle{
+.subtitle{
 	margin-top: 0;
 }
 
