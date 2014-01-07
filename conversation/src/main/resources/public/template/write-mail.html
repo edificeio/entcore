@@ -54,7 +54,7 @@
 	</div>
 	<div class="row">
 		<div class="twelve cell block-container">
-			<button class="cell right-magnet" ng-click="sendMail()" translate key="submit"></button>
+			<button class="cell right-magnet" ng-click="sendMail()" translate key="submit" ng-disabled="!newItem.to.length"></button>
 			<button class="cell right-magnet" ng-click="saveDraft()" translate key="save"></button>
 			<button class="cancel cell right-magnet" ng-click="openFolder()" translate key="cancel"></button>
 		</div>

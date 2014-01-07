@@ -36,5 +36,6 @@
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
 	"e500": "Le serveur a rencontré une erreur",
 	"folder.empty": "Ce dossier est vide",
+	"nosubject": "(Aucun objet)",
 	"reply.content": "Le [[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> a écrit : "
 }

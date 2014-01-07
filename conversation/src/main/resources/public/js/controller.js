@@ -141,9 +141,11 @@ function Conversation($scope, date, notify){
 			if(parseInt(result.sent) > 0){
 				notify.info('Message envoyé');
 			}
+			var inactives = '';
 			result.inactive.forEach(function(name){
-				notify.info(name + lang.translate('invalid'));
+				inactives += name + lang.translate('invalid') + '<br />';
 			});
+			notify.info(inactives);
 			result.undelivered.forEach(function(name){
 				notify.error(name + lang.translate('undelivered'));
 			});

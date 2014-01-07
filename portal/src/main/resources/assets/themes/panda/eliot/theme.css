@@ -3039,7 +3039,9 @@ article.selected {
 section.selected h3,
 article.selected h3,
 section.selected h4,
-article.selected h4 {
+article.selected h4,
+section.selected strong,
+article.selected strong {
   color: #fff;
 }
 article.box.selected h4 {

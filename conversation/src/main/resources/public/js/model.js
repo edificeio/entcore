@@ -42,6 +42,9 @@ function Mail(){
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
 		data.cc = _.pluck(this.cc, 'id');
+		if(!data.subject){
+			data.subject = lang.translate('nosubject');
+		}
 		var path = '/conversation/draft';
 		if(this.id){
 			http().putJson(path + '/' + this.id, data).done(function(newData){
@@ -62,6 +65,9 @@ function Mail(){
 		data.to = _.pluck(this.to, 'id');
 		data.cc = _.pluck(this.cc, 'id');
 		var path = '/conversation/send?';
+		if(!data.subject){
+			data.subject = lang.translate('nosubject');
+		}
 		if(this.id){
 			path += 'id=' + this.id + '&';
 		}
@@ -90,6 +96,7 @@ function Mail(){
 					})[1]
 				})
 			});
+
 			Model.folders.current.trigger('mails.change');
 		});
 	};
