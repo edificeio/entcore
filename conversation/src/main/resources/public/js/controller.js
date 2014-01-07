@@ -215,6 +215,7 @@ function Conversation($scope, date, notify){
 	};
 
 	$scope.lang = lang;
+	$scope.notify = notify;
 	$scope.folders = Model.folders;
 	$scope.users = { list: Model.users, search: '', found: [], foundCC: [] };
 

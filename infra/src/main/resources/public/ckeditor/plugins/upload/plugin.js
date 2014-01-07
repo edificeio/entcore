@@ -15,13 +15,13 @@ CKEDITOR.plugins.add( 'upload', {
 					var formData = new FormData();
 					formData.append('file', fileSelector[0].files[0]);
 
-					One.postFile(uploadPath + '&name=' + fileSelector[0].files[0].name,  formData, {
+					One.postFile(uploadPath + '&thumbnail=600x0&name=' + fileSelector[0].files[0].name,  formData, {
 							requestName: 'ckeditor-image'
 						})
 						.done(function(e){
 						var image = editor.document.createElement('img');
 
-						image.setAttribute('src', '/workspace/document/' + e._id);
+						image.setAttribute('src', '/workspace/document/' + e._id + '?thumbnail=600x0');
 						fileSelector.remove();
 						editor.insertElement(image);
 					});

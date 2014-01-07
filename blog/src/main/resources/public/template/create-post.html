@@ -3,7 +3,8 @@
 	<input type="text" data-ng-model="create.post.title" placeholder="Entrez le titre de votre billet" required class="twelve cell" />
 	<html-editor
 		ng-model="create.post.content"
-		file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"></html-editor>
+		file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"
+		notify="notify"></html-editor>
 	<input type="submit" class="right-magnet" translate-attr="value" value="blog.publish" />
 	<input type="button" class="right-magnet" translate-attr="value" value="blog.save" ng-click="saveDraft()" />
 	<input type="button" class="right-magnet cancel" translate-attr="value" data-ng-click="currentBlogView()" value="cancel" />

@@ -2,7 +2,7 @@
 	<input type="text" data-ng-model="currentPost.title" class="twelve cell" required />
 	<html-editor
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog._id + '&protected=true'"
-		ng-model="currentPost.content"></html-editor>
+		ng-model="currentPost.content" notify="notify"></html-editor>
 
 	<input type="button" class="right-magnet" translate-attr="value" value="blog.publish" ng-if="currentPost.state === 'DRAFT'" ng-click="saveAndSubmit(currentPost)" />
 	<input type="submit" class="right-magnet" translate-attr="value" value="blog.save" />

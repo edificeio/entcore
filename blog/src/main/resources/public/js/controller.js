@@ -43,6 +43,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.currentView = '';
 	$scope.commentFormPath = '';
+	$scope.notify = notify;
 
 	$scope.displayOptions = {
 		showAll: false,

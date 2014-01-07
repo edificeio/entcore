@@ -509,6 +509,15 @@ function createCKEditorInstance(editor, $scope, $compile){
 	});
 
 	editor.on('blur', function(e) {
+		var content = editor.html();
+		if(content.indexOf(';base64,') !== -1){
+			$scope.notify.error('Une image est corrompue')
+		}
+		editor.find('img').each(function(index, item){
+			if($(item).attr('src').indexOf(';base64,') !== -1){
+				$(item).remove();
+			}
+		})
 		$scope.ngModel = editor.html();
 		$scope.$apply();
 	});
@@ -521,7 +530,8 @@ oneModule.directive('richTextEditor', function($compile){
 		restrict: 'E',
 		scope: {
 			ngModel: '=',
-			watchCollection: '@'
+			watchCollection: '@',
+			notify: '='
 		},
 		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
 			'</div><div class="clear"></div></div>',
@@ -561,7 +571,8 @@ oneModule.directive('htmlEditor', function($compile){
 		transclude: true,
 		replace: true,
 		scope: {
-			ngModel: '='
+			ngModel: '=',
+			notify: '='
 		},
 		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div></div>',
