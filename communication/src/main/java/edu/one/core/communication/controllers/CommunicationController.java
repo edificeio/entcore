@@ -383,9 +383,10 @@ public class CommunicationController extends Controller {
 			params.put("schoolId", schoolId);
 		} else {
 			String l = (myGroup) ? "" : " AND length(p) >= 2";
-			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->m ");
+			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t" +
+					"-[:COMMUNIQUE*0..2]->g<-[:DEPENDS*0..1]-m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-					"XOR (type(r) = 'COMMUNIQUE'"+ l + ")) ";
+					"XOR (type(r) = 'COMMUNIQUE'"+ l + " AND length(p) <= 3)) ";
 		}
 		query.append("WHERE n.id = {userId} ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
