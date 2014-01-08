@@ -36,5 +36,6 @@
 	"e408" : "Request Time-out",
 	"e500" : "Internal Server Error",
 	"folder.empty": "Empty folder",
+	"nosubject": "(no subject)",
 	"reply.content": "[[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> wrote : "
 }
