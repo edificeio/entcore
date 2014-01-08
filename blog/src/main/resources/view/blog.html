@@ -56,8 +56,8 @@
 	<div class="eight cell horizontal-spacing">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
-		    <h1 class="text"><i role="blog"></i>[[currentBlog.title]]</h1>
-			<em class="medium-importance">Par <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
+		    <h1 class="text" ng-if="isCurrentView('listPosts') && blogs.length !== 0"><i role="blog"></i>[[currentBlog.title]]</h1>
+			<em class="medium-importance" ng-if="isCurrentView('listPosts') && blogs.length !== 0">Par <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
 			<div class="row">
 				<hr />
 			</div>

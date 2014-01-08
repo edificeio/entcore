@@ -200,6 +200,9 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	};
 
 	$scope.displayBlog = function(blog){
+		if(!blog){
+			return;
+		}
 		resetScope();
 		$scope.currentBlog = blog;
 		http.get('/blog/post/list/all/' + blog._id).done(function(data){

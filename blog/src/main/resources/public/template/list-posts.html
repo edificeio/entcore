@@ -1,4 +1,4 @@
-<div class="row line filters">
+<div class="row line filters" ng-if="blogs.length !== 0">
 	<ul>
 		<li><em class="medium-importance">Voir les billets</em></li>
 		<li>
@@ -25,7 +25,7 @@
 </div>
 
 <article class="text-container row" ng-if="blogs.length === 0">
-	{{#i18n}}noblog{{/i18n}}
+	<span translate key="noblog"></span>
 </article>
 <div ng-if="displayOptions.showAll || displayOptions.showDrafts">
 	<section data-ng-repeat="post in currentBlog.drafts | limitTo:nbResults('drafts')"
