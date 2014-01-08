@@ -24,6 +24,9 @@
 
 	One.get('/userbook/user-preferences').done(function(result){
 		Birthday.currentClass = result.result[0].userPreferencesBirthdayClass;
+		if(Birthday.classes.indexOf(Birthday.currentClass) === -1 && Birthday.currentClass !== ''){
+			Birthday.classes.push(Birthday.currentClass);
+		}
 		Model.widgets.apply();
 	});
 
