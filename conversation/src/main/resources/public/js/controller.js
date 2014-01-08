@@ -158,6 +158,10 @@ function Conversation($scope, date, notify){
 		$scope.openFolder();
 	};
 
+	$scope.restore = function(){
+		Model.folders.trash.mails.restoreMails();
+	};
+
 	$scope.removeSelection = function(){
 		Model.folders.current.mails.removeMails();
 	};

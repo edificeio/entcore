@@ -219,8 +219,16 @@ function buildModel(){
 		this.mails.push(draft);
 	};
 
+	Model.folders.trash.mails.restoreMails = function(){
+		http().put('/conversation/restore?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
+		this.removeSelection();
+		Model.folders.inbox.mails.refresh();
+		Model.folders.outbox.mails.refresh();
+		Model.folders.draft.mails.refresh();
+	};
+
 	Model.folders.trash.mails.removeMails = function(){
 		http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
 		this.removeSelection();
-	}
+	};
 }
