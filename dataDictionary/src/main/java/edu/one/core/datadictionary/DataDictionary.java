@@ -12,7 +12,7 @@ public class DataDictionary extends Server {
 	@Override
 	public void start()  {
 		super.start();
-		final Renders render = new Renders(container);
+		final Renders render = new Renders(vertx, container);
 
 		rm.get("/admin", new Handler<HttpServerRequest>() {
 			@Override

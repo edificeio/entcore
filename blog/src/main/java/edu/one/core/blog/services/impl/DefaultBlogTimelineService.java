@@ -1,6 +1,6 @@
 package edu.one.core.blog.services.impl;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 import com.mongodb.QueryBuilder;
 import edu.one.core.blog.services.BlogTimelineService;
 import edu.one.core.common.notification.TimelineHelper;
@@ -19,7 +19,6 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,13 +75,9 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 												.putString("username", user.getUsername())
 												.putString("blogTitle", blogTitle)
 												.putString("resourceUri", resourceUri);
-										try {
-											notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-													NOTIFICATION_TYPE + "_SHARE", recipients,
-													blogId, "notification/notify-share.html", p);
-										} catch (IOException e) {
-											log.error("Unable to send timeline notification", e);
-										}
+										notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
+												NOTIFICATION_TYPE + "_SHARE", recipients,
+												blogId, "notification/notify-share.html", p);
 									}
 								}
 							});
@@ -112,13 +107,9 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 									.putString("username", user.getUsername())
 									.putString("blogTitle", blog.getString("title"))
 									.putString("resourceUri", resourceUri);
-							try {
-								notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-										NOTIFICATION_TYPE + "_UPDATE", recipients,
-										blogId, "notification/notify-update-blog.html", p);
-							} catch (IOException e) {
-								log.error("Unable to send timeline notification", e);
-							}
+							notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
+									NOTIFICATION_TYPE + "_UPDATE", recipients,
+									blogId, "notification/notify-update-blog.html", p);
 						}
 					}
 				}
@@ -149,13 +140,9 @@ public class DefaultBlogTimelineService implements BlogTimelineService {
 									.putString("blogUri", resourceUri)
 									.putString("postTitle", blog.getString("title"))
 									.putString("postUri", resourceUri + "&post=" + postId);
-							try {
-								notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-										NOTIFICATION_TYPE + "_POST_PUBLISH", recipients,
-										blogId, postId, "notification/notify-publish-post.html", p);
-							} catch (IOException e) {
-								log.error("Unable to send timeline notification", e);
-							}
+							notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
+									NOTIFICATION_TYPE + "_POST_PUBLISH", recipients,
+									blogId, postId, "notification/notify-publish-post.html", p);
 						}
 					}
 				}

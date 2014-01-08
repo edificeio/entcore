@@ -1,6 +1,6 @@
 package edu.one.core.conversation.service.impl;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 import edu.one.core.common.appregistry.AppRegistryEventsService;
 import edu.one.core.common.appregistry.ApplicationUtils;
 import edu.one.core.common.neo4j.Neo;

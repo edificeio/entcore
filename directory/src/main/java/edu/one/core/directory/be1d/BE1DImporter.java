@@ -20,7 +20,7 @@ import org.vertx.java.platform.Container;
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 
 import edu.one.core.datadictionary.generation.ActivationCodeGenerator;
 import edu.one.core.datadictionary.generation.DisplayNameGenerator;

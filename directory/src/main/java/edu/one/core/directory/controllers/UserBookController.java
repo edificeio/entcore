@@ -1,6 +1,5 @@
 package edu.one.core.directory.controllers;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -355,14 +354,10 @@ public class UserBookController extends Controller {
 				.putString("username", user.getUsername())
 				.putString("motto", request.params().get("value"))
 				.putString("moodImg", request.params().get("value"));
-				try {
-					notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-							NOTIFICATION_TYPE + "_" + action.toUpperCase(), userIds,
-							user.getUserId()+System.currentTimeMillis()+action,
-							"notify-" + action + ".html", params);
-				} catch (IOException e) {
-					log.error("Unable to send timeline notification", e);
-				}
+				notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
+						NOTIFICATION_TYPE + "_" + action.toUpperCase(), userIds,
+						user.getUserId()+System.currentTimeMillis()+action,
+						"notify-" + action + ".html", params);
 			}
 		});
 	}

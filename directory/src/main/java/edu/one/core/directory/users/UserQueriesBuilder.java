@@ -5,7 +5,7 @@ import java.util.List;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 
 public class UserQueriesBuilder {
 

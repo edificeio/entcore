@@ -1,6 +1,6 @@
 package edu.one.core.conversation.controllers;
 
-import com.github.mustachejava.MustacheException;
+
 import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.common.user.UserInfos;
 import edu.one.core.conversation.Conversation;
@@ -19,7 +19,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -150,12 +149,8 @@ public class ConversationController extends Controller {
 			if (!(o instanceof String)) continue;
 			recipients.add((String) o);
 		}
-		try {
-			notification.notifyTimeline(request, user, type, type + "_SENT",
-					recipients, id, "notification/notify-send-message.html", params);
-		} catch (IOException | MustacheException e) {
-			log.error("Error sending conversation notification.", e);
-		}
+		notification.notifyTimeline(request, user, type, type + "_SENT",
+				recipients, id, "notification/notify-send-message.html", params);
 	}
 
 	@SecuredAction(value = "conversation.list", type = ActionType.AUTHENTICATED)

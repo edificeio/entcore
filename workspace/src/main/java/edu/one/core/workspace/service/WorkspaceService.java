@@ -5,7 +5,6 @@ import static edu.one.core.common.http.response.DefaultResponseHandler.arrayResp
 import static edu.one.core.common.user.UserUtils.getUserInfos;
 import static edu.one.core.infra.Utils.getOrElse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -281,12 +280,8 @@ public class WorkspaceService extends Controller {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 					params.putString("resourceName", event.body().getObject("result").getString("name", ""));
-					try {
-						notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-								recipients, resource, "notify-share.html", params);
-					} catch (IOException e) {
-						log.error("Unable to send timeline notification", e);
-					}
+					notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
+							recipients, resource, "notify-share.html", params);
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);
 				}

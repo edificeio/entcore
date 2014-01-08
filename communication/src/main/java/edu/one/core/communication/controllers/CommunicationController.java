@@ -19,7 +19,7 @@ import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 
 import edu.one.core.communication.profils.GroupProfil;
 import edu.one.core.communication.profils.ProfilFactory;

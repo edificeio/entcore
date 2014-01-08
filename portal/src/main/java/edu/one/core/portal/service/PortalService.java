@@ -1,16 +1,19 @@
 package edu.one.core.portal.service;
 
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
 import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.I18n;
 import edu.one.core.infra.http.StaticResource;
 import edu.one.core.common.user.UserUtils;
 import edu.one.core.common.user.UserInfos;
-import edu.one.core.portal.mustache.AssetResourceTemplateFunction;
 import edu.one.core.portal.utils.ThemeUtils;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,17 +38,12 @@ public class PortalService extends Controller {
 	private final Neo neo;
 	private List<String> themes;
 	private final String themesPrefix;
+	private final Container container;
 
 	public PortalService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
-		try {
-			putTemplateFunction("asset", new AssetResourceTemplateFunction(
-					container.config().getString("skin"),
-					container.config().getBoolean("ssl", false)));
-		} catch (Exception ex) {
-			log.error(ex.getMessage());
-		}
+		this.container = container;
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
 		this.neo = new Neo(eb, log);
@@ -59,17 +57,31 @@ public class PortalService extends Controller {
 		});
 	}
 
+	private void assetTemplateLambda(final HttpServerRequest request, JsonObject params) {
+		params.putValue("asset", new Mustache.Lambda() {
+
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException {
+				String path = frag.execute();
+				String r = container.config().getBoolean("ssl", false) ? "https://" : "http://"
+						+ request.headers().get("Host")
+						+ "/assets/themes"
+						+ "/" + container.config().getString("skin")
+						+ "/" + path;
+				out.write(r);
+			}
+		});
+	}
+
 	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
 	public void portal(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					JsonObject jo = new JsonObject()
-							.putString("userFirstname", user.getFirstName())
-							.putString("userClass", user.getClassId());
-					JsonObject urls = container.config().getObject("urls");
-					renderView(request, jo.mergeIn(urls), "portal.html", null);
+					redirectPermanent(request, container.config()
+							.getObject("urls", new JsonObject()).getString("timeline"), "/timeline");
 				} else {
 					unauthorized(request);
 				}
@@ -103,6 +115,7 @@ public class PortalService extends Controller {
 				}
 				JsonObject json = new JsonObject()
 						.putArray("apps", apps);
+				assetTemplateLambda(request, json);
 				renderView(request, json);
 			}
 		});
@@ -115,7 +128,9 @@ public class PortalService extends Controller {
 
 			@Override
 			public void handle(JsonObject session) {
-				renderView(request);
+				JsonObject params = new JsonObject();
+				assetTemplateLambda(request, params);
+				renderView(request, params);
 			}
 		});
 

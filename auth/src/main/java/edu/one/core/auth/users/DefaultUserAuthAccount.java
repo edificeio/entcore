@@ -1,6 +1,5 @@
 package edu.one.core.auth.users;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +9,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -31,7 +29,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.neo = new Neo(eb, container.logger());
 		this.vertx = vertx;
 		this.container = container;
-		notification = new NotificationHelper(eb, container);
+		notification = new NotificationHelper(vertx, eb, container);
 	}
 
 	@Override
@@ -146,21 +144,16 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		.putString("resetUri", container.config()
 				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode);
 		container.logger().debug(json.encode());
-		try {
-			notification.sendEmail(request, email, container.config()
-					.getString("email", "noreply@one1d.fr"), null, null,
-					"mail.reset.pw.subject", "email/forgotPassword.txt", json, true,
-					new Handler<Message<JsonObject>>() {
+		notification.sendEmail(request, email, container.config()
+				.getString("email", "noreply@one1d.fr"), null, null,
+				"mail.reset.pw.subject", "email/forgotPassword.txt", json, true,
+				new Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> message) {
 					handler.handle("ok".equals(message.body().getString("status")));
 				}
 			});
-		} catch (IOException e) {
-			container.logger().error("Error sending reset password email", e);
-			handler.handle(false);
-		}
 	}
 
 	@Override

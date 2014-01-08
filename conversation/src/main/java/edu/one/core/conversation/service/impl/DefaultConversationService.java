@@ -4,7 +4,7 @@ import static edu.one.core.common.neo4j.Neo4jResult.*;
 import static edu.one.core.common.user.UserUtils.findVisibleUsers;
 import static edu.one.core.common.user.UserUtils.findVisibles;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 import edu.one.core.common.neo4j.Neo;
 import edu.one.core.common.neo4j.StatementsBuilder;
 import edu.one.core.common.user.UserInfos;

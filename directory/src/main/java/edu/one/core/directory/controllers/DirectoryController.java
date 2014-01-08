@@ -15,7 +15,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 
 import edu.one.core.datadictionary.dictionary.DefaultDictionary;
 import edu.one.core.datadictionary.dictionary.Dictionary;
@@ -228,17 +228,20 @@ public class DirectoryController extends Controller {
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
 					JsonArray r = Neo.resultToJsonArray(res.body().getObject("result"));
-					String export;
-					try {
-						export = processTemplate(request, "text/export.txt",
-								new JsonObject().putArray("list", r));
-						request.response().putHeader("Content-Type", "application/csv");
-						request.response().putHeader("Content-Disposition",
-								"attachment; filename=activation_de_comptes.csv");
-						request.response().end(export);
-					} catch (IOException e) {
-						renderError(request);
-					}
+					processTemplate(request, "text/export.txt",
+							new JsonObject().putArray("list", r), new Handler<String>() {
+						@Override
+						public void handle(String export) {
+							if (export != null) {
+								request.response().putHeader("Content-Type", "application/csv");
+								request.response().putHeader("Content-Disposition",
+										"attachment; filename=activation_de_comptes.csv");
+								request.response().end(export);
+							} else {
+								renderError(request);
+							}
+						}
+					});
 				} else {
 					renderError(request);
 				}

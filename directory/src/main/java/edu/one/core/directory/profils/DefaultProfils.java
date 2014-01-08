@@ -7,7 +7,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-import com.google.common.base.Joiner;
+import edu.one.core.infra.collections.Joiner;
 
 import edu.one.core.common.neo4j.Neo;
 

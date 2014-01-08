@@ -16,7 +16,6 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,36 +33,43 @@ public class TimelineHelper {
 
 	public TimelineHelper(Vertx vertx, EventBus eb, Container container) {
 		this.eb = eb;
-		this.render = new Renders(container);
+		this.render = new Renders(vertx, container);
 		this.vertx = vertx;
 		loadTimelineI18n();
 	}
 
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
-							   List<String> recipients, String resource, String template, JsonObject params)
-			throws IOException {
+							   List<String> recipients, String resource, String template, JsonObject params) {
 		notifyTimeline(request, sender, type, eventType, recipients, resource, null, template, params);
 	}
 
-	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
-			List<String> recipients, String resource, String subResource, String template, JsonObject params)
-			throws IOException {
+	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, final String eventType,
+			List<String> recipients, String resource, String subResource, String template, JsonObject params) {
 		JsonArray r = new JsonArray();
 		for (String userId: recipients) {
 			r.addObject(new JsonObject().putString("userId", userId).putNumber("unread", 1));
 		}
-		JsonObject event = new JsonObject()
+		final JsonObject event = new JsonObject()
 				.putString("action", "add")
 				.putString("resource", resource)
 				.putString("type", type)
 				.putString("event-type", eventType)
 				.putString("sender", sender.getUserId())
-				.putString("message", render.processTemplate(request, template, params))
 				.putArray("recipients", r);
 		if (subResource != null && !subResource.trim().isEmpty()) {
 			event.putString("sub-resource", subResource);
 		}
-		eb.send(TIMELINE_ADDRESS, event);
+		render.processTemplate(request, template, params, new Handler<String>() {
+			@Override
+			public void handle(String message) {
+				if (message != null) {
+					event.putString("message", message);
+					eb.send(TIMELINE_ADDRESS, event);
+				} else {
+					log.error("Unable to send timeline " + eventType + " notification.");
+				}
+			}
+		});
 	}
 
 
