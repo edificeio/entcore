@@ -703,9 +703,11 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 			document.selected = $scope.boxes.selectAll;
 		});
 
-		$scope.openedFolder.folder.children.forEach(function(folder){
-			folder.selected = $scope.boxes.selectAll;
-		});
+		if($scope.openedFolder.folder.children){
+			$scope.openedFolder.folder.children.forEach(function(folder){
+				folder.selected = $scope.boxes.selectAll;
+			});
+		}
 	};
 
 	$scope.selectedFolder = { folder: {}, name: '' };
