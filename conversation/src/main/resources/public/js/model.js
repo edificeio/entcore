@@ -97,6 +97,15 @@ function Mail(){
 				})
 			});
 
+			that.cc = _.map(that.cc, function(user){
+				return new User({
+					id: user,
+					displayName: _.find(that.displayNames, function(name){
+						return name[0] === user;
+					})[1]
+				})
+			});
+
 			Model.folders.current.trigger('mails.change');
 		});
 	};
@@ -129,7 +138,9 @@ function Folder(api){
 			});
 		},
 		removeMails: function(){
-			http().put('/conversation/trash?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
+			http().put('/conversation/trash?' + http().serialize({ id: _.pluck(this.selection(), 'id') })).done(function(){
+				Model.folders.trash.mails.refresh();
+			});
 			this.removeSelection();
 		},
 		api: api

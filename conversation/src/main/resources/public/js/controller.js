@@ -65,6 +65,7 @@ function Conversation($scope, date, notify){
 	};
 
 	$scope.refresh = function(){
+		notify.info('Mise à jour...');
 		Model.folders.current.mails.refresh();
 	}
 
@@ -92,7 +93,7 @@ function Conversation($scope, date, notify){
 	});
 
 	function setMailContent(mailType){
-		if($scope.mail.subject.indexOf(format[mailType].prefix) !== -1){
+		if($scope.mail.subject.indexOf(format[mailType].prefix) === -1){
 			$scope.newItem.subject = format[mailType].prefix + $scope.mail.subject;
 		}
 		else{
@@ -133,6 +134,7 @@ function Conversation($scope, date, notify){
 	};
 
 	$scope.saveDraft = function(){
+		notify.info('Brouillon enregistré');
 		Model.folders.draft.saveDraft($scope.newItem);
 	};
 
@@ -145,7 +147,10 @@ function Conversation($scope, date, notify){
 			result.inactive.forEach(function(name){
 				inactives += name + lang.translate('invalid') + '<br />';
 			});
-			notify.info(inactives);
+			if(result.inactive.length > 0){
+				notify.info(inactives);
+			}
+
 			result.undelivered.forEach(function(name){
 				notify.error(name + lang.translate('undelivered'));
 			});
