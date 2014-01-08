@@ -228,7 +228,8 @@ public class DefaultConversationService implements ConversationService {
 							"AND (dn.id = m.from OR dn.id IN m.to ) " +
 							"RETURN m.id, " +
 							"COLLECT([dn.id, CASE WHEN dn.displayName IS NULL THEN dn.name ELSE dn.displayName END]) " +
-							"as displayNames ";
+							"as displayNames, m.date as date " +
+							"ORDER BY date DESC ";
 					neo.execute(query2, new JsonObject(), new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
