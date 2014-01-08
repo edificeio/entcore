@@ -668,8 +668,8 @@ oneModule.directive('bottomScroll', function($compile){
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
 			$(window).scroll(function(){
-				if($(document).height() - $(window).height() ===
-					window.scrollY || document.getElementsByTagName('html')[0].scrollTop){
+				var scrollHeight = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
+				if($(document).height() - $(window).height() === scrollHeight){
 					$scope.$eval($attributes.bottomScroll);
 				}
 			})
