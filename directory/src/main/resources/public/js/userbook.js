@@ -77,7 +77,7 @@ var userbook = function(){
 		return person;
 	};
 
-	var app = Object.create(oneApp);
+	var app = Object.create(app);
 	app.scope = ".annuaire";
 	app.define({
 		template : {
@@ -241,7 +241,7 @@ var userbook = function(){
 		action : {
 			search : function(o){
 				var url = o.target.form.action + '?' + $('#search-form').serialize();
-				One.get(url)
+				http().get(url)
 				.done(function(data){
 					$("#people").removeClass('four').addClass('twelve');
 					$("#person").html('');
@@ -276,14 +276,14 @@ var userbook = function(){
 			},
 			showFirstPerson: function(){
 				var that = this;
-				One.get($('.person').first().find('h4').attr('href'))
+				http().get($('.person').first().find('h4').attr('href'))
 					.done(function(data){
 						that.showPerson(data);
 					});
 			},
 			person : function(o){
 				var that = this;
-				One.get(o.url)
+				http().get(o.url)
 					.done(function(data){
 						that.showPerson(data);
 					});
@@ -294,7 +294,7 @@ var userbook = function(){
 				}
 			},
 			searchClass : function(url) {
-				One.get(url)
+				http().get(url)
 				.done(function(data){
 					$("#people .text-container.twelve").addClass('four').removeClass('twelve');
 					$("#people").removeClass('four').addClass('twelve');

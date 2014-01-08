@@ -149,13 +149,13 @@ function Navigation($scope){
 	};
 }
 
-function Account($scope, http){
+function Account($scope){
 	"use strict";
 
     $scope.pictureVersion = 0;
 
 	$scope.refreshAvatar = function(){
-		http.get('/userbook/api/person').done(function(result){
+		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
 			$scope.pictureVersion = $scope.pictureVersion + 1;
 			$scope.$apply();

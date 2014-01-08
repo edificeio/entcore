@@ -26,7 +26,7 @@ var personDataExtractor = function(d) {
 	return person;
 };
 
-function MyAccount($scope, http, lang, date, notify, _){
+function MyAccount($scope, lang, date, notify, _){
 	$scope.account = {};
 	var moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	$scope.moods = [];
@@ -45,7 +45,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 
 	$scope.resetPasswordPath = '/auth/reset/password';
 
-	http.get('api/person')
+	http().get('api/person')
 		.done(function(data){
 			$scope.account = personDataExtractor(data);
 			$scope.account.pictureVersion = 0;
@@ -66,21 +66,21 @@ function MyAccount($scope, http, lang, date, notify, _){
 	};
 
 	$scope.updateMood = function(){
-		http.get('api/edit-userbook-info?prop=mood&value=' + $scope.account.mood.id);
+		http().get('api/edit-userbook-info?prop=mood&value=' + $scope.account.mood.id);
 	}
 
 	$scope.saveHobby = function(hobby){
-		http.get('api/edit-userbook-info', hobby);
+		http().get('api/edit-userbook-info', hobby);
 	};
 
 	$scope.saveProperty = function(property){
 		//new lines formatting
 		var savedValue = $scope.account[property].replace(/[\n]/g, '%0a');
-		http.get('api/edit-userbook-info?prop=' + property + '&value=' + savedValue);
+		http().get('api/edit-userbook-info?prop=' + property + '&value=' + savedValue);
 	};
 
 	$scope.saveMail = function(value){
-		http.get('api/edit-user-info?prop=email&value=' + value)
+		http().get('api/edit-user-info?prop=email&value=' + value)
 			.e400(function(){
 				notify.error('mail.invalid')
 			});
@@ -95,7 +95,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 	};
 
 	$scope.resetPassword = function(url){
-		http.post(url, {
+		http().post(url, {
 				oldPassword: $scope.account.oldPassword,
 				password: $scope.account.password,
 				confirmPassword: $scope.account.password,
@@ -136,8 +136,8 @@ function MyAccount($scope, http, lang, date, notify, _){
 	};
 
 	$scope.resetAvatar = function(){
-        http.get('api/edit-userbook-info?prop=picture&value=');
-        http.delete('/workspace/document/' + $scope.account.picture);
+        http().get('api/edit-userbook-info?prop=picture&value=');
+        http().delete('/workspace/document/' + $scope.account.picture);
         $scope.account.picture = '';
         $scope.pictureVersion = $scope.pictureVersion + 1;
         $scope.$apply();
@@ -156,7 +156,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 		form.append("image", $scope.account.photo);
 
 	if (uuidRegex.test($scope.account.picture)) {
-    http.putFile("/workspace/document/" + $scope.account.picture + "?" + thumbs,
+    http().putFile("/workspace/document/" + $scope.account.picture + "?" + thumbs,
         form, { requestName: 'avatar'})
 				.done(function (data) {
 					if (data.status == "ok") {
@@ -166,7 +166,7 @@ function MyAccount($scope, http, lang, date, notify, _){
 					}
 				});
 		} else {
-			http.postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
+			http().postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
 					form, { requestName: 'avatar'})
 				.done(function (data) {
 					if (data.status == "ok") {

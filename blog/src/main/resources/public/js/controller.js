@@ -32,7 +32,7 @@ function resolveMyRights(me){
 	}
 }
 
-function Blog($scope, http, date, _, ui, lang, notify){
+function Blog($scope, date, _, ui, lang, notify){
 	$scope.translate = lang.translate;
 
 	$scope.blogs = [];
@@ -109,7 +109,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	function refreshBlogList(callback){
-		http.get('blog/list/all')
+		http().get('blog/list/all')
 			.done(function(data){
 				data.forEach(function(blog){
 					blogRights(blog);
@@ -137,7 +137,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 			});
 	}
 
-	http.get('/auth/oauth2/userinfo').done(function(data){
+	http().get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		resolveMyRights($scope.me);
 		refreshBlogList();
@@ -180,7 +180,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.publish = function(post){
 		if($scope.currentBlog.myRights.manager){
 			post.state = 'PUBLISHED';
-			http.put('/blog/post/publish/' + $scope.currentBlog._id + '/' + post._id);
+			http().put('/blog/post/publish/' + $scope.currentBlog._id + '/' + post._id);
 		}
 		else{
 			$scope.submit(post);
@@ -196,7 +196,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.submit = function(post){
 		post.state = 'SUBMITTED';
-		http.put('/blog/post/submit/' + $scope.currentBlog._id + '/' + post._id);
+		http().put('/blog/post/submit/' + $scope.currentBlog._id + '/' + post._id);
 	};
 
 	$scope.displayBlog = function(blog){
@@ -205,20 +205,20 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		}
 		resetScope();
 		$scope.currentBlog = blog;
-		http.get('/blog/post/list/all/' + blog._id).done(function(data){
+		http().get('/blog/post/list/all/' + blog._id).done(function(data){
 			$scope.currentBlog.posts = data;
 			$scope.currentView= views.listPosts;
 			initMaxResults();
 			$scope.$apply();
 		});
 
-		http.get('/blog/post/list/all/' + blog._id + '?state=SUBMITTED').done(function(data){
+		http().get('/blog/post/list/all/' + blog._id + '?state=SUBMITTED').done(function(data){
 			$scope.currentBlog.submitted = data;
 			initMaxResults();
 			$scope.$apply();
 		});
 
-		http.get('/blog/post/list/all/' + blog._id + '?state=DRAFT').done(function(data){
+		http().get('/blog/post/list/all/' + blog._id + '?state=DRAFT').done(function(data){
 			$scope.currentBlog.drafts = data;
 			initMaxResults();
 			$scope.$apply();
@@ -228,7 +228,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	$scope.nbComments = function(post){
 		if(!post.comments){
 			post.comments = [];
-			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + post._id).done(function(comments){
+			http().get('/blog/comments/' + $scope.currentBlog._id + '/' + post._id).done(function(comments){
 				post.comments = comments;
 				$scope.$apply();
 			});
@@ -263,7 +263,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		$scope.currentView = views.createBlog;
 	}
 	$scope.showEditBlog = function(blog){
-		http.get('/blog/' + blog._id)
+		http().get('/blog/' + blog._id)
 			.done(function(data){
 				blogRights(data);
 				$scope.currentBlog = data;
@@ -285,7 +285,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.showEditPost = function(post){
 		$scope.currentPost = post;
-		http.get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
+		http().get('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id + '?state=' + post.state)
 			.done(function(data){
 				$scope.currentPost = data;
 				$scope.editPost = post;
@@ -335,9 +335,8 @@ function Blog($scope, http, date, _, ui, lang, notify){
 			notify.error('post.empty');
 			return;
 		}
-
-		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(createdPost){
-			$scope.displayBlog($scope.currentBlog);
+		http().post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(createdPost){
+			$scope.create.post._id = createdPost._id;
 		});
 		notify.info('draft.saved');
 	};
@@ -359,7 +358,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	};
 
 	$scope.createPost = function(callback){
-		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(callback)
+		http().post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(callback)
 	};
 
 	$scope.blogThumbnail = function(blog){
@@ -374,7 +373,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		var formData = new FormData();
 		formData.append('file', $scope.photo.file);
 
-		http.postFile('/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=' + $scope.photo.file.name, formData)
+		http().postFile('/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=' + $scope.photo.file.name, formData)
 			.done(function(e){
 				blog.thumbnail = '/workspace/document/' + e._id + '?thumbnail=100x100';
 				$scope.$apply();
@@ -382,15 +381,15 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	$scope.updatePost = function(){
-		http.put('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.currentPost).done(function(){
+		http().put('/blog/post/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.currentPost).done(function(){
 			$scope.displayBlog($scope.currentBlog);
 			window.scrollTo(0, 0);
 		})
 	};
 
 	$scope.commentPost = function(){
-		http.post('/blog/comment/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.create.comment).done(function(e){
-			http.get('/blog/comments/' + $scope.currentBlog._id + '/' + $scope.currentPost._id).done(function(comments){
+		http().post('/blog/comment/' + $scope.currentBlog._id + '/' + $scope.currentPost._id, $scope.create.comment).done(function(e){
+			http().get('/blog/comments/' + $scope.currentBlog._id + '/' + $scope.currentPost._id).done(function(comments){
 				$scope.currentPost.comments = comments;
 				$scope.hideCommentForm();
 				$scope.$apply();
@@ -444,24 +443,24 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	};
 
 	$scope.updatePublishType = function(){
-		http.put('/blog/' + $scope.currentBlog._id, { 'publish-type': $scope.currentBlog['publish-type'] });
+		http().put('/blog/' + $scope.currentBlog._id, { 'publish-type': $scope.currentBlog['publish-type'] });
 	}
 
 	$scope.removePost = function(post){
-		http.delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){
+		http().delete('/blog/post/' + $scope.currentBlog._id + '/' + post._id).done(function(){
 			$scope.displayBlog($scope.currentBlog);
 		});
 	};
 
 	$scope.removeComment = function(post, comment){
-		http.delete('/blog/comment/' + $scope.currentBlog._id + '/' + post._id + '/' + comment.id).done(function(){
+		http().delete('/blog/comment/' + $scope.currentBlog._id + '/' + post._id + '/' + comment.id).done(function(){
 			post.comments = undefined;
 			$scope.$apply();
 		});
 	}
 
 	$scope.saveBlogChanges = function(){
-		http.put('/blog/' + $scope.currentBlog._id, $scope.currentBlog).done(function(){
+		http().put('/blog/' + $scope.currentBlog._id, $scope.currentBlog).done(function(){
 			refreshBlogList(function(){
 				$scope.displayBlog($scope.currentBlog);
 			});
@@ -469,7 +468,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	}
 
 	$scope.createBlog = function(){
-		http.post('/blog', $scope.create.blog)
+		http().post('/blog', $scope.create.blog)
 			.done(function(newBlog){
 				refreshBlogList(function(){
 					$scope.displayBlog(_.where($scope.blogs, { _id: newBlog._id})[0]);
@@ -478,7 +477,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 	};
 
 	$scope.removeBlog = function(){
-		http.delete('/blog/' + $scope.currentBlog._id).done(function(){
+		http().delete('/blog/' + $scope.currentBlog._id).done(function(){
 			refreshBlogList(function(){
 				$scope.currentBlog = '';
 				$scope.currentView = '';

@@ -1,4 +1,4 @@
-var oneApp = {
+var app = {
 	scope : '#main',
 	init : function() {
 		var that = this;
@@ -122,18 +122,18 @@ var oneApp = {
 	}
 };
 
-var oneModule = angular.module('one', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
+var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
 	})
 	.factory('notify', function(){
 		if(!window.humane){
-			One.load('humane');
+			loader.syncLoad('humane');
 		}
 
 		return {
 			message: function(type, message){
-				message = One.translate(message);
+				message = lang.translate(message);
 				if(parent !== window){
 					messenger.notify(type, message);
 				}
@@ -198,18 +198,6 @@ var oneModule = angular.module('one', ['ngSanitize', 'ngRoute'], function($inter
 			}
 		};
 	})
-	.factory('http', function(){
-		return {
-			get: One.get,
-			post: One.post,
-			put: One.put,
-			delete: One.delete,
-			postFile: One.postFile,
-			putFile: One.putFile,
-			bind: One.bind,
-			serialize: One.serialize
-		}
-	})
 	.factory('lang', function(){
 		return lang
 	})
@@ -233,7 +221,7 @@ if(routes.routing){
 
 //directives
 
-oneModule.directive('completeChange', function() {
+module.directive('completeChange', function() {
 	return {
 		restrict: 'A',
 		scope:{
@@ -264,7 +252,7 @@ oneModule.directive('completeChange', function() {
 	};
 });
 
-oneModule.directive('fileInputChange', function($compile){
+module.directive('fileInputChange', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -282,7 +270,7 @@ oneModule.directive('fileInputChange', function($compile){
 	}
 });
 
-oneModule.directive('filesInputChange', function($compile){
+module.directive('filesInputChange', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -300,7 +288,7 @@ oneModule.directive('filesInputChange', function($compile){
 	}
 })
 
-oneModule.directive('iconsSelect', function($compile) {
+module.directive('iconsSelect', function($compile) {
 	return {
 		restrict: 'E',
 		scope:{
@@ -332,7 +320,7 @@ oneModule.directive('iconsSelect', function($compile) {
 	};
 });
 
-oneModule.directive('translate', function($compile) {
+module.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
 		link: function ($scope, $element, $attributes) {
@@ -341,7 +329,7 @@ oneModule.directive('translate', function($compile) {
 	};
 });
 
-oneModule.directive('translateAttr', function($compile) {
+module.directive('translateAttr', function($compile) {
 	return {
 		restrict: 'A',
 		link: function compile($scope, $element, $attributes) {
@@ -353,7 +341,7 @@ oneModule.directive('translateAttr', function($compile) {
 	};
 });
 
-oneModule.directive('preview', function($compile){
+module.directive('preview', function($compile){
 	return {
 		restrict: 'E',
 		template: '<div class="row content-line"><div class="row fixed-block height-four">' +
@@ -378,7 +366,7 @@ oneModule.directive('preview', function($compile){
 		}
 })
 
-oneModule.directive('bindHtmlUnsafe', function($compile){
+module.directive('bindHtmlUnsafe', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -400,7 +388,7 @@ oneModule.directive('bindHtmlUnsafe', function($compile){
 	}
 });
 
-oneModule.directive('portal', function($compile){
+module.directive('portal', function($compile){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -416,7 +404,7 @@ oneModule.directive('portal', function($compile){
 	}
 });
 
-oneModule.directive('localizedClass', function($compile){
+module.directive('localizedClass', function($compile){
 	return {
 		restrict: 'A',
 		link: function($scope, $attributes, $element){
@@ -425,7 +413,7 @@ oneModule.directive('localizedClass', function($compile){
 	}
 });
 
-oneModule.directive('dropDown', function($compile, $timeout){
+module.directive('dropDown', function($compile, $timeout){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -547,7 +535,7 @@ function createCKEditorInstance(editor, $scope, $compile){
 	return positionning;
 };
 
-oneModule.directive('richTextEditor', function($compile){
+module.directive('richTextEditor', function($compile){
 	return {
 		restrict: 'E',
 		scope: {
@@ -587,7 +575,7 @@ oneModule.directive('richTextEditor', function($compile){
 	}
 })
 
-oneModule.directive('htmlEditor', function($compile){
+module.directive('htmlEditor', function($compile){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -623,7 +611,7 @@ oneModule.directive('htmlEditor', function($compile){
 	}
 });
 
-oneModule.directive('loadingIcon', function($compile){
+module.directive('loadingIcon', function($compile){
 	return {
 		restrict: 'E',
 		link: function($scope, $element, $attributes){
@@ -653,7 +641,7 @@ oneModule.directive('loadingIcon', function($compile){
 	}
 })
 
-oneModule.directive('loadingPanel', function($compile){
+module.directive('loadingPanel', function($compile){
 	return {
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
@@ -672,7 +660,7 @@ oneModule.directive('loadingPanel', function($compile){
 	}
 });
 
-oneModule.directive('behaviour', function($compile){
+module.directive('behaviour', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -685,7 +673,7 @@ oneModule.directive('behaviour', function($compile){
 	}
 });
 
-oneModule.directive('bottomScroll', function($compile){
+module.directive('bottomScroll', function($compile){
 	return {
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
@@ -702,7 +690,7 @@ oneModule.directive('bottomScroll', function($compile){
 	}
 })
 
-oneModule.directive('sharePanel', function($compile){
+module.directive('sharePanel', function($compile){
 	return {
 		scope: {
 			resources: '='
@@ -721,7 +709,7 @@ $(document).ready(function(){
 	}
 	buildModel();
 	Model.sync();
-	angular.bootstrap($('html'), ['one']);
+	angular.bootstrap($('html'), ['app']);
 });
 
 

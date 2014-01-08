@@ -205,6 +205,26 @@ var http = (function(){
 		}
 	});
 
+	Http.prototype.postFile = function(url, data, params){
+		if(typeof params !== 'object'){
+			params = {};
+		}
+		params.contentType = false;
+		params.processData = false;
+
+		return this.post(url, data, params)
+	};
+
+	Http.prototype.putFile = function(url, data, params){
+		if(typeof params !== 'object'){
+			params = {};
+		}
+		params.contentType = false;
+		params.processData = false;
+
+		return this.put(url, data, params)
+	};
+
 	var requestTypes = ['get', 'post', 'put', 'delete'];
 	requestTypes.forEach(function(type){
 		Http.prototype[type + 'Json'] = function(url, data, params, requestName){
@@ -243,54 +263,6 @@ var http = (function(){
 		return new Http();
 	}
 }());
-
-
-
-One = {
-	get: function(url, data, params){
-		return http().get(url, data, params);
-	},
-	post: function(url, data, params){
-		return http().post(url, data, params);
-	},
-	delete: function(url, data, params){
-		return http().delete(url, data, params);
-	},
-	put: function(url, data, params){
-		return http().put(url, data, params);
-	},
-	postFile: function(url, data, params){
-		if(typeof params !== 'object'){
-			params = {};
-		}
-		params.contentType = false;
-		params.processData = false;
-
-		return http().post(url, data, params)
-	},
-	putFile: function(url, data, params){
-		if(typeof params !== 'object'){
-			params = {};
-		}
-		params.contentType = false;
-		params.processData = false;
-
-		return http().put(url, data, params)
-	},
-	bind: function(eventName, handler){
-		http().bind(eventName, handler);
-	},
-	load: function(libName, callback){
-		return loader.load(libName, callback);
-	},
-	translate: function(key){
-		return lang.translate(key);
-	},
-	serialize: function(obj){
-		return http().serialize(obj);
-	}
-};
-
 
 var Model = {};
 (function(){
