@@ -103,5 +103,5 @@
 	"directory.admin.reset.code.sent" : "code de réinitialisation envoyé",
 	"directory.admin.reset.code.send.error" : "erreur lors de l'envoi du code de réinitialisation",
 	"birthday.class": "Ma classe",
-	"nobirthday": "Personne n'a anniversaire ce mois-ci !"
+	"nobirthday": "Personne n'a d'anniversaire ce mois-ci !"
 }
