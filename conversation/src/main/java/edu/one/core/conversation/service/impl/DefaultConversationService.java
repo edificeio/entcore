@@ -172,7 +172,8 @@ public class DefaultConversationService implements ConversationService {
 				"SET message.state = {sent} " +
 				"RETURN EXTRACT(u IN FIlTER(x IN users WHERE NOT(x.id IN sentIds)) | u.displayName) as undelivered,  " +
 				"EXTRACT(u IN FIlTER(x IN users WHERE x.id IN sentIds AND NOT(x.activationCode IS NULL)) " +
-				"| u.displayName) as inactive, LENGTH(sentIds) as sent";
+				"| u.displayName) as inactive, LENGTH(sentIds) as sent, " +
+				"sentIds, message.id as id, message.subject as subject";
 		findVisibles(eb, user.getUserId(), query, params, false, true, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {

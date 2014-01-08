@@ -1,10 +1,13 @@
 package edu.one.core.conversation.controllers;
 
+import com.github.mustachejava.MustacheException;
+import edu.one.core.common.notification.TimelineHelper;
 import edu.one.core.common.user.UserInfos;
 import edu.one.core.conversation.Conversation;
 import edu.one.core.conversation.service.ConversationService;
 import edu.one.core.conversation.service.impl.DefaultConversationService;
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.Either;
 import edu.one.core.infra.Utils;
 import edu.one.core.security.ActionType;
 import edu.one.core.security.SecuredAction;
@@ -12,9 +15,12 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +32,14 @@ import static edu.one.core.common.user.UserUtils.getUserInfos;
 public class ConversationController extends Controller {
 
 	private final ConversationService conversationService;
+	private final TimelineHelper notification;
 
 	public ConversationController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		this.conversationService = new DefaultConversationService(vertx,
 				container.config().getString("app-name", Conversation.class.getSimpleName()));
+		notification = new TimelineHelper(vertx, eb, container);
 	}
 
 	@SecuredAction("conversation.view")
@@ -96,7 +104,19 @@ public class ConversationController extends Controller {
 						@Override
 						public void handle(JsonObject message) {
 							conversationService.send(parentMessageId, messageId, message, user,
-									defaultResponseHandler(request));
+									new Handler<Either<String, JsonObject>>() {
+										@Override
+										public void handle(Either<String, JsonObject> event) {
+											if (event.isRight()) {
+												timelineNotification(request, event.right().getValue(), user);
+												renderJson(request, event.right().getValue());
+											} else {
+												JsonObject error = new JsonObject()
+														.putString("error", event.left().getValue());
+												renderJson(request, error, 400);
+											}
+										}
+									});
 						}
 					});
 				} else {
@@ -104,6 +124,38 @@ public class ConversationController extends Controller {
 				}
 			}
 		});
+	}
+
+	private void timelineNotification(HttpServerRequest request, JsonObject sentMessage, UserInfos user) {
+		log.debug(sentMessage.encode());
+		JsonArray r = sentMessage.getArray("sentIds");
+		String id = sentMessage.getString("id");
+		String subject = sentMessage.getString("subject", "<span translate key=\"timeline.no.subject\"></span>");
+		sentMessage.removeField("sentIds");
+		sentMessage.removeField("id");
+		sentMessage.removeField("subject");
+		if (r == null || id == null || user == null) {
+			return;
+		}
+		final JsonObject params = new JsonObject()
+				.putString("uri", container.config().getString("userbook-host") +
+						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("username", user.getUsername())
+				.putString("subject", subject)
+				.putString("messageUri", container.config().getString("host", "http://localhost:8019") +
+						pathPrefix + "/conversation/#view-mail/" + id);
+		String type = container.config().getString("app-name", Conversation.class.getSimpleName()).toUpperCase();
+		List<String> recipients = new ArrayList<>();
+		for (Object o : r) {
+			if (!(o instanceof String)) continue;
+			recipients.add((String) o);
+		}
+		try {
+			notification.notifyTimeline(request, user, type, type + "_SENT",
+					recipients, id, "notification/notify-send-message.html", params);
+		} catch (IOException | MustacheException e) {
+			log.error("Error sending conversation notification.", e);
+		}
 	}
 
 	@SecuredAction(value = "conversation.list", type = ActionType.AUTHENTICATED)
