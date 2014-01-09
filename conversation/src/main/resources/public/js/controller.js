@@ -19,8 +19,8 @@ function Conversation($scope, date, notify, route){
 		},
 		writeMail: function(params){
 			Model.folders.openFolder('inbox');
-			$scope.openView('write-mail', 'main');
 			new User({ id: params.userId }).findData(function(){
+				$scope.openView('write-mail', 'main');
 				$scope.addUser(this);
 			});
 		}

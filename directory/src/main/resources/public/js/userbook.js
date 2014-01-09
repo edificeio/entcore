@@ -95,7 +95,7 @@ var userbook = function(){
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
-									<i role="send-mail"></i>\
+									<a href="/conversation/conversation#/write-mail/{{id}}"><i role="send-mail"></i></a>\
 									<i role="view-book"></i>\
 									<i role="view-folder"></i>\
 								</span>\
@@ -119,7 +119,7 @@ var userbook = function(){
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
-									<i role="send-mail"></i>\
+									<a href="/conversation/conversation#/write-mail/{{id}}"><i role="send-mail"></i></a>\
 									<i role="view-book"></i>\
 									<i role="view-folder"></i>\
 								</span>\
@@ -143,7 +143,7 @@ var userbook = function(){
 								</div>\
 								<div class="row bottom-locked">\
 									<span class="actions">\
-									<i role="send-mail"></i>\
+									<a href="/conversation/conversation#/write-mail/{{id}}"><i role="send-mail"></i></a>\
 									<i role="view-book"></i>\
 									<i role="view-folder"></i>\
 								</span>\
@@ -201,7 +201,7 @@ var userbook = function(){
 				<div class="row text-container">\
 					<article id="actions" class="row text-container">\
 					<div class="row">\
-						<a><h3><i role="send-mail" class="text-flow"></i> {{#i18n}}userBook.class.write-message{{/i18n}}</h3></a>\
+						<a href="/conversation/conversation#/write-mail/{{id}}"><h3><i role="send-mail" class="text-flow"></i> {{#i18n}}userBook.class.write-message{{/i18n}}</h3></a>\
 					</div>\
 					<div class="row">\
 						<a><h3><i role="view-book" class="text-flow"></i> {{#i18n}}userBook.class.edit-notebook{{/i18n}}</h3></a>\
