@@ -38,5 +38,6 @@
 	"seemore" : "See more",
 	"e404" : "Address not found",
 	"notfound" : "Blog doesn't exist",
-	"share.varyingrights" : "Caution, you will modify sharing rights of this folder: all documents and directories in this folder will be affected"
+	"share.varyingrights" : "Caution, you will modify sharing rights of this folder: all documents and directories in this folder will be affected",
+	"share.me":"Me"
 }

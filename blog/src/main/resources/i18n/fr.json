@@ -46,5 +46,6 @@
 	"filters.published": "Publiés",
 	"filters.drafts": "Brouillons",
 	"filters.all": "Tous",
-	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés"
+	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés",
+	"share.me":"Moi"
 }
