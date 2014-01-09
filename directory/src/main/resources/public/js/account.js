@@ -70,8 +70,6 @@ function MyAccount($scope, http, lang, date, notify, _){
 	}
 
 	$scope.saveHobby = function(hobby){
-		//new lines formatting
-		//hobby.values = hobby.values.replace(/[\n]/g, '%0a');
 		http.get('api/edit-userbook-info', hobby);
 	};
 

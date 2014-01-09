@@ -1,4 +1,32 @@
-function Conversation($scope, date, notify){
+routes.define(function($routeProvider){
+	$routeProvider
+		.when("/read-mail/:mailId", {
+			action: "readMail"
+		})
+		.when("/write-mail/:userId", {
+			action: "writeMail"
+		})
+		.otherwise({
+			redirectTo: "/inbox"
+		})
+});
+
+function Conversation($scope, date, notify, route){
+	route({
+		readMail: function(params){
+			Model.folders.openFolder('inbox');
+			$scope.viewMail(new Mail({ id: params.mailId }));
+		},
+		writeMail: function(params){
+			Model.folders.openFolder('inbox');
+			$scope.openView('write-mail', 'main');
+			new User({ id: params.userId }).findData(function(){
+				$scope.addUser(this);
+			});
+		}
+	});
+
+
 	Model.folders.systemFolders.forEach(function(folderName){
 		Model.folders[folderName].on('mails.change', function(e){
 			$scope.$apply(folderName);

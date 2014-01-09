@@ -13,6 +13,7 @@ var loader = (function(){
 			{ path: 'jquery-1.9.1.js', async: true },
 			{ path: 'angular.min.js', async: true },
 			{ path: 'angular-sanitize.min.js', async: true },
+			{ path: 'angular-route.min.js', async: true },
 			{ path: 'one.js', async: true },
 			{ path: 'ui.js', async: true },
 			{ path: 'one-app.js', async: true },
@@ -129,6 +130,12 @@ var loader = (function(){
 
 document.addEventListener('DOMContentLoaded', function(){
 	document.getElementsByTagName('body')[0].style.display = 'none';
-})
+});
+
+var routes = {
+	define: function(routing){
+		this.routing = routing;
+	}
+};
 
 

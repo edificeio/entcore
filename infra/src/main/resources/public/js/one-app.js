@@ -122,7 +122,7 @@ var oneApp = {
 	}
 };
 
-var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvider) {
+var oneModule = angular.module('one', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
 	})
@@ -147,6 +147,19 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 			info: function(message){
 				this.message('info', message)
 			}
+		}
+	})
+	.factory('route', function($rootScope, $route, $routeParams){
+		var routes = {};
+
+		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
+			if(typeof routes[$route.current.action] === 'function'){
+				routes[$route.current.action]($routeParams);
+			}
+		});
+
+		return function(setRoutes){
+			routes = setRoutes;
 		}
 	})
 	.factory('date', function() {
@@ -207,6 +220,11 @@ var oneModule = angular.module('one', ['ngSanitize'], function($interpolateProvi
 	.factory('ui', function(){
 		return ui;
 	});
+
+//routing
+if(routes.routing){
+	oneModule.config(routes.routing);
+}
 
 //directives
 

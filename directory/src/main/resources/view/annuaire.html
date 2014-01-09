@@ -11,11 +11,19 @@
 		</script>
 		<title>{{#i18n}}userBook.class.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script>
+		var routes = {
+			define: function(routing){
+				this.routing = routing;
+			}
+		};
+		</script>
 		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" type="text/css" />
 		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular-route.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>

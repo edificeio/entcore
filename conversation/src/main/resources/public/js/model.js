@@ -6,6 +6,16 @@ function User(data){
 	this.toString = function(){
 		return (this.displayName || '') + (this.name || '');
 	};
+
+	this.findData = function(cb){
+		var that = this;
+		http().get('/userbook/api/person?id=' + this.id).done(function(userData){
+			that.updateData({ id: that.id, displayName: userData.result[0].displayName });
+			if(typeof cb === "function"){
+				cb.call(that, userData.result[0]);
+			}
+		})
+	}
 }
 
 User.prototype.mapUser = function(displayNames, id){
@@ -16,7 +26,9 @@ User.prototype.mapUser = function(displayNames, id){
 	})[0];
 };
 
-function Mail(){
+function Mail(data){
+	this.updateData(data);
+
 	this.sentDate = function(){
 		return moment(parseInt(this.date)).calendar();
 	};
