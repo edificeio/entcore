@@ -10,6 +10,7 @@
 	"e408" : "Request Time-out",
 	"e500" : "Internal Server Error",
 	"blog.read" : "Read",
+	"welcome": "Welcome, [[username]] !",
 	"blog.contrib" : "Contribute",
 	"blog.comment" : "Comment",
 	"blog.manager" : "Manage"
