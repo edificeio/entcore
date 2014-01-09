@@ -77,5 +77,6 @@
 	"workspace.invalid.folder.name" : "Invalid directory name",
 	"workspace.trash.error" : "Error while moving to the trash",
 	"workspace.forbidden.move.folder.in.itself" : "You can't move a folder in itself",
-	"workspace.folder.already.exists" : "The folder already exist"
+	"workspace.folder.already.exists" : "The folder already exist",
+	"share.me":"Me"
 }

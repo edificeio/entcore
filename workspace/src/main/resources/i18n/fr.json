@@ -80,5 +80,6 @@
     "workspace.folder.already.exists" : "Le dossier existe déjà.",
 	"files.select": "Sélectionner les fichiers",
 	"files.select.please": "Veuillez sélectionner un document",
-	"files.header": "Charger plusieurs fichiers"
+	"files.header": "Charger plusieurs fichiers",
+	"share.me":"Moi"
 }
