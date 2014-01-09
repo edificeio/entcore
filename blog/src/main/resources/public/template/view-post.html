@@ -41,7 +41,9 @@
 				<em>[[formatDate(comment.created.$date)]]</em>
 				<a class="cell right-magnet"
 				   ng-click="removeComment(post, comment)"
-				   ng-if="currentBlog.myRights.comment.remove">Supprimer</a>
+				   ng-if="currentBlog.myRights.comment.remove && (comment.author.userId === me.userId || currentBlog.myRights.manager)">
+					<span translate key="blog.delete.post"></span>
+				</a>
 				<p>[[comment.comment]]</p>
 			</article>
 		</div>
