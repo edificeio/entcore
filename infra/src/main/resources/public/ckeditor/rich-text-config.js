@@ -19,6 +19,9 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }
 	];
 
+	config.linkShowAdvancedTab = false;
+	config.linkShowTargetTab = false;
+
 	config.allowedContent = true;
 
 	config.smiley_images= [];
