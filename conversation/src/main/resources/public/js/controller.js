@@ -162,14 +162,15 @@ function Conversation($scope, date, notify, route){
 	};
 
 	$scope.saveDraft = function(){
-		notify.info('Brouillon enregistré');
+		notify.info('draft.saved');
+		$scope.openFolder();
 		Model.folders.draft.saveDraft($scope.newItem);
 	};
 
 	$scope.sendMail = function(){
 		$scope.newItem.send(function(result){
 			if(parseInt(result.sent) > 0){
-				notify.info('Message envoyé');
+				notify.info('mail.sent');
 			}
 			var inactives = '';
 			result.inactive.forEach(function(name){

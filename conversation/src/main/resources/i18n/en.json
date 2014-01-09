@@ -6,7 +6,8 @@
 	"outbox": "Outbox",
 	"draft": "Drafts",
 	"trash": "Trash",
-	"conversation.title": "Conversation",
+	"conversation.title": "Messaging",
+	"draft.saved": "Draft saved",
 	"clickhere": "Click here ",
 	"copy": "Copy",
 	"save": "Save",
@@ -37,5 +38,6 @@
 	"e500" : "Internal Server Error",
 	"folder.empty": "Empty folder",
 	"nosubject": "(no subject)",
+	"mail.sent": "Mail sent",
 	"reply.content": "[[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> wrote : "
 }
