@@ -9,8 +9,6 @@
 	</head>
 	<body data-ng-controller="Blog">
 	<portal>
-
-
 	<div class="row">
 		<div class="four cell">
 			<h1><a data-reload><i role="blog"></i>{{#i18n}}blog.title{{/i18n}}</a></h1>
@@ -57,7 +55,7 @@
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
 			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
 		    <h1 class="text" ng-if="isCurrentView('listPosts') && blogs.length !== 0"><i role="blog"></i>[[currentBlog.title]]</h1>
-			<em class="medium-importance" ng-if="isCurrentView('listPosts') && blogs.length !== 0">Par <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
+			<em class="medium-importance" ng-if="isCurrentView('listPosts') && blogs.length !== 0"><span translate key="blog.by"></span> <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
 			<div class="row">
 				<hr />
 			</div>

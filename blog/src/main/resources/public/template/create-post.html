@@ -1,6 +1,6 @@
 <div class="text-container">
 <form data-ng-submit="savePost()">
-	<input type="text" data-ng-model="create.post.title" placeholder="Entrez le titre de votre billet" required class="twelve cell" />
+	<input type="text" data-ng-model="create.post.title" placeholder="post.title.placeholder" translate-attr="placeholder" required class="twelve cell" />
 	<html-editor
 		ng-model="create.post.content"
 		file-upload-path="'/workspace/document?application=blog-' + currentBlog.id + '&protected=true'"

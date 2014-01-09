@@ -6,6 +6,7 @@
 	"blog.create.title": "Nouveau blog",
 	"blog.edit.post": "Modifier",
 	"blog.save": "Enregistrer",
+	"blog.changeimage": "Changer l'image",
 	"blog.delete.post": "Supprimer",
 	"blog.comment.post": "Commenter",
 	"blog.publish": "Publier",
@@ -48,5 +49,12 @@
 	"filters.drafts": "Brouillons",
 	"filters.all": "Tous",
 	"share.varyingrights": "Attention, vous allez modifier des droits de partage sur ce dossier : tous les documents et répertoires de ce dossier seront affectés",
-	"share.me":"Moi"
+	"share.me":"Moi",
+	"posts.filter": "Voir les billets",
+	"post.title.placeholder": "Entrez le titre de votre billet",
+	"blog.title.placeholder": "Entrez le titre de votre blog",
+	"comments.show": "Afficher les commentaires ([[nbComments(post)]])",
+	"comments.hide": "Masquer les commentaires ([[nbComments(post)]])",
+	"comment.placehlder": "Entrez votre commentaire",
+	"draft.saved": "Brouillon enregistré"
 }

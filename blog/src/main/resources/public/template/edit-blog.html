@@ -15,14 +15,14 @@
 				<div class="hidden-content">
 					<input type="file" name="file"  id="avatar" file-input-change="updateBlogImage(currentBlog)" data-ng-model="photo.file"/>
 				</div>
-				<button class="file-button file-selector" data-linked="avatar">Changer l'image</button>
+				<button class="file-button file-selector" data-linked="avatar" translate key="blog.changeimage"></button>
 			</form>
 		</div>
 
 	</div>
 	<div class="row">
-		<input type="submit" class="button right-magnet" value="Valider" data-ng-click="saveBlogChanges()">
-		<input type="button" class="button right-magnet cancel" data-ng-click="defaultView()" value="Annuler">
+		<input type="submit" class="button right-magnet" translate-attr="value" value="blog.save" data-ng-click="saveBlogChanges()">
+		<input type="button" class="button right-magnet cancel" translate-attr="value" data-ng-click="defaultView()" value="cancel">
 		<div class="clear"></div>
 	</div>
 </form>

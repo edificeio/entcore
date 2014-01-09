@@ -1,9 +1,9 @@
 <hr />
 <form data-ng-submit="commentPost()">
-	<textarea data-ng-model="create.comment.comment" placeholder="Entrez votre commentaire"></textarea>
+	<textarea data-ng-model="create.comment.comment" translate-attr="placeholder" placeholder="comment.placeholder"></textarea>
 	<div>
-		<input type="submit" class="button right-magnet" value="Valider" />
-		<input type="button" class="button right-magnet cancel" data-ng-click="hideCommentForm()" value="Annuler">
+		<input type="submit" class="button right-magnet" value="blog.publish" translate-attr="value" />
+		<input type="button" class="button right-magnet cancel" data-ng-click="hideCommentForm()" value="cancel" translate-attr="value">
 	</div>
 	<div class="clear"></div>
 </form>

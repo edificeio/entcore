@@ -334,7 +334,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 		http.post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(createdPost){
 			$scope.create.post._id = createdPost._id;
 		});
-		notify.info('Brouillon enregistré');
+		notify.info('draft.saved');
 	};
 
 	$scope.savePost = function(){

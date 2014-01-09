@@ -9,5 +9,8 @@
 	"e403": "Le serveur a refusé votre requête",
 	"e404": "Adresse introuvable",
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
-	"e500": "Le serveur a rencontré une erreur"
+	"e500": "Le serveur a rencontré une erreur",
+	"share.publish.title": "Circuit de publication",
+	"share.publish.immediate": "Publication immédiate",
+	"share.publish.differed": "Billet à soumettre"
 }
