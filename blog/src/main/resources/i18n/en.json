@@ -54,5 +54,6 @@
 	"comments.hide": "Hide comments ([[nbComments(post)]])",
 	"blog.publish": "Publish",
 	"comment.placeholder": "Enter your comment",
-	"draft.saved": "Draft saved"
+	"draft.saved": "Draft saved",
+	"post.empty": "This post is empty"
 }

@@ -56,5 +56,6 @@
 	"comments.show": "Afficher les commentaires ([[nbComments(post)]])",
 	"comments.hide": "Masquer les commentaires ([[nbComments(post)]])",
 	"comment.placehlder": "Entrez votre commentaire",
-	"draft.saved": "Brouillon enregistré"
+	"draft.saved": "Brouillon enregistré",
+	"post.empty": "Votre billet est vide"
 }
