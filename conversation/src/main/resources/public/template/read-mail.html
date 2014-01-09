@@ -33,16 +33,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="row block-container medium-text" ng-if="!containsView('reply', 'write-mail')">
+	<div class="row block-container medium-text">
 		<span translate key="clickhere"></span>
 		<a ng-click="reply()" translate key="reply"></a>,
 		<a ng-click="replyAll()" translate key="replyall"></a>,
 		<a ng-click="transfer()" translate key="transfer"></a>,
 		<a ng-click="removeSelection(); openFolder()" translate key="remove"></a> <span translate key="message"></span>
-	</div>
-	<div class="row" ng-if="containsView('reply', 'write-mail')">
-		<div class="twelve cell" ng-include="viewsContainers.reply">
-		</div>
-		<div class="row clear">&nbsp;</div>
 	</div>
 </article>

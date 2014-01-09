@@ -56,7 +56,6 @@ function Conversation($scope, date, notify, route){
 		if(!folderName){
 			folderName = Model.folders.current.folderName;
 		}
-		$scope.openView('', 'reply');
 		$scope.mail = undefined;
 		Model.folders.openFolder(folderName);
 		$scope.openView(folderName, 'main');
@@ -105,10 +104,10 @@ function Conversation($scope, date, notify, route){
 
 	var format = {
 		reply: {
-			prefix: 'Re : '
+			prefix: lang.translate('reply.re')
 		},
 		transfer: {
-			prefix: 'Tr : '
+			prefix: lang.translate('reply.fw')
 		}
 	};
 
@@ -132,19 +131,19 @@ function Conversation($scope, date, notify, route){
 	}
 
 	$scope.transfer = function(){
-		$scope.openView('write-mail', 'reply');
+		$scope.openView('write-mail', 'main');
 		setMailContent('transfer');
 	};
 
 	$scope.reply = function(){
-		$scope.openView('write-mail', 'reply');
+		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
 		$scope.addUser($scope.mail.sender());
 		setMailContent('reply');
 	};
 
 	$scope.replyAll = function(){
-		$scope.openView('write-mail', 'reply');
+		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
 		setMailContent('reply');
 		$scope.mail.displayNames.forEach(function(user){
