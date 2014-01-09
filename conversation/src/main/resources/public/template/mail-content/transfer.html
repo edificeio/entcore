@@ -1,5 +1,4 @@
 <p>&nbsp;</p><p class="row"><hr /></p>
-<h4 translate key="transfer.title"></h4>
 <p class="medium-text">
 	<span translate key="transfer.from"></span><em>[[mail.sender().displayName]]</em>
 	<br /><span class="medium-importance" translate key="transfer.date"></span><em>[[mail.longDate()]]</em>
@@ -8,5 +7,8 @@
 	<em class="medium-importance" ng-repeat="receiver in mail.to">
 		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
 	</em>
-
+	<br /><span class="medium-importance" translate key="transfer.cc"></span>
+	<em class="medium-importance" ng-repeat="receiver in mail.cc">
+		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+	</em>
 </p>

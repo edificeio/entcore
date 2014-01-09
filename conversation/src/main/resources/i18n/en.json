@@ -30,6 +30,7 @@
 	"transfer.date": "Date: ",
 	"transfer.subject": "Subject: ",
 	"transfer.to": "To: ",
+	"transfer.cc": "Copy: ",
 	"e400" : "Bad Request",
 	"e401" : "You don't have the permission to acces this content",
 	"e403" : "Forbidden",

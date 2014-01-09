@@ -29,6 +29,7 @@
 	"transfer.date": "Date: ",
 	"transfer.subject": "Objet : ",
 	"transfer.to": "A : ",
+	"transfer.cc": "Copie à : ",
 	"e400": "Le client a rencontré une erreur",
 	"e401": "Vous n'avez pas les droits d'accès pour ce contenu",
 	"e403": "Le serveur a refusé votre requête",
