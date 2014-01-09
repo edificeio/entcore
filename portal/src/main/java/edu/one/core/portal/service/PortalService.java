@@ -12,6 +12,7 @@ import edu.one.core.security.SecuredAction;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -171,6 +172,12 @@ public class PortalService extends Controller {
 				}
 			}
 		});
+	}
+
+	public void locale(HttpServerRequest request) {
+		String[] langs = request.headers().get("Accept-Language").split(",");
+		renderJson(request, new JsonObject().putString("locale",
+				Locale.forLanguageTag(langs[0].split("-")[0]).toString()));
 	}
 
 }

@@ -16,6 +16,7 @@ public class Portal extends Server {
 				.get("/apps", "apps")
 				.get("/adapter", "adapter")
 				.get("/theme", "getTheme")
+				.get("/locale", "locale")
 				.getWithRegEx("/assets/.+", "assets");
 
 	}
