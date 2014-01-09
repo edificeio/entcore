@@ -4,7 +4,19 @@ if(window.appPrefix === undefined){
 	}
 }
 
-var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
+var currentLanguage = '';
+(function(){
+	var request = new XMLHttpRequest();
+	request.open('GET', '/locale');
+	request.async = false;
+	request.onload = function(){
+		if(request.status === 200){
+			currentLanguage = request.responseText;
+		}
+	}
+	request.send(null);
+}());
+
 
 var loader = (function(){
 	var configurations = {
@@ -137,5 +149,4 @@ var routes = {
 		this.routing = routing;
 	}
 };
-
 

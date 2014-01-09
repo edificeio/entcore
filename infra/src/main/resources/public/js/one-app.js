@@ -167,16 +167,21 @@ var oneModule = angular.module('one', ['ngSanitize', 'ngRoute'], function($inter
 			loader.syncLoad('moment');
 		}
 
-		moment.lang(currentLanguage, {
-			calendar : {
-				lastDay : '[Hier à] HH[h]mm',
-				sameDay : '[Aujourd\'hui à] HH[h]mm',
-				nextDay : '[Demain à] HH[h]mm',
-				lastWeek : 'dddd [dernier à] HH[h]mm',
-				nextWeek : 'dddd [prochain à] HH[h]mm',
-				sameElse : 'dddd LL'
-			}
-		});
+		if(currentLanguage === 'fr'){
+			moment.lang(currentLanguage, {
+				calendar : {
+					lastDay : '[Hier à] HH[h]mm',
+					sameDay : '[Aujourd\'hui à] HH[h]mm',
+					nextDay : '[Demain à] HH[h]mm',
+					lastWeek : 'dddd [dernier à] HH[h]mm',
+					nextWeek : 'dddd [prochain à] HH[h]mm',
+					sameElse : 'dddd LL'
+				}
+			});
+		}
+		else{
+			moment.lang(currentLanguage);
+		}
 
 		return {
 			format: function(date, format) {
