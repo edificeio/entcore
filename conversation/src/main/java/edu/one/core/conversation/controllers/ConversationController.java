@@ -143,7 +143,7 @@ public class ConversationController extends Controller {
 				.putString("username", user.getUsername())
 				.putString("subject", subject)
 				.putString("messageUri", container.config().getString("host", "http://localhost:8019") +
-						pathPrefix + "/conversation/#view-mail/" + id);
+						pathPrefix + "/conversation#/read-mail/" + id);
 		String type = container.config().getString("app-name", Conversation.class.getSimpleName()).toUpperCase();
 		List<String> recipients = new ArrayList<>();
 		for (Object o : r) {
