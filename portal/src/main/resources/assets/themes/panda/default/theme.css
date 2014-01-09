@@ -3962,6 +3962,21 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
   float: left;
   vertical-align: middle;
 }
+.filters li i[role=conversation],
+.filters li i[role=messagerie] {
+  height: 20px;
+  width: 20px;
+  background-image: url("../img/icons/conversation-small.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 .filters li i[role=userbook] {
   height: 20px;
   width: 20px;
