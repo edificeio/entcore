@@ -18,7 +18,7 @@
 				<ul>
 					<li>
 						<a ng-click="openFolder('inbox')" ng-class="{ selected: folders.current.folderName === 'inbox' }">
-							[[lang.translate('inbox')]]
+							[[lang.translate('inbox')]] ([[folders.inbox.nbUnread()]])
 						</a>
 					</li>
 					<li>

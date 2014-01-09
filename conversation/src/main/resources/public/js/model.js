@@ -243,4 +243,8 @@ function buildModel(){
 		http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
 		this.removeSelection();
 	};
+
+	Model.folders.inbox.nbUnread = function(){
+		return _.where(this.mails.all, { unread: true }).length;
+	}
 }
