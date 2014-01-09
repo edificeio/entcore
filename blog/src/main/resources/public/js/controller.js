@@ -331,7 +331,7 @@ function Blog($scope, http, date, _, ui, lang, notify){
 
 	$scope.saveDraft = function(){
 		$scope.create.post.state = 'DRAFT';
-		if(!$scope.create.post.content){
+		if(!$scope.create.post.content || !$scope.create.post.title){
 			notify.error('post.empty');
 			return;
 		}

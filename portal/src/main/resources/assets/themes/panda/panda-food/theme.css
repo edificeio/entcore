@@ -437,6 +437,9 @@ nav.horizontal a {
 .user-content {
   white-space: pre-line;
 }
+.inline {
+  margin: 0;
+}
 .birthday {
   width: 1;
   -webkit-box-sizing: border-box;
@@ -3865,7 +3868,6 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .line p {
   font-size: 14px;
-  margin: 0;
 }
 .line p a {
   font-size: 14px;
