@@ -1,12 +1,27 @@
-Model.build = function(){
-	function Notification(){
-		this.isUnread = function(){
-			return _.find(this.recipients, function(recipient){
-				return recipient.userId === Model.state.me.userId;
-			}) !== undefined;
-		}
+function Notification(){
+	this.isUnread = function(){
+		return _.find(this.recipients, function(recipient){
+			return recipient.userId === Model.state.me.userId;
+		}) !== undefined;
 	}
+}
 
+function NotificationType(){
+	this.apply = function(){
+		Model.notificationTypes.current = this;
+		Model.notifications.sync();
+	}
+}
+
+function Widget(data){}
+
+function Skin(data){
+	this.setForUser = function(){
+		http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + this._id);
+	}
+}
+
+Model.build = function(){
 	Model.collection(Notification, {
 		sync: function(){
 			var params = {};
@@ -20,12 +35,6 @@ Model.build = function(){
 		}
 	});
 
-	function NotificationType(){
-		this.apply = function(){
-			Model.notificationTypes.current = this;
-			Model.notifications.sync();
-		}
-	}
 	Model.collection(NotificationType, {
 		sync: function(){
 			var that = this;
@@ -37,9 +46,8 @@ Model.build = function(){
 			Model.notificationTypes.current = null;
 			Model.notifications.sync();
 		}
-	})
+	});
 
-	function Widget(data){}
 	Model.collection(Widget, {
 		sync: function(){
 			var that = this;
@@ -56,12 +64,6 @@ Model.build = function(){
 			Model.trigger('widgets.change');
 		}
 	});
-
-	function Skin(data){
-		this.setForUser = function(){
-			http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + this._id);
-		}
-	}
 
 	Model.collection(Skin, {
 		sync: function(){

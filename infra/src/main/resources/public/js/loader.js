@@ -21,24 +21,17 @@ var currentLanguage = '';
 var loader = (function(){
 	var configurations = {
 		'portal': [
-			{ path: 'moment+langs.js', async: true },
-			{ path: 'jquery-1.9.1.js', async: true },
-			{ path: 'angular.min.js', async: true },
-			{ path: 'angular-sanitize.min.js', async: true },
-			{ path: 'angular-route.min.js', async: true },
-			{ path: 'lib.js', async: true },
-			{ path: 'ui.js', async: true },
-			{ path: 'angular-app.js', async: true },
-			{ path: 'underscore-min-1.4.4.js', async: true },
-			{ path: 'humane.min.js', async: true }],
-		'app': [
-			{ path: 'jquery-1.9.1.js', async: true },
-			{ path: 'angular.min.js', async: true },
-			{ path: 'angular-sanitize.min.js', async: true },
-			{ path: 'lib.js', async: true },
-			{ path: 'iframe.js', async: true},
-			{ path: 'ui.js', async: true },
-			{ path: 'angular-app.js', async: true }]
+			{ path: 'moment+langs.js' },
+			{ path: 'jquery-1.10.2.min.js' },
+			{ path: 'angular.min.js' },
+			{ path: 'angular-sanitize.min.js' },
+			{ path: 'angular-route.min.js' },
+			{ path: 'underscore-min-1.4.4.js' },
+			{ path: 'watch-polyfill.js' },
+			{ path: 'lib.js' },
+			{ path: 'ui.js' },
+			{ path: 'humane.min.js' },
+			{ path: 'angular-app.js' }]
 	};
 
 	var loadedScripts = {};
@@ -46,7 +39,6 @@ var loader = (function(){
 	var libraries = {
 		moment: 'moment+langs.js',
 		humane: 'humane.min.js',
-		iframe: 'iframe.js',
 		underscore: 'underscore-min-1.4.4.js',
 		ckeditor: '../ckeditor/ckeditor.js'
 	}
@@ -101,20 +93,10 @@ var loader = (function(){
 	}
 
 	var load = function(script){
-		if(script.async){
-			loadScript(script.path, script.completePath);
-		}
-		else{
-			syncLoadScript(script.path);
-		}
+		loadScript(script.path, script.completePath);
 	}
 
-	if(parent !== window){
-		configurations.app.forEach(load);
-	}
-	else{
-		configurations.portal.forEach(load);
-	}
+	configurations.portal.forEach(load);
 
 	return {
 		load: function(library){
@@ -150,7 +132,6 @@ var routes = {
 	}
 };
 
-var Model = {
-	build: function(){}
-}
+var Model = {};
+Model.build = function(){};
 

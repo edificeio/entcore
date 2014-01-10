@@ -127,19 +127,10 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		$interpolateProvider.endSymbol(']]');
 	})
 	.factory('notify', function(){
-		if(!window.humane){
-			loader.syncLoad('humane');
-		}
-
 		return {
 			message: function(type, message){
 				message = lang.translate(message);
-				if(parent !== window){
-					messenger.notify(type, message);
-				}
-				else{
-					humane.spawn({ addnCls: 'humane-original-' + type })(message);
-				}
+				humane.spawn({ addnCls: 'humane-original-' + type })(message);
 			},
 			error: function(message){
 				this.message('error', message);

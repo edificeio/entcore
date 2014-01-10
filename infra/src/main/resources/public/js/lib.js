@@ -264,6 +264,14 @@ var http = (function(){
 	}
 }());
 
+function Collection(obj){
+	this.all = [];
+	this.current = null;
+	this.obj = obj;
+	this.events = {};
+	this.sync = function(){}
+}
+
 (function(){
 	function pluralizeName(obj){
 		if(!obj.name){
@@ -271,18 +279,25 @@ var http = (function(){
 		}
 		return obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
 	}
-	function Collection(obj){
-		this.all = [];
-		this.current = null;
-		this.obj = obj;
-		this.sync = function(){
-
-		}
-	}
 
 	Collection.prototype = {
+		on: function(eventName, cb){
+			this.events[eventName] = cb;
+		},
 		trigger: function(event){
-			Model.trigger(pluralizeName(this.obj) + '.' + event);
+			if(this.composer && this.composer.trigger){
+				this.composer.trigger(pluralizeName(this.obj) + '.' + event);
+			}
+
+			if(typeof this.events[event] === 'function'){
+				this.events[event]();
+			}
+		},
+		forEach: function(cb){
+			this.all.forEach(cb);
+		},
+		first: function(){
+			return this.all[0];
 		},
 		select: function(predicate){
 			_.find(this.all, predicate).forEach(function(item){
@@ -305,7 +320,19 @@ var http = (function(){
 			});
 		},
 		push: function(element, notify){
-			this.all.push(element);
+			var newItem = element;
+			if(!(newItem instanceof this.obj)){
+				newItem = new this.obj(element);
+			}
+
+			for(var property in element){
+				(function(){
+					var prop = property;
+					newItem.watch(prop, function(val){ newItem.trigger(prop + '.change', { newVal: val })});
+				}());
+
+			}
+			this.all.push(newItem);
 			if(notify === false){
 				return;
 			}
@@ -354,8 +381,20 @@ var http = (function(){
 		}
 	};
 
+	for(var property in _){
+		(function(){
+			if(_.hasOwnProperty(property) && typeof _[property] === 'function'){
+				var func = property;
+				Collection.prototype[func] = function(arg){
+					return _[func](this.all, arg);
+				}
+			}
+		}());
+	}
+
 	Model.collection = function(obj, methods){
 		var col = new Collection(obj);
+		col.composer = this;
 		this[pluralizeName(obj)] = col;
 
 		for(var method in methods){

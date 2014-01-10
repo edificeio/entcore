@@ -337,6 +337,7 @@ function Blog($scope, date, _, ui, lang, notify){
 		}
 		http().post('/blog/post/' + $scope.currentBlog._id, $scope.create.post).done(function(createdPost){
 			$scope.create.post._id = createdPost._id;
+			$scope.displayBlog($scope.currentBlog);
 		});
 		notify.info('draft.saved');
 	};

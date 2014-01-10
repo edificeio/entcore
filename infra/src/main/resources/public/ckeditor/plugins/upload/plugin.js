@@ -15,7 +15,7 @@ CKEDITOR.plugins.add( 'upload', {
 					var formData = new FormData();
 					formData.append('file', fileSelector[0].files[0]);
 
-					One.postFile(uploadPath + '&thumbnail=600x0&name=' + fileSelector[0].files[0].name,  formData, {
+					http().postFile(uploadPath + '&thumbnail=600x0&name=' + fileSelector[0].files[0].name,  formData, {
 							requestName: 'ckeditor-image'
 						})
 						.done(function(e){

@@ -183,7 +183,7 @@ function Folder(api){
 }
 
 Model.build = function(){
-	Model.collection(User, {
+	this.collection(User, {
 		sync: function(){
 			var that = this;
 			http().get('/conversation/visible').done(function(data){
@@ -218,7 +218,7 @@ Model.build = function(){
 		}
 	});
 
-	Model.collection(Folder, {
+	this.collection(Folder, {
 		sync: function(){
 			if(this.current === null){
 				this.current = this.inbox;
@@ -235,19 +235,19 @@ Model.build = function(){
 		systemFolders: ['inbox', 'draft', 'outbox', 'trash']
 	});
 
-	Model.folders.systemFolders.forEach(function(folderName){
+	this.folders.systemFolders.forEach(function(folderName){
 		Model.folders[folderName] = new Folder({
 			get: '/conversation/list/' + folderName.toUpperCase()
 		});
 		Model.folders[folderName].folderName = folderName;
 	});
 
-	Model.folders.draft.saveDraft = function(draft){
+	this.folders.draft.saveDraft = function(draft){
 		draft.saveAsDraft();
 		this.mails.push(draft);
 	};
 
-	Model.folders.trash.mails.restoreMails = function(){
+	this.folders.trash.mails.restoreMails = function(){
 		http().put('/conversation/restore?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
 		this.removeSelection();
 		Model.folders.inbox.mails.refresh();
@@ -255,17 +255,17 @@ Model.build = function(){
 		Model.folders.draft.mails.refresh();
 	};
 
-	Model.folders.trash.mails.removeMails = function(){
+	this.folders.trash.mails.removeMails = function(){
 		http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
 		this.removeSelection();
 	};
 
-	Model.folders.inbox.countUnread = function(){
+	this.folders.inbox.countUnread = function(){
 		var that = this;
 		http().get('/conversation/count/INBOX', { unread: true }).done(function(data){
 			that.nbUnread = parseInt(data.count);
 		});
 	}
 
-	Model.folders.inbox.countUnread();
-}
+	this.folders.inbox.countUnread();
+};

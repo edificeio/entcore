@@ -17,21 +17,21 @@
 				this.routing = routing;
 			}
 		};
-		var Model = {
-			build: function(){}
-		}
+		function Model(){}
+		Model.prototype.build = function(){};
 		</script>
 		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" type="text/css" />
 		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-sanitize-1.0.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular-sanitize.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/angular-route.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/watch-polyfill.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/lib.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/angular-app.js{{/infra}}" type="text/javascript"></script>
 
