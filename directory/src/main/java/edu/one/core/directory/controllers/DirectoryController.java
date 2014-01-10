@@ -215,7 +215,7 @@ public class DirectoryController extends Controller {
 					"WHERE (n:School OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
 					"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
 					"m.login as login, m.activationCode as activationCode, " +
-					"HEAD(filter(x IN labels(m) WHERE x <> 'User')) as type " +
+					"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
 					"ORDER BY type, login ";
 			params.put("id", request.params().get("id"));
 		} else {
