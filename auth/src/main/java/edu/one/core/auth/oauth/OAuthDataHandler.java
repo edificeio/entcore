@@ -144,23 +144,39 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void createOrUpdateAccessToken(final AuthInfo authInfo, final Handler<AccessToken> handler) {
 		if (authInfo != null) {
-			final JsonObject token = new JsonObject()
-			.putString("authId", authInfo.getId())
-			.putString("token", UUID.randomUUID().toString())
-			.putObject("createdOn", MongoDb.now())
-			.putNumber("expiresIn", 3600);
-			mongo.save(ACCESS_TOKEN_COLLECTION, token, new org.vertx.java.core.Handler<Message<JsonObject>>() {
-
+			final JsonObject query = new JsonObject().putString("authId", authInfo.getId());
+			mongo.count(ACCESS_TOKEN_COLLECTION, query,
+					new org.vertx.java.core.Handler<Message<JsonObject>>() {
 				@Override
-				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						AccessToken t = new AccessToken();
-						t.setAuthId(authInfo.getId());
-						t.setToken(token.getString("token"));
-						t.setCreatedOn(new Date(token.getObject("createdOn").getLong("$date")));
-						t.setExpiresIn(3600);
-						handler.handle(t);
-					} else {
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status")) &&
+							event.body().getNumber("count", 1) == 0) {
+						final JsonObject token = new JsonObject()
+								.putString("authId", authInfo.getId())
+								.putString("token", UUID.randomUUID().toString())
+								.putObject("createdOn", MongoDb.now())
+								.putNumber("expiresIn", 3600);
+						mongo.save(ACCESS_TOKEN_COLLECTION, token,
+								new org.vertx.java.core.Handler<Message<JsonObject>>() {
+
+							@Override
+							public void handle(Message<JsonObject> res) {
+								if ("ok".equals(res.body().getString("status"))) {
+									AccessToken t = new AccessToken();
+									t.setAuthId(authInfo.getId());
+									t.setToken(token.getString("token"));
+									t.setCreatedOn(new Date(token.getObject("createdOn").getLong("$date")));
+									t.setExpiresIn(3600);
+									handler.handle(t);
+								} else {
+									handler.handle(null);
+								}
+							}
+						});
+					} else { // revoke existing token and code with same authId
+						mongo.delete(ACCESS_TOKEN_COLLECTION, query);
+						mongo.delete(AUTH_INFO_COLLECTION,
+								new JsonObject().putString("_id", authInfo.getId()));
 						handler.handle(null);
 					}
 				}
@@ -284,8 +300,9 @@ public class OAuthDataHandler extends DataHandler {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result");
+					JsonObject r = res.body().getObject("result");
+					if ("ok".equals(res.body().getString("status")) &&
+							r != null && r.size() > 0) {
 						AccessToken t = new AccessToken();
 						t.setAuthId(r.getString("authId"));
 						t.setToken(r.getString("token"));
