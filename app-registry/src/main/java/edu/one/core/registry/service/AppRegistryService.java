@@ -302,7 +302,7 @@ public class AppRegistryService extends Controller {
 				"WHERE n.id = {id} " +
 				"RETURN n.id as id, n.name as name, " +
 				"n.grantType as grantType, n.secret as secret, n.address as address, " +
-				"n.icon as icon, n.target as target",
+				"n.icon as icon, n.target as target, n.displayName as displayName",
 				params,
 				request.response()
 			);
@@ -324,12 +324,14 @@ public class AppRegistryService extends Controller {
 				String address = request.formAttributes().get("address");
 				String icon = request.formAttributes().get("icon");
 				String target = request.formAttributes().get("target");
+				String displayName = request.formAttributes().get("displayName");
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					String query =
 							"MATCH (n:Application) " +
 							"WHERE n.id = {applicationId} " +
 							"SET n.grantType = {grantType}, n.secret = {secret}, " +
-							"n.address = {address} , n.icon = {icon} , n.target = {target}";
+							"n.address = {address}, n.icon = {icon}, n.target = {target}, " +
+							"n.displayName = {displayName}";
 					Map<String, Object> params = new HashMap<>();
 					params.put("applicationId", applicationId);
 					params.put("grantType", Utils.getOrElse(grantType, ""));
@@ -337,6 +339,7 @@ public class AppRegistryService extends Controller {
 					params.put("address", Utils.getOrElse(address, ""));
 					params.put("icon", Utils.getOrElse(icon, ""));
 					params.put("target", Utils.getOrElse(target, ""));
+					params.put("displayName", Utils.getOrElse(displayName, ""));
 					neo.send(query, params, request.response());
 				} else {
 					badRequest(request);
@@ -360,7 +363,8 @@ public class AppRegistryService extends Controller {
 					String address = request.formAttributes().get("address");
 					String icon = request.formAttributes().get("icon");
 					String target = request.formAttributes().get("target");
-					String query = "CREATE (c:Application { id: {id}, name: {name}, " +
+					String displayName = request.formAttributes().get("displayName");
+					String query = "CREATE (c:Application { id: {id}, name: {name}, displayName: {displayName}, " +
 							"grantType: {grantType}, address: {address} , icon: {icon} , target: {target} ";
 					if (secret != null && !secret.trim().isEmpty()) {
 						query += ", secret: {secret} })";
@@ -377,6 +381,7 @@ public class AppRegistryService extends Controller {
 					params.putString("address", Utils.getOrElse(address, ""));
 					params.putString("icon", Utils.getOrElse(icon, ""));
 					params.putString("target", Utils.getOrElse(target, ""));
+					params.putString("displayName", Utils.getOrElse(displayName, ""));
 					queries.addObject(Neo.toJsonObject(query, params));
 					if (address != null && !address.trim().isEmpty()) {
 						String query2 =
@@ -412,7 +417,8 @@ public class AppRegistryService extends Controller {
 				"CREATE (m:Application {id:'" + UUID.randomUUID().toString() + "', " +
 				"address:'" + app.getString("address", "") + "', " +
 				"icon:'" + app.getString("icon", "") + "', " +
-				"name:'" + application +
+				"name:'" + application + "', " +
+				"displayName:'" + application +
 				"'}) " +
 				"RETURN m.id as id",
 				new Handler<Message<JsonObject>>() {

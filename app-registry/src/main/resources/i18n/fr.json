@@ -19,5 +19,6 @@
 	"app.registry.application.address" : "Adresse",
 	"app.registry.application.target" : "Target",
 	"app.registry.application.icon" : "Icone",
-	"app.registry.createExternalApp" : "Créer une application externe"
+	"app.registry.createExternalApp" : "Créer une application externe",
+	"app.registry.application.display.name" : "Clé d'affichage"
 }

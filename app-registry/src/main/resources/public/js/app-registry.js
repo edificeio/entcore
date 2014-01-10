@@ -69,6 +69,8 @@ var appRegistry = function(){
 							<form action="application/conf">\
 								<input type="hidden" name="applicationId" value="{{id}}" />\
 								<input type="hidden" name="grantType" value="authorization_code" />\
+								<label>{{#i18n}}app.registry.application.display.name{{/i18n}}</label>\
+                                <input type="text" name="displayName" value="{{displayName}}" /><br />\
 								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
 								<input type="text" name="secret" value="{{secret}}" /><br />\
 								<label>{{#i18n}}app.registry.application.address{{/i18n}}</label>\
@@ -85,6 +87,8 @@ var appRegistry = function(){
 								<input type="hidden" name="grantType" value="authorization_code" />\
 								<label>{{#i18n}}app.registry.application{{/i18n}}</label>\
 								<input type="text" name="name" /><br />\
+								<label>{{#i18n}}app.registry.application.display.name{{/i18n}}</label>\
+                                <input type="text" name="displayName" value="{{displayName}}" /><br />\
 								<label>{{#i18n}}app.registry.application.secret{{/i18n}}</label>\
 								<input type="text" name="secret" /><br />\
 								<label>{{#i18n}}app.registry.application.address{{/i18n}}</label>\
