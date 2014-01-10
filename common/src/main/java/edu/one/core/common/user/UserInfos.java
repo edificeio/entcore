@@ -40,6 +40,7 @@ public class UserInfos {
 		private String address;
 		private String icon;
 		private String target;
+		private String displayName;
 
 		public String getName() {
 			return name;
@@ -72,6 +73,10 @@ public class UserInfos {
 		public void setTarget(String target) {
 			this.target = target;
 		}
+
+		public String getDisplayName() { return displayName; }
+
+		public void setDisplayName(String displayName) { this.displayName = displayName; }
 
 	}
 

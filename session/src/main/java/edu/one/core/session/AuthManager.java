@@ -190,7 +190,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, " +
 				"n.lastName as lastName, n.firstName as firstName, " +
 				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'Visible' AND x <> 'User')) as type, " +
-				"COLLECT(distinct [app.name,app.address,app.icon,app.target]) as apps, " +
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
 				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
@@ -220,6 +220,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("address", (String) a.get(1))
 								.putString("icon", (String) a.get(2))
 								.putString("target", (String) a.get(3))
+								.putString("displayName", (String) a.get(4))
 						);
 					}
 					j.putArray("authorizedActions", actions);
