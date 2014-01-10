@@ -77,7 +77,7 @@ var userbook = function(){
 		return person;
 	};
 
-	var app = Object.create(app);
+	var app = Object.create(protoApp);
 	app.scope = ".annuaire";
 	app.define({
 		template : {

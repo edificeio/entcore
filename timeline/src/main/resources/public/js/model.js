@@ -1,4 +1,4 @@
-function buildModel(){
+Model.build = function(){
 	function Notification(){
 		this.isUnread = function(){
 			return _.find(this.recipients, function(recipient){

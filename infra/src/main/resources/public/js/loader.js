@@ -150,3 +150,7 @@ var routes = {
 	}
 };
 
+var Model = {
+	build: function(){}
+}
+

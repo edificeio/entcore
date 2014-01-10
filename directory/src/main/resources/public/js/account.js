@@ -122,7 +122,7 @@ function MyAccount($scope, lang, date, notify, _){
 			hobby.visibility = 'PUBLIC'
 		}
 
-		One.get('api/set-visibility', { value: hobby.visibility, category: hobby.category });
+		http().get('api/set-visibility', { value: hobby.visibility, category: hobby.category });
 	};
 
 	$scope.changeInfosVisibility = function(info, state){
@@ -132,7 +132,7 @@ function MyAccount($scope, lang, date, notify, _){
         else{
             $scope.account.visible[info] = 'public';
         }
-		One.get('api/edit-user-info-visibility', { info: info, state: $scope.account.visible[info] });
+		http().get('api/edit-user-info-visibility', { info: info, state: $scope.account.visible[info] });
 	};
 
 	$scope.resetAvatar = function(){

@@ -1,5 +1,5 @@
 var admin = function() {
-	var app = Object.create(oneApp);
+	var app = Object.create(protoApp);
 	app.scope = "#menu";
 	app.start = function(){
 		this.init();

@@ -264,7 +264,6 @@ var http = (function(){
 	}
 }());
 
-var Model = {};
 (function(){
 	function pluralizeName(obj){
 		if(!obj.name){

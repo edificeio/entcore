@@ -182,7 +182,7 @@ function Folder(api){
 	};
 }
 
-function buildModel(){
+Model.build = function(){
 	Model.collection(User, {
 		sync: function(){
 			var that = this;

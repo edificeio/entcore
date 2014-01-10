@@ -1,4 +1,4 @@
-var app = {
+var protoApp = {
 	scope : '#main',
 	init : function() {
 		var that = this;
@@ -29,12 +29,12 @@ var app = {
 					$(elem).html(that.render(templateName, dataExtractor(data)));
 				})
 				.error(function(data) {
-					oneApp.notify.error(data);
+					protoApp.notify.error(data);
 				});
 		},
 		render : function (name, data) {
 			_.extend(data, {
-				'i18n' : oneApp.i18n.i18n,
+				'i18n' : protoApp.i18n.i18n,
 				'formatDate' : function() {
 					return function(str) {
 						var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
@@ -96,7 +96,7 @@ var app = {
 		i18n : function() {
 			return function(key) {
 				key = Mustache.render(key, this);
-				return oneApp.i18n.bundle[key] === undefined ? key : oneApp.i18n.bundle[key];
+				return protoApp.i18n.bundle[key] === undefined ? key : protoApp.i18n.bundle[key];
 			};
 		},
 		translate: function(key){
@@ -216,7 +216,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 
 //routing
 if(routes.routing){
-	oneModule.config(routes.routing);
+	module.config(routes.routing);
 }
 
 //directives
@@ -705,19 +705,19 @@ module.directive('sharePanel', function($compile){
 
 $(document).ready(function(){
 	if(!window.Model){
-		Model = {};
+		Model = { build: function(){ } };
 	}
-	buildModel();
+	Model.build();
 	Model.sync();
 	angular.bootstrap($('html'), ['app']);
 });
 
 
-function Account($scope, http){
+function Account($scope){
 	"use strict";
 
 	$scope.refreshAvatar = function(){
-		http.get('/userbook/api/person').done(function(result){
+		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
 			$scope.username = result.result['0'].displayName;
 			$scope.$apply();
@@ -727,7 +727,7 @@ function Account($scope, http){
 	$scope.refreshAvatar();
 }
 
-function Share($rootScope, $scope, http, ui, _, lang){
+function Share($rootScope, $scope, ui, _, lang){
 	$scope.sharing = {};
 	$scope.found = [];
 	$scope.maxResults = 5;
@@ -743,7 +743,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 
 	var actionsConfiguration = {};
 
-	http.get('/infra/public/json/sharing-rights.json').done(function(config){
+	http().get('/infra/public/json/sharing-rights.json').done(function(config){
 		actionsConfiguration = config;
 	});
 
@@ -799,7 +799,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 				else{
 					data.groupId = element;
 				}
-				http.put(path, http.serialize(data));
+				http().put(path, http().serialize(data));
 			}
 		}
 		$scope.editResources.forEach(function(resource){
@@ -833,7 +833,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		var initModel = true;
 		$scope.resources.forEach(function(resource){
 			var id = resource._id;
-			http.get('/' + appPrefix + '/share/json/' + id).done(function(data){
+			http().get('/' + appPrefix + '/share/json/' + id).done(function(data){
 				if(initModel){
 					$scope.sharingModel = data;
 					$scope.sharingModel.edited = [];
@@ -941,7 +941,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 
 		$scope.resources.forEach(function(resource){
 			var path = '/' + appPrefix + '/share/remove/' + resource._id;
-			http.put(path, http.serialize(data)).done(function(){
+			http().put(path, http().serialize(data)).done(function(){
 				$rootScope.$broadcast('share-updated');
 			});
 		})
@@ -988,7 +988,7 @@ function Share($rootScope, $scope, http, ui, _, lang){
 		}
 
 		$scope.resources.forEach(function(resource){
-			http.put('/' + appPrefix + '/share/' + setPath + '/' + resource._id, http.serialize(data)).done(function(){
+			http().put('/' + appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
 				$rootScope.$broadcast('share-updated');
 			});
 		});

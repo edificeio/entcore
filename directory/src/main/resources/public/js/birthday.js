@@ -19,10 +19,10 @@
 	};
 
 	Birthday.saveDefaultClass = function(){
-		One.get('/userbook/api/edit-userbook-info?prop=userPreferencesBirthdayClass&value=' + Birthday.currentClass);
+		http().get('/userbook/api/edit-userbook-info?prop=userPreferencesBirthdayClass&value=' + Birthday.currentClass);
 	};
 
-	One.get('/userbook/user-preferences').done(function(result){
+	http().get('/userbook/user-preferences').done(function(result){
 		Birthday.currentClass = result.result[0].userPreferencesBirthdayClass;
 		if(Birthday.classes.indexOf(Birthday.currentClass) === -1 && Birthday.currentClass !== ''){
 			Birthday.classes.push(Birthday.currentClass);
@@ -30,7 +30,7 @@
 		Model.widgets.apply();
 	});
 
-	One.get('/userbook/person/birthday').done(function(birthdays){
+	http().get('/userbook/person/birthday').done(function(birthdays){
 		lang.addBundle('/directory/i18n', function(){
 			Birthday.emptyList = lang.translate('nobirthday');
 			Birthday.birthdays = _.filter(birthdays, function(birthday){
