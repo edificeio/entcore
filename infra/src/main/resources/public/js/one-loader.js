@@ -11,7 +11,7 @@ var currentLanguage = '';
 	request.async = false;
 	request.onload = function(){
 		if(request.status === 200){
-			currentLanguage = request.responseText;
+			currentLanguage = JSON.parse(request.responseText).locale;
 		}
 	}
 	request.send(null);

@@ -3767,6 +3767,9 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 .birthday.fr {
   background-image: url(../img/illustrations/birthdays-header-fr.png);
 }
+.birthday.en {
+  background-image: url(../img/illustrations/birthdays-header-en.png);
+}
 .mood-widget {
   background: #46afe6;
   -webkit-border-radius: 5px;
@@ -3777,10 +3780,13 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .mood-widget h1.fr {
   background: url(../img/illustrations/mood-header-fr.png);
-  width: 140px;
-  height: 21px;
+}
+.mood-widget h1.en {
+  background: url(../img/illustrations/mood-header-en.png);
 }
 .mood-widget h1 {
+  width: 140px;
+  height: 21px;
   font-size: 17px;
   color: transparent;
   font-family: BDCartoonShout;
