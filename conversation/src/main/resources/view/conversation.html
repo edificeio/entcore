@@ -17,8 +17,17 @@
 				<h2>Messages</h2>
 				<ul>
 					<li>
-						<a ng-click="openFolder('inbox')" ng-class="{ selected: folders.current.folderName === 'inbox' }">
-							[[lang.translate('inbox')]] ([[folders.inbox.nbUnread()]])
+						<a
+							ng-if="!folders.inbox.nbUnread"
+							ng-click="openFolder('inbox')"
+							ng-class="{ selected: folders.current.folderName === 'inbox' }">
+							[[lang.translate('inbox')]]
+						</a>
+						<a
+								ng-if="folders.inbox.nbUnread"
+								ng-click="openFolder('inbox')"
+								ng-class="{ selected: folders.current.folderName === 'inbox' }">
+							<strong>[[lang.translate('inbox')]] ([[folders.inbox.nbUnread]])</strong>
 						</a>
 					</li>
 					<li>

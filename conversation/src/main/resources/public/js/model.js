@@ -97,6 +97,10 @@ function Mail(data){
 
 	this.open = function(){
 		var that = this;
+
+		if(Model.folders.current.nbUnread && this.unread){
+			Model.folders.current.nbUnread--;
+		}
 		this.unread = false;
 		http().getJson('/conversation/message/' + this.id).done(function(data){
 			that.updateData(data);
@@ -244,7 +248,12 @@ function buildModel(){
 		this.removeSelection();
 	};
 
-	Model.folders.inbox.nbUnread = function(){
-		return _.where(this.mails.all, { unread: true }).length;
+	Model.folders.inbox.countUnread = function(){
+		var that = this;
+		http().get('/conversation/count/INBOX', { unread: true }).done(function(data){
+			that.nbUnread = parseInt(data.count);
+		});
 	}
+
+	Model.folders.inbox.countUnread();
 }
