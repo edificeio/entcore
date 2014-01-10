@@ -27,6 +27,7 @@ public class OAuthDataHandler extends DataHandler {
 	private final MongoDb mongo;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
+	private static final int CODE_EXPIRES = 600000; // 10 min
 
 	public OAuthDataHandler(Request request, Neo neo, MongoDb mongo) {
 		super(request);
@@ -110,7 +111,8 @@ public class OAuthDataHandler extends DataHandler {
 			final JsonObject auth = new JsonObject()
 			.putString("clientId", clientId)
 			.putString("userId", userId)
-			.putString("scope", scope);
+			.putString("scope", scope)
+			.putObject("createdAt", MongoDb.now());
 			if (redirectUri != null) {
 				auth.putString("redirectUri", redirectUri)
 				.putString("code", UUID.randomUUID().toString())
@@ -122,6 +124,7 @@ public class OAuthDataHandler extends DataHandler {
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
 						auth.putString("id", res.body().getString("_id"));
+						auth.removeField("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
 							handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
@@ -171,15 +174,19 @@ public class OAuthDataHandler extends DataHandler {
 	public void getAuthInfoByCode(String code, final Handler<AuthInfo> handler) {
 		if (code != null && !code.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-			.putString("code", code);
+			.putString("code", code)
+			.putObject("createdAt", new JsonObject()
+					.putObject("$gte",
+							new JsonObject().putNumber("$date", System.currentTimeMillis() - CODE_EXPIRES)));
 			mongo.findOne(AUTH_INFO_COLLECTION, query, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result");
+					JsonObject r = res.body().getObject("result");
+					if ("ok".equals(res.body().getString("status")) && r != null && r.size() > 0) {
 						r.putString("id", r.getString("_id"));
 						r.removeField("_id");
+						r.removeField("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
 							handler.handle(mapper.readValue(r.encode(), AuthInfo.class));
@@ -308,6 +315,7 @@ public class OAuthDataHandler extends DataHandler {
 						JsonObject r = res.body().getObject("result");
 						r.putString("id", r.getString("_id"));
 						r.removeField("_id");
+						r.removeField("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
 							handler.handle(mapper.readValue(r.encode(), AuthInfo.class));
