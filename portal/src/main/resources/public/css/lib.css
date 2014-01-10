@@ -20,6 +20,10 @@
 .right-magnet {
   float: right !important;
 }
+.bottom-magnet {
+  position: absolute;
+  bottom: 0;
+}
 @media screen and (min-width: 720px) {
   .fixed-block.height-five {
     padding-bottom: 41.66666666666667%;

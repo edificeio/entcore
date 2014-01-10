@@ -15,7 +15,7 @@
 		</div>
 		<div class="eight cell">
 			<nav class="contextual-buttons row" ng-if="currentBlog._id">
-				<div class="action-buttons">
+				<div class="row">
 					<button data-ng-click="showCreatePost()" data-ng-disabled="isEditing()" data-ng-if="isVisible()">
 						<i role="add"></i>{{#i18n}}blog.create.post{{/i18n}}
 					</button>
@@ -38,7 +38,7 @@
 								<h3 data-ng-click="displayBlog(blog)">[[blog.shortened]]</h3>
 							</div>
 							<div class="row">
-								<p>
+								<p class="inline">
 									<a ng-href="/userbook/annuaire#[[blog.author.userId]]">
 										<strong>{{#i18n}}blog.by{{/i18n}} [[blog.author.username]]</strong>
 									</a>
@@ -53,9 +53,8 @@
 	</div>
 	<div class="eight cell horizontal-spacing">
 			<h3 data-ng-if="isCurrentView('createBlog')">{{#i18n}}blog.create.title{{/i18n}}</h3>
-			<h3 data-ng-if="isCurrentView('editBlog')">{{#i18n}}blog.edit.title{{/i18n}}</h3>
-		    <h1 class="text" ng-if="isCurrentView('listPosts') && blogs.length !== 0"><i role="blog"></i>[[currentBlog.title]]</h1>
-			<em class="medium-importance" ng-if="isCurrentView('listPosts') && blogs.length !== 0"><span translate key="blog.by"></span> <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
+		    <h1 class="text" ng-if="(isCurrentView('listPosts') || isCurrentView('editBlog')) && blogs.length !== 0">[[currentBlog.title]]</h1>
+			<em class="medium-importance" ng-if="(isCurrentView('listPosts') || isCurrentView('editBlog')) && blogs.length !== 0"><span translate key="blog.by"></span> <a ng-href="/userbook/annuaire#[[currentBlog.author.userId]]">[[currentBlog.author.username]]</a></em>
 			<div class="row">
 				<hr />
 			</div>
