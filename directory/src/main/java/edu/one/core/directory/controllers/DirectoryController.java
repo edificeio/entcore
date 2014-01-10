@@ -117,11 +117,12 @@ public class DirectoryController extends Controller {
 		if (expectedTypes != null && !expectedTypes.isEmpty()) {
 			types = "AND (m:" + Joiner.on(" OR m:").join(expectedTypes) + ") ";
 		}
-		neo.send("MATCH (n:Class)<-[:APPARTIENT]-(m:User) "
+		neo.send("MATCH (n:Class)<-[:APPARTIENT]-u-[:EN_RELATION_AVEC*0..1]->(m:User) "
 				+ "WHERE n.id = {classId} " + types
 				+ "RETURN distinct m.id as userId, HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, "
 				+ "m.activationCode as code, m.firstName as firstName,"
-				+ "m.lastName as lastName, n.id as classId", params, request.response());
+				+ "m.lastName as lastName, n.id as classId "
+				+ "ORDER BY type DESC ", params, request.response());
 	}
 
 	@SecuredAction("directory.authent")

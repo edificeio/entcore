@@ -5,6 +5,7 @@ var admin = function(){
 		for (obj in d.result){
 			d.result[obj]['notActivated'] = d.result[obj].code === '' ? false : true;
 			d.result[obj]['isProfessor'] = d.result[obj].type === 'Teacher' ? true : false;
+			d.result[obj]['isRelative'] = d.result[obj].type === 'Relative' ? true : false;
 		}
 		return {list : _.values(d.result)};
 	};
@@ -38,6 +39,7 @@ var admin = function(){
 						style='\
 							{{#notActivated}}color:red;{{/notActivated}}\
 							{{#isProfessor}}font-weight:bold;{{/isProfessor}}\
+							{{#isRelative}}font-style:italic;{{/isRelative}}\
 						'\
 					>\
 					{{lastName}} {{firstName}}</a> - \
