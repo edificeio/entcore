@@ -162,8 +162,9 @@ function Conversation($scope, date, notify, route){
 
 	$scope.saveDraft = function(){
 		notify.info('draft.saved');
-		$scope.openFolder();
+
 		Model.folders.draft.saveDraft($scope.newItem);
+		$scope.openFolder();
 	};
 
 	$scope.sendMail = function(){
