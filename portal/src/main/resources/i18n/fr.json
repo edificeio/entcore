@@ -12,5 +12,12 @@
 	"e500": "Le serveur a rencontré une erreur",
 	"share.publish.title": "Circuit de publication",
 	"share.publish.immediate": "Publication immédiate",
-	"share.publish.differed": "Billet à soumettre"
+	"share.publish.differed": "Billet à soumettre",
+	"blog" : "Blog",
+	"conversation" : "Messagerie",
+	"workspace" : "Espace documentaire",
+	"my.account" : "Mon compte",
+	"resid.art" : "Résidence d'artiste",
+	"school.website" : "Site web de l'école",
+	"notebook" : "Cahier de texte"
 }

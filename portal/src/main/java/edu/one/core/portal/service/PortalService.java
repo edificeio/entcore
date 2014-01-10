@@ -2,6 +2,7 @@ package edu.one.core.portal.service;
 
 import edu.one.core.common.neo4j.Neo;
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.I18n;
 import edu.one.core.infra.http.StaticResource;
 import edu.one.core.common.user.UserUtils;
 import edu.one.core.common.user.UserInfos;
@@ -65,8 +66,8 @@ public class PortalService extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					JsonObject jo = new JsonObject()
-						.putString("userFirstname", user.getFirstName())
-						.putString("userClass", user.getClassId());
+							.putString("userFirstname", user.getFirstName())
+							.putString("userClass", user.getClassId());
 					JsonObject urls = container.config().getObject("urls");
 					renderView(request, jo.mergeIn(urls), "portal.html", null);
 				} else {
@@ -86,8 +87,22 @@ public class PortalService extends Controller {
 
 			@Override
 			public void handle(JsonObject session) {
+				JsonArray apps = session.getArray("apps", new JsonArray());
+				I18n i18n = I18n.getInstance();
+				for (Object o : apps) {
+					if (!(o instanceof JsonObject)) continue;
+					JsonObject j = (JsonObject) o;
+					String d = j.getString("displayName");
+					if (d == null || d.trim().isEmpty()) {
+						d = j.getString("name");
+					}
+					if (d != null) {
+						j.putString("displayName",
+								i18n.translate(d, request.headers().get("Accept-Language")));
+					}
+				}
 				JsonObject json = new JsonObject()
-				.putArray("apps", session.getArray("apps", new JsonArray()));
+						.putArray("apps", apps);
 				renderView(request, json);
 			}
 		});

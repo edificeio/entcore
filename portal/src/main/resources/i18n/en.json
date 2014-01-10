@@ -16,5 +16,12 @@
 	"blog.manager" : "Manage",
 	"share.publish.title": "Publication",
 	"share.publish.immediate": "Publication is immediate",
-	"share.publish.differed": "Posts have to be validated"
+	"share.publish.differed": "Posts have to be validated",
+	"blog" : "Blog",
+    "conversation" : "Conversation",
+    "workspace" : "Workspace",
+    "my.account" : "My account",
+    "resid.art" : "artist residency",
+    "school.website" : "School website",
+    "notebook" : "Homework notebook"
 }
