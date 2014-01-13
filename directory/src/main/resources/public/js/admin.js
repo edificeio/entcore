@@ -10,7 +10,7 @@ var admin = function(){
 		return {list : _.values(d.result)};
 	};
 
-	var app = Object.create(oneApp);
+	var app = Object.create(protoApp);
 	app.scope = "#annuaire";
 	app.define({
 		template : {

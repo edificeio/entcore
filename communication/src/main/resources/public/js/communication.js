@@ -1,5 +1,5 @@
 var communication = function(){
-	var app = Object.create(oneApp);
+	var app = Object.create(protoApp);
 	app.scope = "#main";
 	app.define ({
 		template : {
