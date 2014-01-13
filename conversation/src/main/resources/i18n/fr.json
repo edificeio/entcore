@@ -43,6 +43,5 @@
 	"reply.re": "Re : ",
 	"reply.fw": "Tr : ",
 	"updating": "Mise à jour...",
-	"draft.empty": "Le brouillon est vide",
-	"reply.content": "Le [[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> a écrit : "
+	"draft.empty": "Le brouillon est vide"
 }

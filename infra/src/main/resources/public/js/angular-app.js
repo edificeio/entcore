@@ -315,7 +315,21 @@ module.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
 		link: function ($scope, $element, $attributes) {
-			$element.html($compile('<span>' + lang.translate($attributes.key) + '</span>')($scope));
+			if($attributes.params){
+				var params = $scope.$eval($attributes.params);
+				for(var i = 0; i < params.length; i++){
+					$scope[i] = params[i];
+				}
+			}
+			if($attributes.attr){
+				var compiled = $compile('<span>' + lang.translate($attributes[$attributes.attr]) + '</span>')($scope);
+				setTimeout(function(){
+					$element.attr($attributes.attr, compiled.text());
+				}, 10);
+			}
+			if($attributes.key){
+				$element.html($compile('<span>' + lang.translate($attributes.key) + '</span>')($scope));
+			}
 		}
 	};
 });
