@@ -692,7 +692,10 @@ oneModule.directive('bottomScroll', function($compile){
 		link: function($scope, $element, $attributes){
 			$(window).scroll(function(){
 				var scrollHeight = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
-				if($(document).height() - $(window).height() === scrollHeight){
+				//adding ten pixels to account for system specific behaviours
+				scrollHeight += 10;
+
+				if($(document).height() - $(window).height() < scrollHeight){
 					$scope.$eval($attributes.bottomScroll);
 				}
 			})
