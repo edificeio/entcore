@@ -95,7 +95,7 @@
 		<div class="clear"></div>
 		<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>
 		<article class="text-container">
-			<div class="row line" data-ng-repeat="hobby in account.hobbies">
+			<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
 				<div class="two cell mini-block-container"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
 				<div class="nine cell">
 					<textarea complete-change="saveHobby(hobby)" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
