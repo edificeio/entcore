@@ -14,9 +14,7 @@ routes.define(function($routeProvider){
 function Conversation($scope, date, notify, route){
 	route({
 		readMail: function(params){
-			Model.folders.openFolder('inbox', function(){
-				$scope.viewMail(new Mail({ id: params.mailId }));
-			});
+			$scope.viewMail(new Mail({ id: params.mailId }));
 		},
 		writeMail: function(params){
 			Model.folders.openFolder('inbox');
