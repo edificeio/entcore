@@ -61,7 +61,6 @@
 	"group.profil.class.enseignant" : "Tous les enseignants de la classe ",
 	"group.profil.class.persreleleve" : "Tous les parents de la classe ",
 	"group.profil.class.directeur" : "Tous les directeurs de la classe ",
-	"loading" : "Loading",
 	"import.file" : "Import",
 	"share.users" : "Utilisateurs",
 	"share.groups" : "Groupes",
@@ -69,7 +68,7 @@
 	"share.title" : "Share with",
 	"share.more" : "See more",
 	"share.search.title" : "Search users and groups",
-	"share.search.placeholder" : "Ex: Emily, SMITH, Theachers in the school…",
+	"share.search.placeholder" : "Ex: Emily, SMITH, Teachers in the school…",
 	"seemore" : "See more",
 	"share.varyingrights" : "Caution, you will modify sharing rights of this folder. All documents and directories in this folder will be affected",
 	"workspace.invalid.user" : "Invalid user",
@@ -77,6 +76,11 @@
 	"workspace.invalid.folder.name" : "Invalid directory name",
 	"workspace.trash.error" : "Error while moving to the trash",
 	"workspace.forbidden.move.folder.in.itself" : "You can't move a folder in itself",
-	"workspace.folder.already.exists" : "The folder already exist",
-	"share.me":"Me"
+	"workspace.folder.already.exists" : "The folder already exists",
+	"share.me":"Me",
+	"folder.new": "New folder",
+	"files.select": "Choose file",
+	"files.select.please": "Waiting for files",
+	"files.header": "Load files",
+	"comments": "[[document.comments.length]] comment(s)"
 }

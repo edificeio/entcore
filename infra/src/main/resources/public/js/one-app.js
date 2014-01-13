@@ -344,12 +344,11 @@ oneModule.directive('translate', function($compile) {
 oneModule.directive('translateAttr', function($compile) {
 	return {
 		restrict: 'A',
-		compile: function compile($element, $attributes, transclude) {
-			$element.attr($attributes.translateAttr, lang.translate($attributes[$attributes.translateAttr]));
-			return {
-				pre: function preLink(scope, $element, $attributes, controller) {},
-				post: function postLink(scope, $element, $attributes, controller) {}
-			};
+		link: function compile($scope, $element, $attributes) {
+			var compiled = $compile('<span>' + lang.translate($attributes[$attributes.translateAttr]) + '</span>')($scope);
+			setTimeout(function(){
+				$element.attr($attributes.translateAttr, compiled.text());
+			}, 10);
 		}
 	};
 });
