@@ -26,7 +26,7 @@
 	"auth.password" : "Password",
 	"auth.activateAccount" : "Activate my account",
 	"auth.error.authenticationFailed" : "Invalid login or password",
-	"forgot.error" : "Unknown user",
+	"forgot.error" : "Unknown user or no email address set for the user. Please contact your administrator.",
 	"auth.old.password" : "Old password",
 	"auth.cancel" : "Cancel",
 	"auth.welcome" : "Welcome!",

@@ -26,7 +26,7 @@
 	"auth.password" : "Mot de passe",
 	"auth.activateAccount": "Activer mon compte",
 	"auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect",
-	"forgot.error": "Utilisateur inconnu",
+	"forgot.error": "Utilisateur inconnu ou aucune adresse mail renseignée pour cet utilisateur. Veuillez contacter votre administrateur ENT.",
 	"auth.old.password" : "Ancien mot de passe",
 	"auth.cancel": "Retour",
 	"auth.welcome": "Bienvenue !",
