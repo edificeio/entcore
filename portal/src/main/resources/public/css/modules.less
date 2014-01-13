@@ -128,6 +128,9 @@ nav.horizontal{
 	white-space: pre-line;
 }
 
+input[type=search]{
+	padding: 3px;
+}
 
 .inline{
 	margin: 0;
@@ -184,9 +187,18 @@ nav.horizontal{
 	padding-right: 10px;
 }
 
+.vertical-spacing{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.vertical-spacing-twice{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
 .calendar{
-	.fixed-block;
-	.fixed-block.height-seven;
+	.height-seven;
 	.widget-container(25.7%);
 	padding-bottom: 49.4% !important;
 
@@ -208,6 +220,49 @@ nav.horizontal{
 		text-align: center;
 		top: 26px;
 	}
+}
+
+.dominos{
+	.twelve;
+	.cell;
+	.item{
+		.grid-cell-width(2.4);
+		.cell;
+		padding: 5px;
+		overflow: hidden;
+		.domino{
+			.cell;
+			.twelve;
+			.top{
+				.height-eleven;
+				.row;
+				overflow: hidden;
+				img{
+					position: absolute;
+					width: 100%;
+					top: 0;
+					left: 0;
+				}
+			}
+			.bottom{
+				.height-nine;
+				.row;
+				background: #fff;
+				overflow: hidden;
+				margin-top: 5px;
+				div.content{
+					position: absolute;
+					width: 100%;
+					height: 100%;
+					top: 0;
+					left: 0;
+					padding: 5px;
+					.border-box;
+				}
+			}
+		}
+	}
+
 }
 
 .mood-widget{
@@ -277,6 +332,14 @@ i.liquid{
 	display: inline-block !important;
 	float: none !important;
 	vertical-align: middle;
+}
+
+.banner{
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	height: 5px;
+	background: #fff;
 }
 
 table.list-view{
@@ -451,6 +514,26 @@ ul.icons-view.two-cols{
 	padding: 7px;
 }
 
+.block-container{
+	padding: 10px;
+}
+
+.reduce-block(@size){
+	padding: @size;
+}
+
+.reduce-block-two{
+	.reduce-block(2px);
+}
+
+.reduce-block-four{
+	.reduce-block(4px);
+}
+
+.reduce-block-six{
+	.reduce-block(6px);
+}
+
 .icons-view{
 	padding-left: 0;
 	.element{
@@ -573,12 +656,6 @@ section{
   }
 }
 
-.fixed-block{
-	.avatar{
-		overflow: hidden;
-	}
-}
-
 .display-buttons{
 	.cell;
 	float: right;
@@ -641,9 +718,7 @@ article{
 	}
 }
 
-.block-container{
-	padding: 10px;
-}
+
 
 .text-container{
 	padding: 10px;
@@ -669,14 +744,14 @@ article{
 	overflow: hidden;
 }
 
+.bottom-locked{
+	position: absolute;
+	bottom: 0px;
+}
+
 .box, .text-container article.box{
 	height: 100px;
 	margin-bottom: 0;
-
-	.bottom-locked{
-		position: absolute;
-		bottom: 7px;
-	}
 
 	.avatar{
 		padding-right: 5px;

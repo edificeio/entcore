@@ -314,6 +314,7 @@ module.directive('iconsSelect', function($compile) {
 module.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
+		replace: true,
 		link: function ($scope, $element, $attributes) {
 			if($attributes.params){
 				var params = $scope.$eval($attributes.params);
@@ -321,15 +322,30 @@ module.directive('translate', function($compile) {
 					$scope[i] = params[i];
 				}
 			}
-			if($attributes.attr){
+
+			$attributes.$observe('content', function(val) {
+				if(!$attributes.content){
+					return;
+				}
+				$element.html($compile('<span>' + lang.translate($attributes.content) + '</span>')($scope));
+			});
+
+			$attributes.$observe('attr', function(val) {
+				if(!$attributes.attr){
+					return;
+				}
 				var compiled = $compile('<span>' + lang.translate($attributes[$attributes.attr]) + '</span>')($scope);
 				setTimeout(function(){
 					$element.attr($attributes.attr, compiled.text());
 				}, 10);
-			}
-			if($attributes.key){
+			});
+
+			$attributes.$observe('key', function(val) {
+				if(!$attributes.key){
+					return;
+				}
 				$element.html($compile('<span>' + lang.translate($attributes.key) + '</span>')($scope));
-			}
+			});
 		}
 	};
 });

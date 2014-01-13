@@ -339,6 +339,7 @@ i[role=angry-panda], i[role=angry]{
 
 i[role=default-panda], i[role=default]{
 	.icon(default-panda-60px, 50px);
+	opacity: 0.6;
 }
 
 i[role=dreamy-panda], i[role=dreamy]{
@@ -578,6 +579,7 @@ h2{
 	font-family: Arial;
 	font-size: 20px;
 	color: @medium-blue;
+	margin-bottom: 8px;
 }
 
 h4{
@@ -817,14 +819,33 @@ article.box{
 section.selected, article.selected{
 	background: @medium-blue;
 	color: #fff;
-	h3,h4, strong{
+	h3,h4, strong, a{
 		color: #fff;
 	}
 	.rounded-corners(10px);
 }
 
-article.box.selected{
+.banner.orange{
+	background: @orange;
+}
 
+.banner.cyan{
+	background: @cyan;
+}
+
+.banner.green{
+	background: @green;
+}
+
+.banner.pink{
+	background: @pink;
+}
+
+.banner.purple{
+	background: @purple;
+}
+
+.selected{
 	h4{
 		color: #fff;
 	}
@@ -856,7 +877,7 @@ article.unstyled{
 }
 
 article{
-	.rounded-corners(10px);
+	.rounded-corners(5px);
 	background: @light-grey-background;
 	border: 1px solid @medium-grey;
 
@@ -940,11 +961,11 @@ h3{
 		line-height: 1em;
 		.rounded-corners-right(5px)
   }
-	input[type=text]{
+	input[type=search]{
 		padding: 5px;
 		color: #888;
 		padding-left: 27px;
-		line-height: 14px;
+		height: 28px;
 		background: url(../img/icons/search.png) no-repeat 3px #fff;
 		.rounded-corners-left(5px)
 	}
@@ -1017,6 +1038,36 @@ a{
 .floating-badge{
 	text-align: right;
 	font-size: 14px;
+}
+
+.dominos{
+	.rounded-corners(5px);
+	.mood{
+		position: absolute;
+		top: 22px;
+		right: 5px;
+	}
+	.item{
+		.domino{
+			border: 1px solid #dfdfdf;
+		}
+		.domino.green{
+			background: @green;
+		}
+		.domino.orange{
+			background: @orange;
+		}
+		.domino.purple{
+			background: @purple;
+		}
+		.domino.cyan{
+			background: @cyan;
+		}
+		.domino.pink{
+			background: @pink;
+		}
+	}
+
 }
 
 .icons-view{

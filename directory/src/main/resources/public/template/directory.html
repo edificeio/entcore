@@ -1,0 +1,31 @@
+<div class="row">
+	<h1 class="upper-title nine cell">
+		<a data-reload><i role="userbook"></i><span translate content="userBook.directory.title"></span></a>
+	</h1>
+	<div class="right-magnet three cell">
+		<div class="row" ng-if="users.all.length > 0">
+			<i role="show-details"
+			   ng-click="selectFirstUser()"
+			   ng-class="{ selected: containsView('main', 'user-selected') }" class="right-magnet"></i>
+			<i role="show-icons"
+			   ng-click="deselectUser()"
+			   ng-class="{ selected: containsView('main', 'list-view') }" class="right-magnet"></i>
+		</div>
+	</div>
+</div>
+
+
+<form ng-submit="searchDirectory()">
+	<div class="row">
+		<div class="twelve cell search reduce-block-six">
+			<input type="search"
+					ng-model="search.field"
+					translate attr="placeholder"
+					placeholder="userBook.search"
+					class="three" />
+			<input type="submit" value="OK" />
+		</div>
+	</div>
+</form>
+
+<div class="row  vertical-spacing-twice" ng-include="viewsContainers.main"></div>

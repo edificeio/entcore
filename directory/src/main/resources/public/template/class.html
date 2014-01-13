@@ -1,0 +1,26 @@
+<div class="row">
+	<div class="twelve cell reduce-block-six">
+		<div class="right-magnet three cell">
+			<div class="row">
+				<i role="show-details"
+				   ng-click="selectFirstUser()"
+				   ng-class="{ selected: containsView('main', 'user-selected') }" class="right-magnet"></i>
+				<i role="show-icons"
+				   ng-click="deselectUser()"
+				   ng-class="{ selected: containsView('main', 'list-view') }" class="right-magnet"></i>
+
+			</div>
+			<div class="row">
+				<input type="search"
+						ng-model="search.text" ng-change="updateSearch()"
+						translate attr="placeholder"
+						placeholder="userBook.search"
+						class="twelve cell right-magnet" />
+			</div>
+		</div>
+		<h1><a data-reload><i role="userbook"></i><span translate key="userBook.class.title"></span></a></h1>
+	</div>
+</div>
+<div class="row vertical-spacing-twice">
+	<div class="twelve cell" ng-include="viewsContainers.main"></div>
+</div>

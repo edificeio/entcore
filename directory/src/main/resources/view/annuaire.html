@@ -1,76 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html ng-controller="Directory">
 	<head>
-		<script>
-			var appPrefix = '';
-			if(window.location.pathname.split('/').length > 0){
-				appPrefix = window.location.pathname.split('/')[1]
-			}
-
-			var currentLanguage = ( navigator.language || navigator.browserLanguage ).slice( 0, 2 );
-		</script>
-		<title>{{#i18n}}userBook.class.title{{/i18n}}</title>
+		<title>[[lang.translate('userBook.' + title + '.title')]]</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script>
-		var routes = {
-			define: function(routing){
-				this.routing = routing;
-			}
-		};
-		function Model(){}
-		Model.prototype.build = function(){};
-		</script>
-		<link rel="stylesheet" href="{{#infra}}css/original.css{{/infra}}" type="text/css" />
-		<script src="{{#infra}}js/moment+langs.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/jquery-1.10.2.min.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-sanitize.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-route.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/watch-polyfill.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/lib.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-app.js{{/infra}}" type="text/javascript"></script>
-
-		<script src="/directory/public/js/userbook.js" type="text/javascript"></script>
-		<style>
-			h4{
-				margin-top: 0 !important
-			}
-		</style>
+		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+		<script src="/directory/public/js/model.js" type="text/javascript"></script>
+		<script src="/directory/public/js/controller.js" type="text/javascript"></script>
 	</head>
-	<body style="display: none">
+	<body bottom-scroll="increaseSearchSize()">
 	<portal>
-
-
-		<div class="twelve cell annuaire">
-			<div class="contextual-buttons right-magnet">
-				<div class="display-buttons clear right-magnet">
-					<i role="show-icons" call="showList" class="selected"></i>
-					<i role="show-details" call="showFirstPerson"></i>
-				</div>
-			</div>
-			<h1><a data-reload><i role="userbook"></i>{{#i18n}}userBook.class.title{{/i18n}}</a></h1>
-		</div>
-
-
-		<div class="annuaire">
-			<div id="search">
-				<form method="GET" action="api/search" id="search-form" class="search">
-					<input type="text" name="name" value="" placeholder="{{#i18n}}userBook.search{{/i18n}}"/>
-					<input type="submit" call="search" value="OK"/>
-				</form>
-			</div>
-			<div class="row clear">
-
-				<div id="people" class="twelve cell text-container"></div>
-				<div id="person" class="eight cell text-container"></div>
-			</div>
-		</div>
-		<div class="clear"></div>
+		<div class="row" ng-include="viewsContainers.page"></div>
 	</portal>
 	</body>
 </html>

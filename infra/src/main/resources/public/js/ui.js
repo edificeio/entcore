@@ -49,6 +49,17 @@ var ui = (function(){
 	}
 
 	var uiInterface = {
+		scrollToTop: function(){
+			var scrollUp = function(){
+				var scrollTop = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
+				if(scrollTop <= $('section.main').offset().top){
+					return;
+				}
+				window.scrollTo(0, scrollTop - parseInt(scrollTop / 10) - 1);
+				setTimeout(scrollUp, 10);
+			};
+			scrollUp();
+		},
 		showLightbox: function(){
 			if(parent !== window){
 				iframeLightbox.show();

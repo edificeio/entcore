@@ -325,13 +325,6 @@ function Collection(obj){
 				newItem = new this.obj(element);
 			}
 
-			for(var property in element){
-				(function(){
-					var prop = property;
-					newItem.watch(prop, function(val){ newItem.trigger(prop + '.change', { newVal: val })});
-				}());
-
-			}
 			this.all.push(newItem);
 			if(notify === false){
 				return;
