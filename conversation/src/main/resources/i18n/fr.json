@@ -42,5 +42,6 @@
 	"mail.sent": "Message envoyé",
 	"reply.re": "Re : ",
 	"reply.fw": "Tr : ",
+	"updating": "Mise à jour...",
 	"reply.content": "Le [[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> a écrit : "
 }

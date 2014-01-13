@@ -42,5 +42,6 @@
 	"mail.sent": "Mail sent",
 	"reply.re": "Re: ",
 	"reply.fw": "Fw: ",
+	"updating": "Updating...",
 	"reply.content": "[[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> wrote : "
 }

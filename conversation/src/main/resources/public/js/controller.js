@@ -14,8 +14,9 @@ routes.define(function($routeProvider){
 function Conversation($scope, date, notify, route){
 	route({
 		readMail: function(params){
-			Model.folders.openFolder('inbox');
-			$scope.viewMail(new Mail({ id: params.mailId }));
+			Model.folders.openFolder('inbox', function(){
+				$scope.viewMail(new Mail({ id: params.mailId }));
+			});
 		},
 		writeMail: function(params){
 			Model.folders.openFolder('inbox');
@@ -52,12 +53,12 @@ function Conversation($scope, date, notify, route){
 		return $scope.viewsContainers[name] === viewsPath + view + '.html';
 	};
 
-	$scope.openFolder = function(folderName){
+	$scope.openFolder = function(folderName, cb){
 		if(!folderName){
 			folderName = Model.folders.current.folderName;
 		}
 		$scope.mail = undefined;
-		Model.folders.openFolder(folderName);
+		Model.folders.openFolder(folderName, cb);
 		$scope.openView(folderName, 'main');
 	};
 
@@ -92,7 +93,7 @@ function Conversation($scope, date, notify, route){
 	};
 
 	$scope.refresh = function(){
-		notify.info('Mise à jour...');
+		notify.info('updating');
 		Model.folders.current.mails.refresh();
 	}
 

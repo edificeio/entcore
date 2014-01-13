@@ -98,9 +98,6 @@ function Mail(data){
 	this.open = function(){
 		var that = this;
 
-		if(Model.folders.current.nbUnread && this.unread){
-			Model.folders.current.nbUnread--;
-		}
 		this.unread = false;
 		http().getJson('/conversation/message/' + this.id).done(function(data){
 			that.updateData(data);
@@ -122,7 +119,8 @@ function Mail(data){
 				})
 			});
 
-			Model.folders.current.trigger('mails.change');
+			Model.folders.inbox.countUnread();
+			Model.folders.current.mails.refresh();
 		});
 	};
 }
@@ -214,7 +212,7 @@ function buildModel(){
 
 			this.current.mails.sync(this.pageNumber);
 		},
-		openFolder: function(folderName){
+		openFolder: function(folderName, cb){
 			this.current = this[folderName];
 			if(this.current.mails.all.length === 0){
 				this.current.mails.sync();
