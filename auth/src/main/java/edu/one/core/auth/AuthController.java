@@ -362,7 +362,7 @@ public class AuthController extends Controller {
 										" introuvable ou déjà activé.");
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()
-								.putString("message", "activation.error"));
+								.putString("message", I18n.getInstance().translate("activation.error", request.headers().get("Accept-Language"))));
 								error.putString("activationCode", activationCode);
 								renderView(request, error);
 							}
