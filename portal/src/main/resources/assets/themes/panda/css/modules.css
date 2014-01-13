@@ -1846,6 +1846,20 @@ i[role=cahier-de-texte-large] {
   float: left;
   vertical-align: middle;
 }
+i[role=attendance-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/attendance-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i[role=conversation-large] {
   height: 135px;
   width: 135px;
@@ -1864,6 +1878,48 @@ i[role=residence-artiste-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/residence-artiste-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=notebook-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/notebook-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=contacts-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/contacts-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=userbook-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/userbook-large.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
