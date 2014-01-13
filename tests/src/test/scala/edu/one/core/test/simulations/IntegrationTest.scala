@@ -10,7 +10,7 @@ import assertions._
 class IntegrationTest extends Simulation {
 
 	val httpProtocol = http
-		.baseURL("http://localhost:8080")
+		.baseURL("http://localhost:8090")
 		.acceptHeader("*/*")
 		.acceptEncodingHeader("gzip, deflate")
 		.acceptLanguageHeader("fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3")

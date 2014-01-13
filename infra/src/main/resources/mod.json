@@ -21,12 +21,12 @@
       "name": "edu.one.core~auth~1.4.0",
       "config": {
         "authenticationServer": {
-          "loginURL": "http://localhost:8080/auth/login",
-          "logoutURL": "http://localhost:8080/auth/logout",
-          "loginCallback": "http://localhost:8080/timeline/timeline",
-          "logoutCallback": "http://localhost:8080/timeline/timeline"
+          "loginURL": "http://localhost:8090/auth/login",
+          "logoutURL": "http://localhost:8090/auth/logout",
+          "loginCallback": "http://localhost:8090/timeline/timeline",
+          "logoutCallback": "http://localhost:8090/timeline/timeline"
         },
-        "host": "http://localhost:8080"
+        "host": "http://localhost:8090"
       }
     },
     {
@@ -35,19 +35,19 @@
         "one-apps": [
           {
             "name": "directory",
-            "url": "http://localhost:8080/directory"
+            "url": "http://localhost:8090/directory"
           },
           {
             "name": "history",
-            "url": "http://localhost:8080/history"
+            "url": "http://localhost:8090/history"
           },
           {
             "name": "appRegistry",
-            "url": "http://localhost:8080/appregistry"
+            "url": "http://localhost:8090/appregistry"
           },
           {
             "name": "communication",
-            "url": "http://localhost:8080/communication"
+            "url": "http://localhost:8090/communication"
           }
         ]
       }
@@ -58,7 +58,7 @@
     {
       "name": "edu.one.core~directory~1.4.0",
       "config": {
-        "host": "http://localhost:8080"
+        "host": "http://localhost:8090"
       }
     },
     {
@@ -70,18 +70,18 @@
     {
       "name": "edu.one.core~workspace~1.4.0",
       "config": {
-        "host": "http://localhost:8080",
-        "userbook-host": "http://localhost:8080",
+        "host": "http://localhost:8090",
+        "userbook-host": "http://localhost:8090",
         "app-name": "Espace documentaire",
-        "app-address": "http://localhost:8080/workspace/workspace"
+        "app-address": "http://localhost:8090/workspace/workspace"
       }
     },
     {
       "name": "edu.one.core~blog~1.4.0",
       "config": {
-        "host": "http://localhost:8080",
-        "userbook-host": "http://localhost:8080",
-        "app-address": "http://localhost:8080/blog"
+        "host": "http://localhost:8090",
+        "userbook-host": "http://localhost:8090",
+        "app-address": "http://localhost:8090/blog"
       }
     },
     {
@@ -97,20 +97,20 @@
       "name": "edu.one.core~portal~1.4.0",
       "config": {
         "urls": {
-          "timeline": "http://localhost:8080/timeline",
-          "userbook": "http://localhost:8080/userbook",
-          "auth": "http://localhost:8080/auth",
-          "portal": "http://localhost:8080",
-          "logoutCallback": "http%3A%2F%2Flocalhost%3A8080"
+          "timeline": "http://localhost:8090/timeline",
+          "userbook": "http://localhost:8090/userbook",
+          "auth": "http://localhost:8090/auth",
+          "portal": "http://localhost:8090",
+          "logoutCallback": "http%3A%2F%2Flocalhost%3A8090"
         }
       }
     },
     {
       "name": "edu.one.core~conversation~1.4.0",
       "config": {
-        "host": "http://localhost:8080",
-        "userbook-host": "http://localhost:8080",
-        "app-address": "http://localhost:8080/conversation/conversation"
+        "host": "http://localhost:8090",
+        "userbook-host": "http://localhost:8090",
+        "app-address": "http://localhost:8090/conversation/conversation"
       }
     }
   ],
@@ -156,7 +156,7 @@
     {
       "name": "com.wse~http-proxy~1.0.0",
       "config": {
-        "port": 8080,
+        "port": 8090,
         "proxies": [
           {
             "location": "/",
