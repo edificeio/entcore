@@ -115,6 +115,7 @@ function Workspace($scope, http, lang, date, ui, notify, _, $rootScope, model){
 
 			if(item.from){
 				item.ownerName = item.fromName;
+				item.owner = item.from;
 			}
 
 			setDocumentRights(item);

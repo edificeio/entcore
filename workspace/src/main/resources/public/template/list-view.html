@@ -33,7 +33,7 @@
 			</div>
 		</td>
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
-		<td><a ng-href="/userbook/annuaire#[[owner]]">[[document.ownerName]]</a></td>
+		<td><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
 		<td><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 		<td>[[longDate(document.created)]]</td>
 	</tr>
