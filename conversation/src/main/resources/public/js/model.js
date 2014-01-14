@@ -123,6 +123,20 @@ function Mail(data){
 			Model.folders.current.mails.refresh();
 		});
 	};
+
+	this.remove = function(){
+		if(Model.folders.current.folderName !== 'trash'){
+			http().put('/conversation/trash?id=' + this.id).done(function(){
+				Model.folders.current.mails.refresh();
+				Model.folders.trash.mails.refresh();
+			});
+		}
+		else{
+			http().delete('/conversation/delete?id=' + this.id).done(function(){
+				Model.folders.trash.mails.refresh();
+			});
+		}
+	};
 }
 
 function Folder(api){
