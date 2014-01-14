@@ -19,5 +19,13 @@
 	"my.account" : "Mon compte",
 	"resid.art" : "Résidence d'artiste",
 	"school.website" : "Site web de l'école",
-	"notebook" : "Cahier de texte"
+	"notebook" : "Cahier de texte",
+	"contactbook" : "Cahier de liaison",
+	"directory.user" : "Annuaire",
+	"multimedia.notebook" : "Cahier multimédia",
+	"maxicours" : "Maxicours",
+	"assessments" : "Gestion des notes",
+	"attendance" : "Gestion des absences",
+	"tdbase" : "TD Base",
+	"statistics" : "Statistiques"
 }
