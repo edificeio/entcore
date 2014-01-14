@@ -40,6 +40,7 @@ function Conversation($scope, date, notify, route){
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){
+		$scope.clearSearch();
 		$scope.newItem = new Mail();
 		$scope.selection.selectAll = false;
 		var viewsPath = '/conversation/public/template/';
