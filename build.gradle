@@ -87,7 +87,7 @@ project(':auth') {
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
-    compile "jp.eisbahn:oauth2-server:1.1-SNAPSHOT"
+    compile "jp.eisbahn:oauth2-server:1.1.0"
   }
 }
 
