@@ -63,7 +63,7 @@ function Directory($scope, route){
 		directory: function(){
 			Model.users.all = [];
 			$scope.openView('directory', 'page');
-			$scope.openView('', 'main');
+			$scope.viewsContainers.main = 'empty';
 			$scope.title = 'directory';
 		},
 		myClass: function(){
