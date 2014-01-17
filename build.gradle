@@ -192,7 +192,7 @@ project(':tests') {
   }
 
   task gatling(dependsOn: 'compileTestScala') << {
-    def simulations =  new java.io.File(sourceSets.test.output.classesDir.getPath() + File.separator + 'edu' + File.separator + 'one' + File.separator + 'core' + File.separator + 'test' + File.separator + 'simulations')
+    def simulations =  new java.io.File(sourceSets.test.output.classesDir.getPath() + File.separator + 'org' + File.separator + 'entcore' + File.separator + 'test' + File.separator + 'simulations')
 
     logger.lifecycle(" ---- Executing all Gatling scenarios from: ${simulations} ----")
     simulations.eachFileRecurse { file ->

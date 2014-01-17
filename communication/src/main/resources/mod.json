@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.communication.Communication",
+	"main":"org.entcore.communication.Communication",
 	"auto-redeploy": true,
 	"port": 8015,
 	"mode": "dev",

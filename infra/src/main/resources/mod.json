@@ -1,12 +1,12 @@
 {
-  "main": "edu.one.core.infra.Starter",
+  "main": "org.entcore.infra.Starter",
   "port": 8001,
   "mode": "dev",
   "auto-redeploy": true,
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "app-registry": {
-    "name": "edu.one.core~app-registry~1.5-SNAPSHOT"
+    "name": "org.entcore~app-registry~1.5-SNAPSHOT"
   },
   "neo4j-persistor": {
     "name": "com.wse.neo4j~neo4jPersistor~1.2.0",
@@ -18,7 +18,7 @@
   },
   "one-modules": [
     {
-      "name": "edu.one.core~auth~1.5-SNAPSHOT",
+      "name": "org.entcore~auth~1.5-SNAPSHOT",
       "config": {
         "authenticationServer": {
           "loginURL": "http://localhost:8090/auth/login",
@@ -30,7 +30,7 @@
       }
     },
     {
-      "name": "edu.one.core~admin~1.5-SNAPSHOT",
+      "name": "org.entcore~admin~1.5-SNAPSHOT",
       "config": {
         "one-apps": [
           {
@@ -53,22 +53,22 @@
       }
     },
     {
-      "name": "edu.one.core~dataDictionary~1.5-SNAPSHOT"
+      "name": "org.entcore~dataDictionary~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~directory~1.5-SNAPSHOT",
+      "name": "org.entcore~directory~1.5-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090"
       }
     },
     {
-      "name": "edu.one.core~history~1.5-SNAPSHOT"
+      "name": "org.entcore~history~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~sync~1.5-SNAPSHOT"
+      "name": "org.entcore~sync~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~workspace~1.5-SNAPSHOT",
+      "name": "org.entcore~workspace~1.5-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -77,7 +77,7 @@
       }
     },
     {
-      "name": "edu.one.core~blog~1.5-SNAPSHOT",
+      "name": "org.entcore~blog~1.5-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -85,16 +85,16 @@
       }
     },
     {
-      "name": "edu.one.core~session~1.5-SNAPSHOT"
+      "name": "org.entcore~session~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~communication~1.5-SNAPSHOT"
+      "name": "org.entcore~communication~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~timeline~1.5-SNAPSHOT"
+      "name": "org.entcore~timeline~1.5-SNAPSHOT"
     },
     {
-      "name": "edu.one.core~portal~1.5-SNAPSHOT",
+      "name": "org.entcore~portal~1.5-SNAPSHOT",
       "config": {
         "urls": {
           "timeline": "http://localhost:8090/timeline",
@@ -106,7 +106,7 @@
       }
     },
     {
-      "name": "edu.one.core~conversation~1.5-SNAPSHOT",
+      "name": "org.entcore~conversation~1.5-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",

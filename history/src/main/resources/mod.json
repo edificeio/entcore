@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.history.History",
+	"main":"org.entcore.history.History",
 	"port": 8006,
 	"log-path": "/opt/one/history/",
 	"mode": "dev"

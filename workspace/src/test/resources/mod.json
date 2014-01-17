@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.workspace.Workspace",
+	"main":"org.entcore.workspace.Workspace",
 	"auto-redeploy": false,
 	"port": 8011,
 	"mode": "dev",

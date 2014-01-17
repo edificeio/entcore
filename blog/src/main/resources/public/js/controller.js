@@ -27,7 +27,7 @@ var views = {
 function resolveMyRights(me){
 	me.myRights = {
 		blog: {
-			post: _.where(me.authorizedActions, { name: "edu.one.core.blog.controllers.BlogController|create" }).length > 0
+			post: _.where(me.authorizedActions, { name: "org.entcore.blog.controllers.BlogController|create" }).length > 0
 		}
 	}
 }
@@ -88,12 +88,12 @@ function Blog($scope, date, _, ui, lang, notify){
 				}) !== undefined;
 		}
 
-		blog.myRights.comment.post = setRight('edu-one-core-blog-controllers-PostController|comment');
-		blog.myRights.comment.remove = setRight('edu-one-core-blog-controllers-PostController|deleteComment');
-		blog.myRights.post.post = setRight('edu-one-core-blog-controllers-PostController|submit');
-		blog.myRights.post.edit = setRight('edu-one-core-blog-controllers-PostController|update');
-		blog.myRights.post.remove = setRight('edu-one-core-blog-controllers-PostController|delete');
-		blog.myRights.post.publish = setRight('edu-one-core-blog-controllers-PostController|publish');
+		blog.myRights.comment.post = setRight('org-entcore-blog-controllers-PostController|comment');
+		blog.myRights.comment.remove = setRight('org-entcore-blog-controllers-PostController|deleteComment');
+		blog.myRights.post.post = setRight('org-entcore-blog-controllers-PostController|submit');
+		blog.myRights.post.edit = setRight('org-entcore-blog-controllers-PostController|update');
+		blog.myRights.post.remove = setRight('org-entcore-blog-controllers-PostController|delete');
+		blog.myRights.post.publish = setRight('org-entcore-blog-controllers-PostController|publish');
 		blog.myRights.blog.edit = setRight('manager');
 		blog.myRights.manager = setRight('manager');
 	}

@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.admin.Admin",
+	"main":"org.entcore.admin.Admin",
 	"port": 8008,
 	"auto-redeploy": true,
 	"mode": "dev",

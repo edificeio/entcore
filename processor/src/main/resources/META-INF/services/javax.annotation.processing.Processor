@@ -1,1 +1,1 @@
-edu.one.core.security.processor.SecuredActionProcessor
+org.entcore.security.processor.SecuredActionProcessor

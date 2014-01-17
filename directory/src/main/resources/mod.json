@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.directory.Directory",
+	"main":"org.entcore.directory.Directory",
 	"auto-redeploy": true,
 	"port": 8003,
 	"mode": "dev",

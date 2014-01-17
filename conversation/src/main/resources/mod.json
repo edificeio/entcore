@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.conversation.Conversation",
+	"main":"org.entcore.conversation.Conversation",
 	"port": 8019,
 	"mode": "dev",
 	"auto-redeploy": true,

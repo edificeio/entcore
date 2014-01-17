@@ -12,19 +12,19 @@ function hasRight(resource, name){
 var behaviours = {
 	resources: {
 		comment: {
-			right: 'edu-one-core-workspace-service-WorkspaceService|commentDocument',
+			right: 'org-entcore-workspace-service-WorkspaceService|commentDocument',
 			apply: function(){
 
 			}
 		},
 		copy: {
-			right: 'edu-one-core-workspace-service-WorkspaceService|moveDocument'
+			right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
 		},
 		move: {
-			right: 'edu-one-core-workspace-service-WorkspaceService|moveDocument'
+			right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
 		},
 		moveTrash: {
-			right: 'edu-one-core-workspace-service-WorkspaceService|moveTrash'
+			right: 'org-entcore-workspace-service-WorkspaceService|moveTrash'
 		}
 	},
 	root: {

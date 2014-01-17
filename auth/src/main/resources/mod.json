@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.auth.Auth",
+	"main":"org.entcore.auth.Auth",
 	"port": 8009,
 	"auto-redeploy": true,
 	"mode": "dev",

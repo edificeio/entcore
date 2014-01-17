@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.timeline.Timeline",
+	"main":"org.entcore.timeline.Timeline",
 	"auto-redeploy": true,
 	"port": 8016,
 	"mode": "dev",

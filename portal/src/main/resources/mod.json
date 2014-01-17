@@ -1,5 +1,5 @@
 {
-	"main":"edu.one.core.portal.Portal",
+	"main":"org.entcore.portal.Portal",
 	"port": 8017,
 	"auto-redeploy": true,
 	"mode": "dev",

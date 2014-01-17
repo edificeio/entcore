@@ -66,7 +66,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 		if(document.owner === $scope.me.userId){
 			document.myRights.share = document.myRights.share &&
-				_.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|share'}).length > 0;
+				_.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|share'}).length > 0;
 			return;
 		}
 
@@ -81,10 +81,10 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			}) !== undefined;
 		}
 
-		document.myRights.document.moveTrash = setRight('edu-one-core-workspace-service-WorkspaceService|moveTrash');
-		document.myRights.document.move = setRight('edu-one-core-workspace-service-WorkspaceService|moveDocument');
-		document.myRights.document.copy = setRight('edu-one-core-workspace-service-WorkspaceService|moveDocument');
-		document.myRights.comment.post = setRight('edu-one-core-workspace-service-WorkspaceService|commentDocument');
+		document.myRights.document.moveTrash = setRight('org-entcore-workspace-service-WorkspaceService|moveTrash');
+		document.myRights.document.move = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
+		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
+		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument');
 		document.myRights.document.share = false;
 	}
 
@@ -180,7 +180,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.workflowRight = function(name){
 		var workflowRights = {
-			share: 'edu.one.core.workspace.service.WorkspaceService|shareJson'
+			share: 'org.entcore.workspace.service.WorkspaceService|shareJson'
 		}
 
 		return _.where($scope.me.authorizedActions, { name: workflowRights[name] }).length > 0;
@@ -300,10 +300,10 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		hierarchical: true,
 		buttons: [
 			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addDocument'}).length > 0;
+				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addDocument'}).length > 0;
 			} },
 			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
 			} }
 		],
 		contextualButtons: [
@@ -316,7 +316,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		path: 'rack/documents',
 		buttons: [
 			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
 			} }
 		],
 		contextualButtons: [
@@ -339,7 +339,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		path: 'documents',
 		buttons: [
 			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'edu.one.core.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
+				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
 			} }
 		],
 		contextualButtons: [
@@ -685,7 +685,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		$scope.me = data;
 		$scope.openFolder($scope.folder.children[0]);
-		if(_.where($scope.me.authorizedActions, {name: 'edu.one.core.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
+		if(_.where($scope.me.authorizedActions, {name: 'org.entcore.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
 			$scope.folder.children = _.reject($scope.folder.children, function(folder){
 				return folder.name === 'rack';
 			});
