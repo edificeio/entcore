@@ -113,7 +113,9 @@ function Directory($scope, route){
 	};
 
 	Model.on('users.change', function(e){
-		$scope.$apply('users');
+		if(!$scope.$$phase){
+			$scope.$apply('users');
+		}
 	});
 
 	$scope.openView('list-view', 'main');
