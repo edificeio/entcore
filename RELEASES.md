@@ -1,6 +1,46 @@
 ONE : Notes de versions
 =======================
 
+# v1.4.0
+
+## Messagerie
+
+* #792, #751, #750, #748 : API et Test (Activation / Désactivation, Envoie, Réponse, Transfert, Brouillon, Corbeille, Intégration des règle de communication)
+* IHM de consultation et de conversation
+
+## Espace Documentaire
+
+* #738 Créer un nouveau document : Ne plus  afficher les fichiers de la fenêtre précédente
+* #737 Copier dans mes documents : sélection précédente conservée
+* #735 Sélectionner le dossier "Mes documents" par défaut lors de la copie d'un document
+* #734 Copier dans mes documents : ne pas autoriser la sélection multiple de dossiers
+
+## Portail / Fil de Nouveautés / Widget
+
+* #827 [portail] Api donner la locale courant de l'utilisateur connecté
+* #668 [fenêtre de partage] Indiquer par défaut les droits de l'utilisateur
+* #786 [fil de nouveauté] Renvoyer les clés i18n des événements de la timeline pour les internationaliser
+* [widget] Ajout du widget changement d'humeur
+* [widget] Anniversaire : Affichage de tous les élèves de la classe (indépendamment des règles de communication) et de toutes les dates d'anniversaires (indépendamment des choix de visibilité d'information personnelle)
+
+## Blog
+
+* #742 [anomalie] Empêcher et informer l'utilisateur de la création d'un billet sans contenu
+* Ajout du workflow de modération pour la publication de billet
+* Ajout de Filtre d'affichage des billets
+
+## Administration
+
+* #785 [annuaire] Réinitialiser un mot de passe via l'explorateur d'annuaire
+* #20 [annuaire][anomalie] Affichage des parents dans l'explorateur d'annuaire
+
+## Évolutions techniques
+
+* #787 [infra] Exécuter les scripts du schema neo4j au démarrage pour le mode embarqué
+* #746 [infra] Helpers pour neo4j version 2 avec les nouveaux formats de retour
+* #749 [registre d'application] Broadcaster un message lors de la modification des habilitations associées à un groupe de profil
+* #754 [registre d'application] Collecter la liste des utilisateurs ou des groupes qui ont accès à mon application
+
 # v1.3.0-neo4j2
 
 * Migration de la base données neo4j de la version 1.9.2 à 2.0.0
