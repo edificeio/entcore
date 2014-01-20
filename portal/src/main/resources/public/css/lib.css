@@ -28,6 +28,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 41.66666666666667%;
 }
 .height-five .right-magnet.cell.fixed {
   right: 0;
@@ -40,15 +41,11 @@
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .height-five {
-    padding-bottom: 41.66666666666667%;
-  }
-}
 .height-six {
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 50%;
 }
 .height-six .right-magnet.cell.fixed {
   right: 0;
@@ -62,11 +59,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-six {
-    padding-bottom: 50%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-five {
     left: 41.66666666666667%;
   }
@@ -75,6 +67,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 33.333333333333336%;
 }
 .height-four .right-magnet.cell.fixed {
   right: 0;
@@ -88,11 +81,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-four {
-    padding-bottom: 33.333333333333336%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-four {
     left: 33.333333333333336%;
   }
@@ -101,6 +89,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 100%;
 }
 .height-twelve .right-magnet.cell.fixed {
   right: 0;
@@ -114,11 +103,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-twelve {
-    padding-bottom: 100%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-twelve {
     left: 100%;
   }
@@ -127,6 +111,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 91.66666666666667%;
 }
 .height-eleven .right-magnet.cell.fixed {
   right: 0;
@@ -140,11 +125,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-eleven {
-    padding-bottom: 91.66666666666667%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-eleven {
     left: 91.66666666666667%;
   }
@@ -153,6 +133,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 83.33333333333334%;
 }
 .height-ten .right-magnet.cell.fixed {
   right: 0;
@@ -166,11 +147,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-ten {
-    padding-bottom: 83.33333333333334%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-ten {
     left: 83.33333333333334%;
   }
@@ -179,6 +155,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 66.66666666666667%;
 }
 .height-eight .right-magnet.cell.fixed {
   right: 0;
@@ -192,11 +169,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-eight {
-    padding-bottom: 66.66666666666667%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-eight {
     left: 66.66666666666667%;
   }
@@ -205,6 +177,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 75%;
 }
 .height-nine .right-magnet.cell.fixed {
   right: 0;
@@ -218,11 +191,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-nine {
-    padding-bottom: 75%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-nine {
     left: 75%;
   }
@@ -231,6 +199,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 58.333333333333336%;
 }
 .height-seven .right-magnet.cell.fixed {
   right: 0;
@@ -244,11 +213,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-seven {
-    padding-bottom: 58.333333333333336%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-seven {
     left: 58.333333333333336%;
   }
@@ -257,6 +221,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 25%;
 }
 .height-three .right-magnet.cell.fixed {
   right: 0;
@@ -270,11 +235,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-three {
-    padding-bottom: 25%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-three {
     left: 25%;
   }
@@ -283,6 +243,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 16.666666666666668%;
 }
 .height-two .right-magnet.cell.fixed {
   right: 0;
@@ -296,11 +257,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-two {
-    padding-bottom: 16.666666666666668%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-two {
     left: 16.666666666666668%;
   }
@@ -309,6 +265,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 8.333333333333334%;
 }
 .height-one .right-magnet.cell.fixed {
   right: 0;
@@ -321,15 +278,11 @@
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .height-one {
-    padding-bottom: 8.333333333333334%;
-  }
-}
 .height-one-plus-half {
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 12.5%;
 }
 .height-one-plus-half .right-magnet.cell.fixed {
   right: 0;
@@ -341,11 +294,6 @@
 .height-one-plus-half .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
-}
-@media screen and (min-width: 720px) {
-  .height-one-plus-half {
-    padding-bottom: 12.5%;
-  }
 }
 @media screen and (min-width: 720px) {
   .left-one {
@@ -374,162 +322,55 @@
 .cell.fixed {
   position: absolute;
   height: 100%;
+  width: 100%;
 }
 .one {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .one {
-    width: 8.333333333333334%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .one {
-    width: 100%;
-  }
+  width: 8.333333333333334%;
 }
 .two {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .two {
-    width: 16.666666666666668%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .two {
-    width: 100%;
-  }
+  width: 16.666666666666668%;
 }
 .three {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .three {
-    width: 25%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .three {
-    width: 100%;
-  }
+  width: 25%;
 }
 .four {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .four {
-    width: 33.333333333333336%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .four {
-    width: 100%;
-  }
+  width: 33.333333333333336%;
 }
 .five {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .five {
-    width: 41.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .five {
-    width: 100%;
-  }
+  width: 41.66666666666667%;
 }
 .six {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .six {
-    width: 50%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .six {
-    width: 100%;
-  }
+  width: 50%;
 }
 .seven {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .seven {
-    width: 58.333333333333336%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .seven {
-    width: 100%;
-  }
+  width: 58.333333333333336%;
 }
 .eight {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .eight {
-    width: 66.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .eight {
-    width: 100%;
-  }
+  width: 66.66666666666667%;
 }
 .nine {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .nine {
-    width: 75%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .nine {
-    width: 100%;
-  }
+  width: 75%;
 }
 .ten {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .ten {
-    width: 83.33333333333334%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .ten {
-    width: 100%;
-  }
+  width: 83.33333333333334%;
 }
 .eleven {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .eleven {
-    width: 91.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .eleven {
-    width: 100%;
-  }
+  width: 91.66666666666667%;
 }
 .twelve {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .twelve {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .twelve {
-    width: 100%;
-  }
+  width: 100%;
 }
 .centered {
   margin-left: auto;

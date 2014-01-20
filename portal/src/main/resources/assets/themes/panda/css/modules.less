@@ -615,10 +615,6 @@ nav.vertical{
 		margin-right: 5px;
 	}
 	ul{
-		margin-top: 0;
-		width: 99%;
-		padding-left: 0;
-
 	ul.selected{
 		.run-transition(all, 250ms, ease-in-out)
 	}
@@ -810,10 +806,6 @@ article.comment{
 		margin-bottom: 0px;
 		font-weight: normal;
 	}
-}
-
-article.box{
-	border: 1px solid #ccc;
 }
 
 section.selected, article.selected{
@@ -1026,12 +1018,6 @@ a{
 	.rounded-corners(10px);
 	background: @solid-blue;
 	color: #fff;
-	font-weight: bold;
-	padding: 1px;
-	display: inline-block;
-	width: 15px;
-	height: 15px;
-	text-align: center;
 	font-size: 12px;
 }
 
@@ -1154,7 +1140,6 @@ table.unstyled{
 
 table{
 	.rounded-corners(10px);
-	border-collapse: collapse;
 
 	thead{
 		tr{
@@ -1348,19 +1333,12 @@ img[src=""]{
 }
 
 .share{
-	table{
-		width: 100%;
-	}
 	tr:hover{
 		background: @light-blue;
 		border: 1px solid #ccc;
 		td.drop-line{
 			background: url(../img/icons/close.png) no-repeat center;
 		}
-	}
-	td, th{
-		width: 100px;
-		text-align: center;
 	}
 	tr{
 		border: 1px solid transparent;
@@ -1371,38 +1349,6 @@ img[src=""]{
 		font-weight: normal;
 		color: @solid-blue;
 		padding-bottom: 5px;
-	}
-	td:first-child, th:first-child{
-		width: 30%;
-		text-align: left;
-		padding-left: 15px;
-	}
-
-	.line{
-		margin-bottom: 15px;
-		padding-bottom: 15px;
-	}
-
-	h3{
-		padding: 15px;
-	}
-
-	input[type=text]{
-		margin-left: 15px;
-		margin-bottom: 15px;
-	}
-
-	.block{
-		padding: 15px;
-	}
-
-	.display-more{
-		text-align: right;
-		width: 100%;
-		display: block;
-		font-size: 15px;
-		padding: 15px;
-		.border-box;
 	}
 }
 

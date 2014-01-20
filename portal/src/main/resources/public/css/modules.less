@@ -8,6 +8,9 @@ nav.vertical{
 		margin-top: 0;
 	}
 	ul{
+		margin-top: 0;
+		width: 99%;
+		padding-left: 0;
 		li{
 			float: none;
 			display: block;
@@ -25,6 +28,9 @@ nav.vertical{
 					margin-top: 2px;
 				}
 			}
+			a.selected{
+				background: #ccc;
+			}
 			input{
 				position: relative !important;
 				top: 0px !important;
@@ -32,6 +38,17 @@ nav.vertical{
 			}
 	}
   }
+}
+
+.badge{
+	.rounded-corners(10px);
+	background: #ccc;
+	font-weight: bold;
+	padding: 1px;
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	text-align: center;
 }
 
 .navbar{
@@ -265,6 +282,10 @@ input[type=search]{
 
 }
 
+section.selected, article.selected{
+	background: #ccc;
+}
+
 .mood-widget{
 	padding-top: 25px;
 	margin-bottom: 25px;
@@ -342,6 +363,22 @@ i.liquid{
 	background: #fff;
 }
 
+table{
+	border-collapse: collapse;
+
+	tr{
+		border-top: 1px solid #ccc;
+		background: transparent;
+	}
+	tr.checked{
+		background: #eee;
+	}
+}
+
+article{
+	border: 1px solid #ccc;
+}
+
 table.list-view{
 	width: 100%;
 	tr.overline{
@@ -371,6 +408,10 @@ table.list-view{
 
 }
 
+a{
+	color: blue;
+}
+
 .v-center-container{
 	display: table;
 	.v-center{
@@ -396,9 +437,50 @@ table.list-view{
 	padding: 4px;
 }
 
+.share{
+	table{
+		width: 100%;
+	}
+	td, th{
+		width: 100px;
+		text-align: center;
+	}
+	td:first-child, th:first-child{
+		width: 30%;
+		text-align: left;
+		padding-left: 15px;
+	}
+
+	.line{
+		margin-bottom: 15px;
+		padding-bottom: 15px;
+	}
+
+	h3{
+		padding: 15px;
+	}
+
+	input[type=text]{
+		margin-left: 15px;
+		margin-bottom: 15px;
+	}
+
+	.block{
+		padding: 15px;
+	}
+
+	.display-more{
+		text-align: right;
+		width: 100%;
+		display: block;
+		font-size: 15px;
+		padding: 15px;
+		.border-box;
+	}
+}
+
 .drop-down.hidden{
 	height: 0px;
-
 }
 
 .drop-down{
@@ -406,7 +488,7 @@ table.list-view{
 	position: absolute;
 	z-index: 10000;
 	height: 150px;
-	background: #fff;
+	background: #eee;
 	cursor: pointer;
 	.run-transition(height, 200ms, ease-in-out);
 	ul{
@@ -414,7 +496,7 @@ table.list-view{
 		padding-top: 10px;
 		padding-bottom: 10px;
 		margin: 0px;
-		background: #fff;
+		background: #eee;
 		width: 100%;
 		li{
 			padding-left: 10px;
@@ -442,6 +524,7 @@ table.list-view{
 
 .toggle-bottom{
 	width: 960px;
+	background: #ccc;
 	left: 50%;
 	margin-left: -(960px / 2);
 	height: 60px;

@@ -28,6 +28,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 41.66666666666667%;
 }
 .height-five .right-magnet.cell.fixed {
   right: 0;
@@ -40,15 +41,11 @@
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .height-five {
-    padding-bottom: 41.66666666666667%;
-  }
-}
 .height-six {
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 50%;
 }
 .height-six .right-magnet.cell.fixed {
   right: 0;
@@ -62,11 +59,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-six {
-    padding-bottom: 50%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-five {
     left: 41.66666666666667%;
   }
@@ -75,6 +67,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 33.333333333333336%;
 }
 .height-four .right-magnet.cell.fixed {
   right: 0;
@@ -88,11 +81,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-four {
-    padding-bottom: 33.333333333333336%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-four {
     left: 33.333333333333336%;
   }
@@ -101,6 +89,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 100%;
 }
 .height-twelve .right-magnet.cell.fixed {
   right: 0;
@@ -114,11 +103,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-twelve {
-    padding-bottom: 100%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-twelve {
     left: 100%;
   }
@@ -127,6 +111,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 91.66666666666667%;
 }
 .height-eleven .right-magnet.cell.fixed {
   right: 0;
@@ -140,11 +125,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-eleven {
-    padding-bottom: 91.66666666666667%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-eleven {
     left: 91.66666666666667%;
   }
@@ -153,6 +133,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 83.33333333333334%;
 }
 .height-ten .right-magnet.cell.fixed {
   right: 0;
@@ -166,11 +147,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-ten {
-    padding-bottom: 83.33333333333334%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-ten {
     left: 83.33333333333334%;
   }
@@ -179,6 +155,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 66.66666666666667%;
 }
 .height-eight .right-magnet.cell.fixed {
   right: 0;
@@ -192,11 +169,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-eight {
-    padding-bottom: 66.66666666666667%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-eight {
     left: 66.66666666666667%;
   }
@@ -205,6 +177,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 75%;
 }
 .height-nine .right-magnet.cell.fixed {
   right: 0;
@@ -218,11 +191,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-nine {
-    padding-bottom: 75%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-nine {
     left: 75%;
   }
@@ -231,6 +199,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 58.333333333333336%;
 }
 .height-seven .right-magnet.cell.fixed {
   right: 0;
@@ -244,11 +213,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-seven {
-    padding-bottom: 58.333333333333336%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-seven {
     left: 58.333333333333336%;
   }
@@ -257,6 +221,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 25%;
 }
 .height-three .right-magnet.cell.fixed {
   right: 0;
@@ -270,11 +235,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-three {
-    padding-bottom: 25%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-three {
     left: 25%;
   }
@@ -283,6 +243,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 16.666666666666668%;
 }
 .height-two .right-magnet.cell.fixed {
   right: 0;
@@ -296,11 +257,6 @@
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .height-two {
-    padding-bottom: 16.666666666666668%;
-  }
-}
-@media screen and (min-width: 720px) {
   .left-two {
     left: 16.666666666666668%;
   }
@@ -309,6 +265,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 8.333333333333334%;
 }
 .height-one .right-magnet.cell.fixed {
   right: 0;
@@ -321,15 +278,11 @@
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .height-one {
-    padding-bottom: 8.333333333333334%;
-  }
-}
 .height-one-plus-half {
   box-sizing: content-box;
   position: relative;
   height: 1px;
+  padding-bottom: 12.5%;
 }
 .height-one-plus-half .right-magnet.cell.fixed {
   right: 0;
@@ -341,11 +294,6 @@
 .height-one-plus-half .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
-}
-@media screen and (min-width: 720px) {
-  .height-one-plus-half {
-    padding-bottom: 12.5%;
-  }
 }
 @media screen and (min-width: 720px) {
   .left-one {
@@ -374,162 +322,55 @@
 .cell.fixed {
   position: absolute;
   height: 100%;
+  width: 100%;
 }
 .one {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .one {
-    width: 8.333333333333334%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .one {
-    width: 100%;
-  }
+  width: 8.333333333333334%;
 }
 .two {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .two {
-    width: 16.666666666666668%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .two {
-    width: 100%;
-  }
+  width: 16.666666666666668%;
 }
 .three {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .three {
-    width: 25%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .three {
-    width: 100%;
-  }
+  width: 25%;
 }
 .four {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .four {
-    width: 33.333333333333336%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .four {
-    width: 100%;
-  }
+  width: 33.333333333333336%;
 }
 .five {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .five {
-    width: 41.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .five {
-    width: 100%;
-  }
+  width: 41.66666666666667%;
 }
 .six {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .six {
-    width: 50%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .six {
-    width: 100%;
-  }
+  width: 50%;
 }
 .seven {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .seven {
-    width: 58.333333333333336%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .seven {
-    width: 100%;
-  }
+  width: 58.333333333333336%;
 }
 .eight {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .eight {
-    width: 66.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .eight {
-    width: 100%;
-  }
+  width: 66.66666666666667%;
 }
 .nine {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .nine {
-    width: 75%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .nine {
-    width: 100%;
-  }
+  width: 75%;
 }
 .ten {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .ten {
-    width: 83.33333333333334%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .ten {
-    width: 100%;
-  }
+  width: 83.33333333333334%;
 }
 .eleven {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .eleven {
-    width: 91.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .eleven {
-    width: 100%;
-  }
+  width: 91.66666666666667%;
 }
 .twelve {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .twelve {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .twelve {
-    width: 100%;
-  }
+  width: 100%;
 }
 .centered {
   margin-left: auto;
@@ -571,6 +412,11 @@ nav.vertical {
 nav.vertical h1 {
   margin-top: 0;
 }
+nav.vertical ul {
+  margin-top: 0;
+  width: 99%;
+  padding-left: 0;
+}
 nav.vertical ul li {
   float: none;
   display: block;
@@ -588,10 +434,27 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
+nav.vertical ul li a.selected {
+  background: #ccc;
+}
 nav.vertical ul li input {
   position: relative !important;
   top: 0px !important;
   left: 0px !important;
+}
+.badge {
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+  background: #ccc;
+  font-weight: bold;
+  padding: 1px;
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  text-align: center;
 }
 .navbar {
   height: 40px;
@@ -677,6 +540,7 @@ input[type=search] {
 }
 .birthday {
   width: 1;
+  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -690,22 +554,13 @@ input[type=search] {
   padding-right: 1px;
   margin-bottom: 25px;
 }
-@media screen and (min-width: 720px) {
-  .birthday {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .birthday {
-    width: 100%;
-  }
-}
 .birthday img {
   max-width: 100%;
 }
 .birthday .content {
   margin-top: 35px;
   width: 1;
+  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -727,16 +582,6 @@ input[type=search] {
   border-bottom-right-radius: 10px;
   overflow: hidden;
 }
-@media screen and (min-width: 720px) {
-  .birthday .content {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .birthday .content {
-    width: 100%;
-  }
-}
 .birthday .content img {
   max-width: 100%;
 }
@@ -757,18 +602,9 @@ input[type=search] {
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
+  width: 41.66666666666667%;
   height: 35px;
   line-height: 100%;
-}
-@media screen and (min-width: 720px) {
-  .birthday nav.vertical ul li a .user {
-    width: 41.66666666666667%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .birthday nav.vertical ul li a .user {
-    width: 100%;
-  }
 }
 .birthday nav.vertical ul li a .user p {
   margin: 0;
@@ -802,7 +638,9 @@ input[type=search] {
 .calendar {
   box-sizing: content-box;
   height: 1px;
+  padding-bottom: 58.333333333333336%;
   width: 1;
+  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -827,27 +665,13 @@ input[type=search] {
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .calendar {
-    padding-bottom: 58.333333333333336%;
-  }
-}
-@media screen and (min-width: 720px) {
-  .calendar {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .calendar {
-    width: 100%;
-  }
-}
 .calendar img {
   max-width: 100%;
 }
 .calendar .content {
   margin-top: 25.7%;
   width: 1;
+  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -869,22 +693,13 @@ input[type=search] {
   border-bottom-right-radius: 10px;
   overflow: hidden;
 }
-@media screen and (min-width: 720px) {
-  .calendar .content {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .calendar .content {
-    width: 100%;
-  }
-}
 .calendar .content img {
   max-width: 100%;
 }
 .calendar .content {
   position: absolute;
   height: 100%;
+  width: 100%;
   height: 98%;
 }
 .calendar .day {
@@ -901,6 +716,7 @@ input[type=search] {
 }
 .dominos {
   width: 1;
+  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -909,21 +725,12 @@ input[type=search] {
   display: block;
   position: relative;
 }
-@media screen and (min-width: 720px) {
-  .dominos {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .dominos {
-    width: 100%;
-  }
-}
 .dominos img {
   max-width: 100%;
 }
 .dominos .item {
   width: 1;
+  width: 20%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -933,16 +740,6 @@ input[type=search] {
   position: relative;
   padding: 5px;
   overflow: hidden;
-}
-@media screen and (min-width: 720px) {
-  .dominos .item {
-    width: 20%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .dominos .item {
-    width: 100%;
-  }
 }
 .dominos .item img {
   max-width: 100%;
@@ -956,23 +753,15 @@ input[type=search] {
   display: block;
   position: relative;
   width: 1;
+  width: 100%;
 }
 .dominos .item .domino img {
   max-width: 100%;
 }
-@media screen and (min-width: 720px) {
-  .dominos .item .domino {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .dominos .item .domino {
-    width: 100%;
-  }
-}
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 1px;
+  padding-bottom: 91.66666666666667%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -994,11 +783,6 @@ input[type=search] {
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .dominos .item .domino .top {
-    padding-bottom: 91.66666666666667%;
-  }
-}
 .dominos .item .domino .top img {
   position: absolute;
   width: 100%;
@@ -1008,6 +792,7 @@ input[type=search] {
 .dominos .item .domino .bottom {
   box-sizing: content-box;
   height: 1px;
+  padding-bottom: 75%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -1031,11 +816,6 @@ input[type=search] {
   bottom: 0;
   position: absolute;
 }
-@media screen and (min-width: 720px) {
-  .dominos .item .domino .bottom {
-    padding-bottom: 75%;
-  }
-}
 .dominos .item .domino .bottom div.content {
   position: absolute;
   width: 100%;
@@ -1047,6 +827,10 @@ input[type=search] {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+}
+section.selected,
+article.selected {
+  background: #ccc;
 }
 .mood-widget {
   padding-top: 25px;
@@ -1105,6 +889,19 @@ i.liquid {
   height: 5px;
   background: #fff;
 }
+table {
+  border-collapse: collapse;
+}
+table tr {
+  border-top: 1px solid #ccc;
+  background: transparent;
+}
+table tr.checked {
+  background: #eee;
+}
+article {
+  border: 1px solid #ccc;
+}
 table.list-view {
   width: 100%;
 }
@@ -1129,6 +926,9 @@ table.list-view td img {
 table.list-view td a {
   word-break: break-word;
 }
+a {
+  color: blue;
+}
 .v-center-container {
   display: table;
 }
@@ -1151,6 +951,45 @@ table.list-view td a {
 .cke_editable {
   padding: 4px;
 }
+.share table {
+  width: 100%;
+}
+.share td,
+.share th {
+  width: 100px;
+  text-align: center;
+}
+.share td:first-child,
+.share th:first-child {
+  width: 30%;
+  text-align: left;
+  padding-left: 15px;
+}
+.share .line {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}
+.share h3 {
+  padding: 15px;
+}
+.share input[type=text] {
+  margin-left: 15px;
+  margin-bottom: 15px;
+}
+.share .block {
+  padding: 15px;
+}
+.share .display-more {
+  text-align: right;
+  width: 100%;
+  display: block;
+  font-size: 15px;
+  padding: 15px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
 .drop-down.hidden {
   height: 0px;
 }
@@ -1159,7 +998,7 @@ table.list-view td a {
   position: absolute;
   z-index: 10000;
   height: 150px;
-  background: #fff;
+  background: #eee;
   cursor: pointer;
   -o-transition: height 200ms ease-in-out;
   -moz-transition: height 200ms ease-in-out;
@@ -1171,7 +1010,7 @@ table.list-view td a {
   padding-top: 10px;
   padding-bottom: 10px;
   margin: 0px;
-  background: #fff;
+  background: #eee;
   width: 100%;
 }
 .drop-down ul li {
@@ -1197,6 +1036,7 @@ table.list-view td a {
 }
 .toggle-bottom {
   width: 960px;
+  background: #ccc;
   left: 50%;
   margin-left: -480px;
   height: 60px;
@@ -1391,21 +1231,12 @@ section .contextual-buttons .action-buttons {
   display: block;
   position: relative;
   width: 1;
+  width: 83.33333333333334%;
   line-height: 50px;
   margin-bottom: 10px;
 }
 section .contextual-buttons .action-buttons img {
   max-width: 100%;
-}
-@media screen and (min-width: 720px) {
-  section .contextual-buttons .action-buttons {
-    width: 83.33333333333334%;
-  }
-}
-@media screen and (max-width: 720px) {
-  section .contextual-buttons .action-buttons {
-    width: 100%;
-  }
 }
 section .contextual-buttons .action-buttons button,
 section .contextual-buttons .action-buttons a.button {
@@ -1704,6 +1535,12 @@ html,
 body {
   margin: 0;
   height: 100%;
+  font-family: Arial;
+  background: #eee;
+}
+html section.main,
+body section.main {
+  background: #fff;
 }
 .container {
   height: 100%;
@@ -3289,11 +3126,6 @@ nav.vertical h2 {
 nav.vertical i {
   margin-right: 5px;
 }
-nav.vertical ul {
-  margin-top: 0;
-  width: 99%;
-  padding-left: 0;
-}
 nav.vertical ul ul.selected {
   -o-transition: all 250ms ease-in-out;
   -moz-transition: all 250ms ease-in-out;
@@ -3555,9 +3387,6 @@ article.comment a {
   margin-top: 10px;
   margin-bottom: 0px;
   font-weight: normal;
-}
-article.box {
-  border: 1px solid #ccc;
 }
 section.selected,
 article.selected {
@@ -3848,12 +3677,6 @@ a strong.small-header {
   border-radius: 10px;
   background: #3889c1;
   color: #fff;
-  font-weight: bold;
-  padding: 1px;
-  display: inline-block;
-  width: 15px;
-  height: 15px;
-  text-align: center;
   font-size: 12px;
 }
 .floating-badge {
@@ -3966,7 +3789,6 @@ table {
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
   border-radius: 10px;
-  border-collapse: collapse;
 }
 table thead tr {
   border: none;
@@ -4141,22 +3963,10 @@ img[src=""] {
 }
 .icons-select.one-col .option {
   width: 1;
-}
-@media screen and (min-width: 720px) {
-  .icons-select.one-col .option {
-    width: 100%;
-  }
-}
-@media screen and (max-width: 720px) {
-  .icons-select.one-col .option {
-    width: 100%;
-  }
+  width: 100%;
 }
 .subtitle {
   margin-top: 0;
-}
-.share table {
-  width: 100%;
 }
 .share tr:hover {
   background: #ebf4f9;
@@ -4164,11 +3974,6 @@ img[src=""] {
 }
 .share tr:hover td.drop-line {
   background: url(../img/icons/close.png) no-repeat center;
-}
-.share td,
-.share th {
-  width: 100px;
-  text-align: center;
 }
 .share tr {
   border: 1px solid transparent;
@@ -4183,37 +3988,6 @@ img[src=""] {
   font-weight: normal;
   color: #3889c1;
   padding-bottom: 5px;
-}
-.share td:first-child,
-.share th:first-child {
-  width: 30%;
-  text-align: left;
-  padding-left: 15px;
-}
-.share .line {
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-}
-.share h3 {
-  padding: 15px;
-}
-.share input[type=text] {
-  margin-left: 15px;
-  margin-bottom: 15px;
-}
-.share .block {
-  padding: 15px;
-}
-.share .display-more {
-  text-align: right;
-  width: 100%;
-  display: block;
-  font-size: 15px;
-  padding: 15px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
 }
 .birthday {
   background-image: url(../img/illustrations/birthdays-header.png);

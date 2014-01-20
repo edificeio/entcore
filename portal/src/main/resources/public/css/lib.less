@@ -27,19 +27,11 @@
 }
 
 .grid-cell-width(@cell-size: 1){
-  @media screen and (min-width: 720px){
-    width: (100% / 12 * @cell-size);
-  }
-
-  @media screen and (max-width: 720px){
-      width: 100%;
-  }
+	width: (100% / 12 * @cell-size);
 }
 
 .grid-cell-height(@cell-size: 1){
-	@media screen and (min-width: 720px){
-		padding-bottom: (100% / 12 * @cell-size);
-	}
+	padding-bottom: (100% / 12 * @cell-size);
 }
 
 .grid-cell-left(@cell-size: 1){
@@ -182,6 +174,7 @@
 .cell.fixed{
 	position: absolute;
 	height: 100%;
+	width: 100%;
 }
 
 .one{
