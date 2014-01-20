@@ -16,7 +16,7 @@ class IntegrationTest extends Simulation {
 		.acceptLanguageHeader("fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3")
     .disableFollowRedirect
 
-	setUp(IntegrationTestScenario.scn.inject(nothingFor(5 seconds), atOnce(1 user)))
+	setUp(IntegrationTestScenario.scn.inject(nothingFor(15 seconds), atOnce(1 user)))
     .protocols(httpProtocol)
     .assertions(global.failedRequests.count.is(0))
 
