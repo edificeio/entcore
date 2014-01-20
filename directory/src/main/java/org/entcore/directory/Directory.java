@@ -40,7 +40,8 @@ public class Directory extends Server {
 				.get("/api/personnes", "people")
 				.get("/api/details", "details")
 				.post("/api/user", "createUser")
-				.get("/api/export", "export");
+				.get("/api/export", "export")
+				.post("/school", "createSchool");
 
 		userBookController.get("/mon-compte", "monCompte")
 				.get("/annuaire", "annuaire")

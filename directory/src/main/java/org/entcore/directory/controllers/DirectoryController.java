@@ -1,9 +1,13 @@
 package org.entcore.directory.controllers;
 
+import static edu.one.core.infra.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -43,6 +47,7 @@ public class DirectoryController extends Controller {
 	private final IdGenerator idGenerator;
 	private final LoginGenerator loginGenerator;
 	private final DisplayNameGenerator displayNameGenerator;
+	private final SchoolService schoolService;
 
 	public DirectoryController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
@@ -52,6 +57,7 @@ public class DirectoryController extends Controller {
 			this.d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 			this.p = new DefaultProfils(neo);
+			this.schoolService = new DefaultSchoolService(neo);
 			loginGenerator = new LoginGenerator();
 			activationGenerator = new ActivationCodeGenerator();
 			idGenerator = new IdGenerator();
@@ -95,6 +101,16 @@ public class DirectoryController extends Controller {
 	@SecuredAction("directory.authent")
 	public void school(HttpServerRequest request) {
 		neo.send("MATCH (n:School) RETURN distinct n.name as name, n.id as id", request.response());
+	}
+
+	@SecuredAction("directory.school.create")
+	public void createSchool(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject school) {
+				schoolService.create(school, defaultResponseHandler(request, 201));
+			}
+		});
 	}
 
 	@SecuredAction("directory.classes")
