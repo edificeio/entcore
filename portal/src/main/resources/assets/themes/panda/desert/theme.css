@@ -606,7 +606,7 @@ p i {
   margin-bottom: 45px;
   padding-right: 1px;
   margin-bottom: 25px;
-  background: #eee;
+  background-color: #eee;
 }
 .birthday img {
   max-width: 100%;
@@ -3288,7 +3288,7 @@ nav.vertical ul li ul a {
 }
 nav.vertical ul a.selected,
 nav.vertical ul a:hover {
-  background: #3889c1;
+  background: #3889c1 !important;
   color: #fff;
 }
 nav.vertical ul a:hover {
@@ -4048,6 +4048,8 @@ img[src=""] {
 }
 .birthday {
   background-image: url(../img/illustrations/birthdays-header.png);
+  background-size: 100% auto;
+  background-color: transparent;
 }
 .birthday h1 {
   display: none;
@@ -4448,8 +4450,11 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
   opacity: 1;
   cursor: pointer;
 }
-body {
+body,
+html {
   background: #c2c2c2;
+}
+body {
   font-family: Arial;
 }
 body .container {
