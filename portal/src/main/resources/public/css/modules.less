@@ -21,6 +21,9 @@ nav.vertical{
 			a{
 				display: block;
 				position: relative;
+				line-height: 20px;
+				padding: 5px;
+				padding-left: 10px;
 
 				i{
 					display: block;
@@ -38,6 +41,60 @@ nav.vertical{
 			}
 	}
   }
+}
+
+.banner.orange{
+	background: orange;
+}
+
+.banner.cyan{
+	background: cyan;
+}
+
+.banner.green{
+	background: green;
+}
+
+.banner.pink{
+	background: pink;
+}
+
+.banner.purple{
+	background: purple;
+}
+
+.dominos{
+	.mood{
+		position: absolute;
+		top: 22px;
+		right: 5px;
+	}
+	.item{
+		.domino{
+			border: 1px solid #ccc;
+		}
+		.domino.green{
+			background: green;
+		}
+		.domino.orange{
+			background: orange;
+		}
+		.domino.purple{
+			background: purple;
+		}
+		.domino.cyan{
+			background: cyan;
+		}
+		.domino.pink{
+			background: pink;
+		}
+	}
+
+}
+
+textarea{
+	width: 100%;
+	height: 130px;
 }
 
 .badge{
@@ -117,6 +174,8 @@ nav.horizontal{
 	li{
 		display: inline-block;
 		list-style-type: none;
+		padding-left: 10px;
+		padding-right: 10px;
 	}
 }
 
@@ -153,9 +212,24 @@ input[type=search]{
 	margin: 0;
 }
 
+p{
+	i{
+		display: inline-block !important;
+		height: 25px !important;
+		width: 25px !important;
+		float: none !important;
+	}
+}
+
 .birthday{
 	.widget-container(35px);
 	margin-bottom: 25px;
+	background: #eee;
+	h1{
+		margin: 0;
+		position: absolute;
+		top: 0;
+	}
 
 	nav.vertical{
 		padding: 0;
@@ -180,6 +254,13 @@ input[type=search]{
 					.date{
 						.right-magnet;
 						display: inline-block;
+						h2, h4{
+							margin: 0;
+						}
+						h4{
+							font-size: 12px;
+							font-weight: normal;
+						}
 					}
 
 					img{
@@ -236,6 +317,8 @@ input[type=search]{
 		width: 100%;
 		text-align: center;
 		top: 26px;
+		margin-top: 0px;
+		margin-bottom: 10px;
 	}
 }
 
@@ -296,6 +379,7 @@ section.selected, article.selected{
 		left: 65px;
 		top: 16px;
 		white-space: nowrap;
+		color: transparent;
 	}
 
 	.icons-select{
@@ -305,14 +389,6 @@ section.selected, article.selected{
 		}
 
 		.current {
-			i{
-				max-height: 55px;
-				height: 55px;
-				width: 55px;
-				position: absolute;
-				top: -30px;
-				left: 4px;
-			}
 			span{
 				position: absolute;
 				top: 0px;
@@ -507,6 +583,10 @@ a{
 }
 
 .toggle-panel{
+	background: #ccc;
+	h1,h2{
+		margin-left: 5px;
+	}
 	.toggle{
 		width: 300px;
 	}
@@ -571,6 +651,8 @@ ul.icons-tabs{
 	display: table;
 
 	li{
+		background: #ccc;
+		border: 2px solid #fff;
 		padding: 0;
 		margin: 0;
 		list-style-type: none;
@@ -681,6 +763,7 @@ ul.icons-view.two-cols{
 	position: relative;
 	margin-top: 15px;
 	z-index: 5;
+	background: #eee;
 
 	.options-list{
 		display: none;
@@ -688,6 +771,11 @@ ul.icons-view.two-cols{
 		width: 175%;
 		top: 49px;
 		.border-box;
+		background: #eee;
+	}
+
+	.option i{
+		background-size: 100% auto;
 	}
 
 	.option, .current{

@@ -33,7 +33,7 @@ function MyAccount($scope, lang, date, notify, _){
 
 	moods.forEach(function(mood){
 		$scope.moods.push({
-			icon: mood + '-panda',
+			icon: mood,
 			text: lang.translate('userBook.mood.' + mood),
 			id: mood
 		})

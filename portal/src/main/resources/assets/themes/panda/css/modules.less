@@ -23,7 +23,6 @@ body{
 	cursor: default !important;
 }
 
-//Icons
 i[role=new-mail]{
 	.icon(new-mail, 40px);
 	color: #fff;
@@ -35,7 +34,6 @@ i[role=new-mail]{
 	.border-box;
 }
 
-//Icons
 i[role=shared]{
 	.icon(shared, 18px);
 	background-position: center;
@@ -455,20 +453,11 @@ blockquote{
 	margin: 5px;
 }
 
-p{
-	i{
-		display: inline-block !important;
-		height: 25px !important;
-		width: 25px !important;
-		float: none !important;
-	}
-}
-
 .icons-tabs{
 	li{
 		border: 2px solid #fff;
 		.rounded-corners-right(10px);
-		background: @medium-blue;
+		background: @medium-blue !important;
 		.run-transition(background);
 		border-left: 0;
 	}
@@ -538,8 +527,6 @@ input[type=button], input[type=submit], a.button, button{
 }
 
 textarea{
-	width: 100%;
-	height: 130px;
 	border: 1px solid #CCC;
 }
 
@@ -615,63 +602,61 @@ nav.vertical{
 		margin-right: 5px;
 	}
 	ul{
-	ul.selected{
-		.run-transition(all, 250ms, ease-in-out)
-	}
-	ul.closed{
-		max-height: 0px;
-		.run-transition(all);
-		overflow: hidden;
-	}
-	li{
-		padding: 0;
-		em{
-			color: @medium-grey;
+		ul.selected{
+			.run-transition(all, 250ms, ease-in-out)
 		}
-		em.active{
-			color: #000;
+		ul.closed{
+			max-height: 0px;
+			.run-transition(all);
+			overflow: hidden;
 		}
-		em, span{
-			background: @ultra-light-grey;
-			.rounded-corners(10px);
-			border: 1px solid @light-grey;
-			display: block;
-			margin: 5px;
-			line-height: 20px;
-			padding: 5px;
-			a{
-				display: inline-block;
-				background: @solid-blue !important;
-				width: 19px;
-				padding: 0;
-				margin: 0;
-				text-align: center;
-				height: 19px;
-				color: white;
-				margin-right: 5px;
-				strong{
-					color: #fff;
+		li{
+			padding: 0;
+			em{
+				color: @medium-grey;
+			}
+			em.active{
+				color: #000;
+			}
+			em, span{
+				background: @ultra-light-grey;
+				.rounded-corners(10px);
+				border: 1px solid @light-grey;
+				display: block;
+				margin: 5px;
+				line-height: 20px;
+				padding: 5px;
+				a{
+					display: inline-block;
+					background: @solid-blue !important;
+					width: 19px;
+					padding: 0;
+					margin: 0;
+					text-align: center;
+					height: 19px;
+					color: white;
+					margin-right: 5px;
+					strong{
+						color: #fff;
+					}
 				}
 			}
-		}
-		input{
-			margin-left: 15px;
-			height: 27px;
-		}
-		input[type=text]{
-			margin-top: -5px;
-			width: 90%;
-		}
-      a{
+			input{
+				margin-left: 15px;
+				height: 27px;
+			}
+			input[type=text]{
+				margin-top: -5px;
+				width: 90%;
+			}
+		a{
         .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
         .rounded-corners(10px);
 
         font-size: 1em;
         border: 1px solid @light-grey;
         margin: 5px;
-        line-height: 20px;
-        padding: 5px;
-		  padding-left: 10px;
+
         .run-transition(background);
 		  color: #000;
       }
@@ -1028,11 +1013,6 @@ a{
 
 .dominos{
 	.rounded-corners(5px);
-	.mood{
-		position: absolute;
-		top: 22px;
-		right: 5px;
-	}
 	.item{
 		.domino{
 			border: 1px solid #dfdfdf;
@@ -1285,7 +1265,6 @@ img[src=""]{
 		margin-right: auto;
 		width: 60px;
 		height: 60px;
-		background-size: 100% auto;
 	}
 
 	.option, .current{
@@ -1354,7 +1333,9 @@ img[src=""]{
 
 .birthday{
 	background-image: url(../img/illustrations/birthdays-header.png);
-
+	h1{
+		display: none;
+	}
 	.content{
 		.select-class{
 			padding-right: 3px;
@@ -1384,7 +1365,6 @@ img[src=""]{
 						color: #666;
 
 						h2, h4{
-							margin: 0;
 							color: #888;
 
 							text-align: center;
@@ -1392,11 +1372,6 @@ img[src=""]{
 
 						h2{
 							font-size: 25px;
-						}
-
-						h4{
-							font-size: 12px;
-							font-weight: normal;
 						}
 					}
 				}
@@ -1499,7 +1474,6 @@ label.checkbox{
 		width: 140px;
 		height: 21px;
 		font-size: 17px;
-		color: transparent;
 		font-family: BDCartoonShout;
 		font-weight: normal;
 
@@ -1521,6 +1495,14 @@ label.checkbox{
 		}
 
 		.current {
+			i{
+				max-height: 55px;
+				height: 55px;
+				width: 55px;
+				position: absolute;
+				top: -30px;
+				left: 4px;
+			}
 			background-position: 185px 5px;
 			span{
 				color: black;
@@ -1701,8 +1683,6 @@ label.checkbox{
 		}
 		color: @medium-blue;
 		font-size: 13px;
-		padding-left: 10px;
-		padding-right: 10px;
 	}
 	li.legend{
 		color: #666;

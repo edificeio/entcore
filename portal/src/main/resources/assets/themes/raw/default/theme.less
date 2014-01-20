@@ -1,1 +1,173 @@
 @import "../../../../public/css/app";
+
+i[role=send-mail]{
+	.icon(glyphicons_010_envelope, 24px);
+	margin: 7px;
+}
+
+i[role=view-folder]{
+	.icon(glyphicons_144_folder_open, 24px);
+	margin: 7px;
+}
+
+i[role=view-book]{
+	.icon(glyphicons_071_book, 24px);
+	margin: 7px;
+}
+
+i[role=angry]{
+	.icon(default, 25px);
+}
+
+i[role=default]{
+	.icon(default, 25px);
+}
+
+i[role=dreamy]{
+	.icon(default, 25px);
+}
+
+i[role=happy]{
+	.icon(default, 25px);
+}
+
+i[role=joker]{
+	.icon(default, 25px);
+}
+
+i[role=love]{
+	.icon(default, 25px);
+}
+
+i[role=proud]{
+	.icon(default, 25px);
+}
+
+i[role=sad]{
+	.icon(default, 25px);
+}
+
+i[role=sick]{
+	.icon(default, 25px);
+}
+
+i[role=tired]{
+	.icon(default, 25px);
+}
+
+i[role=worried]{
+	.icon(default, 25px);
+}
+
+i[role=show-icons]{
+	.icon(glyphicons_156_show_thumbnails, 24px);
+	opacity: 0.5;
+}
+
+i[role=show-details]{
+	.icon(glyphicons_157_show_thumbnails_with_lines, 24px);
+	opacity: 0.5;
+}
+
+i[role=show-list]{
+	.icon(glyphicons_158_show_lines, 24px);
+	opacity: 0.5;
+}
+
+i[role=show-icons].selected{
+	opacity: 1;
+}
+
+i[role=show-details].selected{
+	opacity: 1;
+}
+
+i[role=show-list].selected{
+	opacity: 1;
+}
+
+i[role=close]{
+	.icon(glyphicons_207_remove_2, 24px);
+}
+
+i[role=close2x]{
+	.icon(glyphicons_207_remove_2, 50px);
+}
+
+i[role=tools]{
+	.icon(glyphicons_280_settings, 25px);
+}
+
+@header-height: 70px;
+
+.container{
+	header.main{
+		height: @header-height;
+	}
+
+	.main.wrapper{
+		padding-top: @header-height;
+	}
+}
+
+.mood-widget{
+	border: 1px solid #ccc;
+	background: #eee;
+	padding-top: 0;
+	.icons-select{
+		margin-top: 0;
+	}
+}
+
+.birthday{
+	border: 1px solid #ccc;
+	.content{
+		border: none;
+	}
+}
+
+.calendar{
+	border: 1px solid #ccc;
+	border-bottom: 0;
+	background: #eee;
+	.current-month-header{
+		top: 0;
+	}
+	.content{
+		border-radius: 0px;
+		border: 1px solid #ccc;
+		border-top: 0;
+		background: #eee;
+		margin-top: 18%;
+		.day{
+			font-size: 10px;
+		}
+		.day.today{
+			color: #fff;
+			background: #000;
+		}
+	}
+	.current-day{
+		h1{
+			font-size: 14px;
+			text-align: center;
+			font-weight: normal;
+			margin-bottom: -10px;
+			margin-top: 5px;
+		}
+		h2{
+			font-size: 40px;
+			margin: 0;
+			margin-top: 5px;
+			text-align: center;
+			font-weight: normal;
+		}
+		h3{
+			font-weight: 100;
+			font-size: 14px;
+			text-align: center;
+			margin-top: -10px;
+			padding-top: 6px;
+		}
+	}
+}

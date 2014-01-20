@@ -428,6 +428,9 @@ nav.vertical ul li {
 nav.vertical ul li a {
   display: block;
   position: relative;
+  line-height: 20px;
+  padding: 5px;
+  padding-left: 10px;
 }
 nav.vertical ul li a i {
   display: block;
@@ -441,6 +444,48 @@ nav.vertical ul li input {
   position: relative !important;
   top: 0px !important;
   left: 0px !important;
+}
+.banner.orange {
+  background: orange;
+}
+.banner.cyan {
+  background: cyan;
+}
+.banner.green {
+  background: green;
+}
+.banner.pink {
+  background: pink;
+}
+.banner.purple {
+  background: purple;
+}
+.dominos .mood {
+  position: absolute;
+  top: 22px;
+  right: 5px;
+}
+.dominos .item .domino {
+  border: 1px solid #ccc;
+}
+.dominos .item .domino.green {
+  background: green;
+}
+.dominos .item .domino.orange {
+  background: orange;
+}
+.dominos .item .domino.purple {
+  background: purple;
+}
+.dominos .item .domino.cyan {
+  background: cyan;
+}
+.dominos .item .domino.pink {
+  background: pink;
+}
+textarea {
+  width: 100%;
+  height: 130px;
 }
 .badge {
   -webkit-border-radius: 10px;
@@ -528,6 +573,8 @@ nav.horizontal a {
 .filters li {
   display: inline-block;
   list-style-type: none;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .user-content {
   white-space: pre-line;
@@ -537,6 +584,12 @@ input[type=search] {
 }
 .inline {
   margin: 0;
+}
+p i {
+  display: inline-block !important;
+  height: 25px !important;
+  width: 25px !important;
+  float: none !important;
 }
 .birthday {
   width: 1;
@@ -553,6 +606,7 @@ input[type=search] {
   margin-bottom: 45px;
   padding-right: 1px;
   margin-bottom: 25px;
+  background: #eee;
 }
 .birthday img {
   max-width: 100%;
@@ -585,6 +639,11 @@ input[type=search] {
 .birthday .content img {
   max-width: 100%;
 }
+.birthday h1 {
+  margin: 0;
+  position: absolute;
+  top: 0;
+}
 .birthday nav.vertical {
   padding: 0;
 }
@@ -612,6 +671,14 @@ input[type=search] {
 .birthday nav.vertical ul li a .date {
   float: right !important;
   display: inline-block;
+}
+.birthday nav.vertical ul li a .date h2,
+.birthday nav.vertical ul li a .date h4 {
+  margin: 0;
+}
+.birthday nav.vertical ul li a .date h4 {
+  font-size: 12px;
+  font-weight: normal;
 }
 .birthday nav.vertical ul li a img {
   height: 35px;
@@ -713,6 +780,8 @@ input[type=search] {
   width: 100%;
   text-align: center;
   top: 26px;
+  margin-top: 0px;
+  margin-bottom: 10px;
 }
 .dominos {
   width: 1;
@@ -842,18 +911,11 @@ article.selected {
   left: 65px;
   top: 16px;
   white-space: nowrap;
+  color: transparent;
 }
 .mood-widget .icons-select .options-list {
   top: 25px;
   width: 210%;
-}
-.mood-widget .icons-select .current i {
-  max-height: 55px;
-  height: 55px;
-  width: 55px;
-  position: absolute;
-  top: -30px;
-  left: 4px;
 }
 .mood-widget .icons-select .current span {
   position: absolute;
@@ -1018,6 +1080,7 @@ a {
   line-height: 25px;
 }
 .toggle-panel {
+  background: #ccc;
   width: 300px;
   position: absolute;
   top: 2px;
@@ -1027,6 +1090,10 @@ a {
   -moz-transition: width 250ms ease;
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
+}
+.toggle-panel h1,
+.toggle-panel h2 {
+  margin-left: 5px;
 }
 .toggle-panel .toggle {
   width: 300px;
@@ -1094,6 +1161,8 @@ ul.icons-tabs {
   display: table;
 }
 ul.icons-tabs li {
+  background: #ccc;
+  border: 2px solid #fff;
   padding: 0;
   margin: 0;
   list-style-type: none;
@@ -1187,6 +1256,7 @@ ul.icons-view.two-cols li.element {
   position: relative;
   margin-top: 15px;
   z-index: 5;
+  background: #eee;
 }
 .icons-select .options-list {
   display: none;
@@ -1197,6 +1267,10 @@ ul.icons-view.two-cols li.element {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+  background: #eee;
+}
+.icons-select .option i {
+  background-size: 100% auto;
 }
 .icons-select .option,
 .icons-select .current {
@@ -2936,12 +3010,6 @@ blockquote {
   padding: 7px;
   margin: 5px;
 }
-p i {
-  display: inline-block !important;
-  height: 25px !important;
-  width: 25px !important;
-  float: none !important;
-}
 .icons-tabs li {
   border: 2px solid #fff;
   -webkit-border-top-right-radius: 10px;
@@ -2954,7 +3022,7 @@ p i {
   -o-border-bottom-right-radius: 10px;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
-  background: #2f8cc9;
+  background: #2f8cc9 !important;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -3047,8 +3115,6 @@ button i {
   margin-top: 5px;
 }
 textarea {
-  width: 100%;
-  height: 130px;
   border: 1px solid #CCC;
 }
 input[type=button]:hover,
@@ -3202,9 +3268,6 @@ nav.vertical ul li a {
   font-size: 1em;
   border: 1px solid #eeeeee;
   margin: 5px;
-  line-height: 20px;
-  padding: 5px;
-  padding-left: 10px;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -3690,11 +3753,6 @@ a strong.small-header {
   -o-border-radius: 5px;
   border-radius: 5px;
 }
-.dominos .mood {
-  position: absolute;
-  top: 22px;
-  right: 5px;
-}
 .dominos .item .domino {
   border: 1px solid #dfdfdf;
 }
@@ -3920,7 +3978,6 @@ img[src=""] {
   margin-right: auto;
   width: 60px;
   height: 60px;
-  background-size: 100% auto;
 }
 .icons-select .option,
 .icons-select .current {
@@ -3992,6 +4049,9 @@ img[src=""] {
 .birthday {
   background-image: url(../img/illustrations/birthdays-header.png);
 }
+.birthday h1 {
+  display: none;
+}
 .birthday .content {
   border-color: #e83314;
   background: #eee;
@@ -4021,16 +4081,11 @@ img[src=""] {
 }
 .birthday nav.vertical ul li a .date h2,
 .birthday nav.vertical ul li a .date h4 {
-  margin: 0;
   color: #888;
   text-align: center;
 }
 .birthday nav.vertical ul li a .date h2 {
   font-size: 25px;
-}
-.birthday nav.vertical ul li a .date h4 {
-  font-size: 12px;
-  font-weight: normal;
 }
 .birthday nav.vertical ul li a:hover {
   color: #fff;
@@ -4131,7 +4186,6 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
   width: 140px;
   height: 21px;
   font-size: 17px;
-  color: transparent;
   font-family: BDCartoonShout;
   font-weight: normal;
 }
@@ -4149,6 +4203,14 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .mood-widget .icons-select .current {
   background-position: 185px 5px;
+}
+.mood-widget .icons-select .current i {
+  max-height: 55px;
+  height: 55px;
+  width: 55px;
+  position: absolute;
+  top: -30px;
+  left: 4px;
 }
 .mood-widget .icons-select .current span {
   color: black;
@@ -4296,8 +4358,6 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
   line-height: 23px;
   color: #2f8cc9;
   font-size: 13px;
-  padding-left: 10px;
-  padding-right: 10px;
 }
 .filters li i {
   background-size: contain;
