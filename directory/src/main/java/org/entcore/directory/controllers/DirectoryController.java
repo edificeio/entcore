@@ -6,7 +6,9 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
+import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.impl.DefaultClassService;
 import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -48,6 +50,7 @@ public class DirectoryController extends Controller {
 	private final LoginGenerator loginGenerator;
 	private final DisplayNameGenerator displayNameGenerator;
 	private final SchoolService schoolService;
+	private final ClassService classService;
 
 	public DirectoryController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
@@ -58,6 +61,7 @@ public class DirectoryController extends Controller {
 			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 			this.p = new DefaultProfils(neo);
 			this.schoolService = new DefaultSchoolService(neo);
+			this.classService = new DefaultClassService(neo);
 			loginGenerator = new LoginGenerator();
 			activationGenerator = new ActivationCodeGenerator();
 			idGenerator = new IdGenerator();
@@ -109,6 +113,21 @@ public class DirectoryController extends Controller {
 			@Override
 			public void handle(JsonObject school) {
 				schoolService.create(school, defaultResponseHandler(request, 201));
+			}
+		});
+	}
+
+	@SecuredAction("directory.class.create")
+	public void createClass(final HttpServerRequest request) {
+		final String schoolId = request.params().get("schoolId");
+		if (schoolId == null || schoolId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject c) {
+				classService.create(schoolId, c, defaultResponseHandler(request, 201));
 			}
 		});
 	}
