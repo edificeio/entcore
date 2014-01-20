@@ -319,7 +319,7 @@
   bottom: 0;
   position: absolute;
 }
-.cell.fixed {
+.fixed {
   position: absolute;
   height: 100%;
   width: 100%;
