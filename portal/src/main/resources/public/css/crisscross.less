@@ -40,18 +40,54 @@
 	}
 }
 
-.height-five{
-	.fixed-block;
-	.grid-cell-height(5);
+.fixed-block{
+	box-sizing: content-box;
+	position: relative;
+	height: 1px;
+
+	.right-magnet.cell.absolute{
+		right: 0;
+	}
+	.cell.fluid{
+		position: relative;
+		height: 100%;
+	}
+	.bottom-magnet.cell{
+		bottom: 0;
+		position: absolute;
+	}
 }
 
-.height-six{
+.height-one{
 	.fixed-block;
-	 .grid-cell-height(6);
- }
+	.grid-cell-height(1);
+}
 
-.left-five{
-	.grid-cell-left(5);
+.height-one-plus-half{
+	.fixed-block;
+	.grid-cell-height(1.5);
+}
+
+.left-one{
+	.grid-cell-left(1);
+}
+
+.height-two{
+	.fixed-block;
+	.grid-cell-height(2);
+}
+
+.left-two{
+	.grid-cell-left(2);
+}
+
+.height-three{
+	.fixed-block;
+	.grid-cell-height(3);
+}
+
+.left-three{
+	.grid-cell-left(3);
 }
 
 .height-four{
@@ -63,31 +99,32 @@
 	.grid-cell-left(4);
 }
 
-.height-twelve{
+.height-five{
 	.fixed-block;
-	.grid-cell-height(12);
+	.grid-cell-height(5);
 }
 
-.left-twelve{
-	.grid-cell-left(12);
+.left-five{
+	.grid-cell-left(5);
 }
 
-.height-eleven{
+.height-six{
 	.fixed-block;
-	.grid-cell-height(11);
+	.grid-cell-height(6);
 }
 
-.left-eleven{
-	.grid-cell-left(11);
-}
-
-.height-ten{
+.left-six{
 	.fixed-block;
-	.grid-cell-height(10);
+	.grid-cell-left(6);
 }
 
-.left-ten{
-	.grid-cell-left(10);
+.height-seven{
+	.fixed-block;
+	.grid-cell-height(7);
+}
+
+.left-seven{
+	.grid-cell-left(7);
 }
 
 .height-eight{
@@ -108,70 +145,38 @@
 	.grid-cell-left(9);
 }
 
-.height-seven{
+.height-ten{
 	.fixed-block;
-	.grid-cell-height(7);
+	.grid-cell-height(10);
 }
 
-.left-seven{
-	.grid-cell-left(7);
+.left-ten{
+	.grid-cell-left(10);
 }
 
-.height-three{
+.height-eleven{
 	.fixed-block;
-	.grid-cell-height(3);
+	.grid-cell-height(11);
 }
 
-.left-three{
-	.grid-cell-left(3);
+.left-eleven{
+	.grid-cell-left(11);
 }
 
-.height-two{
+.height-twelve{
 	.fixed-block;
-	.grid-cell-height(2);
+	.grid-cell-height(12);
 }
 
-.left-two{
-	.grid-cell-left(2);
-}
-
-.height-one{
-	.fixed-block;
-	.grid-cell-height(1);
-}
-
-.height-one-plus-half{
-	.fixed-block;
-	.grid-cell-height(1.5);
-}
-
-.left-one{
-	.grid-cell-left(1);
+.left-twelve{
+	.grid-cell-left(12);
 }
 
 .fluid{
 	position: relative !important;
 }
 
-.fixed-block{
-	box-sizing: content-box;
-	position: relative;
-	height: 1px;
-
-	.right-magnet.cell.fixed{
-		right: 0;
-	}
-	.cell.fluid{
-		position: relative;
-		height: 100%;
-	}
-	.bottom-magnet.cell{
-		bottom: 0;
-		position: absolute;
-	}
-}
-
-.fixed{
+.absolute{
 	position: absolute;
 	height: 100%;
 	width: 100%;
@@ -290,15 +295,6 @@
   border-bottom-right-radius: @radius;
 }
 
-.vertical-gradient(@top-color: blue, @bottom-color: white){
-	background: -webkit-linear-gradient(@top-color, @bottom-color);
-	background: -moz-linear-gradient(@top-color, @bottom-color);
-	background: -o-linear-gradient(@top-color, @bottom-color);
-	background:  linear-gradient(@top-color, @bottom-color);
-	-pie-background: linear-gradient(@top-color, @bottom-color);
-	behavior: url(/assets/themes/panda/css/PIE.htc);
-}
-
 .run-transition(@property: color, @speed: 250ms, @timing: ease){
   -o-transition: @property @speed @timing;
   -moz-transition: @property @speed @timing;
@@ -318,38 +314,4 @@
 	-moz-box-sizing: content-box;
 	-o-box-sizing: content-box;
 	box-sizing: content-box;
-}
-
-.icon(@icon-name: icon, @icon-size: 40px){
-  @icons-root: "../img/icons/";
-  @icons-extension: ".png";
-
-	height: @icon-size;
-	width: @icon-size;
-	background-image: url("@{icons-root}@{icon-name}@{icons-extension}");
-	background-repeat: no-repeat;
-	background-position: center;
-	display: block;
-	.border-box;
-	float: left;
-	vertical-align: middle;
-}
-
-a, button, input[type=button], input[type=submit]{
-  cursor: pointer;
-}
-
-i{
-  font-style: normal;
-}
-
-iframe{
-	border: none;
-	width: 100%;
-	height: 100%;
-	overflow: visible;
-}
-
-body.app{
-	margin: 0;
 }

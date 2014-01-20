@@ -1,6 +1,53 @@
-@import "lib";
+@import "crisscross";
 
 @icon-size: 117px;
+
+.icon(@icon-name: icon, @icon-size: 40px){
+	@icons-root: "../img/icons/";
+	@icons-extension: ".png";
+
+	height: @icon-size;
+	width: @icon-size;
+	background-image: url("@{icons-root}@{icon-name}@{icons-extension}");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	.border-box;
+	float: left;
+	vertical-align: middle;
+}
+
+.vertical-gradient(@top-color: blue, @bottom-color: white){
+	background: -webkit-linear-gradient(@top-color, @bottom-color);
+	background: -moz-linear-gradient(@top-color, @bottom-color);
+	background: -o-linear-gradient(@top-color, @bottom-color);
+	background:  linear-gradient(@top-color, @bottom-color);
+	-pie-background: linear-gradient(@top-color, @bottom-color);
+	behavior: url(/assets/themes/panda/css/PIE.htc);
+}
+
+.fixed{
+	.absolute;
+}
+
+a, button, input[type=button], input[type=submit]{
+	cursor: pointer;
+}
+
+i{
+	font-style: normal;
+}
+
+iframe{
+	border: none;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+body.app{
+	margin: 0;
+}
 
 nav.vertical{
 	padding-right: 10px;

@@ -24,43 +24,103 @@
   position: absolute;
   bottom: 0;
 }
-.height-five {
+.fixed-block {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 41.66666666666667%;
 }
-.height-five .right-magnet.cell.fixed {
+.fixed-block .right-magnet.cell.absolute {
   right: 0;
 }
-.height-five .cell.fluid {
+.fixed-block .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-five .bottom-magnet.cell {
+.fixed-block .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
-.height-six {
+.height-one {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 50%;
+  padding-bottom: 8.333333333333334%;
 }
-.height-six .right-magnet.cell.fixed {
+.height-one .right-magnet.cell.absolute {
   right: 0;
 }
-.height-six .cell.fluid {
+.height-one .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-six .bottom-magnet.cell {
+.height-one .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+.height-one-plus-half {
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+  padding-bottom: 12.5%;
+}
+.height-one-plus-half .right-magnet.cell.absolute {
+  right: 0;
+}
+.height-one-plus-half .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.height-one-plus-half .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-five {
-    left: 41.66666666666667%;
+  .left-one {
+    left: 8.333333333333334%;
+  }
+}
+.height-two {
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+  padding-bottom: 16.666666666666668%;
+}
+.height-two .right-magnet.cell.absolute {
+  right: 0;
+}
+.height-two .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.height-two .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+@media screen and (min-width: 720px) {
+  .left-two {
+    left: 16.666666666666668%;
+  }
+}
+.height-three {
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+  padding-bottom: 25%;
+}
+.height-three .right-magnet.cell.absolute {
+  right: 0;
+}
+.height-three .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.height-three .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+@media screen and (min-width: 720px) {
+  .left-three {
+    left: 25%;
   }
 }
 .height-four {
@@ -69,7 +129,7 @@
   height: 1px;
   padding-bottom: 33.333333333333336%;
 }
-.height-four .right-magnet.cell.fixed {
+.height-four .right-magnet.cell.absolute {
   right: 0;
 }
 .height-four .cell.fluid {
@@ -85,70 +145,86 @@
     left: 33.333333333333336%;
   }
 }
-.height-twelve {
+.height-five {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 100%;
+  padding-bottom: 41.66666666666667%;
 }
-.height-twelve .right-magnet.cell.fixed {
+.height-five .right-magnet.cell.absolute {
   right: 0;
 }
-.height-twelve .cell.fluid {
+.height-five .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-twelve .bottom-magnet.cell {
+.height-five .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-twelve {
-    left: 100%;
+  .left-five {
+    left: 41.66666666666667%;
   }
 }
-.height-eleven {
+.height-six {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 91.66666666666667%;
+  padding-bottom: 50%;
 }
-.height-eleven .right-magnet.cell.fixed {
+.height-six .right-magnet.cell.absolute {
   right: 0;
 }
-.height-eleven .cell.fluid {
+.height-six .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-eleven .bottom-magnet.cell {
+.height-six .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+.left-six {
+  box-sizing: content-box;
+  position: relative;
+  height: 1px;
+}
+.left-six .right-magnet.cell.absolute {
+  right: 0;
+}
+.left-six .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.left-six .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-eleven {
-    left: 91.66666666666667%;
+  .left-six {
+    left: 50%;
   }
 }
-.height-ten {
+.height-seven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 83.33333333333334%;
+  padding-bottom: 58.333333333333336%;
 }
-.height-ten .right-magnet.cell.fixed {
+.height-seven .right-magnet.cell.absolute {
   right: 0;
 }
-.height-ten .cell.fluid {
+.height-seven .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-ten .bottom-magnet.cell {
+.height-seven .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-ten {
-    left: 83.33333333333334%;
+  .left-seven {
+    left: 58.333333333333336%;
   }
 }
 .height-eight {
@@ -157,7 +233,7 @@
   height: 1px;
   padding-bottom: 66.66666666666667%;
 }
-.height-eight .right-magnet.cell.fixed {
+.height-eight .right-magnet.cell.absolute {
   right: 0;
 }
 .height-eight .cell.fluid {
@@ -179,7 +255,7 @@
   height: 1px;
   padding-bottom: 75%;
 }
-.height-nine .right-magnet.cell.fixed {
+.height-nine .right-magnet.cell.absolute {
   right: 0;
 }
 .height-nine .cell.fluid {
@@ -195,131 +271,76 @@
     left: 75%;
   }
 }
-.height-seven {
+.height-ten {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 58.333333333333336%;
+  padding-bottom: 83.33333333333334%;
 }
-.height-seven .right-magnet.cell.fixed {
+.height-ten .right-magnet.cell.absolute {
   right: 0;
 }
-.height-seven .cell.fluid {
+.height-ten .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-seven .bottom-magnet.cell {
+.height-ten .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-seven {
-    left: 58.333333333333336%;
+  .left-ten {
+    left: 83.33333333333334%;
   }
 }
-.height-three {
+.height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 25%;
+  padding-bottom: 91.66666666666667%;
 }
-.height-three .right-magnet.cell.fixed {
+.height-eleven .right-magnet.cell.absolute {
   right: 0;
 }
-.height-three .cell.fluid {
+.height-eleven .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-three .bottom-magnet.cell {
+.height-eleven .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-three {
-    left: 25%;
+  .left-eleven {
+    left: 91.66666666666667%;
   }
 }
-.height-two {
+.height-twelve {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 16.666666666666668%;
+  padding-bottom: 100%;
 }
-.height-two .right-magnet.cell.fixed {
+.height-twelve .right-magnet.cell.absolute {
   right: 0;
 }
-.height-two .cell.fluid {
+.height-twelve .cell.fluid {
   position: relative;
   height: 100%;
 }
-.height-two .bottom-magnet.cell {
+.height-twelve .bottom-magnet.cell {
   bottom: 0;
   position: absolute;
 }
 @media screen and (min-width: 720px) {
-  .left-two {
-    left: 16.666666666666668%;
-  }
-}
-.height-one {
-  box-sizing: content-box;
-  position: relative;
-  height: 1px;
-  padding-bottom: 8.333333333333334%;
-}
-.height-one .right-magnet.cell.fixed {
-  right: 0;
-}
-.height-one .cell.fluid {
-  position: relative;
-  height: 100%;
-}
-.height-one .bottom-magnet.cell {
-  bottom: 0;
-  position: absolute;
-}
-.height-one-plus-half {
-  box-sizing: content-box;
-  position: relative;
-  height: 1px;
-  padding-bottom: 12.5%;
-}
-.height-one-plus-half .right-magnet.cell.fixed {
-  right: 0;
-}
-.height-one-plus-half .cell.fluid {
-  position: relative;
-  height: 100%;
-}
-.height-one-plus-half .bottom-magnet.cell {
-  bottom: 0;
-  position: absolute;
-}
-@media screen and (min-width: 720px) {
-  .left-one {
-    left: 8.333333333333334%;
+  .left-twelve {
+    left: 100%;
   }
 }
 .fluid {
   position: relative !important;
 }
-.fixed-block {
-  box-sizing: content-box;
-  position: relative;
-  height: 1px;
-}
-.fixed-block .right-magnet.cell.fixed {
-  right: 0;
-}
-.fixed-block .cell.fluid {
-  position: relative;
-  height: 100%;
-}
-.fixed-block .bottom-magnet.cell {
-  bottom: 0;
-  position: absolute;
-}
-.fixed {
+.absolute {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -387,6 +408,11 @@
   -moz-box-sizing: content-box;
   -o-box-sizing: content-box;
   box-sizing: content-box;
+}
+.fixed {
+  position: absolute;
+  height: 100%;
+  width: 100%;
 }
 a,
 button,
@@ -721,7 +747,7 @@ p i {
   padding-right: 1px;
   padding-bottom: 49.4% !important;
 }
-.calendar .right-magnet.cell.fixed {
+.calendar .right-magnet.cell.absolute {
   right: 0;
 }
 .calendar .cell.fluid {
@@ -841,7 +867,7 @@ p i {
   box-sizing: border-box;
   overflow: hidden;
 }
-.dominos .item .domino .top .right-magnet.cell.fixed {
+.dominos .item .domino .top .right-magnet.cell.absolute {
   right: 0;
 }
 .dominos .item .domino .top .cell.fluid {
@@ -874,7 +900,7 @@ p i {
   overflow: hidden;
   margin-top: 5px;
 }
-.dominos .item .domino .bottom .right-magnet.cell.fixed {
+.dominos .item .domino .bottom .right-magnet.cell.absolute {
   right: 0;
 }
 .dominos .item .domino .bottom .cell.fluid {
