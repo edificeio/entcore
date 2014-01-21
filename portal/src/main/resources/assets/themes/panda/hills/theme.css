@@ -471,21 +471,6 @@ nav.vertical ul li input {
   top: 0px !important;
   left: 0px !important;
 }
-.banner.orange {
-  background: orange;
-}
-.banner.cyan {
-  background: cyan;
-}
-.banner.green {
-  background: green;
-}
-.banner.pink {
-  background: pink;
-}
-.banner.purple {
-  background: purple;
-}
 .dominos .mood {
   position: absolute;
   top: 22px;
@@ -493,21 +478,6 @@ nav.vertical ul li input {
 }
 .dominos .item .domino {
   border: 1px solid #ccc;
-}
-.dominos .item .domino.green {
-  background: green;
-}
-.dominos .item .domino.orange {
-  background: orange;
-}
-.dominos .item .domino.purple {
-  background: purple;
-}
-.dominos .item .domino.cyan {
-  background: cyan;
-}
-.dominos .item .domino.pink {
-  background: pink;
 }
 textarea {
   width: 100%;
