@@ -164,7 +164,6 @@ function Blog($scope, date, _, ui, lang, notify){
 			$scope.displayOptions.showDrafts = false;
 			$scope.displayOptions.showSubmitted = false;
 		}
-
 	};
 
 	$scope.seeMore = function(){
