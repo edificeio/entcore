@@ -1,10 +1,7 @@
 package org.entcore.auth.oauth;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -13,6 +10,7 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,41 +102,71 @@ public class OAuthDataHandler extends DataHandler {
 		createOrUpdateAuthInfo(clientId, userId, scope, null, handler);
 	}
 
-	public void createOrUpdateAuthInfo(String clientId, String userId,
-			String scope, String redirectUri, final Handler<AuthInfo> handler) {
+	public void createOrUpdateAuthInfo(final String clientId, final String userId,
+			final String scope, final String redirectUri, final Handler<AuthInfo> handler) {
 		if (clientId != null && userId != null &&
 				!clientId.trim().isEmpty() && !userId.trim().isEmpty()) {
-			final JsonObject auth = new JsonObject()
-			.putString("clientId", clientId)
-			.putString("userId", userId)
-			.putString("scope", scope)
-			.putObject("createdAt", MongoDb.now());
-			if (redirectUri != null) {
-				auth.putString("redirectUri", redirectUri)
-				.putString("code", UUID.randomUUID().toString())
-				.putString("refreshToken", UUID.randomUUID().toString());
-			}
-			mongo.save(AUTH_INFO_COLLECTION, auth, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			if (scope != null && !scope.trim().isEmpty()) {
+				String query = "MATCH (app:`Application` {name:{clientId}}) RETURN app.scope as scope";
+				neo.execute(query, new JsonObject().putString("clientId", clientId),
+						new org.vertx.java.core.Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> res) {
+						JsonArray r = res.body().getArray("result");
 
-				@Override
-				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						auth.putString("id", res.body().getString("_id"));
-						auth.removeField("createdAt");
-						ObjectMapper mapper = new ObjectMapper();
-						try {
-							handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
-						} catch (IOException e) {
+						if ("ok".equals(res.body().getString("status")) &&
+								r != null && r.size() == 1) {
+							JsonObject j = r.get(0);
+							if (j != null &&
+								Arrays.asList(j.getArray("scope", new JsonArray()).toArray())
+										.containsAll(Arrays.asList(scope.split("\\s")))) {
+								createAuthInfo(clientId, userId, scope, redirectUri, handler);
+							} else {
+								handler.handle(null);
+							}
+						} else {
 							handler.handle(null);
 						}
-					} else {
-						handler.handle(null);
 					}
-				}
-			});
+				});
+			} else {
+				createAuthInfo(clientId, userId, scope, redirectUri, handler);
+			}
 		} else {
 			handler.handle(null);
 		}
+	}
+
+	private void createAuthInfo(String clientId, String userId, String scope,
+			String redirectUri, final Handler<AuthInfo> handler) {
+		final JsonObject auth = new JsonObject()
+		.putString("clientId", clientId)
+		.putString("userId", userId)
+		.putString("scope", scope)
+		.putObject("createdAt", MongoDb.now());
+		if (redirectUri != null) {
+			auth.putString("redirectUri", redirectUri)
+			.putString("code", UUID.randomUUID().toString())
+			.putString("refreshToken", UUID.randomUUID().toString());
+		}
+		mongo.save(AUTH_INFO_COLLECTION, auth, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					auth.putString("id", res.body().getString("_id"));
+					auth.removeField("createdAt");
+					ObjectMapper mapper = new ObjectMapper();
+					try {
+						handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
+					} catch (IOException e) {
+						handler.handle(null);
+					}
+				} else {
+					handler.handle(null);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -228,7 +256,7 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void getClientUserId(String clientId, String clientSecret,
 			Handler<String> handler) {
-		throw new IllegalArgumentException("Not implemented yet.");
+		handler.handle("OAuthSystemUser");
 	}
 
 	@Override

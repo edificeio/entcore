@@ -98,6 +98,7 @@ object AppRegistryScenario {
       .param("""grantType""", """authorization_code""")
       .param("""name""", "test" + now)
       .param("""secret""", "clientSecret")
+      .param("""scope""", "userinfo")
       .check(status.is(200), jsonPath("status").is("ok")))
 
 }

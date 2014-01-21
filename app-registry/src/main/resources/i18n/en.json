@@ -20,5 +20,6 @@
 	"app.registry.application.target" : "Target",
 	"app.registry.application.icon" : "Icon",
 	"app.registry.createExternalApp" : "Create an external application",
-	"app.registry.application.display.name" : "Display key"
+	"app.registry.application.display.name" : "Display key",
+	"app.registry.application.scope" : "Scope"
 }

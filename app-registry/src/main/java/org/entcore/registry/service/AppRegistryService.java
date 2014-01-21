@@ -2,10 +2,7 @@ package org.entcore.registry.service;
 
 import static org.entcore.common.appregistry.AppRegistryEvents.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import edu.one.core.infra.collections.Joiner;
 import org.vertx.java.core.Handler;
@@ -292,19 +289,30 @@ public class AppRegistryService extends Controller {
 	}
 
 	@SecuredAction("app-registry.application")
-	public void application(HttpServerRequest request) {
+	public void application(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			Map<String, Object> params = new HashMap<>();
 			params.put("id", id);
-			neo.send(
+			neo.execute(
 				"MATCH (n:Application) " +
 				"WHERE n.id = {id} " +
 				"RETURN n.id as id, n.name as name, " +
 				"n.grantType as grantType, n.secret as secret, n.address as address, " +
-				"n.icon as icon, n.target as target, n.displayName as displayName",
+				"n.icon as icon, n.target as target, n.displayName as displayName, " +
+				"n.scope as scope",
 				params,
-				request.response()
+				new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> res) {
+						JsonArray r = res.body().getArray("result");
+						if (r != null && r.size() == 1) {
+							JsonObject j = r.get(0);
+							j.putString("scope", Joiner.on(" ").join(j.getArray("scope").toArray()));
+						}
+						renderJson(request, res.body());
+					}
+				}
 			);
 		} else {
 			badRequest(request);
@@ -325,22 +333,25 @@ public class AppRegistryService extends Controller {
 				String icon = request.formAttributes().get("icon");
 				String target = request.formAttributes().get("target");
 				String displayName = request.formAttributes().get("displayName");
+				String scope = request.formAttributes().get("scope");
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					String query =
 							"MATCH (n:Application) " +
 							"WHERE n.id = {applicationId} " +
 							"SET n.grantType = {grantType}, n.secret = {secret}, " +
 							"n.address = {address}, n.icon = {icon}, n.target = {target}, " +
-							"n.displayName = {displayName}";
-					Map<String, Object> params = new HashMap<>();
-					params.put("applicationId", applicationId);
-					params.put("grantType", Utils.getOrElse(grantType, ""));
-					params.put("secret", Utils.getOrElse(secret, ""));
-					params.put("address", Utils.getOrElse(address, ""));
-					params.put("icon", Utils.getOrElse(icon, ""));
-					params.put("target", Utils.getOrElse(target, ""));
-					params.put("displayName", Utils.getOrElse(displayName, ""));
-					neo.send(query, params, request.response());
+							"n.displayName = {displayName}, n.scope = {scope}";
+					JsonObject params = new JsonObject();
+					params.putString("applicationId", applicationId);
+					params.putString("grantType", Utils.getOrElse(grantType, ""));
+					params.putString("secret", Utils.getOrElse(secret, ""));
+					params.putString("address", Utils.getOrElse(address, ""));
+					params.putString("icon", Utils.getOrElse(icon, ""));
+					params.putString("target", Utils.getOrElse(target, ""));
+					params.putString("displayName", Utils.getOrElse(displayName, ""));
+					params.putArray("scope", new JsonArray("[\"" +
+							Utils.getOrElse(scope, "").replaceAll("\\s", "\",\"") + "\"]"));
+					neo.execute(query, params, request.response());
 				} else {
 					badRequest(request);
 				}
@@ -364,8 +375,9 @@ public class AppRegistryService extends Controller {
 					String icon = request.formAttributes().get("icon");
 					String target = request.formAttributes().get("target");
 					String displayName = request.formAttributes().get("displayName");
+					String scope = request.formAttributes().get("scope");
 					String query = "CREATE (c:Application { id: {id}, name: {name}, displayName: {displayName}, " +
-							"grantType: {grantType}, address: {address} , icon: {icon} , target: {target} ";
+							"grantType: {grantType}, address: {address}, icon: {icon}, target: {target}, scope: {scope}";
 					if (secret != null && !secret.trim().isEmpty()) {
 						query += ", secret: {secret} })";
 					} else {
@@ -382,6 +394,8 @@ public class AppRegistryService extends Controller {
 					params.putString("icon", Utils.getOrElse(icon, ""));
 					params.putString("target", Utils.getOrElse(target, ""));
 					params.putString("displayName", Utils.getOrElse(displayName, ""));
+					params.putArray("scope", new JsonArray("[\"" +
+							Utils.getOrElse(scope, "").replaceAll("\\s", "\",\"") + "\"]"));
 					queries.addObject(Neo.toJsonObject(query, params));
 					if (address != null && !address.trim().isEmpty()) {
 						String query2 =

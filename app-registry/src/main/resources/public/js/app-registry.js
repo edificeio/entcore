@@ -79,6 +79,8 @@ var appRegistry = function(){
 								<input type="text" name="icon" value="{{icon}}" /><br />\
 								<label>{{#i18n}}app.registry.application.target{{/i18n}}</label>\
 								<input type="text" name="target" value="{{target}}" /><br />\
+								<label>{{#i18n}}app.registry.application.scope{{/i18n}}</label>\
+                                <input type="text" name="scope" value="{{scope}}" /><br />\
 								<input call="applicationConf" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
 							</form>',
 
@@ -97,6 +99,8 @@ var appRegistry = function(){
 								<input type="text" name="icon" /><br />\
 								<label>{{#i18n}}app.registry.application.target{{/i18n}}</label>\
 								<input type="text" name="target" /><br />\
+								<label>{{#i18n}}app.registry.application.scope{{/i18n}}</label>\
+                                <input type="text" name="scope" value="{{scope}}" /><br />\
 								<input call="createExternalAppSubmit" type="button" value="{{#i18n}}app.registry.valid{{/i18n}}" />\
 							</form>',
 

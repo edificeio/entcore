@@ -159,6 +159,16 @@ public class Neo  {
 		});
 	}
 
+	public void execute(String query, JsonObject params, final HttpServerResponse response) {
+		execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				response.putHeader("Content-Type", "application/json");
+				response.end(m.body().encode());
+			}
+		});
+	}
+
 	public void executeBatch(JsonArray queries, final Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "executeBatch");

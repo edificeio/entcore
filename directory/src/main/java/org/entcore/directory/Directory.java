@@ -1,5 +1,7 @@
 package org.entcore.directory;
 
+import edu.one.core.infra.request.filter.UserAuthFilter;
+import edu.one.core.infra.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.directory.controllers.DirectoryController;
 import org.entcore.directory.controllers.UserBookController;
 import edu.one.core.infra.Server;
@@ -68,9 +70,12 @@ public class Directory extends Server {
 			log.error(e.getMessage(), e);
 		}
 
+		SecurityHandler.clearFilters();
+		SecurityHandler.addFilter(
+				new UserAuthFilter(new DefaultOAuthResourceProvider(Server.getEventBus(vertx))));
 		List<Set<Binding>> securedUriBinding = new ArrayList<>();
 		securedUriBinding.add(directoryController.securedUriBinding());
 		securedUriBinding.add(userBookController.securedUriBinding());
-		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx)));
+		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), null, true));
 	}
 }

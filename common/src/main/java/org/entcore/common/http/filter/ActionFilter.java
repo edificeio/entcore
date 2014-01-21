@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import edu.one.core.infra.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import edu.one.core.infra.request.filter.Filter;
@@ -22,18 +23,24 @@ public class ActionFilter implements Filter {
 	private final Set<Binding> bindings;
 	private final EventBus eb;
 	private final ResourcesProvider provider;
+	private final boolean oauthEnabled;
 
-	public ActionFilter(Set<Binding> bindings, EventBus eb, ResourcesProvider provider) {
+	public ActionFilter(Set<Binding> bindings, EventBus eb, ResourcesProvider provider, boolean oauthEnabled) {
 		this.bindings = bindings;
 		this.eb = eb;
 		this.provider = provider;
+		this.oauthEnabled = oauthEnabled;
+	}
+
+	public ActionFilter(Set<Binding> bindings, EventBus eb, ResourcesProvider provider) {
+		this(bindings, eb, provider, false);
 	}
 
 	public ActionFilter(Set<Binding> bindings, EventBus eb) {
 		this(bindings, eb, null);
 	}
 
-	public ActionFilter(List<Set<Binding>> bindings, EventBus eb, ResourcesProvider provider) {
+	public ActionFilter(List<Set<Binding>> bindings, EventBus eb, ResourcesProvider provider, boolean oauthEnabled) {
 		Set<Binding> b = new HashSet<>();
 		if (bindings != null) {
 			for (Set<Binding> bs: bindings) {
@@ -43,6 +50,11 @@ public class ActionFilter implements Filter {
 		this.bindings = b;
 		this.eb = eb;
 		this.provider = provider;
+		this.oauthEnabled = oauthEnabled;
+	}
+
+	public ActionFilter(List<Set<Binding>> bindings, EventBus eb, ResourcesProvider provider) {
+		this(bindings, eb, provider, false);
 	}
 
 	public ActionFilter(List<Set<Binding>> bindings, EventBus eb) {
@@ -57,6 +69,9 @@ public class ActionFilter implements Filter {
 			public void handle(JsonObject session) {
 				if (session != null) {
 					userIsAuthorized(request, session, handler);
+				} else if (oauthEnabled && request instanceof SecureHttpServerRequest &&
+						((SecureHttpServerRequest) request).getAttribute("client_id") != null) {
+					clientIsAuthorizedByScope((SecureHttpServerRequest) request, handler);
 				} else {
 					handler.handle(false);
 				}
@@ -124,6 +139,12 @@ public class ActionFilter implements Filter {
 			}
 		}
 		return null;
+	}
+
+	private void clientIsAuthorizedByScope(SecureHttpServerRequest request, Handler<Boolean> handler) {
+		String scope = request.getAttribute("scope");
+		Binding b = requestBinding(request);
+		handler.handle(scope.contains(b.getServiceMethod()));
 	}
 
 }

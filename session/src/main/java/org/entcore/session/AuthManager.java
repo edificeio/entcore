@@ -180,7 +180,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.id = {id} " +
+				"WHERE n.id = {id} AND HAS(n.login) " +
 				"OPTIONAL MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WITH app, a, n " +
 				"OPTIONAL MATCH n-[:APPARTIENT]->(gp:ProfileGroup) " +
