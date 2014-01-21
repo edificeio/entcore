@@ -2945,6 +2945,38 @@ i[role=worried-panda].small-panda {
   float: left;
   vertical-align: middle;
 }
+table th i[role=arrow-bottom] {
+  height: 9px;
+  width: 9px;
+  background-image: url("../img/icons/arrow-bottom.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  height: 15px;
+  margin-right: 5px;
+}
+table th i[role=arrow-top] {
+  height: 9px;
+  width: 9px;
+  background-image: url("../img/icons/arrow-top.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  height: 15px;
+  margin-right: 5px;
+}
 i[role=arrow-bottom] {
   height: 9px;
   width: 9px;
@@ -2959,10 +2991,10 @@ i[role=arrow-bottom] {
   float: left;
   vertical-align: middle;
 }
-i[role=arrow-bottom] {
+i[role=arrow-top] {
   height: 9px;
   width: 9px;
-  background-image: url("../img/icons/arrow-bottom.png");
+  background-image: url("../img/icons/arrow-top.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -4309,6 +4341,7 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .drop-down {
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.3);
+  background: #fff;
   -webkit-border-bottom-left-radius: 5px;
   -webkit-border-bottom-right-radius: 5px;
   -moz-border-bottom-left-radius: 5px;

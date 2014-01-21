@@ -435,12 +435,28 @@ i[role=worried-panda].small-panda{
 	.icon(worried-panda-small, 26px);
 }
 
-i[role=arrow-bottom]{
-	.icon(arrow-bottom, 9px);
+table{
+	th{
+		i[role=arrow-bottom]{
+			.icon(arrow-bottom, 9px);
+			height: 15px;
+			margin-right: 5px;
+		}
+
+		i[role=arrow-top]{
+			.icon(arrow-top, 9px);
+			height: 15px;
+			margin-right: 5px;
+		}
+	}
 }
 
 i[role=arrow-bottom]{
 	.icon(arrow-bottom, 9px);
+}
+
+i[role=arrow-top]{
+	.icon(arrow-top, 9px);
 }
 
 i[role=tools]{
@@ -1620,7 +1636,7 @@ label.checkbox{
 
 .drop-down{
 	box-shadow: 0px 5px 5px rgba(0,0,0,0.3);
-
+	background: #fff;
 	.rounded-corners-bottom(5px);
 	border: 1px solid @solid-blue;
 	ul{
