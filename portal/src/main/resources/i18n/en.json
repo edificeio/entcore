@@ -1,7 +1,7 @@
 {
 	"portal.title" : "One",
 	"portal.header.navigation.whatsnew" : "What's new?",
-	"portal.header.navigation.classMembers" : "Class",
+	"portal.header.navigation.classMembers" : "Classroom",
 	"portal.header.navigation.myapps" : "My apps",
 	"e400" : "Bad Request",
 	"e401" : "You don't have the permission to acces this content",
