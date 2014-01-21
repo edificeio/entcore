@@ -24,12 +24,12 @@
     "resid.art" : "Artist residency",
     "school.website" : "School website",
     "notebook" : "Lesson plan",
-	"contactbook" : "Contact book (coming soon)",
-	"directory.user" : "Directory (coming soon)",
-	"multimedia.notebook" : "Multimedia notebook (coming soon)",
+	"contactbook" : "Contact book (soon)",
+	"directory.user" : "Directory (soon)",
+	"multimedia.notebook" : "Multimedia notebook (soon)",
 	"maxicours" : "Maxicours",
 	"assessments" : "Assessments",
 	"attendance" : "Attendance",
-	"tdbase" : "TD Base (coming soon)",
-	"statistics" : "Statistics (coming soon)"
+	"tdbase" : "TD Base (soon)",
+	"statistics" : "Statistics (soon)"
 }

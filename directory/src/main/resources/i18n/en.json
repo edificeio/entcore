@@ -43,7 +43,7 @@
     "directory.admin.send" : "send",
     "directory.admin.reset.code.sent" : "reset code sent",
     "directory.admin.reset.code.send.error" : "error sending reset code",
-	"userBook.class.title" : "Class",
+	"userBook.class.title" : "Classroom",
 	"userBook.class.write-message" : "Send a message",
 	"userBook.class.edit-notebook" : "Edit Notebook",
 	"userBook.class.see-portfolio" : "See portfolio",
