@@ -40,11 +40,16 @@
 				<input type="text" ng-model="search" ng-change="findUserOrGroup()" translate-attr="placeholder" placeholder="share.search.placeholder" />
 				<div>
 					<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
-						<em ng-click="addEdit(item)">[[item.name]][[item.lastName]] [[item.firstName]]</em>
+						<em ng-click="addEdit(item)">
+							[[item.name]][[item.lastName]] [[item.firstName]]
+							<em class="low-importance right-magnet">[[item.login]]</em>
+						</em>
 					</div>
-					<h3 ng-if="found.length > maxResults">
-						<a ng-click="addResults()">[[translate('seemore')]]</a>
-					</h3>
+					<div class="row">
+						<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">
+							[[translate('seemore')]]
+						</a>
+					</div>
 				</div>
 				<hr />
 			</div>
