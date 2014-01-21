@@ -472,7 +472,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if(!dateString){
 			return '';
 		}
-		return date.format(dateString, 'D MMMM YYYY')
+
+		return date.format(dateString.split(' ')[0], 'D MMMM YYYY')
 	}
 
 	$scope.toggleComments = function(document){
