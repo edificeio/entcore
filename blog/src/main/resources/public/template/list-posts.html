@@ -2,7 +2,7 @@
 	<ul>
 		<li><em class="medium-importance" translate key="posts.filter"></em></li>
 		<li>
-			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showAll" />
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showAll" ng-change="uncheckAll()" />
 				<span translate key="filters.all"></span>
 			</label>
 		</li>

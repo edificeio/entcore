@@ -156,7 +156,16 @@ function Blog($scope, date, _, ui, lang, notify){
 	$scope.currentBlogView  = function(){
 		$scope.currentView = '';
 		$scope.displayBlog($scope.currentBlog);
-	}
+	};
+
+	$scope.uncheckAll = function(){
+		if($scope.displayOptions.showAll){
+			$scope.displayOptions.showPosts = false;
+			$scope.displayOptions.showDrafts = false;
+			$scope.displayOptions.showSubmitted = false;
+		}
+
+	};
 
 	$scope.seeMore = function(){
 		var slots = 0;
