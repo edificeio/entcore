@@ -374,7 +374,10 @@ function Blog($scope, date, _, ui, lang, notify){
 		var formData = new FormData();
 		formData.append('file', $scope.photo.file);
 
-		http().postFile('/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=' + $scope.photo.file.name, formData)
+		http().postFile('/workspace/document?application=blog-newblog&protected=true&thumbnail=100x100&name=' + $scope.photo.file.name,
+			formData,
+			{ requestName: 'upload-blog-thumbnail'}
+		)
 			.done(function(e){
 				blog.thumbnail = '/workspace/document/' + e._id + '?thumbnail=100x100';
 				$scope.$apply();

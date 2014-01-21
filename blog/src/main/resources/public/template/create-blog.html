@@ -1,7 +1,10 @@
 <form class="row text-container">
 	<div class="row text-container">
 		<div class="two cell clip fixed-block height-two">
-			<img ng-src="[[blogThumbnail(create.blog)]]" />
+			<div class="absolute" loading-panel="upload-blog-thumbnail">
+				<img ng-src="[[blogThumbnail(create.blog)]]" />
+			</div>
+
 		</div>
 		<div class="nine cell text-container">
 			<input type="text" data-ng-model="create.blog.title" required translate-attr="placeholder" placeholder="blog.title.placeholder" class="twelve cell" />

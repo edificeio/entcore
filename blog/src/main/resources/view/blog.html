@@ -48,7 +48,7 @@
 					</article>
 					<a data-ng-click="showEditBlog(blog)" ng-if="blog.myRights.blog.edit" class="small-text">{{#i18n}}blog.edit.title{{/i18n}}</a>
 				</div>
-				<h5><a data-ng-click="showCreateBlog()" ng-if="me.myRights.blog.post">{{#i18n}}blog.create.blog{{/i18n}}</a></h5>
+				<a data-ng-click="showCreateBlog()" ng-if="me.myRights.blog.post" class="row">{{#i18n}}blog.create.blog{{/i18n}}</a>
 			</nav>
 	</div>
 	<div class="eight cell horizontal-spacing">

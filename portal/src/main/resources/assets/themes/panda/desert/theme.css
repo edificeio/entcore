@@ -1826,6 +1826,20 @@ i[role=shared] {
 .toggle-bottom .contextual-link a {
   color: #fd841c !important;
 }
+.one .loading-panel h1,
+.two .loading-panel h1,
+.three .loading-panel h1 {
+  text-transform: none;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-size: 20px;
+}
+.one .loading-panel img,
+.two .loading-panel img,
+.three .loading-panel img {
+  width: 50%;
+  height: 50%;
+}
 .loading-panel {
   opacity: 0.9;
   background: #333;
@@ -4339,6 +4353,7 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .drop-down ul {
   color: #3889c1;
+  background: #fff;
 }
 .drop-down ul li {
   list-style-type: none;
@@ -4366,6 +4381,11 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
   padding: 3px;
   padding-left: 15px;
   border: 1px solid transparent;
+}
+.autocomplete em.low-importance {
+  border: none;
+  color: #AAA;
+  font-style: italic;
 }
 .autocomplete em:hover {
   background: #ebf4f9;

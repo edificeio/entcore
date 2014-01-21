@@ -75,6 +75,21 @@ i[role=shared]{
 	}
 }
 
+.one, .two, .three{
+	.loading-panel{
+		h1{
+			text-transform: none;
+			margin-top: 10px;
+			margin-bottom: 0;
+			font-size: 20px;
+		}
+		img{
+			width: 50%;
+			height: 50%;
+		}
+	}
+}
+
 .loading-panel{
 	opacity: 0.9;
 	background: #333;
@@ -1605,10 +1620,12 @@ label.checkbox{
 
 .drop-down{
 	box-shadow: 0px 5px 5px rgba(0,0,0,0.3);
+
 	.rounded-corners-bottom(5px);
 	border: 1px solid @solid-blue;
 	ul{
 		color: @solid-blue;
+		background: #fff;
 		li{
 			list-style-type: none;
 		}
@@ -1641,6 +1658,11 @@ label.checkbox{
 		padding: 3px;
 		padding-left: 15px;
 		border: 1px solid transparent;
+	}
+	em.low-importance{
+		border: none;
+		color: #AAA;
+		font-style: italic;
 	}
 	em:hover{
 		background: @light-blue;
