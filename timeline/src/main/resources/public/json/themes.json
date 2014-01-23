@@ -18,4 +18,8 @@
 	"_id": "sparkly",
 	"displayName": "Galaxie",
 	"skinPath": "/assets/themes/panda/sparkly/"
+}, {
+	"_id": "raw",
+	"displayName": "Raw",
+	"skinPath": "/assets/themes/raw/default/"
 }]

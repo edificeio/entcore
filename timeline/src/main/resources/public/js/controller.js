@@ -25,9 +25,16 @@ function Timeline($scope, date, model, lang){
 		return date.calendar(dateString);
 	};
 
+	$scope.order = function(item){
+		return moment(item.date.$date);
+	};
+
 	$scope.removeFilter = function(){
-		Model.notificationTypes.removeFilter();
-	}
+		if(Model.notificationTypes.noFilter){
+			Model.notificationTypes.deselectAll();
+		}
+		Model.notifications.sync();
+	};
 }
 
 function Personalization($rootScope, $scope, model, ui){

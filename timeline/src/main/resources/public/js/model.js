@@ -8,7 +8,6 @@ function Notification(){
 
 function NotificationType(){
 	this.apply = function(){
-		Model.notificationTypes.current = this;
 		Model.notifications.sync();
 	}
 }
@@ -22,33 +21,39 @@ function Skin(data){
 }
 
 Model.build = function(){
-	Model.collection(Notification, {
+	this.collection(Notification, {
 		sync: function(){
-			var params = {};
-			if(Model.notificationTypes.current){
-				params.type = Model.notificationTypes.current.data;
-			}
 			var that = this;
-			http().get('/timeline/lastNotifications', params).done(function(response){
-				that.load(response.results);
+			that.all = [];
+			var types = Model.notificationTypes.selection();
+			if(Model.notificationTypes.noFilter){
+				types = Model.notificationTypes.all;
+			}
+			types.forEach(function(type){
+				var params = { type: type.data };
+				http().get('/timeline/lastNotifications', params).done(function(response){
+					that.addRange(response.results);
+				});
 			});
 		}
 	});
 
-	Model.collection(NotificationType, {
+	this.collection(NotificationType, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/types').done(function(data){
 				that.load(data);
+				Model.notifications.sync();
 			});
 		},
 		removeFilter: function(){
 			Model.notificationTypes.current = null;
 			Model.notifications.sync();
-		}
+		},
+		noFilter: true
 	});
 
-	Model.collection(Widget, {
+	this.collection(Widget, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/public/json/widgets.json').done(function(data){
@@ -65,7 +70,7 @@ Model.build = function(){
 		}
 	});
 
-	Model.collection(Skin, {
+	this.collection(Skin, {
 		sync: function(){
 			var that = this;
 			http().get('/timeline/public/json/themes.json').done(function(data){
