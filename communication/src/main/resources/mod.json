@@ -3,5 +3,21 @@
 	"auto-redeploy": true,
 	"port": 8015,
 	"mode": "dev",
-	"address" : "wse.communication"
+	"address" : "wse.communication",
+	"defaultCommunicationRules" : [
+	    "(s:School)<-[:APPARTIENT*2]-(start:Student)-[:EN_RELATION_AVEC]->(end:Relative)",
+	    "(start:ClassStudentGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassTeacherGroup)",
+	    "(start:ClassRelativeGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassStudentGroup)",
+	    "(start:ClassRelativeGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassTeacherGroup)",
+	    "(start:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(end:SchoolStudentGroup)",
+	    "(start:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(end:SchoolRelativeGroup)",
+	    "c<-[:DEPENDS]-(start:ClassRelativeGroup), s<-[:DEPENDS]-(end:SchoolPrincipalGroup)",
+	    "s<-[:DEPENDS*2]-(start:ClassProfileGroup)<-[:APPARTIENT]-(end:User)",
+	    "s<-[:DEPENDS*2]-(end:ClassProfileGroup)<-[:APPARTIENT]-(start:User)",
+	    "s<-[:DEPENDS]-(start:SchoolTeacherGroup)<-[:APPARTIENT]-(end:User)",
+	    "s<-[:DEPENDS]-(end:SchoolTeacherGroup)<-[:APPARTIENT]-(start:User)",
+	    "s<-[:DEPENDS]-(start:SchoolStudentGroup)<-[:APPARTIENT]-(end:User)",
+	    "s<-[:DEPENDS]-(start:SchoolRelativeGroup)<-[:APPARTIENT]-(end:User)",
+	    "s<-[:DEPENDS]-(start:SchoolPrincipalGroup)<-[:APPARTIENT]-(end:User)"
+	]
 }

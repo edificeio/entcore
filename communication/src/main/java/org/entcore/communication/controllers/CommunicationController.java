@@ -1,13 +1,8 @@
 package org.entcore.communication.controllers;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import org.entcore.common.neo4j.StatementsBuilder;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -507,4 +502,65 @@ public class CommunicationController extends Controller {
 		}
 		return r;
 	}
+
+	@SecuredAction("communication.default.rules")
+	public void defaultCommunicationRules(final HttpServerRequest request) {
+		String schoolId = request.params().get("schoolId");
+		JsonArray r = container.config().getArray("defaultCommunicationRules");
+		if (r == null || r.size() == 0 || schoolId == null || schoolId.trim().isEmpty()) {
+			renderError(request);
+			return;
+		}
+		StatementsBuilder b = new StatementsBuilder();
+		final JsonObject params = new JsonObject().putString("schoolId", schoolId);
+		for (Object o: r) {
+			if (!(o instanceof String) || ((String) o).trim().isEmpty()) continue;
+			if (((String) o).contains("EN_RELATION_AVEC")) {
+				b.add("MATCH " + o + " CREATE UNIQUE start-[:COMMUNIQUE_DIRECT]->end", params);
+					//"(s:School)<-[:APPARTIENT*2]-(n:Student)-[:EN_RELATION_AVEC]->(m:Relative)"
+			} else {
+				if (((String) o).contains("Class")) {
+					b.add(
+						"MATCH (s:School)<-[:APPARTIENT]-(c:Class), " + o + " " +
+						//"(n:ClassStudentGroup)-[:DEPENDS]->c<-[:DEPENDS]-(m:ClassTeacherGroup)"
+						"WHERE s.id = {schoolId} " +
+						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+					);
+				} else {
+					b.add(
+						"MATCH (s:School), " + o + " " +
+						 //"(n:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(m:SchoolStudentGroup)"
+						"WHERE s.id = {schoolId} " +
+						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+					);
+				}
+			}
+		}
+		neo.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				if ("ok".equals(r.body().getString("status"))) {
+					renderJson(request, r.body());
+				} else {
+					renderError(request, r.body());
+				}
+			}
+		});
+	}
+
+	@SecuredAction("communication.remove.rules")
+	public void removeCommunicationRules(HttpServerRequest request) {
+		String schoolId = request.params().get("schoolId");
+		if (schoolId == null || schoolId.trim().isEmpty()) {
+			renderError(request);
+			return;
+		}
+		String query =
+				"MATCH (s:School)<-[:DEPENDS*1..2]-(g:ProfileGroup)-[r:COMMUNIQUE]-() " +
+				"WHERE s.id = {schoolId} " +
+				"OPTIONAl MATCH s<-[:APPARTIENT]-(c:Class)<-[:APPARTIENT]-(u:User)-[r1:COMMUNIQUE_DIRECT]-() " +
+				"DELETE r, r1";
+		neo.execute(query, new JsonObject().putString("schoolId", schoolId), request.response());
+	}
+
 }

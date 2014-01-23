@@ -30,6 +30,10 @@ public class Communication extends Server {
 
 		controller.get("/schools", "listVisiblesSchools");
 
+		controller.put("/rules/:schoolId", "defaultCommunicationRules");
+
+		controller.delete("/rules/:schoolId", "removeCommunicationRules");
+
 		try {
 			controller.registerMethod(config.getString("address") + ".users", "visibleUsers");
 			controller.registerMethod(config.getString("address") + ".schools", "listVisiblesSchools");
