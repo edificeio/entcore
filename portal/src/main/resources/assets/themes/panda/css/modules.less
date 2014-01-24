@@ -46,7 +46,7 @@ i[role=shared]{
 .toggle-panel{
 	background: @ultra-light-grey;
 	box-shadow: -6px 6px 15px rgba(20, 20, 20, 0.2);
-	.rounded-corners-left(10px);
+	.border-radius-left(10px);
 	.toggle{
 		.text-container;
 		h1{
@@ -145,6 +145,12 @@ i[role=blog]{
 	.icon(blog, 33px);
 	margin-top: 1px;
 	margin-right: 3px;
+}
+
+i[role=admin]{
+	.icon(admin, 33px);
+	margin-right: 5px;
+	margin-top: -2px;
 }
 
 i[role=orange-user]{
@@ -473,7 +479,7 @@ i[role=cancel]{
 	padding: 7px;
 	font-size: 12px;
 	text-align: center;
-	.rounded-corners(10px);
+	.border-radius(10px);
 }
 
 blockquote{
@@ -487,7 +493,7 @@ blockquote{
 .icons-tabs{
 	li{
 		border: 2px solid #fff;
-		.rounded-corners-right(10px);
+		.border-radius-right(10px);
 		background: @medium-blue !important;
 		.run-transition(background);
 		border-left: 0;
@@ -515,6 +521,8 @@ a.button{
 .small.button{
 	line-height: 30px;
 	height: 30px;
+	text-transform: none;
+	font-size: 20px;
 }
 
 .remove-fout{
@@ -522,7 +530,7 @@ a.button{
 }
 
 input[type=text], input[type=password]{
-	.rounded-corners(5px);
+	.border-radius(5px);
 	border: 1px solid #ccc;
 	line-height: 25px;
 	height: 25px;
@@ -591,6 +599,7 @@ h1.text{
 	font-size: 27px;
 	margin-top: 0;
 	margin-bottom: 10px;
+	font-weight: normal;
 }
 
 h2{
@@ -651,7 +660,7 @@ nav.vertical{
 			}
 			em, span{
 				background: @ultra-light-grey;
-				.rounded-corners(10px);
+				.border-radius(10px);
 				border: 1px solid @light-grey;
 				display: block;
 				margin: 5px;
@@ -682,7 +691,7 @@ nav.vertical{
 			}
 		a{
         .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
-        .rounded-corners(10px);
+        .border-radius(10px);
 
         font-size: 1em;
         border: 1px solid @light-grey;
@@ -715,6 +724,25 @@ nav.vertical{
 
 }
 
+.tabs{
+	header{
+		color: @medium-blue;
+		.border-radius-top(5px);
+		border-bottom: 1px solid #ccc;
+	}
+	header.selected{
+		border-color: #ccc;
+		border-bottom-color: #fff;
+
+		font-weight: bold;
+		color: @orange;
+	}
+	section{
+		border-color: #ccc;
+		.border-radius-bottom(5px);
+	}
+}
+
 .inline-editing{
 	border: none !important;
 	border-bottom: 1px solid #ccc !important;
@@ -741,7 +769,7 @@ textarea.inline-editing{
 		border-left: 0;
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
-		.rounded-corners-right(3px);
+		.border-radius-right(3px);
 		line-height: 30px;
 		height: 30px;
 		text-transform: none;
@@ -761,7 +789,7 @@ textarea.inline-editing{
 	input[type=submit], button{
 		border: 1px solid #eee;
 		border-left: 0;
-		.rounded-corners(0);
+		.border-radius(0);
 		font-family: Arial;
 		line-height: 25px;
 		height: 25px;
@@ -810,7 +838,7 @@ article.comment{
 }
 
 .box{
-	.rounded-corners(10px);
+	.border-radius(10px);
 	h4, h3{
 		color: @medium-blue;
 	}
@@ -830,7 +858,7 @@ section.selected, article.selected{
 	h3,h4, strong, a{
 		color: #fff;
 	}
-	.rounded-corners(10px);
+	.border-radius(10px);
 }
 
 .banner.orange{
@@ -885,13 +913,13 @@ article.unstyled{
 }
 
 article{
-	.rounded-corners(5px);
+	.border-radius(5px);
 	background: @light-grey-background;
 	border: 1px solid @medium-grey;
 
   header, thead{
     .vertical-gradient(@blue-top-gradient, @blue-bottom-gradient);
-    .rounded-corners-top(10px);
+    .border-radius-top(5px);
     color: #fff;
     padding: 7px;
 
@@ -916,7 +944,7 @@ article{
 
 .navbar{
   .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
-  .rounded-corners-bottom;
+	.border-radius-bottom;
 
   .welcome-message{
     color: @medium-blue;
@@ -939,7 +967,7 @@ nav.horizontal{
     font-size: 23px;
     text-decoration: none;
 
-    .rounded-corners(10px);
+    .border-radius(10px);
     .run-transition(background);
   }
   a:hover{
@@ -967,7 +995,7 @@ h3{
 		font-size: 18px;
 		padding-top: 4px;
 		line-height: 1em;
-		.rounded-corners-right(5px)
+		.border-radius-right(5px)
   }
 	input[type=search]{
 		padding: 5px;
@@ -975,7 +1003,7 @@ h3{
 		padding-left: 27px;
 		height: 28px;
 		background: url(../img/icons/search.png) no-repeat 3px #fff;
-		.rounded-corners-left(5px)
+		.border-radius-left(5px)
 	}
 }
 
@@ -1007,7 +1035,7 @@ a{
 	padding-right: 5px;
 	color: #666;
 	border: 1px solid #ccc;
-	.rounded-corners(5px);
+	.border-radius(5px);
 	font-size: 12px;
 	.close{
 		color: @orange;
@@ -1031,7 +1059,7 @@ a{
 }
 
 .badge{
-	.rounded-corners(10px);
+	.border-radius(10px);
 	background: @solid-blue;
 	color: #fff;
 	font-size: 12px;
@@ -1043,7 +1071,7 @@ a{
 }
 
 .dominos{
-	.rounded-corners(5px);
+	.border-radius(5px);
 	.item{
 		.domino{
 			border: 1px solid #dfdfdf;
@@ -1073,7 +1101,7 @@ a{
 		padding: 7px;
 		border: 1px solid #CCC;
 		background: #fff;
-		.rounded-corners(8px);
+		.border-radius(8px);
 		.border-box;
 
 		div{
@@ -1099,6 +1127,10 @@ a{
 			color: @medium-blue;
 			font-weight: normal;
 			font-size: 14px;
+		}
+
+		i[role=shared]{
+			bottom: 2px;
 		}
 
 		i, img{
@@ -1150,17 +1182,19 @@ table.unstyled{
 }
 
 table{
-	.rounded-corners(10px);
+	.border-radius(5px);
 
 	thead{
 		tr{
 			border: none;
 		}
 		tr:first-child th:first-child{
-			border-top-left-radius: 10px;
+			-moz-border-top-left-radius: 5px;
+			border-top-left-radius: 5px;
 		}
 		tr:first-child th:last-child{
-			border-top-right-radius: 10px;
+			-moz-border-top-right-radius: 5px;
+			border-top-right-radius: 5px;
 		}
 	}
 	tbody{
@@ -1169,11 +1203,13 @@ table{
 			.run-transition(background);
 		}
 		tr:last-child td:first-child{
-			border-bottom-left-radius: 10px;
+			-moz-border-bottom-left-radius: 5px;
+			border-bottom-left-radius: 5px;
 			overflow: hidden;
 		}
 		tr:last-child td:last-child{
-			border-bottom-right-radius: 10px;
+			-moz-border-bottom-right-radius: 5px;
+			border-bottom-right-radius: 5px;
 			overflow: hidden
 		}
 	}
@@ -1287,7 +1323,7 @@ img[src=""]{
 
 .icons-select{
 	background: #fefefe;
-	.rounded-corners(10px);
+	.border-radius(10px);
 	border: 1px solid #ccc;
 
 	.option i{
@@ -1314,7 +1350,7 @@ img[src=""]{
 		background-image: url(../img/icons/arrow-bottom.png);
 		background-repeat: no-repeat;
 		background-position: 5px 15px;
-		.rounded-corners-top(10px);
+		.border-radius-top(10px);
 	}
 
 	.options-list{
@@ -1352,7 +1388,7 @@ img[src=""]{
 	}
 	tr{
 		border: 1px solid transparent;
-		.rounded-corners(0px);
+		.border-radius(0px);
 	}
 	th{
 		font-size: 14px;
@@ -1391,7 +1427,7 @@ img[src=""]{
 		ul{
 			li{
 				a{
-					.rounded-corners(0px);
+					.border-radius(0px);
 					color: @medium-blue;
 
 					.date{
@@ -1421,7 +1457,7 @@ img[src=""]{
 }
 
 label.checkbox:hover{
-	.rounded-corners(5px);
+	.border-radius(5px);
 	.run-transition(background);
 }
 
@@ -1493,7 +1529,7 @@ label.checkbox{
 
 .mood-widget{
 	background: #46afe6;
-	.rounded-corners(5px);
+	.border-radius(5px);
 	//Font used for this widget crashes in IE : replaced by an image
 	h1.fr{
 		background: url(../img/illustrations/mood-header-fr.png);
@@ -1540,7 +1576,7 @@ label.checkbox{
 			span{
 				color: black;
 				background: url(../img/icons/arrow-bottom.png) white no-repeat 4px 8px;
-				.rounded-corners(10px);
+				.border-radius(10px);
 			}
 		}
 
@@ -1637,7 +1673,7 @@ label.checkbox{
 .drop-down{
 	box-shadow: 0px 5px 5px rgba(0,0,0,0.3);
 	background: #fff;
-	.rounded-corners-bottom(5px);
+	.border-radius-bottom(5px);
 	border: 1px solid @solid-blue;
 	ul{
 		color: @solid-blue;

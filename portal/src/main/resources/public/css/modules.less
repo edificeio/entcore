@@ -1,4 +1,12 @@
+@white: #fff;
+@grayLight: #ccc;
+@grayLighter: #eee;
+@btnPrimaryBackground: #ccc;
+
+@baseFontSize: 12px;
+
 @import "crisscross";
+@import "datepicker";
 
 @icon-size: 117px;
 
@@ -24,6 +32,10 @@
 	background:  linear-gradient(@top-color, @bottom-color);
 	-pie-background: linear-gradient(@top-color, @bottom-color);
 	behavior: url(/assets/themes/panda/css/PIE.htc);
+}
+
+.buttonBackground(@top: #eee, @bottom: #ccc){
+	.vertical-gradient(@top, @bottom);
 }
 
 .fixed{
@@ -109,7 +121,7 @@ textarea{
 }
 
 .badge{
-	.rounded-corners(10px);
+	.border-radius(10px);
 	background: #ccc;
 	font-weight: bold;
 	padding: 1px;
@@ -205,7 +217,7 @@ nav.horizontal{
 
 		border: 1px solid;
 		border-top: none;
-		.rounded-corners-bottom(10px);
+		.border-radius-bottom(10px);
 		overflow: hidden;
 
 	}
@@ -297,13 +309,13 @@ p{
 }
 
 .vertical-spacing{
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-top: 5px !important;
+	margin-bottom: 5px !important;
 }
 
 .vertical-spacing-twice{
-	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-top: 10px !important;
+	margin-bottom: 10px !important;
 }
 
 .calendar{
@@ -593,6 +605,22 @@ a{
 	}
 }
 
+//twitter bootstrap adapter
+.dropdown-menu{
+	.drop-down;
+	height: auto;
+	.reduce-block-six;
+}
+
+.table-condensed{
+	font-size: 12px;
+	tr{
+		td, th{
+			padding: 0;
+		}
+	}
+}
+
 .toggle-panel{
 	background: #ccc;
 	h1,h2{
@@ -710,6 +738,10 @@ ul.icons-view.two-cols{
 	.reduce-block(6px);
 }
 
+.reduce-block-eight{
+	.reduce-block(8px);
+}
+
 .icons-view{
 	padding-left: 0;
 	.element{
@@ -728,11 +760,19 @@ ul.icons-view.two-cols{
 			cursor: pointer;
 			max-width: 100%;
 		}
-		i{
-			width: @icon-size;
-			height: @icon-size;
-			height: @icon-size;
-			background-size: auto 100%;
+		a{
+			i.inline{
+				display: inline-block;
+				position: relative;
+				height: 20px;
+				width: 20px;
+			}
+
+			i{
+				width: @icon-size;
+				height: @icon-size;
+				background-size: auto 100%;
+			}
 		}
 
 		input[type=checkbox]{
@@ -758,6 +798,24 @@ ul.icons-view.two-cols{
 
 	div.element:nth-child(8n + 9){
 		clear: left;
+	}
+}
+
+.tabs{
+	header{
+		display: inline-block;
+		padding: 6px;
+		background: #eee;
+	}
+	header.selected{
+		border: 1px solid;
+		border-bottom: 1px solid #fff;
+		background: #fff;
+	}
+	section{
+		margin-top: -1px;
+		border: 1px solid;
+		padding: 6px;
 	}
 }
 

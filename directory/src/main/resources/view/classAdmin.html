@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html ng-controller="ClassAdmin">
+<head>
+	<title>Paramétrage de la classe</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script src="/directory/public/js/model.js" type="text/javascript"></script>
+	<script src="/directory/public/js/controller.js" type="text/javascript"></script>
+</head>
+<script type="text/ng-template" id="empty"></script>
+<body>
+<portal>
+	<h1 data-reload><i role="admin"></i> Paramétrage de la classe</h1>
+
+	<section class="row">
+		<h1 class="text">Paramètres généraux</h1>
+		<article class="twelve cell">
+			<div class="row reduce-block-three medium-text">
+				<div class="two cell reduce-block-eight">Nom de la classe</div>
+				<div class="ten cell reduce-block-two">
+					<input type="text" ng-model="myClass.name" class="twelve cell inline-editing" />
+				</div>
+			</div>
+		</article>
+		<div class="row"></div>
+	</section>
+
+	<h1 class="text row vertical-spacing-twice">Gestion des utilisateurs</h1>
+	<section class="twelve cell tabs row">
+		<header ng-class="{ selected: display.show === 'pupils' }" ng-click="show('pupils')">
+			Elèves
+		</header><header ng-class="{ selected: display.show === 'parents' }" ng-click="show('parents')">
+			Parents
+		</header>
+		<section class="medium-text">
+			<div class="row line">
+				<div class="twelve cell reduce-block-six vertical-spacing">
+					<a>Importer un fichier d'utilisateurs</a> ou <a>exporter les codes d'activation</a>
+				</div>
+				<div class="row"></div>
+			</div>
+			<div class="row">
+				<article class="twelve cell vertical-spacing-twice">
+					<table class="row">
+						<thead>
+						<tr>
+							<th><input type="checkbox" /></th>
+							<th>Nom</th>
+							<th>Prénom</th>
+							<th>Naissance</th>
+							<th>Photo</th>
+							<th>Identifiant</th>
+							<th></th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td></td>
+							<td><input type="text" class="inline-editing" placeholder="Nom" /></td>
+							<td><input type="text" class="inline-editing" placeholder="Prénom" /></td>
+							<td><input type="text" role="datepicker" class="inline-editing" placeholder="Date de naissance" /></td>
+							<td><i role="img"></i></td>
+							<td colspan="2"><input type="button" class="small button right-magnet" value="Ajouter" /></td>
+						</tr>
+						<tr class="checked">
+							<td><input type="checkbox" /></td>
+							<td>COSSON</td>
+							<td>Jade</td>
+							<td>08/09/2005</td>
+							<td><i role="img"></i></td>
+							<td>jade.cosson</td>
+							<td><em class="medium-importance right-magnet">Activé</em></td>
+						</tr>
+						<tr>
+							<td><input type="checkbox" /></td>
+							<td>BROUSSE</td>
+							<td>Cédric</td>
+							<td>08/09/2005</td>
+							<td><i role="img"></i></td>
+							<td>cedric.brousse</td>
+							<td><em class="medium-importance right-magnet">agzg894</em></td>
+						</tr>
+						<tr>
+							<td><input type="checkbox" /></td>
+							<td>PIRES</td>
+							<td>Rachelle</td>
+							<td>08/09/2005</td>
+							<td><i role="img"></i></td>
+							<td>rachelle.pires</td>
+							<td><em class="medium-importance right-magnet">zg4gz9</em></td>
+						</tr>
+						<tr>
+							<td><input type="checkbox" /></td>
+							<td>FARGEAU</td>
+							<td>Antoine</td>
+							<td>08/09/2005</td>
+							<td><i role="img"></i></td>
+							<td>antoine.fargeau</td>
+							<td><em class="medium-importance right-magnet">ezge56</em></td>
+						</tr>
+						</tbody>
+					</table>
+				</article>
+				<div class="row"></div>
+			</div>
+		</section>
+	</section>
+	<div class="row height-one"></div>
+	<section class="toggle-bottom" ng-class="{ hide: users.selection().length === 0 }">
+		<div class="toggle block-container">
+			<div class="row">
+				<button>Réinitialiser le mot de passe</button>
+				<button>Supprimer</button>
+			</div>
+		</div>
+	</section>
+</portal>
+</body>
+</html>

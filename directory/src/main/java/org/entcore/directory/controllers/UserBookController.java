@@ -68,6 +68,11 @@ public class UserBookController extends Controller {
 	public void annuaire(HttpServerRequest request) {
 		renderView(request);
 	}
+	
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void classAdmin(HttpServerRequest request) {
+		renderView(request);
+	}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {

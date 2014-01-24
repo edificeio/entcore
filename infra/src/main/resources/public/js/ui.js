@@ -100,6 +100,14 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
+		if($('input[role=datepicker]').length > 0){
+			loader.asyncLoad('/infra/public/js/bootstrap-datepicker.js', function(){
+				$('body').on('focus', 'input[role=datepicker]', function(){
+					$(this).datepicker()
+				});
+			})
+		}
+
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');
 			$(this).addClass('selected');

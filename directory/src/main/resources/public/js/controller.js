@@ -120,3 +120,15 @@ function Directory($scope, route){
 
 	$scope.openView('list-view', 'main');
 }
+
+function ClassAdmin($scope){
+	$scope.users = Model.users;
+
+	$scope.display = {
+		show: 'pupils'
+	};
+
+	$scope.show = function(tab){
+		$scope.display.show = tab;
+	};
+}
