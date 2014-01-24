@@ -82,5 +82,6 @@
 	"files.select": "Choose file",
 	"files.select.please": "Waiting for files",
 	"files.header": "Load files",
-	"comments": "[[document.comments.length]] comment(s)"
+	"comments": "[[document.comments.length]] comment(s)",
+	"folder.new.title": "New folder"
 }

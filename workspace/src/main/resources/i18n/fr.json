@@ -78,6 +78,7 @@
     "workspace.trash.error" : "Erreur lors de la mise à la corbeille",
     "workspace.forbidden.move.folder.in.itself" : "Interdit de déplacer un dossier dans lui-même.",
     "workspace.folder.already.exists" : "Le dossier existe déjà.",
+	"folder.new.title": "Nouveau dossier",
 	"folder.new": "Créer un nouveau dossier",
 	"files.select": "Sélectionner les fichiers",
 	"files.select.please": "Veuillez sélectionner un document",
