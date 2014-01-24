@@ -22,17 +22,16 @@
 							<div class="row line filters">
 								<ul>
 									<li class="legend" translate key="filters.title"></li>
-
+									<li>
+										<label class="checkbox small-text">
+											<input type="checkbox" ng-model="notificationTypes.noFilter" ng-change="removeFilter()" />
+											<span translate content="filters.all"></span>
+										</label>
+									</li>
 									<li ng-repeat="type in notificationTypes.all">
 										<label class="checkbox small-text">
 											<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
 											<span translate content="[[type.data.toLowerCase()]]"></span>
-										</label>
-									</li>
-									<li>
-										<label class="checkbox">
-											<input type="checkbox" ng-model="notificationTypes.noFilter" ng-change="removeFilter()" />
-											<span translate content="filters.all"></span>
 										</label>
 									</li>
 								</ul>
