@@ -27,5 +27,6 @@
 	"assessments" : "Gestion des notes",
 	"attendance" : "Gestion des absences",
 	"tdbase" : "TD Base",
-	"statistics" : "Statistiques"
+	"statistics" : "Statistiques",
+	"remove": "Supprimer"
 }

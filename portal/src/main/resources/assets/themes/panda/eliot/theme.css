@@ -3610,6 +3610,7 @@ nav.vertical ul a:hover {
   border: none !important;
   border-bottom: 1px solid #ccc !important;
   border-radius: 0 !important;
+  background: transparent;
 }
 textarea.inline-editing {
   height: 28px;

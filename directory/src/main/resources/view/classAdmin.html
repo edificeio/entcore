@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-controller="ClassAdmin">
 <head>
-	<title translate content="classAdmin.title"></title>
+	<title>{{#i18n}}classAdmin.title{{/i18n}}</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 	<script src="/directory/public/js/model.js" type="text/javascript"></script>
@@ -25,18 +25,19 @@
 		<div class="row"></div>
 	</section>
 
-	<h1 class="text row vertical-spacing-twice">Gestion des utilisateurs</h1>
+	<h1 class="text row vertical-spacing-twice" translate content="classAdmin.manageUsers"></h1>
 	<section class="twelve cell tabs row">
-		<header ng-class="{ selected: display.show === 'pupils' }" ng-click="show('pupils')">
-			Elèves
-		</header><header ng-class="{ selected: display.show === 'parents' }" ng-click="show('parents')">
-			Parents
+		<header ng-class="{ selected: display.show === 'Student' }"
+				ng-click="show('Student')"
+				translate content="directory.students">
+		</header><header
+			ng-class="{ selected: display.show === 'Relative' }"
+			ng-click="show('Relative')"
+			translate content="directory.relatives">
 		</header>
 		<section class="medium-text">
 			<div class="row line">
-				<div class="twelve cell reduce-block-six vertical-spacing">
-					<a>Importer un fichier d'utilisateurs</a> ou <a>exporter les codes d'activation</a>
-				</div>
+				<div class="twelve cell reduce-block-six vertical-spacing" translate content="classAdmin.filesActions"></div>
 				<div class="row"></div>
 			</div>
 			<div class="row">
@@ -44,59 +45,33 @@
 					<table class="row">
 						<thead>
 						<tr>
-							<th><input type="checkbox" /></th>
-							<th>Nom</th>
-							<th>Prénom</th>
-							<th>Naissance</th>
-							<th>Photo</th>
-							<th>Identifiant</th>
+							<th>
+								<input type="checkbox" ng-model="display.selectAll" ng-change="switchAll()" />
+							</th>
+							<th></th>
+							<th translate content="directory.lastName"></th>
+							<th translate content="directory.firstName"></th>
+							<th translate content="directory.birthdate"></th>
+							<th translate content="directory.login"></th>
 							<th></th>
 						</tr>
 						</thead>
 						<tbody>
 						<tr>
 							<td></td>
-							<td><input type="text" class="inline-editing" placeholder="Nom" /></td>
-							<td><input type="text" class="inline-editing" placeholder="Prénom" /></td>
-							<td><input type="text" role="datepicker" class="inline-editing" placeholder="Date de naissance" /></td>
-							<td><i role="img"></i></td>
-							<td colspan="2"><input type="button" class="small button right-magnet" value="Ajouter" /></td>
+							<td class="action-cell"><i role="img"></i></td>
+							<td><input type="text" class="inline-editing" translate attr="placeholder" placeholder="directory.lastName" /></td>
+							<td><input type="text" class="inline-editing" translate attr="placeholder" placeholder="directory.firstName" /></td>
+							<td><input type="text" role="datepicker" class="inline-editing" translate attr="placeholder" placeholder="directory.birthdate" data-date-format="dd/mm/yyyy" /></td>
+							<td colspan="2"><input type="button" class="small button right-magnet" translate attr="value" value="directory.add" /></td>
 						</tr>
-						<tr class="checked">
-							<td><input type="checkbox" /></td>
-							<td>COSSON</td>
-							<td>Jade</td>
-							<td>08/09/2005</td>
-							<td><i role="img"></i></td>
-							<td>jade.cosson</td>
-							<td><em class="medium-importance right-magnet">Activé</em></td>
-						</tr>
-						<tr>
-							<td><input type="checkbox" /></td>
-							<td>BROUSSE</td>
-							<td>Cédric</td>
-							<td>08/09/2005</td>
-							<td><i role="img"></i></td>
-							<td>cedric.brousse</td>
-							<td><em class="medium-importance right-magnet">agzg894</em></td>
-						</tr>
-						<tr>
-							<td><input type="checkbox" /></td>
-							<td>PIRES</td>
-							<td>Rachelle</td>
-							<td>08/09/2005</td>
-							<td><i role="img"></i></td>
-							<td>rachelle.pires</td>
-							<td><em class="medium-importance right-magnet">zg4gz9</em></td>
-						</tr>
-						<tr>
-							<td><input type="checkbox" /></td>
-							<td>FARGEAU</td>
-							<td>Antoine</td>
-							<td>08/09/2005</td>
-							<td><i role="img"></i></td>
-							<td>antoine.fargeau</td>
-							<td><em class="medium-importance right-magnet">ezge56</em></td>
+						<tr ng-class="{ checked: user.selected }" ng-repeat="user in users.where({ type: display.show })">
+							<td><input type="checkbox" ng-model="user.selected" /></td>
+							<td class="action-cell"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /></td>
+							<td colspan="2">[[user.displayName]]</td>
+							<td>[[shortDate()]]</td>
+							<td>[[user.login]]</td>
+							<td><em class="medium-importance right-magnet" translate content="directory.activated"></em></td>
 						</tr>
 						</tbody>
 					</table>
@@ -109,8 +84,8 @@
 	<section class="toggle-bottom" ng-class="{ hide: users.selection().length === 0 }">
 		<div class="toggle block-container">
 			<div class="row">
-				<button>Réinitialiser le mot de passe</button>
-				<button>Supprimer</button>
+				<button translate content="directory.resetPassword"></button>
+				<button translate content="remove"></button>
 			</div>
 		</div>
 	</section>

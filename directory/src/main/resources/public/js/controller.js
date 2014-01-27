@@ -127,19 +127,32 @@ function DirectoryController($scope, model, route){
 	$scope.openView('list-view', 'main');
 }
 
-function ClassAdmin($scope, model){
+function ClassAdmin($scope, model, date){
 	model.myClass.sync();
 	model.on('myClass.users.change', function(){
+		$scope.users = model.myClass.users;
 		$scope.$apply('users');
 	});
 
-	$scope.users = model.users;
+	$scope.shortDate = function(dateString){
+		return moment(dateString).format('D/MM/YYYY');
+	}
 
 	$scope.display = {
-		show: 'pupils'
+		show: 'Student',
+		selectAll: false
 	};
 
 	$scope.show = function(tab){
 		$scope.display.show = tab;
 	};
+
+	$scope.switchAll = function(){
+		if($scope.display.selectAll){
+			model.myClass.users.selectAll();
+		}
+		else{
+			model.myClass.users.deselectAll();
+		}
+	}
 }

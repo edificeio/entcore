@@ -103,7 +103,15 @@ var ui = (function(){
 		if($('input[role=datepicker]').length > 0){
 			loader.asyncLoad('/infra/public/js/bootstrap-datepicker.js', function(){
 				$('body').on('focus', 'input[role=datepicker]', function(){
-					$(this).datepicker()
+					$(this).datepicker({
+						dates: {
+							months: moment.months(),
+							monthsShort: moment.monthsShort(),
+							days: moment.weekdays(),
+							daysShort: moment.weekdaysShort(),
+							daysMin: moment.weekdaysMin()
+						}
+					});
 				});
 			})
 		}

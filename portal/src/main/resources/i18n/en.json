@@ -30,6 +30,7 @@
 	"maxicours" : "Maxicours",
 	"assessments" : "Assessments",
 	"attendance" : "Attendance",
-	"tdbase" : "TD Base (soon)",
-	"statistics" : "Statistics (soon)"
+	"tdbase" : "TD Base (coming soon)",
+	"statistics" : "Statistics (coming soon)",
+	"remove": "Remove"
 }

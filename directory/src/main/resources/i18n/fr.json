@@ -27,10 +27,12 @@
 	"directory.admin.type":"Type",
 	"directory.admin.parent":"Parent",
 	"directory.relative":"Parent",
+	"directory.relatives":"Parents",
 	"directory.admin.teacher":"Enseignant",
 	"directory.teacher":"Enseignant",
 	"directory.admin.student":"Eleve",
 	"directory.student":"Élève",
+	"directory.students":"Élèves",
 	"directory.admin.address":"Adresse",
 	"directory.admin.lastname":"Nom",
 	"directory.admin.firstname":"Prénom",
@@ -115,5 +117,14 @@
 	"noresult": "Votre recherche ne retourne aucun résultat !",
 	"classAdmin.title": "Paramétrage de la classe",
 	"classAdmin.globalParams": "Paramétrages généraux",
-	"classAdmin.className": "Nom de la classe"
+	"classAdmin.className": "Nom de la classe",
+	"classAdmin.manageUsers": "Gestion des utilisateurs",
+	"classAdmin.filesActions": "<a>Importer un fichier d'utilisateurs</a> ou <a>exporter les codes d'activation</a>",
+	"directory.firstName": "Prénom",
+	"directory.lastName": "Nom",
+	"directory.birthdate": "Naissance",
+	"directory.login": "Identifiant",
+	"directory.add": "Ajouter",
+	"directory.activated": "Activé",
+	"directory.resetPassword": "Réinitialiser le mot de passe"
 }
