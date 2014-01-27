@@ -1,14 +1,14 @@
 function Notification(){
 	this.isUnread = function(){
 		return _.find(this.recipients, function(recipient){
-			return recipient.userId === Model.state.me.userId;
+			return recipient.userId === model.me.userId;
 		}) !== undefined;
 	}
 }
 
 function NotificationType(){
 	this.apply = function(){
-		Model.notifications.sync();
+		model.notifications.sync();
 	}
 }
 
@@ -20,14 +20,16 @@ function Skin(data){
 	}
 }
 
-Model.build = function(){
+model.build = function (){
+	this.makeModels([Notification, NotificationType, Widget, Skin]);
+
 	this.collection(Notification, {
 		sync: function(){
 			var that = this;
 			that.all = [];
-			var types = Model.notificationTypes.selection();
-			if(Model.notificationTypes.noFilter){
-				types = Model.notificationTypes.all;
+			var types = model.notificationTypes.selection();
+			if(model.notificationTypes.noFilter){
+				types = model.notificationTypes.all;
 			}
 			types.forEach(function(type){
 				var params = { type: type.data };
@@ -43,12 +45,12 @@ Model.build = function(){
 			var that = this;
 			http().get('/timeline/types').done(function(data){
 				that.load(data);
-				Model.notifications.sync();
+				model.notifications.sync();
 			});
 		},
 		removeFilter: function(){
-			Model.notificationTypes.current = null;
-			Model.notifications.sync();
+			model.notificationTypes.current = null;
+			model.notifications.sync();
 		},
 		noFilter: true
 	});
@@ -63,10 +65,10 @@ Model.build = function(){
 			});
 		},
 		findWidget: function(name){
-			return _.findWhere(this.all, {name: name});
+			return this.findWhere({name: name});
 		},
 		apply: function(){
-			Model.trigger('widgets.change');
+			model.trigger('widgets.change');
 		}
 	});
 

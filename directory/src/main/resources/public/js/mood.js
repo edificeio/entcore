@@ -1,5 +1,5 @@
 (function(){
-	var Mood = Model.widgets.findWidget('mood');
+	var Mood = model.widgets.findWidget('mood');
 
 	var availableMoods = ['happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 	Mood.mood = 'default';
@@ -31,7 +31,7 @@
 				Mood.mood = _(Mood.moods).where({id: currentMood})[0];
 			}
 
-			Model.widgets.apply();
+			model.widgets.apply();
 		});
 	});
 }());

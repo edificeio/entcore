@@ -199,7 +199,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		return _;
 	})
 	.factory('model', function(){
-		return Model;
+		return model;
 	})
 	.factory('ui', function(){
 		return ui;
@@ -725,11 +725,9 @@ module.directive('sharePanel', function($compile){
 })
 
 $(document).ready(function(){
-	if(!window.Model){
-		Model = { build: function(){ } };
-	}
-	Model.build();
-	Model.sync();
+	model.build();
+	bootstrap();
+	model.sync();
 	angular.bootstrap($('html'), ['app']);
 });
 

@@ -61,13 +61,13 @@ function Mail(data){
 		if(this.id){
 			http().putJson(path + '/' + this.id, data).done(function(newData){
 				that.updateData(newData);
-				Model.folders.draft.mails.refresh();
+				model.folders.draft.mails.refresh();
 			});
 		}
 		else{
 			http().postJson(path, data).done(function(newData){
 				that.updateData(newData);
-				Model.folders.draft.mails.refresh();
+				model.folders.draft.mails.refresh();
 			});
 		}
 	};
@@ -87,8 +87,8 @@ function Mail(data){
 			path += 'In-Reply-To=' + this.parentConversation.id;
 		}
 		http().postJson(path, data).done(function(result){
-			Model.folders.outbox.mails.refresh();
-			Model.folders.draft.mails.refresh();
+			model.folders.outbox.mails.refresh();
+			model.folders.draft.mails.refresh();
 			if(typeof cb === 'function'){
 				cb(result);
 			}
@@ -119,21 +119,21 @@ function Mail(data){
 				})
 			});
 
-			Model.folders.inbox.countUnread();
-			Model.folders.current.mails.refresh();
+			model.folders.inbox.countUnread();
+			model.folders.current.mails.refresh();
 		});
 	};
 
 	this.remove = function(){
-		if(Model.folders.current.folderName !== 'trash'){
+		if(model.folders.current.folderName !== 'trash'){
 			http().put('/conversation/trash?id=' + this.id).done(function(){
-				Model.folders.current.mails.refresh();
-				Model.folders.trash.mails.refresh();
+				model.folders.current.mails.refresh();
+				model.folders.trash.mails.refresh();
 			});
 		}
 		else{
 			http().delete('/conversation/delete?id=' + this.id).done(function(){
-				Model.folders.trash.mails.refresh();
+				model.folders.trash.mails.refresh();
 			});
 		}
 	};
@@ -167,7 +167,7 @@ function Folder(api){
 		},
 		removeMails: function(){
 			http().put('/conversation/trash?' + http().serialize({ id: _.pluck(this.selection(), 'id') })).done(function(){
-				Model.folders.trash.mails.refresh();
+				model.folders.trash.mails.refresh();
 			});
 			this.removeSelection();
 		},
@@ -182,7 +182,9 @@ function Folder(api){
 	};
 }
 
-Model.build = function(){
+model.build = function(){
+	this.makeModels([Folder, User, Mail]);
+
 	this.collection(User, {
 		sync: function(){
 			var that = this;
@@ -236,10 +238,10 @@ Model.build = function(){
 	});
 
 	this.folders.systemFolders.forEach(function(folderName){
-		Model.folders[folderName] = new Folder({
+		model.folders[folderName] = new Folder({
 			get: '/conversation/list/' + folderName.toUpperCase()
 		});
-		Model.folders[folderName].folderName = folderName;
+		model.folders[folderName].folderName = folderName;
 	});
 
 	this.folders.draft.saveDraft = function(draft){
@@ -250,9 +252,9 @@ Model.build = function(){
 	this.folders.trash.mails.restoreMails = function(){
 		http().put('/conversation/restore?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
 		this.removeSelection();
-		Model.folders.inbox.mails.refresh();
-		Model.folders.outbox.mails.refresh();
-		Model.folders.draft.mails.refresh();
+		model.folders.inbox.mails.refresh();
+		model.folders.outbox.mails.refresh();
+		model.folders.draft.mails.refresh();
 	};
 
 	this.folders.trash.mails.removeMails = function(){

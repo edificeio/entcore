@@ -1,5 +1,5 @@
 (function(){
-	var Birthday = Model.widgets.findWidget('birthday');
+	var Birthday = model.widgets.findWidget('birthday');
 	Birthday.classes = [];
 	Birthday.currentClass = '';
 	Birthday.emptyList = '';
@@ -27,7 +27,7 @@
 		if(Birthday.classes.indexOf(Birthday.currentClass) === -1 && Birthday.currentClass !== ''){
 			Birthday.classes.push(Birthday.currentClass);
 		}
-		Model.widgets.apply();
+		model.widgets.apply();
 	});
 
 	http().get('/userbook/person/birthday').done(function(birthdays){
@@ -55,7 +55,7 @@
 				Birthday.currentClass = Birthday.classes[0];
 			}
 
-			Model.widgets.apply();
+			model.widgets.apply();
 		});
 	});
 }());

@@ -132,6 +132,6 @@ var routes = {
 	}
 };
 
-var Model = {};
-Model.build = function(){};
-
+function Model(){}
+Model.prototype.build = function(){};
+var model = new Model();

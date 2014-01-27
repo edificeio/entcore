@@ -364,6 +364,7 @@ function Collection(obj){
 				return;
 			}
 			this.model.trigger(pluralizeName(this.obj) + '.change');
+			this.trigger('change');
 		},
 		load: function(data, cb, notify){
 			this.all = [];
@@ -385,7 +386,26 @@ function Collection(obj){
 		}());
 	}
 
-	Model.collection = function(obj, methods){
+	Model.prototype.makeModel = function(fn, methods){
+		var additionnalProps = fn.prototype;
+		fn.prototype = new Model();
+
+		for(var method in methods){
+			fn.prototype[method] = methods[method];
+		}
+
+		for(var prop in additionnalProps){
+			fn.prototype[prop] = additionnalProps[prop];
+		}
+	};
+
+	Model.prototype.makeModels = function(constructors){
+		constructors.forEach(function(item){
+			this.makeModel(item);
+		}.bind(this));
+	};
+
+	Model.prototype.collection = function(obj, methods){
 		var col = new Collection(obj);
 		col.composer = this;
 		this[pluralizeName(obj)] = col;
@@ -394,16 +414,11 @@ function Collection(obj){
 			col[method] = methods[method];
 		}
 
-		for(var prop in Model){
-			if(Model.hasOwnProperty(prop)){
-				obj.prototype[prop] = Model[prop];
-			}
-		}
 		col.model = this;
 		return col;
 	};
 
-	Model.sync = function(){
+	Model.prototype.sync = function(){
 		for(var col in this){
 			if(this[col] instanceof Collection){
 				this[col].sync();
@@ -411,7 +426,7 @@ function Collection(obj){
 		}
 	};
 
-	Model.updateData = function(newData){
+	Model.prototype.updateData = function(newData){
 		this.data = newData;
 		if(typeof newData !== 'object'){
 			return this;
@@ -441,11 +456,12 @@ function Collection(obj){
 		return newItem;
 	};
 
-	Model.on = function(event, cb){
+	Model.prototype.on = function(event, cb){
 		var events = event.split(',');
 		var that = this;
 		events.forEach(function(e){
 			var eventName = e.trim();
+
 			if(!that.callbacks){
 				that.callbacks = {}
 			}
@@ -453,10 +469,17 @@ function Collection(obj){
 				that.callbacks[eventName] = []
 			}
 			that.callbacks[eventName].push(cb);
-		});
+
+			var propertiesChain = eventName.split('.');
+			if(propertiesChain.length > 1){
+				var prop = propertiesChain[0];
+				propertiesChain.splice(0, 1);
+				this[prop].on(propertiesChain.join('.'), cb);
+			}
+		}.bind(this));
 	};
 
-	Model.trigger = function(event){
+	Model.prototype.trigger = function(event){
 		if(!this.callbacks || !this.callbacks[event]){
 			return;
 		}
@@ -464,84 +487,86 @@ function Collection(obj){
 			this.callbacks[event][i]();
 		}
 	};
-
-	http().get('/auth/oauth2/userinfo').done(function(data){
-		Model.me = data;
-		Model.trigger('me.change');
-	});
 }());
 
-Behaviours = (function(){
-	var applicationsBehaviours = {};
-	return {
-		register: function(application, apply){
-			applicationsBehaviours[application].apply = apply;
-		},
-		findBehaviours: function(resource){
-			if(!resource.application){
-				throw "Application property is undefined";
-			}
-			if(applicationsBehaviours[resource.application]){
-				if(!applicationsBehaviours[resource.application].loaded){
-					applicationsBehaviours[resource.application].waiting.push(resource);
+function bootstrap(){
+	http().get('/auth/oauth2/userinfo').done(function(data){
+		model.me = data;
+		model.trigger('me.change');
+	});
+
+	Behaviours = (function(){
+		var applicationsBehaviours = {};
+		return {
+			register: function(application, apply){
+				applicationsBehaviours[application].apply = apply;
+			},
+			findBehaviours: function(resource){
+				if(!resource.application){
+					throw "Application property is undefined";
+				}
+				if(applicationsBehaviours[resource.application]){
+					if(!applicationsBehaviours[resource.application].loaded){
+						applicationsBehaviours[resource.application].waiting.push(resource);
+					}
+					else{
+						applicationsBehaviours[resource.application].apply(resource);
+					}
 				}
 				else{
-					applicationsBehaviours[resource.application].apply(resource);
+					applicationsBehaviours[resource.application] = { waiting: [] };
+					applicationsBehaviours[resource.application].waiting.push(resource);
+
+					loader.asyncLoad('/' + resource.application + '/public/js/behaviours.js', function(){
+						applicationsBehaviours[resource.application].waiting.forEach(function(resource){
+							applicationsBehaviours[resource.application].apply(resource);
+						});
+						model.trigger('resources.change');
+					})
 				}
 			}
-			else{
-				applicationsBehaviours[resource.application] = { waiting: [] };
-				applicationsBehaviours[resource.application].waiting.push(resource);
-
-				loader.asyncLoad('/' + resource.application + '/public/js/behaviours.js', function(){
-					applicationsBehaviours[resource.application].waiting.forEach(function(resource){
-						applicationsBehaviours[resource.application].apply(resource);
-					});
-					Model.trigger('resources.change');
-				})
-			}
 		}
-	}
-}());
+	}());
 
-function Resource(data){
-	this.findBehaviours = function(){
-		Behaviours.findBehaviours(this);
+	function Resource(data){
+		this.findBehaviours = function(){
+			Behaviours.findBehaviours(this);
+		};
+	}
+
+	Resource.prototype.struct = {
+		id: 'id',
+		application: 'application'
 	};
-}
 
-Resource.prototype.struct = {
-	id: 'id',
-	application: 'application'
-};
-
-Resource.prototype.structure = function(struct){
-	for(var property in struct){
-		this.struct[property] = struct[property];
-	}
-};
-
-Model.collection(Resource, {
-	push: function(item){
-		for(var property in Resource.struct){
-			item[property] = item[Resource.struct[property]];
+	Resource.prototype.structure = function(struct){
+		for(var property in struct){
+			this.struct[property] = struct[property];
 		}
-		var obj = new Resource(item);
-		for(var property in item){
-			obj[property] = item[property];
-		}
-		obj.findBehaviours();
-		this.all.push(obj, false);
-	},
-	load: function(data, cb){
-		var that = this;
-		that.all = [];
-		data.forEach(function(item){
-			var newObj = that.push(item, false);
-			if(typeof cb === 'function'){
-				cb(newObj);
+	};
+
+	model.collection(Resource, {
+		push: function(item){
+			for(var property in Resource.struct){
+				item[property] = item[Resource.struct[property]];
 			}
-		});
-		this.trigger('change');
-	}
-});
+			var obj = new Resource(item);
+			for(var property in item){
+				obj[property] = item[property];
+			}
+			obj.findBehaviours();
+			this.all.push(obj, false);
+		},
+		load: function(data, cb){
+			var that = this;
+			that.all = [];
+			data.forEach(function(item){
+				var newObj = that.push(item, false);
+				if(typeof cb === 'function'){
+					cb(newObj);
+				}
+			});
+			this.trigger('change');
+		}
+	});
+}

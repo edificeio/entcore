@@ -30,10 +30,10 @@ function Timeline($scope, date, model, lang){
 	};
 
 	$scope.removeFilter = function(){
-		if(Model.notificationTypes.noFilter){
-			Model.notificationTypes.deselectAll();
+		if(model.notificationTypes.noFilter){
+			model.notificationTypes.deselectAll();
 		}
-		Model.notifications.sync();
+		model.notifications.sync();
 	};
 }
 

@@ -1,5 +1,5 @@
 (function(){
-	var Calendar = Model.widgets.findWidget('calendar');
+	var Calendar = model.widgets.findWidget('calendar');
 
 	Calendar.today = function(format){
 		return moment().format(format);
@@ -57,5 +57,5 @@
 		}).name);
 	}
 
-	Model.widgets.apply();
+	model.widgets.apply();
 }());

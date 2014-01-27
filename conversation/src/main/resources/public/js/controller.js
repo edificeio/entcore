@@ -11,13 +11,13 @@ routes.define(function($routeProvider){
 		})
 });
 
-function Conversation($scope, date, notify, route){
+function Conversation($scope, date, notify, route, model){
 	route({
 		readMail: function(params){
-			$scope.viewMail(new Mail({ id: params.mailId }));
+			$scope.readMail(new Mail({ id: params.mailId }));
 		},
 		writeMail: function(params){
-			Model.folders.openFolder('inbox');
+			model.folders.openFolder('inbox');
 			new User({ id: params.userId }).findData(function(){
 				$scope.openView('write-mail', 'main');
 				$scope.addUser(this);
@@ -26,8 +26,8 @@ function Conversation($scope, date, notify, route){
 	});
 
 
-	Model.folders.systemFolders.forEach(function(folderName){
-		Model.folders[folderName].on('mails.change', function(e){
+	model.folders.systemFolders.forEach(function(folderName){
+		model.folders[folderName].on('mails.change', function(e){
 			$scope.$apply(folderName);
 			$scope.$apply('newItem');
 			$scope.$apply('mail');
@@ -54,15 +54,15 @@ function Conversation($scope, date, notify, route){
 
 	$scope.openFolder = function(folderName, cb){
 		if(!folderName){
-			folderName = Model.folders.current.folderName;
+			folderName = model.folders.current.folderName;
 		}
 		$scope.mail = undefined;
-		Model.folders.openFolder(folderName, cb);
+		model.folders.openFolder(folderName, cb);
 		$scope.openView(folderName, 'main');
 	};
 
 	$scope.nextPage = function(){
-		Model.folders.current.nextPage();
+		model.folders.current.nextPage();
 	}
 
 	$scope.selection = {
@@ -71,17 +71,17 @@ function Conversation($scope, date, notify, route){
 
 	$scope.switchSelectAll = function(){
 		if($scope.selection.selectAll){
-			Model.folders.current.mails.selectAll();
+			model.folders.current.mails.selectAll();
 		}
 		else{
-			Model.folders.current.mails.deselectAll();
+			model.folders.current.mails.deselectAll();
 		}
 	};
 
 	function setCurrentMail(mail){
-		Model.folders.current.mails.current = mail;
-		Model.folders.current.mails.deselectAll();
-		Model.folders.current.mails.current.selected = true;
+		model.folders.current.mails.current = mail;
+		model.folders.current.mails.deselectAll();
+		model.folders.current.mails.current.selected = true;
 		$scope.mail = mail;
 	}
 
@@ -93,7 +93,7 @@ function Conversation($scope, date, notify, route){
 
 	$scope.refresh = function(){
 		notify.info('updating');
-		Model.folders.current.mails.refresh();
+		model.folders.current.mails.refresh();
 	}
 
 	$scope.readMail = function(mail){
@@ -147,7 +147,7 @@ function Conversation($scope, date, notify, route){
 		$scope.newItem.parentConversation = $scope.mail;
 		setMailContent('reply');
 		$scope.mail.displayNames.forEach(function(user){
-			if(user[0] === Model.me.userId){
+			if(user[0] === model.me.userId){
 				return;
 			}
 			$scope.addUser(new User({ id: user[0], displayName: user[1] }));
@@ -163,7 +163,7 @@ function Conversation($scope, date, notify, route){
 	$scope.saveDraft = function(){
 		notify.info('draft.saved');
 
-		Model.folders.draft.saveDraft($scope.newItem);
+		model.folders.draft.saveDraft($scope.newItem);
 		$scope.openFolder();
 	};
 
@@ -188,11 +188,11 @@ function Conversation($scope, date, notify, route){
 	};
 
 	$scope.restore = function(){
-		Model.folders.trash.mails.restoreMails();
+		model.folders.trash.mails.restoreMails();
 	};
 
 	$scope.removeSelection = function(){
-		Model.folders.current.mails.removeMails();
+		model.folders.current.mails.removeMails();
 	};
 
 	$scope.clearSearch = function(){
@@ -210,7 +210,7 @@ function Conversation($scope, date, notify, route){
 				return new User({ id: item[0], displayName: item[1] });
 			});
 		}
-		$scope.users.foundCC = Model.users.find($scope.users.searchCC, include, exclude);
+		$scope.users.foundCC = model.users.find($scope.users.searchCC, include, exclude);
 	};
 
 	$scope.updateFoundUsers = function(){
@@ -221,7 +221,7 @@ function Conversation($scope, date, notify, route){
 				return new User({ id: item[0], displayName: item[1] });
 			});
 		}
-		$scope.users.found = Model.users.find($scope.users.search, include, exclude);
+		$scope.users.found = model.users.find($scope.users.search, include, exclude);
 	};
 
 	$scope.addUser = function(user){
@@ -254,8 +254,8 @@ function Conversation($scope, date, notify, route){
 
 	$scope.lang = lang;
 	$scope.notify = notify;
-	$scope.folders = Model.folders;
-	$scope.users = { list: Model.users, search: '', found: [], foundCC: [] };
+	$scope.folders = model.folders;
+	$scope.users = { list: model.users, search: '', found: [], foundCC: [] };
 
 	$scope.newItem = new Mail();
 

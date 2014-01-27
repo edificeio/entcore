@@ -106,5 +106,6 @@
 	"prive" : "Only you can see this information",
 	"public" : "Everyone can see this information",
 	"birthday.title": "Birthdays",
-	"nobirthday": "No birthday this month!"
+	"nobirthday": "No birthday this month!",
+	"noresult": "No result found!"
 }

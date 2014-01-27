@@ -16,19 +16,23 @@ function User(data){
 
 			that.selected = true;
 			that.updateData(data.result[0]);
-			Model.users.setCurrent(that);
+			model.directory.users.setCurrent(that);
+			model.myClass.users.setCurrent(that);
 		});
 	};
 
 	this.deselect = function(){
 		this.selected = false;
-		Model.users.setCurrent(undefined);
+		model.directory.users.setCurrent(undefined);
+		model.myClass.users.setCurrent(undefined);
 	};
 }
 
-Model.build = function(){
+function MyClass(){
+	this.name = '';
+
 	this.collection(User, {
-		loadClass: function(){
+		sync: function(){
 			var that = this;
 			http().get('/userbook/api/class').done(function(data){
 				that.load(_.map(data.result, function(user){
@@ -37,21 +41,6 @@ Model.build = function(){
 					}
 					return user;
 				}));
-			});
-		},
-		searchDirectory: function(search){
-			var that = this;
-			var searchTerm = lang.removeAccents(search).toLowerCase();
-			this.loading = true;
-			http().get('/userbook/api/search?name=' + searchTerm).done(function(result){
-				that.loading = false;
-				that.load(_.map(result.result, function(user){
-					if(!user.mood){
-						user.mood = 'default';
-					}
-					return user;
-				}));
-
 			});
 		},
 		match: function(search){
@@ -72,4 +61,33 @@ Model.build = function(){
 			});
 		}
 	})
+}
+
+function Directory(){
+	this.collection(User, {
+		match: function(){
+			return this.all;
+		},
+		searchDirectory: function(search){
+			var that = this;
+			var searchTerm = lang.removeAccents(search).toLowerCase();
+			this.loading = true;
+			http().get('/userbook/api/search?name=' + searchTerm).done(function(result){
+				that.loading = false;
+				that.load(_.map(result.result, function(user){
+					if(!user.mood){
+						user.mood = 'default';
+					}
+					return user;
+				}));
+
+			});
+		}
+	})
+}
+
+model.build = function(){
+	this.makeModels([User, MyClass, Directory]);
+	this.myClass = new MyClass();
+	this.directory = new Directory();
 };

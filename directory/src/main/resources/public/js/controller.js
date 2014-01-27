@@ -17,8 +17,8 @@ routes.define(function($routeProvider){
 		})
 });
 
-function Directory($scope, route){
-	$scope.users = Model.users;
+function DirectoryController($scope, model, route){
+	$scope.users = [];
 	$scope.lang = lang;
 	$scope.search = {
 		text: '',
@@ -35,7 +35,7 @@ function Directory($scope, route){
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
-	}
+	};
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){
@@ -54,37 +54,43 @@ function Directory($scope, route){
 
 	route({
 		viewUser: function(params){
-			Model.users.deselectAll();
 			new User({ id: params.userId }).select();
 
 			$scope.openView('profile', 'page');
 			$scope.title = 'profile';
 		},
 		directory: function(){
-			Model.users.all = [];
+			$scope.users = model.directory.users;
 			$scope.openView('directory', 'page');
 			$scope.viewsContainers.main = 'empty';
 			$scope.title = 'directory';
 		},
 		myClass: function(){
+			$scope.users = model.myClass.users;
+			model.myClass.sync();
 			$scope.openView('class', 'page');
-			Model.users.loadClass();
 			$scope.title = 'class';
 		}
 	});
 
 	$scope.searchDirectory = function(){
-		Model.users.all = [];
-		Model.users.searchDirectory($scope.search.field);
+		model.directory.users.all = [];
+		model.directory.users.searchDirectory($scope.search.field);
 		$scope.openView('list-view', 'main');
 	};
 
 	$scope.selectFirstUser = function(){
-		$scope.selectUser(Model.users.first());
+		if(model.directory.users.length){
+			$scope.selectUser(model.directory.users.first());
+		}
+		else{
+			$scope.selectUser(model.myClass.users.first());
+		}
 	};
 
 	$scope.deselectUser = function(){
-		Model.users.current.deselect();
+		model.directory.users.current.deselect();
+		model.myClass.users.current.deselect();
 		$scope.openView('list-view', 'main');
 	};
 
@@ -100,8 +106,8 @@ function Directory($scope, route){
 			window.scrollTo(0, 200);
 		}
 
-
-		Model.users.deselectAll();
+		model.directory.users.deselectAll();
+		model.myClass.users.deselectAll();
 		user.select();
 
 		$scope.openView('user-selected', 'main');
@@ -112,7 +118,7 @@ function Directory($scope, route){
 		return colorsMatch[type.toLowerCase()];
 	};
 
-	Model.on('users.change', function(e){
+	model.on('directory.users.change, myClass.users.change', function(e){
 		if(!$scope.$$phase){
 			$scope.$apply('users');
 		}
@@ -121,8 +127,13 @@ function Directory($scope, route){
 	$scope.openView('list-view', 'main');
 }
 
-function ClassAdmin($scope){
-	$scope.users = Model.users;
+function ClassAdmin($scope, model){
+	model.myClass.sync();
+	model.on('myClass.users.change', function(){
+		$scope.$apply('users');
+	});
+
+	$scope.users = model.users;
 
 	$scope.display = {
 		show: 'pupils'

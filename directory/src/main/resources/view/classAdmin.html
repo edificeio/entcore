@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-controller="ClassAdmin">
 <head>
-	<title>Paramétrage de la classe</title>
+	<title translate content="classAdmin.title"></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 	<script src="/directory/public/js/model.js" type="text/javascript"></script>
@@ -10,13 +10,13 @@
 <script type="text/ng-template" id="empty"></script>
 <body>
 <portal>
-	<h1 data-reload><i role="admin"></i> Paramétrage de la classe</h1>
+	<h1 data-reload><i role="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
 	<section class="row">
-		<h1 class="text">Paramètres généraux</h1>
+		<h1 class="text" translate content="classAdmin.globalParams"></h1>
 		<article class="twelve cell">
 			<div class="row reduce-block-three medium-text">
-				<div class="two cell reduce-block-eight">Nom de la classe</div>
+				<div class="two cell reduce-block-eight" translate content="classAdmin.className"></div>
 				<div class="ten cell reduce-block-two">
 					<input type="text" ng-model="myClass.name" class="twelve cell inline-editing" />
 				</div>
