@@ -32,7 +32,8 @@ public class DefaultSchoolService implements SchoolService {
 				"s<-[:DEPENDS]-(spg:ProfileGroup:Visible:SchoolProfileGroup:SchoolStudentGroup {studentGroup})," +
 				"s<-[:DEPENDS]-(tpg:ProfileGroup:Visible:SchoolProfileGroup:SchoolTeacherGroup {teacherGroup})," +
 				"s<-[:DEPENDS]-(rpg:ProfileGroup:Visible:SchoolProfileGroup:SchoolRelativeGroup {relativeGroup})," +
-				"s<-[:DEPENDS]-(ppg:ProfileGroup:Visible:SchoolProfileGroup:SchoolPrincipalGroup {principalGroup})";
+				"s<-[:DEPENDS]-(ppg:ProfileGroup:Visible:SchoolProfileGroup:SchoolPrincipalGroup {principalGroup}) " +
+				"RETURN s.id as id";
 		final String schoolName = s.getString("name");
 		JsonObject params = new JsonObject()
 				.putObject("props", s)
