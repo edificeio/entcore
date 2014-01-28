@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ClassService {
 
-	List<String> CLASS_FIELDS = Arrays.asList("id", "name");
+	List<String> CLASS_FIELDS = Arrays.asList("id", "name", "level");
 
 	List<String> CLASS_REQUIRED_FIELDS = Arrays.asList("id", "name");
 
