@@ -15,4 +15,6 @@ public interface SchoolService {
 
 	void create(JsonObject school, Handler<Either<String, JsonObject>> result);
 
+	void get(String id, Handler<Either<String, JsonObject>> result);
+
 }

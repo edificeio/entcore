@@ -2,6 +2,7 @@ package org.entcore.directory.controllers;
 
 import static edu.one.core.infra.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
@@ -115,6 +116,12 @@ public class DirectoryController extends Controller {
 				schoolService.create(school, defaultResponseHandler(request, 201));
 			}
 		});
+	}
+
+	@SecuredAction("directory.school.get")
+	public void getSchool(final HttpServerRequest request) {
+		String schoolId = request.params().get("id");
+		schoolService.get(schoolId, notEmptyResponseHandler(request));
 	}
 
 	@SecuredAction("directory.class.create")

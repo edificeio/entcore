@@ -53,6 +53,12 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query, params, validUniqueResultHandler(result));
 	}
 
+	@Override
+	public void get(String id, Handler<Either<String, JsonObject>> result) {
+		String query = "match (s:`School`) where s.id = {id} return s.id as id, s.UAI as UAI, s.name as name";
+		neo.execute(query, new JsonObject().putString("id", id), validUniqueResultHandler(result));
+	}
+
 	private boolean validationError(JsonObject c,
 		Handler<Either<String, JsonObject>> result, String ... params) {
 		if (c == null) {

@@ -42,6 +42,7 @@ public class Directory extends Server {
 				.post("/api/user", "createUser")
 				.get("/api/export", "export")
 				.post("/school", "createSchool")
+				.get("/school/:id", "getSchool")
 				.post("/class/:schoolId", "createClass");
 
 		userBookController.get("/mon-compte", "monCompte")

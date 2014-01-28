@@ -31,6 +31,26 @@ public class DefaultResponseHandler {
 		};
 	}
 
+	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
+			final HttpServerRequest request) {
+		return new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+						Renders.renderJson(request, event.right().getValue(), 200);
+					} else {
+						request.response().setStatusCode(404).end();
+					}
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					Renders.renderJson(request, error, 400);
+				}
+			}
+		};
+	}
+
 	public static Handler<Either<String, JsonArray>> arrayResponseHandler(final HttpServerRequest request) {
 		return new Handler<Either<String, JsonArray>>() {
 			@Override
