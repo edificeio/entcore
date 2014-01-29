@@ -53,7 +53,7 @@
 							<th translate content="directory.firstName"></th>
 							<th translate content="directory.birthdate"></th>
 							<th translate content="directory.login"></th>
-							<th></th>
+							<th translate content="directory.activation"></th>
 						</tr>
 						</thead>
 						<tbody>
@@ -68,7 +68,7 @@
 						<tr ng-class="{ checked: user.selected }" ng-repeat="user in users.where({ type: display.show })">
 							<td><input type="checkbox" ng-model="user.selected" /></td>
 							<td class="action-cell"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /></td>
-							<td colspan="2">[[user.displayName]]</td>
+							<td colspan="2"><a href="">[[user.displayName]]</a></td>
 							<td>[[shortDate()]]</td>
 							<td>[[user.login]]</td>
 							<td><em class="medium-importance right-magnet" translate content="directory.activated"></em></td>

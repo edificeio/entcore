@@ -124,6 +124,7 @@
 	"directory.lastName": "Nom",
 	"directory.birthdate": "Naissance",
 	"directory.login": "Identifiant",
+	"directory.activation": "Activation",
 	"directory.add": "Ajouter",
 	"directory.activated": "Activé",
 	"directory.resetPassword": "Réinitialiser le mot de passe"

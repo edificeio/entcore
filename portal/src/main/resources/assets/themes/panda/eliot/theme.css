@@ -566,6 +566,10 @@ iframe {
 body.app {
   margin: 0;
 }
+textarea {
+  max-width: 100%;
+  border: 1px solid #ccc;
+}
 nav.vertical {
   padding-right: 10px;
 }
@@ -575,7 +579,7 @@ nav.vertical h1 {
 nav.vertical ul {
   margin-top: 0;
   width: 99%;
-  padding-left: 0;
+  padding-left: 10px;
 }
 nav.vertical ul li {
   float: none;
@@ -1455,6 +1459,18 @@ ul.icons-view.two-cols li.element {
   margin-top: -1px;
   border: 1px solid;
   padding: 6px;
+}
+.small-text {
+  font-size: 12px;
+}
+.small-text a {
+  font-size: 12px;
+}
+.medium-text {
+  font-size: 14px;
+}
+.medium-text a {
+  font-size: 14px;
 }
 .file-selector {
   cursor: pointer;
@@ -4639,18 +4655,6 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 .drop-down ul li:hover {
   background: #3889c1;
   color: #fff;
-}
-.small-text {
-  font-size: 12px;
-}
-.small-text a {
-  font-size: 12px;
-}
-.medium-text {
-  font-size: 14px;
-}
-.medium-text a {
-  font-size: 14px;
 }
 .autocomplete em {
   color: #666;

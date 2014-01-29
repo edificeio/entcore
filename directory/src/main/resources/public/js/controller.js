@@ -89,8 +89,12 @@ function DirectoryController($scope, model, route){
 	};
 
 	$scope.deselectUser = function(){
-		model.directory.users.current.deselect();
-		model.myClass.users.current.deselect();
+		if(model.directory.users.current){
+			model.directory.users.current.deselect();
+		}
+		if(model.myClass.users.current){
+			model.myClass.users.current.deselect();
+		}
 		$scope.openView('list-view', 'main');
 	};
 

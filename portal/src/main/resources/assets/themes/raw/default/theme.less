@@ -98,7 +98,7 @@ i[role=tools]{
 	.icon(glyphicons_280_settings, 25px);
 }
 
-@header-height: 70px;
+@header-height: 40px;
 
 .container{
 	header.main{
@@ -120,6 +120,10 @@ i[role=tools]{
 }
 
 .birthday{
+	background: #fff;
+	h1{
+		text-align: center;
+	}
 	border: 1px solid #ccc;
 	.content{
 		border: none;
@@ -137,14 +141,18 @@ i[role=tools]{
 			.top{
 				display: none;
 			}
+			.bottom{
+				margin-top: 0px;
+			}
 		}
 	}
 }
 
 .calendar{
+	padding-bottom: 35% !important;
 	border: 1px solid #ccc;
 	border-bottom: 0;
-	background: #eee;
+	background: #fff;
 	.current-month-header{
 		top: 0;
 	}
@@ -152,7 +160,7 @@ i[role=tools]{
 		border-radius: 0px;
 		border: 1px solid #ccc;
 		border-top: 0;
-		background: #eee;
+		background: #fff;
 		margin-top: 18%;
 		.day{
 			font-size: 10px;
@@ -184,5 +192,267 @@ i[role=tools]{
 			margin-top: -10px;
 			padding-top: 6px;
 		}
+	}
+}
+
+a{
+	color: rgb(104, 104, 167);
+	text-decoration: none;
+}
+
+ul.icons-tabs{
+	right: 0px;
+	li{
+		border-radius: 25px;
+	}
+}
+
+.navbar{
+	.vertical-gradient(#000, #222);
+	width: 100%;
+	.welcome-message{
+		display: none;
+	}
+	img{
+		padding: 0px;
+	}
+}
+
+.tag{
+	color: #ccc;
+	padding-left: 10px;
+}
+
+button, input[type=button], input[type=submit], a.button{
+	border: 1px solid #ccc;
+	padding: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+	background: linear-gradient(#333, #444);
+	color: #eee;
+	border-radius: 3px;
+}
+
+button.cancel, input[type=button].cancel{
+	.vertical-gradient(#ccc, #eee);
+	color: #333;
+}
+
+nav.vertical{
+	ul{
+		li{
+			a.selected{
+				background: transparent;
+				font-style: italic;
+				color: #333;
+				font-size: 16px;
+			}
+		}
+	}
+}
+
+nav.horizontal{
+	right: 10px;
+	bottom: 20px;
+	a{
+		color: #fff;
+	}
+}
+
+h1, h2, h3, h4, h5{
+	a{
+		color: #333;
+	}
+	color: #333;
+	font-weight: normal;
+	letter-spacing: 2px;
+	font-family: serif;
+	margin-tp: 5px;
+	margin-bottom: 5px;
+}
+
+.display-buttons{
+	display: none;
+}
+
+section.cell{
+	float: right;
+	padding-left: 10px;
+}
+
+section .contextual-buttons{
+	box-shadow: -2px -2px 5px #fff;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	background: #ccc;
+	line-height: 20px;
+	z-index: 30;
+	padding-top: 5px;
+	.action-buttons{
+		line-height: 20px;
+		margin-bottom: 5px;
+		button{
+			background: transparent;
+			color: #333;
+			font-style: italic;
+			font-family: serif;
+			font-size: 16px;
+		}
+		button:hover{
+			color:#fff;
+		}
+	}
+}
+
+table{
+	td{
+		padding: 5px;
+	}
+}
+
+.toggle-bottom{
+	margin: 0;
+	width: 150px;
+	top: 93px;
+	height: 230px;
+	opacity: 1;
+	background: #eee;
+	position: absolute;
+	left: auto;
+	right: 0;
+	button{
+		background: transparent;
+		border: 0;
+		color: rgb(104, 104, 167);
+		font-size: 14px;
+		padding-left: 30px;
+	}
+	button:hover{
+		font-size: 16px;
+		color: #333;
+		font-style: italic;
+	}
+	.run-transition(opacity);
+	.four;
+	.toggle{
+		width: 130px;
+	}
+}
+
+.toggle-bottom.hide{
+	opacity: 0;
+	.run-transition(opacity);
+}
+
+article{
+	background: #fff;
+	border-radius: 3px;
+}
+
+body{
+	section.main{
+		background: #eee;
+	}
+}
+
+thead{
+	background: linear-gradient(#eee, #ddd);
+	font-size: 12px;
+	th{
+		padding: 5px;
+	}
+}
+
+div[ng-controller=Widgets]{
+	display: none;
+}
+
+.icons-view{
+	margin-top: 0;
+	.element{
+		padding-bottom: 20px;
+		float: none;
+		a{
+			text-align: left;
+		}
+	}
+}
+
+.tabs{
+	header, section{
+		border-color: #ccc;
+	}
+	header{
+		font-family: serif;
+		color: rgb(104, 104, 167);
+	}
+	header.selected{
+		font-style: italic;
+		font-size: 16px;
+		color: #000;
+	}
+	section{
+		background: #fff;
+	}
+}
+
+.toggle-panel{
+	opacity: 1;
+	.run-transition(opacity);
+	background: #fff;
+	border: 1px solid #ccc;
+	right: 0px;
+	top: 53px;
+	h2{
+		display: none;
+	}
+}
+
+.toggle-panel.hide{
+	width: 300px;
+	opacity: 0;
+	.run-transition(opacity);
+}
+
+.filters{
+	position: absolute;
+	right: 0;
+	top: -50px;
+	li{
+		display: block;
+		float: right;
+	}
+	li:first-child{
+		display: none;
+	}
+}
+
+a:hover{
+	color: #000;
+}
+
+section.lightbox-backdrop{
+	background: #fff;
+}
+
+.lightbox-window{
+	border: 1px solid #ccc;
+	.border-radius(3px);
+	box-shadow: 3px 3px 3px #ccc;
+}
+
+nav.vertical{
+	article{
+		background: transparent;
+		border: none;
+	}
+	article.selected{
+		background: transparent;
+		h3{
+			font-size: 18px;
+			font-style: italic;
+		}
+
 	}
 }

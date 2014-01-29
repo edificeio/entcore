@@ -118,6 +118,7 @@
 	"directory.firstName": "First name",
 	"directory.lastName": "Last name",
 	"directory.birthdate": "Birth date",
+	"directory.activation": "Activation",
 	"directory.login": "Identifier",
 	"directory.add": "Add",
 	"directory.activated": "Activated",
