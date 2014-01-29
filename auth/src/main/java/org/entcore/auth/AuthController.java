@@ -14,7 +14,7 @@ import java.util.Map;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.common.validation.StringValidation;
-import org.entcore.security.ActionType;
+import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -56,7 +56,7 @@ import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 public class AuthController extends Controller {
 

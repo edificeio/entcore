@@ -36,7 +36,7 @@ import org.entcore.directory.users.UserQueriesBuilder;
 import edu.one.core.infra.Controller;
 import org.entcore.common.neo4j.Neo;
 import edu.one.core.infra.security.BCrypt;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 
 public class DirectoryController extends Controller {

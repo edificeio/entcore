@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.security.ActionType;
+import fr.wseduc.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -22,7 +22,7 @@ import edu.one.core.infra.Server;
 import edu.one.core.infra.http.HttpClientUtils;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 public class UserBookController extends Controller {
 

@@ -23,7 +23,7 @@ import org.entcore.common.neo4j.Neo;
 import edu.one.core.infra.Server;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 public class CommunicationController extends Controller {
 

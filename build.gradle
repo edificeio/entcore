@@ -65,7 +65,7 @@ project(':common') {
 
 project(':admin') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -74,7 +74,7 @@ project(':admin') {
 
 project(':app-registry') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -83,7 +83,7 @@ project(':app-registry') {
 
 project(':auth') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -93,7 +93,7 @@ project(':auth') {
 
 project(':communication') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -108,7 +108,7 @@ project(':dataDictionary') {
 
 project(':directory') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile project(':dataDictionary')
     compile "edu.one.core:web-utils:$webUtilsVersion"
@@ -119,7 +119,7 @@ project(':directory') {
 
 project(':history') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
   }
@@ -133,7 +133,7 @@ project(':infra') {
 
 project(':portal') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
   }
@@ -148,7 +148,7 @@ project(':sync') {
 
 project(':timeline') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -157,7 +157,7 @@ project(':timeline') {
 
 project(':blog') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -166,7 +166,7 @@ project(':blog') {
 
 project(':workspace') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
@@ -177,7 +177,7 @@ project(':workspace') {
 
 project(':conversation') {
   dependencies {
-    provided project(':processor')
+    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"

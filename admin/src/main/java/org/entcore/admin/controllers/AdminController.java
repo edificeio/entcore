@@ -8,7 +8,7 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.platform.Container;
 
 import edu.one.core.infra.Controller;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 public class AdminController extends Controller {
 

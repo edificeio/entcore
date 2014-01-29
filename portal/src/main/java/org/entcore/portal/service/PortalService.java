@@ -9,8 +9,8 @@ import edu.one.core.infra.http.StaticResource;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.portal.utils.ThemeUtils;
-import org.entcore.security.ActionType;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 
 import java.io.IOException;
 import java.io.Writer;

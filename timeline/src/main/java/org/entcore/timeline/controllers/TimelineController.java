@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import edu.one.core.infra.Utils;
-import org.entcore.security.ActionType;
+import fr.wseduc.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -18,7 +18,7 @@ import org.vertx.java.platform.Container;
 import edu.one.core.infra.Controller;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 

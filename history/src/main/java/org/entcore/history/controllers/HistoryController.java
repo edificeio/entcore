@@ -1,7 +1,7 @@
 package org.entcore.history.controllers;
 
 import edu.one.core.infra.Controller;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 import java.util.Map;
 

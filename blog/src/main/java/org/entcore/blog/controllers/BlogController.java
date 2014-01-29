@@ -17,8 +17,8 @@ import java.util.*;
 
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.ActionType;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;

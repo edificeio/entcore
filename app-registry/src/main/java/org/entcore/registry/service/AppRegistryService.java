@@ -22,7 +22,7 @@ import edu.one.core.infra.Server;
 import edu.one.core.infra.Utils;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
 
 public class AppRegistryService extends Controller {
 
