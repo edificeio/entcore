@@ -2289,7 +2289,7 @@ a {
   text-decoration: none;
 }
 ul.icons-tabs {
-  right: 0px;
+  right: 255px;
 }
 ul.icons-tabs li {
   border-radius: 25px;
