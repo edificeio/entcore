@@ -14,6 +14,10 @@ public interface ClassService {
 
 	List<String> CLASS_REQUIRED_FIELDS = Arrays.asList("id", "name");
 
+	List<String> UPDATE_CLASS_FIELDS = Arrays.asList("level", "name");
+
 	void create(String schoolId, JsonObject c, Handler<Either<String, JsonObject>> result);
+
+	void update(String classId, JsonObject c, Handler<Either<String, JsonObject>> result);
 
 }

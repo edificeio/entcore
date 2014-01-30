@@ -2,6 +2,8 @@ package org.entcore.directory;
 
 import edu.one.core.infra.request.filter.UserAuthFilter;
 import edu.one.core.infra.security.oauth.DefaultOAuthResourceProvider;
+import org.entcore.common.neo4j.Neo;
+import org.entcore.directory.controllers.ClassController;
 import org.entcore.directory.controllers.DirectoryController;
 import org.entcore.directory.controllers.UserBookController;
 import edu.one.core.infra.Server;
@@ -9,6 +11,7 @@ import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.http.Renders;
 import org.entcore.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
+import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -31,6 +34,7 @@ public class Directory extends Server {
 
 		DirectoryController directoryController = new DirectoryController(vertx, container, rm, securedActions, config);
 		UserBookController userBookController = new UserBookController(vertx, container, rm, securedActions, config);
+		ClassController classController = new ClassController(vertx, container, rm, securedActions);
 
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
@@ -62,6 +66,8 @@ public class Directory extends Server {
 				.get("/person/birthday", "personBirthday")
 				.getWithRegEx(".*", "proxyDocument");
 
+		classController
+				.put("/class/:classId", "update");
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
@@ -80,6 +86,8 @@ public class Directory extends Server {
 		List<Set<Binding>> securedUriBinding = new ArrayList<>();
 		securedUriBinding.add(directoryController.securedUriBinding());
 		securedUriBinding.add(userBookController.securedUriBinding());
-		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), null, true));
+		securedUriBinding.add(classController.securedUriBinding());
+		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
+				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}
 }

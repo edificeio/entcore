@@ -8,9 +8,11 @@ import org.entcore.directory.services.ClassService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultClassService implements ClassService {
 
@@ -62,6 +64,32 @@ public class DefaultClassService implements ClassService {
 						"(c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:ClassRelativeGroup) " +
 						"CREATE UNIQUE cg-[:DEPENDS]->sg", p);
 		neo.executeTransaction(queries.build(), null, true, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void update(String classId, JsonObject classe, Handler<Either<String, JsonObject>> result) {
+		JsonObject c = Utils.validAndGet(classe, UPDATE_CLASS_FIELDS, Collections.<String>emptyList());
+		if (validationError(c, result, classId)) return;
+		String name = c.getString("name");
+		if (name != null && name.trim().isEmpty()) {
+			result.handle(new Either.Left<String, JsonObject>("invalid.empty.name"));
+			return;
+		}
+		String query;
+		c.putString("classId", classId);
+		if (name != null) {
+			query =
+					"match (c:`Class` { id : {classId}}), c<-[:DEPENDS]-(sg:ClassStudentGroup), " +
+					"c<-[:DEPENDS]-(tg:ClassTeacherGroup), c<-[:DEPENDS]-(rg:ClassRelativeGroup) " +
+					"SET " + nodeSetPropertiesFromJson("c", c) +
+					", sg.name = {studentName}, tg.name = {teacherName}, rg.name = {relativeName}";
+			c.putString("studentName", name + "_ELEVE");
+			c.putString("teacherName", name + "_ENSEIGNANT");
+			c.putString("relativeName", name + "_PERSRELELEVE");
+		} else {
+			query = "match (c:`Class` { id : {classId}) SET " + nodeSetPropertiesFromJson("c", c);
+		}
+		neo.execute(query, c, validUniqueResultHandler(result));
 	}
 
 	private boolean validationError(JsonObject c,
