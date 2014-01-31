@@ -259,6 +259,10 @@ nav.horizontal{
 	}
 }
 
+h1{
+	font-size: 2em;
+}
+
 h1, h2, h3, h4, h5{
 	a{
 		color: #333;
@@ -267,7 +271,7 @@ h1, h2, h3, h4, h5{
 	font-weight: normal;
 	letter-spacing: 2px;
 	font-family: serif;
-	margin-tp: 5px;
+	margin-top: 5px;
 	margin-bottom: 5px;
 }
 
@@ -281,17 +285,20 @@ section.cell{
 }
 
 section .contextual-buttons{
-	box-shadow: -2px -2px 5px #fff;
 	position: fixed;
 	bottom: 0;
-	left: 0;
-	background: #ccc;
-	line-height: 20px;
+	left: 25px;
+	.eight;
 	z-index: 30;
-	padding-top: 5px;
+	padding-right: 27px;
+
 	.action-buttons{
+		width: 100%;
+		box-shadow: -2px -2px 5px #fff;
+		background: #ccc;
+		padding-top: 5px;
 		line-height: 20px;
-		margin-bottom: 5px;
+		margin-bottom: 0px;
 		button{
 			background: transparent;
 			color: #333;
@@ -311,11 +318,11 @@ table{
 	}
 }
 
-.toggle-bottom{
+.toggle-buttons{
 	margin: 0;
 	width: 150px;
-	top: 93px;
-	height: 230px;
+	top: 120px;
+	height: 100%;
 	opacity: 1;
 	background: #eee;
 	position: absolute;
@@ -340,7 +347,7 @@ table{
 	}
 }
 
-.toggle-bottom.hide{
+.toggle-buttons.hide{
 	opacity: 0;
 	.run-transition(opacity);
 }

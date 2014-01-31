@@ -513,7 +513,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 					return true;
 				}
 			}
-		}
+		};
 
 		return checkSubFolders(container);
 	}
@@ -815,7 +815,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			});
 		});
 
-	}
+	};
 
 	$scope.to = {
 		id: ''

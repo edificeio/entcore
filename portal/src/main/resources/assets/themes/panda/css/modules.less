@@ -61,7 +61,7 @@ i[role=shared]{
 	}
 }
 
-.toggle-bottom{
+.toggle-buttons{
 	background: rgba(235, 244, 249, 0.8);
 	box-shadow: 0px -2px 6px rgba(20, 20, 20, 0.2);
 	.contextual-link{
@@ -137,6 +137,12 @@ i[role=storage]{
 
 i[role=conversation]{
 	.icon(conversation, 25px);
+	margin-top: 1px;
+	margin-right: 7px;
+}
+
+i[role=scrapbook]{
+	.icon(scrapbook, 25px);
 	margin-top: 1px;
 	margin-right: 7px;
 }
@@ -226,6 +232,10 @@ i[role=workspace-large]{
 	.icon(workspace-large, 135px);
 }
 
+i[role=admin-large]{
+	.icon(admin-large, 135px);
+}
+
 i[role=maxicours-large]{
 	.icon(maxicours-large, 135px);
 }
@@ -250,7 +260,7 @@ i[role=residence-artiste-large]{
 	.icon(residence-artiste-large, 135px);
 }
 
-i[role=notebook-large]{
+i[role=notebook-large], i[role=scrap-book-large]{
 	.icon(notebook-large, 135px);
 }
 
@@ -642,6 +652,7 @@ nav.vertical{
 		margin-right: 5px;
 	}
 	ul{
+		padding-left: 0;
 		ul.selected{
 			.run-transition(all, 250ms, ease-in-out)
 		}
@@ -1093,11 +1104,135 @@ a{
 			background: @pink;
 		}
 	}
+}
 
+.scrapbook{
+	background: url('../img/illustrations/scrapbook-monopage.png') no-repeat;
+	width: 900px;
+	height: 630px;
+	position: relative;
+	margin-top: 15px;
+	margin-bottom: 15px;
+
+	.flip-right, .flip-left{
+		width: 80px;
+		height: 80px;
+		z-index: 15;
+		background: #fff;
+		.border-radius(40px);
+		position: absolute;
+		top: 40%;
+		opacity: 0.5;
+		.run-transition(opacity);
+	}
+
+	.flip-right:hover, .flip-left:hover{
+		opacity: 1;
+		.run-transition(opacity);
+	}
+
+	.flip-right{
+		right: -30px;
+		.right-arrow{
+			width: 0;
+			height: 0;
+			border: 25px solid transparent;
+			border-left: 0;
+			color: @medium-blue;
+			border-left: 30px solid;
+			top: 15px;
+			left: 32px;
+			position: absolute;
+		}
+	}
+
+	.flip-left{
+		left: -30px;
+		.left-arrow{
+			width: 0;
+			height: 0;
+			border: 25px solid transparent;
+			border-left: 0;
+			color: @medium-blue;
+			border-right: 30px solid;
+			top: 15px;
+			left: 15px;
+			position: absolute;
+		}
+	}
+
+	.left-arrow.disabled, .right-arrow.disabled{
+		color: @medium-grey;
+	}
+
+	.cover, .drawing-zone{
+		overflow: hidden;
+		position: absolute;
+		.border-box;
+		left: 50px;
+		top: 10px;
+		width: 823px;
+		height: 598px;
+	}
+
+	.cover{
+		width: 838px;
+		text-align: center;
+		img{
+			max-width: 80%;
+			max-height: 50%;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+			border: 10px solid #fff;
+		}
+		h2{
+			font-family: KGJune;
+			text-transform: uppercase;
+			font-size: 27px;
+			color: #fff;
+		}
+		h1{
+			font-size: 40px;
+			color: #fff;
+		}
+	}
+
+	.drawing-zone{
+		article{
+			border: none;
+			background: transparent;
+			[contenteditable=true]{
+				padding: 0;
+			}
+		}
+
+		article.media{
+			border: 2px dashed #ccc;
+		}
+
+		i[role=close]{
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			z-index: 1
+		}
+		audio{
+			width: 100%;
+		}
+		img{
+			width: 100%;
+			height: 100%;
+		}
+	}
+}
+
+.scrapbook.cover{
+	background: url('../img/illustrations/scrapbook-monopage-cover.png') no-repeat;
 }
 
 .icons-view{
-	a.img-container{
+	.img-container{
 		height: 129px;
 		padding: 7px;
 		border: 1px solid #CCC;

@@ -326,6 +326,9 @@ function Collection(obj){
 			}
 
 			this.all.push(newItem);
+			newItem.on('change', function(){
+				this.trigger('change');
+			}.bind(this));
 			if(notify === false){
 				return;
 			}
@@ -372,6 +375,9 @@ function Collection(obj){
 		},
 		empty: function(){
 			return this.all.length === 0;
+		},
+		length: function(){
+			return this.all.length;
 		}
 	};
 
@@ -442,14 +448,14 @@ function Collection(obj){
 	};
 
 	Model.create = function(func, data){
-		var newItem = new func();
+		var newItem = new func(data);
 		newItem.data = data;
 		if(typeof data !== 'object'){
 			return newItem;
 		}
 
 		for(var property in data){
-			if(data.hasOwnProperty(property)){
+			if(data.hasOwnProperty(property) && !newItem.hasOwnProperty(property)){
 				newItem[property] = data[property];
 			}
 		}
@@ -489,10 +495,11 @@ function Collection(obj){
 	};
 }());
 
-function bootstrap(){
+function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		model.me = data;
 		model.trigger('me.change');
+		func();
 	});
 
 	Behaviours = (function(){
@@ -554,6 +561,7 @@ function bootstrap(){
 			for(var property in item){
 				obj[property] = item[property];
 			}
+
 			obj.findBehaviours();
 			this.all.push(obj, false);
 		},

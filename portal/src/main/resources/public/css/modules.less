@@ -397,6 +397,10 @@ section.selected, article.selected{
 	background: #ccc;
 }
 
+article.media{
+	border: 2px dashed #ccc;
+}
+
 .mood-widget{
 	padding-top: 25px;
 	margin-bottom: 25px;
@@ -528,9 +532,15 @@ a{
 	}
 }
 
+.contextual-editor.ck_editable{
+	border: 1px solid #ccc;
+	padding: 0;
+}
 
-.cke_editor_editor1, .cke_editor_editor2, .cke_chrome{
-	display: block !important;
+.block-editor{
+	.cke_chrome{
+		display: block !important;
+	}
 }
 
 .cke_tpl_list{
@@ -642,11 +652,11 @@ a{
 	.run-transition(width);
 }
 
-.toggle-bottom-spacer{
+.toggle-buttons-spacer{
 	margin-bottom: 50px;
 }
 
-.toggle-bottom{
+.toggle-buttons{
 	width: 960px;
 	background: #ccc;
 	left: 50%;
@@ -666,7 +676,18 @@ a{
 	}
 }
 
-.toggle-bottom.hide{
+[draggable]{
+	cursor: move;
+	[contenteditable=true]{
+		cursor: move;
+	}
+}
+
+files-picker{
+	display: none;
+}
+
+.toggle-buttons.hide{
 	height: 0px;
 	.run-transition(height);
 	overflow: hidden;

@@ -261,6 +261,36 @@ module.directive('fileInputChange', function($compile){
 	}
 });
 
+module.directive('filesPicker', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		template: '<input type="button" ng-transclude />',
+		scope: {
+			ngChange: '&',
+			ngModel: '='
+		},
+		link: function($scope, $element, $attributes){
+			$element.on('click', function(){
+				var fileSelector = $('<input />', {
+					type: 'file'
+				})
+					.hide()
+					.appendTo('body');
+
+				fileSelector.on('change', function(){
+					$scope.ngModel = fileSelector[0].files;
+					$scope.$apply();
+					$scope.$eval($scope.ngChange);
+					$scope.$apply();
+				});
+				fileSelector.click();
+			});
+		}
+	}
+})
+
 module.directive('filesInputChange', function($compile){
 	return {
 		restrict: 'A',
@@ -425,6 +455,18 @@ module.directive('portal', function($compile){
 	}
 });
 
+module.directive('skinSrc', function($compile){
+	return {
+		restrict: 'A',
+		scope: '&',
+		link: function($scope, $element, $attributes){
+			var skinPath = $('#theme').attr('href').split('/');
+			var path = skinPath.slice(0, skinPath.length - 2).join('/');
+			$element.attr('src', path + $attributes.skinSrc);
+		}
+	}
+})
+
 module.directive('localizedClass', function($compile){
 	return {
 		restrict: 'A',
@@ -564,7 +606,7 @@ module.directive('richTextEditor', function($compile){
 			watchCollection: '@',
 			notify: '='
 		},
-		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell">' +
+		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
@@ -594,6 +636,64 @@ module.directive('richTextEditor', function($compile){
 			}
 		}
 	}
+});
+
+module.directive('textEditor', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+			ngModel: '=',
+			watchCollection: '@',
+			notify: '='
+		},
+		template: '<div contenteditable="true" style="width: 100%; height: 100%;" class="contextual-editor"></div>',
+		compile: function($element, $attributes, $transclude){
+			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			if(window.CKEDITOR === undefined){
+				loader.syncLoad('ckeditor');
+				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+			}
+			return function($scope, $element, $attributes){
+				var editor = $element.find('[contenteditable=true]');
+				var instance = CKEDITOR.inline(editor[0],
+					{ customConfig: '/infra/public/ckeditor/text-config.js' }
+				);
+				CKEDITOR.on('instanceReady', function(ck){
+					editor.html($compile($scope.ngModel)($scope.$parent));
+				});
+
+				$scope.$watch('ngModel', function(newVal){
+					if(newVal !== editor.html()){
+						editor.html($compile($scope.ngModel)($scope.$parent));
+					}
+				});
+
+				$element.on('click', function(){
+					editor.focus();
+				});
+				$element.parent().on('startDrag', function(){
+					editor.blur();
+				});
+				editor.on('focus', function(){
+					$('.' + instance.id).width(editor.width());
+					editor.parent().parent().data('lock', true);
+					editor.css({ 'cursor': 'text' });
+				});
+				editor.on('blur', function(){
+					editor.parent().parent().data('lock', false);
+					editor.css({ 'cursor': '' });
+					$scope.ngModel = editor.html();
+					$scope.$apply('ngModel');
+				})
+				$element.on('removed', function(){
+					for(var instance in CKEDITOR.instances){
+						CKEDITOR.instances[instance].destroy()
+					}
+					$('.cke').remove();
+				})
+			}
+		}
+	}
 })
 
 module.directive('htmlEditor', function($compile){
@@ -605,7 +705,7 @@ module.directive('htmlEditor', function($compile){
 			ngModel: '=',
 			notify: '='
 		},
-		template: '<div class="twelve cell"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
+		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
@@ -709,12 +809,248 @@ module.directive('bottomScroll', function($compile){
 			})
 		}
 	}
-})
+});
+
+module.directive('resizable', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			$('body').css({
+				'-webkit-user-select': 'none',
+				'-moz-user-select': 'none',
+				'user-select' : 'none'
+			});
+			$element.on('mouseover', function(e){
+				$element.on('mousemove', function(e){
+					if($element.data('resizing') || $element.data('lock')){
+						return;
+					}
+					var mouse = { x: e.pageX, y: e.pageY };
+					var resizeLimits = {
+						horizontal:  $element.offset().left + $element.width() + 5 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15
+						,
+						vertical: $element.offset().top + $element.height() + 5 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
+					};
+					if(resizeLimits.vertical && resizeLimits.horizontal){
+						$element.css({ cursor: 'se-resize' });
+						$element.find('[contenteditable]').css({ cursor: 'se-resize' });
+					}
+					else if(resizeLimits.vertical){
+						$element.css({ cursor: 's-resize' });
+						$element.find('[contenteditable]').css({ cursor: 's-resize' });
+					}
+					else if(resizeLimits.horizontal){
+						$element.css({ cursor: 'e-resize' });
+						$element.find('[contenteditable]').css({ cursor: 'e-resize' });
+					}
+					else{
+						$element.css({ cursor: ''});
+						$element.find('[contenteditable]').css({ cursor: '' });
+					}
+				});
+				$element.on('mouseout', function(e){
+					$element.unbind('mousemove');
+				});
+			})
+			$element.on('mousedown.resize', function(e){
+				if($element.data('lock') === true){
+					return;
+				}
+				$element.trigger('startResize');
+				e.preventDefault();
+				var interrupt = false;
+				var mouse = { y: e.pageY, x: e.pageX };
+				var resizeLimits = {
+					horizontal:  $element.offset().left + $element.width() + 10 > mouse.x && mouse.x > $element.offset().left + $element.width() - 10
+					,
+					vertical: $element.offset().top + $element.height() + 10 > mouse.y && mouse.y > $element.offset().top + $element.height() - 10
+				};
+
+				if(resizeLimits.horizontal || resizeLimits.vertical){
+					$element.data('resizing', true);
+					$(window).unbind('mousemove.drag');
+					$(window).on('mousemove.resize', function(e){
+						$element.unbind("click");
+						mouse = {
+							y: e.pageY,
+							x: e.pageX
+						};
+					});
+
+					var resize = function(){
+						var newHeight = mouse.y - $element.offset().top;
+						var newWidth = mouse.x - $element.offset().left;
+						if(resizeLimits.horizontal && newWidth > 0){
+							$element.width(newWidth);
+						}
+						if(resizeLimits.vertical && newHeight > 0){
+							$element.height(newHeight);
+						}
+						$element.trigger('resizing');
+						if(!interrupt){
+							requestAnimationFrame(resize);
+						}
+					};
+					resize();
+
+					$('body').on('mouseup.resize', function(){
+						$element.trigger('stopResize');
+						interrupt = true;
+						$element.data('resizing', false);
+						$(window).unbind('mousemove.resize');
+						$('body').unbind('mouseup.resize');
+					});
+				}
+			});
+		}
+	}
+});
+
+module.directive('placedBlock', function($compile){
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		scope: {
+			x: '=',
+			y: '=',
+			z: '=',
+			h: '=',
+			w: '='
+		},
+		template: '<article ng-transclude ng-style="{\'z-index\': z }"></article>',
+		link: function($scope, $element, $attributes){
+			$element.css({ 'position': 'absolute' });
+			$scope.$watch('x', function(newVal){
+				$element.offset({
+					top: $element.offset().top,
+					left: newVal
+				});
+			});
+
+			$scope.$watch('y', function(newVal){
+				$element.offset({
+					left: $element.offset().left,
+					top: newVal
+				});
+			});
+
+			var toTop = function(){
+				$element.parents('.drawing-zone').find('*').each(function(index, item){
+					var zIndex = $(item).css('z-index');
+					if(!$scope.z){
+						$scope.z = 1;
+					}
+					if(parseInt(zIndex) && parseInt(zIndex) >= $scope.z){
+						$scope.z = parseInt(zIndex) + 1;
+					}
+				});
+				$scope.$apply('z');
+			};
+
+			$element.on('startDrag', toTop);
+			$element.on('startResize', toTop);
+
+			$element.on('stopDrag', function(){
+				$scope.x = $element.offset().left;
+				$scope.$apply('x');
+				$scope.y = $element.offset().top;
+				$scope.$apply('y');
+			});
+
+			$scope.$watch('z', function(newVal){
+				$element.css({ 'z-index': $scope.z })
+			});
+
+			$scope.$watch('w', function(newVal){
+				$element.width(newVal);
+			});
+			$element.on('stopResize', function(){
+				$scope.w = $element.width();
+				$scope.h = $element.height();
+				$scope.$apply('w');
+				$scope.h = $element.height();
+				$scope.$apply('h');
+			});
+
+			$scope.$watch('h', function(newVal){
+				$element.height(newVal);
+			});
+		}
+	}
+});
+
+module.directive('draggable', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			$element.on('mousedown', function(e){
+				if($element.data('lock') === true){
+					return;
+				}
+				e.preventDefault();
+				var interrupt = false;
+				if($element.data('resizing') !== true){
+					$element.trigger('startDrag');
+					$('body').css({
+						'-webkit-user-select': 'none',
+						'-moz-user-select': 'none',
+						'user-select' : 'none'
+					});
+					$element.css({
+						'position': 'absolute'
+					});
+					var mouse = { y: e.clientY, x: e.clientX };
+					var elementDistance = {
+						y: mouse.y - $element.offset().top,
+						x: mouse.x - $element.offset().left
+					};
+					$(window).on('mousemove.drag', function(e){
+						$element.unbind("click");
+						mouse = {
+							y: e.clientY,
+							x: e.clientX
+						};
+					});
+
+					$('body').on('mouseup.drag', function(e){
+						$element.trigger('stopDrag');
+						$('body').css({
+							'-webkit-user-select': 'initial',
+							'-moz-user-select': 'initial',
+							'user-select' : 'initial'
+						});
+						interrupt = true;
+						$('body').unbind('mouseup.drag');
+						$(window).unbind('mousemove.drag');
+						setTimeout(function(){
+							$element.on('click', function(){
+								$scope.$parent.$eval($attributes.ngClick);
+							});
+						}, 0);
+					});
+					var moveElement = function(){
+						$element.offset({
+							top: mouse.y - elementDistance.y,
+							left: mouse.x - elementDistance.x
+						});
+
+						if(!interrupt){
+							requestAnimationFrame(moveElement);
+						}
+					};
+					moveElement();
+				}
+			});
+		}
+	}
+});
 
 module.directive('sharePanel', function($compile){
 	return {
 		scope: {
-			resources: '='
+			resources: '=',
+			appPrefix: '='
 		},
 		restrict: 'E',
 		templateUrl: '/infra/public/template/share-panel.html',
@@ -722,13 +1058,14 @@ module.directive('sharePanel', function($compile){
 
 		}
 	}
-})
+});
 
 $(document).ready(function(){
 	model.build();
-	bootstrap();
-	model.sync();
-	angular.bootstrap($('html'), ['app']);
+	bootstrap(function(){
+		model.sync();
+		angular.bootstrap($('html'), ['app']);
+	});
 });
 
 
@@ -747,6 +1084,9 @@ function Account($scope){
 }
 
 function Share($rootScope, $scope, ui, _, lang){
+	if(!$scope.appPrefix){
+		$scope.appPrefix = appPrefix;
+	}
 	$scope.sharing = {};
 	$scope.found = [];
 	$scope.maxResults = 5;
@@ -810,7 +1150,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		function drop(resource, type){
 			var done = 0;
 			for(var element in resource[type].checked){
-				var path = '/' + appPrefix + '/share/remove/' + resource._id;
+				var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
 				var data = {};
 				if(type === 'users'){
 					data.userId = element;
@@ -852,7 +1192,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		var initModel = true;
 		$scope.resources.forEach(function(resource){
 			var id = resource._id;
-			http().get('/' + appPrefix + '/share/json/' + id).done(function(data){
+			http().get('/' + $scope.appPrefix + '/share/json/' + id).done(function(data){
 				if(initModel){
 					$scope.sharingModel = data;
 					$scope.sharingModel.edited = [];
@@ -959,7 +1299,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		});
 
 		$scope.resources.forEach(function(resource){
-			var path = '/' + appPrefix + '/share/remove/' + resource._id;
+			var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
 			http().put(path, http().serialize(data)).done(function(){
 				$rootScope.$broadcast('share-updated');
 			});
@@ -1007,7 +1347,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		}
 
 		$scope.resources.forEach(function(resource){
-			http().put('/' + appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
+			http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
 				$rootScope.$broadcast('share-updated');
 			});
 		});

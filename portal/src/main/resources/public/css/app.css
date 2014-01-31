@@ -1035,6 +1035,9 @@ section.selected,
 article.selected {
   background: #ccc;
 }
+article.media {
+  border: 2px dashed #ccc;
+}
 .mood-widget {
   padding-top: 25px;
   margin-bottom: 25px;
@@ -1136,9 +1139,11 @@ a {
 .v-center-container .v-center img {
   width: 100%;
 }
-.cke_editor_editor1,
-.cke_editor_editor2,
-.cke_chrome {
+.contextual-editor.ck_editable {
+  border: 1px solid #ccc;
+  padding: 0;
+}
+.block-editor .cke_chrome {
   display: block !important;
 }
 .cke_tpl_list {
@@ -1265,10 +1270,10 @@ a {
 .toggle-panel .toggle {
   width: 300px;
 }
-.toggle-bottom-spacer {
+.toggle-buttons-spacer {
   margin-bottom: 50px;
 }
-.toggle-bottom {
+.toggle-buttons {
   width: 960px;
   background: #ccc;
   left: 50%;
@@ -1282,21 +1287,30 @@ a {
   transition: height 250ms ease;
   z-index: 20;
 }
-.toggle-bottom button {
+.toggle-buttons button {
   opacity: 1;
   -o-transition: opacity 250ms ease;
   -moz-transition: opacity 250ms ease;
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.toggle-bottom button.hide {
+.toggle-buttons button.hide {
   opacity: 0;
   -o-transition: opacity 250ms ease;
   -moz-transition: opacity 250ms ease;
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.toggle-bottom.hide {
+[draggable] {
+  cursor: move;
+}
+[draggable] [contenteditable=true] {
+  cursor: move;
+}
+files-picker {
+  display: none;
+}
+.toggle-buttons.hide {
   height: 0px;
   -o-transition: height 250ms ease;
   -moz-transition: height 250ms ease;

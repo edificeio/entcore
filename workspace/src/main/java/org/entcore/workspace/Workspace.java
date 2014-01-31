@@ -20,6 +20,7 @@ public class Workspace extends Server {
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);
 
 		service.get("/workspace", "view");
+		service.get("/scrapbook", "scrapbook");
 
 		service.get("/share/json/:id", "shareJson");
 

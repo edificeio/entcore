@@ -28,5 +28,14 @@
 	"attendance" : "Gestion des absences",
 	"tdbase" : "TD Base",
 	"statistics" : "Statistiques",
-	"remove": "Supprimer"
+	"remove": "Supprimer",
+	"scrapbook": "Cahier multimédia",
+	"classadmin": "Administration de la classe",
+	"share.users" : "Utilisateurs",
+	"share.groups" : "Groupes",
+	"share.title": "Partager avec...",
+	"share.more": "Voir la suite",
+	"share.search.title": "Rechercher des utilisateurs et des groupes",
+	"share.search.placeholder": "Ex : Sabine, Dupont, Enseignants de l'école...",
+	"seemore": "Voir la suite"
 }

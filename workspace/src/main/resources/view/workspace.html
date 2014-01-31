@@ -6,7 +6,7 @@
 
 		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
-		<script src="{{#static}}js/workspace-controller.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 
 		<script type="text/ng-template" id="folder-content">
 			<a data-ng-class="{ selected: openedFolder.folder === folder }" data-ng-click="openFolder(folder)">[[translate(folder.name)]]</a>
@@ -71,7 +71,7 @@
 		</div>
 		<div class="clear"></div>
 	</section>
-	<section ng-class="{'toggle-bottom': true, hide: selectedDocuments().length + selectedFolders().length === 0 }">
+	<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 }">
 		<div class="toggle block-container">
 			<div class="row">
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
