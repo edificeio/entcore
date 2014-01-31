@@ -5,12 +5,15 @@ import edu.one.core.infra.Utils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.Collections;
 import java.util.UUID;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
@@ -90,6 +93,35 @@ public class DefaultClassService implements ClassService {
 			query = "match (c:`Class` { id : {classId}) SET " + nodeSetPropertiesFromJson("c", c);
 		}
 		neo.execute(query, c, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void findUsers(String classId, UserService.UserType[] expectedTypes,
+						  Handler<Either<String, JsonArray>> results) {
+		StringBuilder type = new StringBuilder();
+		if (expectedTypes == null || expectedTypes.length < 1) {
+			type.append("m:User");
+		} else {
+			for (UserService.UserType t : expectedTypes) {
+				type.append(" OR m:").append(t.name());
+			}
+			type.delete(0, 4);
+		}
+		String query =
+				"MATCH (c:`Class` { id : {classId}})<-[:APPARTIENT]-(n:User)-[:EN_RELATION_AVEC*0..1]->(m) " +
+				"WHERE (" + type + ") " +
+				"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
+				"m.login as login, m.activationCode as activationCode, " +
+				"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
+				"ORDER BY type, login ";
+		neo.execute(query, new JsonObject().putString("classId", classId), validResultHandler(results));
+	}
+
+	@Override
+	public void get(String classId, Handler<Either<String, JsonObject>> result) {
+		if (validationParamsError(result, classId)) return;
+		String query = "MATCH (c:`Class` { id : {classId}}) RETURN c.id as id,  c.name as name, c.level as level";
+		neo.execute(query, new JsonObject().putString("classId", classId), validUniqueResultHandler(result));
 	}
 
 	private boolean validationError(JsonObject c,
