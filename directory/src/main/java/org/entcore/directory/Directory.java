@@ -67,7 +67,9 @@ public class Directory extends Server {
 				.getWithRegEx(".*", "proxyDocument");
 
 		classController
-				.put("/class/:classId", "update");
+				.put("/class/:classId", "update")
+				.post("/class/:classId/user", "createUser");
+
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {

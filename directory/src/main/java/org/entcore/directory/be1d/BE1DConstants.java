@@ -51,7 +51,7 @@ public final class BE1DConstants {
 	public static final String ENTPersonCodePostal = "zipCode";
 	public static final String ENTPersonVille = "city";
 	public static final String ENTPersonPays = "country";
-	public static final String ENTEleveCycle = "ENTEleveCycle";
+	public static final String ENTEleveCycle = "sector";
 	public static final String ENTEleveNiveau = "level";
 	public static final String ENTPersonClasses = "classes";
 	public static final String ENTPersonTelPerso = "homePhone";
