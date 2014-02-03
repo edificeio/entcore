@@ -112,7 +112,7 @@ project(':directory') {
     compile project(':common')
     compile project(':dataDictionary')
     compile "edu.one.core:web-utils:$webUtilsVersion"
-    compile 'net.sf.opencsv:opencsv:2.4'
+    compile "net.sf.opencsv:opencsv:$opencsvVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -181,6 +181,13 @@ project(':conversation') {
     compile project(':common')
     compile "edu.one.core:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
+  }
+}
+
+project(':feeder') {
+  dependencies {
+    compile project(':dataDictionary')
+    compile "net.sf.opencsv:opencsv:$opencsvVersion"
   }
 }
 

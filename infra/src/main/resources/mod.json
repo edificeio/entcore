@@ -112,6 +112,11 @@
         "userbook-host": "http://localhost:8090",
         "app-address": "http://localhost:8090/conversation/conversation"
       }
+    },
+	{
+	  "name": "org.entcore~feeder~1.5-SNAPSHOT",
+	  "config": {
+	  }
     }
   ],
   "external-modules": [

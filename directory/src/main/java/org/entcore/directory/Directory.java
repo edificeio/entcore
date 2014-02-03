@@ -69,7 +69,8 @@ public class Directory extends Server {
 		classController
 				.put("/class/:classId", "update")
 				.post("/class/:classId/user", "createUser")
-				.get("/class/:classId/users", "findUsers");
+				.get("/class/:classId/users", "findUsers")
+				.post("/csv/:userType/class/:classId", "csv");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");

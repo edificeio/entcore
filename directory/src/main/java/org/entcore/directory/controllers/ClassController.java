@@ -2,6 +2,7 @@ package org.entcore.directory.controllers;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Either;
+import edu.one.core.infra.Server;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.neo4j.Neo;
@@ -11,12 +12,16 @@ import org.entcore.directory.services.impl.DefaultClassService;
 import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +117,52 @@ public class ClassController extends Controller {
 			handler = arrayResponseHandler(request);
 		}
 		classService.findUsers(classId, types.toArray(new UserService.UserType[types.size()]), handler);
+	}
+
+	@SecuredAction(value = "class.csv", type = ActionType.RESOURCE)
+	public void csv(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		final String classId = request.params().get("classId");
+		final String userType = request.params().get("userType");
+		if (classId == null || classId.trim().isEmpty() ||
+				(!"Student".equalsIgnoreCase(userType) && !"Relative".equalsIgnoreCase(userType))) {
+			badRequest(request);
+			return;
+		}
+		request.uploadHandler(new Handler<HttpServerFileUpload>() {
+			@Override
+			public void handle(final HttpServerFileUpload event) {
+				final Buffer buff = new Buffer();
+				event.dataHandler(new Handler<Buffer>() {
+					@Override
+					public void handle(Buffer event) {
+						buff.appendBuffer(event);
+					}
+				});
+				event.endHandler(new Handler<Void>() {
+					@Override
+					public void handle(Void end) {
+						String ut = Character.toUpperCase(userType.charAt(0)) +
+								userType.substring(1).toLowerCase();
+						JsonObject j = new JsonObject()
+								.putString("action", "csvClass" + ut)
+								.putString("classId", classId)
+								.putString("csv", buff.toString("UTF-8"));
+						Server.getEventBus(vertx).send(container.config().getString("feeder",
+								"entcore.feeder"), j, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> message) {
+								if ("ok".equals(message.body().getString("status"))) {
+									request.response().end();
+								} else {
+									renderError(request, message.body());
+								}
+							}
+						});
+					}
+				});
+			}
+		});
 	}
 
 }

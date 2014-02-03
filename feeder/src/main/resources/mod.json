@@ -1,0 +1,7 @@
+{
+	"main" : "org.entcore.feeder.Feeder",
+	"worker": true,
+	"preserve-cwd" : true,
+	"address" : "entcore.feeder",
+	"neo4j-address" : "wse.neo4j.persistor"
+}
