@@ -417,31 +417,24 @@ public class AuthController extends Controller {
 		});
 	}
 
-	@SecuredAction("auth.admin.send.reset.password")
-	public void adminSendResetPassword(final HttpServerRequest request) {
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
-
+	@SecuredAction( value = "auth.send.reset.password", type = ActionType.RESOURCE)
+	public void sendResetPassword(final HttpServerRequest request) {
+		String login = request.formAttributes().get("login");
+		String email = request.formAttributes().get("email");
+		if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
+			badRequest(request);
+			return;
+		}
+		userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
 			@Override
-			protected void handle() {
-				String login = request.formAttributes().get("login");
-				String email = request.formAttributes().get("email");
-				if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
+			public void handle(Boolean sent) {
+				if (Boolean.TRUE.equals(sent)) {
+					renderJson(request, new JsonObject());
+				} else {
 					badRequest(request);
-					return;
 				}
-				userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
-					@Override
-					public void handle(Boolean sent) {
-						if (Boolean.TRUE.equals(sent)) {
-							renderJson(request, new JsonObject());
-						} else {
-							badRequest(request);
-						}
-				  }
+		  }
 				});
-			}
-		});
 	}
 
 	public void resetPassword(final HttpServerRequest request) {

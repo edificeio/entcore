@@ -1,11 +1,14 @@
 package org.entcore.auth;
 
+import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.common.http.filter.ActionFilter;
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Server;
 import edu.one.core.infra.request.filter.SecurityHandler;
 import edu.one.core.infra.request.filter.UserAuthFilter;
 import edu.one.core.infra.security.oauth.DefaultOAuthResourceProvider;
+import org.entcore.common.neo4j.Neo;
+import org.vertx.java.core.eventbus.EventBus;
 
 public class Auth extends Server {
 
@@ -39,7 +42,7 @@ public class Auth extends Server {
 
 		auth.post("/reset", "resetPasswordSubmit");
 
-		auth.post("/sendResetPassword", "adminSendResetPassword");
+		auth.post("/sendResetPassword", "sendResetPassword");
 
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
@@ -47,10 +50,12 @@ public class Auth extends Server {
 			log.error(e.getMessage(), e);
 		}
 
+		final EventBus eb = getEventBus(vertx);
 		SecurityHandler.clearFilters();
 		SecurityHandler.addFilter(
-				new UserAuthFilter(new DefaultOAuthResourceProvider(Server.getEventBus(vertx))));
-		SecurityHandler.addFilter(new ActionFilter(auth.securedUriBinding(), getEventBus(vertx)));
+				new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
+		SecurityHandler.addFilter(new ActionFilter(auth.securedUriBinding(),
+				eb, new AuthResourcesProvider(new Neo(eb, container.logger()))));
 	}
 
 }
