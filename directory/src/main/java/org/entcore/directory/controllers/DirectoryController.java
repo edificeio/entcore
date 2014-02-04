@@ -7,6 +7,7 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
+import edu.one.core.infra.Either;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.impl.DefaultClassService;
@@ -183,7 +184,7 @@ public class DirectoryController extends Controller {
 
 			@Override
 			protected void handle() {
-				String classId = request.formAttributes().get("classId");
+				final String classId = request.formAttributes().get("classId");
 				String firstname = request.formAttributes().get("firstname");
 				String lastname = request.formAttributes().get("lastname");
 				String type = request.formAttributes().get("type");
@@ -220,13 +221,24 @@ public class DirectoryController extends Controller {
 					if ("Relative".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
 						uqb.linkChildrens(userId, childrenIds);
 					}
-					uqb.linkGroupProfils(userId, type)
-							.defaultCommunication(userId, type);
+					uqb.linkGroupProfils(userId, type);
 					neo.sendBatch(uqb.build(), new Handler<Message<JsonObject>>() {
 
 						@Override
 						public void handle(Message<JsonObject> res) {
 							if ("ok".equals(res.body().getString("status"))) {
+								schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> s) {
+										if (s.isRight()) {
+											JsonObject j = new JsonObject()
+													.putString("action", "setDefaultCommunicationRules")
+													.putString("schoolId", s.right().getValue().getString("id"));
+											eb.send("wse.communication", j);
+
+										}
+									}
+								});
 								renderJson(request, res.body());
 							} else {
 								renderError(request, res.body());

@@ -100,22 +100,6 @@ public class UserQueriesBuilder {
 		return this;
 	}
 
-	public UserQueriesBuilder defaultCommunication(String userId, String type) {
-		String query =
-				"MATCH (n:" + type + ")-[:APPARTIENT]->(gp) " +
-				"WHERE n.id = {userId} AND (gp:Class" + type + "Group OR gp:School" + type + "Group) " +
-				"CREATE UNIQUE n-[:COMMUNIQUE]->gp ";
-		String query2 =
-				"MATCH (n:" + type + ")-[:APPARTIENT]->(gp) " +
-				"WHERE n.id = {userId} AND (gp:Class" + type + "Group OR gp:School" + type + "Group) " +
-				"CREATE UNIQUE n<-[:COMMUNIQUE]-gp ";
-		JsonObject params = new JsonObject()
-		.putString("userId", userId);
-		queries.add(toJsonObject(query, params));
-		queries.add(toJsonObject(query2, params));
-		return this;
-	}
-
 	private JsonObject toJsonObject(String query, JsonObject params) {
 		return new JsonObject()
 		.putString("query", query)

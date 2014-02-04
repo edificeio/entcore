@@ -17,4 +17,6 @@ public interface SchoolService {
 
 	void get(String id, Handler<Either<String, JsonObject>> result);
 
+	void getByClassId(String classId, Handler<Either<String, JsonObject>> result);
+
 }
