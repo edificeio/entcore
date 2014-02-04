@@ -1,10 +1,10 @@
 {
-"sync.admin.title" : "Alimentaçao",
-"sync.admin.header" : "Alimentaçao",
-"sync.action.aafTest" : "Começar a alimentação",
-"sync.admin.time" : "Tempo de execução",
-"sync.admin.operation" : "Nùmero de operação",
-"sync.admin.rejects" : "Nùmero de rejeição",
+"sync.admin.title" : "AlimentaÃ§ao",
+"sync.admin.header" : "AlimentaÃ§ao",
+"sync.action.aafTest" : "ComeÃ§ar a alimentaÃ§Ã£o",
+"sync.admin.time" : "Tempo de execuÃ§Ã£o",
+"sync.admin.operation" : "NÃ¹mero de operaÃ§Ã£o",
+"sync.admin.rejects" : "NÃ¹mero de rejeiÃ§Ã£o",
 "sync.admin.endMsg" : "Fim do programa"
 }
 
