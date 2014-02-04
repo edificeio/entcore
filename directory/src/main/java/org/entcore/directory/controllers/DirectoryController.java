@@ -63,7 +63,7 @@ public class DirectoryController extends Controller {
 			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 			this.p = new DefaultProfils(neo);
 			this.schoolService = new DefaultSchoolService(neo);
-			this.classService = new DefaultClassService(neo);
+			this.classService = new DefaultClassService(neo, eb);
 			loginGenerator = new LoginGenerator();
 			activationGenerator = new ActivationCodeGenerator();
 			idGenerator = new IdGenerator();

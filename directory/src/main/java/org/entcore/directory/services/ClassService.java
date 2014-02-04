@@ -2,6 +2,7 @@ package org.entcore.directory.services;
 
 
 import edu.one.core.infra.Either;
+import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -24,5 +25,7 @@ public interface ClassService {
 	void findUsers(String classId, UserService.UserType[] expectedTypes, Handler<Either<String, JsonArray>> results);
 
 	void get(String classId, Handler<Either<String, JsonObject>> result);
+
+	void addUser(String classId, String userId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 }

@@ -72,7 +72,8 @@ public class Directory extends Server {
 				.put("/class/:classId", "update")
 				.post("/class/:classId/user", "createUser")
 				.get("/class/:classId/users", "findUsers")
-				.post("/csv/:userType/class/:classId", "csv");
+				.post("/csv/:userType/class/:classId", "csv")
+				.put("/class/:classId/add/:userId",  "addUser");
 
 		userController
 				.put("/user/:userId", "update")

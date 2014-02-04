@@ -6,6 +6,8 @@ import edu.one.core.infra.Server;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultClassService;
@@ -39,7 +41,7 @@ public class ClassController extends Controller {
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb,log);
-		this.classService = new DefaultClassService(neo);
+		this.classService = new DefaultClassService(neo, eb);
 		this.userService = new DefaultUserService(neo);
 	}
 
@@ -171,6 +173,36 @@ public class ClassController extends Controller {
 			public void handle(JsonObject body) {
 				String classId = request.params().get("classId");
 				classService.update(classId, body, defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@SecuredAction(value = "class.add.user", type = ActionType.RESOURCE)
+	public void addUser(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					final String classId = request.params().get("classId");
+					String userId = request.params().get("userId");
+					classService.addUser(classId, userId, user, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> res) {
+							if (res.isRight()) {
+								String schoolId = res.right().getValue().getString("schoolId");
+								JsonObject j = new JsonObject()
+										.putString("action", "setDefaultCommunicationRules")
+										.putString("schoolId", schoolId);
+								eb.send("wse.communication", j);
+								renderJson(request, res.right().getValue());
+							} else {
+								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}

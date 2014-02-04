@@ -4,9 +4,13 @@ import edu.one.core.infra.Either;
 import edu.one.core.infra.Utils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -20,9 +24,11 @@ import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 public class DefaultClassService implements ClassService {
 
 	private final Neo neo;
+	private final EventBus eb;
 
-	public DefaultClassService(Neo neo) {
+	public DefaultClassService(Neo neo, EventBus eb) {
 		this.neo = neo;
+		this.eb = eb;
 	}
 
 	@Override
@@ -122,6 +128,60 @@ public class DefaultClassService implements ClassService {
 		if (validationParamsError(result, classId)) return;
 		String query = "MATCH (c:`Class` { id : {classId}}) RETURN c.id as id,  c.name as name, c.level as level";
 		neo.execute(query, new JsonObject().putString("classId", classId), validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void addUser(final String classId, final String userId, final UserInfos user,
+			final Handler<Either<String, JsonObject>> result) {
+		if (validationParamsError(result, classId, userId)) return;
+		if (user == null) {
+			result.handle(new Either.Left<String, JsonObject>("invalid.userinfos"));
+			return;
+		}
+		neo.execute("MATCH (u:`User` {id : {id}}) RETURN HEAD(filter(x IN labels(u)" +
+				" WHERE x <> 'Visible' AND x <> 'User')) as type", new JsonObject().putString("id", userId),
+				new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						JsonArray res = r.body().getArray("result");
+						if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
+							String t = ((JsonObject)res.get(0)).getString("type");
+							String addRelativeToClassGroup = " ";
+							if ("Relative".equals(t)) {
+								result.handle(new Either.Left<String, JsonObject>("forbidden.add.relative.in.class"));
+								return;
+							} else if ("Student".equals(t)) {
+								addRelativeToClassGroup = ", p-[:APPARTIENT]->rg ";
+							}
+							String customReturn =
+									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:Class" + t + "Group), " +
+									"c<-[:DEPENDS]-(rg:ClassRelativeGroup), c-[:APPARTIENT]->(s:School) " +
+									"WHERE visibles.id = {uId} " +
+									"OPTIONAL MATCH visibles-[:EN_RELATION_AVEC]->(p:Relative) " +
+									"CREATE UNIQUE visibles-[:APPARTIENT]->cg, visibles-[:APPARTIENT]->c" +
+									addRelativeToClassGroup +
+									"RETURN DISTINCT visibles.id as id, s.id as schoolId";
+							JsonObject params = new JsonObject()
+									.putString("classId", classId)
+									.putString("uId", userId);
+							UserUtils.findVisibleUsers(eb, user.getUserId(), customReturn, params,
+									new Handler<JsonArray>() {
+
+								@Override
+								public void handle(JsonArray users) {
+									if (users != null && users.size() == 1) {
+										result.handle(new Either.Right<String, JsonObject>(
+												(JsonObject) users.get(0)));
+									} else {
+										result.handle(new Either.Left<String, JsonObject>("user.not.visible"));
+									}
+								}
+							});
+						} else {
+							result.handle(new Either.Left<String, JsonObject>("invalid.user"));
+						}
+			}
+		});
 	}
 
 	private boolean validationError(JsonObject c,
