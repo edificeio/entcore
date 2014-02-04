@@ -37,6 +37,7 @@ public class Communication extends Server {
 		try {
 			controller.registerMethod(config.getString("address") + ".users", "visibleUsers");
 			controller.registerMethod(config.getString("address") + ".schools", "listVisiblesSchools");
+			controller.registerMethod(config.getString("address"), "communicationEventBusHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}

@@ -506,13 +506,31 @@ public class CommunicationController extends Controller {
 	@SecuredAction("communication.default.rules")
 	public void defaultCommunicationRules(final HttpServerRequest request) {
 		String schoolId = request.params().get("schoolId");
-		JsonArray r = container.config().getArray("defaultCommunicationRules");
-		if (r == null || r.size() == 0 || schoolId == null || schoolId.trim().isEmpty()) {
-			renderError(request);
+		if (schoolId == null || schoolId.trim().isEmpty()) {
+			badRequest(request);
 			return;
 		}
+		setDefaultCommunicationRules(schoolId, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				if ("ok".equals(r.body().getString("status"))) {
+					renderJson(request, r.body());
+				} else {
+					renderError(request, r.body());
+				}
+			}
+		});
+	}
+
+	private void setDefaultCommunicationRules(
+			String schoolId, Handler<Message<JsonObject>> handler) {
 		StatementsBuilder b = new StatementsBuilder();
 		final JsonObject params = new JsonObject().putString("schoolId", schoolId);
+		JsonArray r = container.config().getArray("defaultCommunicationRules");
+		if (r == null || r.size() == 0 || schoolId == null || schoolId.trim().isEmpty()) {
+			handler.handle(null);
+			return;
+		}
 		for (Object o: r) {
 			if (!(o instanceof String) || ((String) o).trim().isEmpty()) continue;
 			if (((String) o).contains("EN_RELATION_AVEC")) {
@@ -536,16 +554,29 @@ public class CommunicationController extends Controller {
 				}
 			}
 		}
-		neo.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				if ("ok".equals(r.body().getString("status"))) {
-					renderJson(request, r.body());
-				} else {
-					renderError(request, r.body());
-				}
-			}
-		});
+		neo.executeTransaction(b.build(), null, true, handler);
+	}
+
+	public void communicationEventBusHandler(final Message<JsonObject> message) {
+		switch (message.body().getString("action", "")) {
+			case "setDefaultCommunicationRules" :
+				setDefaultCommunicationRules(
+						message.body().getString("schoolId"), new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						if (r != null) {
+							message.reply(r.body());
+						} else {
+							message.reply(new JsonObject().putString("status", "error")
+									.putString("message", "invalid.schoolId"));
+						}
+					}
+				});
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "invalid.action"));
+		}
 	}
 
 	@SecuredAction("communication.remove.rules")
