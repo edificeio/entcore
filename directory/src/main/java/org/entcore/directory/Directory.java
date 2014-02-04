@@ -11,6 +11,7 @@ import edu.one.core.infra.http.Binding;
 import edu.one.core.infra.http.Renders;
 import org.entcore.common.http.filter.ActionFilter;
 import edu.one.core.infra.request.filter.SecurityHandler;
+import org.entcore.directory.controllers.UserController;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -35,6 +36,7 @@ public class Directory extends Server {
 		DirectoryController directoryController = new DirectoryController(vertx, container, rm, securedActions, config);
 		UserBookController userBookController = new UserBookController(vertx, container, rm, securedActions, config);
 		ClassController classController = new ClassController(vertx, container, rm, securedActions);
+		UserController userController = new UserController(vertx, container, rm, securedActions);
 
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
@@ -72,6 +74,10 @@ public class Directory extends Server {
 				.get("/class/:classId/users", "findUsers")
 				.post("/csv/:userType/class/:classId", "csv");
 
+		userController
+				.put("/user/:userId", "update")
+				.put("/userbook/:userId", "updateUserBook");
+
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
@@ -91,6 +97,7 @@ public class Directory extends Server {
 		securedUriBinding.add(directoryController.securedUriBinding());
 		securedUriBinding.add(userBookController.securedUriBinding());
 		securedUriBinding.add(classController.securedUriBinding());
+		securedUriBinding.add(userController.securedUriBinding());
 		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
 				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}

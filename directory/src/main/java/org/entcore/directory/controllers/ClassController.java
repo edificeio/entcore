@@ -21,7 +21,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -161,6 +160,17 @@ public class ClassController extends Controller {
 						});
 					}
 				});
+			}
+		});
+	}
+
+	@SecuredAction(value = "class.update.user", type = ActionType.RESOURCE)
+	public void updateUser(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				String classId = request.params().get("classId");
+				classService.update(classId, body, defaultResponseHandler(request));
 			}
 		});
 	}

@@ -9,11 +9,14 @@ import org.entcore.datadictionary.generation.IdGenerator;
 import org.entcore.datadictionary.generation.LoginGenerator;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.UUID;
 
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultUserService implements UserService {
 
@@ -63,6 +66,37 @@ public class DefaultUserService implements UserService {
 				break;
 			default: result.handle(new Either.Left<String, JsonObject>("unexpected.user.type"));
 		}
+	}
+
+	@Override
+	public void update(final String id, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
+		neo.execute("MATCH (u:`User` {id : {id}}) RETURN HEAD(filter(x IN labels(u)" +
+				" WHERE x <> 'Visible' AND x <> 'User')) as type", new JsonObject().putString("id", id),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				JsonArray res = r.body().getArray("result");
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
+					UserType type;
+					try {
+						JsonObject t = res.get(0);
+						type = UserType.valueOf(t.getString("type"));
+					} catch (Exception e) {
+						result.handle(new Either.Left<String, JsonObject>("invalid.user.type"));
+						return;
+					}
+					JsonObject u = Utils.validAndGet(user, type.getUpdateFields(), type.getUpdateRequiredFields());
+					if (Utils.defaultValidationError(u, result, id)) return;
+					String query =
+							"MATCH (u:`User` {id : {id}}) " +
+							"SET " + nodeSetPropertiesFromJson("u", u) +
+							"RETURN u.id as id";
+					neo.execute(query, u.putString("id", id), validUniqueResultHandler(result));
+				} else {
+					result.handle(new Either.Left<String, JsonObject>("invalid.user"));
+				}
+			}
+		});
 	}
 
 	private void createStudent(String classId, JsonObject c, Handler<Either<String, JsonObject>> result) {
