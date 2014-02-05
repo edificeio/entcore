@@ -102,8 +102,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(csg:ClassStudentGroup)" +
 				"-[:DEPENDS]->(ssg:SchoolStudentGroup)-[:DEPENDS]->(s:School) " +
 				"CREATE c<-[:APPARTIENT]-(u:Student:User:Visible {props}), " +
-				"csg<-[:APPARTIENT]-u, ssg<-[:APPARTIENT]-u, s<-[:APPARTIENT]-u ";
-//				"RETURN u.id as id";
+				"csg<-[:APPARTIENT]-u, ssg<-[:APPARTIENT]-u, s<-[:APPARTIENT]-u " +
+				"RETURN u.id as id";
 		csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
 			@Override
@@ -168,8 +168,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				"WITH u, c " +
 				"MATCH (student:Student)-[:APPARTIENT]->(c) " +
 				"WHERE student.login =~ {childrenLoginRegex} " +
-				"CREATE student-[:EN_RELATION_AVEC]->u ";
-//				"RETURN u.id as id";
+				"CREATE student-[:EN_RELATION_AVEC]->u " +
+				"RETURN u.id as id";
 		csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
 			@Override

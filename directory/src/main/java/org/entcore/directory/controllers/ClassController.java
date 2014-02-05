@@ -5,12 +5,15 @@ import edu.one.core.infra.Either;
 import edu.one.core.infra.Server;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultClassService;
+import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -36,6 +39,7 @@ public class ClassController extends Controller {
 
 	private final ClassService classService;
 	private final UserService userService;
+	private final SchoolService schoolService;
 
 	public ClassController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
@@ -43,6 +47,7 @@ public class ClassController extends Controller {
 		Neo neo = new Neo(eb,log);
 		this.classService = new DefaultClassService(neo, eb);
 		this.userService = new DefaultUserService(neo);
+		schoolService = new DefaultSchoolService(neo);
 	}
 
 	@SecuredAction(value = "class.update", type = ActionType.RESOURCE)
@@ -153,7 +158,30 @@ public class ClassController extends Controller {
 								"entcore.feeder"), j, new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {
-								if ("ok".equals(message.body().getString("status"))) {
+								JsonArray r = message.body().getArray("results");
+								if ("ok".equals(message.body().getString("status")) && r != null) {
+									JsonArray users = new JsonArray();
+									for (int i = 0; i < r.size(); i++) {
+										JsonArray s = r.get(i);
+										if (s != null && s.size() == 1) {
+											String u = ((JsonObject) s.get(0)).getString("id");
+											if (u != null) {
+												users.addString(u);
+											}
+										}
+									}
+									schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+										@Override
+										public void handle(Either<String, JsonObject> s) {
+											if (s.isRight()) {
+												JsonObject j = new JsonObject()
+														.putString("action", "setDefaultCommunicationRules")
+														.putString("schoolId", s.right().getValue().getString("id"));
+												eb.send("wse.communication", j);
+											}
+										}
+									});
+									ApplicationUtils.publishModifiedUserGroup(eb, users);
 									request.response().end();
 								} else {
 									renderError(request, message.body());
@@ -184,7 +212,7 @@ public class ClassController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					final String classId = request.params().get("classId");
-					String userId = request.params().get("userId");
+					final String userId = request.params().get("userId");
 					classService.addUser(classId, userId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
@@ -194,6 +222,8 @@ public class ClassController extends Controller {
 										.putString("action", "setDefaultCommunicationRules")
 										.putString("schoolId", schoolId);
 								eb.send("wse.communication", j);
+								JsonArray a = new JsonArray().addString(userId);
+								ApplicationUtils.publishModifiedUserGroup(eb, a);
 								renderJson(request, res.right().getValue());
 							} else {
 								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);

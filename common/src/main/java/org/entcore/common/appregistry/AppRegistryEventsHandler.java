@@ -24,6 +24,8 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 				case PROFILE_GROUP_ACTIONS_UPDATED:
 					appRegistryEventsService.authorizedActionsUpdated();
 					break;
+				case USER_GROUP_UPDATED:
+					appRegistryEventsService.userGroupUpdated(event.body().getArray("users"));
 			}
 		}
 	}

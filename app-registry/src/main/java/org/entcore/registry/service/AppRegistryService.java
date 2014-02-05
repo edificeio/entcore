@@ -493,7 +493,7 @@ public class AppRegistryService extends Controller {
 			};
 			switch (action) {
 				case "allowedUsers":
-					applicationAllowedUsers(application, responseHandler);
+					applicationAllowedUsers(application, message.body().getArray("users"), responseHandler);
 					break;
 				case "allowedProfileGroups":
 					applicationAllowedProfileGroups(application, responseHandler);
@@ -507,13 +507,22 @@ public class AppRegistryService extends Controller {
 		}
 	}
 
-	private void applicationAllowedUsers(String application, Handler<Message<JsonObject>> handler) {
+	private void applicationAllowedUsers(String application, JsonArray users,
+			Handler<Message<JsonObject>> handler) {
+		JsonObject params = new JsonObject().putString("application", application);
+		String filter;
+		if (users != null) {
+			filter = "AND u.id IN {users} ";
+			params.putArray("users", users);
+		} else {
+			filter = "";
+		}
 		String query =
 				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
 				"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
-				"WHERE app.name = {application} " +
-				"RETURN u.id as id";
-		neo.execute(query, new JsonObject().putString("application", application), handler);
+				"WHERE app.name = {application} " + filter +
+				"RETURN DISTINCT u.id as id";
+		neo.execute(query, params, handler);
 	}
 
 	private void applicationAllowedProfileGroups(String application, Handler<Message<JsonObject>> handler) {

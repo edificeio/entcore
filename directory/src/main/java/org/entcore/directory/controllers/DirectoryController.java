@@ -1,6 +1,9 @@
 package org.entcore.directory.controllers;
 
 import static edu.one.core.infra.request.RequestUtils.bodyToJson;
+import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
+import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
+import static org.entcore.common.appregistry.AppRegistryEvents.USER_GROUP_UPDATED;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.directory.be1d.BE1DConstants.*;
@@ -8,6 +11,7 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 import java.util.*;
 
 import edu.one.core.infra.Either;
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.impl.DefaultClassService;
@@ -193,7 +197,7 @@ public class DirectoryController extends Controller {
 						firstname != null && !firstname.trim().isEmpty() &&
 						lastname != null && !lastname.trim().isEmpty() &&
 						type != null && !type.trim().isEmpty()) {
-					String userId = UUID.randomUUID().toString();
+					final String userId = UUID.randomUUID().toString();
 					final JsonObject user = new JsonObject()
 							.putString("id", userId)
 							.putString(ENTEleveCycle, "")
@@ -235,10 +239,11 @@ public class DirectoryController extends Controller {
 													.putString("action", "setDefaultCommunicationRules")
 													.putString("schoolId", s.right().getValue().getString("id"));
 											eb.send("wse.communication", j);
-
 										}
 									}
 								});
+								JsonArray a = new JsonArray().addString(userId);
+								ApplicationUtils.publishModifiedUserGroup(eb, a);
 								renderJson(request, res.body());
 							} else {
 								renderError(request, res.body());
