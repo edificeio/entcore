@@ -69,6 +69,7 @@ public class Directory extends Server {
 				.getWithRegEx(".*", "proxyDocument");
 
 		classController
+				.get("/class/:classId", "get")
 				.put("/class/:classId", "update")
 				.post("/class/:classId/user", "createUser")
 				.get("/class/:classId/users", "findUsers")

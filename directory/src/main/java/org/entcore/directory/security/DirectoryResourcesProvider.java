@@ -28,6 +28,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(ClassController.class.getName().length() + 1);
 			switch (method) {
+				case "get":
 				case "applyComRulesAndRegistryEvent" :
 				case "addUser":
 				case "csv" :

@@ -50,6 +50,12 @@ public class ClassController extends Controller {
 		schoolService = new DefaultSchoolService(neo);
 	}
 
+	@SecuredAction(value = "class.get", type = ActionType.RESOURCE)
+	public void get(final HttpServerRequest request) {
+		String classId = request.params().get("classId");
+		classService.get(classId, notEmptyResponseHandler(request));
+	}
+
 	@SecuredAction(value = "class.update", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
