@@ -186,8 +186,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[:APPARTIENT]->(gp:ProfileGroup) " +
 				"WITH app, a, n, gp " +
 				"OPTIONAL MATCH n-[:APPARTIENT]->gpe-[:DEPENDS]->(s:School) " +
+				"OPTIONAL MATCH n-[:APPARTIENT]->(c:Class) " +
 				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
-				"HEAD(n.classes) as classId, n.level as level, n.login as login, " +
+				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, " +
 				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'Visible' AND x <> 'User')) as type, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
