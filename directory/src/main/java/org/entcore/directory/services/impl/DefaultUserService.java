@@ -137,12 +137,15 @@ public class DefaultUserService implements UserService {
 				.putArray("childrenIds", c.getArray("childrenIds"));
 		c.removeField("childrenIds");
 		String query =
-				"MATCH (student:Student)-[:APPARTIENT]->(c:`Class` { id : {classId}})" +
+				"MATCH (c:`Class` { id : {classId}}) " +
 				"<-[:DEPENDS]-(csg:ClassRelativeGroup)-[:DEPENDS]->(ssg:SchoolRelativeGroup) " +
+				"CREATE csg<-[:APPARTIENT]-(u:Relative:User:Visible {props}), " +
+				"ssg<-[:APPARTIENT]-u " +
+				"WITH u, c " +
+				"MATCH (student:Student)-[:APPARTIENT]->(c) " +
 				"WHERE student.id IN {childrenIds} " +
-				"CREATE student-[:EN_RELATION_AVEC]->(u:Relative:User:Visible {props}), " +
-				"csg<-[:APPARTIENT]-u, ssg<-[:APPARTIENT]-u " +
-				"RETURN u.id as id";
+				"CREATE student-[:EN_RELATION_AVEC]->u " +
+				"RETURN DISTINCT u.id as id";
 		neo.execute(query, params, validUniqueResultHandler(result));
 	}
 

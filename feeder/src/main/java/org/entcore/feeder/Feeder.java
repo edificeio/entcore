@@ -169,7 +169,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				"MATCH (student:Student)-[:APPARTIENT]->(c) " +
 				"WHERE student.login =~ {childrenLoginRegex} " +
 				"CREATE student-[:EN_RELATION_AVEC]->u " +
-				"RETURN u.id as id";
+				"RETURN DISTINCT u.id as id";
 		csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
 			@Override
