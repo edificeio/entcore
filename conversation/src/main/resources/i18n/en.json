@@ -43,6 +43,5 @@
 	"reply.re": "Re: ",
 	"reply.fw": "Fw: ",
 	"updating": "Updating...",
-	"draft.empty": "This post is empty",
-	"reply.content": "[[mail.longDate()]], <a href=\"/userbook/annuaire#[[mail.sender().id]]\">[[mail.sender().displayName]]</a> wrote : "
+	"draft.empty": "This post is empty"
 }

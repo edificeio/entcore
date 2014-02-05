@@ -127,5 +127,6 @@
 	"directory.activation": "Activation",
 	"directory.add": "Ajouter",
 	"directory.activated": "Activé",
-	"directory.resetPassword": "Réinitialiser le mot de passe"
+	"directory.resetPassword": "Réinitialiser le mot de passe",
+	"search.in.directory": "Plus de critères"
 }

@@ -122,5 +122,6 @@
 	"directory.login": "Identifier",
 	"directory.add": "Add",
 	"directory.activated": "Activated",
-	"directory.resetPassword": "Reset password"
+	"directory.resetPassword": "Reset password",
+	"search.in.directory": "Search in directory"
 }

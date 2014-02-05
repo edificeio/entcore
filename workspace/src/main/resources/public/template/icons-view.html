@@ -12,7 +12,9 @@
 				<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'">
-					<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />
+					<div class="clip">
+						<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />
+					</div>
 				</div>
 
 			</a>

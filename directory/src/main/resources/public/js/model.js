@@ -86,8 +86,19 @@ function Directory(){
 	})
 }
 
+function ClassAdmin(){
+	this.collection(User, {
+		sync: function(){
+			http().get('/directory/class/' + model.me.classId + '/users').done(function(data){
+				this.load(data);
+			}.bind(this));
+		}
+	})
+}
+
 model.build = function(){
-	this.makeModels([User, MyClass, Directory]);
+	this.makeModels([User, MyClass, Directory, ClassAdmin]);
 	this.myClass = new MyClass();
 	this.directory = new Directory();
+	this.classAdmin = new ClassAdmin();
 };

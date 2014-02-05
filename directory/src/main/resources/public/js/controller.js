@@ -131,16 +131,18 @@ function DirectoryController($scope, model, route){
 	$scope.openView('list-view', 'main');
 }
 
-function ClassAdmin($scope, model, date){
-	model.myClass.sync();
-	model.on('myClass.users.change', function(){
-		$scope.users = model.myClass.users;
+function ClassAdminController($scope, model, date){
+	model.classAdmin.sync();
+	$scope.classAdmin = model.classAdmin;
+
+	model.on('classAdmin.users.change', function(){
+		$scope.users = model.classAdmin.users;
 		$scope.$apply('users');
 	});
 
 	$scope.shortDate = function(dateString){
 		return moment(dateString).format('D/MM/YYYY');
-	}
+	};
 
 	$scope.display = {
 		show: 'Student',
