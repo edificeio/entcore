@@ -237,4 +237,32 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "class.apply.rules", type = ActionType.RESOURCE)
+	public void applyComRulesAndRegistryEvent(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				final String classId = request.params().get("classId");
+				JsonArray userIds = body.getArray("userIds");
+				if (userIds != null) {
+					schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> s) {
+							if (s.isRight()) {
+								JsonObject j = new JsonObject()
+										.putString("action", "setDefaultCommunicationRules")
+										.putString("schoolId", s.right().getValue().getString("id"));
+								eb.send("wse.communication", j);
+							}
+						}
+					});
+					ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+					request.response().end();
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
 }
