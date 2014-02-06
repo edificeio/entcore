@@ -70,6 +70,7 @@ public class OAuthDataHandler extends DataHandler {
 			String query =
 					"MATCH (n:User) " +
 					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
+					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
 					"RETURN n.id as userId, n.password as password";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);

@@ -16,4 +16,6 @@ public interface UserAuthAccount {
 
 	void sendResetCode(HttpServerRequest request, String login, String email, Handler<Boolean> handler);
 
+	void blockUser(String id, boolean block, Handler<Boolean> handler);
+
 }

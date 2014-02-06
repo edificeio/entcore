@@ -44,6 +44,8 @@ public class Auth extends Server {
 
 		auth.post("/sendResetPassword", "sendResetPassword");
 
+		auth.put("/block/:userId", "blockUser");
+
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
 		} catch (NoSuchMethodException | IllegalAccessException e) {

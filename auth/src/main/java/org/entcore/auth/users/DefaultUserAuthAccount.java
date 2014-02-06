@@ -205,6 +205,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
+	@Override
+	public void blockUser(String id, boolean block, final Handler<Boolean> handler) {
+		String query = "MATCH (n:`User` { id : {id}}) SET n.blocked = {block} return count(*) = 1 as exists";
+		JsonObject params = new JsonObject().putString("id", id).putBoolean("block", block);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				handler.handle("ok".equals(r.body().getString("status")) &&
+						r.body().getArray("result") != null && r.body().getArray("result").get(0) != null &&
+						((JsonObject) r.body().getArray("result").get(0)).getBoolean("exists", false));
+			}
+		});
+	}
+
 	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		params.put("password", pw);

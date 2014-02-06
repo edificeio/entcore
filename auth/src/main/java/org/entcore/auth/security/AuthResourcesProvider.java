@@ -28,6 +28,9 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(AuthController.class.getName().length() + 1);
 			switch (method) {
+				case "blockUser" :
+					isClassTeacher(request, user, handler);
+					break;
 				case "sendResetPassword" :
 					isClassTeacherByUserLogin(request, user, handler);
 					break;
@@ -36,6 +39,38 @@ public class AuthResourcesProvider implements ResourcesProvider {
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private void isClassTeacher(final HttpServerRequest request, UserInfos user,
+			final Handler<Boolean> handler) {
+		request.pause();
+		if ("SuperAdmin".equals(user.getType())) {
+			handler.handle(true);
+			return;
+		}
+		String id = request.params().get("userId");
+		if (id == null || id.trim().isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		String query =
+				"MATCH (t:`Teacher` { id : {teacherId}})-[:APPARTIENT]->(c:Class)" +
+				"<-[:APPARTIENT]-(s:User)-[:EN_RELATION_AVEC*0..1]->(u:User {id : {id}}) " +
+				"RETURN count(*) >= 1 as exists ";
+		JsonObject params = new JsonObject()
+				.putString("id", id)
+				.putString("teacherId", user.getUserId());
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				JsonArray res = r.body().getArray("result");
+				request.resume();
+				handler.handle(
+						"ok".equals(r.body().getString("status")) &&
+								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+				);
+			}
+		});
 	}
 
 	private void isClassTeacherByUserLogin(final HttpServerRequest request,

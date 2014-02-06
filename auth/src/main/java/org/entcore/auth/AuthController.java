@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import edu.one.core.infra.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.common.validation.StringValidation;
@@ -435,6 +436,27 @@ public class AuthController extends Controller {
 				}
 		  }
 				});
+	}
+
+	@SecuredAction( value = "auth.block.user", type = ActionType.RESOURCE)
+	public void blockUser(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				String userId = request.params().get("userId");
+				boolean block = json.getBoolean("block", true);
+				userAuthAccount.blockUser(userId, block, new org.vertx.java.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean r) {
+						if (Boolean.TRUE.equals(r)) {
+							request.response().end();
+						} else {
+							badRequest(request);
+						}
+					}
+				});
+			}
+		});
 	}
 
 	public void resetPassword(final HttpServerRequest request) {
