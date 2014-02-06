@@ -72,8 +72,19 @@ public class ClassController extends Controller {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
-				String classId = request.params().get("classId");
-				userService.createInClass(classId, body, notEmptyResponseHandler(request, 201));
+				final String classId = request.params().get("classId");
+				userService.createInClass(classId, body, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> r) {
+						if (r.isRight()) {
+							applyComRulesAndRegistryEvent(classId, new JsonArray().add(
+									r.right().getValue().getString("id")));
+							renderJson(request, r.right().getValue());
+						} else {
+							renderJson(request, new JsonObject().putString("error", r.left().getValue()));
+						}
+					}
+				});
 			}
 		});
 	}
@@ -176,18 +187,7 @@ public class ClassController extends Controller {
 											}
 										}
 									}
-									schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
-										@Override
-										public void handle(Either<String, JsonObject> s) {
-											if (s.isRight()) {
-												JsonObject j = new JsonObject()
-														.putString("action", "setDefaultCommunicationRules")
-														.putString("schoolId", s.right().getValue().getString("id"));
-												eb.send("wse.communication", j);
-											}
-										}
-									});
-									ApplicationUtils.publishModifiedUserGroup(eb, users);
+									ClassController.this.applyComRulesAndRegistryEvent(classId, users);
 									request.response().end();
 								} else {
 									renderError(request, message.body());
@@ -251,24 +251,28 @@ public class ClassController extends Controller {
 				final String classId = request.params().get("classId");
 				JsonArray userIds = body.getArray("userIds");
 				if (userIds != null) {
-					schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> s) {
-							if (s.isRight()) {
-								JsonObject j = new JsonObject()
-										.putString("action", "setDefaultCommunicationRules")
-										.putString("schoolId", s.right().getValue().getString("id"));
-								eb.send("wse.communication", j);
-							}
-						}
-					});
-					ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+					ClassController.this.applyComRulesAndRegistryEvent(classId, userIds);
 					request.response().end();
 				} else {
 					badRequest(request);
 				}
 			}
 		});
+	}
+
+	private void applyComRulesAndRegistryEvent(String classId, JsonArray userIds) {
+		schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> s) {
+				if (s.isRight()) {
+					JsonObject j = new JsonObject()
+							.putString("action", "setDefaultCommunicationRules")
+							.putString("schoolId", s.right().getValue().getString("id"));
+					eb.send("wse.communication", j);
+				}
+			}
+		});
+		ApplicationUtils.publishModifiedUserGroup(eb, userIds);
 	}
 
 }
