@@ -90,6 +90,7 @@ public class UserBookController extends Controller {
 							"MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->(m:User) " +
 							"WHERE n.id = {id} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 							"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " + filter +
+							"AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
 							"OPTIONAL MATCH m-[:USERBOOK]->u " +
 							"RETURN distinct m.id as id, m.displayName as displayName, " +
 							"u.mood as mood, u.userid as userId, u.picture as photo, " +
@@ -192,7 +193,7 @@ public class UserBookController extends Controller {
 							"WHERE n.id = {id} " +
 							"WITH c " +
 							"MATCH c<-[:APPARTIENT]-m " +
-							"WHERE NOT(m.login IS NULL) " +
+							"WHERE NOT(m.login IS NULL) AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
 							"OPTIONAL MATCH m-[:USERBOOK]->u " +
 							"RETURN distinct HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, m.id as id, " +
 							"m.displayName as displayName, u.mood as mood, " +

@@ -130,7 +130,7 @@ public class DefaultClassService implements ClassService {
 				"WHERE (" + type + ") " +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"m.login as login, m.activationCode as activationCode, m.birthDate as birthDate, " +
-				"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
+				"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, m.blocked as blocked " +
 				"ORDER BY type, login ";
 		neo.execute(query, new JsonObject().putString("classId", classId), validResultHandler(results));
 	}

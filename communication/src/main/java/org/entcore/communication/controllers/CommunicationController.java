@@ -384,7 +384,7 @@ public class CommunicationController extends Controller {
 					"XOR (type(r) = 'COMMUNIQUE'"+ l +
 					" AND (length(p) < 3 OR (ipg:ProfileGroup AND length(p) = 3)))) ";
 		}
-		query.append("WHERE n.id = {userId} ").append(condition);
+		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();
