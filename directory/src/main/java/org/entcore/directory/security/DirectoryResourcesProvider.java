@@ -45,7 +45,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			switch (method) {
 				case "updateUserBook" :
 				case "update" :
-					isTeacherOf(request, user, handler);
+					isUserOrTeacherOf(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}
@@ -54,11 +54,16 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		}
 	}
 
-	private void isTeacherOf(final HttpServerRequest request, UserInfos user,
+	private void isUserOrTeacherOf(final HttpServerRequest request, UserInfos user,
 			final Handler<Boolean> handler) {
 		String userId = request.params().get("userId");
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(false);
+			return;
+		}
+		// me
+		if (userId.equals(user.getUserId())) {
+			handler.handle(true);
 			return;
 		}
 		String query =
