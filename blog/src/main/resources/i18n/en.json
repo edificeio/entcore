@@ -38,6 +38,8 @@
 	"share.search.title" : "Search users and groups",
 	"share.search.placeholder" : "Ex: Emily, SMITH, Teachers in the school…",
 	"seemore" : "See more",
+	"draft": "(Draft)",
+	"submitted": "(Submitted post)",
 	"e404" : "Address not found",
 	"notfound" : "Blog doesn't exist",
 	"share.varyingrights" : "Caution, you will modify sharing rights of this folder: all documents and directories in this folder will be affected",
@@ -55,5 +57,6 @@
 	"blog.publish": "Publish",
 	"comment.placeholder": "Enter your comment",
 	"draft.saved": "Draft saved",
-	"post.empty": "This post is empty"
+	"post.empty": "This post is empty",
+	"draft.empty": "This draft is empty"
 }

@@ -4,7 +4,7 @@
 "auth.activation.title" : "Ativação da sua conta",
 "auth.activation.header" : "Ativar minha conta",
 "activation.error" : "Erro de ativação",
-"auth.login" : "Id",
+"auth.login" : "Conexão",
 "auth.activation.code" : "Còdigo de ativação",
 "auth.activation.password" : "Senha",
 "auth.activation.confirm.password" : "Confirmar a senha",

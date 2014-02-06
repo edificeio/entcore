@@ -1,5 +1,5 @@
 {
-	"cc": "Cc",
+	"cc": "Copy to",
 	"invalid": " will get the message after activating his account",
 	"undelivered": " doesn't access to conversation",
 	"inbox": "Inbox",
@@ -43,5 +43,5 @@
 	"reply.re": "Re: ",
 	"reply.fw": "Fw: ",
 	"updating": "Updating...",
-	"draft.empty": "This post is empty"
+	"draft.empty": "This draft is empty"
 }

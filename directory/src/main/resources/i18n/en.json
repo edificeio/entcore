@@ -18,6 +18,7 @@
 	"directory.admin.ok" : "Ok",
 	"directory.admin.form-error" : "Form Error",
 	"userBook.directory.title":"Directory",
+	"userBook.profile.title":"User details",
 	"directory.admin.id" : "Id",
 	"directory.admin.name" : "Name",
 	"directory.admin.schools" : "Schools",
@@ -91,6 +92,7 @@
 	"userBook.hobby.animals" : "Animals",
 	"userBook.hobby.music" : "Music",
 	"userBook.hobby.places" : "Places",
+	"userBook.mymood" : "My mood",
 	"userBook.mood.default" : "not specified",
 	"userBook.mood.happy" : "I'm happy",
 	"userBook.mood.proud" : "I'm proud",
@@ -123,5 +125,8 @@
 	"directory.add": "Add",
 	"directory.activated": "Activated",
 	"directory.resetPassword": "Reset password",
-	"search.in.directory": "Search in directory"
+	"search.in.directory": "Search in directory",
+	"search.run": "Search",
+	"directory": "Directory",
+	"birthday.class": "My class"
 }
