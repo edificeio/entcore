@@ -32,7 +32,7 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
-	public void create(String schoolId, JsonObject classe, Handler<Either<String, JsonObject>> result) {
+	public void create(String schoolId, JsonObject classe, final Handler<Either<String, JsonObject>> result) {
 		if (classe == null) {
 			classe = new JsonObject();
 		}
@@ -45,7 +45,8 @@ public class DefaultClassService implements ClassService {
 				"CREATE n<-[:APPARTIENT]-(c:Class {props})," +
 				"c<-[:DEPENDS]-(spg:ProfileGroup:Visible:ClassProfileGroup:ClassStudentGroup {studentGroup})," +
 				"c<-[:DEPENDS]-(tpg:ProfileGroup:Visible:ClassProfileGroup:ClassTeacherGroup {teacherGroup})," +
-				"c<-[:DEPENDS]-(rpg:ProfileGroup:Visible:ClassProfileGroup:ClassRelativeGroup {relativeGroup})";
+				"c<-[:DEPENDS]-(rpg:ProfileGroup:Visible:ClassProfileGroup:ClassRelativeGroup {relativeGroup}) " +
+				"RETURN c.id as id";
 		final String className = c.getString("name");
 		JsonObject params = new JsonObject()
 				.putString("schoolId", schoolId)
@@ -72,7 +73,18 @@ public class DefaultClassService implements ClassService {
 				.add("MATCH (n:`School` { id : {schoolId}})<-[:DEPENDS]-(sg:SchoolRelativeGroup), " +
 						"(c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:ClassRelativeGroup) " +
 						"CREATE UNIQUE cg-[:DEPENDS]->sg", p);
-		neo.executeTransaction(queries.build(), null, true, validUniqueResultHandler(result));
+		neo.executeTransaction(queries.build(), null, true, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				JsonArray results = r.body().getArray("results");
+				if ("ok".equals(r.body().getString("status")) && results != null) {
+					JsonArray createResult = results.get(0);
+					result.handle(new Either.Right<String, JsonObject>((JsonObject) createResult.get(0)));
+				} else {
+					result.handle(new Either.Left<String, JsonObject>(r.body().getString("errors")));
+				}
+			}
+		});
 	}
 
 	@Override

@@ -118,7 +118,7 @@ public class DirectoryController extends Controller {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject school) {
-				schoolService.create(school, defaultResponseHandler(request, 201));
+				schoolService.create(school, notEmptyResponseHandler(request, 201));
 			}
 		});
 	}
@@ -139,7 +139,7 @@ public class DirectoryController extends Controller {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject c) {
-				classService.create(schoolId, c, defaultResponseHandler(request, 201));
+				classService.create(schoolId, c, notEmptyResponseHandler(request, 201));
 			}
 		});
 	}
