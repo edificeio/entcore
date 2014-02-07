@@ -79,9 +79,9 @@ public class ClassController extends Controller {
 						if (r.isRight()) {
 							applyComRulesAndRegistryEvent(classId, new JsonArray().add(
 									r.right().getValue().getString("id")));
-							renderJson(request, r.right().getValue());
+							renderJson(request, r.right().getValue(), 201);
 						} else {
-							renderJson(request, new JsonObject().putString("error", r.left().getValue()));
+							renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
 						}
 					}
 				});
@@ -132,7 +132,7 @@ public class ClassController extends Controller {
 							}
 						});
 					} else {
-						renderJson(request, new JsonObject().putString("error", r.left().getValue()));
+						renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
 					}
 				}
 			};
