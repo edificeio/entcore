@@ -2,6 +2,7 @@ package org.entcore.directory.controllers;
 
 import edu.one.core.infra.Controller;
 import edu.one.core.infra.Either;
+import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Server;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -45,8 +46,9 @@ public class ClassController extends Controller {
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb,log);
+		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
 		this.classService = new DefaultClassService(neo, eb);
-		this.userService = new DefaultUserService(neo);
+		this.userService = new DefaultUserService(neo, notification);
 		schoolService = new DefaultSchoolService(neo);
 	}
 
@@ -77,8 +79,23 @@ public class ClassController extends Controller {
 					@Override
 					public void handle(Either<String, JsonObject> r) {
 						if (r.isRight()) {
-							applyComRulesAndRegistryEvent(classId, new JsonArray().add(
-									r.right().getValue().getString("id")));
+							final String userId = r.right().getValue().getString("id");
+							applyComRulesAndRegistryEvent(classId, new JsonArray().add(userId));
+							if (container.config().getBoolean("createdUserEmail", false) &&
+									request.params().contains("sendCreatedUserEmail")) {
+								userService.sendUserCreatedEmail(request, userId,
+										new Handler<Either<String, Boolean>>() {
+									@Override
+									public void handle(Either<String, Boolean> e) {
+										if (e.isRight()) {
+											log.info("User " + userId + " created email sent.");
+										} else {
+											log.error("Error sending user " + userId + " created email : " +
+											e.left().getValue());
+										}
+									}
+								});
+							}
 							renderJson(request, r.right().getValue(), 201);
 						} else {
 							renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);

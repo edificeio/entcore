@@ -1,6 +1,7 @@
 package org.entcore.directory.controllers;
 
 import edu.one.core.infra.Controller;
+import edu.one.core.infra.NotificationHelper;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.neo4j.Neo;
@@ -31,7 +32,8 @@ public class UserController extends Controller {
 			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb,log);
-		this.userService = new DefaultUserService(neo);
+		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
+		this.userService = new DefaultUserService(neo, notification);
 		this.userBookService = new DefaultUserBookService(neo);
 	}
 

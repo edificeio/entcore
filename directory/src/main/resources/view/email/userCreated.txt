@@ -1,0 +1,6 @@
+{{#i18n}}email.hi{{/i18n}}
+{{#i18n}}email.user.created.info{{/i18n}}
+{{#i18n}}email.login{{/i18n}}{{login}}
+{{#i18n}}email.activation.uri{{/i18n}}
+{{activationUri}}
+{{#i18n}}email.regards{{/i18n}}

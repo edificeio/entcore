@@ -128,5 +128,10 @@
 	"directory.add": "Ajouter",
 	"directory.activated": "Activé",
 	"directory.resetPassword": "Réinitialiser le mot de passe",
+	"email.hi" : "Bonjour,",
+	"email.user.created.info" : "\nVous venez de vous inscrire sur la plateforme.\n",
+	"email.login" : "\nVotre login : ",
+	"email.activation.uri" : "\nPour activer votre compte veuillez cliquer sur le lien ci-dessous et choisir un mot de passse.",
+	"email.regards" : "Cordialement.",
 	"search.in.directory": "Plus de critères"
 }

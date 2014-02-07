@@ -1,6 +1,7 @@
 package org.entcore.directory.services.impl;
 
 import edu.one.core.infra.Either;
+import edu.one.core.infra.NotificationHelper;
 import edu.one.core.infra.Utils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.datadictionary.generation.ActivationCodeGenerator;
@@ -10,11 +11,15 @@ import org.entcore.datadictionary.generation.LoginGenerator;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.UUID;
 
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
@@ -25,9 +30,12 @@ public class DefaultUserService implements UserService {
 	private final DisplayNameGenerator displayNameGenerator;
 	private final ActivationCodeGenerator activationCodeGenerator;
 	private final IdGenerator idGenerator;
+	private final NotificationHelper notification;
+	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
 
-	public DefaultUserService(Neo neo) {
+	public DefaultUserService(Neo neo, NotificationHelper notification) {
 		this.neo = neo;
+		this.notification = notification;
 		activationCodeGenerator = new ActivationCodeGenerator();
 		displayNameGenerator = new DisplayNameGenerator();
 		loginGenerator = new LoginGenerator();
@@ -94,6 +102,54 @@ public class DefaultUserService implements UserService {
 					neo.execute(query, u.putString("id", id), validUniqueResultHandler(result));
 				} else {
 					result.handle(new Either.Left<String, JsonObject>("invalid.user"));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void sendUserCreatedEmail(final HttpServerRequest request, String userId,
+			final Handler<Either<String, Boolean>> result) {
+		String query =
+				"MATCH (u:`User` { id : {id}}) WHERE NOT(u.email IS NULL) AND NOT(u.activationCode IS NULL) " +
+				"RETURN u.login as login, u.email as email, u.activationCode as activationCode ";
+		JsonObject params = new JsonObject().putString("id", userId);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				Either<String, JsonObject> r = validUniqueResult(m);
+				if (r.isRight()) {
+					JsonObject j = r.right().getValue();
+					String email = j.getString("email");
+					String login = j.getString("login");
+					String activationCode = j.getString("activationCode");
+					if (email == null || login == null || activationCode == null ||
+							email.trim().isEmpty() || login.trim().isEmpty() || activationCode.trim().isEmpty()) {
+						result.handle(new Either.Left<String, Boolean>("user.invalid.values"));
+						return;
+					}
+					JsonObject json = new JsonObject()
+							.putString("activationUri", notification.getHost() +
+									"/auth/activation?login=" + login +
+									"&activationCode=" + activationCode)
+							.putString("login", login);
+					logger.debug(json.encode());
+					notification.sendEmail(request, email, null, null,
+							"email.user.created", "email/userCreated.txt", json, true,
+							new Handler<Message<JsonObject>>() {
+
+								@Override
+								public void handle(Message<JsonObject> message) {
+									if ("ok".equals(message.body().getString("status"))) {
+										result.handle(new Either.Right<String, Boolean>(true));
+									} else {
+										result.handle(new Either.Left<String, Boolean>(
+												message.body().getString("message")));
+									}
+								}
+							});
+				} else {
+					result.handle(new Either.Left<String, Boolean>(r.left().getValue()));
 				}
 			}
 		});
