@@ -43,6 +43,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(UserController.class.getName().length() + 1);
 			switch (method) {
+				case "get" :
+				case "getUserBook" :
 				case "updateUserBook" :
 				case "update" :
 					isUserOrTeacherOf(request, user, handler);

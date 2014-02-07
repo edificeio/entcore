@@ -73,4 +73,6 @@ public interface UserService {
 
 	void sendUserCreatedEmail(HttpServerRequest request, String userId, Handler<Either<String, Boolean>> result);
 
+	void get(String id, Handler<Either<String, JsonObject>> result);
+
 }

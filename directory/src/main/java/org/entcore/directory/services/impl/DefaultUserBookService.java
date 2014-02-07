@@ -12,6 +12,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.Collections;
 
+import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultUserBookService implements UserBookService {
@@ -56,6 +57,16 @@ public class DefaultUserBookService implements UserBookService {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void get(String userId, Handler<Either<String, JsonObject>> result) {
+		String query =
+				"MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub: UserBook)" +
+				"OPTIONAL MATCH ub-[:PUBLIC|PRIVE]->(h:Hobby) " +
+				"RETURN ub, COLLECT(h) as hobbies ";
+		neo.execute(query, new JsonObject().putString("id", userId),
+				fullNodeMergeHandler("ub", result, "hobbies"));
 	}
 
 }

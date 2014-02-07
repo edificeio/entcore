@@ -14,4 +14,6 @@ public interface UserBookService {
 
 	void update(String userId, JsonObject userBook, Handler<Either<String, JsonObject>> result);
 
+	void get(String userId, Handler<Either<String, JsonObject>> result);
+
 }

@@ -78,7 +78,9 @@ public class Directory extends Server {
 				.put("/class/:classId/apply", "applyComRulesAndRegistryEvent");
 
 		userController
+				.get("/user/:userId", "get")
 				.put("/user/:userId", "update")
+				.get("/userbook/:userId", "getUserBook")
 				.put("/userbook/:userId", "updateUserBook");
 
 		try {

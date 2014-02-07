@@ -217,17 +217,6 @@ public class ClassController extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "class.update.user", type = ActionType.RESOURCE)
-	public void updateUser(final HttpServerRequest request) {
-		bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject body) {
-				String classId = request.params().get("classId");
-				classService.update(classId, body, defaultResponseHandler(request));
-			}
-		});
-	}
-
 	@SecuredAction(value = "class.add.user", type = ActionType.RESOURCE)
 	public void addUser(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {

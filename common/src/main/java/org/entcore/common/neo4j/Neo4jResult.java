@@ -4,9 +4,42 @@ import edu.one.core.infra.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
 public class Neo4jResult {
+
+	public static Either<String, JsonObject> fullNodeMerge(String nodeAttr,
+			Message<JsonObject> res, String... otherNodes) {
+		Either<String, JsonObject> r = validUniqueResult(res);
+		if (r.isRight()) {
+			JsonObject j = r.right().getValue();
+			JsonObject data = j.getObject(nodeAttr, new JsonObject()).getObject("data");
+			if (otherNodes != null && otherNodes.length > 0) {
+				for (String attr : otherNodes) {
+					JsonElement e = j.getElement(attr);
+					if (e == null) continue;
+					if (e instanceof JsonObject) {
+						data.putObject(attr, ((JsonObject) e).getObject("data"));
+					} else if (e instanceof JsonArray) {
+						JsonArray a = new JsonArray();
+						for (Object o : (JsonArray) e) {
+							if (!(o instanceof JsonObject)) continue;
+							JsonObject jo = (JsonObject) o;
+							a.addObject(jo.getObject("data"));
+						}
+						data.putArray(attr, a);
+					}
+					j.removeField(attr);
+				}
+			}
+			if (data != null) {
+				j.removeField(nodeAttr);
+				return new Either.Right<>(data.mergeIn(j));
+			}
+		}
+		return r;
+	}
 
 	public static Either<String, JsonObject> validUniqueResult(Message<JsonObject> res) {
 		Either<String, JsonArray> r = validResult(res);
@@ -39,6 +72,16 @@ public class Neo4jResult {
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}
+	}
+
+	public static Handler<Message<JsonObject>> fullNodeMergeHandler(final String nodeAttr,
+			final Handler<Either<String, JsonObject>> handler, final String... otherNodes) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(fullNodeMerge(nodeAttr, event, otherNodes));
+			}
+		};
 	}
 
 	public static Handler<Message<JsonObject>> validUniqueResultHandler(

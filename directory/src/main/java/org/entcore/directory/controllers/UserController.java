@@ -59,4 +59,16 @@ public class UserController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "user.get", type = ActionType.RESOURCE)
+	public void get(final HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		userService.get(userId, notEmptyResponseHandler(request));
+	}
+
+	@SecuredAction(value = "user.get.userbook", type = ActionType.RESOURCE)
+	public void getUserBook(final HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		userBookService.get(userId, notEmptyResponseHandler(request));
+	}
+
 }

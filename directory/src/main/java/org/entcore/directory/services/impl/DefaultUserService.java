@@ -19,8 +19,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.UUID;
 
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultUserService implements UserService {
@@ -153,6 +152,14 @@ public class DefaultUserService implements UserService {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void get(String id, Handler<Either<String, JsonObject>> result) {
+		String query =
+				"MATCH (u:`User` { id : {id}}) " +
+				"RETURN HEAD(filter(x IN labels(u) WHERE x <> 'Visible' AND x <> 'User')) as type, u";
+		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}
 
 	private void createStudent(String classId, JsonObject c, Handler<Either<String, JsonObject>> result) {
