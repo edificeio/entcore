@@ -325,6 +325,9 @@ public class AuthController extends Controller {
 		if (request.params().contains("activationCode")) {
 			json.putString("activationCode", request.params().get("activationCode"));
 		}
+		if (request.params().contains("login")) {
+			json.putString("login", request.params().get("login"));
+		}
 		renderView(request, json);
 	}
 
