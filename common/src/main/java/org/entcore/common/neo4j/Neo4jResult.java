@@ -12,7 +12,7 @@ public class Neo4jResult {
 	public static Either<String, JsonObject> fullNodeMerge(String nodeAttr,
 			Message<JsonObject> res, String... otherNodes) {
 		Either<String, JsonObject> r = validUniqueResult(res);
-		if (r.isRight()) {
+		if (r.isRight() && r.right().getValue().size() > 0) {
 			JsonObject j = r.right().getValue();
 			JsonObject data = j.getObject(nodeAttr, new JsonObject()).getObject("data");
 			if (otherNodes != null && otherNodes.length > 0) {
