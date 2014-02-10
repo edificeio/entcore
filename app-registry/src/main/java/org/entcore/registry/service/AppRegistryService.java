@@ -308,7 +308,12 @@ public class AppRegistryService extends Controller {
 						JsonArray r = res.body().getArray("result");
 						if (r != null && r.size() == 1) {
 							JsonObject j = r.get(0);
-							j.putString("scope", Joiner.on(" ").join(j.getArray("scope").toArray()));
+							JsonArray scope = j.getArray("scope");
+							if (scope != null && scope.size() > 0) {
+								j.putString("scope", Joiner.on(" ").join(scope.toArray()));
+							} else {
+								j.putString("scope", "");
+							}
 						}
 						renderJson(request, res.body());
 					}

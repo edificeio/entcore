@@ -9,7 +9,7 @@
     "name": "org.entcore~app-registry~1.5-SNAPSHOT"
   },
   "neo4j-persistor": {
-    "name": "com.wse.neo4j~neo4jPersistor~1.2.2",
+    "name": "com.wse.neo4j~neo4jPersistor~1.2.3",
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",
