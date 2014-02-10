@@ -84,8 +84,9 @@ public class BE1D {
 									String schoolFolder = porteurFolder + File.separator + f.getName();
 									String schoolName = f.getName();
 									String UAI = "";
-									if (f.getName().contains("|")) {
-										int idx = f.getName().lastIndexOf("|");
+									String separator = container.config().getString("uai-separator","|");
+									if (f.getName().contains(separator)) {
+										int idx = f.getName().lastIndexOf(separator);
 										String tUAI = f.getName().substring(idx + 1);
 										if (tUAI != null && tUAI.matches("[0-9]{7}[A-Z]")) {
 											UAI = tUAI;
