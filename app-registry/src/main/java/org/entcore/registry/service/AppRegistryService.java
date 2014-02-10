@@ -534,4 +534,42 @@ public class AppRegistryService extends Controller {
 		neo.execute(query, new JsonObject().putString("application", application), handler);
 	}
 
+	public void registryEventBusHandler(final Message<JsonObject> message) {
+		switch (message.body().getString("action", "")) {
+			case "setDefaultClassRoles" :
+				setDefaultClassRoles(
+						message.body().getString("classId"), new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						if (r != null) {
+							message.reply(r.body());
+						} else {
+							message.reply(new JsonObject().putString("status", "error")
+									.putString("message", "invalid.classId"));
+						}
+					}
+				});
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "invalid.action"));
+		}
+	}
+
+	private void setDefaultClassRoles(String classId, Handler<Message<JsonObject>> handler) {
+		if (classId == null || classId.trim().isEmpty()) {
+			handler.handle(null);
+			return;
+		}
+		String query =
+			"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ClassStudentGroup), " +
+			"c<-[:DEPENDS]-(ctg:ClassTeacherGroup), c<-[:DEPENDS]-(crg:ClassRelativeGroup), " +
+			"(rs:Role), (rt:Role), (rr:Role) " +
+			"WHERE rs.name =~ '^[A-Za-z0-9]+-(student|all)-default$' " +
+			"AND rt.name =~ '^[A-Za-z0-9]+-(teacher|all)-default$' " +
+			"AND rr.name =~ '^[A-Za-z0-9]+-(relative|all)-default$' " +
+			"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr";
+		neo.execute(query, new JsonObject().putString("id", classId), handler);
+	}
+
 }

@@ -12,6 +12,7 @@ import static org.entcore.common.appregistry.AppRegistryEvents.USER_GROUP_UPDATE
 public final class ApplicationUtils {
 
 	private static final String APP_REGISTRY_ADDRESS = "wse.app.registry.applications";
+	private static final String APP_REGISTRY_BUS_ADDRESS = "wse.app.registry.bus";
 	private ApplicationUtils() {}
 
 	public static void applicationAllowedUsers(EventBus eb, String application, Handler<JsonArray> handler) {
@@ -48,6 +49,12 @@ public final class ApplicationUtils {
 				new JsonObject().putString("type", USER_GROUP_UPDATED)
 						.putArray("users", a)
 		);
+	}
+
+	public static void setDefaultClassRoles(EventBus eb, String classId, Handler<Message<JsonObject>> handler) {
+		JsonObject json = new JsonObject();
+		json.putString("action", "setDefaultClassRoles").putString("classId", classId);
+		eb.send(APP_REGISTRY_BUS_ADDRESS, json, handler);
 	}
 
 }

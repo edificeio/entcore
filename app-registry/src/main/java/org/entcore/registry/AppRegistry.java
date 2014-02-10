@@ -15,6 +15,7 @@ public class AppRegistry extends Server {
 		try {
 			service.registerMethod(config.getString("address"), "collectApps");
 			service.registerMethod(config.getString("address") + ".applications", "applications");
+			service.registerMethod(config.getString("address") + ".bus", "registryEventBusHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}
