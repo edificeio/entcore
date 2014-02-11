@@ -11,6 +11,7 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 import java.util.*;
 
 import edu.one.core.infra.Either;
+import edu.one.core.infra.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
@@ -139,7 +140,28 @@ public class DirectoryController extends Controller {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject c) {
-				classService.create(schoolId, c, notEmptyResponseHandler(request, 201));
+				classService.create(schoolId, c, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+								String classId = event.right().getValue().getString("id");
+								if (classId != null && !classId.trim().isEmpty() &&
+										request.params().contains("setDefaultRoles") &&
+										config.getBoolean("classDefaultRoles", false)) {
+									ApplicationUtils.setDefaultClassRoles(eb, classId, null);
+								}
+								renderJson(request, event.right().getValue(), 201);
+							} else {
+								request.response().setStatusCode(404).end();
+							}
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("error", event.left().getValue());
+							renderJson(request, error, 400);
+						}
+					}
+				});
 			}
 		});
 	}
