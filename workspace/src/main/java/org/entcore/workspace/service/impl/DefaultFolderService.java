@@ -3,7 +3,10 @@ package org.entcore.workspace.service.impl;
 import static org.entcore.workspace.dao.DocumentDao.DOCUMENTS_COLLECTION;
 
 import com.mongodb.QueryBuilder;
-import edu.one.core.infra.*;
+import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.MongoQueryBuilder;
+import edu.one.core.infra.MongoUpdateBuilder;
+import fr.wseduc.webutils.*;
 import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.service.FolderService;
 import org.entcore.workspace.service.WorkspaceService;
@@ -19,7 +22,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import static edu.one.core.infra.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class DefaultFolderService implements FolderService {
 

@@ -1,6 +1,6 @@
 package org.entcore.common.notification;
 
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

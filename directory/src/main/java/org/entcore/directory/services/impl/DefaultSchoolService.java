@@ -1,7 +1,7 @@
 package org.entcore.directory.services.impl;
 
-import edu.one.core.infra.Either;
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;

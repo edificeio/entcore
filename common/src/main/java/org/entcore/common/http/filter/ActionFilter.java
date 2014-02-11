@@ -5,18 +5,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import edu.one.core.infra.security.SecureHttpServerRequest;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import edu.one.core.infra.request.filter.Filter;
+import fr.wseduc.webutils.request.filter.Filter;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import edu.one.core.infra.http.Binding;
-import edu.one.core.infra.security.ActionType;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.security.ActionType;
 
 public class ActionFilter implements Filter {
 

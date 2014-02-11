@@ -1,13 +1,13 @@
 package org.entcore.blog;
 
+import edu.one.core.infra.MongoDb;
 import org.entcore.blog.controllers.BlogController;
 import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.security.BlogResourcesProvider;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.http.Binding;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 
 import java.util.ArrayList;
 import java.util.List;

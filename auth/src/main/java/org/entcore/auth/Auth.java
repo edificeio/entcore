@@ -2,11 +2,11 @@ package org.entcore.auth;
 
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.request.filter.SecurityHandler;
-import edu.one.core.infra.request.filter.UserAuthFilter;
-import edu.one.core.infra.security.oauth.DefaultOAuthResourceProvider;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
+import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.neo4j.Neo;
 import org.vertx.java.core.eventbus.EventBus;
 

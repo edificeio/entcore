@@ -6,9 +6,9 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.DefaultConversationService;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.Either;
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.vertx.java.core.Handler;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static edu.one.core.infra.request.RequestUtils.bodyToJson;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
@@ -34,7 +34,7 @@ public class ConversationController extends Controller {
 	private final TimelineHelper notification;
 
 	public ConversationController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		this.conversationService = new DefaultConversationService(vertx,
 				container.config().getString("app-name", Conversation.class.getSimpleName()));

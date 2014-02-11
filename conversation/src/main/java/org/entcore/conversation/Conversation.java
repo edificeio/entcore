@@ -3,7 +3,7 @@ package org.entcore.conversation;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.impl.ConversationServiceManager;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 
 public class Conversation extends Server {
 

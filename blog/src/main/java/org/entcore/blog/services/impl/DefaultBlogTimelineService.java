@@ -1,11 +1,11 @@
 package org.entcore.blog.services.impl;
 
-import edu.one.core.infra.collections.Joiner;
+import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.MongoQueryBuilder;
+import fr.wseduc.webutils.collections.Joiner;
 import com.mongodb.QueryBuilder;
 import org.entcore.blog.services.BlogTimelineService;
 import org.entcore.common.notification.TimelineHelper;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.MongoQueryBuilder;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;

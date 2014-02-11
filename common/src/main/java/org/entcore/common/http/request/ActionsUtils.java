@@ -1,9 +1,9 @@
 package org.entcore.common.http.request;
 
 import org.entcore.common.user.UserUtils;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.http.Binding;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;

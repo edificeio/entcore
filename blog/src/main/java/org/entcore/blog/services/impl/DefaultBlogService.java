@@ -2,8 +2,11 @@ package org.entcore.blog.services.impl;
 
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.MongoQueryBuilder;
+import edu.one.core.infra.MongoUpdateBuilder;
 import org.entcore.blog.services.BlogService;
-import edu.one.core.infra.*;
+import fr.wseduc.webutils.*;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;

@@ -11,8 +11,9 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
-import edu.one.core.infra.*;
-import edu.one.core.infra.request.RequestUtils;
+import edu.one.core.infra.MongoDb;
+import fr.wseduc.webutils.*;
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.common.validation.StringValidation;
@@ -49,8 +50,8 @@ import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.request.CookieHelper;
-import edu.one.core.infra.security.SecureHttpServerRequest;
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -65,7 +66,7 @@ public class AuthController extends Controller {
 	private static final String USERINFO_SCOPE = "userinfo";
 
 	public AuthController(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb, log);
 		this.trace = trace;

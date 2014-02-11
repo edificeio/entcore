@@ -1,6 +1,6 @@
 package org.entcore.conversation.service.impl;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.appregistry.AppRegistryEventsService;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo;

@@ -1,7 +1,7 @@
 package org.entcore.datadictionary;
 
-import edu.one.core.infra.Server;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;

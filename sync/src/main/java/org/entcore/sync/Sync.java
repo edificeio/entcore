@@ -1,9 +1,9 @@
 package org.entcore.sync;
 
-import static edu.one.core.infra.http.Renders.*;
+import static fr.wseduc.webutils.http.Renders.*;
 
-import edu.one.core.infra.Server;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.sync.aaf.SyncManager;
 
 import org.vertx.java.core.Handler;

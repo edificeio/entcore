@@ -4,7 +4,7 @@ import static org.entcore.common.appregistry.AppRegistryEvents.*;
 
 import java.util.*;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -16,10 +16,10 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.Utils;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -29,7 +29,7 @@ public class AppRegistryService extends Controller {
 	private final Neo neo;
 
 	public AppRegistryService(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		neo = new Neo(Server.getEventBus(vertx), log);
 	}

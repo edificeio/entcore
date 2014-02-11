@@ -15,7 +15,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 
 public class BE1D {
 

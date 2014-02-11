@@ -1,7 +1,7 @@
 package org.entcore.common.http.response;
 
-import edu.one.core.infra.Either;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;

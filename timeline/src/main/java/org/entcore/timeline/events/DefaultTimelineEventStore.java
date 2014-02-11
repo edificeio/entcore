@@ -1,5 +1,6 @@
 package org.entcore.timeline.events;
 
+import edu.one.core.infra.MongoDb;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -7,8 +8,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 
 import java.util.List;
 

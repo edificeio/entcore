@@ -1,8 +1,8 @@
 package org.entcore.registry;
 
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.registry.service.AppRegistryService;
 
 public class AppRegistry extends Server {

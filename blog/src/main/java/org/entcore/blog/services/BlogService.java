@@ -1,7 +1,7 @@
 package org.entcore.blog.services;
 
 
-import edu.one.core.infra.Either;
+import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;

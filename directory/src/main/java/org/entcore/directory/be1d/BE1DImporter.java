@@ -20,14 +20,14 @@ import org.vertx.java.platform.Container;
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 
 import org.entcore.datadictionary.generation.ActivationCodeGenerator;
 import org.entcore.datadictionary.generation.DisplayNameGenerator;
 import org.entcore.datadictionary.generation.IdGenerator;
 import org.entcore.datadictionary.generation.LoginGenerator;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 
 public class BE1DImporter {
 

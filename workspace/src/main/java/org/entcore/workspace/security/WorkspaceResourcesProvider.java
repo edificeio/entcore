@@ -7,7 +7,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.http.Binding;
+import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.dao.DocumentDao;

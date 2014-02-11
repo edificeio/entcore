@@ -7,7 +7,7 @@ import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.services.PostService;
 import edu.one.core.infra.MongoDb;
 import edu.one.core.infra.MongoQueryBuilder;
-import edu.one.core.infra.http.Binding;
+import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;

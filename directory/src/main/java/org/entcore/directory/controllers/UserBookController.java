@@ -16,10 +16,10 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import org.entcore.datadictionary.validation.RegExpValidator;
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.http.HttpClientUtils;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.HttpClientUtils;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -35,7 +35,7 @@ public class UserBookController extends Controller {
 	private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
 	public UserBookController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
+		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
 			pathPrefix = "/userbook";
 			this.neo = new Neo(Server.getEventBus(vertx),log);

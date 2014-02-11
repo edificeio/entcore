@@ -3,7 +3,7 @@ package org.entcore.workspace.service;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
-import static edu.one.core.infra.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,11 +17,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mongodb.QueryBuilder;
+import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.MongoQueryBuilder;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
-import edu.one.core.infra.*;
+import fr.wseduc.webutils.*;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -34,7 +36,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.http.ETag;
+import fr.wseduc.webutils.http.ETag;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.ActionType;
@@ -58,7 +60,7 @@ public class WorkspaceService extends Controller {
 	private final FolderService folderService;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		mongo = new MongoDb(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));

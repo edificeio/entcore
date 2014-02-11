@@ -3,6 +3,7 @@ package org.entcore.blog.controllers;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.*;
 
+import edu.one.core.infra.MongoDb;
 import org.entcore.blog.services.BlogService;
 import org.entcore.blog.services.BlogTimelineService;
 import org.entcore.blog.services.impl.DefaultBlogService;
@@ -11,7 +12,7 @@ import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
-import edu.one.core.infra.*;
+import fr.wseduc.webutils.*;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ public class BlogController extends Controller {
 	private final ShareService shareService;
 
 	public BlogController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
+		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions,
 		MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
 		this.blog = new DefaultBlogService(mongo);
@@ -259,10 +260,10 @@ public class BlogController extends Controller {
 		});
 	}
 
-	private List<String> loadManagerActions(Collection<edu.one.core.infra.security.SecuredAction> actions) {
+	private List<String> loadManagerActions(Collection<fr.wseduc.webutils.security.SecuredAction> actions) {
 		List<String> managerActions = new ArrayList<>();
 		if (actions != null) {
-			for (edu.one.core.infra.security.SecuredAction a: actions) {
+			for (fr.wseduc.webutils.security.SecuredAction a: actions) {
 				if (a.getName() != null && "RESOURCE".equals(a.getType()) &&
 						"blog.manager".equals(a.getDisplayName())) {
 					managerActions.add(a.getName().replaceAll("\\.", "-"));

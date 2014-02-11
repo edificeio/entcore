@@ -4,7 +4,7 @@ import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-import edu.one.core.infra.http.Binding;
+import fr.wseduc.webutils.http.Binding;
 
 public interface ResourcesProvider {
 

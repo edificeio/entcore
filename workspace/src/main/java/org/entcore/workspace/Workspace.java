@@ -1,9 +1,9 @@
 package org.entcore.workspace;
 
 import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.vertx.java.core.Future;

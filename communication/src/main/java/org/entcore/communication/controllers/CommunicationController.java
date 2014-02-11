@@ -14,13 +14,13 @@ import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 
 import org.entcore.communication.profils.GroupProfil;
 import org.entcore.communication.profils.ProfilFactory;
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -33,7 +33,7 @@ public class CommunicationController extends Controller {
 			Arrays.asList("SuperAdmin", "Student", "Relative", "Principal", "Teacher"));
 
 	public CommunicationController(Vertx vertx, Container container,
-			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		neo = new Neo(Server.getEventBus(vertx), log);
 		pf = new ProfilFactory();

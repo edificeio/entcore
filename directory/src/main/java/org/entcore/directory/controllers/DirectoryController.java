@@ -1,6 +1,6 @@
 package org.entcore.directory.controllers;
 
-import static edu.one.core.infra.request.RequestUtils.bodyToJson;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
 import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
 import static org.entcore.common.appregistry.AppRegistryEvents.USER_GROUP_UPDATED;
@@ -10,8 +10,8 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
-import edu.one.core.infra.Either;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
@@ -27,7 +27,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 
 import org.entcore.datadictionary.dictionary.DefaultDictionary;
 import org.entcore.datadictionary.dictionary.Dictionary;
@@ -39,9 +39,9 @@ import org.entcore.directory.be1d.BE1D;
 import org.entcore.directory.profils.DefaultProfils;
 import org.entcore.directory.profils.Profils;
 import org.entcore.directory.users.UserQueriesBuilder;
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.security.BCrypt;
+import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.security.SecuredAction;
 
 
@@ -60,7 +60,7 @@ public class DirectoryController extends Controller {
 	private final ClassService classService;
 
 	public DirectoryController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions, JsonObject config) {
+		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
 			this.neo = new Neo(eb,log);
 			this.config = config;

@@ -58,7 +58,7 @@ subprojects {
 
 project(':common') {
   dependencies {
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -67,7 +67,7 @@ project(':admin') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -76,7 +76,7 @@ project(':app-registry') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -85,7 +85,7 @@ project(':auth') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
     compile "jp.eisbahn:oauth2-server:1.1.0"
   }
@@ -95,14 +95,14 @@ project(':communication') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
 
 project(':dataDictionary') {
   dependencies {
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }
 
@@ -111,7 +111,7 @@ project(':directory') {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile project(':dataDictionary')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "net.sf.opencsv:opencsv:$opencsvVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
@@ -121,13 +121,13 @@ project(':history') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }
 
 project(':infra') {
   dependencies {
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }
 
@@ -135,14 +135,14 @@ project(':portal') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }
 
 project(':sync') {
   dependencies {
     compile project(':dataDictionary')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }
 
@@ -150,7 +150,7 @@ project(':timeline') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -159,7 +159,7 @@ project(':blog') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }
@@ -168,7 +168,7 @@ project(':workspace') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
     testCompile 'com.ning:async-http-client:1.7.17'
     testCompile 'commons-codec:commons-codec:1.8'
@@ -179,7 +179,7 @@ project(':conversation') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "edu.one.core:web-utils:$webUtilsVersion"
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "com.wse:mongodb-helper:$mongodbHelperVersion"
   }
 }

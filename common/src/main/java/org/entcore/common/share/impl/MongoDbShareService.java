@@ -1,8 +1,11 @@
 package org.entcore.common.share.impl;
 
 import com.mongodb.QueryBuilder;
-import edu.one.core.infra.*;
-import edu.one.core.infra.security.SecuredAction;
+import edu.one.core.infra.MongoDb;
+import edu.one.core.infra.MongoQueryBuilder;
+import edu.one.core.infra.MongoUpdateBuilder;
+import fr.wseduc.webutils.*;
+import fr.wseduc.webutils.security.SecuredAction;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;

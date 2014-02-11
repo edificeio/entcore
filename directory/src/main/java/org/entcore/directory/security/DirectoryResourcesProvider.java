@@ -1,6 +1,6 @@
 package org.entcore.directory.security;
 
-import edu.one.core.infra.http.Binding;
+import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;

@@ -1,7 +1,7 @@
 package org.entcore.sync.aaf;
 
 import org.entcore.datadictionary.dictionary.Dictionary;
-import edu.one.core.infra.TracerHelper;
+import fr.wseduc.webutils.TracerHelper;
 import java.util.ArrayList;
 import java.util.List;
 import org.xml.sax.Attributes;

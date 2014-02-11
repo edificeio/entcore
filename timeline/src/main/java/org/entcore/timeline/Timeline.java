@@ -1,6 +1,6 @@
 package org.entcore.timeline;
 
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.entcore.timeline.controllers.TimelineController;
 
 public class Timeline extends Server {

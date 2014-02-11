@@ -4,7 +4,7 @@
  */
 package org.entcore.sync.aaf;
 
-import edu.one.core.infra.TracerHelper;
+import fr.wseduc.webutils.TracerHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

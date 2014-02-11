@@ -15,8 +15,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.entcore.datadictionary.dictionary.DefaultDictionary;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.TracerHelper;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.TracerHelper;
 
 /**
  *

@@ -1,6 +1,6 @@
 package org.entcore.history.controllers;
 
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import fr.wseduc.security.SecuredAction;
 
 import java.util.Map;
@@ -19,7 +19,7 @@ public class HistoryController extends Controller {
 	private final String logPath;
 
 	public HistoryController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 			super(vertx, container, rm, securedActions);
 			this.logPath = container.config().getString("log-path");
 		}

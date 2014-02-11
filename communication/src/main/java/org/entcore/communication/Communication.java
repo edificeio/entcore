@@ -1,10 +1,10 @@
 package org.entcore.communication;
 
 import org.entcore.communication.controllers.CommunicationController;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 
 public class Communication extends Server {
 

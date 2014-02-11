@@ -1,6 +1,6 @@
 package org.entcore.infra;
 
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;

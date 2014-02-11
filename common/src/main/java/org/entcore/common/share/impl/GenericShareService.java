@@ -2,9 +2,9 @@ package org.entcore.common.share.impl;
 
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
-import edu.one.core.infra.Either;
-import edu.one.core.infra.security.ActionType;
-import edu.one.core.infra.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.security.ActionType;
+import fr.wseduc.webutils.security.SecuredAction;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;

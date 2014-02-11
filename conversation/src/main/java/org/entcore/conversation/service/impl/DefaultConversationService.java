@@ -4,13 +4,13 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
-import edu.one.core.infra.collections.Joiner;
+import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.conversation.service.ConversationService;
-import edu.one.core.infra.Either;
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;

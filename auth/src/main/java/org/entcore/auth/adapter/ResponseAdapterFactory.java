@@ -1,6 +1,6 @@
 package org.entcore.auth.adapter;
 
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Utils;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class ResponseAdapterFactory {

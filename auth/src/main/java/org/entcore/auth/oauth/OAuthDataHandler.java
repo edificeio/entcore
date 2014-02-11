@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.one.core.infra.MongoDb;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.security.BCrypt;
+import fr.wseduc.webutils.security.BCrypt;
 
 public class OAuthDataHandler extends DataHandler {
 

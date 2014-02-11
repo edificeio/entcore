@@ -1,6 +1,6 @@
 package org.entcore.portal;
 
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Server;
 import org.entcore.portal.service.PortalService;
 
 public class Portal extends Server {

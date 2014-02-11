@@ -1,16 +1,16 @@
 package org.entcore.directory;
 
-import edu.one.core.infra.request.filter.UserAuthFilter;
-import edu.one.core.infra.security.oauth.DefaultOAuthResourceProvider;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
+import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.controllers.ClassController;
 import org.entcore.directory.controllers.DirectoryController;
 import org.entcore.directory.controllers.UserBookController;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.http.Binding;
-import edu.one.core.infra.http.Renders;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.ActionFilter;
-import edu.one.core.infra.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.directory.controllers.UserController;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.vertx.java.core.Handler;

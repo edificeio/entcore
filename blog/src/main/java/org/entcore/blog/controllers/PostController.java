@@ -3,13 +3,14 @@ package org.entcore.blog.controllers;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
+import edu.one.core.infra.MongoDb;
 import org.entcore.blog.security.BlogResourcesProvider;
 import org.entcore.blog.services.BlogTimelineService;
 import org.entcore.blog.services.PostService;
 import org.entcore.blog.services.impl.DefaultBlogTimelineService;
 import org.entcore.blog.services.impl.DefaultPostService;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.*;
+import fr.wseduc.webutils.*;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.ActionType;
@@ -30,7 +31,7 @@ public class PostController extends Controller {
 	private final BlogTimelineService timelineService;
 
 	public PostController(Vertx vertx, Container container,
-						  RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions,
+						  RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions,
 						  MongoDb mongo) {
 		super(vertx, container, rm, securedActions);
 		this.post = new DefaultPostService(mongo);

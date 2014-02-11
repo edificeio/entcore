@@ -1,8 +1,8 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.one.core.infra.request.CookieHelper;
-import edu.one.core.infra.security.SecureHttpServerRequest;
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;

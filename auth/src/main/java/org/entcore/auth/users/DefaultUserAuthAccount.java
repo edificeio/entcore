@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import edu.one.core.infra.Either;
+import fr.wseduc.webutils.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -14,9 +14,9 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.NotificationHelper;
-import edu.one.core.infra.Server;
-import edu.one.core.infra.security.BCrypt;
+import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.security.BCrypt;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
 

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
-import edu.one.core.infra.Utils;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -15,7 +15,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import edu.one.core.infra.Controller;
+import fr.wseduc.webutils.Controller;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -28,7 +28,7 @@ public class TimelineController extends Controller {
 	private final ConcurrentMap<String, String> eventsI18n;
 
 	public TimelineController(Vertx vertx, Container container,
-			RouteMatcher rm, Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		store = new DefaultTimelineEventStore(vertx, container);
 		eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");

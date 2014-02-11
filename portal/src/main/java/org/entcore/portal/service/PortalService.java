@@ -3,9 +3,9 @@ package org.entcore.portal.service;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.I18n;
-import edu.one.core.infra.http.StaticResource;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.StaticResource;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.portal.utils.ThemeUtils;
@@ -41,7 +41,7 @@ public class PortalService extends Controller {
 	private final Container container;
 
 	public PortalService(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		this.container = container;
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");

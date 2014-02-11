@@ -1,9 +1,9 @@
 package org.entcore.directory.controllers;
 
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.Either;
-import edu.one.core.infra.NotificationHelper;
-import edu.one.core.infra.Server;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static edu.one.core.infra.request.RequestUtils.bodyToJson;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
@@ -43,7 +43,7 @@ public class ClassController extends Controller {
 	private final SchoolService schoolService;
 
 	public ClassController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, edu.one.core.infra.security.SecuredAction> securedActions) {
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb,log);
 		NotificationHelper notification = new NotificationHelper(vertx, eb, container);

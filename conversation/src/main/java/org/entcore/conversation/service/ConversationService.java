@@ -2,7 +2,7 @@ package org.entcore.conversation.service;
 
 
 import org.entcore.common.user.UserInfos;
-import edu.one.core.infra.Either;
+import fr.wseduc.webutils.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
