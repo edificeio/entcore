@@ -3,7 +3,7 @@ var admin = function(){
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };
 	var personDataAdaptor = function (d) {
 		for (obj in d.result){
-			d.result[obj]['notActivated'] = d.result[obj].code === '' ? false : true;
+			d.result[obj]['notActivated'] = !d.result[obj].code ? false : true;
 			d.result[obj]['isProfessor'] = d.result[obj].type === 'Teacher' ? true : false;
 			d.result[obj]['isRelative'] = d.result[obj].type === 'Relative' ? true : false;
 		}
