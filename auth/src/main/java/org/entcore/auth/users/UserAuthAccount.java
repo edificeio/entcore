@@ -1,12 +1,13 @@
 package org.entcore.auth.users;
 
+import edu.one.core.infra.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public interface UserAuthAccount {
 
 	void activateAccount(String login, String activationCode, String password,
-			Handler<Boolean> handler);
+			Handler<Either<String, String>> handler);
 
 	void forgotPassword(HttpServerRequest request, String login, Handler<Boolean> handler);
 

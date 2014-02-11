@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import edu.one.core.infra.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -34,7 +35,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -56,24 +57,28 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					Server.getEventBus(vertx).publish(
 							container.config().getString("address.activation", "wse.activation.hack"),
 							jo);
-					handler.handle(true);
+					handler.handle(new Either.Right<String, String>(
+							res.body().getObject("result").getObject("0").getString("id")));
 				} else {
 					String q =
 							"MATCH (n:User) " +
 							"WHERE n.login = {login} AND n.activationCode IS NULL " +
 							"AND NOT(n.password IS NULL) " +
-							"RETURN n.password as password";
+							"RETURN n.password as password, n.id as id";
 					Map<String, Object> p = new HashMap<>();
 					p.put("login", login);
 					neo.send(q, p, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
-							handler.handle(
-									"ok".equals(event.body().getString("status")) &&
+							if ("ok".equals(event.body().getString("status")) &&
 									event.body().getObject("result").getObject("0") != null &&
 									BCrypt.checkpw(password, event.body().getObject("result").getObject("0")
-											.getString("password", ""))
-							);
+											.getString("password", ""))) {
+								handler.handle(new Either.Right<String, String>(
+										event.body().getObject("result").getObject("0").getString("id")));
+							} else {
+								handler.handle(new Either.Left<String, String>("invalid.activation"));
+							}
 						}
 					});
 				}

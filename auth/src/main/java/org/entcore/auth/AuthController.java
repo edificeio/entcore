@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import edu.one.core.infra.*;
 import edu.one.core.infra.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
@@ -47,12 +48,7 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
-import edu.one.core.infra.Controller;
-import edu.one.core.infra.I18n;
-import edu.one.core.infra.MongoDb;
 import org.entcore.common.neo4j.Neo;
-import edu.one.core.infra.TracerHelper;
-import edu.one.core.infra.Utils;
 import edu.one.core.infra.request.CookieHelper;
 import edu.one.core.infra.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
@@ -205,32 +201,37 @@ public class AuthController extends Controller {
 
 					@Override
 					public void handle(String userId) {
+						String c = callBack.toString();
 						if (userId != null && !userId.trim().isEmpty()) {
 							trace.info("Connexion de l'utilisateur " + login);
-							UserUtils.createSession(eb, userId,
-									new org.vertx.java.core.Handler<String>() {
-
-								@Override
-								public void handle(String sessionId) {
-									if (sessionId != null && !sessionId.trim().isEmpty()) {
-										CookieHelper.getInstance().setSigned("oneSessionId", sessionId,
-												container.config().getLong("cookie_timeout", 1800L),
-												request.response());
-										redirect(request, callBack.toString(), "");
-									} else {
-										viewLogin(request, "auth.error.authenticationFailed", callBack.toString());
-									}
-								}
-							});
+							createSession(userId, request, c);
 						} else {
 							trace.info("Erreur de connexion pour l'utilisateur " + login);
-							viewLogin(request, "auth.error.authenticationFailed", callBack.toString());
+							viewLogin(request, "auth.error.authenticationFailed", c);
 						}
 					}
 				});
 
 			}
 		});
+	}
+
+	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
+		UserUtils.createSession(eb, userId,
+				new org.vertx.java.core.Handler<String>() {
+
+					@Override
+					public void handle(String sessionId) {
+						if (sessionId != null && !sessionId.trim().isEmpty()) {
+							CookieHelper.getInstance().setSigned("oneSessionId", sessionId,
+									container.config().getLong("cookie_timeout", 1800L),
+									request.response());
+							redirect(request, callBack, "");
+						} else {
+							viewLogin(request, "auth.error.authenticationFailed", callBack);
+						}
+					}
+				});
 	}
 
 	public void logout(final HttpServerRequest request) {
@@ -354,13 +355,18 @@ public class AuthController extends Controller {
 					renderView(request, error);
 				} else {
 					userAuthAccount.activateAccount(login, activationCode, password,
-							new org.vertx.java.core.Handler<Boolean>() {
+							new org.vertx.java.core.Handler<Either<String, String>>() {
 
 						@Override
-						public void handle(Boolean activated) {
-							if (Boolean.TRUE.equals(activated)) {
+						public void handle(Either<String, String> activated) {
+							if (activated.isRight() && activated.right().getValue() != null) {
 								trace.info("Activation du compte utilisateur " + login);
-								redirect(request, "/auth/login");
+								if (container.config().getBoolean("activationAutoLogin", false)) {
+									createSession(activated.right().getValue(), request,
+											container.config().getString("host"));
+								} else {
+									redirect(request, "/auth/login");
+								}
 							} else {
 								trace.info("Echec de l'activation : compte utilisateur " + login +
 										" introuvable ou déjà activé.");
