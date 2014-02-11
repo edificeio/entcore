@@ -29,21 +29,23 @@ public class Neo  {
 		eb.send(address, jo, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray results = event.body().getArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null) {
-					for (Object o : results) {
-						if (!(o instanceof JsonObject)) continue;
-						JsonObject j = (JsonObject) o;
-						int i = 0;
-						JsonObject r = new JsonObject();
-						for (Object o2 : j.getArray("result")) {
-							if (!(o2 instanceof JsonObject)) continue;
-							r.putObject(String.valueOf(i++), (JsonObject) o2);
+				if (handler != null) {
+					JsonArray results = event.body().getArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null) {
+						for (Object o : results) {
+							if (!(o instanceof JsonObject)) continue;
+							JsonObject j = (JsonObject) o;
+							int i = 0;
+							JsonObject r = new JsonObject();
+							for (Object o2 : j.getArray("result")) {
+								if (!(o2 instanceof JsonObject)) continue;
+								r.putObject(String.valueOf(i++), (JsonObject) o2);
+							}
+							j.putObject("result", r);
 						}
-						j.putObject("result", r);
 					}
+					handler.handle(event);
 				}
-				handler.handle(event);
 			}
 		});
 	}
