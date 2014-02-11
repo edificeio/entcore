@@ -286,7 +286,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				author: $scope.me.userId,
 				authorName: $scope.me.username,
 				comment: $scope.targetDocument.comment,
-				posted: new Date()
+				posted: undefined
 			});
 			$scope.documentComment = $scope.targetDocument;
 			$scope.$apply();
@@ -470,7 +470,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.longDate = function(dateString){
 		if(!dateString){
-			return '';
+			return moment().format('D MMMM YYYY');
 		}
 
 		return date.format(dateString.split(' ')[0], 'D MMMM YYYY')

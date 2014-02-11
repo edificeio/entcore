@@ -270,11 +270,13 @@ p{
 				margin: 0;
 				a{
 					margin: 0;
+					padding-left: 5px;
 					.user{
 						display: inline-block;
 						.five;
-						height: 35px;
+						height: 100%;
 						line-height: 100%;
+						vertical-align: middle;
 						p{
 							margin: 0;
 						}
@@ -282,6 +284,7 @@ p{
 					.date{
 						.right-magnet;
 						display: inline-block;
+						vertical-align: middle;
 						h2, h4{
 							margin: 0;
 						}
@@ -294,7 +297,7 @@ p{
 					img{
 						height: 35px;
 						width: 35px;
-						vertical-align: bottom;
+						vertical-align: middle;
 						margin-right: 10px;
 					}
 				}
@@ -481,19 +484,37 @@ table{
 	tr.checked{
 		background: #eee;
 	}
+	tr.disabled{
+		color: #999;
+	}
+}
+
+.light-style{
+	tr{
+		border: 1px solid #fff;
+	}
 }
 
 article{
 	border: 1px solid #ccc;
 }
 
-table.list-view{
-	width: 100%;
+
+table{
 	tr.overline{
 		border-bottom: none;
 	}
+
 	tr.underline{
 		border-top: none;
+	}
+}
+
+
+table.list-view{
+	width: 100%;
+
+	tr.underline{
 		padding-bottom: 15px;
 		td{
 			vertical-align: bottom;
@@ -594,17 +615,17 @@ a{
 }
 
 .drop-down.hidden{
-	height: 0px;
+	max-height: 0px;
 }
 
 .drop-down{
 	overflow: hidden;
 	position: absolute;
 	z-index: 10000;
-	height: 150px;
+	max-height: 260px;
 	background: #eee;
 	cursor: pointer;
-	.run-transition(height, 200ms, ease-in-out);
+	.run-transition(max-height, 200ms, ease-in-out);
 	ul{
 		padding: 0px;
 		padding-top: 10px;
@@ -845,10 +866,17 @@ ul.icons-view.two-cols{
 	}
 }
 
+.inline-editing{
+	color: #666;
+}
+
 .small-text{
 	font-size: 12px;
-	a{
+	a, em, label, span{
 		font-size: 12px;
+	}
+	input.inline-editing{
+		margin-top: 0px;
 	}
 }
 

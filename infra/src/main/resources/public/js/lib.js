@@ -123,7 +123,7 @@ var lang = (function(){
 }());
 
 var http = (function(){
-	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400'];
+	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400', 'e413'];
 
 
 	function Http(){

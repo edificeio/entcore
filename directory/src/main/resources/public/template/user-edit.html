@@ -1,0 +1,63 @@
+<div class="cell absolute four reduce-block-six">
+	<div class="fluid twelve cell" loading-panel="avatar">
+		<img data-ng-src="document/[[account.picture]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=[[account.pictureVersion]]&thumbnail=290x290" alt="user"
+			 class="absolute" for="photo" ng-class="{ 'file-selector': account.edit.userbook }" />
+	</div>
+</div>
+<div class="eight cell absolute right-magnet reduce-block-six">
+	<article class="fluid cell twelve small-text reduce-block-six">
+		<h2>[[account.displayName]]</h2>
+		<div class="row">
+			<label translate content="userBook.profile.login" class="four cell"></label>
+			<em class="seven cell">[[account.login]]</em>
+		</div>
+		<div class="row" ng-if="account.id === me.userId">
+			<label translate content="userBook.profile.password" class="four cell"></label>
+			<em class="eight cell">
+				<a data-ng-click="openPasswordDialog()" translate content="change.password"></a>
+			</em>
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.firstName" class="four cell"></label>
+			<input class="seven cell inline-editing" type="text" ng-model="account.firstName" complete-change="saveChanges()" />
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.lastName" class="four cell"></label>
+			<input class="seven cell inline-editing" type="text" ng-model="account.lastName" complete-change="saveChanges()" />
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.displayName" class="four cell"></label>
+			<input class="seven cell inline-editing" type="text" ng-model="account.displayName" complete-change="saveChanges()" />
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.email" class="four cell"></label>
+			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.email" />
+			<i role="[[account.visible.email]]" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
+			<div class="clear"></div>
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.telephone" class="four cell"></label>
+			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.homePhone" />
+			<i role="[[account.visible.phone]]" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
+			<div class="clear"></div>
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.address" class="four cell"></label>
+			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.address" />
+			<i role="[[account.visible.mail]]" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
+			<div class="clear"></div>
+		</div>
+		<div class="row">
+			<label translate content="userBook.profile.birthdate" class="four cell"></label>
+			<date-picker
+					ng-if="account.type === 'Student'"
+					ng-model="account.birthDate"
+					ng-change="saveChanges()"
+					class="inline-editing seven">
+			</date-picker>
+			<em class="seven cell" ng-if="account.type !== 'Student'">[[longDate(account.birthDate)]]</em>
+			<i role="[[account.visible.birthdate]]" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
+			<div class="clear"></div>
+		</div>
+	</article>
+</div>

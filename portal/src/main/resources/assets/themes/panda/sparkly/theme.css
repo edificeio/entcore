@@ -791,13 +791,15 @@ p i {
 }
 .birthday nav.vertical ul li a {
   margin: 0;
+  padding-left: 5px;
 }
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
   width: 41.66666666666667%;
-  height: 35px;
+  height: 100%;
   line-height: 100%;
+  vertical-align: middle;
 }
 .birthday nav.vertical ul li a .user p {
   margin: 0;
@@ -805,6 +807,7 @@ p i {
 .birthday nav.vertical ul li a .date {
   float: right !important;
   display: inline-block;
+  vertical-align: middle;
 }
 .birthday nav.vertical ul li a .date h2,
 .birthday nav.vertical ul li a .date h4 {
@@ -817,7 +820,7 @@ p i {
 .birthday nav.vertical ul li a img {
   height: 35px;
   width: 35px;
-  vertical-align: bottom;
+  vertical-align: middle;
   margin-right: 10px;
 }
 .horizontal-spacing {
@@ -1098,17 +1101,25 @@ table tr {
 table tr.checked {
   background: #eee;
 }
+table tr.disabled {
+  color: #999;
+}
+.light-style tr {
+  border: 1px solid #fff;
+}
 article {
   border: 1px solid #ccc;
+}
+table tr.overline {
+  border-bottom: none;
+}
+table tr.underline {
+  border-top: none;
 }
 table.list-view {
   width: 100%;
 }
-table.list-view tr.overline {
-  border-bottom: none;
-}
 table.list-view tr.underline {
-  border-top: none;
   padding-bottom: 15px;
 }
 table.list-view tr.underline td {
@@ -1192,19 +1203,19 @@ a {
   box-sizing: border-box;
 }
 .drop-down.hidden {
-  height: 0px;
+  max-height: 0px;
 }
 .drop-down {
   overflow: hidden;
   position: absolute;
   z-index: 10000;
-  height: 150px;
+  max-height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: height 200ms ease-in-out;
-  -moz-transition: height 200ms ease-in-out;
-  -webkit-transition: height 200ms ease-in-out;
-  transition: height 200ms ease-in-out;
+  -o-transition: max-height 200ms ease-in-out;
+  -moz-transition: max-height 200ms ease-in-out;
+  -webkit-transition: max-height 200ms ease-in-out;
+  transition: max-height 200ms ease-in-out;
 }
 .drop-down ul {
   padding: 0px;
@@ -1222,13 +1233,13 @@ a {
   overflow: hidden;
   position: absolute;
   z-index: 10000;
-  height: 150px;
+  max-height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: height 200ms ease-in-out;
-  -moz-transition: height 200ms ease-in-out;
-  -webkit-transition: height 200ms ease-in-out;
-  transition: height 200ms ease-in-out;
+  -o-transition: max-height 200ms ease-in-out;
+  -moz-transition: max-height 200ms ease-in-out;
+  -webkit-transition: max-height 200ms ease-in-out;
+  transition: max-height 200ms ease-in-out;
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.3);
   background: #fff;
   -webkit-border-bottom-left-radius: 5px;
@@ -1263,6 +1274,10 @@ a {
 }
 .dropdown-menu ul li {
   list-style-type: none;
+  font-size: 14px;
+}
+.dropdown-menu ul li a {
+  font-size: 14px;
 }
 .dropdown-menu ul li:hover {
   background: #3889c1;
@@ -1474,11 +1489,20 @@ ul.icons-view.two-cols li.element {
   border: 1px solid;
   padding: 6px;
 }
+.inline-editing {
+  color: #666;
+}
 .small-text {
   font-size: 12px;
 }
-.small-text a {
+.small-text a,
+.small-text em,
+.small-text label,
+.small-text span {
   font-size: 12px;
+}
+.small-text input.inline-editing {
+  margin-top: 0px;
 }
 .medium-text {
   font-size: 14px;
@@ -3337,6 +3361,18 @@ i[role=cancel] {
   -o-border-radius: 10px;
   border-radius: 10px;
 }
+.info {
+  color: #2f8cc9;
+  background: #ebf4f9;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
 blockquote {
   background: #f6f6f6;
   color: #666;
@@ -3437,7 +3473,6 @@ button {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  padding-bottom: 5px;
   border-radius: 10px;
   font-size: 23px;
   border: 1px solid #eee;
@@ -4015,6 +4050,13 @@ h3 {
   cursor: pointer;
 }
 .search input[type=submit] {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
   height: 28px;
   font-size: 18px;
   padding-top: 4px;
@@ -4030,7 +4072,17 @@ h3 {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+.search input[type=submit] img {
+  max-width: 100%;
+}
 .search input[type=search] {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
   padding: 5px;
   color: #888;
   padding-left: 27px;
@@ -4046,6 +4098,9 @@ h3 {
   -o-border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
+}
+.search input[type=search] img {
+  max-width: 100%;
 }
 .photo-preview {
   background: #fff;
@@ -4370,6 +4425,14 @@ table tbody .checked {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+}
+table tbody .disabled {
+  background: #f6f6f6;
+  color: #888;
+  font-style: italic;
+}
+table tbody .disabled a {
+  color: #888;
 }
 table tbody tr:last-child td:first-child {
   -moz-border-bottom-left-radius: 5px;
@@ -4827,6 +4890,10 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .drop-down ul li {
   list-style-type: none;
+  font-size: 14px;
+}
+.drop-down ul li a {
+  font-size: 14px;
 }
 .drop-down ul li:hover {
   background: #3889c1;
@@ -4947,7 +5014,8 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 .filters li.legend {
   color: #666;
 }
-.humane-original-error {
+.humane-original-error,
+.humane-original-info {
   border: 3px solid #fff;
   font-family: KGJune;
   font-size: 30px;
@@ -4960,6 +5028,7 @@ html {
 }
 body {
   font-family: Arial;
+  font-size: 14px;
 }
 body .container {
   width: 960px;

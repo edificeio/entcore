@@ -55,7 +55,7 @@ function DirectoryController($scope, model, route){
 	route({
 		viewUser: function(params){
 			new User({ id: params.userId }).select();
-
+			$scope.users = model.directory.users;
 			$scope.openView('profile', 'page');
 			$scope.title = 'profile';
 		},
@@ -131,13 +131,34 @@ function DirectoryController($scope, model, route){
 	$scope.openView('list-view', 'main');
 }
 
-function ClassAdminController($scope, model, date){
+function ClassAdminController($scope, model, date, notify){
 	model.classAdmin.sync();
 	$scope.classAdmin = model.classAdmin;
+	$scope.users = model.classAdmin.users;
+	$scope.newUser = new User();
+	$scope.import = {};
 
-	model.on('classAdmin.users.change', function(){
-		$scope.users = model.classAdmin.users;
-		$scope.$apply('users');
+	$scope.viewsContainers = {};
+	$scope.openView = function(view, name){
+		if(name === 'lightbox'){
+			ui.showLightbox();
+		}
+		var viewsPath = '/directory/public/template/';
+		$scope.viewsContainers[name] = viewsPath + view + '.html';
+	};
+
+	$scope.containsView = function(name, view){
+		var viewsPath = '/directory/public/template/';
+		return $scope.viewsContainers[name] === viewsPath + view + '.html';
+	};
+
+	model.on('classAdmin.change, classAdmin.users.change', function(){
+		$scope.display.importing = false;
+		if(!$scope.$$phase){
+			$scope.$apply('users');
+			$scope.$apply('display');
+			$scope.$apply('classAdmin');
+		}
 	});
 
 	$scope.shortDate = function(dateString){
@@ -146,19 +167,124 @@ function ClassAdminController($scope, model, date){
 
 	$scope.display = {
 		show: 'Student',
-		selectAll: false
+		relative: 'Relative',
+		selectAll: false,
+		limit: 20,
+		relativeSearch: ''
 	};
 
 	$scope.show = function(tab){
+		model.classAdmin.users.deselectAll();
 		$scope.display.show = tab;
+		$scope.display.limit = 20;
+		if(tab === 'Relative'){
+			$scope.display.relative = 'Student';
+		}
+		else{
+		   $scope.display.relative = 'Relative';
+		}
+	};
+
+	$scope.showMore = function(){
+		$scope.display.limit += 20;
+	};
+
+	$scope.clearSearch = function(){
+		$scope.display.relativeSearch = '';
+		$scope.updateFoundRelatives();
+	};
+
+	$scope.updateFoundRelatives = function(){
+		if(!$scope.display.relativeSearch){
+			$scope.foundRelatives = '';
+			return;
+		}
+		$scope.foundRelatives = _.filter(
+			model.myClass.users.match.call(
+				model.classAdmin.users,
+				$scope.display.relativeSearch
+			),
+			function(user){
+				return user.type === $scope.display.relative && $scope.newUser.relatives.indexOf(user) === -1;
+			}
+		);
+	};
+
+	$scope.addRelative = function(){
+		$scope.newUser.relatives.push($scope.newUser.newRelative);
+		$scope.clearSearch();
+	};
+
+	$scope.removeRelative = function(relative){
+		$scope.newUser.removeRelative(relative);
 	};
 
 	$scope.switchAll = function(){
 		if($scope.display.selectAll){
-			model.myClass.users.selectAll();
+			model.classAdmin.users.selectAll();
 		}
 		else{
-			model.myClass.users.deselectAll();
+			model.classAdmin.users.deselectAll();
 		}
+	};
+
+	$scope.saveClassInfos = function(){
+		model.classAdmin.saveClassInfos();
+	};
+
+	$scope.importCSV = function(){
+		$scope.display.importing = true;
+		model.classAdmin.importFile($scope.import.csv, $scope.display.show.toLowerCase());
+		ui.hideLightbox();
+	};
+
+	$scope.grabUser = function(user){
+		model.classAdmin.grabUser(user);
+		notify.info('user.added');
+		ui.hideLightbox();
+		$scope.newUser = new User();
+	};
+
+	$scope.createUser = function(){
+		ui.hideLightbox();
+		var user = $scope.newUser;
+		user.type = $scope.display.show;
+		model.classAdmin.addUser(user);
+		$scope.newUser = new User();
+		$('#lastName').focus();
+		notify.info('user.added');
+	};
+
+	$scope.addUser = function(){
+		$scope.clearSearch();
+		$scope.existingMatchs = model.myClass.users.match.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
+		if($scope.existingMatchs.length > 0 && $scope.display.show === 'Student'){
+			$scope.openView('link-user', 'lightbox');
+			return;
+		}
+
+		$scope.createUser();
+	};
+
+	$scope.blockUsers = function(){
+		model.classAdmin.blockUsers(true);
+	};
+
+	$scope.unblockUsers = function(){
+		model.classAdmin.blockUsers(false);
+	};
+
+	$scope.resetPasswords = function(){
+		if(!model.me.email){
+			notify.error('error.missing.mail');
+		}
+		else{
+			notify.info('info.passwords.sent');
+			model.classAdmin.resetPasswords();
+		}
+	};
+
+	$scope.uploadPhoto = function(){
+		$scope.newUser.uploadAvatar()
 	}
 }

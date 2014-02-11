@@ -1,58 +1,74 @@
-var personDataExtractor = function(d) {
-	var person = d.result[0];
-
-	person['hobbies'] = [];
-	d.result[0].category.forEach(function(c,index){
-		person['hobbies'].push({
-			"category" : c,
-			"values" : d.result[0].values[index],
-			"visibility" : d.result[0].visibility[index].toLowerCase()
-		});
-	});
-
-	person['relations'] = [];
-	_.values(d.result).forEach(function(o){
-		person['relations'].push(_.pick(o, 'relatedId', 'relatedName','relatedType'));
-	});
-
-	person.picture = person.photo;
-	person.visible = {};
-	person.visible.email = ($.inArray("SHOW_EMAIL", person.visibleInfos) >= 0) ? "public" : "prive";
-	person.visible.mail = ($.inArray("SHOW_MAIL", person.visibleInfos) >= 0) ? "public" : "prive";
-	person.visible.phone = ($.inArray("SHOW_PHONE", person.visibleInfos) >= 0) ? "public" : "prive";
-	person.visible.birthdate = ($.inArray("SHOW_BIRTHDATE", person.visibleInfos) >= 0) ? "public" : "prive";
-	person.visible.health = ($.inArray("SHOW_HEALTH", person.visibleInfos) >= 0) ? "public" : "prive";
-	// TODO : extract in conf system
-	return person;
-};
-
-function MyAccount($scope, lang, date, notify, _){
-	$scope.account = {};
-	var moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
-	$scope.moods = [];
-
-	moods.forEach(function(mood){
-		$scope.moods.push({
-			icon: mood,
-			text: lang.translate('userBook.mood.' + mood),
-			id: mood
+routes.define(function($routeProvider){
+	$routeProvider
+		.when('/edit-user/:id', {
+			action: 'editUser'
 		})
+		.when('/edit-user-infos/:id', {
+			action: 'editUserInfos'
+		})
+		.otherwise({
+			action: 'editMe'
+		});
+});
+
+function MyAccount($scope, lang, date, notify, route){
+	route({
+		editUserInfos: function(params){
+			model.account = new User({ id: params.id, edit: { infos: true } });
+			init();
+			$scope.openView('user-edit', 'user');
+		},
+		editUser: function(params){
+			model.account = new User({ id: params.id, edit: { userbook: true, infos: true } });
+			init();
+			$scope.openView('user-edit', 'user');
+			$scope.openView('userbook-edit', 'userbook');
+		},
+		editMe: function(params){
+			model.account = new User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
+			if(model.me.type === 'ENSEIGNANT'){
+				model.account.edit.infos = true;
+				$scope.openView('user-edit', 'user');
+			}
+			else{
+				$scope.openView('user-view', 'user');
+			}
+			init();
+
+			$scope.openView('userbook-edit', 'userbook');
+		}
 	});
 
-	$scope.availableMoods = _.reject($scope.moods, function(mood){
-			return mood.id === 'default';
-		});
-
-	$scope.resetPasswordPath = '/auth/reset/password';
-
-	http().get('api/person')
-		.done(function(data){
-			$scope.account = personDataExtractor(data);
-			$scope.account.pictureVersion = 0;
-			$scope.account.mood = _($scope.moods).where({id: $scope.account.mood})[0];
-			$scope.account.photo = {};
+	function init(){
+		$scope.me = model.me;
+		model.account.on('change', function(){
 			$scope.$apply();
 		});
+
+		model.account.load();
+		$scope.account = model.account;
+	}
+
+	$scope.display = {};
+
+	$scope.viewsContainers = {};
+	$scope.openView = function(view, name){
+		var viewsPath = '/directory/public/template/';
+		$scope.viewsContainers[name] = viewsPath + view + '.html';
+	};
+
+	$scope.containsView = function(name, view){
+		var viewsPath = '/directory/public/template/';
+		return $scope.viewsContainers[name] === viewsPath + view + '.html';
+	};
+
+	$scope.moods = User.prototype.moods;
+
+	$scope.availableMoods = _.reject($scope.moods, function(mood){
+		return mood.id === 'default';
+	});
+
+	$scope.resetPasswordPath = '/auth/reset/password';
 
 	$scope.birthDate = function(birthDate){
 		if(birthDate){
@@ -65,25 +81,8 @@ function MyAccount($scope, lang, date, notify, _){
 		return lang.translate(label);
 	};
 
-	$scope.updateMood = function(){
-		http().get('api/edit-userbook-info?prop=mood&value=' + $scope.account.mood.id);
-	}
-
-	$scope.saveHobby = function(hobby){
-		http().get('api/edit-userbook-info', hobby);
-	};
-
-	$scope.saveProperty = function(property){
-		//new lines formatting
-		var savedValue = $scope.account[property].replace(/[\n]/g, '%0a');
-		http().get('api/edit-userbook-info?prop=' + property + '&value=' + savedValue);
-	};
-
-	$scope.saveMail = function(value){
-		http().get('api/edit-user-info?prop=email&value=' + value)
-			.e400(function(){
-				notify.error('mail.invalid')
-			});
+	$scope.saveChanges = function(){
+		model.account.saveChanges();
 	};
 
 	$scope.openPasswordDialog = function(){
@@ -136,46 +135,18 @@ function MyAccount($scope, lang, date, notify, _){
 	};
 
 	$scope.resetAvatar = function(){
-        http().get('api/edit-userbook-info?prop=picture&value=');
-        http().delete('/workspace/document/' + $scope.account.picture);
-        $scope.account.picture = '';
-        $scope.pictureVersion = $scope.pictureVersion + 1;
-        $scope.$apply();
-        ui.updateAvatar();
-	}
-
-    $scope.hasAvatar = function() {
-        var uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        return uuidRegex.test($scope.account.picture);
-    }
+		model.account.picture = '';
+		model.account.saveChanges();
+	};
 
 	$scope.updateAvatar = function(){
-		var form = new FormData(),
-		uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-		thumbs = "thumbnail=290x290&thumbnail=82x82&thumbnail=48x48&thumbnail=100x100";
-		form.append("image", $scope.account.photo);
-
-	if (uuidRegex.test($scope.account.picture)) {
-    http().putFile("/workspace/document/" + $scope.account.picture + "?" + thumbs,
-        form, { requestName: 'avatar'})
-				.done(function (data) {
-					if (data.status == "ok") {
-						$scope.account.pictureVersion = $scope.account.pictureVersion + 1;
-						$scope.$apply();
-						ui.updateAvatar();
-					}
-				});
-		} else {
-			http().postFile("/workspace/document?application=userbook&protected=true&" + thumbs,
-					form, { requestName: 'avatar'})
-				.done(function (data) {
-					if (data.status == "ok") {
-						$scope.account.picture = data._id;
-						$scope.saveProperty('picture');
-						$scope.$apply();
-						ui.updateAvatar();
-					}
-				});
+		//if we're editing someone else's profile, we're unlikely to be the owner
+		//of the photo ; therefore we need to upload a new one
+		if(!model.account.picture || model.me.userId !== model.account.id){
+			model.account.uploadAvatar();
+		}
+		else{
+			model.account.updateAvatar();
 		}
 	}
 }

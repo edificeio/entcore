@@ -283,7 +283,7 @@ module.directive('filesPicker', function($compile){
 					$scope.ngModel = fileSelector[0].files;
 					$scope.$apply();
 					$scope.$eval($scope.ngChange);
-					$scope.$apply();
+					$scope.$parent.$apply();
 				});
 				fileSelector.click();
 			});
@@ -489,13 +489,13 @@ module.directive('dropDown', function($compile, $timeout){
 		template: '<div data-drop-down class="drop-down">\
 						<div>\
 							<ul class="ten cell right-magnet">\
-								<li ng-repeat="option in options | limitTo:5" ng-model="option">[[option.toString()]]</li>\
+								<li ng-repeat="option in options | limitTo:10" ng-model="option">[[option.toString()]]</li>\
 							</ul>\
 						</div>\
 			</div>',
 		link: function($scope, $element, $attributes){
 			$scope.$watchCollection('options', function(newValue){
-				if($scope.options.length === 0){
+				if(!$scope.options || $scope.options.length === 0){
 					$element.addClass('hidden');
 					return;
 				}
@@ -543,7 +543,8 @@ function createCKEditorInstance(editor, $scope, $compile){
 		$('<style></style>').text('.cke_chrome{' +
 			'top:' + (editor.offset().top - $('.cke_chrome').height()) + 'px !important;' +
 			'left:' + editor.offset().left + 'px !important;' +
-			'position: absolute !important' +
+			'position: absolute !important;' +
+			'display: block !important' +
 			'}').appendTo('head');
 
 	};
@@ -805,6 +806,10 @@ module.directive('bottomScroll', function($compile){
 
 				if($(document).height() - $(window).height() < scrollHeight){
 					$scope.$eval($attributes.bottomScroll);
+					if(!$scope.$$phase){
+						$scope.$apply();
+					}
+
 				}
 			})
 		}
@@ -936,6 +941,7 @@ module.directive('placedBlock', function($compile){
 			});
 
 			var toTop = function(){
+				$(':focus').blur();
 				$element.parents('.drawing-zone').find('*').each(function(index, item){
 					var zIndex = $(item).css('z-index');
 					if(!$scope.z){
@@ -1060,9 +1066,61 @@ module.directive('sharePanel', function($compile){
 	}
 });
 
+module.directive('datePicker', function($compile){
+	return {
+		scope: {
+			ngModel: '=',
+			ngChange: '&'
+		},
+		transclude: true,
+		replace: true,
+		restrict: 'E',
+		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy"  />',
+		link: function($scope, $element, $attributes){
+			$scope.$watch('ngModel', function(newVal){
+				$element.val(moment($scope.ngModel).format('DD/MM/YYYY'));
+			});
+			loader.asyncLoad('/infra/public/js/bootstrap-datepicker.js', function(){
+				$element.datepicker({
+						dates: {
+							months: moment.months(),
+							monthsShort: moment.monthsShort(),
+							days: moment.weekdays(),
+							daysShort: moment.weekdaysShort(),
+							daysMin: moment.weekdaysMin()
+						}
+					})
+					.on('changeDate', function(){
+						var date = $element.val().split('/');
+						var temp = date[0];
+						date[0] = date[1];
+						date[1] = temp;
+						date = date.join('/');
+						$scope.ngModel = new Date(date);
+						$scope.$apply('ngModel');
+						$scope.$parent.$eval($scope.ngChange);
+						$scope.$parent.$apply();
+						$(this).datepicker('hide');
+					});
+				$element.datepicker('hide');
+			});
+
+			$element.on('focus', function(){
+				var that = this;
+				$(this).parents('form').on('submit', function(){
+					$(that).datepicker('hide');
+				});
+				$element.datepicker('show');
+			});
+
+		}
+	}
+})
+
 $(document).ready(function(){
-	model.build();
+
 	bootstrap(function(){
+		model.build();
 		model.sync();
 		angular.bootstrap($('html'), ['app']);
 	});

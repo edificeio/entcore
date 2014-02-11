@@ -4,116 +4,21 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
-		<script type="text/javascript" src="{{#static}}js/model.js{{/static}}"></script>
+		<script type="text/javascript" src="/directory/public/js/model.js"></script>
 		<script src="/directory/public/js/account.js" type="text/javascript"></script>
 	</head>
 	<body data-ng-controller="MyAccount">
 	<portal>
 
-		<h1><a data-reload><i role="orange-user"></i>{{#i18n}}userBook.header{{/i18n}}</a></h1>
+		<h1 ng-if="me.userId === account.id">
+			<a data-reload><i role="orange-user"></i><span translate content="account.myaccount"></span></a>
+		</h1>
+		<h1 ng-if="me.userId !== account.id">
+			<a data-reload><i role="orange-user"></i><span translate content="account.useraccount"></span></a>
+		</h1>
 
-		<div class="row height-four">
-			<div class="cell absolute four text-container">
-				<div class="fluid twelve cell avatar" loading-panel="avatar">
-					<img data-ng-src="document/[[account.picture]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=[[account.pictureVersion]]&thumbnail=290x290" alt="user" class="avatar file-selector" />
-				</div>
-			</div>
-			<div class="eight cell absolute right-magnet text-container">
-				<article class="fluid cell twelve text-container">
-					<h2>[[account.displayName]]</h2>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.login{{/i18n}}</label></div>
-						<em class="six cell">[[account.login]]</em>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.password{{/i18n}}</label></div>
-						<em class="eight cell">
-							<a data-ng-click="openPasswordDialog()">{{#i18n}}change.password{{/i18n}}</a>
-						</em>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.email{{/i18n}}</label></div>
-						<input type="text" class="six cell" data-complete-change="saveMail(account.email)" data-ng-model="account.email" />
-                        <i role="[[account.visible.email]]" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
-                        <div class="clear"></div>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.telephone{{/i18n}}</label></div>
-						<em class="six cell">[[account.tel]]</em>
-                        <i role="[[account.visible.phone]]" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
-                        <div class="clear"></div>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.address{{/i18n}}</label></div>
-						<em class="six cell">[[account.address]]</em>
-                        <i role="[[account.visible.mail]]" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
-                        <div class="clear"></div>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.birthdate{{/i18n}}</label></div>
-						<em class="six cell">[[birthDate(account.birthdate)]]</em>
-                        <i role="[[account.visible.birthdate]]" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
-                        <div class="clear"></div>
-					</div>
-					<div class="row">
-						<div class="four cell"><label>{{#i18n}}userBook.profile.school{{/i18n}}</label></div>
-						<em class="six cell">[[account.schoolName]]</em>
-					</div>
-				</article>
-			</div>
-		</div>
-		<div class="row height-one-plus-half">
-			<div class="four cell absolute">
-				<div class="cell absolute twelve bottom-magnet">
-					<div class="twelve cell bottom-magnet text-container">
-						<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="updateMood()">
-							<div>[[mon-binding]]</div>
-						</icons-select>
-					</div>
-				</div>
-				<div class="row horizontal-spacing-twice">
-					<div class="twelve cell centered">
-						<button type="button" value="Supprimer" ng-if="hasAvatar()" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
-						<form id="upload-form" method="post" action="document" enctype="multipart/form-data" class="cell right-magnet">
-							<!-- styling file inputs is currently impossible, so we hide them and display a replacement. -->
-							<div class="hidden-content">
-								<input type="file" name="file"  id="avatar" file-input-change="updateAvatar(file)" data-ng-model="account.photo"/>
-							</div>
-							<button class="file-button file-selector" data-linked="avatar">{{#i18n}}userBook.profile.changeavatar{{/i18n}}</button>
-						</form>
-					</div>
-				</div>
-			</div>
-			<div class="eight cell right-magnet absolute text-container">
-				<article class="fluid twelve cell text-container">
-					<div class="row">
-						<h2>{{#i18n}}userBook.profile.motto{{/i18n}}</h2>
-						<input type="text" class="twelve cell monoline" maxlength="75" complete-change="saveProperty('motto')" ng-model="account.motto" />
-					</div>
-				</article>
-			</div>
-		</div>
-		<div class="clear"></div>
-		<h1>{{#i18n}}userBook.interests{{/i18n}}</h1>
-		<article class="text-container">
-			<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
-				<div class="two cell mini-block-container"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
-				<div class="nine cell">
-					<textarea complete-change="saveHobby(hobby)" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
-
-				</div>
-				<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
-				<div class="clear"></div>
-			</div>
-		</article>
-		<div class="clear"></div>
-		<h1 class="block-container">{{#i18n}}userBook.profile.health{{/i18n}} <i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
-			<article class="text-container">
-				<textarea data-ng-model="account.health" complete-change="saveProperty('health')"></textarea>
-			</article>
-			</div>
-		<div class="clear"></div>
-
+		<div class="row height-four" ng-include="viewsContainers.user"></div>
+		<div class="row" ng-include="viewsContainers.userbook"></div>
 	</portal>
 	<section class="lightbox-backdrop"></section>
 	<section class="lightbox-window height-two five cell">

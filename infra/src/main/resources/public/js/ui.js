@@ -100,22 +100,6 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
-		if($('input[role=datepicker]').length > 0){
-			loader.asyncLoad('/infra/public/js/bootstrap-datepicker.js', function(){
-				$('body').on('focus', 'input[role=datepicker]', function(){
-					$(this).datepicker({
-						dates: {
-							months: moment.months(),
-							monthsShort: moment.monthsShort(),
-							days: moment.weekdays(),
-							daysShort: moment.weekdaysShort(),
-							daysMin: moment.weekdaysMin()
-						}
-					});
-				});
-			})
-		}
-
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');
 			$(this).addClass('selected');
@@ -135,7 +119,7 @@ var ui = (function(){
 			window.location.href = window.location.href;
 		});
 
-		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel', function(){
+		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel, .lightbox-window .cancel', function(){
 			ui.hideLightbox();
 		});
 
@@ -143,6 +127,10 @@ var ui = (function(){
 
 		$('body').on('click', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
+			if($(this).attr('for')){
+				inputFile = $('#' + $(this).attr('for'));
+			}
+
 			if(inputFile.length === 0){
 				inputFile = $('input[type=file]');
 			}

@@ -492,6 +492,15 @@ i[role=cancel]{
 	.border-radius(10px);
 }
 
+.info{
+	color: @medium-blue;
+	background: @light-blue;
+	padding: 7px;
+	font-size: 12px;
+	text-align: center;
+	.border-radius(10px);
+}
+
 blockquote{
 	background: @ultra-light-grey;
 	color: #666;
@@ -564,7 +573,6 @@ input[type=button], input[type=submit], a.button, button{
 	height: 40px;
 	display: inline-block;
 	.border-box;
-	padding-bottom: 5px;
 	border-radius: 10px;
 	font-size: 23px;
 	border: 1px solid #eee;
@@ -1003,6 +1011,7 @@ h3{
 
 .search{
 	input[type=submit]{
+		.cell;
 		height: 28px;
 		font-size: 18px;
 		padding-top: 4px;
@@ -1010,6 +1019,7 @@ h3{
 		.border-radius-right(5px)
   }
 	input[type=search]{
+		.cell;
 		padding: 5px;
 		color: #888;
 		padding-left: 27px;
@@ -1337,6 +1347,14 @@ table{
 		.checked{
 			background: @light-blue;
 			.run-transition(background);
+		}
+		.disabled{
+			background: #f6f6f6;
+			color: #888;
+			font-style: italic;
+			a{
+				color: #888;
+			}
 		}
 		tr:last-child td:first-child{
 			-moz-border-bottom-left-radius: 5px;
@@ -1816,6 +1834,7 @@ label.checkbox{
 		background: #fff;
 		li{
 			list-style-type: none;
+			.medium-text;
 		}
 		li:hover{
 			background: @solid-blue;
@@ -1887,7 +1906,7 @@ label.checkbox{
 	}
 }
 
-.humane-original-error{
+.humane-original-error, .humane-original-info{
 	border: 3px solid #fff;
 	font-family: KGJune;
 	font-size: 30px;

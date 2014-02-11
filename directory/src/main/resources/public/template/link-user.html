@@ -1,0 +1,23 @@
+<div class="twelve cell block-container">
+	<h2>Choisir un utilisateur existant</h2>
+	<div class="warning vertical-spacing-twice">
+		<strong>Votre nouvel utilisateur existe peut-être déjà.</strong>
+		<br />Vous pouvez choisir un utilisateur existant et le rattacher à votre classe.
+	</div>
+	<table class="twelve vertical-spacing-twice light-style">
+		<tr ng-repeat="user in existingMatchs" class="checked" ng-click="grabUser(user)">
+			<td class="action-cell">
+				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" />
+			</td>
+			<td><a>[[user.displayName]]</a></td>
+		</tr>
+	</table>
+	<div class="row">
+		<button class="right-magnet" ng-click="createUser();">Créer l'utilisateur</button>
+		<button class="cancel right-magnet">Annuler</button>
+	</div>
+</div>
+<div class="close-lightbox">
+	<i role="close-2x"></i>
+</div>
+<div class="clear"></div>

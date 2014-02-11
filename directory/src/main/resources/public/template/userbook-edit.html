@@ -1,0 +1,47 @@
+<div class="row height-one-plus-half">
+	<div class="four cell absolute">
+		<div class="cell absolute twelve bottom-magnet">
+			<div class="twelve cell bottom-magnet reduce-block-six">
+				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveChanges()">
+					<div>[[mon-binding]]</div>
+				</icons-select>
+			</div>
+		</div>
+		<div class="row horizontal-spacing-twice">
+			<div class="twelve cell centered">
+				<button type="button" value="Supprimer" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
+				<files-picker ng-model="account.photo" id="photo" ng-change="updateAvatar()" translate attr="value" value="userBook.profile.changeavatar"></files-picker>
+			</div>
+		</div>
+	</div>
+	<div class="eight cell right-magnet absolute reduce-block-six">
+		<article class="fluid twelve cell text-container">
+			<div class="row">
+				<h2 translate content="userBook.profile.motto"></h2>
+				<input type="text" class="twelve cell monoline" maxlength="75" complete-change="saveChanges()" ng-model="account.motto" />
+			</div>
+		</article>
+	</div>
+</div>
+<div class="clear"></div>
+<h1 translate content="userBook.interests" class="vertical-spacing"></h1>
+<article class="reduce-block-six">
+	<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
+		<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
+		<div class="nine cell">
+			<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
+
+		</div>
+		<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
+		<div class="clear"></div>
+	</div>
+</article>
+<div class="clear"></div>
+<h1 class="vertical-spacing">
+	<span translate content="userBook.profile.health"></span>
+	<i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
+<article class="reduce-block-six">
+	<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
+</article>
+</div>
+<div class="clear"></div>

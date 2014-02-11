@@ -791,13 +791,15 @@ p i {
 }
 .birthday nav.vertical ul li a {
   margin: 0;
+  padding-left: 5px;
 }
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
   width: 41.66666666666667%;
-  height: 35px;
+  height: 100%;
   line-height: 100%;
+  vertical-align: middle;
 }
 .birthday nav.vertical ul li a .user p {
   margin: 0;
@@ -805,6 +807,7 @@ p i {
 .birthday nav.vertical ul li a .date {
   float: right !important;
   display: inline-block;
+  vertical-align: middle;
 }
 .birthday nav.vertical ul li a .date h2,
 .birthday nav.vertical ul li a .date h4 {
@@ -817,7 +820,7 @@ p i {
 .birthday nav.vertical ul li a img {
   height: 35px;
   width: 35px;
-  vertical-align: bottom;
+  vertical-align: middle;
   margin-right: 10px;
 }
 .horizontal-spacing {
@@ -1100,17 +1103,25 @@ table tr {
 table tr.checked {
   background: #eee;
 }
+table tr.disabled {
+  color: #999;
+}
+.light-style tr {
+  border: 1px solid #fff;
+}
 article {
   border: 1px solid #ccc;
+}
+table tr.overline {
+  border-bottom: none;
+}
+table tr.underline {
+  border-top: none;
 }
 table.list-view {
   width: 100%;
 }
-table.list-view tr.overline {
-  border-bottom: none;
-}
 table.list-view tr.underline {
-  border-top: none;
   padding-bottom: 15px;
 }
 table.list-view tr.underline td {
@@ -1194,19 +1205,19 @@ a {
   box-sizing: border-box;
 }
 .drop-down.hidden {
-  height: 0px;
+  max-height: 0px;
 }
 .drop-down {
   overflow: hidden;
   position: absolute;
   z-index: 10000;
-  height: 150px;
+  max-height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: height 200ms ease-in-out;
-  -moz-transition: height 200ms ease-in-out;
-  -webkit-transition: height 200ms ease-in-out;
-  transition: height 200ms ease-in-out;
+  -o-transition: max-height 200ms ease-in-out;
+  -moz-transition: max-height 200ms ease-in-out;
+  -webkit-transition: max-height 200ms ease-in-out;
+  transition: max-height 200ms ease-in-out;
 }
 .drop-down ul {
   padding: 0px;
@@ -1224,13 +1235,13 @@ a {
   overflow: hidden;
   position: absolute;
   z-index: 10000;
-  height: 150px;
+  max-height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: height 200ms ease-in-out;
-  -moz-transition: height 200ms ease-in-out;
-  -webkit-transition: height 200ms ease-in-out;
-  transition: height 200ms ease-in-out;
+  -o-transition: max-height 200ms ease-in-out;
+  -moz-transition: max-height 200ms ease-in-out;
+  -webkit-transition: max-height 200ms ease-in-out;
+  transition: max-height 200ms ease-in-out;
   height: auto;
   padding: 6px;
 }
@@ -1452,11 +1463,20 @@ ul.icons-view.two-cols li.element {
   border: 1px solid;
   padding: 6px;
 }
+.inline-editing {
+  color: #666;
+}
 .small-text {
   font-size: 12px;
 }
-.small-text a {
+.small-text a,
+.small-text em,
+.small-text label,
+.small-text span {
   font-size: 12px;
+}
+.small-text input.inline-editing {
+  margin-top: 0px;
 }
 .medium-text {
   font-size: 14px;
@@ -2424,7 +2444,7 @@ table td {
 .toggle-buttons {
   margin: 0;
   width: 150px;
-  top: 120px;
+  top: 100px;
   height: 100%;
   opacity: 1;
   background: #eee;

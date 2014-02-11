@@ -1,0 +1,23 @@
+<div class="twelve cell block-container">
+	<h2 class="vertical-spacing-twice">Importer un fichier d'utilisateurs</h2>
+
+	<div class="info vertical-spacing-twice">
+		<strong>Le fichier CSV doit être un export BE1D.</strong>
+		<br />Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice).
+	</div>
+
+	<div class="row vertical-spacing-twice">
+		<div class="twelve cell select-file input-block">
+			<div class="hidden-content">
+				<input type="file" file-input-change  data-ng-model="import.csv" />
+			</div>
+			<input type="text" data-ng-model="import.csv.name" class="cell" />
+			<button class="file-button" translate key="choose"></button>
+		</div>
+	</div>
+
+	<div class="row">
+		<button class="right-magnet" ng-click="importCSV()">Importer</button>
+		<button class="cancel right-magnet">Annuler</button>
+	</div>
+</div>

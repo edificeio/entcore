@@ -8,7 +8,7 @@
 	<script src="/directory/public/js/controller.js" type="text/javascript"></script>
 </head>
 <script type="text/ng-template" id="empty"></script>
-<body>
+<body bottom-scroll="showMore()">
 <portal>
 	<h1 data-reload><i role="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
@@ -18,7 +18,9 @@
 			<div class="row reduce-block-three medium-text">
 				<div class="two cell reduce-block-eight" translate content="classAdmin.className"></div>
 				<div class="ten cell reduce-block-two">
-					<input type="text" ng-model="myClass.name" class="twelve cell inline-editing" />
+					<input type="text" ng-model="classAdmin.name"
+							complete-change="saveClassInfos()"
+							class="twelve cell inline-editing" />
 				</div>
 			</div>
 		</article>
@@ -37,58 +39,144 @@
 		</header>
 		<section class="medium-text">
 			<div class="row line">
-				<div class="twelve cell reduce-block-six vertical-spacing" translate content="classAdmin.filesActions"></div>
+				<div class="cell" ng-if="display.importing">
+					<loading-icon class="cell" request="loadingUsers" default="loading" />
+				</div>
+				<div class="eleven cell reduce-block-six vertical-spacing">
+
+					<a translate content="classAdmin.importFile" ng-click="openView('importCSV', 'lightbox')"></a>
+					<span translate content="or"></span>
+					<a translate content="classAdmin.exportFile"
+					   ng-href="/directory/class/[[classAdmin.id]]/users?type=[[display.show]]&format=csv"></a>
+				</div>
 				<div class="row"></div>
 			</div>
 			<div class="row">
 				<article class="twelve cell vertical-spacing-twice">
-					<table class="row">
-						<thead>
-						<tr>
-							<th>
-								<input type="checkbox" ng-model="display.selectAll" ng-change="switchAll()" />
-							</th>
-							<th></th>
-							<th translate content="directory.lastName"></th>
-							<th translate content="directory.firstName"></th>
-							<th translate content="directory.birthdate"></th>
-							<th translate content="directory.login"></th>
-							<th translate content="directory.activation"></th>
-						</tr>
-						</thead>
-						<tbody>
-						<tr>
-							<td></td>
-							<td class="action-cell"><i role="img"></i></td>
-							<td><input type="text" class="inline-editing" translate attr="placeholder" placeholder="directory.lastName" /></td>
-							<td><input type="text" class="inline-editing" translate attr="placeholder" placeholder="directory.firstName" /></td>
-							<td><input type="text" role="datepicker" class="inline-editing" translate attr="placeholder" placeholder="directory.birthdate" data-date-format="dd/mm/yyyy" /></td>
-							<td colspan="2"><input type="button" class="small button right-magnet" translate attr="value" value="directory.add" /></td>
-						</tr>
-						<tr ng-class="{ checked: user.selected }" ng-repeat="user in users.where({ type: display.show })">
-							<td><input type="checkbox" ng-model="user.selected" /></td>
-							<td class="action-cell"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /></td>
-							<td colspan="2"><a href="">[[user.displayName]]</a></td>
-							<td>[[shortDate()]]</td>
-							<td>[[user.login]]</td>
-							<td><em class="medium-importance right-magnet" translate content="directory.activated"></em></td>
-						</tr>
-						</tbody>
-					</table>
+					<form ng-submit="addUser()">
+						<table class="row">
+							<thead>
+							<tr>
+								<th>
+									<input type="checkbox" ng-model="display.selectAll" ng-change="switchAll()" />
+								</th>
+								<th class="centered"></th>
+								<th translate content="directory.lastName"></th>
+								<th translate content="directory.firstName"></th>
+								<th translate content="directory.birthdate" ng-if="display.show === 'Student'"></th>
+								<th translate content="directory.login"></th>
+								<th translate content="directory.activation"></th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr>
+								<td></td>
+								<td class="action-cell">
+								</td>
+								<td>
+									<input type="text" class="inline-editing" id="lastName" autofocus required
+											translate attr="placeholder"
+											placeholder="directory.lastName"
+											ng-model="newUser.lastName" ng-change="newUser.lastName = newUser.lastName.toUpperCase()" />
+								</td>
+								<td>
+									<input type="text" class="inline-editing" required
+											translate attr="placeholder"
+											placeholder="directory.firstName"
+											ng-model="newUser.firstName" />
+								</td>
+								<td ng-if="display.show === 'Student'">
+									<date-picker
+											class="inline-editing"
+											translate attr="placeholder"
+											placeholder="directory.birthdate" ng-model="newUser.birthDate">
+									</date-picker>
+								</td>
+								<td colspan="2">
+									<input type="submit" class="button right-magnet"
+										   translate attr="value" ng-if="!newUser.lastName || display.show === 'Student'"
+										   value="directory.add" />
+								</td>
+							</tr>
+							<tr class="underline" ng-if="newUser.lastName && display.show === 'Relative'">
+								<td colspan="2"></td>
+								<td colspan="3">
+									<div class="row">
+										<div class="label-badge cell" ng-repeat="relative in newUser.relatives" ng-click="removeRelative(relative)">
+											<span class="cell">[[relative.firstName]] [[relative.lastName]]</span>
+											<i role="close" class="right-magnet"></i>
+										</div>
+										<input type="text" class="twelve cell inline-editing" ng-model="display.relativeSearch"
+												ng-change="updateFoundRelatives()" id="relative"
+												translate attr="placeholder"
+												placeholder="findkids" />
+									</div>
+									<drop-down
+											options="foundRelatives"
+											change="addRelative()"
+											current="newUser.newRelative"
+											for="relative">
+									</drop-down>
+								</td>
+								<td colspan="2"><input type="submit" class="button right-magnet"
+													   translate attr="value"
+													   value="directory.add" /></td>
+							</tr>
+							<tr ng-class="{ checked: user.selected, disabled: user.blocked }"
+								ng-repeat="user in users.where({ type: display.show }) | limitTo:display.limit">
+								<td><input type="checkbox" ng-model="user.selected" /></td>
+								<td class="action-cell centered">
+									<img class="eight" ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" />
+								</td>
+								<td>
+									<a ng-href="/userbook/mon-compte#edit-user/[[user.id]]"
+										ng-if="!user.activationCode">[[user.lastName]]</a>
+									<a ng-href="/userbook/mon-compte#edit-user-infos/[[user.id]]"
+										ng-if="user.activationCode">[[user.lastName]]</a>
+								</td>
+								<td>
+									<a ng-href="/userbook/mon-compte#edit-user/[[user.id]]"
+										ng-if="!user.activationCode">[[user.firstName]]</a>
+									<a  ng-href="/userbook/mon-compte#edit-user-infos/[[user.id]]"
+										ng-if="user.activationCode">[[user.firstName]]</a>
+								</td>
+								<td ng-if="display.show === 'Student'"><span ng-if="user.birthDate !== ''">[[shortDate(user.birthDate)]]</span></td>
+								<td>[[user.login]]</td>
+								<td>
+									<span class="horizontal-spacing right-magnet">[[user.activationCode]]</span>
+									<em class="low-importance horizontal-spacing right-magnet"
+										ng-if="user.activationCode === ''"
+										translate content="directory.activated"></em>
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</form>
 				</article>
 				<div class="row"></div>
 			</div>
 		</section>
 	</section>
 	<div class="row height-one"></div>
-	<section class="toggle-bottom" ng-class="{ hide: users.selection().length === 0 }">
+	<section class="toggle-buttons" ng-class="{ hide: users.selection().length === 0 }">
 		<div class="toggle block-container">
 			<div class="row">
-				<button translate content="directory.resetPassword"></button>
-				<button translate content="remove"></button>
+				<button translate content="directory.resetPassword" ng-click="resetPasswords()"></button>
+				<button ng-click="blockUsers()"
+						ng-if="!users.where({ blocked: true, selected: true }).length"
+						translate content="admin.block">
+				</button>
+				<button ng-click="unblockUsers()"
+						ng-if="users.where({ blocked: true, selected: true }).length"
+						translate content="admin.unblock">
+				</button>
 			</div>
 		</div>
 	</section>
 </portal>
+<section class="lightbox-backdrop"></section>
+<section class="lightbox-window five cell">
+	<div class="row" ng-include="viewsContainers.lightbox"></div>
+</section>
 </body>
 </html>
