@@ -62,7 +62,7 @@ object DirectoryScenario {
         json.values.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
           val user = c.asInstanceOf[JSONObject]
           user.get("lastName").asInstanceOf[String] match {
-            case "Devost" | "Monjeau" if !user.get("code").asInstanceOf[String].isEmpty() =>
+            case "Devost" | "Monjeau" if user.get("code") != null =>
               (user.get("type").asInstanceOf[String], user.get("userId").asInstanceOf[String]) :: acc
             case _ => acc
           }
