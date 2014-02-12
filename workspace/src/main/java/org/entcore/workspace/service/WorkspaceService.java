@@ -691,21 +691,25 @@ public class WorkspaceService extends Controller {
 				String status = res.getString("status");
 				JsonObject result = res.getObject("result");
 				String thumbSize = request.params().get("thumbnail");
-				String file;
-				if (thumbSize != null && !thumbSize.trim().isEmpty()) {
-					file = result.getObject("thumbnails", new JsonObject())
-							.getString(thumbSize, result.getString("file"));
-				} else {
-					file = result.getString("file");
-				}
-				if ("ok".equals(status) && result != null && file != null) {
-					boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-					if (inline && ETag.check(request, file)) {
-						notModified(request, file);
+				if ("ok".equals(status) && result != null) {
+					String file;
+					if (thumbSize != null && !thumbSize.trim().isEmpty()) {
+						file = result.getObject("thumbnails", new JsonObject())
+								.getString(thumbSize, result.getString("file"));
 					} else {
-						FileUtils.gridfsSendFile(file,
-								result.getString("name"), eb, gridfsAddress, request.response(),
-								inline, result.getObject("metadata"));
+						file = result.getString("file");
+					}
+					if (file != null && !file.trim().isEmpty()) {
+						boolean inline = inlineDocumentResponse(result, request.params().get("application"));
+						if (inline && ETag.check(request, file)) {
+							notModified(request, file);
+						} else {
+							FileUtils.gridfsSendFile(file,
+									result.getString("name"), eb, gridfsAddress, request.response(),
+									inline, result.getObject("metadata"));
+						}
+					} else {
+						request.response().setStatusCode(404).end();
 					}
 				} else {
 					request.response().setStatusCode(404).end();
