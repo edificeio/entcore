@@ -32,6 +32,22 @@ c-[r:PROVIDE]->(a:Action:WorkflowAction {
   displayName:'my_account_default.address'
 });
 
+CREATE (c:Application {
+  id: '8445dd20-3391-4bac-80bb-9c5ca449d365',
+  name: 'class_admin_default',
+  displayName: 'classadmin',
+  grantType: '',
+  address: '/userbook/classAdmin',
+  icon: 'admin-large',
+  target: '',
+  scope: ''
+}),
+c-[r:PROVIDE]->(a:Action:WorkflowAction {
+  type: 'SECURED_ACTION_WORKFLOW',
+  name:'class_admin_default|address',
+  displayName:'class_admin_default.address'
+});
+
 MATCH (n:Role)
 WHERE n.name = 'directory-all-default'
 WITH count(*) AS exists
@@ -50,6 +66,16 @@ CREATE (m:Role {id:'aa12ac93-2180-491f-b5ec-08f062a9b795', name:'myaccount-all-d
 WITH m
 MATCH (n:Action)
 WHERE n.name IN ['my_account_default|address']
+CREATE UNIQUE m-[:AUTHORIZE]->n;
+
+MATCH (n:Role)
+WHERE n.name = 'classadmin-teacher-default'
+WITH count(*) AS exists
+WHERE exists=0
+CREATE (m:Role {id:'da5871b8-d849-4223-b2d6-6730cc64834d', name:'classadmin-teacher-default'})
+WITH m
+MATCH (n:Action)
+WHERE n.name IN ['class_admin_default|address']
 CREATE UNIQUE m-[:AUTHORIZE]->n;
 
 MATCH (n:Role)
