@@ -73,7 +73,7 @@ public class CommunicationController extends Controller {
 						"MATCH (n:ProfileGroup) " +
 						"WHERE n.id IN ['" + Joiner.on("','").join(gpId) + "'] " +
 						"RETURN n.id as id, n.name as name, " +
-						"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
+						"HEAD(filter(x IN labels(n) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
 						"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type",
 						 new Handler<Message<JsonObject>>() {
 
