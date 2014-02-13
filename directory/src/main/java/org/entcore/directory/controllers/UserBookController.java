@@ -3,7 +3,6 @@ package org.entcore.directory.controllers;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import org.entcore.common.notification.TimelineHelper;
 import fr.wseduc.security.ActionType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -26,12 +25,10 @@ import fr.wseduc.security.SecuredAction;
 
 public class UserBookController extends Controller {
 
-	private static final String NOTIFICATION_TYPE = "USERBOOK";
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject userBookData;
 	private HttpClient client;
-	private final TimelineHelper notification;
 	private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
 	public UserBookController(Vertx vertx, Container container,
@@ -46,7 +43,6 @@ public class UserBookController extends Controller {
 							.setPort(config.getInteger("workspace-port"))
 							.setMaxPoolSize(16)
 							.setKeepAlive(false);
-			notification = new TimelineHelper(vertx, eb, container);
 		}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
@@ -215,71 +211,22 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", user.getUserId());
-					String neoRequest =
-							"MATCH (n:User)-[USERBOOK]->(m)";
-					String category = request.params().get("category");
 					String prop = request.params().get("prop");
-					if (category != null && !category.trim().isEmpty()){
-						neoRequest += ", (m)-->(p) WHERE n.id = {id} "
-								+ "AND p.category={category} "
-								+ "SET p.values={values} ";
-						params.put("category", request.params().get("category"));
-						params.put("values", request.params().get("values"));
-					} else if (prop != null && !prop.trim().isEmpty()) {
+					if ("theme".equals(prop) || "userPreferencesBirthdayClass".equals(prop)) {
 						String attr = prop.replaceAll("\\W+", "");
-						neoRequest += "WHERE n.id = {id} SET m." + attr + "={value}";
+						String neoRequest =
+								"MATCH (n:User)-[:USERBOOK]->(m:UserBook)" +
+								"WHERE n.id = {id} SET m." + attr + "={value}";
+						Map<String, Object> params = new HashMap<>();
+						params.put("id", user.getUserId());
 						params.put("value", request.params().get("value"));
-					} else {
-						badRequest(request);
-						return;
-					}
-					neo.send(neoRequest, params, new Handler<Message<JsonObject>>() {
+						neo.send(neoRequest, params, new Handler<Message<JsonObject>>() {
 
-						@Override
-						public void handle(Message<JsonObject> res) {
-							if ("ok".equals(res.body().getString("status"))) {
-								if ("mood".equals(request.params().get("prop")) ||
-										"motto".equals(request.params().get("prop"))){
-									notifyTimeline(request, user);
-								}
+							@Override
+							public void handle(Message<JsonObject> res) {
+								renderJson(request, res.body());
 							}
-							renderJson(request, res.body());
-						}
-					});
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
-	public void editUserInfo(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					if ("email".equals(request.params().get("prop"))) {
-						String email = request.params().get("value");
-						try {
-							if (RegExpValidator.instance("email").test(email)) {
-								String query =
-										"MATCH (n:User) " +
-										"WHERE n.id = {id} " +
-										"SET n.email={email} ";
-								Map<String, Object> params = new HashMap<>();
-								params.put("id", user.getUserId());
-								params.put("email", email);
-								neo.send(query, params, request.response());
-							} else {
-								badRequest(request);
-							}
-						} catch (Exception e) {
-							log.error("Save email", e);
-							renderError(request);
-						}
+						});
 					} else {
 						badRequest(request);
 					}
@@ -341,31 +288,6 @@ public class UserBookController extends Controller {
 			queries.add(Neo.toJsonObject(query2, j));
 		}
 		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
-	}
-
-	private void notifyTimeline(final HttpServerRequest request, final UserInfos user) {
-		UserUtils.findUsersCanSeeMe(eb, request, new Handler<JsonArray>() {
-
-			@Override
-			public void handle(JsonArray users) {
-				String action = request.params().get("prop");
-				List<String> userIds = new ArrayList<>();
-				for (Object o: users) {
-					JsonObject u = (JsonObject) o;
-					userIds.add(u.getString("id"));
-				}
-				JsonObject params = new JsonObject()
-				.putString("uri", container.config().getString("host") + pathPrefix +
-						"/annuaire#" + user.getUserId() + "#" + user.getType())
-				.putString("username", user.getUsername())
-				.putString("motto", request.params().get("value"))
-				.putString("moodImg", request.params().get("value"));
-				notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-						NOTIFICATION_TYPE + "_" + action.toUpperCase(), userIds,
-						user.getUserId()+System.currentTimeMillis()+action,
-						"notify-" + action + ".html", params);
-			}
-		});
 	}
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)

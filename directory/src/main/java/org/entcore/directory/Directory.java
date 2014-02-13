@@ -60,7 +60,6 @@ public class Directory extends Server {
 				.get("/api/search","search")
 				.get("/api/person", "person")
 				.get("/api/class", "myClass")
-				.get("/api/edit-user-info", "editUserInfo")
 				.get("/api/edit-userbook-info", "editUserBookInfo")
 				.get("/api/set-visibility", "setVisibility")
 				.get("/api/edit-user-info-visibility", "editUserInfoVisibility")
