@@ -481,7 +481,7 @@ public class AuthController extends Controller {
 				if (params == null) {
 					params = new JsonObject();
 				}
-				if (user != null) {
+				if (user != null && "password".equals(request.params().get("resetCode"))) {
 					renderView(request, params
 					.putString("login", user.getLogin())
 					.putString("callback", "/userbook/mon-compte"),
