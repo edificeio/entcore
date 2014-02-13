@@ -204,10 +204,15 @@ public class ClassController extends Controller {
 											}
 										}
 									}
-									ClassController.this.applyComRulesAndRegistryEvent(classId, users);
-									request.response().end();
+									if (users.size() > 0) {
+										ClassController.this.applyComRulesAndRegistryEvent(classId, users);
+										request.response().end();
+									} else {
+										renderJson(request, new JsonObject()
+												.putString("error", "import.invalid." + userType.toLowerCase()), 400);
+									}
 								} else {
-									renderError(request, message.body());
+									renderJson(request, message.body(), 400);
 								}
 							}
 						});

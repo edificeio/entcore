@@ -113,6 +113,27 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				while (i < values.length && !"#break#".equals(header[i])) {
 					if ("classes".equals(header[i])) {
 						props.putArray(header[i], new JsonArray().addString(values[i]));
+					} else if ("lastName".equals(header[i])) {
+						if (values[i] != null && !values[i].trim().isEmpty()) {
+							props.putString(header[i], values[i].trim());
+						} else {
+							sendError(message, "invalid.lastName " + rowIdx);
+							return;
+						}
+					} else if ("firstName".equals(header[i])) {
+						if (values[i] != null && !values[i].trim().isEmpty()) {
+							props.putString(header[i], values[i].trim());
+						} else {
+							sendError(message, "invalid.firstName " + rowIdx);
+							return;
+						}
+					} else if ("birthDate".equals(header[i])) {
+						if (values[i] != null && values[i].matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) {
+							props.putString(header[i], values[i]);
+						} else {
+							sendError(message, "invalid.birthDate");
+							return;
+						}
 					} else if (!"#skip#".equals(header[i])) {
 						props.putString(header[i], values[i]);
 					}
@@ -177,7 +198,21 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				int i = 0;
 				JsonObject props = new JsonObject();
 				while (i < header.length) {
-					if (!"#skip#".equals(header[i])) {
+					if ("lastName".equals(header[i])) {
+						if (values[i] != null && !values[i].trim().isEmpty()) {
+							props.putString(header[i], values[i].trim());
+						} else {
+							sendError(message, "invalid.lastName " + rowIdx);
+							return;
+						}
+					} else if ("firstName".equals(header[i])) {
+						if (values[i] != null && !values[i].trim().isEmpty()) {
+							props.putString(header[i], values[i].trim());
+						} else {
+							sendError(message, "invalid.firstName " + rowIdx);
+							return;
+						}
+					} else if (!"#skip#".equals(header[i])) {
 						props.putString(header[i], values[i]);
 					}
 					i++;

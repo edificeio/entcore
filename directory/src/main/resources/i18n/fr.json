@@ -144,5 +144,7 @@
 	"info.passwords.sent": "Les nouveaux mots de passe ont été envoyés à votre adresse e-mail",
 	"Student" : "Élève",
 	"Teacher" : "Enseignant",
-	"Relative" : "Parent"
+	"Relative" : "Parent",
+	"import.invalid.student" : "Aucun élève importé.",
+	"import.invalid.student" : "Aucun parent importé."
 }
