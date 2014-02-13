@@ -1,4 +1,4 @@
 "Type";"Nom";"Prénom";"Login";"Code d'activation"
 {{#list}}
-"{{type}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{activationCode}}"
+"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{activationCode}}"
 {{/list}}
