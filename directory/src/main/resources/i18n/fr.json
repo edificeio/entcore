@@ -146,5 +146,6 @@
 	"Teacher" : "Enseignant",
 	"Relative" : "Parent",
 	"import.invalid.student" : "Aucun élève importé.",
-	"import.invalid.student" : "Aucun parent importé."
+	"import.invalid.student" : "Aucun parent importé.",
+	"choose": "Choisir"
 }
