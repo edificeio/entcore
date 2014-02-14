@@ -116,6 +116,7 @@ User.prototype.loadUserbook = function(){
 User.prototype.loadVisibility = function(){
 	http().get('/userbook/api/person').done(function(data){
 		this.updateData({
+			schoolName: data.result[0].schoolName,
 			hobbies: _.map(this.hobbies, function(hobby, index){
 				hobby.visibility = data.result[0].visibility[index];
 				return hobby;

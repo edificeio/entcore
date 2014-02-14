@@ -11,7 +11,7 @@
 			<div class="four cell"><label translate content="userBook.profile.login"></label></div>
 			<em class="six cell">[[account.login]]</em>
 		</div>
-		<div class="row" ng-if="account.id === me.id">
+		<div class="row" ng-if="account.id === me.userId">
 			<div class="four cell"><label translate content="userBook.profile.password"></label></div>
 			<em class="eight cell">
 				<a data-ng-click="openPasswordDialog()" translate content="change.password"></a>
@@ -37,7 +37,7 @@
 		</div>
 		<div class="row">
 			<div class="four cell"><label translate content="userBook.profile.birthdate"></label></div>
-			<em class="six cell">[[birthDate(account.birthdate)]]</em>
+			<em class="six cell">[[birthDate(account.birthDate)]]</em>
 			<i role="[[account.visible.birthdate]]" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
 			<div class="clear"></div>
 		</div>
