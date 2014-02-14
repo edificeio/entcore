@@ -336,7 +336,7 @@ public class UserBookController extends Controller {
 							"MATCH c<-[:APPARTIENT]-(m:Student) " +
 							"WHERE m.birthDate=~{regex} " +
 							"RETURN distinct m.id as id, m.displayName as username, " +
-							"m.birthDate as birthDate, COLLECT(distinct c.name) as classes ";
+							"m.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
 					JsonObject params = new JsonObject();
 					params.putString("id", user.getUserId());
 					params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
