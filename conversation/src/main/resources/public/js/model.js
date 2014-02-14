@@ -198,24 +198,29 @@ model.build = function(){
 			if(!searchTerm){
 				return [];
 			}
-			var found = _.filter(this.all.concat(include), function(user){
-				var testDisplayName = '', testNameReversed = '';
-				if(user.displayName){
-					testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
-					testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
-						+ user.displayName.split(' ')[0]).toLowerCase();
-				}
-				var testName = '';
-				if(user.name){
-					testName = lang.removeAccents(user.name).toLowerCase();
-				}
+			var found = _.filter(
+				this.filter(function(user){
+					return _.findWhere(include, { id: user.id }) === undefined
+				})
+				.concat(include), function(user){
+					var testDisplayName = '', testNameReversed = '';
+					if(user.displayName){
+						testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
+						testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
+							+ user.displayName.split(' ')[0]).toLowerCase();
+					}
+					var testName = '';
+					if(user.name){
+						testName = lang.removeAccents(user.name).toLowerCase();
+					}
 
-				return testDisplayName.indexOf(searchTerm) !== -1 ||
-					testNameReversed.indexOf(searchTerm) !== -1 ||
-					testName.indexOf(searchTerm) !== -1;
-			});
+					return testDisplayName.indexOf(searchTerm) !== -1 ||
+						testNameReversed.indexOf(searchTerm) !== -1 ||
+						testName.indexOf(searchTerm) !== -1;
+				}
+			);
 			return _.reject(found, function(element){
-				return exclude.indexOf(element) !== -1;
+				return _.findWhere(exclude, {id :element.id });
 			});
 		}
 	});
