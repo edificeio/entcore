@@ -31,9 +31,7 @@ function User(data){
 
 User.prototype.saveUserbook = function(){
 	http().putJson('/directory/userbook/' + this.id, {
-		mood: this.mood.id,
 		health: this.health,
-		motto: this.motto,
 		hobbies: this.hobbies,
 		picture: this.picture
 	});
