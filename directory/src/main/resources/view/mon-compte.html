@@ -1,13 +1,14 @@
-<html>
+<html data-ng-controller="MyAccount">
 	<head>
-		<title>{{#i18n}}userBook.title{{/i18n}}</title>
+		<title ng-if="me.userId === account.id">{{#i18n}}account.myaccount{{/i18n}}</title>
+		<title ng-if="me.userId !== account.id">{{#i18n}}account.useraccount{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script type="text/javascript" src="/directory/public/js/model.js"></script>
 		<script src="/directory/public/js/account.js" type="text/javascript"></script>
 	</head>
-	<body data-ng-controller="MyAccount">
+	<body>
 	<portal>
 
 		<h1 ng-if="me.userId === account.id">
