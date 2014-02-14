@@ -101,6 +101,9 @@ User.prototype.loadUserbook = function(){
 	this.pictureVersion = 0;
 
 	http().get('/directory/userbook/' + this.id).done(function(data){
+		if(this.type){
+			data.type = this.type;
+		}
 		if(!data.mood){
 			data.mood = 'default';
 		}
