@@ -1,5 +1,5 @@
 <div class="row">
-	<h2 class="seven cell upper-title">
+	<h2 class="six cell upper-title">
 		<span class="warning-text-badge" ng-if="post.state === 'DRAFT'" translate key="draft"></span>
 		<span class="warning-text-badge" ng-if="post.state === 'SUBMITTED'" translate key="submitted"></span>
 		[[post.title]]
@@ -9,7 +9,7 @@
 	<button class="right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="currentBlog.myRights.post.remove">
 		[[translate('blog.delete.post')]]
 	</button>
-	<h5 class="seven cell subtitle">
+	<h5 class="six cell subtitle">
 		[[translate('blog.by')]] <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> [[translate('blog.on.date')]] [[formatDate(post.created.$date)]]
 			<span data-ng-if="isCurrentView('lastPosts')">
 				[[translate('blog.on.blog')]] <a data-ng-click="displayBlog(currentBlog)">[[currentBlog.title]]</a>
