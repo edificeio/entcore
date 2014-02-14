@@ -163,18 +163,6 @@ User.prototype.uploadAvatar = function(){
 		}.bind(this));
 };
 
-User.prototype.updateAvatar = function(){
-	var form = new FormData();
-	form.append("image", this.photo[0]);
-	http()
-		.putFile('/workspace/document/' + this.picture + '?application=userbook&protected=true&' + User.prototype.thumbs, form, { requestName: 'photo'})
-		.done(function(data){
-			this.pictureVersion++;
-			this.saveChanges();
-			ui.updateAvatar();
-		}.bind(this));
-};
-
 User.prototype.toString = function(){
 	if(this.displayName){
 		return this.displayName;

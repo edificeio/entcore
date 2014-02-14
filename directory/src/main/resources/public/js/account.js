@@ -144,13 +144,6 @@ function MyAccount($scope, lang, date, notify, route){
 	};
 
 	$scope.updateAvatar = function(){
-		//if we're editing someone else's profile, we're unlikely to be the owner
-		//of the photo ; therefore we need to upload a new one
-		if(!model.account.picture || model.me.userId !== model.account.id){
-			model.account.uploadAvatar();
-		}
-		else{
-			model.account.updateAvatar();
-		}
+		model.account.uploadAvatar();
 	}
 }
