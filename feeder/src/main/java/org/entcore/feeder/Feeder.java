@@ -20,6 +20,8 @@ import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -28,6 +30,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private DisplayNameGenerator displayNameGenerator;
 	private ActivationCodeGenerator activationCodeGenerator;
 	private IdGenerator idGenerator;
+	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 
 	@Override
 	public void start() {
@@ -54,7 +57,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getArray("result") != null) {
 					Set<String> login = new HashSet<>();
-					for (Object o :  event.body().getArray("result")) {
+					for (Object o : event.body().getArray("result")) {
 						if (!(o instanceof JsonObject)) continue;
 						login.add(((JsonObject) o).getString("login", ""));
 					}
@@ -130,8 +133,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							return;
 						}
 					} else if ("birthDate".equals(header[i])) {
+						Matcher m;
 						if (values[i] != null && values[i].matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) {
 							props.putString(header[i], values[i]);
+						} else if (values[i] != null &&
+								(m = frenchDatePatter.matcher(values[i])).find()) {
+							props.putString(header[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
 						} else {
 							sendError(message, "invalid.birthDate " + (rowIdx + 2));
 							return;
