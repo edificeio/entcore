@@ -119,21 +119,21 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
-							sendError(message, "invalid.lastName " + rowIdx);
+							sendError(message, "invalid.lastName " + (rowIdx + 2));
 							return;
 						}
 					} else if ("firstName".equals(header[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
-							sendError(message, "invalid.firstName " + rowIdx);
+							sendError(message, "invalid.firstName " + (rowIdx + 2));
 							return;
 						}
 					} else if ("birthDate".equals(header[i])) {
 						if (values[i] != null && values[i].matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) {
 							props.putString(header[i], values[i]);
 						} else {
-							sendError(message, "invalid.birthDate");
+							sendError(message, "invalid.birthDate " + (rowIdx + 2));
 							return;
 						}
 					} else if (!"#skip#".equals(header[i])) {
@@ -179,6 +179,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				.skipLines(1)
 				.charset(charset)
 				.create();
+		csv = csv.split(";;;;;;;;;;;;;;;;;;;;")[0];
 		final String [] header = new String[] { "title", "surname", "lastName", "firstName",
 				"address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
 				"#skip#", "mobile" };
@@ -206,14 +207,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
-							sendError(message, "invalid.lastName " + rowIdx);
+							sendError(message, "invalid.lastName " + (rowIdx + 2));
 							return;
 						}
 					} else if ("firstName".equals(header[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
-							sendError(message, "invalid.firstName " + rowIdx);
+							sendError(message, "invalid.firstName " + (rowIdx + 2));
 							return;
 						}
 					} else if (!"#skip#".equals(header[i])) {
