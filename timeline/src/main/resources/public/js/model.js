@@ -31,11 +31,12 @@ model.build = function (){
 			if(model.notificationTypes.noFilter){
 				types = model.notificationTypes.all;
 			}
-			types.forEach(function(type){
-				var params = { type: type.data };
-				http().get('/timeline/lastNotifications', params).done(function(response){
-					that.addRange(response.results);
-				});
+			var params = { type: _.map(types, function(type){
+				return type.data;
+			})};
+
+			http().get('/timeline/lastNotifications',params).done(function(response){
+				that.load(response.results);
 			});
 		}
 	});
