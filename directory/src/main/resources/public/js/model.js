@@ -39,6 +39,15 @@ User.prototype.saveUserbook = function(){
 	});
 };
 
+User.prototype.saveUserbookProperty = function(prop){
+	var data = {};
+	data[prop] = this[prop];
+	if(prop === 'mood'){
+		data.mood = data.mood.id;
+	}
+	http().putJson('/directory/userbook/' + this.id, data);
+}
+
 User.prototype.saveInfos = function(){
 	var userData = {
 		displayName: this.displayName,

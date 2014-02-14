@@ -2,7 +2,7 @@
 	<div class="four cell absolute">
 		<div class="cell absolute twelve bottom-magnet">
 			<div class="twelve cell bottom-magnet reduce-block-six">
-				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveChanges()">
+				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
 					<div>[[mon-binding]]</div>
 				</icons-select>
 			</div>
@@ -18,7 +18,9 @@
 		<article class="fluid twelve cell text-container">
 			<div class="row">
 				<h2 translate content="userBook.profile.motto"></h2>
-				<input type="text" class="twelve cell monoline" maxlength="75" complete-change="saveChanges()" ng-model="account.motto" />
+				<input type="text" class="twelve cell monoline" maxlength="75"
+					   complete-change="saveUserbookProperty('motto')"
+					   ng-model="account.motto" />
 			</div>
 		</article>
 	</div>
@@ -30,7 +32,6 @@
 		<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
 		<div class="nine cell">
 			<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
-
 		</div>
 		<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
 		<div class="clear"></div>

@@ -113,6 +113,10 @@ function MyAccount($scope, lang, date, notify, route){
 			})
 	};
 
+	$scope.saveUserbookProperty = function(prop){
+		model.account.saveUserbookProperty(prop);
+	}
+
 	$scope.changeVisibility = function(hobby){
 		if(hobby.visibility.toLowerCase() === 'public'){
 			hobby.visibility = 'PRIVE';

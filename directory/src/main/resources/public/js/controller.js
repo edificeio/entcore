@@ -286,5 +286,5 @@ function ClassAdminController($scope, model, date, notify){
 
 	$scope.uploadPhoto = function(){
 		$scope.newUser.uploadAvatar()
-	}
+	};
 }
