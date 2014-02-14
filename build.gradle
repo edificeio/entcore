@@ -188,6 +188,7 @@ project(':feeder') {
   dependencies {
     compile project(':dataDictionary')
     compile "net.sf.opencsv:opencsv:$opencsvVersion"
+    compile "com.googlecode.juniversalchardet:juniversalchardet:$juniversalchardetVersion"
   }
 }
 

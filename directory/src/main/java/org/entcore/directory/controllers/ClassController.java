@@ -187,7 +187,7 @@ public class ClassController extends Controller {
 						JsonObject j = new JsonObject()
 								.putString("action", "csvClass" + ut)
 								.putString("classId", classId)
-								.putString("csv", buff.toString("UTF-8"));
+								.putString("csv", buff.toString("ISO-8859-1"));
 						Server.getEventBus(vertx).send(container.config().getString("feeder",
 								"entcore.feeder"), j, new Handler<Message<JsonObject>>() {
 							@Override

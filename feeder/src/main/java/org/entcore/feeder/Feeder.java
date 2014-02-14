@@ -8,6 +8,7 @@ import org.entcore.datadictionary.generation.IdGenerator;
 import org.entcore.datadictionary.generation.LoginGenerator;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.StatementsBuilder;
+import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -19,7 +20,6 @@ import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -88,10 +88,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			return;
 		}
 
+		String charset = detectCharset(csv);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
 				.skipLines(1)
+				.charset(charset)
 				.create();
 		final String [] header = new String[] { "lastName", "surname", "firstName", "birthDate", "gender",
 				"address", "zipCode", "city", "country", "#skip#", "#skip#", "#skip#", "#skip#",
@@ -170,10 +172,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			return;
 		}
 
+		String charset = detectCharset(csv);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
 				.skipLines(1)
+				.charset(charset)
 				.create();
 		final String [] header = new String[] { "title", "surname", "lastName", "firstName",
 				"address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
@@ -243,6 +247,17 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				message.reply(res.body());
 			}
 		});
+	}
+
+	private String detectCharset(String csv) {
+		UniversalDetector detector = new UniversalDetector(null);
+		byte[] data = csv.getBytes();
+		detector.handleData(data, 0, data.length);
+		detector.dataEnd();
+		String encoding = detector.getDetectedCharset();
+		logger.debug(encoding);
+		detector.reset();
+		return encoding != null ? encoding : "ISO-8859-1";
 	}
 
 	private static String removeAccents(String str) {
