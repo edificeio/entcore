@@ -15,6 +15,7 @@
 	"share.publish.differed": "Posts have to be validated",
 	"blog" : "Blog",
     "conversation" : "Messaging",
+	"messagerie" : "Messaging",
     "workspace" : "Workspace",
     "my.account" : "My account",
     "resid.art" : "Artist residency",
@@ -29,5 +30,6 @@
 	"tdbase" : "TD Base (coming soon)",
 	"statistics" : "Statistics (coming soon)",
 	"remove": "Remove",
-	"scrapbook": "Cahier multimédia"
+	"scrapbook": "Cahier multimédia",
+	"classadmin": "Class parameters"
 }
