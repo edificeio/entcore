@@ -132,7 +132,7 @@
 	"email.login" : "\nVotre login : ",
 	"email.activation.uri" : "\nPour activer votre compte veuillez cliquer sur le lien ci-dessous et choisir un mot de passse.",
 	"email.regards" : "Cordialement.",
-	"search.in.directory": "Plus de critères",
+	"search.in.directory": "Rechercher dans tout l'annuaire",
 	"account.myaccount": "Mon compte",
 	"account.useraccount": "Compte utilisateur",
 	"admin.changeavatar": "Changer la photo",
@@ -147,5 +147,6 @@
 	"Relative" : "Parent",
 	"import.invalid.student" : "Aucun élève importé.",
 	"import.invalid.student" : "Aucun parent importé.",
-	"choose": "Choisir"
+	"choose": "Choisir",
+	"directory.explaination": "Cette fonctionnalité vous permet de rechercher une personne dans l'annuaire de l'école ou des écoles auxquelles vous avez accès.<br>Saisissez quelques caractères et cliquez sur OK pour afficher les résultats."
 }

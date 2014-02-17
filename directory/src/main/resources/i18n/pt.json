@@ -126,6 +126,7 @@
 "directory.activated" : "Ativado",
 "directory.resetPassword" : "Reinicializar a senha",
 "prive" : "Esta informação sò pode ser consultada por você",
-"public" : "Esta informação pode ser consultada por todos"
+"public" : "Esta informação pode ser consultada por todos",
+"directory.explaination": ""
 }
 
