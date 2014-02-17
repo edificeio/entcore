@@ -1091,15 +1091,18 @@ module.directive('datePicker', function($compile){
 						}
 					})
 					.on('changeDate', function(){
-						var date = $element.val().split('/');
-						var temp = date[0];
-						date[0] = date[1];
-						date[1] = temp;
-						date = date.join('/');
-						$scope.ngModel = new Date(date);
-						$scope.$apply('ngModel');
-						$scope.$parent.$eval($scope.ngChange);
-						$scope.$parent.$apply();
+						setTimeout(function(){
+							var date = $element.val().split('/');
+							var temp = date[0];
+							date[0] = date[1];
+							date[1] = temp;
+							date = date.join('/');
+							$scope.ngModel = new Date(date);
+							$scope.$apply('ngModel');
+							$scope.$parent.$eval($scope.ngChange);
+							$scope.$parent.$apply();
+						}, 10);
+
 						$(this).datepicker('hide');
 					});
 				$element.datepicker('hide');
