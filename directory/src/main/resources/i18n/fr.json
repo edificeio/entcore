@@ -141,7 +141,7 @@
 	"findkids": "Rechercher des enfants",
 	"user.added": "Utilisateur ajouté",
 	"error.missing.mail": "Veuillez renseigner votre adresse e-mail",
-	"info.passwords.sent": "Les nouveaux mots de passe ont été envoyés à votre adresse e-mail",
+	"info.passwords.sent": "Le(s) nouveau(x) mot(s) de passe a/ont été envoyé(s) à votre adresse e-mail",
 	"Student" : "Élève",
 	"Teacher" : "Enseignant",
 	"Relative" : "Parent",

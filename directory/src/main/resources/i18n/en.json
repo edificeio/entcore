@@ -135,6 +135,6 @@
 	"findkids": "Find children by name",
 	"user.added": "User added",
 	"error.missing.mail": "Please fill in your e-mail address",
-	"info.passwords.sent": "New passwords were sent to your e-mail address",
+	"info.passwords.sent": "New password(s) was/were sent to your e-mail address",
 	"choose": "Choose file"
 }
