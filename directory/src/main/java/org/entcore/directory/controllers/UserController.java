@@ -2,19 +2,23 @@ package org.entcore.directory.controllers;
 
 import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultUserBookService;
 import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 
@@ -35,6 +40,7 @@ public class UserController extends Controller {
 	private final UserService userService;
 	private final UserBookService userBookService;
 	private final TimelineHelper notification;
+	private final WorkspaceHelper workspaceHelper;
 
 	public UserController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -44,6 +50,8 @@ public class UserController extends Controller {
 		this.userService = new DefaultUserService(neo, notification);
 		this.userBookService = new DefaultUserBookService(neo);
 		this.notification = new TimelineHelper(vertx, eb, container);
+		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
+		this.workspaceHelper = new WorkspaceHelper(gridfsAddress, eb);
 	}
 
 	@SecuredAction(value = "user.update", type = ActionType.RESOURCE)
@@ -97,6 +105,59 @@ public class UserController extends Controller {
 	public void getUserBook(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userBookService.get(userId, notEmptyResponseHandler(request));
+	}
+
+	@SecuredAction(value = "user.update.avatar", type = ActionType.RESOURCE)
+	public void updateAvatar(final HttpServerRequest request) {
+		request.pause();
+		final String userId = request.params().get("userId");
+		userBookService.get(userId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(final Either<String, JsonObject> r) {
+				if (r.isRight()) {
+					final String picture = r.right().getValue().getString("picture");
+					JsonArray thumbs = new JsonArray(request.params().getAll("thumbnail").toArray());
+					if (StringValidation.isUUID(picture)) { // update
+						workspaceHelper.updateDocument(request, picture, null, thumbs,
+								new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> message) {
+								if ("ok".equals(message.body().getString("status"))) {
+									renderJson(request, new JsonObject().putString("picture", picture));
+								} else {
+									renderJson(request, message.body(), 400);
+								}
+							}
+						});
+					} else { // create
+						workspaceHelper.createDocument(request, null, "userbook", true, thumbs,
+								new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> message) {
+								if ("ok".equals(message.body().getString("status"))) {
+									final JsonObject j = new JsonObject().putString("picture",
+											message.body().getString("_id"));
+									userBookService.update(userId, j, new Handler<Either<String, JsonObject>>() {
+										@Override
+										public void handle(Either<String, JsonObject> u) {
+											if (u.isRight()) {
+												renderJson(request, j);
+											} else {
+												leftToResponse(request, r.left());
+											}
+										}
+									});
+								} else {
+									renderJson(request, message.body(), 400);
+								}
+							}
+						});
+					}
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	private void notifyTimeline(final HttpServerRequest request, final UserInfos user, final JsonObject body) {

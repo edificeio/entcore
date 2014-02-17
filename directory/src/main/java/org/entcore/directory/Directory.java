@@ -80,7 +80,8 @@ public class Directory extends Server {
 				.get("/user/:userId", "get")
 				.put("/user/:userId", "update")
 				.get("/userbook/:userId", "getUserBook")
-				.put("/userbook/:userId", "updateUserBook");
+				.put("/userbook/:userId", "updateUserBook")
+				.put("/avatar/:userId", "updateAvatar");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");

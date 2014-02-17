@@ -43,6 +43,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(UserController.class.getName().length() + 1);
 			switch (method) {
+				case "updateAvatar" :
 				case "get" :
 				case "getUserBook" :
 				case "updateUserBook" :

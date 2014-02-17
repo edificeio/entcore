@@ -376,25 +376,40 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(final JsonObject uploaded) {
 				if ("ok".equals(uploaded.getString("status"))) {
-					doc.putString("name", getOrElse(request
-							.params().get("name"), uploaded.getObject("metadata")
-							.getString("filename"), false));
-					doc.putObject("metadata", uploaded.getObject("metadata"));
-					doc.putString("file", uploaded.getString("_id"));
-					doc.putString("application", getOrElse(request.params()
-							.get("application"), WORKSPACE_NAME)); // TODO check if application name is valid
-					mongo.save(mongoCollection, doc, new Handler<Message<JsonObject>>() {
+					addAfterUpload(uploaded, doc, request
+							.params().get("name"), request.params().get("application"),
+							request.params().getAll("thumbnail"),
+							mongoCollection, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> res) {
 							if ("ok".equals(res.body().getString("status"))) {
 								renderJson(request, res.body(), 201);
-								createThumbnailIfNeeded(mongoCollection, request, uploaded,
-										res.body().getString("_id"), null);
 							} else {
 								renderError(request, res.body());
 							}
 						}
 					});
+				}
+			}
+		});
+	}
+
+	private void addAfterUpload(final JsonObject uploaded, JsonObject doc, String name, String application,
+			final List<String> thumbs, final String mongoCollection, final Handler<Message<JsonObject>> handler) {
+		doc.putString("name", getOrElse(name, uploaded.getObject("metadata")
+				.getString("filename"), false));
+		doc.putObject("metadata", uploaded.getObject("metadata"));
+		doc.putString("file", uploaded.getString("_id"));
+		doc.putString("application", getOrElse(application, WORKSPACE_NAME)); // TODO check if application name is valid
+		mongo.save(mongoCollection, doc, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if ("ok".equals(res.body().getString("status"))) {
+					createThumbnailIfNeeded(mongoCollection, uploaded,
+							res.body().getString("_id"), null, thumbs);
+				}
+				if (handler != null) {
+					handler.handle(res);
 				}
 			}
 		});
@@ -554,9 +569,8 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void createThumbnailIfNeeded(final String collection, HttpServerRequest request,
-			JsonObject srcFile, final String documentId, JsonObject oldThumbnail) {
-		List<String> thumbs = request.params().getAll("thumbnail");
+	private void createThumbnailIfNeeded(final String collection, JsonObject srcFile,
+			final String documentId, JsonObject oldThumbnail, List<String> thumbs) {
 		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() &&
 				srcFile != null && isImage(srcFile) && srcFile.getString("_id") != null) {
 			Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
@@ -578,7 +592,6 @@ public class WorkspaceService extends Controller {
 						outputs.addObject(j);
 					} catch (NumberFormatException e) {
 						log.error("Invalid thumbnail size.", e);
-						continue;
 					}
 				}
 			}
@@ -612,54 +625,74 @@ public class WorkspaceService extends Controller {
 		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject uploaded) {
-				documentDao.findById(request.params().get("id"), new Handler<JsonObject>() {
+				updateAfterUpload(request.params().get("id"), request.params().get("name"),
+						uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
 					@Override
-					public void handle(final JsonObject old) {
-						if ("ok".equals(old.getString("status"))) {
-							JsonObject metadata = uploaded.getObject("metadata");
-							JsonObject set = new JsonObject();
-							JsonObject doc = new JsonObject();
-							doc.putString("name", getOrElse(request
-									.params().get("name"), metadata.getString("filename")));
-							final String now = MongoDb.formatDate(new Date());
-							doc.putString("modified", now);
-							doc.putObject("metadata", metadata);
-							doc.putString("file", uploaded.getString("_id"));
-							final JsonObject thumbs = old.getObject("result", new JsonObject())
-									.getObject("thumbnails");
-							if (thumbs != null) {
-								doc.putObject("thumbnails", new JsonObject());
-							}
-							String query = "{ \"_id\": \"" + request.params().get("id") + "\"}";
-							set.putObject("$set", doc);
-							mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
-									new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(final Message<JsonObject> res) {
-									String status = res.body().getString("status");
-									JsonObject result = old.getObject("result");
-									if ("ok".equals(status) && result != null) {
-										FileUtils.gridfsRemoveFile(
-												result.getString("file"), eb, gridfsAddress,
-												new Handler<JsonObject>() {
-
-													@Override
-													public void handle(JsonObject event) {
-														renderJson(request, res.body());
-													}
-												});
-										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
-												request, uploaded, request.params().get("id"), thumbs);
-									} else {
-										renderError(request, res.body());
-									}
-								}
-							});
-						} else {
+					public void handle(Message<JsonObject> res) {
+						if (res == null) {
 							request.response().setStatusCode(404).end();
+						} else if ("ok".equals(res.body().getString("status"))) {
+							renderJson(request, res.body());
+						} else {
+							renderError(request, res.body());
 						}
 					}
 				});
+			}
+		});
+	}
+
+	private void updateAfterUpload(final String id, final String name, final JsonObject uploaded,
+			final List<String> t, final Handler<Message<JsonObject>> handler) {
+		documentDao.findById(id, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject old) {
+				if ("ok".equals(old.getString("status"))) {
+					JsonObject metadata = uploaded.getObject("metadata");
+					JsonObject set = new JsonObject();
+					JsonObject doc = new JsonObject();
+					doc.putString("name", getOrElse(name, metadata.getString("filename")));
+					final String now = MongoDb.formatDate(new Date());
+					doc.putString("modified", now);
+					doc.putObject("metadata", metadata);
+					doc.putString("file", uploaded.getString("_id"));
+					final JsonObject thumbs = old.getObject("result", new JsonObject())
+							.getObject("thumbnails");
+					if (thumbs != null) {
+						doc.putObject("thumbnails", new JsonObject());
+					}
+					String query = "{ \"_id\": \"" + id + "\"}";
+					set.putObject("$set", doc);
+					mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
+							new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(final Message<JsonObject> res) {
+							String status = res.body().getString("status");
+							JsonObject result = old.getObject("result");
+							if ("ok".equals(status) && result != null) {
+								FileUtils.gridfsRemoveFile(
+										result.getString("file"), eb, gridfsAddress,
+										new Handler<JsonObject>() {
+
+											@Override
+											public void handle(JsonObject event) {
+												if (handler != null) {
+													handler.handle(res);
+												}
+											}
+										});
+								createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
+										uploaded, id, thumbs, t);
+							} else {
+								if (handler != null) {
+									handler.handle(res);
+								}
+							}
+						}
+					});
+				} else if (handler != null) {
+					handler.handle(null);
+				}
 			}
 		});
 	}
@@ -1421,6 +1454,68 @@ public class WorkspaceService extends Controller {
 	@SecuredAction(value = "workspace.habilitation", type = ActionType.AUTHENTICATED)
 	public void getActionsInfos(final HttpServerRequest request) {
 		ActionsUtils.findWorkflowSecureActions(eb, request, this);
+	}
+
+	public void workspaceEventBusHandler(final Message<JsonObject> message) {
+		switch (message.body().getString("action", "")) {
+			case "addDocument" : addDocument(message);
+				break;
+			case "updateDocument" : updateDocument(message);
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "invalid.action"));
+		}
+	}
+
+	private void addDocument(final Message<JsonObject> message) {
+		JsonObject uploaded = message.body().getObject("uploaded");
+		JsonObject doc = message.body().getObject("document");
+		if (doc == null || uploaded == null) {
+			message.reply(new JsonObject().putString("status", "error")
+					.putString("message", "missing.attribute"));
+			return;
+		}
+		String name = message.body().getString("name");
+		String application = message.body().getString("application");
+		JsonArray t = message.body().getArray("thumbs", new JsonArray());
+		List<String> thumbs = new ArrayList<>();
+		for (int i = 0; i < t.size(); i++) {
+			thumbs.add((String) t.get(i));
+		}
+		addAfterUpload(uploaded, doc,  name, application, thumbs, DocumentDao.DOCUMENTS_COLLECTION,
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				if (m != null) {
+					message.reply(m.body());
+				}
+			}
+		});
+	}
+
+	private void updateDocument(final Message<JsonObject> message) {
+		JsonObject uploaded = message.body().getObject("uploaded");
+		String id = message.body().getString("id");
+		if (uploaded == null || id == null || id.trim().isEmpty()) {
+			message.reply(new JsonObject().putString("status", "error")
+					.putString("message", "missing.attribute"));
+			return;
+		}
+		String name = message.body().getString("name");
+		JsonArray t = message.body().getArray("thumbs", new JsonArray());
+		List<String> thumbs = new ArrayList<>();
+		for (int i = 0; i < t.size(); i++) {
+			thumbs.add((String) t.get(i));
+		}
+		updateAfterUpload(id, name, uploaded, thumbs, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				if (m != null) {
+					message.reply(m.body());
+				}
+			}
+		});
 	}
 
 }

@@ -71,4 +71,12 @@ public class DefaultResponseHandler {
 		};
 	}
 
+	public static void leftToResponse(HttpServerRequest request, Either.Left<String, ?> left) {
+		if (left != null) {
+			Renders.renderJson(request, new JsonObject().putString("error", left.getValue()), 400);
+		} else {
+			request.response().setStatusCode(400).end();
+		}
+	}
+
 }

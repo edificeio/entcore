@@ -155,13 +155,12 @@ User.prototype.uploadAvatar = function(){
 	var form = new FormData();
 	form.append("image", this.photo[0]);
 	http()
-		.postFile("/workspace/document?application=userbook&protected=true&" + User.prototype.thumbs, form, { requestName: 'photo'})
+		.putFile("/directory/avatar/" + this.id + "?" + User.prototype.thumbs, form, { requestName: 'photo'})
 		.done(function(data){
 			this.updateData({
-				picture: data._id
+				picture: data.picture
 			});
 			this.pictureVersion++;
-			this.saveChanges();
 			ui.updateAvatar();
 		}.bind(this));
 };

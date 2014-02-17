@@ -98,6 +98,12 @@ public class Workspace extends Server {
 
 		service.get("/workspace/availables-workflow-actions", "getActionsInfos");
 
+		try {
+			service.registerMethod("org.entcore.workspace", "workspaceEventBusHandler");
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			log.error(e.getMessage(), e);
+		}
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
 				Server.getEventBus(vertx), new WorkspaceResourcesProvider(mongo)));
 
