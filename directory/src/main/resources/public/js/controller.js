@@ -67,6 +67,7 @@ function DirectoryController($scope, model, route){
 		},
 		myClass: function(){
 			$scope.users = model.myClass.users;
+			$scope.myClass = model.myClass;
 			model.myClass.sync();
 			$scope.openView('class', 'page');
 			$scope.title = 'class';

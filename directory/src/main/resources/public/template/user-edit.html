@@ -35,7 +35,7 @@
 			<i role="[[account.visible.email]]" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
 			<div class="clear"></div>
 		</div>
-		<div class="row">
+		<div class="row" ng-if="account.type !== 'Student'">
 			<label translate content="userBook.profile.telephone" class="four cell"></label>
 			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.homePhone" />
 			<i role="[[account.visible.phone]]" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
