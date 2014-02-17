@@ -209,7 +209,7 @@ public class ClassController extends Controller {
 										request.response().end();
 									} else {
 										renderJson(request, new JsonObject()
-												.putString("error", "import.invalid." + userType.toLowerCase()), 400);
+												.putString("message", "import.invalid." + userType.toLowerCase()), 400);
 									}
 								} else {
 									renderJson(request, message.body(), 400);

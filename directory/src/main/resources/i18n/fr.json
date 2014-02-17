@@ -146,8 +146,14 @@
 	"Teacher" : "Enseignant",
 	"Relative" : "Parent",
 	"import.invalid.student" : "Aucun élève importé.",
-	"import.invalid.student" : "Aucun parent importé.",
+	"import.invalid.relative" : "Aucun parent importé. Vous devez importer les élèves en premier.",
 	"choose": "Choisir",
 	"directory.explaination": "Cette fonctionnalité vous permet de rechercher une personne dans l'annuaire de l'école ou des écoles auxquelles vous avez accès.<br>Saisissez quelques caractères et cliquez sur OK pour afficher les résultats.",
-	"or" : "ou"
+	"or" : "ou",
+	"missing.csv" : "Le fichier csv est manquant.",
+	"invalid.action" : "Action invalide",
+	"invalid.class.id" : "La classe n'est pas valide",
+	"invalid.lastName" : "Le nom est invalide à la ligne ",
+	"invalid.firstName" : "Le prénom est invalide à la ligne ",
+	"invalid.birthDate" : "La date de naissance est invalide à la ligne "
 }

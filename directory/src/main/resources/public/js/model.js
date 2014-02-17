@@ -276,9 +276,16 @@ function ClassAdmin(){
 			.done(function(){
 				this.sync();
 			}.bind(this))
-			.e400(function(){
+			.e400(function(e){
 				this.sync()
-			});
+				var error = JSON.parse(e.responseText).message;
+				var errWithIdx = error.split(/\s/);
+				if (errWithIdx.length === 2) {
+					notify.error(lang.translate(errWithIdx[0]) + errWithIdx[1]);
+				} else {
+					notify.error(error);
+				}
+			}.bind(this));
 	}
 
 	this.addUser = function(user){

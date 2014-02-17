@@ -75,19 +75,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "csvClassRelative" : csvClassRelative(message);
 				break;
 			default:
-				sendError(message, "Invalid action.");
+				sendError(message, "invalid.action");
 		}
 	}
 
 	private void csvClassStudent(final Message<JsonObject> message) {
 		String classId = message.body().getString("classId");
 		if (classId == null || classId.trim().isEmpty()) {
-			sendError(message, "Invalid classId.");
+			sendError(message, "invalid.class.id");
 			return;
 		}
 		String csv = message.body().getString("csv");
 		if (csv == null || csv.trim().isEmpty()) {
-			sendError(message, "Missing csv.");
+			sendError(message, "missing.csv");
 			return;
 		}
 
@@ -170,12 +170,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void csvClassRelative(final Message<JsonObject> message) {
 		String classId = message.body().getString("classId");
 		if (classId == null || classId.trim().isEmpty()) {
-			sendError(message, "Invalid classId.");
+			sendError(message, "invalid.class.id");
 			return;
 		}
 		String csv = message.body().getString("csv");
 		if (csv == null || csv.trim().isEmpty()) {
-			sendError(message, "Missing csv.");
+			sendError(message, "missing.csv");
 			return;
 		}
 

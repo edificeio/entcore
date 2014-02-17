@@ -138,5 +138,13 @@
 	"info.passwords.sent": "New password(s) was/were sent to your e-mail address",
 	"choose": "Choose file",
 	"directory.explaination": "",
-	"or" : "or"
+	"or" : "or",
+	"import.invalid.student" : "Invalid student import.",
+	"import.invalid.relative" : "Invalid relative import. You must import students first.",
+	"missing.csv" : "Missing csv file.",
+	"invalid.action" : "Invalid action.",
+	"invalid.class.id" : "Invalid class room",
+	"invalid.lastName" : "Invalid last name at line ",
+	"invalid.firstName" : "Invalid first name at line ",
+	"invalid.birthDate" : "Invalid birth date at line "
 }
