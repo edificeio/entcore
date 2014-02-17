@@ -122,23 +122,25 @@ var protoApp = {
 	}
 };
 
+var notify = {
+	message: function(type, message){
+		message = lang.translate(message);
+		humane.spawn({ addnCls: 'humane-original-' + type })(message);
+	},
+	error: function(message){
+		this.message('error', message);
+	},
+	info: function(message){
+		this.message('info', message)
+	}
+};
+
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
 	})
 	.factory('notify', function(){
-		return {
-			message: function(type, message){
-				message = lang.translate(message);
-				humane.spawn({ addnCls: 'humane-original-' + type })(message);
-			},
-			error: function(message){
-				this.message('error', message);
-			},
-			info: function(message){
-				this.message('info', message)
-			}
-		}
+		return notify;
 	})
 	.factory('route', function($rootScope, $route, $routeParams){
 		var routes = {};

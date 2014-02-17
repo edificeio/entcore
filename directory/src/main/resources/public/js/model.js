@@ -272,9 +272,13 @@ function ClassAdmin(){
 	this.importFile = function(file, type){
 		var form = new FormData();
 		form.append('file', file);
-		http().postFile('/directory/csv/' + type + '/class/' + this.id, form).done(function(){
-			this.sync();
-		}.bind(this));
+		http().postFile('/directory/csv/' + type + '/class/' + this.id, form)
+			.done(function(){
+				this.sync();
+			}.bind(this))
+			.e400(function(){
+				this.sync()
+			});
 	}
 
 	this.addUser = function(user){

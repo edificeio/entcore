@@ -176,6 +176,10 @@ var http = (function(){
 					}
 				})
 				.fail(function(e){
+					if(requestName && that.events['request-ended.' + requestName]){
+						that.events['request-ended.' + requestName]();
+					}
+
 					if(typeof that.statusCallbacks['e' + e.status] === 'function'){
 						that.statusCallbacks['e' + e.status].call(that, e);
 					}
@@ -188,9 +192,6 @@ var http = (function(){
 						}
 					}
 
-					if(requestName && that.events['request-ended.' + requestName]){
-						that.events['request-ended.' + requestName]();
-					}
 					console.log('HTTP error:' + e.status);
 					console.log(e);
 				});
