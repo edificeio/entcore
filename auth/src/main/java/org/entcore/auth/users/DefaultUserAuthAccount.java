@@ -87,7 +87,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void forgotPassword(final HttpServerRequest request, String login,
+	public void forgotPassword(final HttpServerRequest request, final String login,
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
@@ -112,7 +112,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					if (json.getObject("0") != null &&
 							json.getObject("0").getString("email") != null &&
 							!json.getObject("0").getString("email").trim().isEmpty()) {
-						sendResetPasswordLink(request, json.getObject("0")
+						sendResetPasswordLink(request, login, json.getObject("0")
 								.getString("email"), resetCode, handler);
 					} else {
 						neo.send(query2, params, new Handler<Message<JsonObject>>(){
@@ -124,7 +124,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 										j.getObject("0") != null &&
 										j.getObject("0").getString("email") != null &&
 										!j.getObject("0").getString("email").trim().isEmpty()) {
-									sendResetPasswordLink(request, j.getObject("0")
+									sendResetPasswordLink(request, login, j.getObject("0")
 											.getString("email"), resetCode, handler);
 								} else {
 									handler.handle(false);
@@ -139,13 +139,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
-	private void sendResetPasswordLink(HttpServerRequest request, String email, String resetCode,
+	private void sendResetPasswordLink(HttpServerRequest request, String login, String email, String resetCode,
 			final Handler<Boolean> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
 			handler.handle(false);
 			return;
 		}
 		JsonObject json = new JsonObject()
+				.putString("login", login)
 		.putString("resetUri", container.config()
 				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode);
 		container.logger().debug(json.encode());
@@ -187,7 +188,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetCode(final HttpServerRequest request, String login, final String email,
+	public void sendResetCode(final HttpServerRequest request, final String login, final String email,
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
@@ -202,7 +203,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
 						"1".equals(((JsonObject) event.body().getArray("result").get(0)).getString("nb"))) {
-					sendResetPasswordLink(request, email, code, handler);
+					sendResetPasswordLink(request, login, email, code, handler);
 				} else {
 					handler.handle(false);
 				}
