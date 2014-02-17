@@ -15,7 +15,12 @@ var admin = function() {
 						src: o.url,
 						frameBorder: '0'
 					}).load(function() {
-						this.contentWindow.postMessage(style, o.url);
+
+						$('head', this.contentWindow.document).prepend($('<link>', {
+							rel: 'stylesheet',
+							type: 'text/css',
+							href: '/admin/public/css/font.css'
+						}))
 					}).appendTo('#main');
 				}
 				$('#' + o.target.id).parent().addClass('active');
