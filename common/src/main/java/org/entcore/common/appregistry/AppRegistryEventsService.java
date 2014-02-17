@@ -5,7 +5,7 @@ import org.vertx.java.core.json.JsonArray;
 
 public interface AppRegistryEventsService {
 
-	void authorizedActionsUpdated();
+	void authorizedActionsUpdated(JsonArray groups);
 
 	void userGroupUpdated(JsonArray users);
 

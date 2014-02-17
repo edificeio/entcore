@@ -22,10 +22,11 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 		if (type != null) {
 			switch (type) {
 				case PROFILE_GROUP_ACTIONS_UPDATED:
-					appRegistryEventsService.authorizedActionsUpdated();
+					appRegistryEventsService.authorizedActionsUpdated(event.body().getArray("groups"));
 					break;
 				case USER_GROUP_UPDATED:
 					appRegistryEventsService.userGroupUpdated(event.body().getArray("users"));
+					break;
 			}
 		}
 	}

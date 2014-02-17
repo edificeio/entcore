@@ -16,24 +16,32 @@ public final class ApplicationUtils {
 	private ApplicationUtils() {}
 
 	public static void applicationAllowedUsers(EventBus eb, String application, Handler<JsonArray> handler) {
-		applicationInfos(eb, "allowedUsers", application, null, handler);
+		applicationInfos(eb, "allowedUsers", application, null, null, handler);
 	}
 
 	public static void applicationAllowedUsers(EventBus eb, String application, JsonArray users,
 			Handler<JsonArray> handler) {
-		applicationInfos(eb, "allowedUsers", application, users, handler);
+		applicationInfos(eb, "allowedUsers", application, users, null, handler);
+	}
+
+	public static void applicationAllowedUsers(EventBus eb, String application,
+			JsonArray users, JsonArray groups, Handler<JsonArray> handler) {
+		applicationInfos(eb, "allowedUsers", application, users, groups, handler);
 	}
 
 	public static void applicationAllowedProfileGroups(EventBus eb, String application, Handler<JsonArray> handler) {
-		applicationInfos(eb, "allowedProfileGroups", application, null, handler);
+		applicationInfos(eb, "allowedProfileGroups", application, null, null, handler);
 	}
 
-	private static void applicationInfos(EventBus eb, String action, String application, JsonArray users,
-			final Handler<JsonArray> handler) {
+	private static void applicationInfos(EventBus eb, String action, String application,
+			JsonArray users, JsonArray groups, final Handler<JsonArray> handler) {
 		JsonObject json = new JsonObject();
 		json.putString("action", action).putString("application", application);
 		if (users != null) {
 			json.putArray("users", users);
+		}
+		if (groups != null) {
+			json.putArray("groups", groups);
 		}
 		eb.send(APP_REGISTRY_ADDRESS, json, new Handler<Message<JsonArray>>() {
 			@Override

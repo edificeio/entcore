@@ -152,7 +152,7 @@ public class AppRegistryService extends Controller {
 			@Override
 			protected void handle() {
 				List <String> roleIds = request.formAttributes().getAll("roleIds");
-				String groupId = request.formAttributes().get("groupId");
+				final String groupId = request.formAttributes().get("groupId");
 				Map<String, Object> params = new HashMap<>();
 				params.put("groupId", groupId);
 				if (roleIds != null && groupId != null && !groupId.trim().isEmpty()) {
@@ -165,7 +165,7 @@ public class AppRegistryService extends Controller {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								request.response().end(event.body().encode());
-								updatedProfileGroupActions();
+								updatedProfileGroupActions(groupId);
 							}
 						});
 					} else {
@@ -184,7 +184,7 @@ public class AppRegistryService extends Controller {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								request.response().end(event.body().encode());
-								updatedProfileGroupActions();
+								updatedProfileGroupActions(groupId);
 							}
 						});
 					}
@@ -195,8 +195,12 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
-	private void updatedProfileGroupActions() {
-		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, new JsonObject().putString("type", PROFILE_GROUP_ACTIONS_UPDATED));
+	private void updatedProfileGroupActions(String groupId) {
+		JsonObject message = new JsonObject().putString("type", PROFILE_GROUP_ACTIONS_UPDATED);
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			message.putArray("groups", new JsonArray().add(groupId));
+		}
+		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, message);
 	}
 
 	@SecuredAction("app-registry.list.roles")
@@ -498,7 +502,10 @@ public class AppRegistryService extends Controller {
 			};
 			switch (action) {
 				case "allowedUsers":
-					applicationAllowedUsers(application, message.body().getArray("users"), responseHandler);
+					applicationAllowedUsers(application,
+							message.body().getArray("users"),
+							message.body().getArray("groups"),
+							responseHandler);
 					break;
 				case "allowedProfileGroups":
 					applicationAllowedProfileGroups(application, responseHandler);
@@ -512,15 +519,17 @@ public class AppRegistryService extends Controller {
 		}
 	}
 
-	private void applicationAllowedUsers(String application, JsonArray users,
+	private void applicationAllowedUsers(String application, JsonArray users, JsonArray groups,
 			Handler<Message<JsonObject>> handler) {
 		JsonObject params = new JsonObject().putString("application", application);
-		String filter;
+		String filter = "";
 		if (users != null) {
-			filter = "AND u.id IN {users} ";
+			filter += "AND u.id IN {users} ";
 			params.putArray("users", users);
-		} else {
-			filter = "";
+		}
+		if (groups != null) {
+			filter += "AND pg.id IN {groups} ";
+			params.putArray("groups", groups);
 		}
 		String query =
 				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +

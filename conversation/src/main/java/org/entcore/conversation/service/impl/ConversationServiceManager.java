@@ -8,6 +8,7 @@ import org.entcore.common.neo4j.StatementsBuilder;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -28,16 +29,26 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 	}
 
 	@Override
-	public void authorizedActionsUpdated() {
-		ApplicationUtils.applicationAllowedUsers(eb, applicationName, new Handler<JsonArray>() {
+	public void authorizedActionsUpdated(final JsonArray groups) {
+		ApplicationUtils.applicationAllowedUsers(eb, applicationName, null, groups, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray users) {
-				Set<String> userIds = new HashSet<>();
+				final Set<String> userIds = new HashSet<>();
 				for (Object o: users) {
 					if (!(o instanceof JsonObject)) continue;
 					userIds.add(((JsonObject) o).getString("id"));
 				}
-				manageConversationNodes(userIds, null);
+				if (groups != null) {
+					usersInGroups(groups, new Handler<JsonArray>(){
+
+						@Override
+						public void handle(JsonArray uig) {
+							manageConversationNodes(userIds, uig);
+						}
+					});
+				} else {
+					manageConversationNodes(userIds, null);
+				}
 			}
 		});
 	}
@@ -84,6 +95,30 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 				"WHERE NOT(c.userId IN ['" + Joiner.on("','").join(userIds) + "']) AND c.active <> {false} " + filter +
 				"SET c.active = {false} ", disableParams);
 		neo.executeTransaction(b.build(), null, true, null);
+	}
+
+	private void usersInGroups(JsonArray groups, final Handler<JsonArray> users) {
+		if (users == null) return;
+		if (groups == null) {
+			users.handle(null);
+		}
+		String query =
+				"MATCH (g:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"WHERE g.id IN {groups} " +
+				"RETURN COLLECT(distinct u.id) as users ";
+		neo.execute(query, new JsonObject().putArray("groups", groups), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonArray a = message.body().getArray("result");
+				if ("ok".equals(message.body().getString("status")) && a != null &&
+						a.size() == 1 && a.get(0) != null) {
+					JsonObject j = a.get(0);
+					users.handle(j.getArray("users"));
+				} else {
+					users.handle(null);
+				}
+			}
+		});
 	}
 
 }
