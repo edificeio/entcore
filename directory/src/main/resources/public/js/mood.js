@@ -5,7 +5,7 @@
 	Mood.mood = 'default';
 
 	Mood.updateMood = function(){
-		http().get('/userbook/api/edit-userbook-info?prop=mood&value=' + Mood.mood.id);
+		http().putJson('/directory/userbook/' + model.me.userId, { mood: Mood.mood.id });
 	};
 
 	lang.addBundle('/directory/i18n', function(){
