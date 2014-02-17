@@ -94,6 +94,10 @@ function MyAccount($scope, lang, date, notify, route){
 		ui.hideLightbox();
 	};
 
+	$scope.saveInfos = function(){
+		model.account.saveInfos();
+	}
+
 	$scope.resetPassword = function(url){
 		http().post(url, {
 				oldPassword: $scope.account.oldPassword,
