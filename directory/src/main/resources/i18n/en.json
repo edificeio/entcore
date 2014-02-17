@@ -137,5 +137,6 @@
 	"error.missing.mail": "Please fill in your e-mail address",
 	"info.passwords.sent": "New password(s) was/were sent to your e-mail address",
 	"choose": "Choose file",
-	"directory.explaination": ""
+	"directory.explaination": "",
+	"or" : "or"
 }
