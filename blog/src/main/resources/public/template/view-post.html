@@ -1,9 +1,10 @@
 <div class="row">
 	<h2 class="six cell upper-title">[[post.title]]</h2>
-	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="(currentBlog.myRights.post.edit && post.author.userId === me.userId) || currentBlog.myRights.manager">[[translate('blog.edit.post')]]</button>
 	<button class="right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="(currentBlog.myRights.post.remove && post.author.userId === me.userId) || currentBlog.myRights.manager">
 		[[translate('blog.delete.post')]]
 	</button>
+	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="(currentBlog.myRights.post.edit && post.author.userId === me.userId) || currentBlog.myRights.manager">[[translate('blog.edit.post')]]</button>
+
 </div>
 
 <h5 class="six cell subtitle">

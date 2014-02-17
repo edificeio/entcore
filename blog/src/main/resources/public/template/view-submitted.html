@@ -4,11 +4,12 @@
 		<span class="warning-text-badge" ng-if="post.state === 'SUBMITTED'" translate key="submitted"></span>
 		[[post.title]]
 	</h2>
-	<button ng-click="publish(post)" ng-if="currentBlog.myRights.post.publish || post.state === 'DRAFT'" translate key="blog.publish" class="right-magnet"></button>
-	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">[[translate('blog.edit.post')]]</button>
 	<button class="right-magnet" data-ng-click="openConfirmView(removePost, post)" ng-if="currentBlog.myRights.post.remove">
 		[[translate('blog.delete.post')]]
 	</button>
+	<button ng-click="publish(post)" ng-if="currentBlog.myRights.post.publish || post.state === 'DRAFT'" translate key="blog.publish" class="right-magnet"></button>
+	<button class="right-magnet" data-ng-click="showEditPost(post)" data-ng-disabled="isCurrentView('editPost')" ng-if="currentBlog.myRights.post.edit">[[translate('blog.edit.post')]]</button>
+
 	<h5 class="six cell subtitle">
 		[[translate('blog.by')]] <a href="/userbook/annuaire#[[post.author.userId]]">[[post.author.username]]</a> [[translate('blog.on.date')]] [[formatDate(post.created.$date)]]
 			<span data-ng-if="isCurrentView('lastPosts')">
