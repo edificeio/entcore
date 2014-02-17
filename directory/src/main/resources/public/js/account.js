@@ -87,6 +87,7 @@ function MyAccount($scope, lang, date, notify, route){
 
 	$scope.openPasswordDialog = function(){
 		ui.showLightbox();
+		$scope.account.password = '';
 	};
 
 	$scope.closePassword = function(){
