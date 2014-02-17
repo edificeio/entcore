@@ -186,7 +186,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				.skipLines(1)
 				.charset(charset)
 				.create();
-		csv = csv.split(";;;;;;;;;;;;;;;;;;;;")[0];
+		csv = csv.split("(;;;;;;;;;;;;;;;;;;;;|\n\n|\r\n\r\n)")[0];
 		final String [] header = new String[] { "title", "surname", "lastName", "firstName",
 				"address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
 				"#skip#", "mobile" };
