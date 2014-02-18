@@ -147,12 +147,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 		JsonObject json = new JsonObject()
 				.putString("login", login)
-		.putString("resetUri", container.config()
-				.getString("host", "http://localhost:8009") + "/auth/reset/" + resetCode);
+				.putString("host", notification.getHost())
+				.putString("resetUri", notification.getHost() + "/auth/reset/" + resetCode);
 		container.logger().debug(json.encode());
 		notification.sendEmail(request, email, container.config()
 				.getString("email", "noreply@one1d.fr"), null, null,
-				"mail.reset.pw.subject", "email/forgotPassword.txt", json, true,
+				"mail.reset.pw.subject", "email/forgotPassword.html", json, true,
 				new Handler<Message<JsonObject>>() {
 
 				@Override
