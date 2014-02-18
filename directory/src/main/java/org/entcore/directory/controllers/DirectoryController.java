@@ -10,6 +10,7 @@ import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
+import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -96,6 +97,11 @@ public class DirectoryController extends Controller {
 	@SecuredAction("directory.view")
 	public void directory(HttpServerRequest request) {
 		renderView(request, new JsonObject());
+	}
+
+	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
+	public void annuaire(HttpServerRequest request) {
+		renderView(request, null, "annuaire.html", null);
 	}
 
 	@SecuredAction("directory.be1d")

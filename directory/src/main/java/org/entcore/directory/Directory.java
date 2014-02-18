@@ -40,6 +40,7 @@ public class Directory extends Server {
 
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
+				.get("/annuaire", "annuaire")
 				.get("/testbe1d", "testBe1d")
 				.get("/api/ecole", "school")
 				.get("/api/classes", "classes")
