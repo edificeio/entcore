@@ -1,2 +1,2 @@
-create (u:User {id:'OAuthSystemUser'})
+create (u:User {id:'OAuthSystemUser'});
 
