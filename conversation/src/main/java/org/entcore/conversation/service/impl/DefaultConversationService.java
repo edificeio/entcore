@@ -4,6 +4,7 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -29,7 +30,7 @@ public class DefaultConversationService implements ConversationService {
 	private final String applicationName;
 
 	public DefaultConversationService(Vertx vertx, String applicationName) {
-		eb = vertx.eventBus();
+		eb = Server.getEventBus(vertx);
 		neo = new Neo(eb, LoggerFactory.getLogger(Neo.class));
 		this.applicationName = applicationName;
 	}
