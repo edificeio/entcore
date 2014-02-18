@@ -17,7 +17,7 @@ routes.define(function($routeProvider){
 		})
 });
 
-function DirectoryController($scope, model, route){
+function DirectoryController($scope, model, route, date){
 	$scope.users = [];
 	$scope.lang = lang;
 	$scope.search = {
@@ -35,6 +35,10 @@ function DirectoryController($scope, model, route){
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
+	};
+
+	$scope.longDate = function(dateString){
+		return moment(dateString).format('DD MMMM YYYY')
 	};
 
 	$scope.viewsContainers = {};
