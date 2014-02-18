@@ -1116,12 +1116,47 @@ a{
 	}
 }
 
+nav.scrapbook-buttons{
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: #f6f6f6;
+	.border-radius-top();
+	border-bottom: 1px solid #ccc;
+	padding: 4px;
+	input{
+		.border-radius(0px);
+		border: none;
+		opacity: 0.6;
+		.run-transition(opacity);
+		margin-left: 4px;
+		margin-right: 4px;
+	}
+	input:hover{
+		opacity: 1;
+		background: none;
+	}
+	input.text{
+		.icon(text-icon, 30px);
+	}
+	input.image{
+		.icon(picture-icon, 30px);
+	}
+	input.sound{
+		.icon(music-icon, 30px);
+	}
+	a{
+		line-height: 33px;
+		height: 33px;
+	}
+}
+
 .scrapbook{
 	background: url('../img/illustrations/scrapbook-monopage.png') no-repeat;
 	width: 900px;
 	height: 630px;
 	position: relative;
-	margin-top: 15px;
+	margin-top: 55px;
 	margin-bottom: 15px;
 
 	.flip-right, .flip-left{
@@ -1208,17 +1243,32 @@ a{
 		}
 	}
 
+	.scrapbook-pagination{
+		position: absolute;
+		bottom: 0;
+		right: 0;
+	}
+
 	.drawing-zone{
 		article{
 			border: none;
 			background: transparent;
 			[contenteditable=true]{
 				padding: 0;
+				position: absolute;
+				top: 0;
+				left: 0;
+				p, h1, h2, h3, h4, h5, h6, div{
+					padding: 5px;
+				}
+			}
+			[contenteditable=true]:focus{
+				outline: none;
 			}
 		}
 
 		article.media{
-			border: 2px dashed #ccc;
+			border: 1px dashed rgb(119, 13, 13);
 		}
 
 		i[role=close]{
@@ -1234,6 +1284,26 @@ a{
 			width: 100%;
 			height: 100%;
 		}
+	}
+}
+
+.scrapbook-pagination{
+	padding: 5px;
+	padding-right: 10px;
+	font-size: 16px;
+	color: @medium-blue;
+
+	input[type=text]{
+		font-size: 16px;
+		color: #666;
+		border-radius: 0;
+		width: 30px;
+		text-align: right;
+		padding: 3px;
+		height: 19px;
+		line-height: 16px;
+		box-sizing: border-box;
+		border: 1px solid;
 	}
 }
 
@@ -1917,4 +1987,38 @@ label.checkbox{
 	opacity: 1;
 	cursor: pointer;
 }
+
+.cke_float.cke_chrome{
+	box-shadow: none;
+	 .cke_inner{
+		background: @ultra-light-grey;
+		box-shadow: none !important;
+		border: 1px solid #ccc;
+
+		.cke_top{
+			background: none;
+			border: none;
+			box-shadow: none;
+			border-bottom: none;
+			.cke_toolgroup{
+				box-shadow: none;
+			}
+			span{
+				border: none;
+				background: none;
+			}
+			.cke_combo_arrow{
+				border-left: 3px solid transparent;
+				border-right: 3px solid transparent;
+				border-top: 3px solid #474747;
+			}
+			.cke_combo_button{
+				background: #fff;
+				border: 1px solid #ddd;
+			}
+		}
+	}
+}
+
+
 
