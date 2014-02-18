@@ -166,6 +166,10 @@ function Blog($scope, date, _, ui, lang, notify){
 		}
 	};
 
+	$scope.uncheckAllBox = function(){
+		$scope.displayOptions.showAll = false;
+	};
+
 	$scope.seeMore = function(){
 		var slots = 0;
 		if(!$scope.currentBlog){

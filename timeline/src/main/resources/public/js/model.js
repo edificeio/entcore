@@ -8,6 +8,9 @@ function Notification(){
 
 function NotificationType(){
 	this.apply = function(){
+		if(model.notificationTypes.selection().length > 0){
+			model.notificationTypes.noFilter = false;
+		}
 		model.notifications.sync();
 	}
 }
@@ -31,6 +34,11 @@ model.build = function (){
 			if(model.notificationTypes.noFilter){
 				types = model.notificationTypes.all;
 			}
+
+			if(!types.length){
+				return;
+			}
+
 			var params = { type: _.map(types, function(type){
 				return type.data;
 			})};

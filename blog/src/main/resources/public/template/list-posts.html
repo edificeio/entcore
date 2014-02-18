@@ -7,17 +7,17 @@
 			</label>
 		</li>
 		<li>
-			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showPosts" />
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showPosts" ng-change="uncheckAllBox()" />
 				<span translate key="filters.published"></span>
 			</label>
 		</li>
 		<li>
-			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showDrafts" />
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showDrafts" ng-change="uncheckAllBox()" />
 				<span translate key="filters.drafts"></span>
 			</label>
 		</li>
 		<li>
-			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showSubmitted" />
+			<label class="checkbox"><input type="checkbox" ng-model="displayOptions.showSubmitted" ng-change="uncheckAllBox()" />
 				<span translate key="filters.submitted"></span>
 			</label>
 		</li>
