@@ -4199,6 +4199,14 @@ a strong.small-header {
 .dominos .item .domino.pink {
   background: #fa4860;
 }
+article header.infos-block {
+  background: none;
+  position: absolute;
+}
+article header.infos-block h2 {
+  font-size: 20px;
+  display: block;
+}
 nav.scrapbook-buttons {
   position: absolute;
   top: 0;
@@ -4231,6 +4239,7 @@ nav.scrapbook-buttons input {
   transition: opacity 250ms ease;
   margin-left: 4px;
   margin-right: 4px;
+  font-family: Arial;
 }
 nav.scrapbook-buttons input:hover {
   opacity: 1;
