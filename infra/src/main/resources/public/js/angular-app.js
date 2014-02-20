@@ -931,14 +931,14 @@ module.directive('placedBlock', function($compile){
 			$scope.$watch('x', function(newVal){
 				$element.offset({
 					top: $element.offset().top,
-					left: newVal
+					left: newVal + $element.parent().offset().left
 				});
 			});
 
 			$scope.$watch('y', function(newVal){
 				$element.offset({
 					left: $element.offset().left,
-					top: newVal
+					top: newVal + $element.parent().offset().top
 				});
 			});
 
@@ -960,9 +960,9 @@ module.directive('placedBlock', function($compile){
 			$element.on('startResize', toTop);
 
 			$element.on('stopDrag', function(){
-				$scope.x = $element.offset().left;
+				$scope.x = $element.position().left;
 				$scope.$apply('x');
-				$scope.y = $element.offset().top;
+				$scope.y = $element.position().top;
 				$scope.$apply('y');
 			});
 
