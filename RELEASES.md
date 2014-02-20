@@ -1,45 +1,84 @@
 ONE : Notes de versions
 =======================
 
+# v1.5.0
+
+## Administration de la classe
+
+* [nouveau] Application de gestion des utilisateurs de classe par l'enseignant
+
+## Annuaire
+
+* \#907 Attribuer les roles par défaut après la création d'une classe
+* \#898 Masquer utilisateurs bloqués dans la classe, les recherches, les partagess et l'envoie de message
+* \#864, \#863 Api de création de d'école / classe
+* \#899 Pouvoir envoyer un email à un utilisateur lors de sa création
+
+## La classe
+
+* \#776 Relooking de la vue "Ma classe"
+* \#619 Recherche par auto complétion dans la classe
+
+## Registre d'application
+
+* \#902 Pouvoir attribuer des roles par défaut
+* \#901 Créer des roles par défaut
+
+## Messagerie
+
+* \#815 Transférer un message depuis la boite d'envoi
+
+## Évolutions Techniques
+* \#865 Api idempotente de création et de suppression des règles de communication par défaut
+* Renommage des espaces de nom pour supprimer toute référence à _"one"_  du code (au profit de _"ent-core"_)
+
+# Authentification / Session
+
+* \#559	[oAuth2] Pouvoir se servir du code une seule fois
+* \#558	[oAuth2] Expirer le code au bout de 10 min
+* \#867	[oAuth2] Supporter le flux "client_credentials"
+* \#895	Bloquer la connexion pour un utilisateur
+* \#904	Authentifier directement les utilisateurs après l'activation
+
 # v1.4.0
 
 ## Messagerie
 
-* #792, #751, #750, #748 : API et Test (Activation / Désactivation, Envoie, Réponse, Transfert, Brouillon, Corbeille, Intégration des règle de communication)
+* \#792, \#751, \#750, \#748 : API et Test (Activation / Désactivation, Envoie, Réponse, Transfert, Brouillon, Corbeille, Intégration des règle de communication)
 * IHM de consultation et de conversation
 
 ## Espace Documentaire
 
-* #738 Créer un nouveau document : Ne plus  afficher les fichiers de la fenêtre précédente
-* #737 Copier dans mes documents : sélection précédente conservée
-* #735 Sélectionner le dossier "Mes documents" par défaut lors de la copie d'un document
-* #734 Copier dans mes documents : ne pas autoriser la sélection multiple de dossiers
+* \#738 Créer un nouveau document : Ne plus  afficher les fichiers de la fenêtre précédente
+* \#737 Copier dans mes documents : sélection précédente conservée
+* \#735 Sélectionner le dossier "Mes documents" par défaut lors de la copie d'un document
+* \#734 Copier dans mes documents : ne pas autoriser la sélection multiple de dossiers
 
 ## Portail / Fil de Nouveautés / Widget
 
-* #827 [portail] Api donner la locale courant de l'utilisateur connecté
-* #668 [fenêtre de partage] Indiquer par défaut les droits de l'utilisateur
-* #786 [fil de nouveauté] Renvoyer les clés i18n des événements de la timeline pour les internationaliser
+* \#827 [portail] Api donner la locale courant de l'utilisateur connecté
+* \#668 [fenêtre de partage] Indiquer par défaut les droits de l'utilisateur
+* \#786 [fil de nouveauté] Renvoyer les clés i18n des événements de la timeline pour les internationaliser
 * [widget] Ajout du widget changement d'humeur
 * [widget] Anniversaire : Affichage de tous les élèves de la classe (indépendamment des règles de communication) et de toutes les dates d'anniversaires (indépendamment des choix de visibilité d'information personnelle)
 
 ## Blog
 
-* #742 [anomalie] Empêcher et informer l'utilisateur de la création d'un billet sans contenu
+* \#742 [anomalie] Empêcher et informer l'utilisateur de la création d'un billet sans contenu
 * Ajout du workflow de modération pour la publication de billet
 * Ajout de Filtre d'affichage des billets
 
 ## Administration
 
-* #785 [annuaire] Réinitialiser un mot de passe via l'explorateur d'annuaire
-* #20 [annuaire][anomalie] Affichage des parents dans l'explorateur d'annuaire
+* \#785 [annuaire] Réinitialiser un mot de passe via l'explorateur d'annuaire
+* \#20 [annuaire][anomalie] Affichage des parents dans l'explorateur d'annuaire
 
 ## Évolutions techniques
 
-* #787 [infra] Exécuter les scripts du schema neo4j au démarrage pour le mode embarqué
-* #746 [infra] Helpers pour neo4j version 2 avec les nouveaux formats de retour
-* #749 [registre d'application] Broadcaster un message lors de la modification des habilitations associées à un groupe de profil
-* #754 [registre d'application] Collecter la liste des utilisateurs ou des groupes qui ont accès à mon application
+* \#787 [infra] Exécuter les scripts du schema neo4j au démarrage pour le mode embarqué
+* \#746 [infra] Helpers pour neo4j version 2 avec les nouveaux formats de retour
+* \#749 [registre d'application] Broadcaster un message lors de la modification des habilitations associées à un groupe de profil
+* \#754 [registre d'application] Collecter la liste des utilisateurs ou des groupes qui ont accès à mon application
 
 # v1.3.0-neo4j2
 
@@ -49,45 +88,45 @@ ONE : Notes de versions
 
 ## Activation et connexion
 
-* #675 Ne pas afficher d'erreur lors de la tentative d'activation d'un compte déjà activé (e.g. double clic)
+* \#675 Ne pas afficher d'erreur lors de la tentative d'activation d'un compte déjà activé (e.g. double clic)
 
 ## Portail
 
-* #652 Police dans la liste des applications
-* #644 Taille des widgets
-* #601 [widget][Calendrier] Erreur quand on clique sur le nom d'une personne
+* \#652 Police dans la liste des applications
+* \#644 Taille des widgets
+* \#601 [widget][Calendrier] Erreur quand on clique sur le nom d'une personne
 * [widget] Ajout du widget Anniversaire
 
 ## Fil de nouveauté
 
-* #646 Style des notifications
-* #633 Ajouter un type par événement
+* \#646 Style des notifications
+* \#633 Ajouter un type par événement
 
 ## Mon Compte
 
-* #655 Changer ma photo : appliquer le clic à l'avatar
-* #625 Possibilité de supprimer la photo après un premier ajout
-* #57 Afficher d'infos-bulles sur sur les icônes de gestion des droits de visibilité
+* \#655 Changer ma photo : appliquer le clic à l'avatar
+* \#625 Possibilité de supprimer la photo après un premier ajout
+* \#57 Afficher d'infos-bulles sur sur les icônes de gestion des droits de visibilité
 
 ## Espace Documentaire
 
-* #624, #673, #672 :  api de gestion des dossiers (création , copie, copie depuis "documents partagés avec moi", déplacement, déplacement dans la corbeille)
-* #632 Copier un document partagé vers ses documents personnels
-* #654, #637 Trier les documents par date (choix par défaut), par titre, par propriétaire
-* #647, #631 Action en lot sur les documents : Chargement, partage copie et déplacement
-* #629 [ergonomie] Affichage des actions contextuelles à une ressource via une barre de boutons en bas de l'écran. (résout en même temps #37)
-* #626 Ne pas faire apparaitre les boutons d'action en fonction des habilitations
-* #56 Faire apparaître le nom du document partagé lors de la publication sur le fil de nouveauté
+* \#624, \#673, \#672 :  api de gestion des dossiers (création , copie, copie depuis "documents partagés avec moi", déplacement, déplacement dans la corbeille)
+* \#632 Copier un document partagé vers ses documents personnels
+* \#654, \#637 Trier les documents par date (choix par défaut), par titre, par propriétaire
+* \#647, \#631 Action en lot sur les documents : Chargement, partage copie et déplacement
+* \#629 [ergonomie] Affichage des actions contextuelles à une ressource via une barre de boutons en bas de l'écran. (résout en même temps \#37)
+* \#626 Ne pas faire apparaitre les boutons d'action en fonction des habilitations
+* \#56 Faire apparaître le nom du document partagé lors de la publication sur le fil de nouveauté
 
 # Blog
 
-* #645 Ajouter un bord gris à la liste des blogs
-* #627 [partage] le rôle "consulter" est conditionne l'activation du rôle "commenter"
+* \#645 Ajouter un bord gris à la liste des blogs
+* \#627 [partage] le rôle "consulter" est conditionne l'activation du rôle "commenter"
 * Gestion de la pagination
 
 ## Opération techniques
 
-* #676 [alimentation] Supprimer tous les envois à wordpress
+* \#676 [alimentation] Supprimer tous les envois à wordpress
 
 # v1.2.1
 
@@ -103,17 +142,17 @@ ONE : Notes de versions
 * [thème] Personnalisation du thème par utilisateur (avec un volet de configuration)
 * [widget] Infrastructure de widget statique côté client
 * [widget] Date courante
-* [widget] Anniversaires (+ #527 Api permettant de renvoyer tous les utilisateurs avec une date de naissance comprise dans les trois mois encadrant la date courante)
+* [widget] Anniversaires (+ \#527 Api permettant de renvoyer tous les utilisateurs avec une date de naissance comprise dans les trois mois encadrant la date courante)
 
 ## Fil de nouveautés
 
-* #555 : Pour mettre en évidence les nouveautés jamais consultées
-* #554 : Pour filter les nouveautés par applications sources (Blog, Espace Documentare, Mon Compte)
-* #524 : Pour afficher de l'avatar de l'utilisateur à l'origine de la nouveauté
+* \#555 : Pour mettre en évidence les nouveautés jamais consultées
+* \#554 : Pour filter les nouveautés par applications sources (Blog, Espace Documentare, Mon Compte)
+* \#524 : Pour afficher de l'avatar de l'utilisateur à l'origine de la nouveauté
 
 ## Droit et habilitations
 
-* #540, #529, #530, #531, #532, #533, #534, #535, #536 : API REST de gestion des gestions des partages indépendantes des IHM 
+* \#540, \#529, \#530, \#531, \#532, \#533, \#534, \#535, \#536 : API REST de gestion des gestions des partages indépendantes des IHM 
  - Matrice d'autorisation
  - Utilisateur visible (via règle de communication)
  - Ajout/Suppression d'un droit ...
@@ -121,23 +160,23 @@ ONE : Notes de versions
 
 ## Espace Documentaire
 
-* #562, #563 Gestion du format des miniatures (création et affichage)
-* #62 Mise en évidance des documents partagés
-* [fix] #16 Copier un document dans le dossier "racine" de l'arborescence
+* \#562, \#563 Gestion du format des miniatures (création et affichage)
+* \#62 Mise en évidance des documents partagés
+* [fix] \#16 Copier un document dans le dossier "racine" de l'arborescence
 
 ## Mon compte et Annuaire
 
-* [fix] #567 : Changement de mot de passe cassé par le portage Angular.js 
-* [fix] #556 : Lors de la saisie de la devise  des requêtes sont envoyées avant la fin de la saisie.
-* #522 : Api pour récupérer l'avatar de l'usager à partir de son id
-* [fix] #355 Mettre à jour l'avatar plutôt que de créer un nouveau document "workspace"
-* #436 : Permettre à l'utilisateur de gérer la visibilité de son adresse postale, email et numéro de téléphone dans l'annuaire
-* [fix] #56 : La saisie des centres d'intérêts envoie une requête par lettre saisie
+* [fix] \#567 : Changement de mot de passe cassé par le portage Angular.js 
+* [fix] \#556 : Lors de la saisie de la devise  des requêtes sont envoyées avant la fin de la saisie.
+* \#522 : Api pour récupérer l'avatar de l'usager à partir de son id
+* [fix] \#355 Mettre à jour l'avatar plutôt que de créer un nouveau document "workspace"
+* \#436 : Permettre à l'utilisateur de gérer la visibilité de son adresse postale, email et numéro de téléphone dans l'annuaire
+* [fix] \#56 : La saisie des centres d'intérêts envoie une requête par lettre saisie
 
 # Opérations Techniques
 
-* [infra] #184 : Regroupement des fonctionnalités communes au application ent-core dans un module
-* [infra] #179 : Ecriture d'module vertx de redimensionnement d'image basé sur _org.imgscalr_
+* [infra] \#184 : Regroupement des fonctionnalités communes au application ent-core dans un module
+* [infra] \#179 : Ecriture d'module vertx de redimensionnement d'image basé sur _org.imgscalr_
 * [test] Test d'intégration et performance. Ecriture de simulations Gatlin pour  : AppRegistry, Auth, Blog, Directory, Import
 
 # v1.1.0
@@ -154,11 +193,11 @@ ONE : Notes de versions
 
 * [UX] passage à Angular.js
 * [Test] intégration de Gatlin pour les tests intégration et de performance
-* [infra] #357: Fusionner les application Directory et UserBook
-* [infra] #161: Intégration du module vertx proxy HTTP pour simplifier les environements de développement
-* [sécurité] #180: Création du type Authentification pour l'annotation SecuredAction pour filter l'accès simplement pour les utilisateurs authentifiés
-* [infra] #211: Sortir les librairies utilitaires pour vertx dans un dépôt séparé
-* [dictionnaire des données] #344:  pourvoir charger des fichiers ressource depuis le classpath
+* [infra] \#357: Fusionner les application Directory et UserBook
+* [infra] \#161: Intégration du module vertx proxy HTTP pour simplifier les environements de développement
+* [sécurité] \#180: Création du type Authentification pour l'annotation SecuredAction pour filter l'accès simplement pour les utilisateurs authentifiés
+* [infra] \#211: Sortir les librairies utilitaires pour vertx dans un dépôt séparé
+* [dictionnaire des données] \#344:  pourvoir charger des fichiers ressource depuis le classpath
 
 # v1.0.0
 
