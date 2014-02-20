@@ -61,16 +61,23 @@ var loader = (function(){
 		document.getElementsByTagName('head')[0].appendChild(element);
 	};
 
-	var syncLoadScript = function(script){
+	var syncLoadScript = function(script, completePath){
 		var request = new XMLHttpRequest();
-		request.open('GET', basePath + '/' + script, false);
+		var path = script;
+		if(!completePath){
+			path = basePath + '/' + script;
+		}
+
+		request.open('GET', path, false);
 		request.onreadystatechange = function(){
 			if(request.readyState === 4 && request.status === 200){
 				var lib = new Function(request.responseText);
 				lib.name = script.path;
 				lib();
+				loadedScripts[path] = lib;
 			}
 		};
+
 		request.send(null);
 	};
 
@@ -112,6 +119,11 @@ var loader = (function(){
 		syncLoad: function(library){
 			if(!loadedScripts[library]){
 				syncLoadScript(libraries[library]);
+			}
+		},
+		syncLoadFile: function(path){
+			if(!loadedScripts[path]){
+				syncLoadScript(path, true);
 			}
 		},
 		asyncLoad: function(path, callback){

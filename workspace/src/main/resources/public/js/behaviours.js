@@ -1,30 +1,22 @@
-function hasRight(resource, name){
-	var currentSharedRights = _.filter(resource.shared, function(sharedRight){
-		return Model.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
-			|| sharedRight.userId === Model.me.userId;
-	});
-
-	return _.find(currentSharedRights, function(right){
-		return right[name];
-	}) !== undefined;
-}
-
-var behaviours = {
+var workspaceBehaviours = {
 	resources: {
 		comment: {
-			right: 'org-entcore-workspace-service-WorkspaceService|commentDocument',
-			apply: function(){
-
-			}
+			right: 'org-entcore-workspace-service-WorkspaceService|commentDocument'
 		},
 		copy: {
-			right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
+			right: 'org-entcore-workspace-service-WorkspaceService|copyDocuments'
 		},
 		move: {
 			right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
 		},
 		moveTrash: {
 			right: 'org-entcore-workspace-service-WorkspaceService|moveTrash'
+		},
+		read: {
+			right: 'org-entcore-workspace-service-WorkspaceService|getDocument'
+		},
+		edit: {
+			right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
 		}
 	},
 	root: {
@@ -49,15 +41,23 @@ var behaviours = {
 
 Behaviours.register('workspace', {
 	resource: function(resource){
-		for(var behaviour in behaviours.resources){
-			if(hasRight(resource, behaviours.resources[behaviour].right)){
-				resource[behaviour] = behaviours.resources[behaviour].right;
+		resource.myRights = {};
+		for(var behaviour in workspaceBehaviours.resources){
+			if(model.me.hasRight(resource, workspaceBehaviours.resources[behaviour].right) || model.me.userId === resource.owner){
+				resource.myRights[behaviour] = workspaceBehaviours.resources[behaviour].right;
 			}
+		}
+
+		if(model.me.userId === resource.owner){
+			resource.myRights.share = true;
 		}
 
 		return resource;
 	},
 	workflow: function(){
-		return behaviours.root;
+		return workspaceBehaviours.root;
+	},
+	resourceRights: function(){
+		return ['comment', 'copy', 'move', 'moveTrash']
 	}
 });

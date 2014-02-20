@@ -119,7 +119,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			}
 
 			setDocumentRights(item);
-		})
+		});
 
 		callback(documents);
 	}

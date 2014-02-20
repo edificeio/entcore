@@ -786,13 +786,24 @@ module.directive('loadingPanel', function($compile){
 
 module.directive('behaviour', function($compile){
 	return {
-		restrict: 'A',
+		restrict: 'E',
+		template: '<div ng-transclude></div>',
+		replace: true,
+		transclude: true,
 		scope: {
-			behaviour: '=',
 			resource: '='
 		},
 		link: function($scope, $element, $attributes){
-			console.log($scope);
+			if(!$attributes.name){
+				throw "Behaviour name is required";
+			}
+			$scope.$watch('resource', function(newVal){
+				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
+					($scope.resource instanceof Model && !$scope.resource.myRights[$attributes.name]);
+				if(hide){
+					$element.hide();
+				}
+			});
 		}
 	}
 });

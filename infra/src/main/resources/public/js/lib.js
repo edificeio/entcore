@@ -325,6 +325,9 @@ function Collection(obj){
 			if(!(newItem instanceof this.obj)){
 				newItem = new this.obj(element);
 			}
+			if(this.behaviours){
+				newItem.behaviours(this.behaviours);
+			}
 
 			this.all.push(newItem);
 			newItem.on('change', function(){
@@ -350,7 +353,14 @@ function Collection(obj){
 			this.trigger('change');
 		},
 		selection: function(){
-			return _.where(this.all, { selected: true }) || [];
+			//returning the new array systematically breaks the watcher
+			//due to the reference always being updated
+			var currentSelection = _.where(this.all, { selected: true }) || [];
+			var mismatch = !this._selection || this._selection.length !== currentSelection.length;
+			if(!this._selection || this._selection.length !== currentSelection.length){
+				this._selection = currentSelection;
+			}
+			return this._selection;
 		},
 		removeSelection: function(){
 			this.all = _.reject(this.all, function(item){ return item.selected });
@@ -494,88 +504,49 @@ function Collection(obj){
 			this.callbacks[event][i]();
 		}
 	};
+
+	Model.prototype.behaviours = function(serviceName){
+		return Behaviours.findBehaviours(serviceName, this);
+	};
 }());
+
+
+var Behaviours = {};
 
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		model.me = data;
+		model.me.hasRight = function(resource, name){
+			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
+				return model.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
+					|| sharedRight.userId === model.me.userId;
+			});
+
+			return _.find(currentSharedRights, function(right){
+				return right[name];
+			}) !== undefined;
+		};
+
 		model.trigger('me.change');
 		func();
 	});
 
 	Behaviours = (function(){
-		var applicationsBehaviours = {};
 		return {
-			register: function(application, apply){
-				applicationsBehaviours[application].apply = apply;
+			register: function(application, appBehaviours){
+				this.applicationsBehaviours[application] = {};
+				this.applicationsBehaviours[application] = appBehaviours;
 			},
-			findBehaviours: function(resource){
-				if(!resource.application){
-					throw "Application property is undefined";
+			findBehaviours: function(serviceName, resource){
+				if(this.applicationsBehaviours[serviceName]){
+					return this.applicationsBehaviours[serviceName].resource(resource);
 				}
-				if(applicationsBehaviours[resource.application]){
-					if(!applicationsBehaviours[resource.application].loaded){
-						applicationsBehaviours[resource.application].waiting.push(resource);
-					}
-					else{
-						applicationsBehaviours[resource.application].apply(resource);
-					}
-				}
-				else{
-					applicationsBehaviours[resource.application] = { waiting: [] };
-					applicationsBehaviours[resource.application].waiting.push(resource);
 
-					loader.asyncLoad('/' + resource.application + '/public/js/behaviours.js', function(){
-						applicationsBehaviours[resource.application].waiting.forEach(function(resource){
-							applicationsBehaviours[resource.application].apply(resource);
-						});
-						model.trigger('resources.change');
-					})
-				}
+				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+				return this.applicationsBehaviours[serviceName].resource(resource);
 			}
 		}
 	}());
 
-	function Resource(data){
-		this.findBehaviours = function(){
-			Behaviours.findBehaviours(this);
-		};
-	}
-
-	Resource.prototype.struct = {
-		id: 'id',
-		application: 'application'
-	};
-
-	Resource.prototype.structure = function(struct){
-		for(var property in struct){
-			this.struct[property] = struct[property];
-		}
-	};
-
-	model.collection(Resource, {
-		push: function(item){
-			for(var property in Resource.struct){
-				item[property] = item[Resource.struct[property]];
-			}
-			var obj = new Resource(item);
-			for(var property in item){
-				obj[property] = item[property];
-			}
-
-			obj.findBehaviours();
-			this.all.push(obj, false);
-		},
-		load: function(data, cb){
-			var that = this;
-			that.all = [];
-			data.forEach(function(item){
-				var newObj = that.push(item, false);
-				if(typeof cb === 'function'){
-					cb(newObj);
-				}
-			});
-			this.trigger('change');
-		}
-	});
+	Behaviours.applicationsBehaviours = {};
 }
