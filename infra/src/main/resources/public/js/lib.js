@@ -344,6 +344,10 @@ function Collection(obj){
 			});
 			this.trigger('change');
 		},
+		removeAt: function(index){
+			var element = this.all[index];
+			this.remove(element);
+		},
 		setCurrent: function(item){
 			this.current = item;
 			this.trigger('change');
@@ -516,16 +520,33 @@ var Behaviours = {};
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		model.me = data;
-		model.me.hasRight = function(resource, name){
+
+		model.me.hasWorkflow = function(workflow){
+			return _.find(model.me.authorizedActions, function(workflowRight){
+				return workflowRight.name === workflow;
+			}) !== undefined || workflow === undefined;
+		}
+
+		model.me.hasRight = function(resource, right){
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
 				return model.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
 					|| sharedRight.userId === model.me.userId;
 			});
 
-			return _.find(currentSharedRights, function(right){
-				return right[name];
+			var resourceRight = _.find(currentSharedRights, function(resourceRight){
+				return resourceRight[right.right];
 			}) !== undefined;
+
+			var workflowRight = this.hasWorkflow(right.workflow);
+
+			return resourceRight && workflowRight;
 		};
+
+		model.me.workflow = {
+			load: function(serviceName){
+				this[serviceName] = Behaviours.findWorkflow(serviceName);
+			}
+		}
 
 		model.trigger('me.change');
 		func();
@@ -544,6 +565,14 @@ function bootstrap(func){
 
 				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
 				return this.applicationsBehaviours[serviceName].resource(resource);
+			},
+			findWorkflow: function(serviceName){
+				if(this.applicationsBehaviours[serviceName]){
+					return this.applicationsBehaviours[serviceName].workflow();
+				}
+
+				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+				return this.applicationsBehaviours[serviceName].workflow();
 			}
 		}
 	}());

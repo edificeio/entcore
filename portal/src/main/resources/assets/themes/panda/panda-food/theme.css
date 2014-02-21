@@ -44,7 +44,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 8.33333333%;
+  padding-bottom: 8.333333333333334%;
 }
 .height-one .right-magnet.cell.absolute {
   right: 0;
@@ -76,14 +76,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-one {
-    left: 8.33333333%;
+    left: 8.333333333333334%;
   }
 }
 .height-two {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 16.66666667%;
+  padding-bottom: 16.666666666666668%;
 }
 .height-two .right-magnet.cell.absolute {
   right: 0;
@@ -98,7 +98,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-two {
-    left: 16.66666667%;
+    left: 16.666666666666668%;
   }
 }
 .height-three {
@@ -127,7 +127,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 33.33333333%;
+  padding-bottom: 33.333333333333336%;
 }
 .height-four .right-magnet.cell.absolute {
   right: 0;
@@ -142,14 +142,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-four {
-    left: 33.33333333%;
+    left: 33.333333333333336%;
   }
 }
 .height-five {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 41.66666667%;
+  padding-bottom: 41.66666666666667%;
 }
 .height-five .right-magnet.cell.absolute {
   right: 0;
@@ -164,7 +164,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-five {
-    left: 41.66666667%;
+    left: 41.66666666666667%;
   }
 }
 .height-six {
@@ -209,7 +209,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0;
@@ -224,14 +224,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-seven {
-    left: 58.33333333%;
+    left: 58.333333333333336%;
   }
 }
 .height-eight {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 66.66666667%;
+  padding-bottom: 66.66666666666667%;
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0;
@@ -246,7 +246,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eight {
-    left: 66.66666667%;
+    left: 66.66666666666667%;
   }
 }
 .height-nine {
@@ -275,7 +275,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 83.33333333%;
+  padding-bottom: 83.33333333333334%;
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0;
@@ -290,14 +290,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-ten {
-    left: 83.33333333%;
+    left: 83.33333333333334%;
   }
 }
 .height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0;
@@ -312,7 +312,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eleven {
-    left: 91.66666667%;
+    left: 91.66666666666667%;
   }
 }
 .height-twelve {
@@ -347,11 +347,11 @@
 }
 .one {
   width: 1;
-  width: 8.33333333%;
+  width: 8.333333333333334%;
 }
 .two {
   width: 1;
-  width: 16.66666667%;
+  width: 16.666666666666668%;
 }
 .three {
   width: 1;
@@ -359,11 +359,11 @@
 }
 .four {
   width: 1;
-  width: 33.33333333%;
+  width: 33.333333333333336%;
 }
 .five {
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
 }
 .six {
   width: 1;
@@ -371,11 +371,11 @@
 }
 .seven {
   width: 1;
-  width: 58.33333333%;
+  width: 58.333333333333336%;
 }
 .eight {
   width: 1;
-  width: 66.66666667%;
+  width: 66.66666666666667%;
 }
 .nine {
   width: 1;
@@ -383,11 +383,11 @@
 }
 .ten {
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
 }
 .eleven {
   width: 1;
-  width: 91.66666667%;
+  width: 91.66666666666667%;
 }
 .twelve {
   width: 1;
@@ -430,6 +430,7 @@
   /*.dow {
 		border-top: 1px solid #ddd !important;
 	}*/
+
 }
 .datepicker:before {
   content: '';
@@ -795,7 +796,7 @@ p i {
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
   height: 100%;
   line-height: 100%;
   vertical-align: middle;
@@ -841,7 +842,7 @@ p i {
 .calendar {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
   width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
@@ -966,7 +967,7 @@ p i {
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -1569,7 +1570,7 @@ section .contextual-buttons .action-buttons {
   display: block;
   position: relative;
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
   line-height: 50px;
   margin-bottom: 10px;
 }
@@ -2064,16 +2065,16 @@ i[role=shared] {
 .toggle-buttons .contextual-link a {
   color: #fd841c !important;
 }
-.one .loading-panel h1,
-.two .loading-panel h1,
+.one h1,
+.two h1,
 .three .loading-panel h1 {
   text-transform: none;
   margin-top: 10px;
   margin-bottom: 0;
   font-size: 20px;
 }
-.one .loading-panel img,
-.two .loading-panel img,
+.one img,
+.two img,
 .three .loading-panel img {
   width: 50%;
   height: 50%;
@@ -3544,6 +3545,13 @@ h4 {
 a {
   color: #2f8cc9;
   text-decoration: none;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
+a:hover {
+  color: #fd841c;
 }
 hr {
   margin-top: 7px;
@@ -4202,6 +4210,7 @@ a strong.small-header {
 article header.infos-block {
   background: none;
   position: absolute;
+  width: 100%;
 }
 article header.infos-block h2 {
   font-size: 20px;
@@ -4298,6 +4307,8 @@ nav.scrapbook-buttons a {
   position: relative;
   margin-top: 55px;
   margin-bottom: 15px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .scrapbook .flip-right,
 .scrapbook .flip-left {
@@ -4423,17 +4434,37 @@ nav.scrapbook-buttons a {
 }
 .scrapbook .drawing-zone article.media {
   border: 1px dashed #770d0d;
+  min-width: 30px;
+  min-height: 30px;
 }
-.scrapbook .drawing-zone i[role=close] {
+.scrapbook .drawing-zone article.media .loading-panel {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  float: left;
+}
+.scrapbook .drawing-zone article.media .loading-panel h1 {
+  text-transform: none;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-size: 20px;
+}
+.scrapbook .drawing-zone article.media .loading-panel img {
+  width: 50%;
+  height: 50%;
+}
+.scrapbook .drawing-zone article.media i[role=close] {
   position: absolute;
   right: 10px;
   top: 10px;
   z-index: 1;
 }
-.scrapbook .drawing-zone audio {
+.scrapbook .drawing-zone article.media audio {
   width: 100%;
+  min-width: 250px;
 }
-.scrapbook .drawing-zone img {
+.scrapbook .drawing-zone article.media img,
+.scrapbook .drawing-zone article.media div {
   width: 100%;
   height: 100%;
 }

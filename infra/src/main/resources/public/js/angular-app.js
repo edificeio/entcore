@@ -769,20 +769,41 @@ module.directive('loadingPanel', function($compile){
 	return {
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
-			http().bind('request-started.' + $attributes.loadingPanel, function(e){
-				var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
-				$element.append('<div class="loading-panel">' +
-					'<h1>' + lang.translate('loading') + '</h1>' +
-					'<img src="' + loadingIllustrationPath + '" />' +
-					'</div>');
+			$attributes.$observe('loadingPanel', function(val) {
+				http().bind('request-started.' + $attributes.loadingPanel, function(e){
+					var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
+					$element.append('<div class="loading-panel">' +
+						'<h1>' + lang.translate('loading') + '</h1>' +
+						'<img src="' + loadingIllustrationPath + '" />' +
+						'</div>');
 
-			})
-			http().bind('request-ended.' + $attributes.loadingPanel, function(e){
-				$element.find('.loading-panel').remove();
-			})
+				})
+				http().bind('request-ended.' + $attributes.loadingPanel, function(e){
+					$element.find('.loading-panel').remove();
+				})
+			});
 		}
 	}
 });
+
+module.directive('workflow', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			var auth = $attributes.workflow.split('.');
+			var right = model.me.workflow;
+			auth.forEach(function(prop){
+				right = right[prop];
+			});
+			if(!right){
+				$element.hide();
+			}
+			else{
+				$element.show();
+			}
+		}
+	}
+})
 
 module.directive('behaviour', function($compile){
 	return {
@@ -802,6 +823,9 @@ module.directive('behaviour', function($compile){
 					($scope.resource instanceof Model && !$scope.resource.myRights[$attributes.name]);
 				if(hide){
 					$element.hide();
+				}
+				else{
+					$element.show();
 				}
 			});
 		}
