@@ -457,11 +457,28 @@ module.directive('portal', function($compile){
 	}
 });
 
+module.directive('portalStyles', function($compile){
+	return {
+		restrict: 'E',
+		compile: function($element, $attribute){
+			var rand = Math.random();
+			$.get('/theme?token=' + rand, function(data){
+				var css = data.skin;
+				$('[logout]').attr('href', '/auth/logout?callback=' + data.logoutCallback)
+				ui.setStyle(css);
+			})
+		}
+	}
+});
+
 module.directive('skinSrc', function($compile){
 	return {
 		restrict: 'A',
 		scope: '&',
 		link: function($scope, $element, $attributes){
+			if(!$('#theme').attr('href')){
+				return;
+			}
 			var skinPath = $('#theme').attr('href').split('/');
 			var path = skinPath.slice(0, skinPath.length - 2).join('/');
 			$element.attr('src', path + $attributes.skinSrc);
@@ -801,6 +818,32 @@ module.directive('workflow', function($compile){
 			else{
 				$element.show();
 			}
+		}
+	}
+});
+
+module.directive('tooltip', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			$element.on('mouseover', function(){
+				var tip = $('<div />')
+					.addClass('tooltip')
+					.html('<div class="arrow"></div><div class="content">' + $attributes.tooltip + '</div> ')
+					.appendTo('body');;
+
+				tip.offset({
+					top: parseInt($element.offset().top + $element.height()),
+					left: parseInt($element.offset().left + $element.width() - tip.width() / 2)
+				});
+				tip.fadeIn();
+				$element.one('mouseout', function(){
+					tip.fadeOut(400, function(){
+						$(this).remove();
+					})
+				});
+			});
+
 		}
 	}
 })

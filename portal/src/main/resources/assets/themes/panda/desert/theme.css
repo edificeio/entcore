@@ -1274,7 +1274,7 @@ a {
 }
 .dropdown-menu ul li {
   list-style-type: none;
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .dropdown-menu ul li a {
   font-size: 14px;
@@ -1493,7 +1493,7 @@ ul.icons-view.two-cols li.element {
   color: #666;
 }
 .small-text {
-  font-size: 12px;
+  font-size: 12px !important;
 }
 .small-text a,
 .small-text em,
@@ -1505,7 +1505,7 @@ ul.icons-view.two-cols li.element {
   margin-top: 0px;
 }
 .medium-text {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .medium-text a {
   font-size: 14px;
@@ -3513,6 +3513,9 @@ button[disabled]:hover {
   height: 40px;
   line-height: 40px;
 }
+a.button:hover {
+  color: #fff !important;
+}
 h1,
 h1 a {
   font-family: KGJune;
@@ -4215,12 +4218,40 @@ article header.infos-block {
 article header.infos-block h2 {
   font-size: 20px;
   display: block;
+  width: 100%;
+}
+.tooltip {
+  position: absolute;
+  z-index: 20;
+  display: none;
+}
+.tooltip .content {
+  padding: 5px;
+  background: #fd841c;
+  color: #fff;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  box-shadow: 1px 2px 2px #ccc;
+  font-size: 12px;
+  position: relative;
+}
+.tooltip .arrow {
+  width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  border: 8px solid transparent;
+  border-top: 0;
+  color: #fd841c;
+  border-bottom: 10px solid;
 }
 nav.scrapbook-buttons {
   position: absolute;
   top: 0;
   left: 0;
-  background: #f6f6f6;
+  background: #eee;
   -webkit-border-top-left-radius: 5px;
   -webkit-border-top-right-radius: 5px;
   -moz-border-top-left-radius: 5px;
@@ -4233,6 +4264,22 @@ nav.scrapbook-buttons {
   border-top-right-radius: 5px;
   border-bottom: 1px solid #ccc;
   padding: 4px;
+}
+nav.scrapbook-buttons .toolbar {
+  height: 33px;
+  float: left;
+  background: #fff;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+nav.scrapbook-buttons .toolbar p {
+  color: #666;
+  line-height: 33px;
+  margin: 0;
+  margin-left: 5px;
 }
 nav.scrapbook-buttons input {
   -webkit-border-radius: 0px;
@@ -4467,6 +4514,11 @@ nav.scrapbook-buttons a {
 .scrapbook .drawing-zone article.media div {
   width: 100%;
   height: 100%;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
 }
 .scrapbook-pagination {
   padding: 5px;
@@ -5051,7 +5103,7 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 }
 .drop-down ul li {
   list-style-type: none;
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .drop-down ul li a {
   font-size: 14px;

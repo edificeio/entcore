@@ -1466,7 +1466,7 @@ ul.icons-view.two-cols li.element {
   color: #666;
 }
 .small-text {
-  font-size: 12px;
+  font-size: 12px !important;
 }
 .small-text a,
 .small-text em,
@@ -1478,7 +1478,7 @@ ul.icons-view.two-cols li.element {
   margin-top: 0px;
 }
 .medium-text {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .medium-text a {
   font-size: 14px;
