@@ -393,6 +393,26 @@ function Collection(obj){
 		},
 		length: function(){
 			return this.all.length;
+		},
+		request: function(method, path, cb){
+			var col = this;
+			function parseUrl(path, item){
+				var matchParams = new RegExp(':[a-zA-Z0-9_]+', ["g"]);
+				var params = path.match(matchParams);
+				params.forEach(function(param){
+					var prop = param.split(':')[1];
+					var data = item[prop] || col[prop] || col.model[prop] || '';
+					path = path.replace(param, data);
+				});
+				return path;
+			}
+			this.selection().forEach(function(item){
+				http()[method](parseUrl(path, item), {}).done(function(data){
+					if(typeof cb === 'function'){
+						cb(data);
+					}
+				});
+			})
 		}
 	};
 

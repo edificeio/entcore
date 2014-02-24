@@ -838,7 +838,7 @@ module.directive('tooltip', function($compile){
 				});
 				tip.fadeIn();
 				$element.one('mouseout', function(){
-					tip.fadeOut(400, function(){
+					tip.fadeOut(200, function(){
 						$(this).remove();
 					})
 				});
@@ -912,26 +912,33 @@ module.directive('resizable', function($compile){
 					}
 					var mouse = { x: e.pageX, y: e.pageY };
 					var resizeLimits = {
-						horizontal:  $element.offset().left + $element.width() + 5 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15
-						,
-						vertical: $element.offset().top + $element.height() + 5 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
+						horizontalRight:  $element.offset().left + $element.width() + 5 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15,
+						horizontalLeft: $element.offset().left + 5 > mouse.x && mouse.x > $element.offset().left - 15,
+						verticalTop: $element.offset().top + 5 > mouse.y && mouse.y > $element.offset().top - 15,
+						verticalBottom: $element.offset().top + $element.height() + 5 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
 					};
-					if(resizeLimits.vertical && resizeLimits.horizontal){
-						$element.css({ cursor: 'se-resize' });
-						$element.find('[contenteditable]').css({ cursor: 'se-resize' });
+
+					var orientations = {
+						'ns': resizeLimits.verticalTop || resizeLimits.verticalBottom,
+						'ew': resizeLimits.horizontalLeft || resizeLimits.horizontalRight,
+						'nwse': (resizeLimits.verticalBottom && resizeLimits.horizontalRight) || (resizeLimits.verticalTop && resizeLimits.horizontalLeft),
+						'nesw': (resizeLimits.verticalBottom && resizeLimits.horizontalLeft) || (resizeLimits.verticalTop && resizeLimits.horizontalRight)
+
+					};
+
+					var cursor = '';
+					for(var orientation in orientations){
+						if(orientations[orientation]){
+							cursor = orientation;
+						}
 					}
-					else if(resizeLimits.vertical){
-						$element.css({ cursor: 's-resize' });
-						$element.find('[contenteditable]').css({ cursor: 's-resize' });
+
+
+					if(cursor){
+						cursor = cursor + '-resize';
 					}
-					else if(resizeLimits.horizontal){
-						$element.css({ cursor: 'e-resize' });
-						$element.find('[contenteditable]').css({ cursor: 'e-resize' });
-					}
-					else{
-						$element.css({ cursor: ''});
-						$element.find('[contenteditable]').css({ cursor: '' });
-					}
+					$element.css({ cursor: cursor });
+					$element.find('[contenteditable]').css({ cursor: cursor });
 				});
 				$element.on('mouseout', function(e){
 					$element.unbind('mousemove');
@@ -946,12 +953,21 @@ module.directive('resizable', function($compile){
 				var interrupt = false;
 				var mouse = { y: e.pageY, x: e.pageX };
 				var resizeLimits = {
-					horizontal:  $element.offset().left + $element.width() + 10 > mouse.x && mouse.x > $element.offset().left + $element.width() - 10
-					,
-					vertical: $element.offset().top + $element.height() + 10 > mouse.y && mouse.y > $element.offset().top + $element.height() - 10
+					horizontalRight:  $element.offset().left + $element.width() + 15 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15,
+					horizontalLeft: $element.offset().left + 15 > mouse.x && mouse.x > $element.offset().left - 15,
+					verticalTop: $element.offset().top + 15 > mouse.y && mouse.y > $element.offset().top - 15,
+					verticalBottom: $element.offset().top + $element.height() + 15 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
 				};
 
-				if(resizeLimits.horizontal || resizeLimits.vertical){
+				var initial = {
+					pos: $element.offset(),
+					size: {
+						width: $element.width(),
+						height: $element.height()
+					}
+				}
+
+				if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight ||resizeLimits.verticalTop || resizeLimits.verticalBottom){
 					$element.data('resizing', true);
 					$(window).unbind('mousemove.drag');
 					$(window).on('mousemove.resize', function(e){
@@ -963,13 +979,39 @@ module.directive('resizable', function($compile){
 					});
 
 					var resize = function(){
-						var newHeight = mouse.y - $element.offset().top;
-						var newWidth = mouse.x - $element.offset().left;
-						if(resizeLimits.horizontal && newWidth > 0){
-							$element.width(newWidth);
+						var p = $element.offset();
+						var newWidth = 0; var newHeight = 0;
+						if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight){
+							if(resizeLimits.horizontalLeft){
+								$element.offset({
+									left: p.left - (p.left - mouse.x),
+									top: p.top
+								});
+								newWidth = initial.size.width + (p.left - mouse.x);
+								p.left = p.left - (p.left - mouse.x);
+							}
+							else{
+								newWidth = mouse.x - p.left;
+							}
+							if(newWidth > 0){
+								$element.width(newWidth);
+							}
 						}
-						if(resizeLimits.vertical && newHeight > 0){
-							$element.height(newHeight);
+						if(resizeLimits.verticalTop || resizeLimits.verticalBottom){
+							if(resizeLimits.verticalTop){
+								$element.offset({
+									left: p.left,
+									top: p.top - (p.top - mouse.y)
+								});
+								newHeight = initial.size.height + (p.top - mouse.y);
+								p.top = p.top - (p.top - mouse.y);
+							}
+							else{
+								newHeight = mouse.y - p.top;
+							}
+							if(newHeight > 0){
+								$element.height(newHeight);
+							}
 						}
 						$element.trigger('resizing');
 						if(!interrupt){
@@ -1035,7 +1077,13 @@ module.directive('placedBlock', function($compile){
 			};
 
 			$element.on('startDrag', toTop);
-			$element.on('startResize', toTop);
+			$element.on('startResize', function(){
+				$scope.w = $element.width();
+				$scope.$apply('w');
+				$scope.h = $element.height();
+				$scope.$apply('h');
+				toTop();
+			});
 
 			$element.on('stopDrag', function(){
 				$scope.x = $element.position().left;
@@ -1053,7 +1101,6 @@ module.directive('placedBlock', function($compile){
 			});
 			$element.on('stopResize', function(){
 				$scope.w = $element.width();
-				$scope.h = $element.height();
 				$scope.$apply('w');
 				$scope.h = $element.height();
 				$scope.$apply('h');
@@ -1116,10 +1163,34 @@ module.directive('draggable', function($compile){
 						}, 0);
 					});
 					var moveElement = function(){
-						$element.offset({
+						var parent = $('article').parents('.drawing-zone');
+						var parentPosition = parent.offset();
+						var boundaries = {
+							left: parentPosition.left,
+							top: parentPosition.top,
+							right: parentPosition.left + parent.width() - $element.width(),
+							bottom: parentPosition.top + parent.height() - $element.height()
+						}
+
+						var newOffset = {
 							top: mouse.y - elementDistance.y,
 							left: mouse.x - elementDistance.x
-						});
+						};
+
+						if(mouse.x < boundaries.left + elementDistance.x && $element.width() < parent.width()){
+							newOffset.left = boundaries.left + 1;
+						}
+						if(mouse.x > boundaries.right + elementDistance.x && $element.width() < parent.width()){
+							newOffset.left = boundaries.right - 1
+						}
+						if(mouse.y < boundaries.top + elementDistance.y && $element.height() < parent.height()){
+							newOffset.top = boundaries.top + 1;
+						}
+						if(mouse.y > boundaries.bottom + elementDistance.y && $element.height() < parent.height()){
+							newOffset.top = boundaries.bottom - 1;
+						}
+
+						$element.offset(newOffset);
 
 						if(!interrupt){
 							requestAnimationFrame(moveElement);
