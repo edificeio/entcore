@@ -359,7 +359,7 @@ module.directive('translate', function($compile) {
 				if(!$attributes.content){
 					return;
 				}
-				$element.html($compile('<span>' + lang.translate($attributes.content) + '</span>')($scope));
+				$element.html($compile('<span class="no-style">' + lang.translate($attributes.content) + '</span>')($scope));
 			});
 
 			$attributes.$observe('attr', function(val) {
@@ -376,7 +376,7 @@ module.directive('translate', function($compile) {
 				if(!$attributes.key){
 					return;
 				}
-				$element.html($compile('<span>' + lang.translate($attributes.key) + '</span>')($scope));
+				$element.html($compile('<span class="no-style">' + lang.translate($attributes.key) + '</span>')($scope));
 			});
 		}
 	};
@@ -666,7 +666,7 @@ module.directive('textEditor', function($compile){
 			watchCollection: '@',
 			notify: '='
 		},
-		template: '<div contenteditable="true" style="width: 100%; height: 100%;" class="contextual-editor"></div>',
+		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -689,21 +689,31 @@ module.directive('textEditor', function($compile){
 				});
 
 				$element.on('click', function(){
+					if(editor.parent().parent().data('resizing') || editor.parent().parent().data('dragging')){
+						return;
+					}
 					editor.focus();
 				});
 				$element.parent().on('startDrag', function(){
 					editor.blur();
 				});
 				editor.on('focus', function(){
+					editor.parent().parent().height(editor.height());
+					editor.parent().parent().trigger('stopResize');
 					$('.' + instance.id).width(editor.width());
 					editor.parent().parent().data('lock', true);
 					editor.css({ 'cursor': 'text' });
+					$(document).on('keyup.editor', function(key){
+						editor.parent().parent().height(editor.height());
+						editor.parent().parent().trigger('stopResize');
+					});
 				});
 				editor.on('blur', function(){
 					editor.parent().parent().data('lock', false);
 					editor.css({ 'cursor': '' });
 					$scope.ngModel = editor.html();
 					$scope.$apply('ngModel');
+					$(document).unbind('keyup.editor');
 				})
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
@@ -829,7 +839,7 @@ module.directive('tooltip', function($compile){
 			$element.on('mouseover', function(){
 				var tip = $('<div />')
 					.addClass('tooltip')
-					.html('<div class="arrow"></div><div class="content">' + $attributes.tooltip + '</div> ')
+					.html('<div class="arrow"></div><div class="content">' + lang.translate($attributes.tooltip) + '</div> ')
 					.appendTo('body');;
 
 				tip.offset({
@@ -846,7 +856,7 @@ module.directive('tooltip', function($compile){
 
 		}
 	}
-})
+});
 
 module.directive('behaviour', function($compile){
 	return {
@@ -945,7 +955,7 @@ module.directive('resizable', function($compile){
 				});
 			})
 			$element.on('mousedown.resize', function(e){
-				if($element.data('lock') === true){
+				if($element.data('lock') === true || $element.data('resizing') === true){
 					return;
 				}
 				$element.trigger('startResize');
@@ -965,10 +975,21 @@ module.directive('resizable', function($compile){
 						width: $element.width(),
 						height: $element.height()
 					}
-				}
+				};
+				var parent = $element.parents('.drawing-zone');
+				var parentData = {
+					pos: parent.offset(),
+					size: {
+						width: parent.width(),
+						height: parent.height()
+					}
+				};
 
 				if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight ||resizeLimits.verticalTop || resizeLimits.verticalBottom){
 					$element.data('resizing', true);
+					$('.main').css({
+						'cursor': $element.css('cursor')
+					});
 					$(window).unbind('mousemove.drag');
 					$(window).on('mousemove.resize', function(e){
 						$element.unbind("click");
@@ -979,35 +1000,50 @@ module.directive('resizable', function($compile){
 					});
 
 					var resize = function(){
-						var p = $element.offset();
 						var newWidth = 0; var newHeight = 0;
 						if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight){
+							var p = $element.offset();
 							if(resizeLimits.horizontalLeft){
+								var distance = initial.pos.left - mouse.x;
+								if(initial.pos.left - distance < parentData.pos.left){
+									distance = initial.pos.left - parentData.pos.left;
+								}
 								$element.offset({
-									left: p.left - (p.left - mouse.x),
+									left: initial.pos.left - distance,
 									top: p.top
 								});
-								newWidth = initial.size.width + (p.left - mouse.x);
-								p.left = p.left - (p.left - mouse.x);
+								newWidth = initial.size.width + distance;
 							}
 							else{
-								newWidth = mouse.x - p.left;
+								var distance = mouse.x - p.left;
+								if($element.offset().left + distance > parentData.pos.left + parentData.size.width){
+									distance = (parentData.pos.left + parentData.size.width) - $element.offset().left - 2;
+								}
+								newWidth = distance;
 							}
 							if(newWidth > 0){
 								$element.width(newWidth);
 							}
 						}
 						if(resizeLimits.verticalTop || resizeLimits.verticalBottom){
+							var p = $element.offset();
 							if(resizeLimits.verticalTop){
+								var distance = initial.pos.top - mouse.y;
+								if(initial.pos.top - distance < parentData.pos.top){
+									distance = initial.pos.top - parentData.pos.top;
+								}
 								$element.offset({
 									left: p.left,
-									top: p.top - (p.top - mouse.y)
+									top: initial.pos.top - distance
 								});
-								newHeight = initial.size.height + (p.top - mouse.y);
-								p.top = p.top - (p.top - mouse.y);
+								newHeight = initial.size.height + distance;
 							}
 							else{
-								newHeight = mouse.y - p.top;
+								var distance = mouse.y - p.top;
+								if($element.offset().top + distance > parentData.pos.top + parent.height()){
+									distance = (parentData.pos.top + parentData.size.height) - $element.offset().top - 2;
+								}
+								newHeight = distance;
 							}
 							if(newHeight > 0){
 								$element.height(newHeight);
@@ -1023,9 +1059,12 @@ module.directive('resizable', function($compile){
 					$('body').on('mouseup.resize', function(){
 						$element.trigger('stopResize');
 						interrupt = true;
-						$element.data('resizing', false);
+						setTimeout(function(){
+							$element.data('resizing', false);
+						}, 0)
 						$(window).unbind('mousemove.resize');
 						$('body').unbind('mouseup.resize');
+						$('.main').css({'cursor': ''})
 					});
 				}
 			});
@@ -1125,6 +1164,7 @@ module.directive('draggable', function($compile){
 				var interrupt = false;
 				if($element.data('resizing') !== true){
 					$element.trigger('startDrag');
+
 					$('body').css({
 						'-webkit-user-select': 'none',
 						'-moz-user-select': 'none',
@@ -1140,6 +1180,7 @@ module.directive('draggable', function($compile){
 					};
 					$(window).on('mousemove.drag', function(e){
 						$element.unbind("click");
+						$element.data('dragging', true)
 						mouse = {
 							y: e.clientY,
 							x: e.clientX
@@ -1157,6 +1198,7 @@ module.directive('draggable', function($compile){
 						$('body').unbind('mouseup.drag');
 						$(window).unbind('mousemove.drag');
 						setTimeout(function(){
+							$element.data('dragging', false);
 							$element.on('click', function(){
 								$scope.$parent.$eval($attributes.ngClick);
 							});
@@ -1178,16 +1220,16 @@ module.directive('draggable', function($compile){
 						};
 
 						if(mouse.x < boundaries.left + elementDistance.x && $element.width() < parent.width()){
-							newOffset.left = boundaries.left + 1;
+							newOffset.left = boundaries.left;
 						}
 						if(mouse.x > boundaries.right + elementDistance.x && $element.width() < parent.width()){
-							newOffset.left = boundaries.right - 1
+							newOffset.left = boundaries.right - 2
 						}
 						if(mouse.y < boundaries.top + elementDistance.y && $element.height() < parent.height()){
-							newOffset.top = boundaries.top + 1;
+							newOffset.top = boundaries.top;
 						}
 						if(mouse.y > boundaries.bottom + elementDistance.y && $element.height() < parent.height()){
-							newOffset.top = boundaries.bottom - 1;
+							newOffset.top = boundaries.bottom - 2;
 						}
 
 						$element.offset(newOffset);

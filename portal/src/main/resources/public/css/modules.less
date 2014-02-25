@@ -1207,6 +1207,139 @@ div.hidden-content{
 	overflow: hidden;
 }
 
+.flip-right, .flip-left{
+	width: 80px;
+	height: 80px;
+	z-index: 15;
+	background: #fff;
+	.border-radius(40px);
+	position: absolute;
+	top: 40%;
+	opacity: 0.5;
+	.run-transition(opacity);
+}
+
+.flip-right:hover, .flip-left:hover{
+	opacity: 1;
+	.run-transition(opacity);
+}
+
+.flip-right{
+	right: -30px;
+	.right-arrow{
+		width: 0;
+		height: 0;
+		border: 25px solid transparent;
+		border-left: 0;
+		color: black;
+		border-left: 30px solid;
+		top: 15px;
+		left: 32px;
+		position: absolute;
+	}
+}
+
+.flip-left{
+	left: -30px;
+	.left-arrow{
+		width: 0;
+		height: 0;
+		border: 25px solid transparent;
+		border-left: 0;
+		color: black;
+		border-right: 30px solid;
+		top: 15px;
+		left: 15px;
+		position: absolute;
+	}
+}
+
+.left-arrow.disabled, .right-arrow.disabled{
+	color: #ccc;
+}
+
+.drawing-zone{
+	overflow: hidden;
+	position: absolute;
+	.border-box;
+	left: 50px;
+	top: 10px;
+	width: 823px;
+	height: 598px;
+}
+
+span.no-style{
+	background: none !important;
+	display: inline !important;
+	padding: 0 !important;
+	border: none !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+}
+
+.drawing-zone{
+	article{
+		border: none;
+		background: transparent;
+		overflow: hidden;
+		[contenteditable=true]{
+			padding: 0;
+			position: absolute;
+			top: 0;
+			left: 0;
+
+		}
+		[contenteditable=true]:focus{
+			outline: none;
+		}
+	}
+
+	article.media{
+		border: 1px dashed #666;
+		min-width: 30px;
+		min-height: 30px;
+
+		i[role=close]{
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			z-index: 1
+		}
+		audio{
+			width: 93%;
+			margin-right: 35px;
+			min-width: 250px;
+		}
+		img, div{
+			.border-radius();
+			max-width: none;
+		}
+
+		div{
+			width: 100%;
+			height: 100%;
+		}
+
+		div[contenteditable=true]{
+			height: auto;
+			position: absolute;
+			top: 0;
+			left: 0;
+			min-height: 100%;
+		}
+	}
+	article{
+		img.extensible{
+			width: 100%;
+			height: 100%;
+		}
+		p, h1, h2, h3, h4, h5, h6{
+			padding: 5px;
+		}
+	}
+
+}
+
 .humane,
 .humane-original {
 	position: fixed;

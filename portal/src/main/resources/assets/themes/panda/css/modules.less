@@ -533,7 +533,7 @@ blockquote{
 a.button{
 	padding-left: 7px;
 	padding-right: 7px;
-	padding-top: 0px !important;
+	padding-top: 2px !important;
 }
 
 .small.button{
@@ -1221,50 +1221,20 @@ nav.scrapbook-buttons{
 	margin-left: auto;
 	margin-right: auto;
 
-	.flip-right, .flip-left{
-		width: 80px;
-		height: 80px;
-		z-index: 15;
-		background: #fff;
-		.border-radius(40px);
-		position: absolute;
-		top: 40%;
-		opacity: 0.5;
-		.run-transition(opacity);
-	}
-
 	.flip-right:hover, .flip-left:hover{
 		opacity: 1;
 		.run-transition(opacity);
 	}
 
 	.flip-right{
-		right: -30px;
 		.right-arrow{
-			width: 0;
-			height: 0;
-			border: 25px solid transparent;
-			border-left: 0;
 			color: @medium-blue;
-			border-left: 30px solid;
-			top: 15px;
-			left: 32px;
-			position: absolute;
 		}
 	}
 
 	.flip-left{
-		left: -30px;
 		.left-arrow{
-			width: 0;
-			height: 0;
-			border: 25px solid transparent;
-			border-left: 0;
 			color: @medium-blue;
-			border-right: 30px solid;
-			top: 15px;
-			left: 15px;
-			position: absolute;
 		}
 	}
 
@@ -1272,17 +1242,13 @@ nav.scrapbook-buttons{
 		color: @medium-grey;
 	}
 
-	.cover, .drawing-zone{
+	.cover{
 		overflow: hidden;
 		position: absolute;
 		.border-box;
 		left: 50px;
 		top: 10px;
-		width: 823px;
 		height: 598px;
-	}
-
-	.cover{
 		width: 838px;
 		text-align: center;
 		img{
@@ -1312,27 +1278,8 @@ nav.scrapbook-buttons{
 	}
 
 	.drawing-zone{
-		article{
-			border: none;
-			background: transparent;
-			[contenteditable=true]{
-				padding: 0;
-				position: absolute;
-				top: 0;
-				left: 0;
-				p, h1, h2, h3, h4, h5, h6, div{
-					padding: 5px;
-				}
-			}
-			[contenteditable=true]:focus{
-				outline: none;
-			}
-		}
-
 		article.media{
 			border: 1px dashed rgb(119, 13, 13);
-			min-width: 30px;
-			min-height: 30px;
 
 			.loading-panel{
 				width: 200px;
@@ -1350,28 +1297,7 @@ nav.scrapbook-buttons{
 					height: 50%;
 				}
 			}
-
-			i[role=close]{
-				position: absolute;
-				right: 10px;
-				top: 10px;
-				z-index: 1
-			}
-			audio{
-				width: 100%;
-				min-width: 250px;
-			}
-			img, div{
-				.border-radius();
-				max-width: none;
-			}
-			img.extensible, div{
-				width: 100%;
-				height: 100%;
-			}
 		}
-
-
 	}
 }
 
@@ -1380,6 +1306,10 @@ nav.scrapbook-buttons{
 	padding-right: 10px;
 	font-size: 16px;
 	color: @medium-blue;
+	z-index: 1000;
+	background: #fefefe;
+	-moz-border-radius-topleft: 7px;
+	border-top-left-radius: 7px;
 
 	input[type=text]{
 		font-size: 16px;
@@ -1387,11 +1317,18 @@ nav.scrapbook-buttons{
 		border-radius: 0;
 		width: 30px;
 		text-align: right;
-		padding: 3px;
+		padding: 0;
+		padding-right: 3px;
 		height: 19px;
 		line-height: 16px;
 		box-sizing: border-box;
 		border: 1px solid;
+	}
+}
+
+.scrapbook-buttons{
+	.scrapbook-pagination{
+		.border-radius(7px);
 	}
 }
 
