@@ -28,6 +28,9 @@
 "e403" : "Proibido",
 "e404" : "A página solicitada não existe",
 "e408" : "Tempo limite da solicitação",
-"e500" : "Erro Interno de Servidor"
+"e500" : "Erro Interno de Servidor",
+
+"admin.title" : "One : consola administrativa",
+"admin.header" : "One : consola administrativa"
 }
 

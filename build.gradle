@@ -63,15 +63,6 @@ project(':common') {
   }
 }
 
-project(':admin') {
-  dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
-    compile project(':common')
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-    compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-  }
-}
-
 project(':app-registry') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"

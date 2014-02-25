@@ -40,5 +40,8 @@
 	"cancel": "Cancel",
 	"create": "Create",
 	"scrapbook": "Cahier multimédia",
-	"classadmin": "Class parameters"
+	"classadmin": "Class parameters",
+
+	"admin.title" : "One : administration console",
+	"admin.header" : "One : administration console"
 }

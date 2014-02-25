@@ -52,5 +52,7 @@
 	"share.search.title": "Rechercher des utilisateurs et des groupes",
 	"share.search.placeholder": "Ex : Sabine, Dupont, Enseignants de l'école...",
 	"seemore": "Voir la suite",
-	"share.me":"Moi"
+	"share.me":"Moi",
+	"admin.title": "One : Console d'administration",
+	"admin.header": "One : Console d'administration"
 }

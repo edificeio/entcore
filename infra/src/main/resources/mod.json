@@ -30,29 +30,6 @@
       }
     },
     {
-      "name": "org.entcore~admin~1.6-SNAPSHOT",
-      "config": {
-        "one-apps": [
-          {
-            "name": "directory",
-            "url": "http://localhost:8090/directory"
-          },
-          {
-            "name": "history",
-            "url": "http://localhost:8090/history"
-          },
-          {
-            "name": "appRegistry",
-            "url": "http://localhost:8090/appregistry"
-          },
-          {
-            "name": "communication",
-            "url": "http://localhost:8090/communication"
-          }
-        ]
-      }
-    },
-    {
       "name": "org.entcore~dataDictionary~1.6-SNAPSHOT"
     },
     {
@@ -102,7 +79,13 @@
           "auth": "http://localhost:8090/auth",
           "portal": "http://localhost:8090",
           "logoutCallback": "http%3A%2F%2Flocalhost%3A8090"
-        }
+        },
+		"admin-urls": [
+			{"name": "directory", "url": "http://localhost:8090/directory"},
+			{"name": "history", "url": "http://localhost:8090/history"},
+			{"name": "appRegistry", "url": "http://localhost:8090/appregistry"},
+			{"name": "communication", "url": "http://localhost:8090/communication"}
+		]
       }
     },
     {
@@ -180,10 +163,6 @@
           {
             "location": "/history",
             "proxy_pass": "http://localhost:8006"
-          },
-          {
-            "location": "/admin",
-            "proxy_pass": "http://localhost:8008"
           },
           {
             "location": "/auth",

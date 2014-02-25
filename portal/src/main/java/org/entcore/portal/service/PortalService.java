@@ -210,4 +210,9 @@ public class PortalService extends Controller {
 				Locale.forLanguageTag(langs[0].split("-")[0]).toString()));
 	}
 
+	@SecuredAction("admin.view")
+	public void admin(HttpServerRequest request) {
+		renderView(request, container.config());
+	}
+
 }

@@ -1,6 +1,8 @@
 package org.entcore.portal;
 
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
+import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.portal.service.PortalService;
 
 public class Portal extends Server {
@@ -17,8 +19,10 @@ public class Portal extends Server {
 				.get("/adapter", "adapter")
 				.get("/theme", "getTheme")
 				.get("/locale", "locale")
+				.get("/admin","admin")
 				.getWithRegEx("/assets/.+", "assets");
 
+		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), getEventBus(vertx)));
 	}
 
 }

@@ -3,7 +3,7 @@
 	"port": 8017,
 	"auto-redeploy": true,
 	"mode": "dev",
-	"skin": "panda",
+	"skin": "raw",
 	"path-prefix" : "",
 	"urls" : {
 		"timeline" : "http://localhost/timeline",
@@ -11,5 +11,11 @@
 		"auth" : "http://localhost/auth",
 		"portal" : "http://localhost",
 		"logoutCallback" : "http://localhost"
-	}
+	},
+	"admin-urls": [
+		{"name": "directory", "url": "http://localhost/directory"},
+		{"name": "history", "url": "http://localhost/history"},
+		{"name": "appRegistry", "url": "http://localhost/appregistry"},
+		{"name": "communication", "url": "http://localhost/communication"}
+	]
 }

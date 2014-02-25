@@ -8,7 +8,7 @@ var admin = function() {
 	app.define ({
 		action : {
 			displayApp : function(o) {
-				var style = 'http://localhost:8008/public/css/test.css';
+				var style = 'http://localhost:8090/public/css/test.css';
 				if ($('#iframe' + '-frame')) {
 					$('<iframe />', {
 						id: o.target.id + '-frame',
@@ -19,7 +19,7 @@ var admin = function() {
 						$('head', this.contentWindow.document).prepend($('<link>', {
 							rel: 'stylesheet',
 							type: 'text/css',
-							href: '/admin/public/css/font.css'
+							href: '/public/css//admin/font.css'
 						}))
 					}).appendTo('#main');
 				}
