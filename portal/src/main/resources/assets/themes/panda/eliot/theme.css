@@ -2131,6 +2131,10 @@ html.app body {
   font-family: Satellite;
   src: url(../fonts/Satellite.otf);
 }
+@font-face {
+  font-family: EcritureA;
+  src: url(../fonts/EcritureA-Romain-Orne.otf);
+}
 body {
   cursor: default !important;
 }

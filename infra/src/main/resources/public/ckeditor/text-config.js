@@ -4,6 +4,7 @@
  */
 
 CKEDITOR.editorConfig = function(config){
+	config.title = false;
 	config.removePlugins = 'magicline';
 	config.allowedContent = true;
 	config.toolbar = [
@@ -16,4 +17,5 @@ CKEDITOR.editorConfig = function(config){
 
 	config.linkShowAdvancedTab = false;
 	config.linkShowTargetTab = false;
+	config.font_names = 'Arial;Times New Roman;Verdana;EcritureA;KGJune;Comic Sans MS';
 };

@@ -4,6 +4,7 @@
  */
 
 CKEDITOR.editorConfig = function(config){
+	config.title = false;
 	config.removePlugins = 'magicline';
 	config.allowedContent = true;
 	config.extraPlugins = 'upload,audio';
@@ -40,4 +41,5 @@ CKEDITOR.editorConfig = function(config){
 	config.smiley_descriptions= ['En colère', 'Rêveur', 'Content', 'Farceur', 'Amoureux',
 	'Fier', 'Triste', 'Fatigué', 'Embêté'];
 	config.templates_replaceContent = false;
+	config.font_names = 'Arial;Times New Roman;Verdana;EcritureA;KGJune;Comic Sans MS';
 };
