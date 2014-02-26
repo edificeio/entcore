@@ -1,18 +1,34 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>{{#i18n}}app.registry.title{{/i18n}}</title>
-		<meta charset="utf-8" />
-		<link rel="stylesheet" href="{{#static}}css/knacss.css{{/static}}" media="all" />
-		<link rel="stylesheet" href="{{#static}}css/app-registry.css{{/static}}" media="all" />
-		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#infra}}js/angular-app.js{{/infra}}" type="text/javascript"></script>
-		<script src="{{#static}}js/app-registry.js{{/static}}" type="text/javascript"></script>
-	</head>
-	<body>
+<head>
+	<script>
+		var appPrefix = 'app-registry';
+		var routes = {
+			define: function(routing){
+				this.routing = routing;
+			}
+		};
+
+		function Model(){}
+		Model.prototype.build = function(){};
+		var model = new Model();
+	</script>
+	<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/jquery-1.10.2.min.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/angular-sanitize.min.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/angular-route.min.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/lib.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#infra}}js/angular-app.js{{/infra}}" type="text/javascript"></script>
+	<script src="{{#static}}js/app-registry.js{{/static}}" type="text/javascript"></script>
+</head>
+<body>
+<admin-portal>
 		<header>
 			<h1>{{#i18n}}app.registry.header{{/i18n}}</h1>
 		</header>
@@ -35,5 +51,6 @@
 				</div>
 			</div>
 		</section>
+	</admin-portal>
 	</body>
 </html>

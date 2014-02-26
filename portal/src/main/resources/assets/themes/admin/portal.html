@@ -1,0 +1,9 @@
+<header>
+	<h1 translate content="admin.header">admin.header</h1>
+</header>
+<nav ng-controller="Admin">
+	<ul>
+		<li ng-repeat="url in urls"><a ng-href="[[url.url]]" translate content="[[url.name]]"></a></li>
+	</ul>
+</nav>
+<section ng-transclude></section>

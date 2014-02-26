@@ -1,5 +1,0 @@
-appPrefix = '.';
-
-function buildModel(){
-
-}

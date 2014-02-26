@@ -485,17 +485,42 @@ module.directive('bindHtmlUnsafe', function($compile){
 });
 
 module.directive('portal', function($compile){
+	var skin = 'raw';
+	var theme = '/assets/themes/raw/default/';
+	var template = '/assets/themes/raw/portal.html';
+	var logout = '/';
+	http().get('/theme', {}, {
+		async: false,
+		success: function(data){
+			logout = data.logoutCallback;
+			theme = data.skin;
+			skin = theme.split('/assets/themes/')[1].split('/')[0];
+			template = '/assets/themes/' + skin + '/portal.html';
+		}
+	});
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: '/public/template/portal.html',
-		compile: function($element, $attribute){
-			var rand = Math.random();
-			$.get('/theme?token=' + rand, function(data){
-				var css = data.skin;
-				$('[logout]').attr('href', '/auth/logout?callback=' + data.logoutCallback)
-				ui.setStyle(css);
-			})
+		templateUrl: template,
+		compile: function($element, $attribute, $transclude){
+			$('[logout]').attr('href', '/auth/logout?callback=' + logout);
+			ui.setStyle(theme);
+		}
+	}
+});
+
+module.directive('adminPortal', function($compile){
+	var skin = 'admin';
+	var theme = '/assets/themes/admin/default/';
+	var template = '/assets/themes/admin/portal.html';
+	var logout = '/';
+	return {
+		restrict: 'E',
+		transclude: true,
+		templateUrl: template,
+		compile: function($element, $attribute, $transclude){
+			$('[logout]').attr('href', '/auth/logout?callback=' + logout);
+			ui.setStyle(theme);
 		}
 	}
 });
@@ -1674,4 +1699,12 @@ function Share($rootScope, $scope, ui, _, lang){
 			applyRights(element, action);
 		}
 	};
+}
+
+function Admin($scope){
+	$scope.urls = [];
+	http().get('/admin-urls').done(function(urls){
+		$scope.urls = urls;
+		$scope.$apply('urls');
+	})
 }

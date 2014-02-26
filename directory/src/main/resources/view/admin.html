@@ -1,25 +1,45 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<script>
+		var appPrefix = 'directory';
+		var routes = {
+			define: function(routing){
+				this.routing = routing;
+			}
+		};
+
+		function Model(){}
+		Model.prototype.build = function(){};
+		var model = new Model();
+		</script>
 		<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script src="{{#infra}}js/jquery-1.9.1.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/jquery-1.10.2.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular-sanitize.min.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/angular-route.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/underscore-min-1.4.4.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/lib.js{{/infra}}" type="text/javascript"></script>
+		<script src="{{#infra}}js/ui.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/mustache.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/humane.min.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#infra}}js/angular-app.js{{/infra}}" type="text/javascript"></script>
 		<script src="{{#static}}js/admin.js{{/static}}" type="text/javascript"></script>
 	</head>
 	<body>
-		<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
-		
-		<div id="annuaire">
-			<a href="api/export?id=all" id="export">{{#i18n}}directory.admin.export{{/i18n}}</a>
-			<div id="display">
-				<h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2>
-				<a href="api/ecole" call="ecole">{{#i18n}}directory.admin.see-schools{{/i18n}}</a>
-				<div id="schools"></div>
+		<admin-portal>
+			<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
+
+			<div id="annuaire">
+				<a href="api/export?id=all" id="export">{{#i18n}}directory.admin.export{{/i18n}}</a>
+				<div id="display">
+					<h2>{{#i18n}}directory.admin.schools{{/i18n}}</h2>
+					<a href="api/ecole" call="ecole">{{#i18n}}directory.admin.see-schools{{/i18n}}</a>
+					<div id="schools"></div>
+				</div>
 			</div>
-		</div>
+		</admin-portal>
+
 	</body>
 </html>

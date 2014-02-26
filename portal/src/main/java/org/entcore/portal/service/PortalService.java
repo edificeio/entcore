@@ -210,9 +210,14 @@ public class PortalService extends Controller {
 				Locale.forLanguageTag(langs[0].split("-")[0]).toString()));
 	}
 
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void adminURLS(HttpServerRequest request){
+		renderJson(request, container.config().getArray("admin-urls", new JsonArray()));
+	}
+	
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
-		renderView(request, container.config());
+		redirectPermanent(request, "/directory/admin");
 	}
 
 }

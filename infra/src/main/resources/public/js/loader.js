@@ -27,7 +27,6 @@ var loader = (function(){
 			{ path: 'angular-sanitize.min.js' },
 			{ path: 'angular-route.min.js' },
 			{ path: 'underscore-min-1.4.4.js' },
-			{ path: 'watch-polyfill.js' },
 			{ path: 'lib.js' },
 			{ path: 'ui.js' },
 			{ path: 'humane.min.js' },
