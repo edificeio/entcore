@@ -73,7 +73,7 @@ public class PortalService extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
+	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void portal(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -93,7 +93,7 @@ public class PortalService extends Controller {
 		renderView(request);
 	}
 
-	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
+	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void apps(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 
@@ -122,7 +122,7 @@ public class PortalService extends Controller {
 
 	}
 	
-	@SecuredAction(value = "portal.auth",type = ActionType.RESOURCE)
+	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 
