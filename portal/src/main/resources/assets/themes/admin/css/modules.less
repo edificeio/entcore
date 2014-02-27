@@ -1,0 +1,86 @@
+@import "../../../../public/css/app";
+@import "elements";
+
+header{
+	background: @light-green;
+	border-bottom: 5px solid @mid-green;
+	position: absolute;
+	width: 100%;
+	height: 42px;
+	top: 0;
+	left: 0;
+
+	h1{
+		font-size: 1.7em;
+		font-weight: normal;
+		padding-left: 10px;
+		margin: 8px;
+		color: @dark-green;
+		border-bottom: 0;
+	}
+}
+
+a{
+	text-decoration: none;
+	color: @dark-blue;
+}
+
+h1{
+	font-size: 1.5em;
+}
+
+h1, h2{
+	color: @teal;
+	border-bottom: 4px solid @mid-green;
+	font-weight: normal;
+	font-family: Clemente;
+}
+
+.container{
+	padding-left: @nav-width;
+	padding-top: 43px;
+}
+
+html section.main, body section.main{
+	height: 100%;
+	border-left: 1px solid #ccc;
+	padding-top: 0;
+}
+
+article.main{
+	height: 100%;
+	padding-top: 0;
+
+}
+
+article{
+	background: #fff;
+	.reduce-block-eight;
+	.border-radius();
+	border: none;
+}
+
+nav{
+	position: fixed;
+	padding-top: 47px;
+	width: @nav-width;
+	ul{
+		padding: 0;
+		margin: 0;
+	}
+	li{
+		list-style-type: none;
+		padding: 7px;
+		.vertical-gradient(#555, #494949);
+		border: 1px solid #444;
+		border-right: 0;
+		border-bottom: 0;
+	}
+	li:last-child{
+		border-bottom: 1px solid #444;
+	}
+	a{
+		color: #888;
+		font-size: 14px;
+	}
+}

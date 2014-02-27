@@ -60,6 +60,11 @@ public class CommunicationController extends Controller {
 		});
 	}
 
+	@SecuredAction("communication.view")
+	public void staticView(final HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@SecuredAction("communication.conf.profils.matrix")
 	public void setGroupsProfilsMatrix(final HttpServerRequest request) {
 		request.expectMultiPart(true);

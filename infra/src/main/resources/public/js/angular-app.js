@@ -989,6 +989,8 @@ module.directive('resizable', function($compile){
 				'-moz-user-select': 'none',
 				'user-select' : 'none'
 			});
+
+			//cursor styles to indicate resizing possibilities
 			$element.on('mouseover', function(e){
 				$element.on('mousemove', function(e){
 					if($element.data('resizing') || $element.data('lock')){
@@ -1027,7 +1029,9 @@ module.directive('resizable', function($compile){
 				$element.on('mouseout', function(e){
 					$element.unbind('mousemove');
 				});
-			})
+			});
+
+			//actual resize
 			$element.on('mousedown.resize', function(e){
 				if($element.data('lock') === true || $element.data('resizing') === true){
 					return;
@@ -1073,6 +1077,7 @@ module.directive('resizable', function($compile){
 						};
 					});
 
+					//animation for resizing
 					var resize = function(){
 						var newWidth = 0; var newHeight = 0;
 						if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight){

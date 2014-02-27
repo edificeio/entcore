@@ -2,8 +2,16 @@
 	<h1 translate content="admin.header">admin.header</h1>
 </header>
 <nav ng-controller="Admin">
+	<button>Remonter</button>
 	<ul>
-		<li ng-repeat="url in urls"><a ng-href="[[url.url]]" translate content="[[url.name]]"></a></li>
+		<li ng-repeat="url in urls">
+			<a ng-href="[[url.url]]" translate content="admin.[[url.name]]"></a>
+			<ul>
+				<li ng-repeat="child in children"><a ng-href="[[child.url]]" translate content="admin.[[child.name]]"></a></li>
+			</ul>
+		</li>
 	</ul>
 </nav>
-<section ng-transclude></section>
+<section class="container">
+	<section class="main" ng-transclude></section>
+</section>

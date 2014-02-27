@@ -15,6 +15,7 @@ public class Communication extends Server {
 		Controller controller = new CommunicationController(vertx, container, rm, securedActions);
 
 		controller.get("/admin", "view");
+		controller.get("/static-view", "staticView");
 
 		controller.post("/groups/profils", "setGroupsProfilsMatrix");
 
