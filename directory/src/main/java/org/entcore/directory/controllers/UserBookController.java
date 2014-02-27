@@ -4,8 +4,10 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import fr.wseduc.security.ActionType;
+import fr.wseduc.webutils.Either;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -22,6 +24,9 @@ import fr.wseduc.webutils.http.HttpClientUtils;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
+
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class UserBookController extends Controller {
 
@@ -414,5 +419,70 @@ public class UserBookController extends Controller {
 			}
 		});
 	}
+
+	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
+	public void getPreference(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb,request,new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String query =
+							"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf)"
+									+" RETURN uac."+ request.params().get("application") +" AS preference";
+					neo.execute(query,
+							new JsonObject().putString("userId", user.getUserId()),
+							validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> result) {
+									if (result.isRight()) {
+										renderJson(request, result.right().getValue());
+									} else {
+										leftToResponse(request,result.left());
+									}
+								}
+							}));
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
+	public void updatePreference(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>(){
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					final JsonObject params = new JsonObject().putString("userId", user.getUserId());
+					final String application = request.params().get("application");
+					request.bodyHandler(new Handler<Buffer>() {
+						@Override
+						public void handle(Buffer body) {
+							params.putString("conf", body.toString("UTF-8"));
+							String query =
+									"MATCH (u:User {id:{userId}})"
+											+"MERGE (u)-[:PREFERS]->(uac:UserAppConf)"
+											+" ON CREATE SET uac."+ application +" = {conf}"
+											+" ON MATCH SET uac."+ application +" = {conf}";
+							neo.execute(query, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> result) {
+									if (result.isRight()) {
+										renderJson(request, result.right().getValue());
+									} else {
+										leftToResponse(request,result.left());
+									}
+								}
+							}));
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
 
 }

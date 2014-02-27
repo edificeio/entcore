@@ -66,6 +66,8 @@ public class Directory extends Server {
 				.get("/api/edit-user-info-visibility", "editUserInfoVisibility")
 				.get("/avatar/:id", "getAvatar")
 				.get("/person/birthday", "personBirthday")
+				.get("/preference/:application", "getPreference")
+				.put("/preference/:application", "updatePreference")
 				.getWithRegEx(".*", "proxyDocument");
 
 		classController
