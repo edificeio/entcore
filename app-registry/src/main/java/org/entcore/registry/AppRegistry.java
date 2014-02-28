@@ -21,6 +21,8 @@ public class AppRegistry extends Server {
 		}
 
 		service.get("/admin", "view");
+		service.get("/static-admin", "staticAdmin");
+		service.get("/app-preview", "appPreview");
 
 		service.get("/applications", "listApplications");
 

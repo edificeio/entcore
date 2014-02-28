@@ -10,18 +10,18 @@ routes.define(function($routeProvider){
 			action: 'viewClass'
 		})
 		.otherwise({
-			action: 'viewSchool'
+			redirectTo: '/view-school'
 		})
 });
 
-function CommunicationAdmin($scope, route, containers){
-	$scope.containers = containers;
+function CommunicationAdmin($scope, route, views){
+	$scope.containers = views.containers;
 	route({
 		viewSchool: function(params){
-			containers.main = ''
+			views.openView('view-school', 'main');
 		},
 		viewClasses: function(params){
-
+			views.openView('view-classes', 'main');
 		},
 		viewClass: function(params){
 

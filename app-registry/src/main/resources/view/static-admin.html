@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{#i18n}}directory.admin.title{{/i18n}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+	<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
+</head>
+<body>
+<admin-portal>
+	<article ng-controller="AppRegistry">
+		<nav class="side-tabs three cell">
+			<ul>
+				<li ng-repeat="application in applications.all" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+					[[application.name]]
+				</li>
+			</ul>
+		</nav>
+		<article class="side-tabs-content nine cell" ng-if="application">
+			<h1>[[application.name]]</h1>
+				<div class="row">
+					<label class="cell">Clef i18n</label>
+					<input type="text" ng-model="application.displayName" class="cell" />
+				</div>
+				<div class="row preview">
+					<label translate content="[[application.displayName]]"></label>
+				</div>
+				<div class="row">
+					<label class="cell" tooltip="icon.help">Icône</label>
+					<input type="text" ng-model="application.icon" class="cell" />
+				</div>
+				<div class="row preview">
+					<iframe ng-src="/appregistry/app-preview?icon=[[application.icon]]"></iframe>
+				</div>
+				<div class="row" ng-if="application.external">
+					<label class="cell">Mot de passe</label>
+					<input type="text" ng-model="application.password" class="cell" />
+				</div>
+				<div class="row">
+					<label class="cell">URL</label>
+					<input type="text" ng-model="application.url" class="cell" />
+				</div>
+
+				<div class="row">
+					<label class="cell">Cible</label>
+					<select ng-model="application.target" class="cell">
+						<option value="">Portail</option>
+						<option value="_blank">Nouvelle page</option>
+						<option value="adapter">Adapateur</option>
+					</select>
+				</div>
+				<div class="row" ng-if="application.external">
+					<input type="checkbox" ng-model="application.transferSession" /> <label class="four cell">Transmettre la session</label>
+				</div>
+				<div class="row">
+					<a ng-if="!display.advanced" ng-click="showAdvanced()" class="right-magnet">Paramètres avancés</a>
+				</div>
+				<div class="row" ng-if="display.advanced">
+					<div class="row">
+						<label class="cell">Scope</label><input class="cell" type="text" />
+					</div>
+
+				</div>
+				<div class="row">
+					<a ng-if="display.advanced" ng-click="hideAdvanced()" class="right-magnet">Mode simple</a>
+				</div>
+			<h1>Rôles</h1>
+		</article>
+	</article>
+</admin-portal>
+</body>
+</html>

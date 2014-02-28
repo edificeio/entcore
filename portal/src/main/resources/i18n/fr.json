@@ -55,5 +55,6 @@
 	"share.me":"Moi",
 	"admin.title": "One : Console d'administration",
 	"admin.header": "One : Console d'administration",
-	"admin.communication": "Règles de communication"
+	"admin.communication": "Règles de communication",
+	"admin.appRegistry": "Registre d'applications"
 }

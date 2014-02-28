@@ -54,6 +54,16 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
+	@SecuredAction("app-registry.staticAdmin")
+	public void staticAdmin(final HttpServerRequest request) {
+		renderView(request);
+	}
+
+	@SecuredAction("app-registry.staticAdmin")
+	public void appPreview(final HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@SecuredAction("app-registry.list.applications")
 	public void listApplications(HttpServerRequest request) {
 		neo.send(

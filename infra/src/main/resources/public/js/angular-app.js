@@ -155,6 +155,24 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			routes = setRoutes;
 		}
 	})
+	.factory('views', function(){
+		return {
+			viewPath: '/' + appPrefix + '/public/template/',
+			containers: {},
+			openView: function(view, name){
+				if(name === 'lightbox' && view === ''){
+					ui.hideLightbox()
+				}
+				else if(name === 'lightbox'){
+					ui.showLightbox();
+				}
+				this.containers[name] = this.viewPath + view + '.html';
+			},
+			containsView: function(name, view){
+				return $scope.viewsContainers[name] === this.viewPath + view + '.html';
+			}
+		}
+	})
 	.factory('date', function() {
 		if(window.moment === undefined){
 			loader.syncLoad('moment');

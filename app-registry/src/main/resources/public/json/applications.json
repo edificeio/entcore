@@ -1,0 +1,27 @@
+[
+	{
+		"name": "Blog",
+		"displayName": "blog",
+		"password": "blipblop",
+		"url": "/blog",
+		"target": "",
+		"scope": "",
+		"icon": "blog-large"
+	}, {
+		"name": "Workspace",
+		"displayName": "workspace",
+		"password": "blipblop",
+		"url": "/workspace",
+		"target": "",
+		"scope": "",
+		"icon": "workspace-large"
+	}, {
+		"name": "Maxicours",
+		"displayName": "maxicours",
+		"password": "blipblop",
+		"url": "",
+		"target": "_blank",
+		"scope": "userinfo",
+		"icon": "maxicours-large"
+	}
+]
