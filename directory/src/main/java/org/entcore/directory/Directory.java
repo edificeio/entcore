@@ -15,6 +15,7 @@ import org.entcore.directory.controllers.UserController;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class Directory extends Server {
 
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
+				.post("/import", "launchImport")
 				.get("/annuaire", "annuaire")
 				.get("/testbe1d", "testBe1d")
 				.get("/api/ecole", "school")

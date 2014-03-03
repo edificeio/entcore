@@ -99,6 +99,12 @@ public class DirectoryController extends Controller {
 		renderView(request, new JsonObject());
 	}
 
+	@SecuredAction("directory.import")
+	public void launchImport(HttpServerRequest request) {
+		eb.send("entcore.feeder", new JsonObject().putString("action", "import"));
+		request.response().end();
+	}
+
 	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request, null, "annuaire.html", null);
