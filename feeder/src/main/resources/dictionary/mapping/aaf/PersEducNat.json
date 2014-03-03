@@ -1,0 +1,22 @@
+{
+	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
+	"sn" : { "attribute" : "lastName", "type" : "string" },
+	"givenName" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
+	"personalTitle" : { "attribute" : "title", "type" : "string" },
+	"categoriePersonne" : { "attribute" : "category", "type" : "string" },
+	"mail" : { "attribute" : "email", "type" : "string" },
+	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string" },
+	"ENTAuxEnsCategoDiscipline" : { "attribute" : "classCategories", "type" : "array-string" },
+	"ENTAuxEnsMEF" : { "attribute" : "modules", "type" : "array-string" },
+	"ENTAuxEnsMatiereEnseignEtab" : { "attribute" : "subjectTaught", "type" : "array-string" },
+	"ENTAuxEnsClasses" : { "attribute" : "classes", "type" : "array-string" },
+	"ENTAuxEnsGroupes" : { "attribute" : "groups", "type" : "array-string" },
+	"ENTAuxEnsClassesMatieres" : { "attribute" : "classesFieldOfStudy", "type" : "array-string" },
+	"ENTAuxEnsGroupesMatieres" : { "attribute" : "groupsFieldOfStudy", "type" : "array-string" },
+	"ENTAuxEnsClassesPrincipal" : { "attribute" : "headTeacher", "type" : "array-string" },
+	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string" },
+	"PersEducNatPresenceDevantEleves" : { "attribute" : "teaches", "type" : "boolean" },
+	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" }
+}

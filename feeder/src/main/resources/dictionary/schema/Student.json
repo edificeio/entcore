@@ -1,0 +1,146 @@
+{
+	"validate" : {
+		"externalId" : {
+			"type": "string",
+			"validator" : "notEmpty"
+		},
+		"joinKey" : {
+			"type": "array-string",
+			"validator":"notEmpty"
+		},
+		"password" : {
+			"type": "string",
+			"validator":"BCrypt"
+		},
+		"firstName" : {
+			"type": "string",
+			"validator":"notEmpty"
+		},
+		"lastName" : {
+			"type": "string",
+			"validator" : "notEmpty"
+		},
+		"profiles" : {
+			"type": "array-string",
+			"validator" : "notEmpty"
+		},
+		"structures" : {
+			"type": "array-string",
+			"validator":"notEmpty"
+		},
+		"functions" : {
+			"type": "array-string",
+			"validator":"notEmpty"
+		},
+		"surname" : {
+			"type": "string",
+			"validator":"notEmpty"
+		},
+		"otherNames" : {
+			"type": "array-string",
+			"validator":"notEmpty"
+		},
+		"address" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"postbox" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"zipCode" : {
+			"type" : "string",
+			"validator" : "zipCode"
+		},
+		"city" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"country" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"homePhone" : {
+			"type" : "string",
+			"validator" : "phone"
+		},
+		"workPhone" : {
+			"type" : "string",
+			"validator" : "phone"
+		},
+		"mobile" : {
+			"type" : "string",
+			"validator" : "mobile"
+		},
+		"email" : {
+			"type" : "string",
+			"validator" : "email"
+		},
+		"birthDate" : {
+			"type" : "string",
+			"validator" : "birthDate"
+		},
+		"scholarshipHolder" : {
+			"type" : "boolean"
+		},
+		"module" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"moduleName" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"level" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"sector" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"accommodation" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"classes" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"groups" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"relative" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"transport" : {
+			"type" : "boolean"
+		},
+		"status" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"attachmentId" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"fieldOfStudy" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"fieldOfStudyLabels" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		}
+	},
+	"generate" : {
+		"id" : {"generator":"uuid4", "args":[]},
+		"login" : {"generator":"login", "args":["firstName", "lastName"]},
+		"displayName" : {"generator":"displayName", "args":["firstName", "lastName"]},
+		"activationCode" : {"generator":"activationCode", "args":["password"]}
+	},
+	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName", "birthDate"],
+	"modifiable" : []
+}

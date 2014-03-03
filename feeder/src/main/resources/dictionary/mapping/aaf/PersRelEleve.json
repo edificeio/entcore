@@ -1,0 +1,15 @@
+{
+	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
+	"sn" : { "attribute" : "lastName", "type" : "string" },
+	"givenName" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
+	"personalTitle" : { "attribute" : "title", "type" : "string" },
+	"homePhone" : { "attribute" : "homePhone", "type" : "string" },
+	"telephoneNumber" : { "attribute" : "workPhone", "type" : "string" },
+	"ENTPersonAdresse" : { "attribute" : "address", "type" : "string" },
+	"ENTPersonCodePostal" : { "attribute" : "zipCode", "type" : "string" },
+	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
+	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
+	"categoriePersonne" : { "attribute" : "category", "type" : "string" }
+}

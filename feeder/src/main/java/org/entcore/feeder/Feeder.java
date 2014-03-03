@@ -6,8 +6,11 @@ import org.entcore.datadictionary.generation.ActivationCodeGenerator;
 import org.entcore.datadictionary.generation.DisplayNameGenerator;
 import org.entcore.datadictionary.generation.IdGenerator;
 import org.entcore.datadictionary.generation.LoginGenerator;
+import org.entcore.feeder.aaf.AafFeeder;
+import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.StatementsBuilder;
+import org.entcore.feeder.utils.TransactionHelper;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -25,17 +28,19 @@ import java.util.regex.Pattern;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
+	private Feed feed;
 	private Neo4j neo4j;
 	private LoginGenerator loginGenerator;
 	private DisplayNameGenerator displayNameGenerator;
 	private ActivationCodeGenerator activationCodeGenerator;
 	private IdGenerator idGenerator;
 	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
+	private String neo4jAddress;
 
 	@Override
 	public void start() {
 		super.start();
-		String neo4jAddress = container.config().getString("neo4j-address");
+		neo4jAddress = container.config().getString("neo4j-address");
 		if (neo4jAddress == null || neo4jAddress.trim().isEmpty()) {
 			logger.fatal("Missing neo4j address.");
 			return;
@@ -48,6 +53,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		loadUsedLogin();
 		vertx.eventBus().registerHandler(
 				container.config().getString("address", "entcore.feeder"), this);
+		feed = new AafFeeder(vertx, container.config().getString("import-files"));
 	}
 
 	private void loadUsedLogin() {
@@ -74,8 +80,48 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "csvClassRelative" : csvClassRelative(message);
 				break;
+			case "import" : launchImport(message);
+				break;
 			default:
 				sendError(message, "invalid.action");
+		}
+	}
+
+	private void launchImport(final Message<JsonObject> message) {
+		final Importer importer = Importer.getInstance();
+		if (importer.isReady()) { // TODO else manage queue
+			final long start = System.currentTimeMillis();
+			importer.init(new Neo4j(vertx.eventBus(), neo4jAddress), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> res) {
+					if (!"ok".equals(res.body().getString("status"))) {
+						logger.error(res.body().getString("message"));
+						return;
+					}
+					try {
+						feed.launch(importer, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> m) {
+								if (m != null && "ok".equals(m.body().getString("status"))) {
+									logger.info(m.body().encode());
+									sendOK(message);
+								} else if (m != null) {
+									logger.error(m.body().getString("message"));
+									sendError(message, m.body().getString("message"));
+								} else {
+									logger.error("Import return null value.");
+									sendError(message, "Import return null value.");
+								}
+								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+								importer.clear();
+							}
+						});
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						importer.clear();
+					}
+				}
+			});
 		}
 	}
 

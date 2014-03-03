@@ -1,0 +1,30 @@
+{
+	"validate" : {
+		"externalId" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"name" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"joinKey" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"attachment" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"stat" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		}
+
+	},
+	"generate" : {
+		"id" : {"generator":"uuid4", "args":[]}
+	},
+	"required" : ["id", "externalId", "name", "attachment", "stat"],
+	"modifiable" : []
+}

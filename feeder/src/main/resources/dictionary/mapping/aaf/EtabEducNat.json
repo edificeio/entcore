@@ -1,0 +1,22 @@
+{
+	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTStructureUAI" : { "attribute" : "oldUAI", "type" : "string" },
+	"ENTEtablissementUAI" : { "attribute" : "UAI", "type" : "string" },
+	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
+	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
+	"ENTStructureTypeStruct" : { "attribute" : "type", "type" : "string" },
+	"ENTEtablissementMinistereTutelle" : { "attribute" : "ministry", "type" : "string" },
+	"ENTEtablissementContrat" : { "attribute" : "contract", "type" : "string" },
+	"postOfficeBox" : { "attribute" : "postbox", "type" : "string" },
+	"street" : { "attribute" : "address", "type" : "string" },
+	"postalCode" : { "attribute" : "zipCode", "type" : "string" },
+	"l" : { "attribute" : "city", "type" : "string" },
+	"telephoneNumber" : { "attribute" : "phone", "type" : "string" },
+	"facsimileTelephoneNumber" : { "attribute" : "fax", "type" : "string" },
+	"ENTEtablissementStructRattachFctl" : { "attribute" : "functionalAttachment", "type" : "array-string" },
+	"ENTEtablissementBassin" : { "attribute" : "area", "type" : "string" },
+	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
+	"ENTStructureClasses" : { "attribute" : "classes", "type" : "array-string" },
+	"ENTStructureGroupes" : { "attribute" : "groups", "type" : "array-string" },
+	"categorieStructure" : { "attribute" : "category", "type" : "string" }
+}

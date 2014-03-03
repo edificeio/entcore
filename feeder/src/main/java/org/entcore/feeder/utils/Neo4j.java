@@ -6,6 +6,10 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class Neo4j  {
 
 	private EventBus eb;
@@ -50,6 +54,24 @@ public class Neo4j  {
 		jo.putString("action", "rollbackTransaction");
 		jo.putNumber("transactionId", transactionId);
 		eb.send(address, jo, handler);
+	}
+
+	public static String nodeSetPropertiesFromJson(String nodeAlias, JsonObject json, String... ignore) {
+		StringBuilder sb = new StringBuilder();
+		List<String> i;
+		if (ignore != null) {
+			i = Arrays.asList(ignore);
+		} else {
+			i = Collections.emptyList();
+		}
+		for (String attr: json.getFieldNames()) {
+			if (i.contains(attr)) continue;
+			sb.append(", ").append(nodeAlias).append(".").append(attr).append(" = {").append(attr).append("}");
+		}
+		if (sb.length() > 2) {
+			return sb.append(" ").substring(2);
+		}
+		return " ";
 	}
 
 }
