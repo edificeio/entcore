@@ -48,6 +48,8 @@ public class AppRegistry extends Server {
 
 		service.post("/application/external", "createExternalApp");
 
+		service.put("/application", "recordApplication");
+
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), Server.getEventBus(vertx)));
 
 	}

@@ -1,13 +1,17 @@
 package org.entcore.registry.service;
 
-import static org.entcore.common.appregistry.AppRegistryEvents.*;
-
-import java.util.*;
-
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.collections.Joiner;
+import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -15,14 +19,13 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import fr.wseduc.webutils.Controller;
-import org.entcore.common.neo4j.Neo;
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.Utils;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.user.UserInfos;
-import fr.wseduc.security.SecuredAction;
+import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
+import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
 
 public class AppRegistryService extends Controller {
 
@@ -484,6 +487,22 @@ public class AppRegistryService extends Controller {
 				}
 			);
 		}
+	}
+
+	// TODO : Move in infra module to authorize HTTP application record just form localhost
+	public void recordApplication(final HttpServerRequest request) {
+		request.bodyHandler(new Handler<Buffer>() {
+			@Override
+			public void handle(Buffer body) {
+				JsonObject jo = new JsonObject(body.toString("UTF-8"));
+				eb.send(container.config().getString("address"), jo, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> reply) {
+						renderJson(request, reply.body());
+					}
+				});
+			}
+		});
 	}
 
 	public void applications(final Message<JsonObject> message) {
