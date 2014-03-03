@@ -100,6 +100,9 @@ var lang = (function(){
 
 	return {
 		translate: function(key){
+			if(key === undefined){
+				key = '';
+			}
 			return bundle[key] === undefined ? key : bundle[key];
 		},
 		addBundle: function(path, callback){
@@ -182,6 +185,9 @@ var http = (function(){
 
 					if(typeof that.statusCallbacks['e' + e.status] === 'function'){
 						that.statusCallbacks['e' + e.status].call(that, e);
+					}
+					else if(typeof that.statusCallbacks.error === 'function'){
+						that.statusCallbacks.error.call(that, e);
 					}
 					else{
 						if(parent !== window){
@@ -476,6 +482,9 @@ function Collection(obj){
 		for(var property in newData){
 			if(newData.hasOwnProperty(property) && !(this[property] instanceof Collection)){
 				this[property] = newData[property];
+			}
+			if(this[property] instanceof Collection){
+				this[property].load(newData[property]);
 			}
 		}
 

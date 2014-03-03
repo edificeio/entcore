@@ -933,12 +933,12 @@ module.directive('tooltip', function($compile){
 
 				tip.offset({
 					top: parseInt($element.offset().top + $element.height()),
-					left: parseInt($element.offset().left + $element.width() - tip.width() / 2)
+					left: parseInt($element.offset().left + $element.width() / 2 - tip.width() / 2)
 				});
 				tip.fadeIn();
 				$element.one('mouseout', function(){
 					tip.fadeOut(200, function(){
-						$(this).remove();
+						tip.remove();
 					})
 				});
 			});
@@ -1729,5 +1729,7 @@ function Admin($scope){
 	http().get('/admin-urls').done(function(urls){
 		$scope.urls = urls;
 		$scope.$apply('urls');
-	})
+	});
+
+	$scope.scrollUp = ui.scrollToTop;
 }

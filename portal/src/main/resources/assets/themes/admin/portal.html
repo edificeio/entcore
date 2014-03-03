@@ -1,8 +1,9 @@
 <header>
 	<h1 translate content="admin.header">admin.header</h1>
+	<a class="right-magnet cell" href="/auth/login"><i role="disconnect"></i></a>
 </header>
 <nav ng-controller="Admin" class="left">
-	<button>Remonter</button>
+	<button ng-click="scrollUp()">Remonter</button>
 	<ul>
 		<li ng-repeat="url in urls">
 			<a ng-href="[[url.url]]" translate content="admin.[[url.name]]"></a>

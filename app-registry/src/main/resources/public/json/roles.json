@@ -1,0 +1,22 @@
+[
+	{
+		"name": "workspace-all",
+		"authorizations": [{
+				"displayName": "workspace.view",
+				"name": "org.entcore.workspace.service.WorkspaceService|view",
+				"type": "SECURED_ACTION_WORKFLOW"
+			}, {
+				"displayName": "workspace.share.json",
+				"name": "org.entcore.workspace.service.WorkspaceService|shareJsonSubmit",
+				"type": "SECURED_ACTION_WORKFLOW"
+			}, {
+				"displayName": "workspace.share.json",
+				"name": "org.entcore.workspace.service.WorkspaceService|shareJson",
+				"type": "SECURED_ACTION_WORKFLOW"
+			}, {
+				"displayName": "workspace.rack.restore",
+				"name": "org.entcore.workspace.service.WorkspaceService|restoreTrashRack",
+				"type": "SECURED_ACTION_WORKFLOW"
+		}]
+	}
+]

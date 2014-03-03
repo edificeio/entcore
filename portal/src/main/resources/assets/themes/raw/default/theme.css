@@ -1945,6 +1945,33 @@ span.no-style {
 .drawing-zone article h6 {
   padding: 5px;
 }
+.tooltip {
+  position: absolute;
+  z-index: 20;
+  display: none;
+}
+.tooltip .content {
+  padding: 5px;
+  background: #ccc;
+  color: #000;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  box-shadow: 1px 2px 2px #ccc;
+  font-size: 12px;
+  position: relative;
+}
+.tooltip .arrow {
+  width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  border: 8px solid transparent;
+  border-top: 0;
+  color: #ccc;
+  border-bottom: 10px solid;
+}
 .humane,
 .humane-original {
   position: fixed;
@@ -2024,10 +2051,10 @@ body section.main {
   background: #fff;
 }
 html.print {
-  background: #fff;
+  background: transparent;
 }
 html.print body {
-  background: #fff;
+  background: transparent;
 }
 html.print body section {
   page-break-after: always;

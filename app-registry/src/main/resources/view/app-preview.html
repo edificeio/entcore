@@ -3,24 +3,35 @@
 <head>
 	<title></title>
 	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script type="text/javascript">
+		function Preview($scope){
+			var location = decodeURIComponent(window.location.href);
+			$scope.icon = location.split('icon=')[1].split('&')[0];
+			$scope.displayName = location.split('displayName=')[1].split('&')[0];
+			$scope.path = location.split('path=')[1].split('&')[0];
+			$scope.target = location.split('target=')[1].split('&')[0];
+
+			setTimeout(function(){
+				$('.preview iframe', parent.document).height($('.height-mark').height());
+			}, 200);
+
+		}
+	</script>
 </head>
 <body>
 <portal-styles></portal-styles>
-	<ul class="list icons-view">
+	<div class="row height-mark">
+	<ul class="list icons-view" ng-controller="Preview" style="margin: 0;">
 		<li class="element fixed-block height-two">
 			<div class="fixed twelve cell">
-				<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>
-				<i role="{{icon}}"></i>
+				<a href="[[path]]" target="[[target]]">
+					<i role="[[icon]]"></i>
 				</a>
-				<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>{{displayName}}</a>
+				<a href="[[path]]" target="[[target]]">[[displayName]]</a>
 			</div>
 		</li>
+		<li class="clear"></li>
 	</ul>
-	<script>
-		var icon = window.location.href.split('?icon=')[1];
-		document.getElementsByTagName('i')[0].setAttribute('role', icon);
-		var displayName = window.location.href.split('?displayName=')[1].split('&')[0];
-		document.getElementsByTagName('a')[1].innerHTML = displayName;
-	</script>
+	</div>
 </body>
 </html>

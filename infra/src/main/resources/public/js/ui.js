@@ -103,9 +103,8 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
-		var evt = document.createEvent("Event");
-		evt.initEvent("ui-ready", true, false);
-		window.dispatchEvent(evt);
+		var event = new CustomEvent('ui-ready');
+		window.dispatchEvent(event);
 
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');

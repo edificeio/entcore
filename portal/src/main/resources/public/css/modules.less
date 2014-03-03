@@ -34,6 +34,12 @@
 	behavior: url(/assets/themes/panda/css/PIE.htc);
 }
 
+.invert-colors(){
+	-webkit-filter: invert(100%);
+	-moz-filter: invert(100%);
+	filter: invert(100%);
+}
+
 .buttonBackground(@top: #eee, @bottom: #ccc){
 	.vertical-gradient(@top, @bottom);
 }
@@ -1341,6 +1347,31 @@ span.no-style{
 		p, h1, h2, h3, h4, h5, h6{
 			padding: 5px;
 		}
+	}
+
+}
+
+.tooltip{
+	position: absolute;
+	z-index: 20;
+	display: none;
+	.content{
+		padding: 5px;
+		background: #ccc;
+		color: #000;
+		.border-radius(3px);
+		box-shadow: 1px 2px 2px #ccc;
+		font-size: 12px;
+		position: relative;
+	}
+	.arrow{
+		width: 0;
+		margin-left: auto;
+		margin-right: auto;
+		border: 8px solid transparent;
+		border-top: 0;
+		color: #ccc;
+		border-bottom: 10px solid;
 	}
 
 }

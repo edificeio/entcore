@@ -1,5 +1,6 @@
 [
 	{
+		"id": "1",
 		"name": "Blog",
 		"displayName": "blog",
 		"password": "blipblop",
@@ -8,14 +9,33 @@
 		"scope": "",
 		"icon": "blog-large"
 	}, {
+		"id": "2",
 		"name": "Workspace",
 		"displayName": "workspace",
 		"password": "blipblop",
-		"url": "/workspace",
+		"url": "/workspace/workspace",
 		"target": "",
 		"scope": "",
-		"icon": "workspace-large"
+		"icon": "workspace-large",
+		"authorizations": [{
+			"displayName": "workspace.view",
+			"name": "org.entcore.workspace.service.WorkspaceService|view",
+			"type": "SECURED_ACTION_WORKFLOW"
+		}, {
+			"displayName": "workspace.share.json",
+			"name": "org.entcore.workspace.service.WorkspaceService|shareJsonSubmit",
+			"type": "SECURED_ACTION_WORKFLOW"
+		}, {
+			"displayName": "workspace.share.json",
+			"name": "org.entcore.workspace.service.WorkspaceService|shareJson",
+			"type": "SECURED_ACTION_WORKFLOW"
+		}, {
+			"displayName": "workspace.rack.restore",
+			"name": "org.entcore.workspace.service.WorkspaceService|restoreTrashRack",
+			"type": "SECURED_ACTION_WORKFLOW"
+		}]
 	}, {
+		"id": "3",
 		"name": "Maxicours",
 		"displayName": "maxicours",
 		"password": "blipblop",
