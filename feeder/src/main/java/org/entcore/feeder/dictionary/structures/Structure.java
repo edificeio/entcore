@@ -173,4 +173,8 @@ public class Structure {
 		getTransaction().add(query, params);
 	}
 
+	public String getExternalId() {
+		return externalId;
+	}
+
 }

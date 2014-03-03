@@ -5,5 +5,6 @@
 	"preserve-cwd" : true,
 	"address" : "entcore.feeder",
 	"neo4j-address" : "wse.neo4j.persistor",
-	"import-files" : "/home/dboissin/Docs/aaf2d/20130117/"
+	"import-files" : "/opt/one/be1d",
+	"feeder" : "BE1D"
 }

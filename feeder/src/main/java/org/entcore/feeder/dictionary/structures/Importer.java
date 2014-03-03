@@ -1,5 +1,6 @@
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.feeder.utils.Joiner;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
@@ -224,6 +225,10 @@ public class Importer {
 	}
 
 	public void createOrUpdateUser(JsonObject object) {
+		createOrUpdateUser(object, null);
+	}
+
+	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent) {
 		final String error = userValidator.validate(object);
 		if (error != null) {
 			log.warn(error);
@@ -243,6 +248,17 @@ public class Importer {
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
+			if (linkStudent != null && linkStudent.size() > 0) {
+				String query2 =
+						"START u=node:node_auto_index(externalId={externalId}), " +
+						"s=node:node_auto_index({studentExternalIds}) " +
+						"CREATE u<-[:RELATED]-s ";
+				JsonObject p = new JsonObject()
+						.putString("externalId", object.getString("externalId"))
+						.putString("studentExternalIds",
+								"externalId:" + Joiner.on(" OR externalId:").join(linkStudent));
+				transactionHelper.add(query2, p);
+			}
 		}
 	}
 

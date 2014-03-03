@@ -99,17 +99,8 @@ public class Validator {
 	}
 
 	private void checksum(JsonObject object, String values) throws NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest.getInstance("SHA-1");
-		final String checksum = byteArray2Hex(md.digest(values.getBytes()));
+		String checksum = Hash.sha1(values.getBytes());
 		object.putString("checksum", checksum);
-	}
-
-	private static String byteArray2Hex(final byte[] hash) {
-		Formatter formatter = new Formatter();
-		for (byte b : hash) {
-			formatter.format("%02x", b);
-		}
-		return formatter.toString();
 	}
 
 	private String required(JsonObject object) {

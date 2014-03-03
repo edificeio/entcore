@@ -7,10 +7,10 @@ import org.entcore.datadictionary.generation.DisplayNameGenerator;
 import org.entcore.datadictionary.generation.IdGenerator;
 import org.entcore.datadictionary.generation.LoginGenerator;
 import org.entcore.feeder.aaf.AafFeeder;
+import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.StatementsBuilder;
-import org.entcore.feeder.utils.TransactionHelper;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -53,7 +53,17 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		loadUsedLogin();
 		vertx.eventBus().registerHandler(
 				container.config().getString("address", "entcore.feeder"), this);
-		feed = new AafFeeder(vertx, container.config().getString("import-files"));
+		switch (container.config().getString("feeder", "")) {
+			case "AAF" :
+				feed = new AafFeeder(vertx, container.config().getString("import-files"));
+				break;
+			case "BE1D" :
+				feed = new Be1dFeeder(vertx, container.config().getString("import-files"),
+						container.config().getString("uai-separator","|"));
+				break;
+			default: throw new IllegalArgumentException("Invalid importer");
+		}
+
 	}
 
 	private void loadUsedLogin() {
