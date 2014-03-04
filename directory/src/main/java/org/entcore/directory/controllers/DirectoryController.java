@@ -148,16 +148,23 @@ public class DirectoryController extends Controller {
 			public void handle(JsonObject c) {
 				classService.create(schoolId, c, new Handler<Either<String, JsonObject>>() {
 					@Override
-					public void handle(Either<String, JsonObject> event) {
+					public void handle(final Either<String, JsonObject> event) {
 						if (event.isRight()) {
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 								String classId = event.right().getValue().getString("id");
 								if (classId != null && !classId.trim().isEmpty() &&
 										request.params().contains("setDefaultRoles") &&
 										config.getBoolean("classDefaultRoles", false)) {
-									ApplicationUtils.setDefaultClassRoles(eb, classId, null);
+									ApplicationUtils.setDefaultClassRoles(eb, classId,
+											new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> message) {
+											renderJson(request, event.right().getValue(), 201);
+										}
+									});
+								} else {
+									renderJson(request, event.right().getValue(), 201);
 								}
-								renderJson(request, event.right().getValue(), 201);
 							} else {
 								request.response().setStatusCode(404).end();
 							}

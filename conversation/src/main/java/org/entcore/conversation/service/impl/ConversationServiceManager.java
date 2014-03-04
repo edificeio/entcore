@@ -54,12 +54,12 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 	}
 
 	@Override
-	public void userGroupUpdated(JsonArray users) {
+	public void userGroupUpdated(final JsonArray users) {
 		ApplicationUtils.applicationAllowedUsers(eb, applicationName, users, new Handler<JsonArray>() {
 			@Override
-			public void handle(JsonArray users) {
+			public void handle(JsonArray u) {
 				Set<String> userIds = new HashSet<>();
-				for (Object o: users) {
+				for (Object o: u) {
 					if (!(o instanceof JsonObject)) continue;
 					userIds.add(((JsonObject) o).getString("id"));
 				}
