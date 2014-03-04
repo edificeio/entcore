@@ -8,7 +8,7 @@ CREATE (c:Application {
   address: '/userbook/annuaire#/search',
   icon: 'userbook-large',
   target: '',
-  scope: ''
+  scope: ['']
 }),
 c-[r:PROVIDE]->(a:Action:WorkflowAction {
   type: 'SECURED_ACTION_WORKFLOW',
@@ -24,7 +24,7 @@ CREATE (c:Application {
   address: '/userbook/mon-compte',
   icon: 'account-large',
   target: '',
-  scope: ''
+  scope: ['']
 }),
 c-[r:PROVIDE]->(a:Action:WorkflowAction {
   type: 'SECURED_ACTION_WORKFLOW',
@@ -40,7 +40,7 @@ CREATE (c:Application {
   address: '/userbook/classAdmin',
   icon: 'admin-large',
   target: '',
-  scope: ''
+  scope: ['']
 }),
 c-[r:PROVIDE]->(a:Action:WorkflowAction {
   type: 'SECURED_ACTION_WORKFLOW',
