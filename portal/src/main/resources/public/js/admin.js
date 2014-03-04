@@ -8,7 +8,7 @@ var admin = function() {
 	app.define ({
 		action : {
 			displayApp : function(o) {
-				var style = 'http://localhost:8090/public/css/test.css';
+				var style = '/public/css/test.css';
 				if ($('#iframe' + '-frame')) {
 					$('<iframe />', {
 						id: o.target.id + '-frame',
