@@ -1334,6 +1334,11 @@ function Account($scope){
 		});
 	};
 
+	http().get('/conversation/count/INBOX').done(function(nbMessages){
+		$scope.nbNewMessages = nbMessages.count;
+		$scope.$apply('nbNewMessages');
+	});
+
 	$scope.refreshAvatar();
 }
 

@@ -2149,10 +2149,32 @@ i[role=new-mail] {
   vertical-align: middle;
   color: #fff;
   font-size: 10px;
-  padding-left: 28px;
-  padding-top: 8px;
+  padding-left: 23px;
+  padding-top: 10px;
   background-position: 0px 0px;
   cursor: pointer;
+  margin-top: -3px !important;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+i[role=mail] {
+  height: 40px;
+  width: 40px;
+  background-image: url("../img/icons/conversation-yellow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  float: left;
+  vertical-align: middle;
+  color: #fff;
+  font-size: 10px;
+  padding-left: 23px;
+  padding-top: 10px;
+  background-position: 12px 0px;
+  cursor: pointer;
+  margin-top: 6px !important;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -5344,6 +5366,10 @@ label.checkbox input[type=checkbox][disabled]:checked + span {
 .cke_float.cke_chrome .cke_inner .cke_top .cke_combo_button {
   background: #fff;
   border: 1px solid #ddd;
+}
+.cke_float.cke_chrome .cke_inner .cke_top .cke_button_on {
+  background: #ddd;
+  box-shadow: inset 1px 1px 2px #999;
 }
 body,
 html {
