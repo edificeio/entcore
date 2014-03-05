@@ -1855,6 +1855,9 @@ span.no-style {
   border-radius: 0 !important;
   margin: 0 !important;
 }
+[contenteditable=true]:focus {
+  outline: none;
+}
 .drawing-zone article {
   border: none;
   background: transparent;
@@ -1865,9 +1868,6 @@ span.no-style {
   position: absolute;
   top: 0;
   left: 0;
-}
-.drawing-zone article [contenteditable=true]:focus {
-  outline: none;
 }
 .drawing-zone article.media {
   border: 1px dashed #666;

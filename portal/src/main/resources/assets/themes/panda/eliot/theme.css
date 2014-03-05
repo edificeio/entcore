@@ -1881,6 +1881,9 @@ span.no-style {
   border-radius: 0 !important;
   margin: 0 !important;
 }
+[contenteditable=true]:focus {
+  outline: none;
+}
 .drawing-zone article {
   border: none;
   background: transparent;
@@ -1891,9 +1894,6 @@ span.no-style {
   position: absolute;
   top: 0;
   left: 0;
-}
-.drawing-zone article [contenteditable=true]:focus {
-  outline: none;
 }
 .drawing-zone article.media {
   border: 1px dashed #666;
@@ -2241,16 +2241,16 @@ i[role=shared] {
 .toggle-buttons .contextual-link a {
   color: #fd841c !important;
 }
-.one h1,
-.two h1,
+.one .loading-panel h1,
+.two .loading-panel h1,
 .three .loading-panel h1 {
   text-transform: none;
   margin-top: 10px;
   margin-bottom: 0;
   font-size: 20px;
 }
-.one img,
-.two img,
+.one .loading-panel img,
+.two .loading-panel img,
 .three .loading-panel img {
   width: 50%;
   height: 50%;
