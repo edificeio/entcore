@@ -474,7 +474,7 @@ function Collection(obj){
 		}
 
 		for(var property in newData){
-			if(newData.hasOwnProperty(property)){
+			if(newData.hasOwnProperty(property) && !(this[property] instanceof Collection)){
 				this[property] = newData[property];
 			}
 		}
