@@ -1856,6 +1856,9 @@ span.no-style {
 [contenteditable=true]:focus {
   outline: none;
 }
+[data-reload] {
+  cursor: pointer;
+}
 .drawing-zone article {
   border: none;
   background: transparent;

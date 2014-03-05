@@ -725,6 +725,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if($scope.order.field === 'created' && item.created){
 			return moment(item.created);
 		}
+		if($scope.order.field === 'name'){
+			return lang.removeAccents(item[$scope.order.field]);
+		}
 		return item[$scope.order.field];
 	}
 	$scope.orderByField = function(fieldName){
@@ -814,7 +817,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				targetFolders = []
 			});
 		});
-
 	};
 
 	$scope.to = {
