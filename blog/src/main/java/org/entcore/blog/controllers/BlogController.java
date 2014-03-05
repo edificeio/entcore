@@ -3,7 +3,7 @@ package org.entcore.blog.controllers;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.*;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import org.entcore.blog.services.BlogService;
 import org.entcore.blog.services.BlogTimelineService;
 import org.entcore.blog.services.impl.DefaultBlogService;

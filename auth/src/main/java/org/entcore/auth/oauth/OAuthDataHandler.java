@@ -3,6 +3,7 @@ package org.entcore.auth.oauth;
 import java.io.IOException;
 import java.util.*;
 
+import fr.wseduc.mongodb.MongoDb;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
@@ -15,7 +16,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.one.core.infra.MongoDb;
 import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.security.BCrypt;
 

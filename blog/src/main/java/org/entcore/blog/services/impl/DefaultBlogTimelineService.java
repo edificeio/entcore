@@ -1,7 +1,7 @@
 package org.entcore.blog.services.impl;
 
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.collections.Joiner;
 import com.mongodb.QueryBuilder;
 import org.entcore.blog.services.BlogTimelineService;

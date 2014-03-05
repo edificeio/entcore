@@ -1,6 +1,6 @@
 package org.entcore.blog;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import org.entcore.blog.controllers.BlogController;
 import org.entcore.blog.controllers.PostController;
 import org.entcore.blog.security.BlogResourcesProvider;

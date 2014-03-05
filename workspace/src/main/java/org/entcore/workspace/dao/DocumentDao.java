@@ -1,6 +1,6 @@
 package org.entcore.workspace.dao;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 
 public class DocumentDao extends GenericDao {
 

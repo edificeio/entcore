@@ -1,6 +1,6 @@
 package org.entcore.timeline.events;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;

@@ -11,7 +11,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.*;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;

@@ -1,6 +1,6 @@
 package org.entcore.common.bus;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.FileUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;

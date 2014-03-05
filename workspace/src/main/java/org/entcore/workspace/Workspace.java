@@ -1,6 +1,6 @@
 package org.entcore.workspace;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;

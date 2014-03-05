@@ -2,7 +2,7 @@ package org.entcore.workspace.dao;
 
 import org.vertx.java.core.json.JsonObject;
 
-import edu.one.core.infra.MongoDb;
+import fr.wseduc.mongodb.MongoDb;
 
 public class RackDao extends GenericDao {
 

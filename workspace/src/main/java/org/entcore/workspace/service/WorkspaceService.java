@@ -17,8 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mongodb.QueryBuilder;
-import edu.one.core.infra.MongoDb;
-import edu.one.core.infra.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
