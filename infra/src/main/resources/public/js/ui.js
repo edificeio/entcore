@@ -52,7 +52,7 @@ var ui = (function(){
 		scrollToTop: function(){
 			var scrollUp = function(){
 				var scrollTop = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
-				if(scrollTop <= $('section.main').offset().top){
+				if(scrollTop <= $('body').offset().top){
 					return;
 				}
 				window.scrollTo(0, scrollTop - parseInt(scrollTop / 10) - 1);

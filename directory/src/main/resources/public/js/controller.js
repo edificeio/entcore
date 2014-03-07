@@ -85,11 +85,11 @@ function DirectoryController($scope, model, route, date){
 	};
 
 	$scope.selectFirstUser = function(){
-		if(model.directory.users.length){
-			$scope.selectUser(model.directory.users.first());
+		if(model.myClass.users.length()){
+			$scope.selectUser(model.myClass.users.first());
 		}
 		else{
-			$scope.selectUser(model.myClass.users.first());
+			$scope.selectUser(model.directory.users.first());
 		}
 	};
 
