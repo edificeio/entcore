@@ -251,7 +251,7 @@ public class UserBookController extends Controller {
 				params.put("id", user.getUserId());
 				params.put("category", request.params().get("category"));
 				String visibility = "PUBLIC".equals(request.params().get("value")) ? "PUBLIC" : "PRIVE";
-				neo.send("MATCH (n:User)-[USERBOOK]->(m)-[s]->(p) "
+				neo.send("MATCH (n:User)-[:USERBOOK]->(m)-[s]->(p) "
 					+ "WHERE n.id = {id} AND p.category={category} "
 					+ "DELETE s CREATE (m)-[j:"+ visibility +"]->(p) "
 					+ "RETURN n,m,j,p", params, request.response());
