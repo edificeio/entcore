@@ -3638,11 +3638,11 @@ input[type=submit],
 a.button,
 button {
   background: #3789c3;
-  background: -webkit-linear-gradient(#3789c3, #3ec0d0);
-  background: -moz-linear-gradient(#3789c3, #3ec0d0);
-  background: -o-linear-gradient(#3789c3, #3ec0d0);
-  background: linear-gradient(#3789c3, #3ec0d0);
-  -pie-background: linear-gradient(#3789c3, #3ec0d0);
+  background: -webkit-linear-gradient(#3789c3, #43b9e7);
+  background: -moz-linear-gradient(#3789c3, #43b9e7);
+  background: -o-linear-gradient(#3789c3, #43b9e7);
+  background: linear-gradient(#3789c3, #43b9e7);
+  -pie-background: linear-gradient(#3789c3, #43b9e7);
   behavior: url(/assets/themes/panda/css/PIE.htc);
   color: #fff;
   font-family: KGJune;
@@ -4139,11 +4139,11 @@ article {
 }
 article header,
 article thead {
-  background: -webkit-linear-gradient(#3789c3, #3ec0d0);
-  background: -moz-linear-gradient(#3789c3, #3ec0d0);
-  background: -o-linear-gradient(#3789c3, #3ec0d0);
-  background: linear-gradient(#3789c3, #3ec0d0);
-  -pie-background: linear-gradient(#3789c3, #3ec0d0);
+  background: -webkit-linear-gradient(#3789c3, #43b9e7);
+  background: -moz-linear-gradient(#3789c3, #43b9e7);
+  background: -o-linear-gradient(#3789c3, #43b9e7);
+  background: linear-gradient(#3789c3, #43b9e7);
+  -pie-background: linear-gradient(#3789c3, #43b9e7);
   behavior: url(/assets/themes/panda/css/PIE.htc);
   -webkit-border-top-left-radius: 5px;
   -webkit-border-top-right-radius: 5px;
