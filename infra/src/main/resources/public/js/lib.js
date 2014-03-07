@@ -563,8 +563,10 @@ function bootstrap(func){
 		};
 
 		model.me.workflow = {
-			load: function(serviceName){
-				this[serviceName] = Behaviours.findWorkflow(serviceName);
+			load: function(services){
+				services.forEach(function(serviceName){
+					this[serviceName] = Behaviours.findWorkflow(serviceName);
+				}.bind(this));
 			}
 		}
 

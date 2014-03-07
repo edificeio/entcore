@@ -822,11 +822,14 @@ module.directive('workflow', function($compile){
 			auth.forEach(function(prop){
 				right = right[prop];
 			});
+			var content = $element.children();
 			if(!right){
+				content.remove();
 				$element.hide();
 			}
 			else{
 				$element.show();
+				$element.append(content);
 			}
 		}
 	}
@@ -862,7 +865,7 @@ module.directive('behaviour', function($compile){
 	return {
 		restrict: 'E',
 		template: '<div ng-transclude></div>',
-		replace: true,
+		replace: false,
 		transclude: true,
 		scope: {
 			resource: '='
@@ -871,15 +874,18 @@ module.directive('behaviour', function($compile){
 			if(!$attributes.name){
 				throw "Behaviour name is required";
 			}
+			var content = $element.children('div');
 			$scope.$watch('resource', function(newVal){
 				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
 					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
+
 				if(hide){
-					$element.hide();
+					content.remove();
 				}
 				else{
-					$element.show();
+					$element.append(content);
 				}
+
 			});
 		}
 	}
