@@ -13,6 +13,7 @@
 	"share.publish.title": "Publication",
 	"share.publish.immediate": "Publication is immediate",
 	"share.publish.differed": "Posts have to be validated",
+	"share.varyingrights": "Changing sharing rights on these documents will reset their sharing configuration",
 	"blog" : "Blog",
     "conversation" : "Messaging",
 	"messagerie" : "Messaging",
