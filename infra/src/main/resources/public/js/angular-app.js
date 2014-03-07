@@ -872,8 +872,8 @@ module.directive('behaviour', function($compile){
 				throw "Behaviour name is required";
 			}
 			$scope.$watch('resource', function(newVal){
-				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
-					($scope.resource instanceof Model && !$scope.resource.myRights[$attributes.name]);
+				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
+					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
 				if(hide){
 					$element.hide();
 				}
