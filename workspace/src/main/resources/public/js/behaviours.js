@@ -44,10 +44,18 @@ var workspaceBehaviours = {
 
 Behaviours.register('workspace', {
 	resource: function(resource){
-		resource.myRights = {};
+		if(!resource.myRights){
+			resource.myRights = {};
+		}
+
 		for(var behaviour in workspaceBehaviours.resources){
 			if(model.me.hasRight(resource, workspaceBehaviours.resources[behaviour]) || model.me.userId === resource.owner){
-				resource.myRights[behaviour] = workspaceBehaviours.resources[behaviour];
+				if(resource.myRights[behaviour] !== undefined){
+					resource.myRights[behaviour] = resource.myRights[behaviour] && workspaceBehaviours.resources[behaviour];
+				}
+				else{
+					resource.myRights[behaviour] = workspaceBehaviours.resources[behaviour];
+				}
 			}
 		}
 
