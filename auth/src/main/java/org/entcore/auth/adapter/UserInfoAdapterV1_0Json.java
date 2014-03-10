@@ -27,6 +27,9 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 		JsonObject filteredInfos = info.copy();
 		String type = Utils.getOrElse(types.get(info.getString("type", "")), "");
 		filteredInfos.putString("type", type);
+		if (filteredInfos.getString("level") == null) {
+			filteredInfos.putString("level", "");
+		}
 		if (clientId != null && !clientId.trim().isEmpty()) {
 			filteredInfos.removeField("classes");
 			filteredInfos.removeField("apps");
