@@ -1332,6 +1332,9 @@ $(document).ready(function(){
 function Account($scope){
 	"use strict";
 
+	$scope.nbNewMessages = 0;
+	$scope.me = model.me;
+
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
@@ -1340,7 +1343,7 @@ function Account($scope){
 		});
 	};
 
-	http().get('/conversation/count/INBOX').done(function(nbMessages){
+	http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
 		$scope.nbNewMessages = nbMessages.count;
 		$scope.$apply('nbNewMessages');
 	});

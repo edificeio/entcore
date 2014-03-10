@@ -8,8 +8,8 @@
 			<div class="cell six">
 				<nav class="account">
 					<a href="/conversation/conversation">
-						<i role="new-mail" ng-if="nbNewMessages">[[nbNewMessages]]</i>
-						<i role="mail" ng-if="!nbNewMessages"></i>
+						<i role="new-mail" ng-if="nbNewMessages > 0 && me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|view')">[[nbNewMessages]]</i>
+						<i role="mail" ng-if="nbNewMessages == 0 && me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|view')"></i>
 					</a>
 					<a href="/userbook/mon-compte"><i role="user"></i></a>
 					<a logout><i role="shutdown"></i></a>
