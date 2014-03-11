@@ -245,6 +245,49 @@ module.directive('completeChange', function() {
 	};
 });
 
+module.directive('lightbox', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+			show: '='
+		},
+		template: '<div>\
+					<section class="lightbox-backdrop"></section>\
+					<section class="lightbox-window five cell">\
+						<div class="twelve cell" ng-transclude></div>\
+						<div class="close-lightbox">\
+						<i role="close-2x"></i>\
+						</div>\
+						<div class="clear"></div>\
+					</section>\
+				</div>',
+		link: function(scope, element, attributes){
+			scope.$watch('visible', function(newVal){
+				if(newVal){
+					element.find('.lightbox-window').fadeIn();
+				}
+				else{
+					element.find('.lightbox-window').fadeOut();
+				}
+			})
+		}
+	}
+});
+
+module.directive('documentsLibrary', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+
+		},
+		templateUrl: '/infra/public/template/documents-library.html',
+		link: function(scope, element, attributes){
+
+		}
+	}
+});
+
 module.directive('fileInputChange', function($compile){
 	return {
 		restrict: 'A',
