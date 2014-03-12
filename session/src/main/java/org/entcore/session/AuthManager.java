@@ -181,16 +181,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.id = {id} AND HAS(n.login) " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
+				"OPTIONAL MATCH n-[:IN]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WITH app, a, n " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->(gp:ProfileGroup) " +
+				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
 				"WITH app, a, n, gp " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->gpe-[:DEPENDS]->(s:School) " +
-				"OPTIONAL MATCH n-[:APPARTIENT]->(c:Class) " +
+				"OPTIONAL MATCH n-[:IN]->(gpe:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH n-[:IN]->(gpc:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"OPTIONAL MATCH n-[:IN]->(fg:FunctionGroup)-[:HAS_FUNCTION]->(f:Function) " +
+				"OPTIONAL MATCH gpe-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, " +
-				"n.displayName as username, HEAD(filter(x IN labels(n) WHERE x <> 'Visible' AND x <> 'User')) as type, " +
+				"n.displayName as username, p.name as type, COLLECT(distinct f.externalId) as functionCodes, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
 				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
