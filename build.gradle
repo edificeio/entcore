@@ -101,9 +101,7 @@ project(':directory') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile project(':dataDictionary')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
-    compile "net.sf.opencsv:opencsv:$opencsvVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
   }
 }

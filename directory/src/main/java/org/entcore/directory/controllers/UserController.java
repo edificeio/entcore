@@ -2,7 +2,6 @@ package org.entcore.directory.controllers;
 
 import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -47,7 +46,7 @@ public class UserController extends Controller {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb,log);
 		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
-		this.userService = new DefaultUserService(neo, notification);
+		this.userService = new DefaultUserService(neo, notification, eb);
 		this.userBookService = new DefaultUserBookService(neo);
 		this.notification = new TimelineHelper(vertx, eb, container);
 		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");

@@ -54,8 +54,8 @@ public class ClassController extends Controller {
 		Neo neo = new Neo(eb,log);
 		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
 		this.classService = new DefaultClassService(neo, eb);
-		this.userService = new DefaultUserService(neo, notification);
-		schoolService = new DefaultSchoolService(neo);
+		this.userService = new DefaultUserService(neo, notification, eb);
+		schoolService = new DefaultSchoolService(neo, eb);
 		this.conversationNotification = new ConversationNotification(vertx, eb, container);
 	}
 
@@ -117,15 +117,7 @@ public class ClassController extends Controller {
 	@SecuredAction(value = "class.user.find", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
-		List<UserService.UserType> types = new ArrayList<>();
-		for (String t: request.params().getAll("type")) {
-			try {
-				types.add(UserService.UserType.valueOf(t));
-			} catch (Exception e) {
-				badRequest(request);
-				return;
-			}
-		}
+		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
 			handler = new Handler<Either<String, JsonArray>>() {
@@ -164,7 +156,7 @@ public class ClassController extends Controller {
 		} else {
 			handler = arrayResponseHandler(request);
 		}
-		classService.findUsers(classId, types.toArray(new UserService.UserType[types.size()]), handler);
+		classService.findUsers(classId, types, handler);
 	}
 
 	@SecuredAction(value = "class.csv", type = ActionType.RESOURCE)
@@ -194,10 +186,8 @@ public class ClassController extends Controller {
 				event.endHandler(new Handler<Void>() {
 					@Override
 					public void handle(Void end) {
-						String ut = Character.toUpperCase(userType.charAt(0)) +
-								userType.substring(1).toLowerCase();
 						JsonObject j = new JsonObject()
-								.putString("action", "csvClass" + ut)
+								.putString("action", "manual-csv-class-" + userType.toLowerCase())
 								.putString("classId", classId)
 								.putString("csv", buff.toString("ISO-8859-1"));
 						Server.getEventBus(vertx).send(container.config().getString("feeder",

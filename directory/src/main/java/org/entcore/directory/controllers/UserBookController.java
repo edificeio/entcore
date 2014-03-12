@@ -16,7 +16,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import org.entcore.datadictionary.validation.RegExpValidator;
 import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.Server;
@@ -77,33 +76,24 @@ public class UserBookController extends Controller {
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+		String name = request.params().get("name");
+		String filter = "";
+		JsonObject params = new JsonObject();
+		if (name != null && !name.trim().isEmpty()) {
+			filter = "WHERE visibles.displayName=~{regex} ";
+			params.putString("regex", "(?i)^.*?" + Pattern.quote(name.trim()) + ".*?$");
+		}
+		String customReturn = filter +
+				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
+				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
+				"u.mood as mood, u.userid as userId, u.picture as photo, " +
+				"profile.name as type " +
+				"ORDER BY displayName";
+		UserUtils.findVisibleUsers(eb, request, true, customReturn, params, new Handler<JsonArray>() {
 
 			@Override
-			public void handle(UserInfos user) {
-				if (user != null) {
-					String name = request.params().get("name");
-					String filter = "";
-					if (name != null && !name.trim().isEmpty()) {
-						filter = "AND m.displayName=~{regex} ";
-					}
-					String query =
-							"MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..2]->(m:User) " +
-							"WHERE n.id = {id} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-							"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " + filter +
-							"AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
-							"OPTIONAL MATCH m-[:USERBOOK]->u " +
-							"RETURN distinct m.id as id, m.displayName as displayName, " +
-							"u.mood as mood, u.userid as userId, u.picture as photo, " +
-							"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
-							"ORDER BY displayName";
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", user.getUserId());
-					params.put("regex", "(?i)^.*?" + Pattern.quote(name.trim()) + ".*?$");
-					neo.send(query, params, request.response());
-				} else {
-					unauthorized(request);
-				}
+			public void handle(JsonArray users) {
+				renderJson(request, users);
 			}
 		});
 	}
@@ -143,9 +133,9 @@ public class UserBookController extends Controller {
 								"p.homePhone as tel, b.birthDate as birthdate, " +
 								"COLLECT([]) as r ";
 					}
-					String query = "MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e "
+					String query = "MATCH (n:User) "
 								+ "WHERE n.id = {userId} "
-								+ "OPTIONAL MATCH e-[:APPARTIENT]->(c:School) "
+								+ "OPTIONAL MATCH n-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Structure)"
 								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
 								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
 								+ "OPTIONAL MATCH (n)-[:EN_RELATION_AVEC]-(n2) "
@@ -191,13 +181,14 @@ public class UserBookController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					String query =
-							"MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->(c:Class) " +
+							"MATCH (n:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 							"WHERE n.id = {id} " +
 							"WITH c " +
-							"MATCH c<-[:APPARTIENT]-m " +
-							"WHERE NOT(m.login IS NULL) AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
+							"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)" +
+							"-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
+							"WHERE p.name IN ['Student','Teacher'] AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
 							"OPTIONAL MATCH m-[:USERBOOK]->u " +
-							"RETURN distinct HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, m.id as id, " +
+							"RETURN distinct p.name as type, m.id as id, " +
 							"m.displayName as displayName, u.mood as mood, " +
 							"u.userid as userId, u.picture as photo " +
 							"ORDER BY type DESC, displayName ";
@@ -337,16 +328,17 @@ public class UserBookController extends Controller {
 					String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
 							"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
 					String query =
-							"MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->(c:Class) " +
+							"MATCH (n:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 							"WHERE n.id = {id} " +
 							"WITH c " +
-							"MATCH c<-[:APPARTIENT]-(m:Student) " +
+							"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)" +
+							"-[:HAS_PROFILE]->(p:Profile {name : 'Student'}), cpg<-[:IN]-(m:User) " +
 							"WHERE m.birthDate=~{regex} " +
 							"RETURN distinct m.id as id, m.displayName as username, " +
 							"m.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
 					JsonObject params = new JsonObject();
 					params.putString("id", user.getUserId());
-					params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
+					params.putString("regex", "^(3[01]|[12][0-9]|0[1-9])/(" + monthRegex[month] + ")/[0-9]{4}$");
 					neo.execute(query, params, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {

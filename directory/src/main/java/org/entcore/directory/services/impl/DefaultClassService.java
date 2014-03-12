@@ -1,11 +1,10 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.directory.Directory;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -14,12 +13,8 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.Collections;
-import java.util.UUID;
-
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
-import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultClassService implements ClassService {
 
@@ -33,106 +28,42 @@ public class DefaultClassService implements ClassService {
 
 	@Override
 	public void create(String schoolId, JsonObject classe, final Handler<Either<String, JsonObject>> result) {
-		if (classe == null) {
-			classe = new JsonObject();
-		}
-		String classId = UUID.randomUUID().toString();
-		classe.putString("id", classId);
-		JsonObject c = Utils.validAndGet(classe, CLASS_FIELDS, CLASS_REQUIRED_FIELDS);
-		if (validationError(c, result)) return;
-		String query =
-				"MATCH (n:`School` { id : {schoolId}}) " +
-				"CREATE n<-[:APPARTIENT]-(c:Class {props})," +
-				"c<-[:DEPENDS]-(spg:ProfileGroup:Visible:ClassProfileGroup:ClassStudentGroup {studentGroup})," +
-				"c<-[:DEPENDS]-(tpg:ProfileGroup:Visible:ClassProfileGroup:ClassTeacherGroup {teacherGroup})," +
-				"c<-[:DEPENDS]-(rpg:ProfileGroup:Visible:ClassProfileGroup:ClassRelativeGroup {relativeGroup}) " +
-				"RETURN c.id as id";
-		final String className = c.getString("name");
-		JsonObject params = new JsonObject()
-				.putString("schoolId", schoolId)
-				.putObject("props", c)
-				.putObject("studentGroup", new JsonObject()
-						.putString("id", UUID.randomUUID().toString())
-						.putString("name", className + "_ELEVE")
-				).putObject("teacherGroup", new JsonObject()
-						.putString("id", UUID.randomUUID().toString())
-						.putString("name", className + "_ENSEIGNANT")
-				).putObject("relativeGroup", new JsonObject()
-						.putString("id", UUID.randomUUID().toString())
-						.putString("name", className + "_PERSRELELEVE")
-				);
-		JsonObject p = new JsonObject().putString("schoolId", schoolId).putString("classId", classId);
-		StatementsBuilder queries = new StatementsBuilder()
-				.add(query, params)
-				.add("MATCH (n:`School` { id : {schoolId}})<-[:DEPENDS]-(sg:SchoolStudentGroup), " +
-						"(c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:ClassStudentGroup) " +
-						"CREATE UNIQUE cg-[:DEPENDS]->sg", p)
-				.add("MATCH (n:`School` { id : {schoolId}})<-[:DEPENDS]-(sg:SchoolTeacherGroup), " +
-						"(c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:ClassTeacherGroup) " +
-						"CREATE UNIQUE cg-[:DEPENDS]->sg", p)
-				.add("MATCH (n:`School` { id : {schoolId}})<-[:DEPENDS]-(sg:SchoolRelativeGroup), " +
-						"(c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:ClassRelativeGroup) " +
-						"CREATE UNIQUE cg-[:DEPENDS]->sg", p);
-		neo.executeTransaction(queries.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				JsonArray results = r.body().getArray("results");
-				if ("ok".equals(r.body().getString("status")) && results != null) {
-					JsonArray createResult = results.get(0);
-					result.handle(new Either.Right<String, JsonObject>((JsonObject) createResult.get(0)));
-				} else {
-					result.handle(new Either.Left<String, JsonObject>(r.body().getString("errors")));
-				}
-			}
-		});
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-create-class")
+				.putString("structureId", schoolId)
+				.putObject("data", classe);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
 	}
 
 	@Override
 	public void update(String classId, JsonObject classe, Handler<Either<String, JsonObject>> result) {
-		JsonObject c = Utils.validAndGet(classe, UPDATE_CLASS_FIELDS, Collections.<String>emptyList());
-		if (validationError(c, result, classId)) return;
-		String name = c.getString("name");
-		if (name != null && name.trim().isEmpty()) {
-			result.handle(new Either.Left<String, JsonObject>("invalid.empty.name"));
-			return;
-		}
-		String query;
-		c.putString("classId", classId);
-		if (name != null) {
-			query =
-					"match (c:`Class` { id : {classId}}), c<-[:DEPENDS]-(sg:ClassStudentGroup), " +
-					"c<-[:DEPENDS]-(tg:ClassTeacherGroup), c<-[:DEPENDS]-(rg:ClassRelativeGroup) " +
-					"SET " + nodeSetPropertiesFromJson("c", c) +
-					", sg.name = {studentName}, tg.name = {teacherName}, rg.name = {relativeName}";
-			c.putString("studentName", name + "_ELEVE");
-			c.putString("teacherName", name + "_ENSEIGNANT");
-			c.putString("relativeName", name + "_PERSRELELEVE");
-		} else {
-			query = "match (c:`Class` { id : {classId}) SET " + nodeSetPropertiesFromJson("c", c);
-		}
-		neo.execute(query, c, validUniqueResultHandler(result));
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-update-class")
+				.putString("classId", classId)
+				.putObject("data", classe);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
 	}
 
 	@Override
-	public void findUsers(String classId, UserService.UserType[] expectedTypes,
+	public void findUsers(String classId, JsonArray expectedTypes,
 						  Handler<Either<String, JsonArray>> results) {
-		StringBuilder type = new StringBuilder();
-		if (expectedTypes == null || expectedTypes.length < 1) {
-			type.append("m:User");
+		String filter;
+		JsonObject params = new JsonObject().putString("classId", classId);
+		if (expectedTypes == null || expectedTypes.size() < 1) {
+			filter = "";
 		} else {
-			for (UserService.UserType t : expectedTypes) {
-				type.append(" OR m:").append(t.name());
-			}
-			type.delete(0, 4);
+			filter = "WHERE p.name IN {expected} ";
+			params.putArray("expected", expectedTypes);
 		}
 		String query =
-				"MATCH (c:`Class` { id : {classId}})<-[:APPARTIENT]-(n:User)-[:EN_RELATION_AVEC*0..1]->(m) " +
-				"WHERE (" + type + ") " +
+				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
+				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
+				filter +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"m.login as login, m.activationCode as activationCode, m.birthDate as birthDate, " +
-				"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, m.blocked as blocked " +
+				"p.name as type, m.blocked as blocked " +
 				"ORDER BY type, lastName ";
-		neo.execute(query, new JsonObject().putString("classId", classId), validResultHandler(results));
+		neo.execute(query, params, validResultHandler(results));
 	}
 
 	@Override
@@ -150,8 +81,8 @@ public class DefaultClassService implements ClassService {
 			result.handle(new Either.Left<String, JsonObject>("invalid.userinfos"));
 			return;
 		}
-		neo.execute("MATCH (u:`User` {id : {id}}) RETURN HEAD(filter(x IN labels(u)" +
-				" WHERE x <> 'Visible' AND x <> 'User')) as type", new JsonObject().putString("id", userId),
+		neo.execute("MATCH (u:`User` {id : {id}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"RETURN p.name as type", new JsonObject().putString("id", userId),
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> r) {
@@ -159,23 +90,26 @@ public class DefaultClassService implements ClassService {
 						if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
 							String t = ((JsonObject)res.get(0)).getString("type");
 							String addRelativeToClassGroup = " ";
-							if ("Relative".equals(t)) {
-								result.handle(new Either.Left<String, JsonObject>("forbidden.add.relative.in.class"));
-								return;
-							} else if ("Student".equals(t)) {
-								addRelativeToClassGroup = ", p-[:APPARTIENT]->rg ";
+							if ("Student".equals(t)) {
+								addRelativeToClassGroup =
+										"WITH c, visibles, s " +
+										"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)" +
+										"-[:HAS_PROFILE]->(p:Profile {name : 'Relative'}), " +
+										"visibles-[:RELATED]->(relative:User)" +
+										"CREATE UNIQUE relative-[:IN]->cpg ";
 							}
 							String customReturn =
-									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cg:Class" + t + "Group), " +
-									"c<-[:DEPENDS]-(rg:ClassRelativeGroup), c-[:APPARTIENT]->(s:School) " +
+									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
+									"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {name : {profile}}), " +
+									"c-[:BELONGS]->(s:School) " +
 									"WHERE visibles.id = {uId} " +
-									"OPTIONAL MATCH visibles-[:EN_RELATION_AVEC]->(p:Relative) " +
-									"CREATE UNIQUE visibles-[:APPARTIENT]->cg, visibles-[:APPARTIENT]->c" +
+									"CREATE UNIQUE visibles-[:IN]->cpg " +
 									addRelativeToClassGroup +
 									"RETURN DISTINCT visibles.id as id, s.id as schoolId";
 							JsonObject params = new JsonObject()
 									.putString("classId", classId)
-									.putString("uId", userId);
+									.putString("uId", userId)
+									.putString("profile", t);
 							UserUtils.findVisibleUsers(eb, user.getUserId(), customReturn, params,
 									new Handler<JsonArray>() {
 
@@ -194,15 +128,6 @@ public class DefaultClassService implements ClassService {
 						}
 			}
 		});
-	}
-
-	private boolean validationError(JsonObject c,
-		Handler<Either<String, JsonObject>> result, String ... params) {
-		if (c == null) {
-			result.handle(new Either.Left<String, JsonObject>("school.invalid.fields"));
-			return true;
-		}
-		return validationParamsError(result, params);
 	}
 
 	private boolean validationParamsError(Handler<Either<String, JsonObject>> result, String ... params) {

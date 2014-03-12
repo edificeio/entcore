@@ -23,6 +23,8 @@ import java.util.Set;
 
 public class Directory extends Server {
 
+	public static final String FEEDER = "entcore.feeder";
+
 	@Override
 	public void start() {
 		super.start();
@@ -43,7 +45,6 @@ public class Directory extends Server {
 		directoryController.get("/admin", "directory")
 				.post("/import", "launchImport")
 				.get("/annuaire", "annuaire")
-				.get("/testbe1d", "testBe1d")
 				.get("/api/ecole", "school")
 				.get("/api/classes", "classes")
 				.get("/api/personnes", "people")

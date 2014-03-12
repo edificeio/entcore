@@ -54,7 +54,7 @@ User.prototype.saveInfos = function(){
 		address: this.address,
 		email: this.email,
 		homePhone: this.homePhone,
-		birthDate: moment(this.birthDate).format('YYYY-MM-DD')
+		birthDate: moment(this.birthDate).format('DD/MM/YYYY')
 	};
 	if(this.type === 'Relative'){
 		userData.childrenIds = _.map(this.relatives, function(user){
@@ -82,7 +82,7 @@ User.prototype.saveAccount = function(cb){
 		lastName : this.lastName,
 		firstName: this.firstName,
 		type: this.type,
-		birthDate: moment(this.birthDate).format('YYYY-MM-DD')
+		birthDate: moment(this.birthDate).format('DD/MM/YYYY')
 	};
 	if(this.type === 'Relative'){
 		accountData.childrenIds = _.map(this.relatives, function(user){
@@ -235,7 +235,7 @@ function Directory(){
 			this.loading = true;
 			http().get('/userbook/api/search?name=' + searchTerm).done(function(result){
 				that.loading = false;
-				that.load(_.map(result.result, function(user){
+				that.load(_.map(result, function(user){
 					if(!user.mood){
 						user.mood = 'default';
 					}

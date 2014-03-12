@@ -1,23 +1,20 @@
 package org.entcore.directory.controllers;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
-import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
-import static org.entcore.common.appregistry.AppRegistryEvents.USER_GROUP_UPDATED;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-import static org.entcore.directory.be1d.BE1DConstants.*;
 
 import java.util.*;
 
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultClassService;
 import org.entcore.directory.services.impl.DefaultSchoolService;
+import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -30,16 +27,8 @@ import org.vertx.java.platform.Container;
 
 import fr.wseduc.webutils.collections.Joiner;
 
-import org.entcore.datadictionary.dictionary.DefaultDictionary;
-import org.entcore.datadictionary.dictionary.Dictionary;
-import org.entcore.datadictionary.generation.ActivationCodeGenerator;
-import org.entcore.datadictionary.generation.DisplayNameGenerator;
-import org.entcore.datadictionary.generation.IdGenerator;
-import org.entcore.datadictionary.generation.LoginGenerator;
-import org.entcore.directory.be1d.BE1D;
 import org.entcore.directory.profils.DefaultProfils;
 import org.entcore.directory.profils.Profils;
-import org.entcore.directory.users.UserQueriesBuilder;
 import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.security.BCrypt;
@@ -51,48 +40,22 @@ public class DirectoryController extends Controller {
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
-	private Dictionary d;
 	private Profils p;
-	private final ActivationCodeGenerator activationGenerator;
-	private final IdGenerator idGenerator;
-	private final LoginGenerator loginGenerator;
-	private final DisplayNameGenerator displayNameGenerator;
 	private final SchoolService schoolService;
 	private final ClassService classService;
+	private final UserService userService;
 
 	public DirectoryController(Vertx vertx, Container container,
 		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions, JsonObject config) {
 			super(vertx, container, rm, securedActions);
 			this.neo = new Neo(eb,log);
 			this.config = config;
-			this.d = new DefaultDictionary(vertx, container, "aaf-dictionary.json");
 			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 			this.p = new DefaultProfils(neo);
-			this.schoolService = new DefaultSchoolService(neo);
+			this.schoolService = new DefaultSchoolService(neo, eb);
 			this.classService = new DefaultClassService(neo, eb);
-			loginGenerator = new LoginGenerator();
-			activationGenerator = new ActivationCodeGenerator();
-			idGenerator = new IdGenerator();
-			displayNameGenerator = new DisplayNameGenerator();
-			loadUsedLogin();
+			this.userService = new DefaultUserService(neo, null, eb);
 		}
-
-	private void loadUsedLogin() {
-		String query = "MATCH (u:User) RETURN u.login as login";
-		neo.send(query, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
-					Set<String> login = new HashSet<>();
-					JsonObject res = event.body().getObject("result");
-					for (String attr : res.getFieldNames()) {
-						login.add(res.getObject(attr).getString("login", ""));
-					}
-					LoginGenerator.setUsedLogin(login);
-				}
-			}
-		});
-	}
 
 	@SecuredAction("directory.view")
 	public void directory(HttpServerRequest request) {
@@ -110,20 +73,9 @@ public class DirectoryController extends Controller {
 		renderView(request, null, "annuaire.html", null);
 	}
 
-	@SecuredAction("directory.be1d")
-	public void testBe1d(final HttpServerRequest r) {
-		new BE1D(vertx, container, config.getString("test-be1d-folder","/opt/one/be1d")).importPorteur(
-				new Handler<JsonArray>() {
-					@Override
-					public void handle(JsonArray m) {
-						renderJson(r, m);
-					}
-				});
-	}
-
 	@SecuredAction("directory.authent")
 	public void school(HttpServerRequest request) {
-		neo.send("MATCH (n:School) RETURN distinct n.name as name, n.id as id", request.response());
+		neo.send("MATCH (n:Structure) RETURN distinct n.name as name, n.id as id", request.response());
 	}
 
 	@SecuredAction("directory.school.create")
@@ -189,7 +141,7 @@ public class DirectoryController extends Controller {
 	public void classes(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("id",request.params().get("id"));
-		neo.send("MATCH (n:School)<-[:APPARTIENT]-(m:Class) " +
+		neo.send("MATCH (n:Structure)<-[:BELONGS]-(m:Class) " +
 				"WHERE n.id = {id} " +
 				"RETURN distinct m.name as name, m.id as classId, n.id as schoolId",
 				params, request.response());
@@ -204,9 +156,10 @@ public class DirectoryController extends Controller {
 		if (expectedTypes != null && !expectedTypes.isEmpty()) {
 			types = "AND (m:" + Joiner.on(" OR m:").join(expectedTypes) + ") ";
 		}
-		neo.send("MATCH (n:Class)<-[:APPARTIENT]-u-[:EN_RELATION_AVEC*0..1]->(m:User) "
+		neo.send("MATCH (n:Class)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]->(m:User) "
 				+ "WHERE n.id = {classId} " + types
-				+ "RETURN distinct m.id as userId, HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type, "
+				+ "OPTIONAL MATCH g-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
+				+ "RETURN distinct m.id as userId, p.name as type, "
 				+ "m.activationCode as code, m.firstName as firstName,"
 				+ "m.lastName as lastName, n.id as classId "
 				+ "ORDER BY type DESC ", params, request.response());
@@ -230,70 +183,40 @@ public class DirectoryController extends Controller {
 			@Override
 			protected void handle() {
 				final String classId = request.formAttributes().get("classId");
-				String firstname = request.formAttributes().get("firstname");
-				String lastname = request.formAttributes().get("lastname");
-				String type = request.formAttributes().get("type");
-				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
-				if (classId != null && !classId.trim().isEmpty() &&
-						firstname != null && !firstname.trim().isEmpty() &&
-						lastname != null && !lastname.trim().isEmpty() &&
-						type != null && !type.trim().isEmpty()) {
-					final String userId = UUID.randomUUID().toString();
-					final JsonObject user = new JsonObject()
-							.putString("id", userId)
-							.putString(ENTEleveCycle, "")
-							.putString(ENTEleveNiveau, "")
-							.putString(ENTPersonAdresse, "")
-							.putString(ENTPersonCivilite, "")
-							.putString(ENTPersonCodePostal, "")
-							.putString(ENTPersonMail, "")
-							.putString(ENTPersonNomPatro, "")
-							.putString(ENTPersonPays, "")
-							.putString(ENTPersonTelPerso, "")
-							.putString(ENTPersonVille, "")
-							.putString(ENTPersRelEleveTelMobile, "")
-							.putString(ENTPersonClasses, classId)
-							.putString(ENTPersonNom, lastname)
-							.putString(ENTPersonPrenom, firstname)
-							.putString(ENTPersonIdentifiant, idGenerator.generate())
-							.putString(ENTPersonLogin, loginGenerator.generate(firstname, lastname))
-							.putString(ENTPersonNomAffichage, displayNameGenerator.generate(firstname, lastname))
-							.putString("activationCode", activationGenerator.generate());
-					UserQueriesBuilder uqb = new UserQueriesBuilder();
-					uqb.createUser(user, type)
-							.linkClass(userId, classId)
-							.linkSchool(userId, classId);
-					if ("Relative".equals(type) && childrenIds != null && !childrenIds.isEmpty()) {
-						uqb.linkChildrens(userId, childrenIds);
-					}
-					uqb.linkGroupProfils(userId, type);
-					neo.sendBatch(uqb.build(), new Handler<Message<JsonObject>>() {
-
-						@Override
-						public void handle(Message<JsonObject> res) {
-							if ("ok".equals(res.body().getString("status"))) {
-								schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
-									@Override
-									public void handle(Either<String, JsonObject> s) {
-										if (s.isRight()) {
-											JsonObject j = new JsonObject()
-													.putString("action", "setDefaultCommunicationRules")
-													.putString("schoolId", s.right().getValue().getString("id"));
-											eb.send("wse.communication", j);
-										}
-									}
-								});
-								JsonArray a = new JsonArray().addString(userId);
-								ApplicationUtils.publishModifiedUserGroup(eb, a);
-								renderJson(request, res.body());
-							} else {
-								renderError(request, res.body());
-							}
-						}
-					});
-				} else {
-					badRequest(request);
+				JsonObject user = new JsonObject()
+						.putString("firstName", request.formAttributes().get("firstname"))
+						.putString("lastName", request.formAttributes().get("lastname"))
+						.putString("type", request.formAttributes().get("type"));
+				String birthDate = request.formAttributes().get("birthDate");
+				if (birthDate != null && !birthDate.trim().isEmpty()) {
+					user.putString("birthDate", birthDate);
 				}
+				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
+				user.putArray("childrenIds", new JsonArray(childrenIds.toArray()));
+				userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> res) {
+						if (res.isRight()) {
+							JsonObject r = res.right().getValue();
+							schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> s) {
+									if (s.isRight()) {
+										JsonObject j = new JsonObject()
+												.putString("action", "setDefaultCommunicationRules")
+												.putString("schoolId", s.right().getValue().getString("id"));
+										eb.send("wse.communication", j);
+									}
+								}
+							});
+							JsonArray a = new JsonArray().addString(r.getString("id"));
+							ApplicationUtils.publishModifiedUserGroup(eb, a);
+							renderJson(request, r);
+						} else {
+							leftToResponse(request, res.left());
+						}
+					}
+				});
 			}
 		});
 	}
@@ -311,11 +234,12 @@ public class DirectoryController extends Controller {
 					+ "ORDER BY type, login ";
 		} else if (request.params().get("id") != null) {
 			neoRequest =
-					"MATCH (m:User)-[:APPARTIENT]->g-[:DEPENDS]->n " +
-					"WHERE (n:School OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
+					"MATCH (m:User)-[:IN]->g-[:DEPENDS]->n " +
+					"OPTIONAL MATCH g-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE (n:Structure OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
 					"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
 					"m.login as login, m.activationCode as activationCode, " +
-					"HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
+					"p.name as type " +
 					"ORDER BY type, login ";
 			params.put("id", request.params().get("id"));
 		} else {
@@ -349,16 +273,19 @@ public class DirectoryController extends Controller {
 	}
 
 	public void createSuperAdmin(){
-		neo.send("MATCH (n:SuperAdmin) "
+		neo.send("MATCH (n:User)-[:IN]->(fg:FunctionGroup)-[:HAS_FUNCTION]->(f:Function { externalId : 'SUPER_ADMIN'}) "
 			+ "WHERE n.id = '" + admin.getString("id") + "' "
 			+ "WITH count(*) AS exists "
 			+ "WHERE exists=0 "
-			+ "CREATE (m:SuperAdmin:User {id:'" + admin.getString("id") + "', "
+			+ "CREATE (m:User {id:'" + admin.getString("id") + "', "
+			+ "externalId:'" + UUID.randomUUID().toString() + "', "
 			+ "lastName:'"+ admin.getString("firstname") +"', "
 			+ "firstName:'"+ admin.getString("lastname") +"', "
 			+ "login:'"+ admin.getString("login") +"', "
 			+ "displayName:'"+ admin.getString("firstname") +" " + admin.getString("lastname") +"', "
-			+ "password:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})");
+			+ "password:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})" +
+			"-[:IN]->(fg:FunctionGroup)-[:HAS_FUNCTION]->" +
+			"(f:Function { externalId : 'SUPER_ADMIN', name : 'SuperAdmin' })");
 	}
 
 	public void directoryHandler(final Message<JsonObject> message) {

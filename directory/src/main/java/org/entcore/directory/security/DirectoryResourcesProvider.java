@@ -70,8 +70,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String query =
-				"MATCH (t:`Teacher` { id : {teacherId}})-[:APPARTIENT]->(c:Class)" +
-				"<-[:APPARTIENT]-(s:User)-[:EN_RELATION_AVEC*0..1]->(u:User {id: {userId}}) " +
+				"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id: {userId}}) " +
 				"RETURN count(*) >= 1 as exists ";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
@@ -98,7 +98,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String query =
-				"MATCH (c:`Class` { id : {classId}})<-[:APPARTIENT]-(t:`Teacher` { id : {teacherId}}) " +
+				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+				"<-[:IN]-(t:`User` { id : {teacherId}}) " +
 				"RETURN count(*) = 1 as exists ";
 		JsonObject params = new JsonObject()
 				.putString("classId", classId)

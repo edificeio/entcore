@@ -145,7 +145,7 @@ var admin = function(){
 				var form = $(o.target).parents("form");
 				$.post(form.attr("action"), form.serialize())
 				.done(function(response) {
-					if (response.status === "ok") {
+					if (response.hasOwnProperty("id")) {
 						$('#people-' + form.children("input[name='classId']").attr("value")).empty();
 						app.notify.done(app.i18n.bundle["directory.admin.user.created"]);
 					} else {
