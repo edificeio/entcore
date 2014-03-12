@@ -123,5 +123,7 @@
 		"activationCode" : {"generator":"activationCode", "args":["password"]}
 	},
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName"],
-	"modifiable" : []
+	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
+		"otherNames", "address", "postbox", "zipCode", "city", "country", "homePhone",
+		"workPhone", "mobile", "email", "birthDate"]
 }

@@ -1,9 +1,10 @@
 package org.entcore.feeder.utils;
 
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.*;
@@ -32,6 +33,7 @@ public class Validator {
 	private final JsonObject validate;
 	private final JsonObject generate;
 	private final JsonArray required;
+	private final JsonArray modifiable;
 
 	public Validator(JsonObject schema) {
 		if (schema == null || schema.size() == 0) {
@@ -40,7 +42,8 @@ public class Validator {
 		this.validate = schema.getObject("validate");
 		this.generate = schema.getObject("generate");
 		this.required = schema.getArray("required");
-		if (validate == null || generate == null || required == null) {
+		this.modifiable = schema.getArray("modifiable");
+		if (validate == null || generate == null || required == null || modifiable == null) {
 			throw new IllegalArgumentException("Invalid schema.");
 		}
 	}
@@ -96,6 +99,41 @@ public class Validator {
 		}
 		generate(object);
 		return required(object);
+	}
+
+	public String modifiableValidate(JsonObject object) {
+		if (object == null) {
+			return "Null object.";
+		}
+		final Set<String> attributes = new HashSet<>(object.getFieldNames());
+		for (String attr : attributes) {
+			JsonObject v = validate.getObject(attr);
+			if (v == null || !modifiable.contains(attr)) {
+				object.removeField(attr);
+			} else {
+				Object value = object.getValue(attr);
+				String validator = v.getString("validator");
+				String type = v.getString("type", "");
+				String err;
+				switch (type) {
+					case "string" :
+						err = validString(attr, value, validator);
+						break;
+					case "array-string" :
+						err = validStringArray(attr, value, validator);
+						break;
+					case "boolean" :
+						err = validBoolean(attr, value);
+						break;
+					default:
+						err = "Missing type validator: " + type;
+				}
+				if (err != null) {
+					return err;
+				}
+			}
+		}
+		return (object.size() > 0) ? null : "Empty object.";
 	}
 
 	private void checksum(JsonObject object, String values) throws NoSuchAlgorithmException {
@@ -240,6 +278,26 @@ public class Validator {
 		} else {
 			return "Attribute " + attr + " contains an invalid value: " + value;
 		}
+	}
+
+	public static void initLogin(Neo4j neo4j) {
+		logins.clear();
+		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";
+		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonArray r = message.body().getArray("result");
+				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
+					JsonArray l = ((JsonObject) r.get(0)).getArray("logins");
+					if (l != null) {
+						for (Object o : l) {
+							if (!(o instanceof String)) continue;
+							logins.add((String) o);
+						}
+					}
+				}
+			}
+		});
 	}
 
 }

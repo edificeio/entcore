@@ -1,7 +1,6 @@
 package org.entcore.feeder.utils;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -40,6 +39,10 @@ public class TransactionHelper {
 			}
 		}
 
+	}
+
+	public TransactionHelper(Neo4j neo4j) {
+		this(neo4j, 1000);
 	}
 
 	public TransactionHelper(Neo4j neo4j, int statementNumber) {

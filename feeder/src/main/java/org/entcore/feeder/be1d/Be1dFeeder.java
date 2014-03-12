@@ -27,15 +27,15 @@ public class Be1dFeeder implements Feed {
 	private static final Logger log = LoggerFactory.getLogger(Be1dFeeder.class);
 	private static final String [] fileNames = new String[]
 			{"CSVExtraction-eleves.csv", "CSVExtraction-enseignants.csv", "CSVExtraction-responsables.csv"};
-	private static final String [] studentHeader = new String[] { "lastName", "surname", "firstName",
+	public static final String [] studentHeader = new String[] { "lastName", "surname", "firstName",
 			"birthDate", "gender", "address", "zipCode", "city", "country", "#skip#", "#skip#",
 			"#skip#", "#skip#", "sector", "level", "classes", "#break#" };
-	private static final String [] relativeHeader = new String[] { "title", "surname", "lastName", "firstName",
+	public static final String [] relativeHeader = new String[] { "title", "surname", "lastName", "firstName",
 			"address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
 			"#skip#", "mobile" };
 	private static final String [] personnelHeader = new String[] { "title", "surname", "lastName", "firstName",
 			"address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
-	private static final Pattern be1dDatePattern = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
+	public static final Pattern be1dDatePattern = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
 	private final Vertx vertx;
 	private final String path;
 	private final String separator;
