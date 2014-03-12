@@ -41,11 +41,11 @@ public class GroupProfil {
 			if (getId() != null && getId().equals(groupProfil.getId())) {
 				// communication au sein du groupe
 				query =
-					"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(m:User) " +
+					"MATCH (n:ProfileGroup)<-[:IN]-(m:User) " +
 					"WHERE n.id = {id} " +
 					"CREATE UNIQUE m-[:COMMUNIQUE]->n ";
 				String query2 =
-						"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(m:User) " +
+						"MATCH (n:ProfileGroup)<-[:IN]-(m:User) " +
 						"WHERE n.id = {id} " +
 						"CREATE UNIQUE m<-[:COMMUNIQUE]-n ";
 				params.put("id", getId());
@@ -71,11 +71,11 @@ public class GroupProfil {
 		if (groupsIds != null) {
 			Map<String, Object> params = new HashMap<>();
 			String query =
-					"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(e:Student)-[:EN_RELATION_AVEC]->(p:Relative) " +
+					"MATCH (n:ProfileGroup)<-[:IN]-(e:Student)-[:RELATED]->(p:Relative) " +
 					"WHERE n.id IN ['" + Joiner.on("','").join(groupsIds) + "'] " +
 					"CREATE UNIQUE e-[:COMMUNIQUE_DIRECT]->p";
 			String query2 =
-					"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(e:Student)-[:EN_RELATION_AVEC]->(p:Relative) " +
+					"MATCH (n:ProfileGroup)<-[:IN]-(e:Student)-[:RELATED]->(p:Relative) " +
 					"WHERE n.id IN ['" + Joiner.on("','").join(groupsIds) + "'] " +
 					"CREATE UNIQUE e<-[:COMMUNIQUE_DIRECT]-p";
 			queries.addObject(toJsonObject(query, params)).addObject(toJsonObject(query2, params));

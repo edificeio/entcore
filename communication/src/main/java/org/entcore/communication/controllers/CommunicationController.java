@@ -46,7 +46,11 @@ public class CommunicationController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					listVisiblesSchools(user.getUserId(), user.getType(), new Handler<JsonArray>() {
+					JsonArray functions = null;
+					if (user.getFunctionCodes() != null) {
+						functions = new JsonArray(user.getFunctionCodes().toArray());
+					}
+					listVisiblesStructures(user.getUserId(), user.getType(), functions, new Handler<JsonArray>() {
 
 						@Override
 						public void handle(JsonArray event) {
@@ -231,14 +235,18 @@ public class CommunicationController extends Controller {
 		});
 	}
 
-	@SecuredAction("communication.list.schools")
-	public void listVisiblesSchools(final HttpServerRequest request) {
+	@SecuredAction("communication.list.structures")
+	public void listVisiblesStructures(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					listVisiblesSchools(user.getUserId(), user.getType(), new Handler<JsonArray>() {
+					JsonArray functions = null;
+					if (user.getFunctionCodes() != null) {
+						functions = new JsonArray(user.getFunctionCodes().toArray());
+					}
+					listVisiblesStructures(user.getUserId(), user.getType(), functions, new Handler<JsonArray>() {
 
 						@Override
 						public void handle(JsonArray event) {
@@ -252,11 +260,12 @@ public class CommunicationController extends Controller {
 		});
 	}
 
-	public void listVisiblesSchools(final Message<JsonObject> message) {
+	public void listVisiblesStructures(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
 		String userType = message.body().getString("userType");
+		JsonArray functions = message.body().getArray("userFunctions");
 		if (userId != null && !userId.trim().isEmpty()) {
-			listVisiblesSchools(userId, userType, new Handler<JsonArray>() {
+			listVisiblesStructures(userId, userType, functions, new Handler<JsonArray>() {
 
 				@Override
 				public void handle(JsonArray event) {
@@ -268,16 +277,16 @@ public class CommunicationController extends Controller {
 		}
 	}
 
-	private void listVisiblesSchools(String userId, String userType,
+	private void listVisiblesStructures(String userId, String userType, JsonArray functions,
 			final Handler<JsonArray> handler) {
 		String query;
 		Map<String, Object> params = new HashMap<>();
-		if (!"SuperAdmin".equals(userType)) {
-			query = "MATCH (m:User)-[:COMMUNIQUE]->g-[:DEPENDS*1..2]->(n:School) " +
+		if (functions != null && functions.contains("SUPER_ADMIN")) {
+			query = "MATCH (n:Structure) ";
+		} else {
+			query = "MATCH (m:User)-[:COMMUNIQUE]->g-[:DEPENDS*1..2]->(n:Structure) " +
 					"WHERE m.id = {userId} ";
 			params.put("userId", userId);
-		} else {
-			query = "MATCH (n:School) ";
 		}
 		query += "RETURN n.id as id, n.name as name, HEAD(labels(n)) as type";
 		neo.send(query, params, new Handler<Message<JsonObject>>() {
@@ -379,7 +388,7 @@ public class CommunicationController extends Controller {
 		Map<String, Object> params = new HashMap<>();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
 		if (schoolId != null && !schoolId.trim().isEmpty()) {
-			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:School {id:{schoolId}})"); //TODO manage leaf
+			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", schoolId);
 		} else {
 			String l = (myGroup) ? "" : " AND length(p) >= 2";
@@ -400,14 +409,13 @@ public class CommunicationController extends Controller {
 			}
 			query.append(types.substring(4)).append(") ");
 		}
+		query.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
-			query.append("WITH DISTINCT m as visibles ");
+			query.append("WITH DISTINCT m as visibles, profile ");
 			query.append(customReturn);
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
-				+ "m.login as login, m.displayName as username, "
-				+ "HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User' AND x <> 'ProfileGroup' "
-				+ "AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type, "
+				+ "m.login as login, m.displayName as username, profile.name as type, "
 				+ "m.lastName as lastName, m.firstName as firstName "
 				+ "ORDER BY name, username ");
 		}
@@ -433,8 +441,9 @@ public class CommunicationController extends Controller {
 				"MATCH p=(n:User)<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-(m:User) " +
 				"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
+				"OPTIONAL MATCH m-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				"RETURN distinct m.id as id, m.login as login, " +
-				"m.displayName as username, HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type " +
+				"m.displayName as username, profile.name as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
@@ -455,9 +464,8 @@ public class CommunicationController extends Controller {
 		String query =
 				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:ProfileGroup) " +
 				"WHERE n.id = {userId} " +
-				"RETURN distinct gp.id as id, gp.name as name, " +
-				"HEAD(filter(x IN labels(gp) WHERE x <> 'Visible' AND x <> 'ProfileGroup' " +
-				"AND x <> 'ClassProfileGroup' AND x <> 'SchoolProfileGroup')) as type " +
+				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"RETURN distinct gp.id as id, gp.name as name, profile.name as type " +
 				"ORDER BY type DESC, name ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("userId", userId);
@@ -478,10 +486,11 @@ public class CommunicationController extends Controller {
 			final Handler<JsonArray> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
 		String query =
-				"MATCH (n:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"MATCH (n:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE n.id = {groupId} " + condition +
+				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				"RETURN distinct u.id as id, u.login as login," +
-				" u.displayName as username, HEAD(filter(x IN labels(u) WHERE x <> 'Visible' AND x <> 'User')) as type " +
+				" u.displayName as username, profile.name as type " +
 				"ORDER BY username ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("groupId", profilGroupId);
@@ -538,27 +547,45 @@ public class CommunicationController extends Controller {
 		}
 		for (Object o: r) {
 			if (!(o instanceof String) || ((String) o).trim().isEmpty()) continue;
-			if (((String) o).contains("EN_RELATION_AVEC")) {
+			if (((String) o).contains("RELATED")) {
 				b.add("MATCH " + o + " CREATE UNIQUE start-[:COMMUNIQUE_DIRECT]->end", params);
-					//"(s:School)<-[:APPARTIENT*2]-(n:Student)-[:EN_RELATION_AVEC]->(m:Relative)"
 			} else {
-				if (((String) o).contains("Class")) {
+				if (((String) o).contains("endProfile")) {
 					b.add(
-						"MATCH (s:School)<-[:APPARTIENT]-(c:Class), " + o + " " +
-						//"(n:ClassStudentGroup)-[:DEPENDS]->c<-[:DEPENDS]-(m:ClassTeacherGroup)"
-						"WHERE s.id = {schoolId} " +
+						"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
+						"c<-[:DEPENDS]-(startClassGroup:ProfileGroup)-[:DEPENDS]->" +
+						"(startStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(startProfile:Profile), " +
+						"c<-[:DEPENDS]-(endClassGroup:ProfileGroup)-[:DEPENDS]->" +
+						"(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
+						"WHERE s.id = {schoolId} " + o +
 						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
 					);
-				} else {
+				} else if (((String) o).contains("userClass")) {
 					b.add(
-						"MATCH (s:School), " + o + " " +
-						 //"(n:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(m:SchoolStudentGroup)"
-						"WHERE s.id = {schoolId} " +
+						"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
+						"c<-[:DEPENDS]-(classGroup:ProfileGroup)-[:DEPENDS]->" +
+						"(structureGroup:ProfileGroup)-[:HAS_PROFILE]-(profile:Profile), " +
+						"classGroup<-[:IN]-(userClass:User) " +
+						"WHERE s.id = {schoolId} " + o +
+						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+					);
+				} else if (((String) o).contains("userStructure")) {
+					b.add(
+						"MATCH (s:Structure)<-[:DEPENDS]-(structureGroup:ProfileGroup)" +
+						"-[:HAS_PROFILE]-(profile:Profile), " +
+						"structureGroup<-[:IN]-(userStructure:User) " +
+						"WHERE s.id = {schoolId} " + o +
 						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
 					);
 				}
 			}
 		}
+		b.add(
+			"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+			"WHERE s.id = {schoolId} AND NOT(v:Visible) " +
+			"WITH DISTINCT v " +
+			"SET v:Visible ", params
+		);
 		neo.executeTransaction(b.build(), null, true, handler);
 	}
 
@@ -592,9 +619,10 @@ public class CommunicationController extends Controller {
 			return;
 		}
 		String query =
-				"MATCH (s:School)<-[:DEPENDS*1..2]-(g:ProfileGroup)-[r:COMMUNIQUE]-() " +
+				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)-[r:COMMUNIQUE]-() " +
 				"WHERE s.id = {schoolId} " +
-				"OPTIONAl MATCH s<-[:APPARTIENT]-(c:Class)<-[:APPARTIENT]-(u:User)-[r1:COMMUNIQUE_DIRECT]-() " +
+				"OPTIONAl MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]" +
+				"-(u:User)-[r1:COMMUNIQUE_DIRECT]->() " +
 				"DELETE r, r1";
 		neo.execute(query, new JsonObject().putString("schoolId", schoolId), request.response());
 	}

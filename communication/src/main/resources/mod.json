@@ -5,19 +5,17 @@
 	"mode": "dev",
 	"address" : "wse.communication",
 	"defaultCommunicationRules" : [
-	    "(s:School)<-[:APPARTIENT*2]-(start:Student)-[:EN_RELATION_AVEC]->(end:Relative)",
-	    "(start:ClassStudentGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassTeacherGroup)",
-	    "(start:ClassRelativeGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassStudentGroup)",
-	    "(start:ClassRelativeGroup)-[:DEPENDS]->c<-[:DEPENDS]-(end:ClassTeacherGroup)",
-	    "(start:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(end:SchoolStudentGroup)",
-	    "(start:SchoolTeacherGroup)-[:DEPENDS]->s<-[:DEPENDS]-(end:SchoolRelativeGroup)",
-	    "c<-[:DEPENDS]-(start:ClassRelativeGroup), s<-[:DEPENDS]-(end:SchoolPrincipalGroup)",
-	    "s<-[:DEPENDS*2]-(start:ClassProfileGroup)<-[:APPARTIENT]-(end:User)",
-	    "s<-[:DEPENDS*2]-(end:ClassProfileGroup)<-[:APPARTIENT]-(start:User)",
-	    "s<-[:DEPENDS]-(start:SchoolTeacherGroup)<-[:APPARTIENT]-(end:User)",
-	    "s<-[:DEPENDS]-(end:SchoolTeacherGroup)<-[:APPARTIENT]-(start:User)",
-	    "s<-[:DEPENDS]-(start:SchoolStudentGroup)<-[:APPARTIENT]-(end:User)",
-	    "s<-[:DEPENDS]-(start:SchoolRelativeGroup)<-[:APPARTIENT]-(end:User)",
-	    "s<-[:DEPENDS]-(start:SchoolPrincipalGroup)<-[:APPARTIENT]-(end:User)"
+	    "(s:Structure)<-[:ADMINISTRATIVE_ATTACHMENT]-(start:User)-[:RELATED]->(end:User)",
+	    "AND startProfile.name = 'Student' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
+	    "AND startProfile.name = 'Relative' AND endProfile.name = 'Student' WITH startClassGroup as start, endClassGroup as end ",
+	    "AND startProfile.name = 'Relative' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
+	    "AND startProfile.name = 'Teacher' AND endProfile.name = 'Student' WITH startStructureGroup as start, endStructureGroup as end ",
+	    "AND startProfile.name = 'Teacher' AND endProfile.name = 'Relative' WITH startStructureGroup as start, endStructureGroup as end ",
+		"AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as start, userClass as end ",
+		"AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as end, userClass as start ",
+		"AND profile.name = 'Teacher' WITH structureGroup as start, userStructure as end ",
+		"AND profile.name = 'Teacher' WITH structureGroup as end, userStructure as start ",
+		"AND profile.name = 'Student' WITH structureGroup as start, userStructure as end ",
+		"AND profile.name = 'Relative' WITH structureGroup as start, userStructure as end "
 	]
 }
