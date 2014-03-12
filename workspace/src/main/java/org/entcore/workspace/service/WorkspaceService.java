@@ -1381,7 +1381,7 @@ public class WorkspaceService extends Controller {
 	@SecuredAction("workspace.rack.available.users")
 	public void rackAvailableUsers(final HttpServerRequest request) {
 		String customReturn =
-				"MATCH visibles-[:APPARTIENT]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
+				"MATCH visibles-[:IN]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
 				"WHERE has(a.name) AND a.name={action} " +
 				"RETURN distinct visibles.id as id, visibles.displayName as username " +
 				"ORDER BY username ";
