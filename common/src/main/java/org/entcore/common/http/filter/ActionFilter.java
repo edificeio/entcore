@@ -121,7 +121,7 @@ public class ActionFilter implements Filter {
 				}
 			}
 		}
-		if ("SuperAdmin".equals(session.getString("type"))) {
+		if (session.getArray("functionCodes", new JsonArray()).contains("SUPER_ADMIN")) {
 			handler.handle(true);
 			return;
 		}

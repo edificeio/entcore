@@ -94,6 +94,7 @@ public class UserInfos {
 	private List<Application> apps;
 	private List<String> profilGroupsIds;
 	private List<String> classes;
+	private List<String> functionCodes;
 
 	public String getUserId() {
 		return userId;
@@ -205,6 +206,14 @@ public class UserInfos {
 
 	public void setClasses(List<String> classes) {
 		this.classes = classes;
+	}
+
+	public List<String> getFunctionCodes() {
+		return functionCodes;
+	}
+
+	public void setFunctionCodes(List<String> functionCodes) {
+		this.functionCodes = functionCodes;
 	}
 
 }
