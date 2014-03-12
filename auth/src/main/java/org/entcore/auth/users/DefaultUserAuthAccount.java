@@ -95,7 +95,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"SET n.resetCode = {resetCode} " +
 				"RETURN n.email as email";
 		final String query2 =
-				"MATCH (n:Student)-[:APPARTIENT]->(m:Class)<-[:APPARTIENT]-(p:Teacher) " +
+				"MATCH (n:User)-[:IN]->(sg:ProfileGroup)-[:DEPENDS]->(m:Class)" +
+				"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
+				"sg<-[:DEPENDS]-(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
+				"tg<-[:DEPENDS]-(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}), " +
 				"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN p.email as email";

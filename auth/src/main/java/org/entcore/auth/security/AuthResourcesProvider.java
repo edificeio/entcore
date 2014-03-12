@@ -44,7 +44,7 @@ public class AuthResourcesProvider implements ResourcesProvider {
 	private void isClassTeacher(final HttpServerRequest request, UserInfos user,
 			final Handler<Boolean> handler) {
 		request.pause();
-		if ("SuperAdmin".equals(user.getType())) {
+		if (user.getFunctionCodes() != null && user.getFunctionCodes().contains("SUPER_ADMIN")) {
 			handler.handle(true);
 			return;
 		}
@@ -54,8 +54,8 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String query =
-				"MATCH (t:`Teacher` { id : {teacherId}})-[:APPARTIENT]->(c:Class)" +
-				"<-[:APPARTIENT]-(s:User)-[:EN_RELATION_AVEC*0..1]->(u:User {id : {id}}) " +
+				"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
 				"RETURN count(*) >= 1 as exists ";
 		JsonObject params = new JsonObject()
 				.putString("id", id)
@@ -79,7 +79,7 @@ public class AuthResourcesProvider implements ResourcesProvider {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				if ("SuperAdmin".equals(user.getType())) {
+				if (user.getFunctionCodes() != null && user.getFunctionCodes().contains("SUPER_ADMIN")) {
 					handler.handle(true);
 					return;
 				}
@@ -89,8 +89,8 @@ public class AuthResourcesProvider implements ResourcesProvider {
 					return;
 				}
 				String query =
-						"MATCH (t:`Teacher` { id : {teacherId}})-[:APPARTIENT]->(c:Class)" +
-						"<-[:APPARTIENT]-(s:User)-[:EN_RELATION_AVEC*0..1]->(u:User {login : {login}}) " +
+						"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+						"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
 						"RETURN count(*) >= 1 as exists ";
 				JsonObject params = new JsonObject()
 						.putString("login", login)
