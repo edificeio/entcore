@@ -1,6 +1,23 @@
 ONE : Notes de versions
 =======================
 
+# v1.5.1
+
+## Améliorations mineures
+
+* \#910 : [Portail] Ajouter une alerte sur le nombre de messages reçus
+* \#919 : [Blog] Espacer l'affichage du titre et de l'auteur d'un blog (dans la vignette)
+* \#800 : [Messagerie] Suppression du tooltip sur l'éditeur de message
+* \#1026 : [Directory] Adapter le message de confirmation de création de compte
+* \#1017 : API de collecte / stockage des préférences utilisateur indépendantes des application
+
+## Anomalies corrigées
+* \#727 : [Espace Dcoumentaire] Tri sur le champ Titre ne fonctionne pas avec les fichiers comportant des accents
+* \#924 [Ressources externes] Accès des élèves sans niveau à Maxicours
+* \#1036 : [Quoi de neuf] - Problème avec les notifications du cahier multimédia (QuikFix)
+* \#1019 : [Messagerie] création de l'utilisateur après la création des rôles de la classe
+* \#1020 : [Administration] Correction du modèles des applications configurées par défaut
+
 # v1.5.0
 
 ## Administration de la classe
