@@ -156,10 +156,10 @@ public class DefaultConversationService implements ConversationService {
 		}
 		String query =
 				usersQuery +
-				"MATCH v<-[:APPARTIENT*0..1]-(u:User), " +
+				"MATCH v<-[:IN*0..1]-(u:User), " +
 				"(message:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder), " +
 				"(sender:Conversation)-[:HAS_CONVERSATION_FOLDER]->(fOut:ConversationSystemFolder) " +
-				"WHERE (v:User OR v:ProfileGroup) AND u.id <> {userId} " +
+				"WHERE (v:Visible) AND u.id <> {userId} " +
 				"AND message.id = {messageId} AND message.state = {draft} AND message.from = {userId} AND " +
 				"fDraft.name = {draft} AND sender.userId = {userId} AND " +
 				"(v.id IN message.to OR v.id IN message.cc) AND fOut.name = {outbox} " +
@@ -201,7 +201,7 @@ public class DefaultConversationService implements ConversationService {
 				"LIMIT {limit} " +
 				"MATCH m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)<-[:HAS_CONVERSATION]-(u:User)" +
-				"-[:APPARTIENT*0..1]->(dn:Visible) " +
+				"-[:IN*0..1]->(dn:Visible) " +
 				"WHERE dn.id = m.from OR dn.id IN m.to " +
 				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.subject as subject, m.date as date, r.unread as unread, " +
@@ -375,7 +375,7 @@ public class DefaultConversationService implements ConversationService {
 				}
 				String users =
 						"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-						"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+						"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
 						replyUserQuery + "AND app.name = {conversation} " +
 						"RETURN DISTINCT u.id as id, u.displayName as displayName";
 				findVisibleUsers(eb, user.getUserId(), false, users, params, new Handler<JsonArray>() {

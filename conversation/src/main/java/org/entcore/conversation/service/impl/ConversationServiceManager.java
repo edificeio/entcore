@@ -117,7 +117,7 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 			users.handle(null);
 		}
 		String query =
-				"MATCH (g:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"MATCH (g:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE g.id IN {groups} " +
 				"RETURN COLLECT(distinct u.id) as users ";
 		neo.execute(query, new JsonObject().putArray("groups", groups), new Handler<Message<JsonObject>>() {
