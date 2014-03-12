@@ -42,7 +42,7 @@ public class AppRegistry extends Server {
 
 		service.post("/authorize/group", "linkGroup");
 
-		service.get("/schools", "listSchools");
+		service.get("/schools", "listStructures");
 
 		service.post("/application/conf", "applicationConf");
 

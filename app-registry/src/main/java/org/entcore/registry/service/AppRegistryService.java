@@ -43,7 +43,7 @@ public class AppRegistryService extends Controller {
 
 			@Override
 			public void handle(UserInfos user) {
-				listSchools(user, new Handler<JsonArray>() {
+				listStructures(user, new Handler<JsonArray>() {
 
 					@Override
 					public void handle(JsonArray event) {
@@ -220,7 +220,7 @@ public class AppRegistryService extends Controller {
 	public void listRoles(HttpServerRequest request) {
 		neo.send(
 			"MATCH (n:Role) " +
-			"RETURN n.id as id, n.name as name",
+			"RETURN n.id as id, n.name as name ORDER BY name ASC ",
 			request.response()
 		);
 	}
@@ -250,14 +250,14 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
-	@SecuredAction("app-registry.list.schools")
-	public void listSchools(final HttpServerRequest request) {
+	@SecuredAction("app-registry.list.structures")
+	public void listStructures(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					listSchools(user, new Handler<JsonArray>() {
+					listStructures(user, new Handler<JsonArray>() {
 
 						@Override
 						public void handle(JsonArray event) {
@@ -271,11 +271,16 @@ public class AppRegistryService extends Controller {
 		});
 	}
 
-	private void listSchools(UserInfos user, final Handler<JsonArray> handler) {
+	private void listStructures(UserInfos user, final Handler<JsonArray> handler) {
 		if (user != null) {
+			JsonArray functions = null;
+			if (user.getFunctionCodes() != null) {
+				functions = new JsonArray(user.getFunctionCodes().toArray());
+			}
 			eb.send("wse.communication.schools", new JsonObject()
 			.putString("userId", user.getUserId())
-			.putString("userType", user.getType()), new Handler<Message<JsonArray>>() {
+			.putString("userType", user.getType())
+			.putArray("userFunctions", functions), new Handler<Message<JsonArray>>() {
 
 				@Override
 				public void handle(Message<JsonArray> event) {
@@ -294,14 +299,15 @@ public class AppRegistryService extends Controller {
 		Map<String, Object> params = new HashMap<>();
 		if (schoolId != null && !schoolId.trim().isEmpty()) {
 			params.put("schoolId", schoolId);
-			query = "MATCH (m:School)<-[:DEPENDS*1..2]-(n:ProfileGroup) " +
+			query = "MATCH (m:Structure)<-[:DEPENDS*1..2]-(n:ProfileGroup) " +
 					"WHERE m.id = {schoolId} " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		} else {
 			query = "MATCH (n:ProfileGroup) " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		}
-		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles";
+		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles " +
+				 "ORDER BY name ASC ";
 		neo.send(query, params, request.response());
 	}
 
@@ -562,7 +568,7 @@ public class AppRegistryService extends Controller {
 		}
 		String query =
 				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-				"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:APPARTIENT]-(u:User) " +
+				"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE app.name = {application} " + filter +
 				"RETURN DISTINCT u.id as id";
 		neo.execute(query, params, handler);
@@ -605,8 +611,9 @@ public class AppRegistryService extends Controller {
 			return;
 		}
 		String query =
-			"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ClassStudentGroup), " +
-			"c<-[:DEPENDS]-(ctg:ClassTeacherGroup), c<-[:DEPENDS]-(crg:ClassRelativeGroup), " +
+			"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ProfileGroup)-[:DEPENDS]->(ssg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name : 'Student'}), " +
+			"c<-[:DEPENDS]-(ctg:ProfileGroup)-[:DEPENDS]->(stg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name : 'Teacher'}), " +
+			"c<-[:DEPENDS]-(crg:ProfileGroup)-[:DEPENDS]->(srg:ProfileGroup)-[:HAS_PROFILE]->(rp:Profile {name : 'Relative'}), " +
 			"(rs:Role), (rt:Role), (rr:Role) " +
 			"WHERE rs.name =~ '^[A-Za-z0-9]+-(student|all)-default$' " +
 			"AND rt.name =~ '^[A-Za-z0-9]+-(teacher|all)-default$' " +
