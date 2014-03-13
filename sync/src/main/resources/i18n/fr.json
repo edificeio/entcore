@@ -1,9 +1,0 @@
-{
-	"sync.admin.title": "Alimentation",
-	"sync.admin.header": "Alimentation",
-	"sync.action.aafTest": "Lancer l'alimentation",
-	"sync.admin.time": "Temps d'exécution",
-	"sync.admin.operation": "Nombre d'opérations",
-	"sync.admin.rejects": "Nombre de rejets",
-	"sync.admin.endMsg": "Alimentation terminée"
-}

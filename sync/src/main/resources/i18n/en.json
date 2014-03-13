@@ -1,9 +1,0 @@
-{
-	"sync.admin.title" : "User synchronization",
-	"sync.admin.header" : "User synchronization",
-	"sync.action.aafTest" : "Launch synchronization",
-	"sync.admin.time" : "Exectution time",
-	"sync.admin.operation" : "Number of operations",
-	"sync.admin.rejects" : "Number of rejects",
-	"sync.admin.endMsg" : "End of script"
-}

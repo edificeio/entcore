@@ -1,6 +1,0 @@
-{
-	"main":"org.entcore.sync.Sync",
-	"port": 8005,
-	"mode": "dev",
-	"input-files-folder" : "/opt/one/aaf_files/"
-}

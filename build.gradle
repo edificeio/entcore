@@ -91,12 +91,6 @@ project(':communication') {
   }
 }
 
-project(':dataDictionary') {
-  dependencies {
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-  }
-}
-
 project(':directory') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
@@ -124,13 +118,6 @@ project(':portal') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-  }
-}
-
-project(':sync') {
-  dependencies {
-    compile project(':dataDictionary')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }

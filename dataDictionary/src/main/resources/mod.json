@@ -1,6 +1,0 @@
-{
-	"main":"org.entcore.datadictionary.DataDictionary",
-	"port": 8010,
-	"auto-redeploy": true,
-	"mode": "dev"
-}
