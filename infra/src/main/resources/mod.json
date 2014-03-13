@@ -13,7 +13,11 @@
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",
-      "datastore-path": "./data/tests/neo4j"
+      "datastore-path": "./data/tests/neo4j",
+      "neo4j" : {
+      	"node_auto_indexing" : "true",
+      	"node_keys_indexable" : "externalId"
+      }
     }
   },
   "one-modules": [
