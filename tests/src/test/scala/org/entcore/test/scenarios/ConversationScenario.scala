@@ -47,7 +47,7 @@ object ConversationScenario {
   .exec(http("Delete message")
     .delete("/conversation/delete?id=${conversationDraftId}")
     .check(status.is(204)))
-  .pause(10)
+  .pause(1)
   .exec(http("Logout teacher user")
     .get("""/auth/logout""")
     .check(status.is(302)))

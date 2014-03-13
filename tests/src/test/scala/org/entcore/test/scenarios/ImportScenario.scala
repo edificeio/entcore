@@ -17,9 +17,9 @@ object ImportScenario {
     .check(status.is(200), jsonPath("$.status").is("ok"), jsonPath("$.result").find.saveAs("schools")))
     .doIf(session => session("schools").asOption.getOrElse("") == "{}") {
       exec(http("Directory : import schools")
-        .get("""/directory/testbe1d""")
+        .post("""/directory/import""")
         .check(status.is(200))
-      )
+      ).pause(10)
     }
     .exec(http("Auth : Logout user")
     .get("""/auth/logout""")

@@ -77,8 +77,8 @@ object AppRegistryScenario {
           json.values.asScala.foldLeft[List[String]](List("","")){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
             app.get("name").asInstanceOf[String] match {
-              case "Ecole primaire Emile Zola_ENSEIGNANT" => List(app.get("id").asInstanceOf[String], acc.last)
-              case "Ecole primaire Emile Zola_ELEVE" => List(acc.head, app.get("id").asInstanceOf[String])
+              case "Ecole primaire Emile Zola-Teacher" => List(app.get("id").asInstanceOf[String], acc.last)
+              case "Ecole primaire Emile Zola-Student" => List(acc.head, app.get("id").asInstanceOf[String])
               case _ => acc
             }
           }
