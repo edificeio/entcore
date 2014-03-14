@@ -1,5 +1,11 @@
 @import "../../../../public/css/app";
 
+@dark-blue: #074e68;
+@mid-blue: #085a78;
+@light-blue: #008cba;
+@black: #2A2829;
+@bright-blue: #008cba;
+
 i[role=send-mail]{
 	.icon(glyphicons_010_envelope, 24px);
 	margin: 7px;
@@ -201,7 +207,7 @@ i[role=tools]{
 }
 
 a{
-	color: rgb(104, 104, 167);
+	color: @bright-blue;
 	text-decoration: none;
 }
 
@@ -249,14 +255,73 @@ button.cancel, input[type=button].cancel{
 	color: #333;
 }
 
+.panel{
+	width: 400px;
+	background: #fff;
+	margin-left:auto;
+	margin-right: auto;
+	.border-radius;
+	padding: 15px;
+
+	label{
+		width: 150px;
+	}
+
+	input[type=text], input[type=password]{
+		width: 200px;
+		float: right;
+		line-height: 20px;
+		border: 1px solid #ccc;
+	}
+	a{
+		display: block;
+		clear: both;
+	}
+	h1 img{
+		display: none;
+	}
+
+	input[type=submit]{
+		float: right;
+	}
+}
+
+button, input[type=button], a.button, input[type=submit]{
+	background: @mid-blue;
+	padding: 4px;
+	padding-left: 10px;
+	padding-right: 10px;
+	color: #fff;
+	border-radius: 5px;
+	font-size: 15px;
+	border: 1px solid transparent;
+	.run-transition(background);
+}
+
 nav.vertical{
+	background: #fff;
+	.border-radius();
+	margin-right: 100px;
 	ul{
+		margin: 0;
+		padding: 0;
+		width: 100%;
 		li{
+			padding-left: 20px;
+			.border-box;
+			a{
+				color: #000;
+				.run-transition(color);
+			}
 			a.selected{
-				background: transparent;
+				background: @dark-blue;
 				font-style: italic;
-				color: #333;
+				color: #fff;
 				font-size: 16px;
+				border-right: 10px solid @bright-blue;
+			}
+			a:hover{
+				color: @bright-blue;
 			}
 		}
 	}
@@ -290,77 +355,10 @@ h1, h2, h3, h4, h5{
 	display: none;
 }
 
-section.cell{
-	float: right;
-	padding-left: 10px;
-}
-
-section .contextual-buttons{
-	position: fixed;
-	bottom: 0;
-	left: 25px;
-	.eight;
-	z-index: 30;
-	padding-right: 27px;
-
-	.action-buttons{
-		width: 100%;
-		box-shadow: -2px -2px 5px #fff;
-		background: #ccc;
-		padding-top: 5px;
-		line-height: 20px;
-		margin-bottom: 0px;
-		button{
-			background: transparent;
-			color: #333;
-			font-style: italic;
-			font-family: serif;
-			font-size: 16px;
-		}
-		button:hover{
-			color:#fff;
-		}
-	}
-}
-
 table{
 	td{
 		padding: 5px;
 	}
-}
-
-.toggle-buttons{
-	margin: 0;
-	width: 150px;
-	top: 100px;
-	height: 100%;
-	opacity: 1;
-	background: #eee;
-	position: absolute;
-	left: auto;
-	right: 0;
-	button{
-		background: transparent;
-		border: 0;
-		color: rgb(104, 104, 167);
-		font-size: 14px;
-		padding-left: 30px;
-	}
-	button:hover{
-		font-size: 16px;
-		color: #333;
-		font-style: italic;
-	}
-	.run-transition(opacity);
-	.four;
-	.toggle{
-		width: 130px;
-	}
-}
-
-.toggle-buttons.hide{
-	opacity: 0;
-	.run-transition(opacity);
 }
 
 article{
@@ -372,6 +370,7 @@ body{
 	section.main{
 		background: #eee;
 	}
+	font-size: 12px;
 }
 
 thead{

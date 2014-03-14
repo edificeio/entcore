@@ -769,6 +769,9 @@ p i {
   width: 25px !important;
   float: none !important;
 }
+.welcome-text {
+  display: none;
+}
 .birthday {
   width: 1;
   width: 100%;
@@ -4712,6 +4715,77 @@ nav.scrapbook-buttons a {
 .scrapbook .drawing-zone article.media .loading-panel img {
   width: 50%;
   height: 50%;
+}
+.panel {
+  width: 400px;
+  float: right;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-family: Arial;
+  background: -webkit-linear-gradient(#ffffff, #eeeeee);
+  background: -moz-linear-gradient(#ffffff, #eeeeee);
+  background: -o-linear-gradient(#ffffff, #eeeeee);
+  background: linear-gradient(#ffffff, #eeeeee);
+  -pie-background: linear-gradient(#ffffff, #eeeeee);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+}
+.panel h1 {
+  margin: 0;
+  padding: 3px;
+  padding-left: 10px;
+  background: -webkit-linear-gradient(#3789c3, #43b9e7);
+  background: -moz-linear-gradient(#3789c3, #43b9e7);
+  background: -o-linear-gradient(#3789c3, #43b9e7);
+  background: linear-gradient(#3789c3, #43b9e7);
+  -pie-background: linear-gradient(#3789c3, #43b9e7);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+  -webkit-border-top-left-radius: 10px;
+  -webkit-border-top-right-radius: 10px;
+  -moz-border-top-left-radius: 10px;
+  -moz-border-top-right-radius: 10px;
+  -ms-border-top-left-radius: 10px;
+  -ms-border-top-right-radius: 10px;
+  -o-border-top-left-radius: 10px;
+  -o-border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  font-family: KGJune;
+  content: "";
+  font-size: 23px;
+  color: #fff;
+}
+.panel form {
+  padding: 15px;
+}
+.panel label {
+  display: block;
+  width: 300px;
+  color: #666;
+  font-size: 12px;
+  line-height: 16px;
+}
+.panel input[type=text],
+.panel input[type=password] {
+  width: 100%;
+}
+.panel input[type=submit] {
+  clear: both;
+  display: block;
+  float: right;
+}
+.panel a {
+  font-size: 12px;
+  color: #2f8cc9;
+  display: block;
+  clear: both;
+  text-decoration: underline;
+}
+.welcome-text {
+  width: 50%;
+  float: left;
+  color: #888;
+  font-size: 12px;
+  display: block;
 }
 .scrapbook-pagination {
   padding: 5px;

@@ -769,6 +769,9 @@ p i {
   width: 25px !important;
   float: none !important;
 }
+.welcome-text {
+  display: none;
+}
 .birthday {
   width: 1;
   width: 100%;

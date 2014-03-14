@@ -468,6 +468,66 @@ function Collection(obj){
 		return col;
 	};
 
+	Model.prototype.resources = function(obj, methods){
+		function setCol(col){
+			col.composer = this;
+			for(var method in methods){
+				col[method] = methods[method];
+			}
+
+			col.model = this;
+		}
+
+		this[pluralizeName(obj)].mine = new Collection(obj);
+		this[pluralizeName(obj)].shared = new Collection(obj);
+		this[pluralizeName(obj)].trash = new Collection(obj);
+
+		var mine = this[pluralizeName(obj)].mine;
+		var trash = this[pluralizeName(obj)].trash;
+		var shared = this[pluralizeName(obj)].shared;
+
+		mine.sync = function(){
+			http().get('/workspace/documents', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+
+			});
+		};
+
+		shared.sync = function(){
+			http().get('/workspace/documents', { filter: 'shared', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+
+			});
+		};
+
+		trash.sync = function(){
+			http().get('/workspace/documents/Trash', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+
+			});
+		};
+
+		obj.prototype.save = function(){
+			mine.sync();
+			shared.sync();
+		};
+
+		obj.prototype.move = function(){
+			mine.sync();
+		};
+
+		obj.prototype.trash = function(){
+			mine.sync();
+			shared.sync();
+			trash.sync();
+		};
+
+		obj.prototype.permanentDelete = function(){
+			trash.sync();
+		};
+
+		obj.prototype.open = function(){
+
+		};
+	};
+
 	Model.prototype.sync = function(){
 		for(var col in this){
 			if(this[col] instanceof Collection){

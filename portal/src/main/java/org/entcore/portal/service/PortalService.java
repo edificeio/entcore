@@ -204,6 +204,10 @@ public class PortalService extends Controller {
 		});
 	}
 
+	public void getSkin(final HttpServerRequest request) {
+		renderJson(request, new JsonObject().putString("skin", container.config().getString("skin")));
+	}
+
 	public void locale(HttpServerRequest request) {
 		String[] langs = request.headers().get("Accept-Language").split(",");
 		renderJson(request, new JsonObject().putString("locale",

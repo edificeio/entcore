@@ -154,6 +154,12 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			},
 			contains: function(name, view){
 				return this.containers[name] === this.viewPath + view + '.html';
+			},
+			close: function(name){
+				this.containers[name] = 'empty';
+				if(name === 'lightbox'){
+					ui.hideLightbox();
+				}
 			}
 		}
 	})

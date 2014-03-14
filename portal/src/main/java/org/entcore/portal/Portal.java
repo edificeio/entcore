@@ -18,6 +18,7 @@ public class Portal extends Server {
 				.get("/apps", "apps")
 				.get("/adapter", "adapter")
 				.get("/theme", "getTheme")
+				.get("/skin", "getSkin")
 				.get("/locale", "locale")
 				.get("/admin", "admin")
 				.get("/admin-urls", "adminURLS")

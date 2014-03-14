@@ -1317,6 +1317,65 @@ nav.scrapbook-buttons{
 	}
 }
 
+.panel{
+	width: 400px;
+	float: right;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+	font-family: Arial;
+
+	.vertical-gradient(#fff, #eee);
+
+	h1{
+		margin: 0;
+		padding: 3px;
+		padding-left: 10px;
+		.vertical-gradient(@button-top-gradient, @button-bottom-gradient);
+		.border-radius-top(10px);
+		font-family: KGJune;
+		content: "";
+		font-size: 23px;
+		color: #fff;
+	}
+
+	form{
+		padding: 15px;
+	}
+
+	label{
+		display: block;
+		width: 300px;
+		color: #666;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	input[type=text], input[type=password]{
+		width: 100%;
+	}
+	input[type=submit]{
+		clear: both;
+		display: block;
+		float: right;
+	}
+
+	a{
+		font-size: 12px;
+		color: @medium-blue;
+		display: block;
+		clear: both;
+		text-decoration: underline;
+	}
+}
+
+.welcome-text {
+	width: 50%;
+	float: left;
+	color: #888;
+	font-size: 12px;
+	display: block;
+}
+
 .scrapbook-pagination{
 	padding: 5px;
 	padding-right: 10px;

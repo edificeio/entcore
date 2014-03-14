@@ -744,6 +744,9 @@ p i {
   width: 25px !important;
   float: none !important;
 }
+.welcome-text {
+  display: none;
+}
 .birthday {
   width: 1;
   width: 100%;
@@ -2529,7 +2532,7 @@ i[role=tools] {
   padding-top: 6px;
 }
 a {
-  color: #6868a7;
+  color: #008cba;
   text-decoration: none;
 }
 ul.icons-tabs {
@@ -2585,11 +2588,92 @@ input[type=button].cancel {
   behavior: url(/assets/themes/panda/css/PIE.htc);
   color: #333;
 }
+.panel {
+  width: 400px;
+  background: #fff;
+  margin-left: auto;
+  margin-right: auto;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  padding: 15px;
+}
+.panel label {
+  width: 150px;
+}
+.panel input[type=text],
+.panel input[type=password] {
+  width: 200px;
+  float: right;
+  line-height: 20px;
+  border: 1px solid #ccc;
+}
+.panel a {
+  display: block;
+  clear: both;
+}
+.panel h1 img {
+  display: none;
+}
+.panel input[type=submit] {
+  float: right;
+}
+button,
+input[type=button],
+a.button,
+input[type=submit] {
+  background: #085a78;
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 15px;
+  border: 1px solid transparent;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+nav.vertical {
+  background: #fff;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  margin-right: 100px;
+}
+nav.vertical ul {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+nav.vertical ul li {
+  padding-left: 20px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+nav.vertical ul li a {
+  color: #000;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
 nav.vertical ul li a.selected {
-  background: transparent;
+  background: #074e68;
   font-style: italic;
-  color: #333;
+  color: #fff;
   font-size: 16px;
+  border-right: 10px solid #008cba;
+}
+nav.vertical ul li a:hover {
+  color: #008cba;
 }
 nav.horizontal {
   right: 10px;
@@ -2623,82 +2707,15 @@ h5 a {
 .display-buttons {
   display: none;
 }
-section.cell {
-  float: right;
-  padding-left: 10px;
-}
-section .contextual-buttons {
-  position: fixed;
-  bottom: 0;
-  left: 25px;
-  width: 1;
-  width: 66.66666666666667%;
-  z-index: 30;
-  padding-right: 27px;
-}
-section .contextual-buttons .action-buttons {
-  width: 100%;
-  box-shadow: -2px -2px 5px #ffffff;
-  background: #ccc;
-  padding-top: 5px;
-  line-height: 20px;
-  margin-bottom: 0px;
-}
-section .contextual-buttons .action-buttons button {
-  background: transparent;
-  color: #333;
-  font-style: italic;
-  font-family: serif;
-  font-size: 16px;
-}
-section .contextual-buttons .action-buttons button:hover {
-  color: #fff;
-}
 table td {
   padding: 5px;
-}
-.toggle-buttons {
-  margin: 0;
-  width: 150px;
-  top: 100px;
-  height: 100%;
-  opacity: 1;
-  background: #eee;
-  position: absolute;
-  left: auto;
-  right: 0;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
-  width: 1;
-  width: 33.333333333333336%;
-}
-.toggle-buttons button {
-  background: transparent;
-  border: 0;
-  color: #6868a7;
-  font-size: 14px;
-  padding-left: 30px;
-}
-.toggle-buttons button:hover {
-  font-size: 16px;
-  color: #333;
-  font-style: italic;
-}
-.toggle-buttons .toggle {
-  width: 130px;
-}
-.toggle-buttons.hide {
-  opacity: 0;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
 }
 article {
   background: #fff;
   border-radius: 3px;
+}
+body {
+  font-size: 12px;
 }
 body section.main {
   background: #eee;
