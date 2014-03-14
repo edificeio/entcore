@@ -1105,7 +1105,7 @@ module.directive('resizable', function($compile){
 					};
 					resize();
 
-					$('body').on('mouseup.resize', function(){
+					$(window).on('mouseup.resize', function(){
 						$element.trigger('stopResize');
 						interrupt = true;
 						setTimeout(function(){

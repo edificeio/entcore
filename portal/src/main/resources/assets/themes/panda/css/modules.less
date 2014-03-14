@@ -1224,6 +1224,9 @@ nav.scrapbook-buttons{
 	input.sound{
 		.icon(music-icon, 30px);
 	}
+	input.video{
+		.icon(video-icon, 30px);
+	}
 	a{
 		line-height: 33px;
 		height: 33px;
@@ -1299,7 +1302,9 @@ nav.scrapbook-buttons{
 	.drawing-zone{
 		article.media{
 			border: 1px dashed rgb(119, 13, 13);
-
+			iframe{
+				pointer-events: none;
+			}
 			.loading-panel{
 				width: 200px;
 				height: 200px;
