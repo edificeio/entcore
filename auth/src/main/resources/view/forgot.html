@@ -3,16 +3,17 @@
 	<head>
 		<title>{{#i18n}}auth.forgot.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="{{#infra}}js/jquery-1.10.2.min.js{{/infra}}"></script>
 		<link rel="stylesheet" href="{{#static}}css/auth.css{{/static}}" type="text/css" />
 		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
 	</head>
-	<body>
-	<div class="logo">
+	<body style="display: none">
+	<div class="centered container row">
+		<div class="logo">
 
-	</div>
-	<div class="container">
-		<div class="main">
-			<div class="welcome">
+		</div>
+		<section class="main">
+			<div class="welcome-text">
 				<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
 				<p>{{#i18n}}auth.welcome.p1{{/i18n}}</p>
 				<p>{{#i18n}}auth.welcome.p2{{/i18n}}</p>
@@ -32,7 +33,7 @@
 				<div class="clear"></div>
 			</form>
 		</div>
-		</div>
+		</section>
 	</div>
 	</body>
 </html>

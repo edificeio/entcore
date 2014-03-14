@@ -8,5 +8,13 @@ window.addEventListener('load', function(e){
 		var base = url[0];
 		parent.location.href = base + 'callback=' + callback;
 	}
-})
+});
+
+$.get('/skin').done(function(skin){
+	$('link').attr('href', '/assets/themes/' + skin.skin + '/default/theme.css');
+
+	setTimeout(function(){
+		$('body').show();
+	}, 300);
+});
 
