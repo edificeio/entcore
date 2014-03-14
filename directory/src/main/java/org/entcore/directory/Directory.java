@@ -63,6 +63,8 @@ public class Directory extends Server {
 				.get("/user-preferences", "userPreferences")
 				.get("/api/search","search")
 				.get("/api/person", "person")
+				.get("/structures", "showStructures")
+				.get("/structure/:structId", "showStructure")
 				.get("/api/class", "myClass")
 				.get("/api/edit-userbook-info", "editUserBookInfo")
 				.get("/api/set-visibility", "setVisibility")

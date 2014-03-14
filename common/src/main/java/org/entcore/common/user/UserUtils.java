@@ -134,6 +134,14 @@ public class UserUtils {
 		findUsers(eb, request, QUERY_VISIBLE_PROFILS_GROUPS, handler);
 	}
 
+	public static void findVisibleProfilsGroups(final EventBus eb, HttpServerRequest request,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
+				.putString("customReturn", customReturn)
+				.putObject("additionnalParams", additionnalParams);
+		findUsers(eb, request, m, handler);
+	}
+
 	public static void findVisibleProfilsGroups(final EventBus eb, String userId,
 												final Handler<JsonArray> handler) {
 		findUsers(eb, userId, QUERY_VISIBLE_PROFILS_GROUPS, handler);

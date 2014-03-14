@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -24,6 +26,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
@@ -33,6 +36,7 @@ public class UserBookController extends Controller {
 	private JsonObject config;
 	private JsonObject userBookData;
 	private HttpClient client;
+	private SchoolService schoolService;
 	private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
 	public UserBookController(Vertx vertx, Container container,
@@ -42,6 +46,7 @@ public class UserBookController extends Controller {
 			this.neo = new Neo(Server.getEventBus(vertx),log);
 			this.config = config;
 			userBookData= config.getObject("user-book-data");
+			schoolService = new DefaultSchoolService(neo, eb);
 			client = vertx.createHttpClient()
 							.setHost(config.getString("workspace-url"))
 							.setPort(config.getInteger("workspace-port"))
@@ -173,6 +178,54 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@SecuredAction(value = "userbook.my.structures", type = ActionType.AUTHENTICATED)
+	public void showStructures(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					schoolService.listByUserId(user.getUserId(), arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@SecuredAction(value = "userbook.structure.classes.personnel", type = ActionType.AUTHENTICATED)
+	public void showStructure(final HttpServerRequest request) {
+		String structureId = request.params().get("structId");
+		String customReturn =
+				"MATCH (s:Structure { id : {structId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+				"-[:HAS_PROFILE]->(p:Profile {name : 'Personnel'}), visibles-[:IN]->pg " +
+				"OPTIONAL MATCH visibles-[:USERBOOK]->(u:UserBook) " +
+				"RETURN DISTINCT p.name as type, visibles.id as id, " +
+				"visibles.displayName as displayName, u.mood as mood, " +
+				"u.picture as photo " +
+				"ORDER BY type DESC, displayName ";
+		final JsonObject params = new JsonObject().putString("structId", structureId);
+		UserUtils.findVisibleUsers(eb, request, true, customReturn, params, new Handler<JsonArray>() {
+
+			@Override
+			public void handle(final JsonArray personnel) {
+				String customReturn =
+						"MATCH profileGroup-[:DEPENDS]->(c:Class)-[:BELONGS]->(s:Structure { id : {structId}}) " +
+						"RETURN DISTINCT c.id as id, c.name as name, c.level as level " +
+						"ORDER BY name ASC ";
+				UserUtils.findVisibleProfilsGroups(eb, request, customReturn, params, new Handler<JsonArray>() {
+					@Override
+					public void handle(JsonArray classes) {
+						JsonObject result = new JsonObject()
+								.putArray("users", personnel)
+								.putArray("classes", classes);
+						renderJson(request, result);
+					}
+				});
+			}
+		});
+	}
+
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -180,9 +233,18 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
+					String classId = request.params().get("id");
+					String matchClass;
+					Map<String, Object> params = new HashMap<>();
+					if (classId == null || classId.trim().isEmpty()) {
+						matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
+						params.put("userId", user.getUserId());
+					} else {
+						matchClass = "(c:Class {id : {classId}}) ";
+						params.put("classId", classId);
+					}
 					String query =
-							"MATCH (n:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-							"WHERE n.id = {id} " +
+							"MATCH " + matchClass +
 							"WITH c " +
 							"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)" +
 							"-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
@@ -192,8 +254,6 @@ public class UserBookController extends Controller {
 							"m.displayName as displayName, u.mood as mood, " +
 							"u.userid as userId, u.picture as photo " +
 							"ORDER BY type DESC, displayName ";
-					Map<String, Object> params = new HashMap<>();
-					params.put("id", user.getUserId());
 					neo.send(query, params, request.response());
 				} else {
 					unauthorized(request);

@@ -6,8 +6,10 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultSchoolService implements SchoolService {
@@ -39,6 +41,14 @@ public class DefaultSchoolService implements SchoolService {
 				"match (c:`Class` {id : {id}})-[:BELONGS]->(s:`Structure`) " +
 				"return s.id as id, s.UAI as UAI, s.name as name";
 		neo.execute(query, new JsonObject().putString("id", classId), validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void listByUserId(String userId, Handler<Either<String, JsonArray>> results) {
+		String query =
+				"MATCH (u:User { id: {id}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"RETURN DISTINCT s.id as id, s.UAI as UAI, s.name as name ";
+		neo.execute(query, new JsonObject().putString("id", userId), validResultHandler(results));
 	}
 
 }

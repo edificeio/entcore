@@ -356,7 +356,9 @@ public class CommunicationController extends Controller {
 				usersCanSeeMe(userId, responseHandler);
 				break;
 			case "visibleProfilsGroups":
-				visibleProfilsGroups(userId, responseHandler);
+				String c = message.body().getString("customReturn");
+				JsonObject p = message.body().getObject("additionnalParams");
+				visibleProfilsGroups(userId, c, p, responseHandler);
 				break;
 			case "usersInProfilGroup":
 				boolean itSelf2 = message.body().getBoolean("itself", false);
@@ -460,15 +462,23 @@ public class CommunicationController extends Controller {
 		});
 	}
 
-	private void visibleProfilsGroups(String userId, final Handler<JsonArray> handler) {
+	private void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
+			final Handler<JsonArray> handler) {
+		String r;
+		if (customReturn != null && !customReturn.trim().isEmpty()) {
+			r = "WITH gp as profileGroup, profile " + customReturn;
+		} else {
+			r = "RETURN distinct gp.id as id, gp.name as name, profile.name as type " +
+				"ORDER BY type DESC, name ";
+		}
+		Map<String, Object> params =
+				(additionnalParams != null) ? additionnalParams.toMap() : new HashMap<String, Object>();
+		params.put("userId", userId);
 		String query =
 				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:ProfileGroup) " +
 				"WHERE n.id = {userId} " +
 				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
-				"RETURN distinct gp.id as id, gp.name as name, profile.name as type " +
-				"ORDER BY type DESC, name ";
-		Map<String, Object> params = new HashMap<>();
-		params.put("userId", userId);
+				r;
 		neo.send(query, params, new Handler<Message<JsonObject>>() {
 
 			@Override
