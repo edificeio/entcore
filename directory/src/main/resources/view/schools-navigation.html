@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html ng-controller="SchoolsController">
+<head>
+	<title>{{#i18n}}classAdmin.title{{/i18n}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script src="/directory/public/js/model.js" type="text/javascript"></script>
+	<script src="/directory/public/js/schools-controller.js" type="text/javascript"></script>
+</head>
+<script type="text/ng-template" id="empty"></script>
+<body bottom-scroll="showMore()">
+<portal>
+	<div class="row">
+			<div class="right-magnet five cell">
+				<div class="right-magnet">
+					<i role="show-icons"
+					   ng-click="views.open('list', 'dominos-list')"
+					   ng-class="{ selected: views.contains('list', 'dominos-list') }" class="right-magnet"></i>
+					<i role="show-list"
+					   ng-click="views.open('list', 'table-list')"
+					   ng-class="{ selected: views.contains('list', 'table-list') }" class="right-magnet"></i>
+				</div>
+
+				<div class="right-magnet cell reduce-block-four">
+					<input type="search"
+						   ng-model="search.text" ng-change="updateSearch()"
+						   translate attr="placeholder"
+						   placeholder="userBook.search"
+						   class="twelve cell right-magnet" />
+				</div>
+			</div>
+			<h1 class="three cell"><a data-reload><i role="userbook"></i><span translate key="userBook.class.title"></span></a></h1>
+	</div>
+	<div class="row">
+		<section class="four cell reduce-block-eight">
+			<nav class="vertical">
+				<ul>
+					<li ng-repeat="project in projects">
+						<a>Essone</a>
+						<ul>
+							<li><a>Palaiseau</a></li>
+							<li><a>Villebon</a></li>
+						</ul>
+					</li>
+				</ul>
+			</nav>
+		</section>
+
+		<article data-ng-include="views.containers.list" class="eight cell"></article>
+	</div>
+</portal>
+</body>
+</html>

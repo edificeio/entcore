@@ -1,0 +1,32 @@
+[
+	{
+		"name": "Experimentation Versailles",
+		"towns": [
+			{
+				"name": "Villebon",
+				"schools": [
+					{
+						"name": "Ecole élémentaire",
+						"users": [
+							{
+								"displayName": "Jean Bon",
+								"profile": "director"
+							}, {
+								"displayName": "Jean Emart",
+								"profile": "surge"
+							}
+						],
+						"classes": [
+							{
+								"name": "CM1",
+								"users": [
+									{"displayName": "Eloïse Rageant", "profile": "student"}
+								]
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]

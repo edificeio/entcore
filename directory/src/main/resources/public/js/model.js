@@ -365,6 +365,13 @@ model.build = function(){
 	this.myClass = new MyClass();
 	this.directory = new Directory();
 	this.classAdmin = new ClassAdmin();
+	this.collection(Project, {
+		sync: function(){
+			http().get('/directory/public/json/schools.json').done(function(projects){
+				this.load(projects);
+			}.bind(this));
+		}
+	});
 
 	http().get('/userbook/api/person').done(function(data){
 		model.me.email = data.result[0].email;

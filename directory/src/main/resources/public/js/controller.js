@@ -81,6 +81,7 @@ function DirectoryController($scope, model, route, date){
 	$scope.searchDirectory = function(){
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field);
+
 		$scope.openView('dominos', 'main');
 	};
 
