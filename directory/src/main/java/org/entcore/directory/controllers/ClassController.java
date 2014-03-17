@@ -8,6 +8,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
@@ -41,6 +42,7 @@ public class ClassController extends Controller {
 	private final ClassService classService;
 	private final UserService userService;
 	private final SchoolService schoolService;
+	private final ConversationNotification conversationNotification;
 
 	public ClassController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -50,6 +52,7 @@ public class ClassController extends Controller {
 		this.classService = new DefaultClassService(neo, eb);
 		this.userService = new DefaultUserService(neo, notification);
 		schoolService = new DefaultSchoolService(neo);
+		this.conversationNotification = new ConversationNotification(vertx, eb, container);
 	}
 
 	@SecuredAction(value = "class.get", type = ActionType.RESOURCE)
@@ -80,9 +83,10 @@ public class ClassController extends Controller {
 					public void handle(Either<String, JsonObject> r) {
 						if (r.isRight()) {
 							final String userId = r.right().getValue().getString("id");
-							applyComRulesAndRegistryEvent(classId, new JsonArray().add(userId));
-							if (container.config().getBoolean("createdUserEmail", false) &&
-									request.params().contains("sendCreatedUserEmail")) {
+							boolean notify = container.config().getBoolean("createdUserEmail", false) &&
+									request.params().contains("sendCreatedUserEmail");
+							initPostCreate(classId, new JsonArray().add(userId), notify, request);
+							if (notify) {
 								userService.sendUserCreatedEmail(request, userId,
 										new Handler<Either<String, Boolean>>() {
 									@Override
@@ -205,7 +209,7 @@ public class ClassController extends Controller {
 										}
 									}
 									if (users.size() > 0) {
-										ClassController.this.applyComRulesAndRegistryEvent(classId, users);
+										ClassController.this.initPostCreate(classId, users);
 										request.response().end();
 									} else {
 										renderJson(request, new JsonObject()
@@ -262,7 +266,7 @@ public class ClassController extends Controller {
 				final String classId = request.params().get("classId");
 				JsonArray userIds = body.getArray("userIds");
 				if (userIds != null) {
-					ClassController.this.applyComRulesAndRegistryEvent(classId, userIds);
+					ClassController.this.initPostCreate(classId, userIds);
 					request.response().end();
 				} else {
 					badRequest(request);
@@ -271,7 +275,12 @@ public class ClassController extends Controller {
 		});
 	}
 
-	private void applyComRulesAndRegistryEvent(String classId, JsonArray userIds) {
+	private void initPostCreate(String classId, JsonArray userIds) {
+		initPostCreate(classId, userIds, false, null);
+	}
+
+	private void initPostCreate(String classId, final JsonArray userIds, boolean welcomeMessage,
+			final HttpServerRequest request) {
 		schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> s) {
@@ -283,7 +292,27 @@ public class ClassController extends Controller {
 				}
 			}
 		});
-		ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+		if (welcomeMessage) {
+			ApplicationUtils.sendModifiedUserGroup(eb, userIds, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					JsonObject params = new JsonObject().putString("host", conversationNotification.getHost());
+					conversationNotification.notify(request, "", userIds, null,
+							"welcome.subject", "email/welcome.html", params,
+							new Handler<Either<String, JsonObject>>() {
+
+								@Override
+								public void handle(Either<String, JsonObject> r) {
+									if (r.isLeft()) {
+										log.error(r.left().getValue());
+									}
+								}
+							});
+				}
+			});
+		} else {
+			ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+		}
 	}
 
 }

@@ -59,6 +59,13 @@ public final class ApplicationUtils {
 		);
 	}
 
+	public static void sendModifiedUserGroup(EventBus eb, JsonArray a, Handler<Message<JsonObject>> res) {
+		eb.send(APP_REGISTRY_PUBLISH_ADDRESS,
+				new JsonObject().putString("type", USER_GROUP_UPDATED)
+						.putArray("users", a), res
+		);
+	}
+
 	public static void setDefaultClassRoles(EventBus eb, String classId, Handler<Message<JsonObject>> handler) {
 		JsonObject json = new JsonObject();
 		json.putString("action", "setDefaultClassRoles").putString("classId", classId);

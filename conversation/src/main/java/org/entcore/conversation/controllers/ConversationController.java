@@ -1,6 +1,7 @@
 package org.entcore.conversation.controllers;
 
 
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.conversation.Conversation;
@@ -13,10 +14,12 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.json.impl.Json;
 import org.vertx.java.platform.Container;
 
 import java.util.ArrayList;
@@ -291,6 +294,44 @@ public class ConversationController extends Controller {
 				}
 			}
 		});
+	}
+
+	public void conversationEventBusHandler(Message<JsonObject> message) {
+		switch (message.body().getString("action", "")) {
+			case "send" : send(message);
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "invalid.action"));
+		}
+	}
+
+	private void send(final Message<JsonObject> message) {
+		JsonObject m = message.body().getObject("message");
+		if (m == null) {
+			message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.message"));
+		}
+		final HttpServerRequest request = new JsonHttpServerRequest(
+				message.body().getObject("request", new JsonObject()));
+		final UserInfos user = new UserInfos();
+		user.setUserId(message.body().getString("userId"));
+		user.setUsername(message.body().getString("username"));
+		conversationService.send(null, null, m, user,
+				new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							timelineNotification(request, event.right().getValue(), user);
+							JsonObject s = new JsonObject().putString("status", "ok")
+									.putArray("result", new JsonArray().add(new JsonObject()));
+							message.reply(s);
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("error", event.left().getValue());
+							message.reply(error);
+						}
+					}
+				});
 	}
 
 }

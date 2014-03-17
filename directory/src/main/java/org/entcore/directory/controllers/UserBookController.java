@@ -143,8 +143,9 @@ public class UserBookController extends Controller {
 								"p.homePhone as tel, b.birthDate as birthdate, " +
 								"COLLECT([]) as r ";
 					}
-					String query = "MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e-[:APPARTIENT]->c "
-								+ "WHERE n.id = {userId} AND ((c IS NULL) OR 'School' IN labels(c)) "
+					String query = "MATCH (n:User)<-[:EN_RELATION_AVEC*0..1]-e "
+								+ "WHERE n.id = {userId} "
+								+ "OPTIONAL MATCH e-[:APPARTIENT]->(c:School) "
 								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
 								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
 								+ "OPTIONAL MATCH (n)-[:EN_RELATION_AVEC]-(n2) "

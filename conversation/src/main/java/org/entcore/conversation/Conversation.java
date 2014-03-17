@@ -26,6 +26,12 @@ public class Conversation extends Server {
 		conversationController.put("restore", "restore");
 		conversationController.delete("delete", "delete");
 
+		try {
+			conversationController.registerMethod("org.entcore.conversation", "conversationEventBusHandler");
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			log.error(e.getMessage(), e);
+		}
+
 		new AppRegistryEventsHandler(vertx, new ConversationServiceManager(vertx,
 				config.getString("app-name", Conversation.class.getSimpleName())));
 

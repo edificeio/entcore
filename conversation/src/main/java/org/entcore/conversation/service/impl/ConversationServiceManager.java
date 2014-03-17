@@ -54,7 +54,7 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 	}
 
 	@Override
-	public void userGroupUpdated(final JsonArray users) {
+	public void userGroupUpdated(final JsonArray users, final Message<JsonObject> message) {
 		ApplicationUtils.applicationAllowedUsers(eb, applicationName, users, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray u) {
@@ -63,12 +63,17 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 					if (!(o instanceof JsonObject)) continue;
 					userIds.add(((JsonObject) o).getString("id"));
 				}
-				manageConversationNodes(userIds, users);
+				manageConversationNodes(userIds, users, message);
 			}
 		});
 	}
 
 	private void manageConversationNodes(Set<String> userIds, JsonArray modifiedUsers) {
+		manageConversationNodes(userIds, modifiedUsers, null);
+	}
+
+	private void manageConversationNodes(Set<String> userIds, JsonArray modifiedUsers,
+			final Message<JsonObject> message) {
 		String filter = "";
 		JsonObject disableParams = new JsonObject().putBoolean("false", false);
 		if (modifiedUsers != null) {
@@ -94,7 +99,16 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 				"MATCH (c:Conversation) " +
 				"WHERE NOT(c.userId IN ['" + Joiner.on("','").join(userIds) + "']) AND c.active <> {false} " + filter +
 				"SET c.active = {false} ", disableParams);
-		neo.executeTransaction(b.build(), null, true, null);
+		Handler<Message<JsonObject>> h = null;
+		if (message != null) {
+			h = new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> m) {
+					message.reply(m.body());
+				}
+			};
+		}
+		neo.executeTransaction(b.build(), null, true, h);
 	}
 
 	private void usersInGroups(JsonArray groups, final Handler<JsonArray> users) {
