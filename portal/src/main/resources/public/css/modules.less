@@ -94,6 +94,11 @@ nav.vertical{
 				line-height: 20px;
 				padding: 5px;
 				padding-left: 10px;
+				.border-box;
+				width: 100%;
+				margin: 0;
+				margin-top: 5px;
+				margin-bottom: 5px;
 
 				i{
 					display: block;
@@ -109,6 +114,12 @@ nav.vertical{
 				top: 0px !important;
 				left: 0px !important;
 			}
+			input[type=text], input[type=search]{
+				.border-radius(0px);
+				margin-left: 0;
+				.border-box;
+				width: 100%;
+			}
 	}
   }
 }
@@ -120,6 +131,7 @@ nav.vertical{
 		right: 5px;
 	}
 	.item{
+		min-width: 154px;
 		.domino{
 			border: 1px solid #ccc;
 		}
@@ -400,6 +412,10 @@ p{
 		}
 	}
 
+}
+
+img.text-sized{
+	height: 20px;
 }
 
 section.selected, article.selected{
@@ -737,7 +753,7 @@ ul.icons-tabs{
 	padding: 0;
 	position: absolute;
 	top: 0;
-	right: -60px;
+	right: -53px;
 	width: 45px;
 	height: 45px;
 	display: table;

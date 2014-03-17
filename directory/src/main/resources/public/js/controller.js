@@ -81,7 +81,7 @@ function DirectoryController($scope, model, route, date){
 	$scope.searchDirectory = function(){
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field);
-		$scope.openView('list-view', 'main');
+		$scope.openView('dominos', 'main');
 	};
 
 	$scope.selectFirstUser = function(){
@@ -100,7 +100,7 @@ function DirectoryController($scope, model, route, date){
 		if(model.myClass.users.current){
 			model.myClass.users.current.deselect();
 		}
-		$scope.openView('list-view', 'main');
+		$scope.openView('dominos', 'main');
 	};
 
 	$scope.selectUser = function(user){
@@ -133,7 +133,7 @@ function DirectoryController($scope, model, route, date){
 		}
 	});
 
-	$scope.openView('list-view', 'main');
+	$scope.openView('dominos', 'main');
 }
 
 function ClassAdminController($scope, model, date, notify){
@@ -292,4 +292,46 @@ function ClassAdminController($scope, model, date, notify){
 	$scope.uploadPhoto = function(){
 		$scope.newUser.uploadAvatar()
 	};
+}
+
+function SchoolController($scope, view){
+	$scope.view = view;
+	$scope.view.open('list', 'table');
+
+	$scope.search = {
+		text: '',
+		maxLength: 20
+	};
+
+	model.myClass.users.sync();
+
+	$scope.users = model.myClass.users;
+	$scope.classrooms = model.myClass.classrooms;
+
+	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange' };
+	$scope.colorFromType = function(type){
+		return colorsMatch[type.toLowerCase()];
+	};
+
+	$scope.increaseSearchSize = function(){
+		$scope.search.maxLength += 20;
+	};
+
+	$scope.updateSearch = function(){
+		if($scope.view.contains('list', 'user-infos')){
+			$scope.view.open('list', 'table');
+		}
+	};
+
+	$scope.selectUser = function(user){
+		window.scrollTo(0, 200);
+		model.myClass.users.deselectAll();
+		user.select();
+
+		user.on('change', function(){
+			$scope.$apply('users')
+		});
+
+		$scope.view.open('list', 'user-infos');
+	}
 }

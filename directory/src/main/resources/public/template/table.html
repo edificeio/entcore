@@ -1,0 +1,22 @@
+<article class="row">
+	<div class="row reduce-block-six" ng-if="users.match(search.text).length === 0 && !users.loading" translate content="noresult"></div>
+	<table class="twelve">
+		<thead>
+		<tr>
+			<th>Nom</th>
+			<th class="right-magnet">Profil</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="openClassroom(classroom)">
+			<td><a><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /> [[user.displayName]]</a></td>
+			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
+		</tr>
+		<tr ng-repeat="user in users.match(search.text) | limitTo:search.maxLength - classrooms.length()" ng-click="selectUser(user)">
+			<td class="action-cell centered"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /></td>
+			<td><a><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /> [[user.displayName]]</a></td>
+			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
+		</tr>
+		</tbody>
+	</table>
+</article>

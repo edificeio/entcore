@@ -328,6 +328,9 @@ function Collection(obj){
 		},
 		push: function(element, notify){
 			var newItem = element;
+			if(this.obj === undefined){
+				this.obj = Model;
+			}
 			if(!(newItem instanceof this.obj)){
 				newItem = new this.obj(element);
 			}

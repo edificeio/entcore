@@ -570,7 +570,7 @@ a.button{
 	visibility: hidden
 }
 
-input[type=text], input[type=password]{
+input[type=text], input[type=password], input[type=search]{
 	.border-radius(5px);
 	border: 1px solid #ccc;
 	line-height: 25px;
@@ -578,6 +578,10 @@ input[type=text], input[type=password]{
 	margin-top: 2px;
 	margin-bottom: 2px;
 	padding-left: 3px;
+}
+
+input[type=search]{
+	.border-radius(0px);
 }
 
 label{
@@ -735,9 +739,8 @@ nav.vertical{
 				margin-left: 15px;
 				height: 27px;
 			}
-			input[type=text]{
-				margin-top: -5px;
-				width: 90%;
+			input[type=text], input[type=search]{
+				.border-radius(0px);
 			}
 		a{
         .vertical-gradient(@grey-top-gradient, @grey-bottom-gradient);
@@ -745,7 +748,6 @@ nav.vertical{
 
         font-size: 1em;
         border: 1px solid @light-grey;
-        margin: 5px;
 
         .run-transition(background);
 		  color: #000;
@@ -757,21 +759,20 @@ nav.vertical{
 			.border-box;
 			width: 100%;
 
-        a{
-          background: @ultra-light-grey;
-        }
-      }
-    }
+			a{
+				background: @ultra-light-grey;
+			}
+		}
+	}
 
-    a.selected, a:hover{
-      background: @solid-blue !important;
-      color: #fff;
-    }
-    a:hover{
-      .run-transition(background);
-    }
-  }
-
+		a.selected, a:hover{
+			background: @solid-blue !important;
+			color: #fff;
+		}
+		a:hover{
+			.run-transition(background);
+		}
+	}
 }
 
 .tabs{
@@ -1439,6 +1440,11 @@ table.unstyled{
 
 table{
 	.border-radius(5px);
+
+	th.right-magnet, td.right-magnet{
+		float: none !important;
+		text-align: right !important;
+	}
 
 	thead{
 		tr{

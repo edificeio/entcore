@@ -45,6 +45,7 @@ public class Directory extends Server {
 		directoryController.get("/admin", "directory")
 				.post("/import", "launchImport")
 				.get("/annuaire", "annuaire")
+				.get("/schools", "schools")
 				.get("/api/ecole", "school")
 				.get("/api/classes", "classes")
 				.get("/api/personnes", "people")

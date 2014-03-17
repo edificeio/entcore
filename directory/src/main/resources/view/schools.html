@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{#i18n}}userBook.class.title{{/i18n}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script src="/directory/public/js/model.js" type="text/javascript"></script>
+	<script src="/directory/public/js/controller.js" type="text/javascript"></script>
+</head>
+<script type="text/ng-template" id="empty"></script>
+<body ng-controller="SchoolController" bottom-scroll="increaseSearchSize()">
+<portal>
+	<div class="row">
+		<div class="twelve cell">
+			<div class="right-magnet five cell">
+				<div class="row">
+					<div class="right-magnet">
+						<i role="show-icons"
+						   ng-click="view.open('list', 'dominos')"
+						   ng-class="{ selected: view.contains('list', 'dominos') }" class="right-magnet"></i>
+						<i role="show-list"
+						   ng-click="view.open('list', 'table')"
+						   ng-class="{ selected: view.contains('list', 'table') }" class="right-magnet"></i>
+
+					</div>
+
+					<div class="right-magnet eight cell reduce-block-four">
+						<input type="search"
+							   ng-model="search.text" ng-change="updateSearch()"
+							   translate attr="placeholder"
+							   placeholder="userBook.search"
+							   class="twelve cell right-magnet" />
+					</div>
+				</div>
+
+			</div>
+			<h1 class="subtitle" data-reload><i role="userbook"></i><span translate key="userBook.class.title"></span></h1>
+		</div>
+	</div>
+
+	<nav class="vertical four cell">
+		<ul>
+			<li>
+				<a>Projet</a>
+				<ul>
+					<li>
+						<a>Ville 1</a>
+						<ul>
+							<li>
+								<input type="text" placeholder="Saisissez le nom d'une école" />
+								<ul>
+									<li>
+										<a>Ecole 1</a>
+									</li>
+									<li>
+										<a>Ecole 2</a>
+									</li>
+								</ul>
+							</li>
+
+						</ul>
+					</li>
+					<li>
+						<a>Ville 2</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+	<div class="eight cell" ng-include="view.containers.list">
+
+	</div>
+</portal>
+</body>
+</html>

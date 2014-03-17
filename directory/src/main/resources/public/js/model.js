@@ -224,6 +224,30 @@ function MyClass(){
 	})
 }
 
+function Classroom(){
+	this.collection(User, {
+
+	});
+}
+
+function School(){
+	this.collection(User, {
+
+	});
+
+	this.collection(Classroom, {
+
+	});
+
+	this.location = 'Villebon';
+}
+
+function EntProject(){
+	this.collection(School, {
+
+	});
+}
+
 function Directory(){
 	this.collection(User, {
 		match: function(){
@@ -322,7 +346,7 @@ function ClassAdmin(){
 }
 
 model.build = function(){
-	this.makeModels([User, MyClass, Directory, ClassAdmin]);
+	this.makeModels([User, MyClass, Directory, ClassAdmin, EntProject, Classroom, School]);
 	this.myClass = new MyClass();
 	this.directory = new Directory();
 	this.classAdmin = new ClassAdmin();

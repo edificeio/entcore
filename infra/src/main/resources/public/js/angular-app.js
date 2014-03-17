@@ -137,21 +137,23 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			routes = setRoutes;
 		}
 	})
-	.factory('views', function(){
+	.factory('view', function(){
 		return {
 			viewPath: '/' + appPrefix + '/public/template/',
 			containers: {},
-			openView: function(view, name){
+			open: function(name, view){
 				if(name === 'lightbox' && view === ''){
-					ui.hideLightbox()
+					ui.hideLightbox();
+					this.containers.lightbox = 'empty';
+					return;
 				}
 				else if(name === 'lightbox'){
 					ui.showLightbox();
 				}
 				this.containers[name] = this.viewPath + view + '.html';
 			},
-			containsView: function(name, view){
-				return $scope.viewsContainers[name] === this.viewPath + view + '.html';
+			contains: function(name, view){
+				return this.containers[name] === this.viewPath + view + '.html';
 			}
 		}
 	})

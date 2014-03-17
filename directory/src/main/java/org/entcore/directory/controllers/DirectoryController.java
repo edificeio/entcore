@@ -74,6 +74,11 @@ public class DirectoryController extends Controller {
 		renderView(request, null, "annuaire.html", null);
 	}
 
+	@SecuredAction(value = "directory.schools", type = ActionType.AUTHENTICATED)
+	public void schools(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@SecuredAction("directory.authent")
 	public void school(HttpServerRequest request) {
 		neo.send("MATCH (n:Structure) RETURN distinct n.name as name, n.id as id", request.response());

@@ -95,7 +95,7 @@
 <div class="row reduce-block-six" ng-if="users.current.hobbies.length">
 	<article>
 		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in users.current.hobbies | orderBy:'category'">
-			<div class="two cell reduce-block-six">[[lang.translate('userBook.hobby.' + hobby.category)]]</div>
+			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
 			<em class="ten cell reduce-block-six user-content">[[hobby.value]]</em>
 		</div>
 		<div class="row"></div>
