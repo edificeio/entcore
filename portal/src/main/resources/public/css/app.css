@@ -1082,6 +1082,9 @@ p i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+img.text-sized {
+  height: 20px;
+}
 section.selected,
 article.selected {
   background: #ccc;
@@ -1395,7 +1398,7 @@ ul.icons-tabs {
   padding: 0;
   position: absolute;
   top: 0;
-  right: -60px;
+  right: -53px;
   width: 45px;
   height: 45px;
   display: table;

@@ -3,18 +3,32 @@
 	<table class="twelve">
 		<thead>
 		<tr>
+			<th></th>
 			<th>Nom</th>
 			<th class="right-magnet">Profil</th>
 		</tr>
 		</thead>
 		<tbody>
 		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="openClassroom(classroom)">
-			<td><a><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /> [[user.displayName]]</a></td>
+			<td class="action-cell">
+				<img ng-src="/userbook/avatar/[[classroom.id]]?thumbnail=48x48" />
+			</td>
+			<td>
+				<a>
+					[[classroom.name]]
+				</a>
+			</td>
 			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
 		</tr>
 		<tr ng-repeat="user in users.match(search.text) | limitTo:search.maxLength - classrooms.length()" ng-click="selectUser(user)">
-			<td class="action-cell centered"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /></td>
-			<td><a><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" /> [[user.displayName]]</a></td>
+			<td class="action-cell">
+				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" />
+			</td>
+			<td>
+				<a>
+					[[user.displayName]]
+				</a>
+			</td>
 			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
 		</tr>
 		</tbody>

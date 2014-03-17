@@ -183,6 +183,30 @@ User.prototype.removeRelative = function(relative){
 	});
 };
 
+function usersMatch(search){
+	var searchTerm = lang.removeAccents(search).toLowerCase();
+	if(!searchTerm){
+		return this.all;
+	}
+	return _.filter(this.all, function(user){
+		var testDisplayName = '', testNameReversed = '', testFullName = '', testFullNameReversed = '';
+		if(user.displayName){
+			testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
+			if(user.displayName.split(' ').length > 0){
+				testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
+					+ user.displayName.split(' ')[0]).toLowerCase();
+			}
+		}
+		if(user.firstName && user.lastName){
+			testFullName = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
+			testFullNameReversed = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
+		}
+
+		return testDisplayName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1
+			|| testFullName.indexOf(searchTerm) !== -1 || testFullNameReversed.indexOf(searchTerm) !== -1;
+	});
+}
+
 function MyClass(){
 	this.name = '';
 
@@ -197,37 +221,18 @@ function MyClass(){
 					return user;
 				}));
 			});
-		},
-		match: function(search){
-			var searchTerm = lang.removeAccents(search).toLowerCase();
-			if(!searchTerm){
-				return this.all;
-			}
-			return _.filter(this.all, function(user){
-				var testDisplayName = '', testNameReversed = '', testFullName = '', testFullNameReversed = '';
-				if(user.displayName){
-					testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
-					if(user.displayName.split(' ').length > 0){
-						testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
-							+ user.displayName.split(' ')[0]).toLowerCase();
-					}
-				}
-				if(user.firstName && user.lastName){
-					testFullName = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-					testFullNameReversed = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
-				}
-
-				return testDisplayName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1
-					|| testFullName.indexOf(searchTerm) !== -1 || testFullNameReversed.indexOf(searchTerm) !== -1;
-			});
 		}
-	})
+	});
+
+	this.users.match = usersMatch.bind(this.users);
 }
 
 function Classroom(){
 	this.collection(User, {
 
 	});
+
+	this.users.match = usersMatch.bind(this.users);
 }
 
 function School(){
@@ -235,11 +240,19 @@ function School(){
 
 	});
 
+	this.users.match = usersMatch.bind(this.users);
+
 	this.collection(Classroom, {
-
+		match: function(search){
+			var searchTerm = lang.removeAccents(search).toLowerCase();
+			if(!searchTerm){
+				return this.all;
+			}
+			return _.filter(this.all, function(classroom){
+				return lang.removeAccents(classroom.name).toLowerCase().indexOf(searchTerm) !== -1;
+			});
+		}
 	});
-
-	this.location = 'Villebon';
 }
 
 function EntProject(){
@@ -295,6 +308,8 @@ function ClassAdmin(){
 			}.bind(this));
 		}
 	});
+
+	this.users.match = usersMatch.bind(this.users);
 
 	this.importFile = function(file, type){
 		var form = new FormData();

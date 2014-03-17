@@ -205,11 +205,7 @@ function ClassAdminController($scope, model, date, notify){
 			return;
 		}
 		$scope.foundRelatives = _.filter(
-			model.myClass.users.match.call(
-				model.classAdmin.users,
-				$scope.display.relativeSearch
-			),
-			function(user){
+			model.classAdmin.users.match($scope.display.relativeSearch), function(user){
 				return user.type === $scope.display.relative && $scope.newUser.relatives.indexOf(user) === -1;
 			}
 		);
@@ -262,7 +258,7 @@ function ClassAdminController($scope, model, date, notify){
 
 	$scope.addUser = function(){
 		$scope.clearSearch();
-		$scope.existingMatchs = model.myClass.users.match.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
+		$scope.existingMatchs = usersMatch.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
 		if($scope.existingMatchs.length > 0 && $scope.display.show === 'Student'){
 			$scope.openView('link-user', 'lightbox');
 			return;
