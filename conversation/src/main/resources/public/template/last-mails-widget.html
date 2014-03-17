@@ -1,0 +1,7 @@
+<h1>Messages</h1>
+<ul class="row last-mails-widget">
+	<li ng-repeat="mail in widget.mails | limitTo:3">
+		<a ng-href="/conversation/conversation#/read-mail/[[mail.id]]">[[mail.subject]]</a>
+	</li>
+	<li ng-if="widget.mails.length === 0">Vous n’avez aucun message</li>
+</ul>
