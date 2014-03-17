@@ -1,9 +1,9 @@
 <div class="twelve cell block-container">
-	<h2 class="vertical-spacing-twice">Importer un fichier d'utilisateurs</h2>
+	<h2 class="vertical-spacing-twice" translate content="classAdmin.importFile">Importer un fichier d'utilisateurs</h2>
 
 	<div class="info vertical-spacing-twice">
-		<strong>Le fichier CSV doit être un export BE1D.</strong>
-		<br />Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice).
+		<strong translate content="classAdmin.importType"></strong>
+		<br /><span translate content="classAdmin.fileHelp"></span>
 	</div>
 
 	<div class="row vertical-spacing-twice">
@@ -17,7 +17,7 @@
 	</div>
 
 	<div class="row">
-		<button class="right-magnet" ng-click="importCSV()">Importer</button>
-		<button class="cancel right-magnet">Annuler</button>
+		<button class="right-magnet" ng-click="importCSV()" translate content="classAdmin.import"></button>
+		<button class="cancel right-magnet" translate content="cancel"></button>
 	</div>
 </div>
