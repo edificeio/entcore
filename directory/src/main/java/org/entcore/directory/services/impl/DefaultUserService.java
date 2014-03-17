@@ -9,6 +9,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -26,6 +27,16 @@ public class DefaultUserService implements UserService {
 		this.neo = neo;
 		this.notification = notification;
 		this.eb = eb;
+	}
+
+	@Override
+	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-create-user")
+				.putString("structureId", structureId)
+				.putString("profile", user.getString("type"))
+				.putObject("data", user);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
 	}
 
 	@Override
@@ -103,6 +114,35 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN DISTINCT p.name as type, u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
+	}
+
+	@Override
+	public void list(String structureId, String classId, JsonArray expectedProfiles,
+			Handler<Either<String, JsonArray>> results) {
+		JsonObject params = new JsonObject();
+		String filterProfile = "";
+		String filterStructure = "";
+		String filterClass = "";
+		if (expectedProfiles != null && expectedProfiles.size() > 0) {
+			filterProfile = "WHERE p.name IN {expectedProfiles} ";
+			params.putArray("expectedProfiles", expectedProfiles);
+		}
+		if (classId != null && !classId.trim().isEmpty()) {
+			filterClass = "(g:ProfileGroup)-[:DEPENDS]->(n:Class {id : {classId}}), ";
+			params.putString("classId", classId);
+		} else if (structureId != null && !structureId.trim().isEmpty()) {
+			filterStructure = "(pg:ProfileGroup)-[:DEPENDS]->(n:Structure {id : {structureId}}), ";
+			params.putString("structureId", structureId);
+		}
+		String query =
+				"MATCH " +filterClass + filterStructure +
+				"(u:User)-[:IN]->g-[:DEPENDS*0..1]->pg-[:HAS_PROFILE]->(p:Profile) " +
+				filterProfile +
+				"RETURN DISTINCT u.id as id, p.name as type, " +
+				"u.activationCode as code, u.firstName as firstName," +
+				"u.lastName as lastName, u.displayName as displayName " +
+				"ORDER BY type DESC, displayName ASC ";
+		neo.execute(query, params, validResultHandler(results));
 	}
 
 }

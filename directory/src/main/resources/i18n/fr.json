@@ -32,6 +32,8 @@
 	"directory.teacher":"Enseignant",
 	"directory.admin.student":"Eleve",
 	"directory.student":"Élève",
+	"directory.admin.personnel" : "Personnel",
+	"directory.admin.birthDate" : "Date de naissance",
 	"directory.students":"Élèves",
 	"directory.admin.address":"Adresse",
 	"directory.admin.lastname":"Nom",

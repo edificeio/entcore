@@ -18,9 +18,14 @@ var admin = function(){
 				{{#list}}<h3>{{name}}</h3>\
 				<a call='classes' href='api/classes?id={{id}}'>\
 				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
+				<a call='users' href='users?profile=Personnel&structureId={{id}}'>\
+				{{#i18n}}directory.admin.see-people{{/i18n}}</a> - \
+				<a href=\"{{id}}\" call=\"addStructureUser\">\
+				{{#i18n}}directory.admin.create-user{{/i18n}}</a> - \
 				<a href='api/export?id={{id}}'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
-				<div id='classes-{{id}}'></div>{{/list}}"
+				<div id='classes-{{id}}'></div>\
+				<div id='people-{{id}}'></div>{{/list}}"
 			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
@@ -35,6 +40,7 @@ var admin = function(){
 			personnes: "\
 				<br /><span>\
 					{{#list}}\
+					{{#userId}}\
 					<a call='personne' href='api/details?id={{userId}}'\
 						style='\
 							{{#notActivated}}color:red;{{/notActivated}}\
@@ -42,6 +48,10 @@ var admin = function(){
 							{{#isRelative}}font-style:italic;{{/isRelative}}\
 						'\
 					>\
+					{{/userId}}\
+					{{^userId}}\
+					<a call='personne' href='api/details?id={{id}}'>\
+					{{/userId}}\
 					{{lastName}} {{firstName}}</a> - \
 					{{/list}}\
 				</span><div id='details'></div>"
@@ -56,22 +66,35 @@ var admin = function(){
 				{{lastName}} {{firstName}} - {{/list}}',
 			addUser : '<span>{{#i18n}}directory.admin.create-user{{/i18n}}</span>\
 				<form action="api/user">\
+				{{#classId}}\
 				<input type="hidden" name="classId" value="{{classId}}" />\
+				{{/classId}}\
+				{{^classId}}\
+				<input type="hidden" name="structureId" value="{{structureId}}" />\
+				{{/classId}}\
 				<label>{{#i18n}}directory.admin.lastname{{/i18n}}</label>\
 				<input type="text" name="lastname" />\
 				<label>{{#i18n}}directory.admin.firstname{{/i18n}}</label>\
 				<input type="text" name="firstname" />\
+				{{#classId}}\
+				<label>{{#i18n}}directory.admin.birthDate{{/i18n}}</label>\
+				<input type="text" name="birthDate" />\
 				<label>{{#i18n}}directory.admin.type{{/i18n}}</label>\
 				<select name="type">\
 					<option value="Teacher">{{#i18n}}directory.admin.teacher{{/i18n}}</option>\
 					<option value="Student">{{#i18n}}directory.admin.student{{/i18n}}</option>\
 					<option value="Relative">{{#i18n}}directory.admin.parent{{/i18n}}</option>\
+					<option value="Personnel">{{#i18n}}directory.admin.personnel{{/i18n}}</option>\
 				</select>\
 				<select name="childrenIds" multiple>\
 				{{#childrens}}\
 					<option value="{{userId}}">{{firstName}} {{lastName}}</option>\
 				{{/childrens}}\
 				</select>\
+				{{/classId}}\
+				{{^classId}}\
+				<input type="hidden" name="type" value="Personnel" />\
+				{{/classId}}\
 				<input call="addUserSubmit" type="button" value="{{#i18n}}directory.admin.create{{/i18n}}" />\
 			</form>',
 			sendResetPassword : '\
@@ -120,7 +143,14 @@ var admin = function(){
 				})
 				.error(function(data){app.notify.error(data)})
 			},
-
+			users : function(o) {
+				var id = o.url.substring(o.url.lastIndexOf("=") + 1);
+				$.get(o.url)
+				.done(function(data){
+					$("#people-" + id).html(app.template.render('personnes', {list : data}));
+				})
+				.error(function(data){app.notify.error(data)})
+			},
 			personne : function(o) {
 				if (!!$('#details').children('form').length) {
 					$('#details').html('');
@@ -140,6 +170,9 @@ var admin = function(){
 								{ classId : o.url, childrens : childrens }));
 					}
 				});
+			},
+			addStructureUser : function(o) {
+				$("#people-" + o.url).html(app.template.render('addUser', { structureId : o.url }));
 			},
 			addUserSubmit : function(o) {
 				var form = $(o.target).parents("form");

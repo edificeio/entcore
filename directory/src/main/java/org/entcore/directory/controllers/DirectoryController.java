@@ -1,6 +1,7 @@
 package org.entcore.directory.controllers;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
@@ -150,19 +151,28 @@ public class DirectoryController extends Controller {
 	@SecuredAction("directory.authent")
 	public void people(HttpServerRequest request) {
 		List<String> expectedTypes = request.params().getAll("type");
-		Map<String, Object> params = new HashMap<>();
-		params.put("classId",request.params().get("id"));
+		JsonObject params = new JsonObject();
+		params.putString("classId", request.params().get("id"));
 		String types = "";
 		if (expectedTypes != null && !expectedTypes.isEmpty()) {
-			types = "AND (m:" + Joiner.on(" OR m:").join(expectedTypes) + ") ";
+			types = "AND p.name IN {expectedTypes} ";
+			params.putArray("expectedTypes", new JsonArray(expectedTypes.toArray()));
 		}
-		neo.send("MATCH (n:Class)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]->(m:User) "
+		neo.send("MATCH (n:Class)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(m:User), "
+				+ "g-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
 				+ "WHERE n.id = {classId} " + types
-				+ "OPTIONAL MATCH g-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
 				+ "RETURN distinct m.id as userId, p.name as type, "
 				+ "m.activationCode as code, m.firstName as firstName,"
 				+ "m.lastName as lastName, n.id as classId "
-				+ "ORDER BY type DESC ", params, request.response());
+				+ "ORDER BY type DESC ", params.toMap(), request.response());
+	}
+
+	@SecuredAction("directory.list.users")
+	public void users(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String classId = request.params().get("classId");
+		List<String> profiles = request.params().getAll("profile");
+		userService.list(structureId, classId, new JsonArray(profiles.toArray()), arrayResponseHandler(request));
 	}
 
 	@SecuredAction("directory.authent")
@@ -183,6 +193,12 @@ public class DirectoryController extends Controller {
 			@Override
 			protected void handle() {
 				final String classId = request.formAttributes().get("classId");
+				final String structureId = request.formAttributes().get("structureId");
+				if ((classId == null || classId.trim().isEmpty()) &&
+						(structureId == null || structureId.trim().isEmpty())) {
+					badRequest(request);
+					return;
+				}
 				JsonObject user = new JsonObject()
 						.putString("firstName", request.formAttributes().get("firstname"))
 						.putString("lastName", request.formAttributes().get("lastname"))
@@ -193,30 +209,50 @@ public class DirectoryController extends Controller {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.putArray("childrenIds", new JsonArray(childrenIds.toArray()));
-				userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
-					@Override
-					public void handle(Either<String, JsonObject> res) {
-						if (res.isRight()) {
-							JsonObject r = res.right().getValue();
-							schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
-								@Override
-								public void handle(Either<String, JsonObject> s) {
-									if (s.isRight()) {
-										JsonObject j = new JsonObject()
-												.putString("action", "setDefaultCommunicationRules")
-												.putString("schoolId", s.right().getValue().getString("id"));
-										eb.send("wse.communication", j);
-									}
-								}
-							});
-							JsonArray a = new JsonArray().addString(r.getString("id"));
-							ApplicationUtils.publishModifiedUserGroup(eb, a);
-							renderJson(request, r);
-						} else {
-							leftToResponse(request, res.left());
+				if (classId != null && !classId.trim().isEmpty()) {
+					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> res) {
+							if (res.isRight() && res.right().getValue().size() > 0) {
+								JsonObject r = res.right().getValue();
+								schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> s) {
+										if (s.isRight()) {
+											JsonObject j = new JsonObject()
+													.putString("action", "setDefaultCommunicationRules")
+													.putString("schoolId", s.right().getValue().getString("id"));
+											eb.send("wse.communication", j);
+										}
+								  }
+								});
+								JsonArray a = new JsonArray().addString(r.getString("id"));
+								ApplicationUtils.publishModifiedUserGroup(eb, a);
+								renderJson(request, r);
+							} else {
+								leftToResponse(request, res.left());
+							}
+					   }
+					});
+				} else {
+					userService.createInStructure(structureId, user, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> res) {
+							if (res.isRight() && res.right().getValue().size() > 0) {
+								JsonObject r = res.right().getValue();
+								JsonObject j = new JsonObject()
+										.putString("action", "setDefaultCommunicationRules")
+										.putString("schoolId", structureId);
+								eb.send("wse.communication", j);
+								JsonArray a = new JsonArray().addString(r.getString("id"));
+								ApplicationUtils.publishModifiedUserGroup(eb, a);
+								renderJson(request, r);
+							} else {
+								leftToResponse(request, res.left());
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 		});
 	}
