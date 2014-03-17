@@ -560,7 +560,15 @@ public class CommunicationController extends Controller {
 			if (((String) o).contains("RELATED")) {
 				b.add("MATCH " + o + " CREATE UNIQUE start-[:COMMUNIQUE_DIRECT]->end", params);
 			} else {
-				if (((String) o).contains("endProfile")) {
+				if (((String) o).contains("startStructureGroup") && ((String) o).contains("endStructureGroup")) {
+					b.add(
+						"MATCH (s:Structure)<-[:DEPENDS]-(startStructureGroup:ProfileGroup)" +
+						"-[:HAS_PROFILE]-(startProfile:Profile), " +
+						"s<-[:DEPENDS]-(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
+						"WHERE s.id = {schoolId} " + o +
+						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+					);
+				} else if (((String) o).contains("endProfile")) {
 					b.add(
 						"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
 						"c<-[:DEPENDS]-(startClassGroup:ProfileGroup)-[:DEPENDS]->" +
