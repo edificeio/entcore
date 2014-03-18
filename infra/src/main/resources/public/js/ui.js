@@ -90,8 +90,11 @@ var ui = (function(){
 				});
 				style.on('load', function(){
 					$('body').show();
-				})
+				});
 				$('head').append(style);
+				setTimeout(function(){
+					$('body').show();
+				}, 300);
 			}
 			else{
 				$('#theme').attr('href', stylePath + 'theme.css');
@@ -100,6 +103,10 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
+		var evt = document.createEvent("Event");
+		evt.initEvent("ui-ready", true, false);
+		window.dispatchEvent(evt);
+
 		$('.display-buttons i').on('click', function(){
 			$(this).parent().find('i').removeClass('selected');
 			$(this).addClass('selected');
