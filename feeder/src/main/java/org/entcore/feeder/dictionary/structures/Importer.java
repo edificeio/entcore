@@ -316,14 +316,14 @@ public class Importer {
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
 				if (!firstImport) {
-					sb.append("MERGE (u:`User`:`Personnel` { externalId : {externalId}}) ");
+					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
 					sb.append("ON CREATE SET u.id = {id}, u.login = {login} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object, "id", "externalId", "login"));
 					params = object;
 				} else {
-					sb.append("CREATE (u:User:Personnel {props}) ");
+					sb.append("CREATE (u:User {props}) ");
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
@@ -416,14 +416,14 @@ public class Importer {
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
 				if (!firstImport) {
-					sb.append("MERGE (u:`User`:`Student` { externalId : {externalId}}) ");
+					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
 					sb.append("ON CREATE SET u.id = {id}, u.login = {login} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object, "id", "externalId", "login"));
 					params = object;
 				} else {
-					sb.append("CREATE (u:User:Student {props}) ");
+					sb.append("CREATE (u:User {props}) ");
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
