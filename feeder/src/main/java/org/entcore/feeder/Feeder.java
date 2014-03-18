@@ -109,6 +109,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				"CREATE c<-[:APPARTIENT]-(u:Student:User:Visible {props}), " +
 				"csg<-[:APPARTIENT]-u, ssg<-[:APPARTIENT]-u, s<-[:APPARTIENT]-u " +
 				"RETURN u.id as id";
+		final JsonArray errors = new JsonArray();
 		csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
 			@Override
@@ -122,6 +123,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
+							errors.add("invalid.lastName " + (rowIdx + 2));
 							sendError(message, "invalid.lastName " + (rowIdx + 2));
 							return;
 						}
@@ -129,6 +131,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
+							errors.add("invalid.firstName " + (rowIdx + 2));
 							sendError(message, "invalid.firstName " + (rowIdx + 2));
 							return;
 						}
@@ -140,6 +143,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								(m = frenchDatePatter.matcher(values[i])).find()) {
 							props.putString(header[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
 						} else {
+							errors.add("invalid.birthDate " + (rowIdx + 2));
 							sendError(message, "invalid.birthDate " + (rowIdx + 2));
 							return;
 						}
@@ -159,12 +163,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 
 		});
-		neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
+		if (errors.size() == 0) {
+			neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				message.reply(res.body());
 			}
 		});
+		}
 	}
 
 	private void csvClassRelative(final Message<JsonObject> message) {
@@ -203,6 +209,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				"WHERE student.login =~ {childrenLoginRegex} " +
 				"CREATE student-[:EN_RELATION_AVEC]->u " +
 				"RETURN DISTINCT u.id as id";
+		final JsonArray errors = new JsonArray();
 		csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
 			@Override
@@ -214,6 +221,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
+							errors.add("invalid.lastName " + (rowIdx + 2));
 							sendError(message, "invalid.lastName " + (rowIdx + 2));
 							return;
 						}
@@ -221,6 +229,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
 						} else {
+							errors.add("invalid.firstName " + (rowIdx + 2));
 							sendError(message, "invalid.firstName " + (rowIdx + 2));
 							return;
 						}
@@ -231,8 +240,15 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				}
 				StringBuilder sb = new StringBuilder();
 				for (int j = i; j < values.length; j += 4) {
-					String login = (removeAccents(values[j+2]).replaceAll("\\s+", "-").toLowerCase()
-							+ "." + removeAccents(values[j+1]).replaceAll("\\s+", "-").toLowerCase())
+					String firstName = values[j+2];
+					String lastName = values[j+1];
+					if (firstName == null || lastName == null) {
+						errors.add("invalid.child.name " + (rowIdx + 2));
+						sendError(message, "invalid.child.name " + (rowIdx + 2));
+						return;
+					}
+					String login = (removeAccents(firstName).replaceAll("\\s+", "-").toLowerCase()
+							+ "." + removeAccents(lastName).replaceAll("\\s+", "-").toLowerCase())
 							.replaceAll("'", "");
 					sb.append("|^").append(login).append("\\d*$");
 				}
@@ -249,12 +265,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 
 		});
-		neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
+		if (errors.size() == 0) {
+			neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				message.reply(res.body());
 			}
 		});
+		}
 	}
 
 	private String detectCharset(String csv) {

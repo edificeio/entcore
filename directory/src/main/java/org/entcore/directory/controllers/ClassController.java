@@ -29,6 +29,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,9 @@ public class ClassController extends Controller {
 	private final UserService userService;
 	private final SchoolService schoolService;
 	private final ConversationNotification conversationNotification;
+	private static final List<String> csvMimeTypes = Arrays.asList("text/comma-separated-values", "text/csv",
+			"application/csv", "application/excel", "application/vnd.ms-excel", "application/vnd.msexcel",
+			"text/anytext", "text/plain");
 
 	public ClassController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -177,6 +181,10 @@ public class ClassController extends Controller {
 			@Override
 			public void handle(final HttpServerFileUpload event) {
 				final Buffer buff = new Buffer();
+				if (!csvMimeTypes.contains(event.contentType())) {
+					renderJson(request, new JsonObject().putString("message", "invalid.file"), 400);
+					return;
+				}
 				event.dataHandler(new Handler<Buffer>() {
 					@Override
 					public void handle(Buffer event) {

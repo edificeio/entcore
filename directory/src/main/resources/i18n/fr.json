@@ -160,6 +160,8 @@
 	"invalid.lastName" : "Le nom est invalide à la ligne ",
 	"invalid.firstName" : "Le prénom est invalide à la ligne ",
 	"invalid.birthDate" : "La date de naissance est invalide à la ligne ",
+	"invalid.child.name" : "Le nom de l'élève est invalide à la ligne ",
+	"invalid.file" : "Le fichier est invalide.",
     "welcome.hi" : "Bonjour,",
     "welcome.info" : "Bienvenue dans votre ENT One !",
     "welcome.class.admin.uri" : "Pour commencer, nous vous recommandons d'initialiser votre classe en saisissant les données des élèves et parents dans le service",
