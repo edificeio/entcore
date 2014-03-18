@@ -297,6 +297,7 @@ public class Importer {
 		JsonObject j = new JsonObject();
 		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.id IS UNIQUE;", j);
 		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.externalId IS UNIQUE;", j);
+		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.name IS UNIQUE;", j);
 	}
 
 	public void functionConstraints() {
