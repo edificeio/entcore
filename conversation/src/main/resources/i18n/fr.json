@@ -43,5 +43,7 @@
 	"reply.re": "Re : ",
 	"reply.fw": "Tr : ",
 	"updating": "Mise à jour...",
-	"draft.empty": "Le brouillon est vide"
+	"draft.empty": "Le brouillon est vide",
+	"widget.title": "Messages",
+	"widget.empty": "Vous n'avez aucun message"
 }

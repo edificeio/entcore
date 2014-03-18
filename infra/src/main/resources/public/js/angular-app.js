@@ -1346,6 +1346,19 @@ module.directive('sharePanel', function($compile){
 	}
 });
 
+module.directive('widgets', function($compile){
+	return {
+		scope: {
+			list: '='
+		},
+		restrict: 'E',
+		templateUrl: '/infra/public/template/widgets.html',
+		link: function($scope, $element, $attributes){
+
+		}
+	}
+});
+
 module.directive('datePicker', function($compile){
 	return {
 		scope: {
@@ -1722,4 +1735,46 @@ function Admin($scope){
 	});
 
 	$scope.scrollUp = ui.scrollToTop;
+}
+
+function Widgets($scope, model, lang, date){
+	model.makeModels([Widget]);
+	model.collection(Widget, {
+		sync: function(){
+			var that = this;
+			http().get('/widgets').done(function(data){
+				data = data.filter(function(widget){
+					return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
+				});
+				that.load(data, function(widget){
+					if(widget.i18n){
+						lang.addBundle(widget.i18n, function(){
+							loader.loadFile(widget.js);
+						})
+					}
+					else{
+						loader.loadFile(widget.js);
+					}
+				});
+			});
+		},
+		findWidget: function(name){
+			return this.findWhere({name: name});
+		},
+		apply: function(){
+			model.trigger('widgets.change');
+		}
+	});
+
+	model.widgets.sync();
+
+	$scope.widgets = model.widgets;
+
+	model.on('widgets.change', function(){
+		if(!$scope.$$phase){
+			$scope.$apply('widgets');
+		}
+	})
+
+	$scope.translate = lang.translate;
 }

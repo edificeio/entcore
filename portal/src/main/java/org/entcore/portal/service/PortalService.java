@@ -218,6 +218,11 @@ public class PortalService extends Controller {
 	public void adminURLS(HttpServerRequest request){
 		renderJson(request, container.config().getArray("admin-urls", new JsonArray()));
 	}
+
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void widgets(HttpServerRequest request){
+		renderJson(request, container.config().getArray("widgets", new JsonArray()));
+	}
 	
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
