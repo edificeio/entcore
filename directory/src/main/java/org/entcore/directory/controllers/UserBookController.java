@@ -398,7 +398,7 @@ public class UserBookController extends Controller {
 							"m.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
 					JsonObject params = new JsonObject();
 					params.putString("id", user.getUserId());
-					params.putString("regex", "^(3[01]|[12][0-9]|0[1-9])/(" + monthRegex[month] + ")/[0-9]{4}$");
+					params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
 					neo.execute(query, params, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
