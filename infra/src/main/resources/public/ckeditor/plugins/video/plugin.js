@@ -25,7 +25,7 @@ CKEDITOR.plugins.add('video', {
 							padding : 0,
 							elements : [{
 									type : 'html',
-									html : '<p>Code embed : </p>'
+									html : '<p>Code de la vidéo à intégrer : </p>'
 								},{
 									type : 'textarea',
 									id : 'video-link'
