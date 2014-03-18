@@ -278,11 +278,12 @@ public class UserBookController extends Controller {
 		JsonObject params = new JsonObject();
 		params.putString("userId", message.body().getString("userId"));
 		params.putString("avatar", userBookData.getString("default-avatar"));
+		params.putString("theme", userBookData.getString("default-theme", ""));
 		JsonArray queries = new JsonArray();
 		String query = "MATCH (n:User) "
 				+ "WHERE n.id = {userId} "
 				+ "CREATE n-[:USERBOOK]->(m:UserBook {type:'USERBOOK', picture:{avatar}, "
-				+ "motto:'', health:'', mood:'default', userid:{userId}})";
+				+ "motto:'', health:'', mood:'default', userid:{userId}, theme: {theme}})";
 		queries.add(Neo.toJsonObject(query, params));
 		String query2 = "MATCH (n:User)-[:USERBOOK]->m "
 				+ "WHERE n.id = {userId} "
