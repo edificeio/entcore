@@ -34,9 +34,6 @@
       }
     },
     {
-      "name": "org.entcore~dataDictionary~1.6-SNAPSHOT"
-    },
-    {
       "name": "org.entcore~directory~1.6-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090"
@@ -44,9 +41,6 @@
     },
     {
       "name": "org.entcore~history~1.6-SNAPSHOT"
-    },
-    {
-      "name": "org.entcore~sync~1.6-SNAPSHOT"
     },
     {
       "name": "org.entcore~workspace~1.6-SNAPSHOT",
