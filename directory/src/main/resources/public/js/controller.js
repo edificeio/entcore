@@ -303,6 +303,7 @@ function SchoolController($scope, view){
 	model.myClass.users.sync();
 
 	$scope.users = model.myClass.users;
+	model.myClass.classrooms.push(new Classroom({ name: 'CM1' }));
 	$scope.classrooms = model.myClass.classrooms;
 
 	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange' };

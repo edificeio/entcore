@@ -16,9 +16,11 @@ function User(data){
 			});
 
 			that.selected = true;
-			that.updateData(data.result[0]);
+
 			model.directory.users.setCurrent(that);
 			model.myClass.users.setCurrent(that);
+
+			that.updateData(data.result[0]);
 		});
 	};
 
@@ -257,7 +259,9 @@ function School(){
 
 function EntProject(){
 	this.collection(School, {
-
+		sync: function(){
+			http().get()
+		}
 	});
 }
 
@@ -328,7 +332,7 @@ function ClassAdmin(){
 					notify.error(error);
 				}
 			}.bind(this));
-	}
+	};
 
 	this.addUser = function(user){
 		user.saveAccount(function(){
@@ -365,13 +369,6 @@ model.build = function(){
 	this.myClass = new MyClass();
 	this.directory = new Directory();
 	this.classAdmin = new ClassAdmin();
-	this.collection(Project, {
-		sync: function(){
-			http().get('/directory/public/json/schools.json').done(function(projects){
-				this.load(projects);
-			}.bind(this));
-		}
-	});
 
 	http().get('/userbook/api/person').done(function(data){
 		model.me.email = data.result[0].email;
