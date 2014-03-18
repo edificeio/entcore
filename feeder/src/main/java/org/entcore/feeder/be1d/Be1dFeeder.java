@@ -35,7 +35,7 @@ public class Be1dFeeder implements Feed {
 			"#skip#", "mobile" };
 	private static final String [] personnelHeader = new String[] { "title", "surname", "lastName", "firstName",
 			"address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
-	public static final Pattern be1dDatePattern = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
+	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private final Vertx vertx;
 	private final String path;
 	private final String separator;
@@ -261,8 +261,10 @@ public class Be1dFeeder implements Feed {
 					if ("birthDate".equals(studentHeader[i]) && values[i] != null) {
 						Matcher m;
 						if (values[i] != null &&
-								(m = be1dDatePattern.matcher(values[i])).find()) {
-							props.putString(studentHeader[i], m.group(3) + "/" + m.group(2) + "/" + m.group(1));
+								(m = frenchDatePatter.matcher(values[i])).find()) {
+							props.putString(studentHeader[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+						} else {
+							props.putString(studentHeader[i], values[i].trim());
 						}
 					} else if (!"#skip#".equals(studentHeader[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
