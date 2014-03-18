@@ -326,9 +326,11 @@ public class ManualFeeder extends BusModBase {
 								if ("birthDate".equals(Be1dFeeder.studentHeader[i]) && values[i] != null) {
 									Matcher m;
 									if (values[i] != null &&
-											(m = Be1dFeeder.be1dDatePattern.matcher(values[i])).find()) {
+											(m = Be1dFeeder.frenchDatePatter.matcher(values[i])).find()) {
 										props.putString(Be1dFeeder.studentHeader[i],
-												m.group(3) + "/" + m.group(2) + "/" + m.group(1));
+												m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+									} else {
+										props.putString(Be1dFeeder.studentHeader[i], values[i].trim());
 									}
 								} else if (!"#skip#".equals(Be1dFeeder.studentHeader[i])) {
 									if (values[i] != null && !values[i].trim().isEmpty()) {
