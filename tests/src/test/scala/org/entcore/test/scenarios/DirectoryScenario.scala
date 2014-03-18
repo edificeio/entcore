@@ -44,7 +44,7 @@ object DirectoryScenario {
       .param("""classId""", """${classId}""")
       .param("""lastname""", "Monjeau")
       .param("""firstname""", """Lundy""")
-      .param("""birthDate""", """01/01/1970""")
+      .param("""birthDate""", """1970-01-01""")
       .param("""type""", """Student""")
     .check(status.is(200)))
     .exec(http("Create manual parent")
