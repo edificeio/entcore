@@ -289,15 +289,18 @@ function Collection(obj){
 
 	Collection.prototype = {
 		on: function(eventName, cb){
-			this.events[eventName] = cb;
+			if(typeof cb !== 'function'){
+				return;
+			}
+			this.callbacks[eventName] = cb;
 		},
 		trigger: function(event){
 			if(this.composer && this.composer.trigger){
 				this.composer.trigger(pluralizeName(this.obj) + '.' + event);
 			}
 
-			if(typeof this.events[event] === 'function'){
-				this.events[event]();
+			if(typeof this.callbacks[event] === 'function'){
+				this.callbacks[event]();
 			}
 		},
 		forEach: function(cb){
@@ -478,6 +481,7 @@ function Collection(obj){
 			col.model = this;
 		}
 
+		this[pluralizeName(obj)] = new Model();
 		this[pluralizeName(obj)].mine = new Collection(obj);
 		this[pluralizeName(obj)].shared = new Collection(obj);
 		this[pluralizeName(obj)].trash = new Collection(obj);
@@ -485,28 +489,57 @@ function Collection(obj){
 		var mine = this[pluralizeName(obj)].mine;
 		var trash = this[pluralizeName(obj)].trash;
 		var shared = this[pluralizeName(obj)].shared;
+		setCol.call(this, mine);
+		setCol.call(this, trash);
+		setCol.call(this, shared);
 
 		mine.sync = function(){
 			http().get('/workspace/documents', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-
+				docs = _.map(docs, function(doc){
+					doc.title = doc.name.split('.json')[0];
+					return doc;
+				});
+				mine.load(docs);
 			});
 		};
 
 		shared.sync = function(){
 			http().get('/workspace/documents', { filter: 'shared', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-
+				docs = _.map(docs, function(doc){
+					doc.title = doc.name.split('.json')[0];
+					return doc;
+				});
+				shared.load(docs);
 			});
 		};
 
 		trash.sync = function(){
 			http().get('/workspace/documents/Trash', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-
+				docs = _.map(docs, function(doc){
+					doc.title = doc.name.split('.json')[0];
+				});
+				trash.load(docs);
 			});
 		};
 
 		obj.prototype.save = function(){
-			mine.sync();
-			shared.sync();
+			var toJson = this;
+			toJson.callbacks = undefined;
+			toJson._id = undefined;
+			var blob = new Blob([JSON.stringify(toJson)], { type: 'application/json' });
+			var form = new FormData();
+			form.append('blob', blob, this.title + '.json');
+
+			if(this._id !== undefined){
+				http().putFile('/workspace/document/' + this._id, form);
+			}
+			else{
+				http().postFile('/workspace/document?app=' + appPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
+					this._id = e._id;
+					mine.sync();
+					shared.sync();
+				}.bind(this));
+			}
 		};
 
 		obj.prototype.move = function(){
@@ -524,8 +557,15 @@ function Collection(obj){
 		};
 
 		obj.prototype.open = function(){
-
+			this.opened = true;
+			http().get('/workspace/document/' + this._id).done(function(content){
+				this.updateData(content);
+			}.bind(this))
 		};
+
+		mine.sync();
+		shared.sync();
+		trash.sync();
 	};
 
 	Model.prototype.sync = function(){
@@ -570,6 +610,9 @@ function Collection(obj){
 	};
 
 	Model.prototype.on = function(event, cb){
+		if(typeof cb !== 'function'){
+			return;
+		}
 		var events = event.split(',');
 		var that = this;
 		events.forEach(function(e){
@@ -597,7 +640,9 @@ function Collection(obj){
 			return;
 		}
 		for(var i = 0; i < this.callbacks[event].length; i++){
-			this.callbacks[event][i]();
+			if(typeof this.callbacks[event][i] === 'function'){
+				this.callbacks[event][i]();
+			}
 		}
 	};
 
