@@ -44,10 +44,8 @@
 				</div>
 				<div class="eleven cell reduce-block-six vertical-spacing">
 
+					<span translate content="fill.manual"></span>
 					<a translate content="classAdmin.importFile" ng-click="openView('importCSV', 'lightbox')"></a>
-					<span translate content="or"></span>
-					<a translate content="classAdmin.exportFile"
-					   ng-href="/directory/class/[[classAdmin.id]]/users?type=[[display.show]]&format=csv"></a>
 				</div>
 				<div class="row"></div>
 			</div>
@@ -151,8 +149,11 @@
 							</tr>
 							</tbody>
 						</table>
+
 					</form>
 				</article>
+				<a translate content="classAdmin.exportFile"
+				   ng-href="/directory/class/[[classAdmin.id]]/users?type=[[display.show]]&format=csv"></a>
 				<div class="row"></div>
 			</div>
 		</section>

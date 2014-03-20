@@ -77,7 +77,7 @@ User.prototype.saveChanges = function(){
 	}
 };
 
-User.prototype.saveAccount = function(){
+User.prototype.saveAccount = function(cb){
 	var accountData = {
 		lastName : this.lastName,
 		firstName: this.firstName,
@@ -91,6 +91,9 @@ User.prototype.saveAccount = function(){
 	}
 	http().postJson('/directory/class/' + model.me.classes[0] + '/user', accountData).done(function(data){
 		this.updateData(data);
+		if(typeof cb === 'function'){
+			cb();
+		}
 	}.bind(this));
 };
 
@@ -289,9 +292,10 @@ function ClassAdmin(){
 	}
 
 	this.addUser = function(user){
-		user.saveAccount();
-		model.classAdmin.sync();
-		model.directory.sync();
+		user.saveAccount(function(){
+			model.classAdmin.sync();
+			model.directory.sync();
+		});
 	};
 
 	this.grabUser = function(user){
