@@ -6,7 +6,12 @@ import bootstrap._
 
 object ConversationScenario {
 
-	val scn = exec(http("Get conversation page")
+  val scn = exec(http("Login teacher")
+    .post("""/auth/login""")
+    .param("""email""", """${teacherLogin}""")
+    .param("""password""", """blipblop""")
+    .check(status.is(302)))
+  .exec(http("Get conversation page")
     .get("/conversation/conversation")
     .check(status.is(200)))
   .exec(http("Find visible users or groups")

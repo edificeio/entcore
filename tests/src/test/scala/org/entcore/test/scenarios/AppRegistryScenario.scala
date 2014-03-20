@@ -24,11 +24,6 @@ object AppRegistryScenario {
             _.asInstanceOf[JSONArray].get(0).asInstanceOf[String]
           )
           app.get("name").asInstanceOf[String] match {
-            case "Blog" =>
-              val tbt = List("blog-enseignants-" + now, actions.mkString(","))
-              val fa = actions.filter(action => action.endsWith("list") || action.endsWith("blog"))
-              val tbs = List("blog-eleves-" + now, fa.mkString(","))
-              tbt :: tbs :: acc
             case "Espace documentaire" =>
               val twt = List("workspace-enseignants-" + now, actions.mkString(","))
               val fa = actions.filterNot(action =>
