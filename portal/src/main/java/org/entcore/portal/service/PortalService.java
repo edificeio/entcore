@@ -39,6 +39,7 @@ public class PortalService extends Controller {
 	private List<String> themes;
 	private final String themesPrefix;
 	private final Container container;
+	private final String assetsPath;
 
 	public PortalService(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -47,9 +48,9 @@ public class PortalService extends Controller {
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
 		this.neo = new Neo(eb, log);
-		// TODO configurable external assets with multiple skins
+		assetsPath = container.config().getString("assets-path", ".");
 		themesPrefix = "/assets/themes/" + container.config().getString("skin");
-		ThemeUtils.availableThemes(vertx, "." + themesPrefix, false, new Handler<List<String>>() {
+		ThemeUtils.availableThemes(vertx, assetsPath + themesPrefix, false, new Handler<List<String>>() {
 			@Override
 			public void handle(List<String> event) {
 				themes = event;
@@ -138,14 +139,14 @@ public class PortalService extends Controller {
 
 	public void assets(final HttpServerRequest request) {
 		if (dev) {
-			request.response().sendFile("." + request.path());
+			request.response().sendFile(assetsPath + request.path());
 		} else {
 			if (staticRessources.containsKey(request.uri())) {
 				StaticResource.serveRessource(request,
-						"." + request.path(),
+						assetsPath + request.path(),
 						staticRessources.get(request.uri()));
 			} else {
-				vertx.fileSystem().props("." + request.path(),
+				vertx.fileSystem().props(assetsPath + request.path(),
 						new Handler<AsyncResult<FileProps>>(){
 					@Override
 					public void handle(AsyncResult<FileProps> af) {
@@ -153,10 +154,10 @@ public class PortalService extends Controller {
 							String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
 							staticRessources.put(request.uri(), lastModified);
 							StaticResource.serveRessource(request,
-									"." + request.path(),
+									assetsPath + request.path(),
 									lastModified);
 						} else {
-							request.response().sendFile("." + request.path());
+							request.response().sendFile(assetsPath + request.path());
 						}
 					}
 				});
@@ -172,7 +173,7 @@ public class PortalService extends Controller {
 				if (user != null) {
 					JsonObject urls = container.config().getObject("urls", new JsonObject());
 					final JsonObject theme = new JsonObject()
-							.putString("template", "/public/template/portal.html") // TODO configurable ?
+							.putString("template", "/public/template/portal.html")
 							.putString("logoutCallback", urls.getString("logoutCallback", ""));
 					String query =
 							"MATCH (n:User)-[:USERBOOK]->u " +

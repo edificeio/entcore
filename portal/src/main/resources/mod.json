@@ -4,6 +4,7 @@
 	"auto-redeploy": true,
 	"mode": "dev",
 	"skin": "raw",
+	"assets-path" : ".",
 	"path-prefix" : "",
 	"urls" : {
 		"timeline" : "http://localhost/timeline",
