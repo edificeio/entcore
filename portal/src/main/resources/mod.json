@@ -5,6 +5,7 @@
 	"mode": "dev",
 	"skin": "raw",
 	"assets-path" : ".",
+	"root-page" : "/apps",
 	"path-prefix" : "",
 	"urls" : {
 		"timeline" : "http://localhost/timeline",

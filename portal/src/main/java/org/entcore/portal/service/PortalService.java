@@ -81,8 +81,7 @@ public class PortalService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					redirectPermanent(request, container.config()
-							.getObject("urls", new JsonObject()).getString("timeline"), "/timeline");
+					redirectPermanent(request, container.config().getString("root-page", "/apps"));
 				} else {
 					unauthorized(request);
 				}
