@@ -12,7 +12,7 @@
 		"auto-redeploy": false,
 		"port" : 8012,
 		"address" : "wse.app.registry",
-		"mode": "prod"
+		"mode": "dev"
     }
   },
   "neo4j-persistor": {
@@ -173,14 +173,6 @@
           {
             "location": "/communication",
             "proxy_pass": "http://localhost:8015"
-          },
-          {
-            "location": "/timeline",
-            "proxy_pass": "http://localhost:8016"
-          },
-          {
-            "location": "/blog",
-            "proxy_pass": "http://localhost:8018"
           },
           {
             "location": "/userbook",
