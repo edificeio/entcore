@@ -6,7 +6,14 @@
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "app-registry": {
-    "name": "org.entcore~app-registry~1.6-SNAPSHOT"
+    "name": "org.entcore~app-registry~1.6-SNAPSHOT",
+    "config": {
+		"main":"org.entcore.registry.AppRegistry",
+		"auto-redeploy": false,
+		"port" : 8012,
+		"address" : "wse.app.registry",
+		"mode": "prod"
+    }
   },
   "neo4j-persistor": {
     "name": "com.wse.neo4j~neo4jPersistor~1.2.4",
@@ -52,21 +59,10 @@
       }
     },
     {
-      "name": "org.entcore~blog~1.6-SNAPSHOT",
-      "config": {
-        "host": "http://localhost:8090",
-        "userbook-host": "http://localhost:8090",
-        "app-address": "http://localhost:8090/blog"
-      }
-    },
-    {
       "name": "org.entcore~session~1.6-SNAPSHOT"
     },
     {
       "name": "org.entcore~communication~1.6-SNAPSHOT"
-    },
-    {
-      "name": "org.entcore~timeline~1.6-SNAPSHOT"
     },
     {
       "name": "org.entcore~portal~1.6-SNAPSHOT",

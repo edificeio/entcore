@@ -122,24 +122,6 @@ project(':portal') {
   }
 }
 
-project(':timeline') {
-  dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
-    compile project(':common')
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-    compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-  }
-}
-
-project(':blog') {
-  dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
-    compile project(':common')
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-    compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-  }
-}
-
 project(':workspace') {
   dependencies {
     provided "fr.wseduc:processor:$processorVersion"

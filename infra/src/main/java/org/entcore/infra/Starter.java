@@ -20,7 +20,9 @@ public class Starter extends Server {
 			if (vertx.fileSystem().existsSync("../../developer.id")) {
 				developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
 			}
-			config = getConfig("", "mod.json");
+			if (container.config() == null || container.config().size() == 0) {
+				config = getConfig("", "mod.json");
+			}
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
 					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK") + Math.random());
@@ -29,7 +31,7 @@ public class Starter extends Server {
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
 						loadCypherScript(); // only in dev mode with embedded neo4j
-						deployModule(config.getObject("app-registry"), true,
+						deployModule(config.getObject("app-registry"), false,
 								new Handler<AsyncResult<String>>() {
 							@Override
 							public void handle(AsyncResult<String> event) {
