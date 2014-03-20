@@ -25,7 +25,8 @@ CKEDITOR.plugins.add('video', {
 							padding : 0,
 							elements : [{
 									type : 'html',
-									html : '<p>Code de la vidéo à intégrer : </p>'
+									html : '<p>Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
+										'(youtube, vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.</p>'
 								},{
 									type : 'textarea',
 									id : 'video-link'
