@@ -6,7 +6,7 @@ var tools = (function(){
 					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
 				},
 				'xls': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1;
+					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
 				},
 				'img': function(type){
 					return type.indexOf('image') !== -1;
