@@ -192,67 +192,28 @@ public class DefaultConversationService implements ConversationService {
 		if (validationError(user, results, folder)) return;
 		int skip = page * LIST_LIMIT;
 		String query =
-				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationFolder)" +
+				"MATCH (c:Conversation {userId : {userId}, active : {true}})-[:HAS_CONVERSATION_FOLDER]->" +
+				"(f:ConversationFolder {name : {folder}})" +
 				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
-				"WHERE c.userId = {userId} AND c.active = {true} AND f.name = {folder} " +
-				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
-				"m.subject as subject, m.date as date, r.unread as unread " +
-				"ORDER BY date DESC " +
+				"WITH m, r " +
+				"ORDER BY m.date DESC " +
 				"SKIP {skip} " +
-				"LIMIT {limit} ";
+				"LIMIT {limit} " +
+				"MATCH m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder)" +
+				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)<-[:HAS_CONVERSATION]-(u:User)" +
+				"-[:APPARTIENT*0..1]->(dn:Visible) " +
+				"WHERE dn.id = m.from OR dn.id IN m.to " +
+				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
+				"m.subject as subject, m.date as date, r.unread as unread, " +
+				"COLLECT(distinct [dn.id, CASE WHEN dn.displayName IS NULL THEN dn.name ELSE dn.displayName END]) " +
+				"as displayNames ";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
 				.putString("folder", folder)
 				.putNumber("skip", skip)
 				.putNumber("limit", LIST_LIMIT)
 				.putBoolean("true", true);
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray res = event.body().getArray("result");
-				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
-					Set<Object> ugids = new HashSet<>();
-					List<String> ids = new ArrayList<>();
-					for (Object o : res) {
-						if (!(o instanceof JsonObject)) continue;
-						JsonObject j = (JsonObject) o;
-						ids.add(j.getString("id"));
-						ugids.addAll(Arrays.<Object>asList(j.getArray("to", new JsonArray()).toArray()));
-						ugids.add(j.getString("from"));
-					}
-					String query2 =
-							"MATCH (dn:Visible) " +
-							"WHERE dn.id IN ['" + Joiner.on("','").join(ugids) + "'] " +
-							"WITH dn " +
-							"MATCH (m:ConversationMessage) " +
-							"WHERE m.id IN ['" + Joiner.on("','").join(ids) + "'] " +
-							"AND (dn.id = m.from OR dn.id IN m.to ) " +
-							"RETURN m.id, " +
-							"COLLECT([dn.id, CASE WHEN dn.displayName IS NULL THEN dn.name ELSE dn.displayName END]) " +
-							"as displayNames, m.date as date " +
-							"ORDER BY date DESC ";
-					neo.execute(query2, new JsonObject(), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							JsonArray res2 = event.body().getArray("result");
-							if ("ok".equals(event.body().getString("status")) && res2 != null
-									&& res2.size() > 0 && res.size() == res2.size()) {
-								for (int i = 0; i < res.size(); i++) {
-									JsonObject j = res.get(i);
-									JsonObject j2 = res2.get(i);
-									j.putArray("displayNames", j2.getArray("displayNames"));
-								}
-								results.handle(new Either.Right<String, JsonArray>(res));
-							} else {
-								results.handle(validResults(event));
-							}
-						}
-					});
-				} else {
-					results.handle(validResult(event));
-				}
-			}
-		});
+		neo.execute(query, params, validResultHandler(results));
 	}
 
 	@Override
@@ -309,10 +270,12 @@ public class DefaultConversationService implements ConversationService {
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
 				"OPTIONAL MATCH message-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
+				"CREATE f-[:HAD_CONVERSATION_MESSAGE]->m " +
 				"DELETE r " +
 				"WITH m as message, pr " +
+				"MATCH message<-[r:HAD_CONVERSATION_MESSAGE]-() " +
 				"WHERE NOT(message-[:HAS_CONVERSATION_MESSAGE]-()) " +
-				"DELETE pr, message";
+				"DELETE r, pr, message";
 		StatementsBuilder b = new StatementsBuilder();
 		for (String id: messagesId) {
 			JsonObject params = new JsonObject()
