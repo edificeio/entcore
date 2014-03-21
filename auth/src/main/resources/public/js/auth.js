@@ -11,7 +11,7 @@ window.addEventListener('load', function(e){
 });
 
 $.get('/skin').done(function(skin){
-	$('link').attr('href', '/assets/themes/' + skin.skin + '/default/theme.css');
+	$('head').append('<link rel="stylesheet" href="/assets/themes/' + skin.skin + '/default/theme.css" />')
 
 	setTimeout(function(){
 		$('body').show();
