@@ -613,14 +613,6 @@ nav.vertical ul li a {
   line-height: 20px;
   padding: 5px;
   padding-left: 10px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-  margin: 0;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 nav.vertical ul li a i {
   display: block;
@@ -635,27 +627,10 @@ nav.vertical ul li input {
   top: 0px !important;
   left: 0px !important;
 }
-nav.vertical ul li input[type=text],
-nav.vertical ul li input[type=search] {
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  -ms-border-radius: 0px;
-  -o-border-radius: 0px;
-  border-radius: 0px;
-  margin-left: 0;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-}
 .dominos .mood {
   position: absolute;
   top: 22px;
   right: 5px;
-}
-.dominos .item {
-  min-width: 154px;
 }
 .dominos .item .domino {
   border: 1px solid #ccc;
@@ -1082,11 +1057,6 @@ p i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
-img.text-sized {
-  height: 20px;
-  vertical-align: top;
-  display: inline-block;
-}
 section.selected,
 article.selected {
   background: #ccc;
@@ -1428,7 +1398,7 @@ ul.icons-tabs {
   padding: 0;
   position: absolute;
   top: 0;
-  right: -53px;
+  right: -60px;
   width: 45px;
   height: 45px;
   display: table;
@@ -2118,7 +2088,7 @@ html.print body section {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   min-height: 100%;
-  padding: 10px;
+  padding: 15px;
   text-align: left;
 }
 section.lightbox-backdrop {
@@ -2714,6 +2684,20 @@ i[role=workspace-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=hiboutheque] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/hiboutheque.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3669,8 +3653,7 @@ a.button {
   visibility: hidden;
 }
 input[type=text],
-input[type=password],
-input[type=search] {
+input[type=password] {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -ms-border-radius: 5px;
@@ -3682,13 +3665,6 @@ input[type=search] {
   margin-top: 2px;
   margin-bottom: 2px;
   padding-left: 3px;
-}
-input[type=search] {
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  -ms-border-radius: 0px;
-  -o-border-radius: 0px;
-  border-radius: 0px;
 }
 label {
   font-size: 14px;
@@ -3876,13 +3852,9 @@ nav.vertical ul li input {
   margin-left: 15px;
   height: 27px;
 }
-nav.vertical ul li input[type=text],
-nav.vertical ul li input[type=search] {
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  -ms-border-radius: 0px;
-  -o-border-radius: 0px;
-  border-radius: 0px;
+nav.vertical ul li input[type=text] {
+  margin-top: -5px;
+  width: 90%;
 }
 nav.vertical ul li a {
   background: -webkit-linear-gradient(#ffffff, #eeeeee);
@@ -3898,6 +3870,7 @@ nav.vertical ul li a {
   border-radius: 10px;
   font-size: 1em;
   border: 1px solid #eeeeee;
+  margin: 5px;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -4805,11 +4778,6 @@ table {
   -ms-border-radius: 5px;
   -o-border-radius: 5px;
   border-radius: 5px;
-}
-table th.right-magnet,
-table td.right-magnet {
-  float: none !important;
-  text-align: right !important;
 }
 table thead tr {
   border: none;

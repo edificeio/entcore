@@ -31,6 +31,7 @@
 }
 .fixed-block .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .fixed-block .cell.fluid {
   position: relative;
@@ -48,6 +49,7 @@
 }
 .height-one .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-one .cell.fluid {
   position: relative;
@@ -65,6 +67,7 @@
 }
 .height-one-plus-half .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-one-plus-half .cell.fluid {
   position: relative;
@@ -87,6 +90,7 @@
 }
 .height-two .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-two .cell.fluid {
   position: relative;
@@ -109,6 +113,7 @@
 }
 .height-three .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-three .cell.fluid {
   position: relative;
@@ -131,6 +136,7 @@
 }
 .height-four .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-four .cell.fluid {
   position: relative;
@@ -153,6 +159,7 @@
 }
 .height-five .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-five .cell.fluid {
   position: relative;
@@ -175,6 +182,7 @@
 }
 .height-six .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-six .cell.fluid {
   position: relative;
@@ -191,6 +199,7 @@
 }
 .left-six .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .left-six .cell.fluid {
   position: relative;
@@ -213,6 +222,7 @@
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-seven .cell.fluid {
   position: relative;
@@ -235,6 +245,7 @@
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-eight .cell.fluid {
   position: relative;
@@ -257,6 +268,7 @@
 }
 .height-nine .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-nine .cell.fluid {
   position: relative;
@@ -279,6 +291,7 @@
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-ten .cell.fluid {
   position: relative;
@@ -301,6 +314,7 @@
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-eleven .cell.fluid {
   position: relative;
@@ -323,6 +337,7 @@
 }
 .height-twelve .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .height-twelve .cell.fluid {
   position: relative;
@@ -598,14 +613,6 @@ nav.vertical ul li a {
   line-height: 20px;
   padding: 5px;
   padding-left: 10px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-  margin: 0;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 nav.vertical ul li a i {
   display: block;
@@ -620,27 +627,10 @@ nav.vertical ul li input {
   top: 0px !important;
   left: 0px !important;
 }
-nav.vertical ul li input[type=text],
-nav.vertical ul li input[type=search] {
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  -ms-border-radius: 0px;
-  -o-border-radius: 0px;
-  border-radius: 0px;
-  margin-left: 0;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-}
 .dominos .mood {
   position: absolute;
   top: 22px;
   right: 5px;
-}
-.dominos .item {
-  min-width: 154px;
 }
 .dominos .item .domino {
   border: 1px solid #ccc;
@@ -888,6 +878,7 @@ p i {
 }
 .calendar .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .calendar .cell.fluid {
   position: relative;
@@ -1011,6 +1002,7 @@ p i {
 }
 .dominos .item .domino .top .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .dominos .item .domino .top .cell.fluid {
   position: relative;
@@ -1045,6 +1037,7 @@ p i {
 }
 .dominos .item .domino .bottom .right-magnet.cell.absolute {
   right: 0 !important;
+  left: auto;
 }
 .dominos .item .domino .bottom .cell.fluid {
   position: relative;
@@ -1065,11 +1058,6 @@ p i {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-}
-img.text-sized {
-  height: 20px;
-  vertical-align: top;
-  display: inline-block;
 }
 section.selected,
 article.selected {
@@ -1384,7 +1372,7 @@ ul.icons-tabs {
   padding: 0;
   position: absolute;
   top: 0;
-  right: -53px;
+  right: -60px;
   width: 45px;
   height: 45px;
   display: table;
@@ -2074,7 +2062,7 @@ html.print body section {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   min-height: 100%;
-  padding: 10px;
+  padding: 15px;
   text-align: left;
 }
 section.lightbox-backdrop {
@@ -2605,7 +2593,7 @@ section .contextual-buttons {
   bottom: 0;
   left: 25px;
   width: 1;
-  width: 66.66666666666667%;
+  width: 66.66666667%;
   z-index: 30;
   padding-right: 27px;
 }
@@ -2645,7 +2633,7 @@ table td {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
   width: 1;
-  width: 33.333333333333336%;
+  width: 33.33333333%;
 }
 .toggle-buttons button {
   background: transparent;

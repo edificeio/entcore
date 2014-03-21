@@ -1057,11 +1057,6 @@ p i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
-img.text-sized {
-  height: 20px;
-  vertical-align: top;
-  display: inline-block;
-}
 section.selected,
 article.selected {
   background: #ccc;
@@ -2689,6 +2684,20 @@ i[role=workspace-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=hiboutheque] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/hiboutheque.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
