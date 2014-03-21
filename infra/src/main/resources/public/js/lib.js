@@ -275,7 +275,7 @@ function Collection(obj){
 	this.all = [];
 	this.current = null;
 	this.obj = obj;
-	this.events = {};
+	this.callbacks = {};
 	this.sync = function(){}
 }
 
@@ -494,7 +494,7 @@ function Collection(obj){
 		setCol.call(this, shared);
 
 		mine.sync = function(){
-			http().get('/workspace/documents', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents', { filter: 'owner', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 					return doc;
@@ -504,7 +504,7 @@ function Collection(obj){
 		};
 
 		shared.sync = function(){
-			http().get('/workspace/documents', { filter: 'shared', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents', { filter: 'shared', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 					return doc;
@@ -514,7 +514,7 @@ function Collection(obj){
 		};
 
 		trash.sync = function(){
-			http().get('/workspace/documents/Trash', { filter: 'owner', app: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents/Trash', { filter: 'owner', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 				});
@@ -523,21 +523,21 @@ function Collection(obj){
 		};
 
 		obj.prototype.save = function(){
-			var toJson = this;
-			toJson.callbacks = undefined;
-			toJson._id = undefined;
+			var toJson = JSON.parse(JSON.stringify(this));
+			delete toJson.callbacks;
+			delete toJson._id;
 			var blob = new Blob([JSON.stringify(toJson)], { type: 'application/json' });
 			var form = new FormData();
 			form.append('blob', blob, this.title + '.json');
 
 			if(this._id !== undefined){
+				notify.info('notify.object.saved');
 				http().putFile('/workspace/document/' + this._id, form);
 			}
 			else{
-				http().postFile('/workspace/document?app=' + appPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
+				http().postFile('/workspace/document?application=' + appPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
 					this._id = e._id;
-					mine.sync();
-					shared.sync();
+					mine.push(this);
 				}.bind(this));
 			}
 		};
@@ -552,8 +552,12 @@ function Collection(obj){
 			trash.sync();
 		};
 
-		obj.prototype.permanentDelete = function(){
-			trash.sync();
+		obj.prototype.remove = function(){
+			notify.info('notify.object.remove');
+			http().delete('/workspace/document/' + this._id);
+			mine.remove(this);
+			trash.remove(this);
+			shared.remove(this);
 		};
 
 		obj.prototype.open = function(){

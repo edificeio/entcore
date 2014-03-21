@@ -56,5 +56,8 @@
 	"admin.title": "One : Console d'administration",
 	"admin.header": "One : Console d'administration",
 	"admin.communication": "Règles de communication",
-	"admin.appRegistry": "Registre d'applications"
+	"admin.appRegistry": "Registre d'applications",
+	"notify.object.remove": "Cet élément a été supprimé",
+	"notify.object.trash": "Cet élément a été déplacé vers la corbeille",
+	"notify.object.saved": "Modifications enregistrées"
 }
