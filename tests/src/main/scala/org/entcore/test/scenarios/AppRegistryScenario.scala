@@ -3,7 +3,7 @@ package org.entcore.test.scenarios
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import bootstrap._
-import net.minidev.json.{JSONArray, JSONValue, JSONObject}
+import net.minidev.json.{JSONValue, JSONObject, JSONArray}
 import scala.collection.JavaConverters._
 
 object AppRegistryScenario {
