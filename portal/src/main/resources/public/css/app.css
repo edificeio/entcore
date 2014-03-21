@@ -1088,6 +1088,11 @@ p i {
 }
 img.text-sized {
   height: 20px;
+<<<<<<< HEAD
+=======
+  vertical-align: top;
+  display: inline-block;
+>>>>>>> 6d9ffa2... [infra] framework update and corrected issues with editor
 }
 section.selected,
 article.selected {

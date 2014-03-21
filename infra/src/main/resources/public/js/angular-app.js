@@ -666,7 +666,7 @@ function createCKEditorInstance(editor, $scope, $compile){
 		}, 500);
 
 		if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
-			$('img').on('load', positionning);
+			$('img').on('load', ckeEditorFixedPositionning);
 		}
 		else{
 			ckeEditorFixedPositionning();
@@ -1462,7 +1462,10 @@ function Account($scope){
 
 function Share($rootScope, $scope, ui, _, lang){
 	if(!$scope.appPrefix){
-		$scope.appPrefix = appPrefix;
+		$scope.appPrefix = 'workspace';
+		if($scope.resources instanceof Model){
+			$scope.resources = [$scope.resources];
+		}
 	}
 	$scope.sharing = {};
 	$scope.found = [];

@@ -329,6 +329,16 @@ function Collection(obj){
 				item.selected = false;
 			});
 		},
+		concat: function(col){
+			return this.all.concat(col.all);
+		},
+		closeAll: function(){
+			this.all.forEach(function(item){
+				if(item.opened){
+					item.opened = false;
+				}
+			})
+		},
 		push: function(element, notify){
 			var newItem = element;
 			if(this.obj === undefined){
@@ -479,6 +489,7 @@ function Collection(obj){
 			}
 
 			col.model = this;
+			col.behaviours = 'workspace';
 		}
 
 		this[pluralizeName(obj)] = new Model();
@@ -486,9 +497,15 @@ function Collection(obj){
 		this[pluralizeName(obj)].shared = new Collection(obj);
 		this[pluralizeName(obj)].trash = new Collection(obj);
 
+		var colContainer = this[pluralizeName(obj)];
 		var mine = this[pluralizeName(obj)].mine;
 		var trash = this[pluralizeName(obj)].trash;
 		var shared = this[pluralizeName(obj)].shared;
+
+		mine.on('change', function(){ colContainer.trigger('change') });
+		shared.on('change', function(){ colContainer.trigger('change') });
+		trash.on('change', function(){ colContainer.trigger('change') });
+
 		setCol.call(this, mine);
 		setCol.call(this, trash);
 		setCol.call(this, shared);
@@ -565,6 +582,12 @@ function Collection(obj){
 			http().get('/workspace/document/' + this._id).done(function(content){
 				this.updateData(content);
 			}.bind(this))
+		};
+
+		obj.prototype.close = function(){
+			if(this.opened === true){
+				this.opened = false;
+			}
 		};
 
 		mine.sync();
