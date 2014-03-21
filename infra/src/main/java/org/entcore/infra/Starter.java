@@ -36,8 +36,8 @@ public class Starter extends Server {
 							@Override
 							public void handle(AsyncResult<String> event) {
 								if (event.succeeded()) {
-									deployModules(config.getArray("external-modules"), false);
-									deployModules(config.getArray("one-modules"), true);
+									deployModules(config.getArray("external-modules", new JsonArray()), false);
+									deployModules(config.getArray("one-modules", new JsonArray()), true);
 								}
 							}
 						});
