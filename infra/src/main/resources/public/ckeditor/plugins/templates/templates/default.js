@@ -45,7 +45,7 @@ CKEDITOR.addTemplates(
 			html:'<div class="row">' +
 					'<div class="text-container cell six">' +
 						'<div class="fixed-block height-five">' +
-							'<article class="twelve cell fixed clip">' +
+							'<article class="twelve cell absolute clip">' +
 								'<div class="fluid cell six avatar">' +
 									'<img src="' + imagesPath + 'filler-image.png" />' +
 								'</div>' +
@@ -58,7 +58,7 @@ CKEDITOR.addTemplates(
 					'</div>' +
 					'<div class="cell six text-container">' +
 						'<div class="fixed-block height-five">' +
-							'<article class="twelve cell fixed clip">' +
+							'<article class="twelve cell absolute clip">' +
 								'<div class="fluid cell six avatar">' +
 								'<img src="' + imagesPath + 'filler-image.png" />' +
 								'</div>' +
@@ -73,7 +73,7 @@ CKEDITOR.addTemplates(
 				'<div class="row">' +
 					'<div class="text-container cell six">' +
 						'<div class="fixed-block height-five">' +
-								'<article class="twelve cell fixed clip">' +
+								'<article class="twelve cell absolute clip">' +
 									'<div class="fluid cell six avatar">' +
 									'<img src="' + imagesPath + 'filler-image.png" />' +
 									'</div>' +
@@ -86,7 +86,7 @@ CKEDITOR.addTemplates(
 						'</div>' +
 						'<div class="text-container cell six">' +
 							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell fixed clip">' +
+								'<article class="twelve cell absolute clip">' +
 									'<div class="fluid cell six avatar">' +
 									'<img src="' + imagesPath + 'filler-image.png" />' +
 									'</div>' +
@@ -101,7 +101,7 @@ CKEDITOR.addTemplates(
 					'<div class="row">' +
 						'<div class="text-container cell six">' +
 							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell fixed clip">' +
+								'<article class="twelve cell absolute clip">' +
 									'<div class="fluid cell six avatar">' +
 										'<img src="' + imagesPath + 'filler-image.png" />' +
 									'</div>' +
@@ -114,7 +114,7 @@ CKEDITOR.addTemplates(
 						'</div>' +
 						'<div class="text-container cell six">' +
 							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell fixed clip">' +
+								'<article class="twelve cell absolute clip">' +
 									'<div class="fluid cell six avatar">' +
 										'<img src="' + imagesPath + 'filler-image.png" />' +
 									'</div>' +

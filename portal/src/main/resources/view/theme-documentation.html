@@ -86,8 +86,8 @@
 					<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-	  &lt;div class=&quot;two cell&quot;&gt;Two cell&lt;/div&gt;
-  	  &lt;div class=&quot;ten cell&quot;&gt;Ten cell&lt;/div&gt;
+	&lt;div class=&quot;two cell&quot;&gt;Two cell&lt;/div&gt;
+  	&lt;div class=&quot;ten cell&quot;&gt;Ten cell&lt;/div&gt;
   &lt;/div&gt;
 					</pre>
 				</div>
@@ -109,12 +109,12 @@
 					<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-	  &lt;div class=&quot;two cell height-two&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Two cell height-two&lt;/div&gt;
-	  &lt;/div&gt;
-	  &lt;div class=&quot;ten cell height-two&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-two&lt;/div&gt;
-	  &lt;/div&gt;
+	&lt;div class=&quot;two cell height-two&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Two cell height-two&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;ten cell height-two&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-two&lt;/div&gt;
+	&lt;/div&gt;
   &lt;/div&gt;
 				</pre>
 				</div>
@@ -139,15 +139,15 @@
 					<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-	  &lt;div class=&quot;two cell height-two&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Two cell height-two&lt;/div&gt;
-	  &lt;/div&gt;
-	  &lt;div class=&quot;ten cell height-one&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-one&lt;/div&gt;
-	  &lt;/div&gt;
-	  &lt;div class=&quot;ten cell height-one&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-one&lt;/div&gt;
-	  &lt;/div&gt;
+	&lt;div class=&quot;two cell height-two&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Two cell height-two&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;ten cell height-one&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-one&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;ten cell height-one&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Ten cell height-one&lt;/div&gt;
+	&lt;/div&gt;
   &lt;/div&gt;
 					</pre>
 				</div>
@@ -182,9 +182,9 @@
 				<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-	  &lt;div class=&quot;twelve cell height-two&quot; style=&quot;padding:15px&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot;&gt;Twelve cell height-two avec un padding de 15px&lt;/div&gt;
-	  &lt;/div&gt;
+	&lt;div class=&quot;twelve cell height-two&quot; style=&quot;padding:15px&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot;&gt;Twelve cell height-two avec un padding de 15px&lt;/div&gt;
+	&lt;/div&gt;
   &lt;/div&gt;
 				</pre>
 
@@ -207,11 +207,11 @@
 				<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-	  &lt;div class=&quot;twelve cell height-two&quot;&gt;
-		  &lt;div class=&quot;absolute cell&quot; style=&quot;padding:15px&quot;&gt;
-			Twelve cell height-two, avec un padding de 15px padding dans le bloc absolute
-		  &lt;/div&gt;
+	&lt;div class=&quot;twelve cell height-two&quot;&gt;
+	  &lt;div class=&quot;absolute cell&quot; style=&quot;padding:15px&quot;&gt;
+		Twelve cell height-two, avec un padding de 15px padding dans le bloc absolute
 	  &lt;/div&gt;
+	&lt;/div&gt;
   &lt;/div&gt;
 				</pre>
 
@@ -230,11 +230,11 @@
 				<pre class="row prettyprint">
 
   &lt;div class=&quot;row&quot;&gt;
-        &lt;div class=&quot;twelve cell&quot; style=&quot;padding:15px;background:#333;&quot;&gt;
-	      &lt;div class=&quot;twelve cell height-two&quot;&gt;
-		      &lt;div class=&quot;absolute cell&quot;&gt;Twelve cell height-two, avec un padding de 15px padding dans un wrapper&lt;/div&gt;
-	      &lt;/div&gt;
-        &lt;/div&gt;
+    &lt;div class=&quot;twelve cell&quot; style=&quot;padding:15px;background:#333;&quot;&gt;
+      &lt;div class=&quot;twelve cell height-two&quot;&gt;
+        &lt;div class=&quot;absolute cell&quot;&gt;Twelve cell height-two, avec un padding de 15px padding dans un wrapper&lt;/div&gt;
+	  &lt;/div&gt;
+    &lt;/div&gt;
   &lt;/div&gt;
 				</pre>
 
@@ -248,18 +248,21 @@
 					</div>
 				</div>
 			</div>
-
+			<div class="twelve cell vertical-spacing-twice"></div>
 			<div class="row">
-				<h1 class="twelve cell">Composants d'affichage</h1>
+				<h1 class="twelve cell vertical-spacing">Composants d'affichage</h1>
 
 				<h2 class="twelve cell">Panneau</h2>
-				<pre class="prettyprint">
+				<div class="row">
+					<pre class="prettyprint twelve cell">
 
-	&lt;article class=&quot;reduce-block-six&quot;&gt;
-			...
-	&lt;/article&gt;
-				</pre>
-				<article class="reduce-block-six">
+  &lt;article class=&quot;reduce-block-six&quot;&gt;
+    ...
+  &lt;/article&gt;
+					</pre>
+				</div>
+
+				<article class="reduce-block-six row">
 					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque hendrerit sed turpis nec interdum. In lobortis iaculis hendrerit.
 					Nullam porttitor mattis orci, quis rutrum leo fringilla eget. Sed egestas tellus eget felis dignissim,
 					eu sollicitudin neque tincidunt. Duis dignissim tempus eros sed elementum. Vestibulum vehicula quam dolor,
@@ -271,47 +274,36 @@
 				</article>
 
 				<h2 class="twelve cell">Dominos</h2>
-				<pre class="prettyprint">
-	&lt;div class="dominos"&gt;
-		&lt;div class="item"&gt;
-			&lt;section class="domino green"&gt;
-				&lt;div class="top"&gt;
-					&lt;img src="/userbook/public/img/no-avatar.jpg" class="fixed twelve cell" /&gt;
-				&lt;/div&gt;
-				&lt;div class="bottom"&gt;
-					&lt;div class="content"&gt;
-						&lt;a>Nom/titre&lt;/a&gt;
-						&lt;br />&lt;span class="medium-text">Information&lt;/span&gt;
-						&lt;div class="bottom-locked"&gt;
-							Information supplémentaire du bas
-						&lt;/div&gt;
-					&lt;/div&gt;
-				&lt;/div&gt;
-			&lt;/section&gt;
-		&lt;/div&gt;
-		&lt;div class="item"&gt;
-			&lt;section class="domino pink"&gt;
-				&lt;div class="top"&gt;
-					&lt;img src="/directory/public/img/no-avatar.jpg" class="fixed twelve cell" /&gt;
-				&lt;/div&gt;
-				&lt;div class="bottom"&gt;
-					&lt;div class="content"&gt;
-						&lt;a>Nom/titre&lt;/a&gt;
-						&lt;br />&lt;span class="medium-text">Information&lt;/span&gt;
-						&lt;div class="bottom-locked"&gt;
-							Information supplémentaire du bas
-						&lt;/div&gt;
-					&lt;/div&gt;
-				&lt;/div&gt;
-			&lt;/section&gt;
-		&lt;/div&gt;
-	&lt;/div&gt;
+
+				<p>Les dominos d'affichent côte à côte. La couleur de la bande est paramétrable avec les classes <label>cyan</label>, <label>orange</label>,
+				<label>green</label>, <label>purple</label> et <label>pink</label>.</p>
+
+				<pre class="prettyprint twelve cell">
+
+  &lt;div class="dominos"&gt;
+    &lt;div class="item"&gt;
+	  &lt;section class="domino green"&gt;
+	    &lt;div class="top"&gt;
+		  &lt;img src="/userbook/public/img/no-avatar.jpg" class="fixed twelve cell" /&gt;
+	    &lt;/div&gt;
+	    &lt;div class="bottom"&gt;
+		  &lt;div class="content"&gt;
+		    &lt;a&gt;Nom/titre&lt;/a&gt;
+		    &lt;br /&gt;&lt;span class="medium-text">Information&lt;/span&gt;
+		    &lt;div class="bottom-locked"&gt;
+			  Information supplémentaire du bas
+		    &lt;/div&gt;
+		  &lt;/div&gt;
+	    &lt;/div&gt;
+	  &lt;/section&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
 				</pre>
-				<div class="dominos">
+				<div class="dominos row">
 					<div class="item">
 						<section class="domino green">
 							<div class="top">
-								<img src="/userbook/public/img/no-avatar.jpg" class="fixed twelve cell" />
+								<img src="/directory/public/img/no-avatar.jpg" class="fixed twelve cell" />
 							</div>
 							<div class="bottom">
 								<div class="content">
@@ -340,46 +332,303 @@
 							</div>
 						</section>
 					</div>
+					<div class="item">
+						<section class="domino cyan">
+							<div class="top">
+								<img src="/directory/public/img/no-avatar.jpg" class="fixed twelve cell" />
+							</div>
+							<div class="bottom">
+								<div class="content">
+									<a>Nom/titre</a>
+									<br /><span class="medium-text">Information</span>
+									<div class="bottom-locked">
+										Information supplémentaire du bas
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+					<div class="item">
+						<section class="domino purple">
+							<div class="top">
+								<img src="/directory/public/img/no-avatar.jpg" class="fixed twelve cell" />
+							</div>
+							<div class="bottom">
+								<div class="content">
+									<a>Nom/titre</a>
+									<br /><span class="medium-text">Information</span>
+									<div class="bottom-locked">
+										Information supplémentaire du bas
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+					<div class="item">
+						<section class="domino orange">
+							<div class="top">
+								<img src="/directory/public/img/no-avatar.jpg" class="fixed twelve cell" />
+							</div>
+							<div class="bottom">
+								<div class="content">
+									<a>Nom/titre</a>
+									<br /><span class="medium-text">Information</span>
+									<div class="bottom-locked">
+										Information supplémentaire du bas
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
 				</div>
 			</div>
 
+		<h2 class="twelve cell">Vignettes</h2>
 
+		<pre class="prettyprint twelve cell">
 
-
-		<h2>Vignettes</h2>
+  &lt;div class="reduce-block-six cell four"&gt;
+    &lt;div class="fixed-block height-six"&gt;
+	  &lt;article class="twelve cell absolute clip"&gt;
+	    &lt;div class="cell six"&gt;
+		  &lt;img src="/directory/public/img/no-avatar.jpg" /&gt;
+	    &lt;/div&gt;
+	    &lt;div class="cell six reduce-block-six right-magnet"&gt;
+		  &lt;h2&gt;Nom/titre&lt;/h2&gt;
+		  &lt;p&gt;Informations&lt;/p&gt;
+	    &lt;/div&gt;
+	  &lt;/article&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+		</pre>
 
 		<div class="row">
-			<div class="text-container cell six">
-				<div class="fixed-block height-five">
-					<article class="twelve cell fixed clip">
-						<div class="fluid cell six avatar">
+			<div class="reduce-block-six cell four">
+				<div class="fixed-block height-six">
+					<article class="twelve cell absolute clip">
+						<div class="cell six">
 							<img src="/directory/public/img/no-avatar.jpg" />
-							</div>
-						<div class="fluid cell six text-container right-magnet">
+						</div>
+						<div class="cell six reduce-block-six right-magnet">
 							<h2>Nom/titre</h2>
 							<p>Informations</p>
-							</div>
-						</article>
-					</div>
+						</div>
+					</article>
 				</div>
-			<div class="cell six text-container">
-				<div class="fixed-block height-five">
-					<article class="twelve cell fixed clip">
-						<div class="fluid cell six avatar">
+			</div>
+			<div class="cell four reduce-block-six">
+				<div class="fixed-block height-six">
+					<article class="twelve cell absolute clip">
+						<div class="cell six">
 							<img src="/directory/public/img/no-avatar.jpg" />
-							</div>
-						<div class="fluid cell six text-container right-magnet">
+						</div>
+						<div class="cell six reduce-block-six right-magnet">
 							<h2>Nom/titre</h2>
 							<p>Informations</p>
-							</div>
-						</article>
-					</div>
+						</div>
+					</article>
+				</div>
+			</div>
+			<div class="cell four reduce-block-six">
+				<div class="fixed-block height-six">
+					<article class="twelve cell absolute clip">
+						<div class="cell six">
+							<img src="/directory/public/img/no-avatar.jpg" />
+						</div>
+						<div class="cell six reduce-block-six right-magnet">
+							<h2>Nom/titre</h2>
+							<p>Informations</p>
+						</div>
+					</article>
+				</div>
+			</div>
+		</div>
+		<div class="row reduce-block-six"></div>
+		<h1 class="twelve cell vertical-spacing-twice">Modules</h1>
+
+			<h2>Navigation</h2>
+
+			<h3>Verticale</h3>
+
+			<pre class="prettyprint">
+  &lt;nav class=&quot;vertical&quot;&gt;
+    &lt;ul&gt;
+	  &lt;li&gt;
+	    &lt;a&gt;Lien A&lt;/a&gt;
+	  &lt;/li&gt;
+	  &lt;li&gt;
+	    &lt;a&gt;Lien B&lt;/a&gt;
+		&lt;ul&gt;
+		  &lt;li&gt;
+		    &lt;a&gt;Lien B.1&lt;/a&gt;
+		  &lt;/li&gt;
+		  &lt;li&gt;
+		    &lt;a&gt;Lien B.2&lt;/a&gt;
+		  &lt;/li&gt;
+		  &lt;li&gt;
+			&lt;a&gt;&lt;i role=&quot;close&quot;&gt;&lt;/i&gt;Avec fermeture&lt;/a&gt;
+		  &lt;/li&gt;
+		&lt;/ul&gt;
+	  &lt;/li&gt;
+	  &lt;li&gt;
+		&lt;a&gt;Lien C&lt;/a&gt;
+	  &lt;/li&gt;
+	&lt;/ul&gt;
+  &lt;/nav&gt;
+			</pre>
+
+			<nav class="vertical">
+				<ul>
+					<li>
+						<a>Lien A</a>
+					</li>
+					<li>
+						<a>Lien B</a>
+						<ul>
+							<li>
+								<a>Lien B.1</a>
+							</li>
+							<li>
+								<a>Lien B.2</a>
+							</li>
+							<li>
+								<a><i role="close"></i>Avec fermeture</a>
+							</li>
+						</ul>
+					</li>
+					<li>
+						<a>Lien C</a>
+					</li>
+				</ul>
+			</nav>
+
+			<h3>Horizontale</h3>
+
+			<p>La navigation horizontale a une position absolute et doit donc être placée dans un conteneur.</p>
+
+			<div class="row grid-exemple">
+				<div class="row height-one">
+					<nav class="horizontal absolute cell">
+						<a>Lien A</a>
+						<a>Lien B</a>
+						<a>Lien C</a>
+					</nav>
 				</div>
 			</div>
 
+		<pre class="prettyprint">
+
+  &lt;div class=&quot;row height-one&quot;&gt;
+    &lt;nav class=&quot;horizontal absolute cell&quot;&gt;
+  	  &lt;a&gt;Lien A&lt;/a&gt;
+	  &lt;a&gt;Lien B&lt;/a&gt;
+	  &lt;a&gt;Lien C&lt;/a&gt;
+	&lt;/nav&gt;
+  &lt;/div&gt;
+		</pre>
+
+			<div class="row"></div>
+			<h2>Listes</h2>
+
+			<h3 class="vertical-spacing-twice">Tableau</h3>
+
+			<div class="row">
+				<article class="twelve cell list-view">
+					<table class="twelve">
+						<thead>
+						<tr>
+							<th>
+
+							</th>
+							<th>
+								Colonne 1
+							</th>
+							<th>
+								Colonne 2
+							</th>
+							<th>
+								Colonne 3
+							</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+						</tr>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+						</tr>
+						<tr>
+							<td><i role="doc"></i></td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+							<td>Valeur</td>
+						</tr>
+						</tbody>
+					</table>
+				</article>
+			</div>
+
+		<pre class="prettyprint row">
+
+  &lt;article class=&quot;twelve cell list-view&quot;&gt;
+	&lt;table class="twelve"&gt;
+	  &lt;thead&gt;
+		&lt;tr&gt;
+		  &lt;th&gt;&lt;/th&gt;
+		  &lt;th&gt;Colonne 1&lt;/th&gt;
+		  &lt;th&gt;Colonne 2&lt;/th&gt;
+		  &lt;th&gt;Colonne 3&lt;/th&gt;
+		&lt;/tr&gt;
+	  &lt;/thead&gt;
+	  &lt;tbody&gt;
+	    &lt;tr&gt;
+		  &lt;td&gt;&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		&lt;/tr&gt;
+		...
+	  &lt;/tbody&gt;
+	&lt;/table&gt;
+  &lt;/article&gt;
+		</pre>
+
+			<h3 class="vertical-spacing-twice">Liste d'icônes</h3>
+
+			<h2>Forms</h2>
+
+			<h3>Search form</h3>
+
+			<form class="search">
+				<input type="text" />
+				<input type="submit" value="Search" />
+			</form>
+			<div class="clear"></div>
+
+		<pre class="prettyprint">
+
+  &lt;form class=&quot;search&quot;&gt;
+    &lt;input type=&quot;text&quot; /&gt;
+	&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;
+  &lt;/form&gt;
+		</pre>
+
+			<h1>Composants dynamiques</h1>
+			<h2>Lightbox</h2>
+			<h2>Panneau horizontal</h2>
+			<h2>Panneau vertical</h2>
+
+			<div class="clear"></div>
+
+		<div class="row"></div>
 		<h1>Elements</h1>
-
-
 
 		<h2>Typographie</h2>
 
@@ -512,186 +761,7 @@
 
 		<div class="clear"></div>
 
-		<h1>Modules</h1>
 
-		<h2>Navigation</h2>
-
-		<h3>Vertical</h3>
-
-		<nav class="vertical">
-			<ul>
-				<li>
-					<a>Link A</a>
-				</li>
-				<li>
-					<a>Link B</a>
-					<ul>
-						<li>
-							<a>Link B.1</a>
-						</li>
-						<li>
-							<a>Link B.2</a>
-						</li>
-						<li>
-							<a><i role="close"></i>Removable</a>
-						</li>
-					</ul>
-				</li>
-				<li>
-					<a>Link C</a>
-				</li>
-			</ul>
-		</nav>
-
-		<pre class="prettyprint">
-	&lt;nav class=&quot;vertical&quot;&gt;
-		&lt;ul&gt;
-			&lt;li&gt;
-				&lt;a&gt;Link A&lt;/a&gt;
-			&lt;/li&gt;
-			&lt;li&gt;
-				&lt;a&gt;Link B&lt;/a&gt;
-				&lt;ul&gt;
-					&lt;li&gt;
-						&lt;a&gt;Link B.1&lt;/a&gt;
-					&lt;/li&gt;
-					&lt;li&gt;
-						&lt;a&gt;Link B.2&lt;/a&gt;
-					&lt;/li&gt;
-					&lt;li&gt;
-						&lt;a&gt;&lt;i role=&quot;close&quot;&gt;&lt;/i&gt;Removable&lt;/a&gt;
-					&lt;/li&gt;
-				&lt;/ul&gt;
-			&lt;/li&gt;
-			&lt;li&gt;
-				&lt;a&gt;Link C&lt;/a&gt;
-			&lt;/li&gt;
-		&lt;/ul&gt;
-	&lt;/nav&gt;
-		</pre>
-
-		<h3>Horizontal</h3>
-
-		<div class="row horizontal-navigation-exemple">
-			<div class="twelve cell">
-				<nav class="horizontal">
-					<a>Link A</a>
-					<a>Link B</a>
-					<a>Link C</a>
-				</nav>
-			</div>
-		</div>
-
-		<pre class="prettyprint">
-	&lt;div class=&quot;row&quot;&gt;
-		&lt;div class=&quot;twelve cell&quot;&gt;
-			&lt;nav class=&quot;horizontal&quot;&gt;
-				&lt;a&gt;Link A&lt;/a&gt;
-				&lt;a&gt;Link B&lt;/a&gt;
-				&lt;a&gt;Link C&lt;/a&gt;
-			&lt;/nav&gt;
-		&lt;/div&gt;
-	&lt;/div&gt;
-		</pre>
-
-		<h2>Lists</h2>
-
-		<h3>Table</h3>
-
-		<div class="row">
-			<article class="twelve cell list-view">
-				<table class="twelve">
-					<thead>
-						<tr>
-							<th>
-
-							</th>
-							<th>
-								Column 1
-							</th>
-							<th>
-								Column 2
-							</th>
-							<th>
-								Column 3
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><i role="doc"></i></td>
-							<td>Value</td>
-							<td>Value</td>
-							<td>Value</td>
-						</tr>
-						<tr>
-							<td><i role="doc"></i></td>
-							<td>Value</td>
-							<td>Value</td>
-							<td>Value</td>
-						</tr>
-						<tr>
-							<td><i role="doc"></i></td>
-							<td>Value</td>
-							<td>Value</td>
-							<td>Value</td>
-						</tr>
-					</tbody>
-				</table>
-			</article>
-		</div>
-		<div class="clear"></div>
-
-		<h3>Liste d'icônes</h3>
-
-
-		<pre class="prettyprint">
-	&lt;article class=&quot;twelve cell list-view&quot;&gt;
-		&lt;table&gt;
-			&lt;thead&gt;
-				&lt;tr&gt;
-					&lt;th&gt;&lt;/th&gt;
-					&lt;th&gt;Column 1&lt;/th&gt;
-					&lt;th&gt;Column 2&lt;/th&gt;
-					&lt;th&gt;Column 3&lt;/th&gt;
-				&lt;/tr&gt;
-			&lt;/thead&gt;
-			&lt;tbody&gt;
-				&lt;tr&gt;
-					&lt;td&gt;&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;&lt;/td&gt;
-					&lt;td&gt;Value&lt;/td&gt;
-					&lt;td&gt;Value&lt;/td&gt;
-					&lt;td&gt;Value&lt;/td&gt;
-				&lt;/tr&gt;
-				...
-			&lt;/tbody&gt;
-		&lt;/table&gt;
-	&lt;/article&gt;
-		</pre>
-
-		<h2>Forms</h2>
-
-		<h3>Search form</h3>
-
-		<form class="search">
-			<input type="text" />
-			<input type="submit" value="Search" />
-		</form>
-		<div class="clear"></div>
-
-		<pre class="prettyprint">
-	&lt;form class=&quot;search&quot;&gt;
-		&lt;input type=&quot;text&quot; /&gt;
-		&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;
-	&lt;/form&gt;
-		</pre>
-
-		<h1>Composants dynamiques</h1>
-		<h2>Lightbox</h2>
-		<h2>Panneau horizontal</h2>
-		<h2>Panneau vertical</h2>
-
-		<div class="clear"></div>
 
 		<h1>LESS usage</h1>
 
