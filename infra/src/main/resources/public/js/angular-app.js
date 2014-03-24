@@ -626,28 +626,29 @@ module.directive('dropDown', function($compile, $timeout){
 
 		}
 	}
-})
+});
 
 var ckeEditorFixedPositionning = function(){
 	var editableElement;
 	var toolbox;
-	$('head').find('[ckestyle]').remove();
-	for(var instance in CKEDITOR.instances){
-		editableElement = $(CKEDITOR.instances[instance].container.$);
-		toolbox = $('#cke_' + CKEDITOR.instances[instance].name);
 
-		if(!editableElement.length){
+	for(var instance in CKEDITOR.instances){
+		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
+		toolbox = $('#cke_' + CKEDITOR.instances[instance].name);
+		if(!CKEDITOR.instances[instance].element){
 			toolbox.remove();
-			CKEDITOR.instances[instance].remove();
+			CKEDITOR.instances[instance].destroy();
 			return;
 		}
+
+		editableElement = $(CKEDITOR.instances[instance].element.$);
 
 		toolbox.width(editableElement.width() + 2 + parseInt(editableElement.css('padding') || 4) * 2);
 		toolbox.offset({
 			top: editableElement.offset().top - toolbox.height(),
 			left: editableElement.offset().left
 		});
-		$('<style ckestyle></style>').text('#cke_' + CKEDITOR.instances[instance].name + '{' +
+		$('<style ckestyle="' + CKEDITOR.instances[instance].name + '"></style>').text('#cke_' + CKEDITOR.instances[instance].name + '{' +
 			'top:' + (editableElement.offset().top - toolbox.height()) + 'px !important;' +
 			'left:' + editableElement.offset().left + 'px !important;' +
 			'position: absolute !important;' +
@@ -659,7 +660,7 @@ var ckeEditorFixedPositionning = function(){
 function createCKEditorInstance(editor, $scope, $compile){
 	CKEDITOR.on('instanceReady', function(ck){
 		editor.focus();
-		editor.html($compile($scope.ngModel)($scope.$parent));
+		editor.html($compile('<div>' + $scope.ngModel + '</div>')($scope.$parent));
 		$scope.$parent.$apply();
 		setTimeout(function(){
 			$('input').first().focus();
@@ -678,7 +679,7 @@ function createCKEditorInstance(editor, $scope, $compile){
 
 	$scope.$watch('ngModel', function(newValue){
 		if(editor.html() !== newValue){
-			editor.html($compile(newValue)($scope.$parent));
+			editor.html($compile('<div>' + newValue + '</div>')($scope.$parent));
 			//weird browser bug with audio tags
 			editor.find('audio').each(function(index, item){
 				var parent = $(item).parent();
@@ -741,7 +742,7 @@ module.directive('richTextEditor', function($compile){
 						CKEDITOR.instances[instance].destroy()
 					}
 					$('.cke').remove();
-				})
+				});
 			}
 		}
 	}
@@ -842,7 +843,6 @@ module.directive('htmlEditor', function($compile){
 				var instance = CKEDITOR.inline(editor[0]);
 
 				createCKEditorInstance(editor, $scope, $compile);
-
 				$element.on('removed', function(){
 					setTimeout(function(){
 						ckeEditorFixedPositionning();

@@ -580,6 +580,7 @@ function Collection(obj){
 		obj.prototype.open = function(){
 			this.opened = true;
 			http().get('/workspace/document/' + this._id).done(function(content){
+				delete content.$$hashKey;
 				this.updateData(content);
 			}.bind(this))
 		};
