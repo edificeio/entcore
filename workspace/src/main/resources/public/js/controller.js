@@ -98,6 +98,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	}
 
 	function formatDocuments(documents, callback){
+		documents = _.filter(documents, function(doc){
+			return doc.metadata['content-type'] !== 'application/json';
+		});
 		documents.forEach(function(item){
 			if(item.created){
 				item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
