@@ -46,6 +46,8 @@ public class Auth extends Server {
 
 		auth.put("/block/:userId", "blockUser");
 
+		auth.get("/cgu", "cgu");
+
 		try {
 			auth.registerMethod(config.getString("address", "wse.oauth"), "oauthResourceServer");
 		} catch (NoSuchMethodException | IllegalAccessException e) {

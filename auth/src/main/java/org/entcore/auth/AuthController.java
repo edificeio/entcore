@@ -330,6 +330,9 @@ public class AuthController extends Controller {
 		if (request.params().contains("login")) {
 			json.putString("login", request.params().get("login"));
 		}
+		if (container.config().getBoolean("cgu", true)) {
+			json.putBoolean("cgu", true);
+		}
 		renderView(request, json);
 	}
 
@@ -343,7 +346,18 @@ public class AuthController extends Controller {
 				final String activationCode = request.formAttributes().get("activationCode");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
-				if (login == null || activationCode == null|| password == null ||
+				if (container.config().getBoolean("cgu", true) &&
+						!"true".equals(request.formAttributes().get("acceptCGU"))) {
+					trace.info("Invalid cgu " + login);
+					JsonObject error = new JsonObject()
+							.putObject("error", new JsonObject()
+							.putString("message", "invalid.cgu"))
+							.putBoolean("cgu", true);
+					if (activationCode != null) {
+						error.putString("activationCode", activationCode);
+					}
+					renderView(request, error);
+				} else if (login == null || activationCode == null|| password == null ||
 						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
 					trace.info("Echec de l'activation du compte utilisateur " + login);
@@ -566,6 +580,10 @@ public class AuthController extends Controller {
 				resetPasswordView(request, error);
 			}
 		});
+	}
+
+	public void cgu(final HttpServerRequest request) {
+		renderView(request);
 	}
 
 }

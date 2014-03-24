@@ -21,7 +21,7 @@
 
 			<div class="panel">
 			<h1><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.activation.header{{/i18n}}</h1>
-			{{#error}}<p style="color:red">{{message}}</p>{{/error}}
+			{{#error}}<p style="color:red">{{#i18n}}{{message}}{{/i18n}}</p>{{/error}}
 
 			<form method="post" action="activation">
 				<p>
@@ -40,6 +40,11 @@
 					<label>{{#i18n}}auth.activation.confirm.password{{/i18n}}</label>
 					<input type="password" name="confirmPassword" />
 				</p>
+				{{#cgu}}
+				<p>
+					<input type="checkbox" name="acceptCGU" value="true"><a href="/auth/cgu">{{#i18n}}label.accept.cgu{{/i18n}}</a>
+				</p>
+				{{/cgu}}
 				<input type="submit" value="{{#i18n}}auth.activate{{/i18n}}" />
 				<a href="/auth/login" class="right cell">{{#i18n}}auth.cancel{{/i18n}}</a>
 				<div class="clear"></div>
