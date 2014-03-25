@@ -451,8 +451,6 @@
 
 			<h2>Navigation</h2>
 
-			<h3>Verticale</h3>
-
 			<pre class="prettyprint">
   &lt;nav class=&quot;vertical&quot;&gt;
     &lt;ul&gt;
@@ -480,7 +478,7 @@
   &lt;/nav&gt;
 			</pre>
 
-			<nav class="vertical">
+			<nav class="vertical four">
 				<ul>
 					<li>
 						<a class="selected">Lien A</a>
@@ -505,36 +503,37 @@
 				</ul>
 			</nav>
 
-			<h3>Horizontale</h3>
-
-			<p>La navigation horizontale a une position absolute et doit donc être placée dans un conteneur.</p>
-
-			<div class="row grid-exemple">
-				<div class="row height-one">
-					<nav class="horizontal absolute cell">
-						<a>Lien A</a>
-						<a>Lien B</a>
-						<a>Lien C</a>
-					</nav>
-				</div>
-			</div>
-
-		<pre class="prettyprint">
-
-  &lt;div class=&quot;row height-one&quot;&gt;
-    &lt;nav class=&quot;horizontal absolute cell&quot;&gt;
-  	  &lt;a&gt;Lien A&lt;/a&gt;
-	  &lt;a&gt;Lien B&lt;/a&gt;
-	  &lt;a&gt;Lien C&lt;/a&gt;
-	&lt;/nav&gt;
-  &lt;/div&gt;
-		</pre>
-
 			<div class="row"></div>
 			<h2>Listes</h2>
 
 			<h3 class="vertical-spacing-twice">Tableau</h3>
 
+			<pre class="prettyprint row">
+
+  &lt;article class=&quot;twelve cell list-view&quot;&gt;
+	&lt;table class="twelve"&gt;
+	  &lt;thead&gt;
+		&lt;tr&gt;
+		  &lt;th&gt;&lt;/th&gt;
+		  &lt;th&gt;Colonne 1&lt;/th&gt;
+		  &lt;th&gt;Colonne 2&lt;/th&gt;
+		  &lt;th&gt;Colonne 3&lt;/th&gt;
+		&lt;/tr&gt;
+	  &lt;/thead&gt;
+	  &lt;tbody&gt;
+	    &lt;tr&gt;
+		  &lt;td&gt;&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		  &lt;td&gt;Valeur&lt;/td&gt;
+		&lt;/tr&gt;
+		...
+	  &lt;/tbody&gt;
+	&lt;/table&gt;
+  &lt;/article&gt;
+		</pre>
+
+			<div class="row"></div>
 			<div class="row">
 				<article class="twelve cell list-view">
 					<table class="twelve">
@@ -577,59 +576,64 @@
 					</table>
 				</article>
 			</div>
+			<div class="row"></div>
 
-		<pre class="prettyprint row">
+			<h3 class="vertical-spacing-twice">Liste d'images</h3>
 
-  &lt;article class=&quot;twelve cell list-view&quot;&gt;
-	&lt;table class="twelve"&gt;
-	  &lt;thead&gt;
-		&lt;tr&gt;
-		  &lt;th&gt;&lt;/th&gt;
-		  &lt;th&gt;Colonne 1&lt;/th&gt;
-		  &lt;th&gt;Colonne 2&lt;/th&gt;
-		  &lt;th&gt;Colonne 3&lt;/th&gt;
-		&lt;/tr&gt;
-	  &lt;/thead&gt;
-	  &lt;tbody&gt;
-	    &lt;tr&gt;
-		  &lt;td&gt;&lt;i role=&quot;doc&quot;&gt;&lt;/i&gt;&lt;/td&gt;
-		  &lt;td&gt;Valeur&lt;/td&gt;
-		  &lt;td&gt;Valeur&lt;/td&gt;
-		  &lt;td&gt;Valeur&lt;/td&gt;
-		&lt;/tr&gt;
-		...
-	  &lt;/tbody&gt;
-	&lt;/table&gt;
-  &lt;/article&gt;
+			<p>La div .element est celle à répéter pour chaque image.</p>
+
+						<pre class="prettyprint row">
+
+  &lt;header&gt;&nbsp;&lt;/header&gt;
+  &lt;div class="icons-view"&gt;
+	&lt;div class="element reduce-block-six"&gt;
+	  &lt;div class="img-container"&gt;
+		&lt;div class="clip"&gt;&lt;img class="twelve" src="/public/img/exemples/filler1.png" /&gt;&lt;/div&gt;
+	  &lt;/div&gt;
+	  &lt;input type="checkbox" /&gt;
+	  &lt;a class="medium-text"&gt;Image&lt;/a&gt;
+		&lt;a href=""&gt;&lt;strong class="small-text">Auteur&lt;/strong>&lt;/a&gt;
+	  &lt;/div&gt;
+	&lt;div class="clear"&gt;&lt;/div&gt;
+  &lt;/div>
 		</pre>
 
-			<h3 class="vertical-spacing-twice">Liste d'icônes</h3>
-
-			<h2>Forms</h2>
-
-			<h3>Search form</h3>
-
-			<form class="search">
-				<input type="text" />
-				<input type="submit" value="Search" />
-			</form>
-			<div class="clear"></div>
-
-		<pre class="prettyprint">
-
-  &lt;form class=&quot;search&quot;&gt;
-    &lt;input type=&quot;text&quot; /&gt;
-	&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;
-  &lt;/form&gt;
-		</pre>
-
-			<h1>Composants dynamiques</h1>
-			<h2>Lightbox</h2>
-			<h2>Panneau horizontal</h2>
-			<h2>Panneau vertical</h2>
-
-			<div class="clear"></div>
-
+			<header>&nbsp;</header>
+			<div class="icons-view eight">
+				<div class="element reduce-block-six">
+					<div class="img-container">
+						<div class="clip"><img class="twelve" src="/public/img/exemples/filler1.png" /></div>
+					</div>
+					<input type="checkbox" />
+					<a class="medium-text">Image</a>
+					<a href=""><strong class="small-text">Auteur</strong></a>
+				</div>
+				<div class="element reduce-block-six">
+					<div class="img-container">
+						<div class="clip"><img class="twelve" src="/public/img/exemples/filler2.png" /></div>
+					</div>
+					<input type="checkbox" />
+					<a class="medium-text">Image</a>
+					<a href=""><strong class="small-text">Auteur</strong></a>
+				</div>
+				<div class="element reduce-block-six">
+					<div class="img-container">
+						<div class="clip"><img class="twelve" src="/public/img/exemples/filler3.png" /></div>
+					</div>
+					<input type="checkbox" />
+					<a class="medium-text">Image</a>
+					<a href=""><strong class="small-text">Auteur</strong></a>
+				</div>
+				<div class="element reduce-block-six">
+					<div class="img-container">
+						<div class="clip"><img class="twelve" src="/public/img/exemples/filler4.png" /></div>
+					</div>
+					<input type="checkbox" />
+					<a class="medium-text">Image</a>
+					<a href=""><strong class="small-text">Auteur</strong></a>
+				</div>
+				<div class="clear"></div>
+			</div>
 		<div class="row"></div>
 		<h1>Elements</h1>
 
@@ -657,6 +661,10 @@
 		<div class="error">
 			Message d'erreur
 		</div>
+
+			<div class="reduce-block-six comment">
+				Commentaire
+			</div>
 
 		<h2>Buttons</h2>
 			<button>Active</button>
@@ -764,7 +772,12 @@
 
 		<div class="clear"></div>
 
+			<h1>Composants dynamiques</h1>
+			<h2>Lightbox</h2>
+			<h2>Panneau horizontal</h2>
+			<h2>Panneau vertical</h2>
 
+			<div class="clear"></div>
 
 		<h1>LESS usage</h1>
 

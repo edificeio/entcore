@@ -2258,6 +2258,7 @@ i[role=send-mail] {
   float: left;
   vertical-align: middle;
   margin: 7px;
+  opacity: 0.3;
 }
 i[role=view-folder] {
   height: 24px;
@@ -2273,6 +2274,7 @@ i[role=view-folder] {
   float: left;
   vertical-align: middle;
   margin: 7px;
+  opacity: 0.3;
 }
 i[role=view-book] {
   height: 24px;
@@ -2288,6 +2290,7 @@ i[role=view-book] {
   float: left;
   vertical-align: middle;
   margin: 7px;
+  opacity: 0.3;
 }
 i[role=angry] {
   height: 25px;
@@ -2472,6 +2475,7 @@ i[role=show-details] {
   float: left;
   vertical-align: middle;
   opacity: 0.5;
+  background-size: 100% 93%;
 }
 i[role=show-list] {
   height: 24px;
@@ -2487,6 +2491,7 @@ i[role=show-list] {
   float: left;
   vertical-align: middle;
   opacity: 0.5;
+  background-size: 100% 93%;
 }
 i[role=show-icons].selected {
   opacity: 1;
@@ -2639,9 +2644,6 @@ a {
   color: #008cba;
   text-decoration: none;
 }
-ul.icons-tabs {
-  right: 255px;
-}
 ul.icons-tabs li {
   border-radius: 25px;
 }
@@ -2736,7 +2738,10 @@ nav.horizontal a {
 nav.horizontal a:hover {
   color: #008cba;
 }
-button:hover {
+button:hover,
+input[type=button]:hover,
+a.button:hover,
+input[type=submit]:hover {
   background: #fff;
   color: #000;
   border: 1px solid #008cba;
@@ -2795,6 +2800,13 @@ nav.vertical a.classic-link {
   font-size: 1.2em;
   font-family: Lato;
   font-weight: 300;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+nav.vertical a.classic-link:hover {
+  background: #444;
 }
 nav.horizontal {
   right: 10px;
@@ -2813,7 +2825,6 @@ h4,
 h5 {
   color: #333;
   font-weight: 300;
-  letter-spacing: 2px;
   font-family: Lato;
   margin-top: 5px;
   margin-bottom: 5px;
@@ -2828,9 +2839,6 @@ h5 a {
 h3 {
   font-size: 1.4em;
   font-style: italic;
-}
-.display-buttons {
-  display: none;
 }
 table {
   border-bottom: 2px solid #008cba;
@@ -2873,15 +2881,17 @@ thead th {
 div[ng-controller=Widgets] {
   display: none;
 }
+header {
+  background: #eee;
+}
 .icons-view {
+  background: #eee;
   margin-top: 0;
 }
-.icons-view .element {
-  padding-bottom: 20px;
-  float: none;
-}
-.icons-view .element a {
-  text-align: left;
+.icons-view .img-container div.clip {
+  border: 1px solid #008cba;
+  background: #fff;
+  padding: 10px;
 }
 .tabs header,
 .tabs section {
@@ -2898,17 +2908,6 @@ div[ng-controller=Widgets] {
 }
 .tabs section {
   background: #fff;
-}
-.toggle-panel {
-  opacity: 1;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
-  background: #fff;
-  border: 1px solid #ccc;
-  right: 0px;
-  top: 53px;
 }
 .toggle-panel h2 {
   display: none;
@@ -2953,6 +2952,10 @@ a:hover {
 section.lightbox-backdrop {
   background: #fff;
 }
+.line {
+  border-top: 10px solid #eee;
+  margin-top: 7px;
+}
 .lightbox-window {
   border: 1px solid #ccc;
   -webkit-border-radius: 3px;
@@ -2962,12 +2965,53 @@ section.lightbox-backdrop {
   border-radius: 3px;
   box-shadow: 3px 3px 3px #ccc;
 }
+.comment {
+  background: #eee;
+  border: 1px solid #ccc;
+}
 nav.vertical article {
   background: transparent;
   border: none;
 }
+nav.vertical article h3 {
+  font-family: Arial;
+  font-style: normal;
+  margin-left: -10px;
+  margin-top: -10px;
+  margin-right: 10px;
+  padding-left: 10px;
+  border-top: 5px solid;
+  padding-top: 5px;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
+nav.vertical article a {
+  margin-left: 0;
+  color: #000;
+}
+nav.vertical article strong {
+  font-weight: normal;
+}
 nav.vertical article.selected {
   background: transparent;
+}
+nav.vertical article.selected a {
+  color: #008cba;
+}
+nav.vertical article.selected h3 {
+  color: #008cba;
+}
+article.selected {
+  background: #008cba;
+  color: #fff;
+}
+article.selected a {
+  color: #fff;
+}
+[contenteditable] {
+  border: 1px solid #ccc;
 }
 .grid-exemple.row .article,
 .grid-exemple.row .absolute {
@@ -2981,4 +3025,37 @@ nav.vertical article.selected {
 }
 .panel p {
   line-height: 29px;
+}
+i[role=unknown-large],
+i[role=xls-large],
+i[role=ppt-large],
+i[role=pdf-large],
+i[role=video-large],
+i[role=audio-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/unknown-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=folder-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/folder-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
 }
