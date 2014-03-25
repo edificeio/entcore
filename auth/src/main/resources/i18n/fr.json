@@ -29,6 +29,7 @@
 "forgot.error": "Utilisateur inconnu ou aucune adresse mail renseignée pour cet utilisateur. Veuillez contacter votre administrateur ENT.",
 "auth.old.password" : "Ancien mot de passe",
 "auth.cancel": "Retour",
+"auth.close": "Fermer",
 "auth.welcome": "Bienvenue !",
 "mail.reset.pw.subject" : "Réinitialisation de votre mot de passe",
 "email.hi" : "Bonjour,",

@@ -356,6 +356,9 @@ public class AuthController extends Controller {
 					if (activationCode != null) {
 						error.putString("activationCode", activationCode);
 					}
+					if (login != null) {
+						error.putString("login", login);
+					}
 					renderView(request, error);
 				} else if (login == null || activationCode == null|| password == null ||
 						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
@@ -366,6 +369,12 @@ public class AuthController extends Controller {
 					.putString("message", I18n.getInstance().translate("auth.activation.invalid.argument", request.headers().get("Accept-Language"))));
 					if (activationCode != null) {
 						error.putString("activationCode", activationCode);
+					}
+					if (login != null) {
+						error.putString("login", login);
+					}
+					if (container.config().getBoolean("cgu", true)) {
+						error.putBoolean("cgu", true);
 					}
 					renderView(request, error);
 				} else {

@@ -29,6 +29,7 @@
 	"forgot.error" : "Unknown user or no email address entered for this user. Please contact your VLE administrator.",
 	"auth.old.password" : "Old password",
 	"auth.cancel" : "Cancel",
+    "auth.close": "Close",
 	"auth.welcome" : "Welcome!",
 	"mail.reset.pw.subject" : "Reset password",
 	"email.hi" : "Hello,",
