@@ -4,7 +4,7 @@ CKEDITOR.plugins.add('video', {
 			editor.addCommand('Video',new CKEDITOR.dialogCommand('Video'));
 
 			editor.ui.addButton( 'Video', {
-				label: 'Ajouter une image',
+				label: 'Ajouter une vidéo',
 				command: 'Video',
 				toolbar: 'insert'
 			});
