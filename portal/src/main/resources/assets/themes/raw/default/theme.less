@@ -1,10 +1,18 @@
 @import "../../../../public/css/app";
+@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
 @dark-blue: #074e68;
-@mid-blue: #085a78;
+@bright-blue: #085a78;
 @light-blue: #008cba;
 @black: #2A2829;
 @bright-blue: #008cba;
+
+//legend colors
+@green: #6fbd2c;
+@purple: #a04ac5;
+@pink: #fa4860;
+@cyan: #50b9fa;
+@orange: #FD841C;
 
 i[role=send-mail]{
 	.icon(glyphicons_010_envelope, 24px);
@@ -109,15 +117,18 @@ i[role=tools]{
 .container{
 	header.main{
 		height: @header-height;
+		max-width: none;
 	}
 
 	.main.wrapper{
 		padding-top: @header-height;
-		.main{
-			max-width: 1300px;
-			margin-left: auto;
-			margin-right: auto;
-		}
+		max-width: none;
+
+	}
+	.main{
+		max-width: 960px;
+		margin-left: auto;
+		margin-right: auto;
 	}
 }
 
@@ -148,14 +159,21 @@ i[role=tools]{
 .dominos{
 	.item{
 		width: 14%;
-		.domino{
-			.top{
-				display: none;
-			}
-			.bottom{
-				margin-top: 0px;
-			}
-		}
+	}
+	.domino.green{
+		background: @green;
+	}
+	.domino.orange{
+		background: @orange;
+	}
+	.domino.purple{
+		background: @purple;
+	}
+	.domino.cyan{
+		background: @cyan;
+	}
+	.domino.pink{
+		background: @pink;
 	}
 }
 
@@ -240,18 +258,8 @@ ul.icons-tabs{
 	padding-left: 10px;
 }
 
-button, input[type=button], input[type=submit], a.button{
-	border: 1px solid #ccc;
-	padding: 5px;
-	padding-left: 10px;
-	padding-right: 10px;
-	background: linear-gradient(#333, #444);
-	color: #eee;
-	border-radius: 3px;
-}
-
 button.cancel, input[type=button].cancel{
-	.vertical-gradient(#ccc, #eee);
+	background: #ccc;
 	color: #333;
 }
 
@@ -287,21 +295,44 @@ button.cancel, input[type=button].cancel{
 }
 
 button, input[type=button], a.button, input[type=submit]{
-	background: @mid-blue;
+	background: @bright-blue;
 	padding: 4px;
 	padding-left: 10px;
 	padding-right: 10px;
 	color: #fff;
-	border-radius: 5px;
+	border-radius: 3px;
 	font-size: 15px;
 	border: 1px solid transparent;
 	.run-transition(background);
+	font-family: Lato;
+	font-weight: 300;
+}
+
+nav.horizontal{
+	a{
+		font-family: Lato;
+		font-weight: 300;
+		font-size: 1.3em;
+		margin-left: 5px;
+		margin-right: 5px;
+	}
+	a:hover{
+		color: @bright-blue;
+	}
+}
+
+button:hover{
+	background: #fff;
+	color: #000;
+	border: 1px solid @bright-blue;
 }
 
 nav.vertical{
-	background: #fff;
-	.border-radius();
-	margin-right: 100px;
+	margin-right: 50px;
+	margin-left: -20px;
+	h2{
+		display: none;
+	}
 	ul{
 		margin: 0;
 		padding: 0;
@@ -312,18 +343,36 @@ nav.vertical{
 			a{
 				color: #000;
 				.run-transition(color);
+				font-family: Lato;
+				font-weight: 300;
+				margin-left: 0;
+				border-right: 8px solid #ccc;
 			}
 			a.selected{
-				background: @dark-blue;
 				font-style: italic;
-				color: #fff;
-				font-size: 16px;
-				border-right: 10px solid @bright-blue;
+				color: @bright-blue;
+				border-right: 8px solid @bright-blue;
 			}
 			a:hover{
 				color: @bright-blue;
+				background: #ddd;
+				border-right: 8px solid @bright-blue;
 			}
 		}
+	}
+	article, a{
+		margin-left: 20px;
+	}
+	a.classic-link{
+		margin-left: 20px;
+		display: block;
+		padding: 5px;
+		padding-left: 11px;
+		background: @bright-blue;
+		color: #fff;
+		font-size: 1.2em;
+		font-family: Lato;
+		font-weight: 300;
 	}
 }
 
@@ -344,11 +393,16 @@ h1, h2, h3, h4, h5{
 		color: #333;
 	}
 	color: #333;
-	font-weight: normal;
+	font-weight: 300;
 	letter-spacing: 2px;
-	font-family: serif;
+	font-family: Lato;
 	margin-top: 5px;
 	margin-bottom: 5px;
+}
+
+h3{
+	font-size: 1.4em;
+	font-style: italic;
 }
 
 .display-buttons{
@@ -356,14 +410,33 @@ h1, h2, h3, h4, h5{
 }
 
 table{
+	border-bottom: 2px solid @bright-blue;
 	td{
 		padding: 5px;
+	}
+	tr{
+		border: 2px solid #fff;
+		background: #f5f5f5;
+	}
+	tr.checked{
+		background: #fff;
+	}
+	thead{
+		tr{
+			background: #fff;
+			font-family: Lato;
+			font-weight: 300;
+			font-size: 1.3em;
+			border-top: 2px solid @bright-blue;
+			border-bottom: 2px solid @bright-blue;
+		}
 	}
 }
 
 article{
 	background: #fff;
 	border-radius: 3px;
+	border: none;
 }
 
 body{
@@ -374,7 +447,6 @@ body{
 }
 
 thead{
-	background: linear-gradient(#eee, #ddd);
 	font-size: 12px;
 	th{
 		padding: 5px;
@@ -426,6 +498,21 @@ div[ng-controller=Widgets]{
 	}
 }
 
+.toggle-buttons{
+	width: 100%;
+	left: 0;
+	margin-left: 0;
+	background: #333;
+	button{
+		background: none;
+		border: none;
+		font-size: 1.3em;
+	}
+	button:hover{
+		color: @light-blue;
+	}
+}
+
 .toggle-panel.hide{
 	width: 300px;
 	opacity: 0;
@@ -466,10 +553,21 @@ nav.vertical{
 	}
 	article.selected{
 		background: transparent;
-		h3{
-			font-size: 18px;
-			font-style: italic;
-		}
+	}
+}
 
+.grid-exemple.row .article, .grid-exemple.row .absolute{
+	font-size: 14px;
+	padding: 10px;
+	color: #888;
+	border: #eee solid 5px;
+	border-radius: 5px;
+	background: #fff;
+	text-align: left;
+}
+
+.panel{
+	p{
+		line-height: 29px;
 	}
 }

@@ -18,16 +18,6 @@
 	<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
 	<link rel="stylesheet" type="text/css" href="/public/css/html-theme.css" />
 	<style type="text/css">
-		.grid-exemple.row .article, .grid-exemple.row .absolute{
-			font-size: 14px;
-			padding: 10px;
-			color: #888;
-			border: #fff solid 5px;
-			border-radius: 12px;
-			background: #eee;
-			text-align: left;
-		}
-
 		label{
 			font-family: "Courier New";
 			background: #EEE;
@@ -387,7 +377,7 @@
 
 		<pre class="prettyprint twelve cell">
 
-  &lt;div class="reduce-block-six cell four"&gt;
+  &lt;div class="reduce-block-six cell three"&gt;
     &lt;div class="fixed-block height-six"&gt;
 	  &lt;article class="twelve cell absolute clip"&gt;
 	    &lt;div class="cell six"&gt;
@@ -403,7 +393,7 @@
 		</pre>
 
 		<div class="row">
-			<div class="reduce-block-six cell four">
+			<div class="reduce-block-six cell three">
 				<div class="fixed-block height-six">
 					<article class="twelve cell absolute clip">
 						<div class="cell six">
@@ -416,7 +406,7 @@
 					</article>
 				</div>
 			</div>
-			<div class="cell four reduce-block-six">
+			<div class="cell three reduce-block-six">
 				<div class="fixed-block height-six">
 					<article class="twelve cell absolute clip">
 						<div class="cell six">
@@ -429,7 +419,20 @@
 					</article>
 				</div>
 			</div>
-			<div class="cell four reduce-block-six">
+			<div class="cell three reduce-block-six">
+				<div class="fixed-block height-six">
+					<article class="twelve cell absolute clip">
+						<div class="cell six">
+							<img src="/directory/public/img/no-avatar.jpg" />
+						</div>
+						<div class="cell six reduce-block-six right-magnet">
+							<h2>Nom/titre</h2>
+							<p>Informations</p>
+						</div>
+					</article>
+				</div>
+			</div>
+			<div class="cell three reduce-block-six">
 				<div class="fixed-block height-six">
 					<article class="twelve cell absolute clip">
 						<div class="cell six">
@@ -454,7 +457,7 @@
   &lt;nav class=&quot;vertical&quot;&gt;
     &lt;ul&gt;
 	  &lt;li&gt;
-	    &lt;a&gt;Lien A&lt;/a&gt;
+	    &lt;a class="selected"&gt;Lien A&lt;/a&gt;
 	  &lt;/li&gt;
 	  &lt;li&gt;
 	    &lt;a&gt;Lien B&lt;/a&gt;
@@ -480,7 +483,7 @@
 			<nav class="vertical">
 				<ul>
 					<li>
-						<a>Lien A</a>
+						<a class="selected">Lien A</a>
 					</li>
 					<li>
 						<a>Lien B</a>

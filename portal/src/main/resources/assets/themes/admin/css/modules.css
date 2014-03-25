@@ -1,3 +1,4 @@
+@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 .row {
   max-width: 960px;
   width: 100%;
@@ -2303,8 +2304,8 @@ h1,
 h2 {
   color: #2a2829;
   border-bottom: 1px solid #2a2829;
-  font-weight: normal;
-  font-family: Clemente;
+  font-weight: 300;
+  font-family: Lato;
   margin-bottom: 10px;
 }
 html section.main,
@@ -2383,8 +2384,8 @@ nav.left button {
 }
 button {
   background: #085a78;
-  font-family: Clemente;
-  border: none;
+  font-family: Lato;
+  font-weight: 300;
   padding: 4px;
   padding-left: 10px;
   padding-right: 10px;
@@ -2577,7 +2578,8 @@ input[type=text] {
 }
 .humane-original-error,
 .humane-original-info {
-  font-family: Clemente;
+  font-family: Lato;
+  font-weight: 300;
 }
 .humane-original-info {
   background: #085a78;

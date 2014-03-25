@@ -660,6 +660,7 @@ var ckeEditorFixedPositionning = function(){
 function createCKEditorInstance(editor, $scope, $compile){
 	CKEDITOR.on('instanceReady', function(ck){
 		editor.focus();
+		$scope.ngModel = $scope.ngModel || '';
 		editor.html($compile('<div>' + $scope.ngModel + '</div>')($scope.$parent));
 		$scope.$parent.$apply();
 		setTimeout(function(){
