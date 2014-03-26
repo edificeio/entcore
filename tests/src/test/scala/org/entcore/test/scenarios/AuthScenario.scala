@@ -20,6 +20,7 @@ object AuthScenario {
 			.param("""activationCode""", """${studentCode}""")
 			.param("""password""", """blipblop""")
       .param("""confirmPassword""", """blipblop""")
+      .param("""acceptCGU""", """true""")
 		.check(status.is(302)))
     .exec(http("Activate teacher account")
       .post("""/auth/activation""")
@@ -27,6 +28,7 @@ object AuthScenario {
       .param("""activationCode""", """${teacherCode}""")
       .param("""password""", """blipblop""")
       .param("""confirmPassword""", """blipblop""")
+      .param("""acceptCGU""", """true""")
     .check(status.is(302)))
     .exec(http("Get OAuth2 code with disconnected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
