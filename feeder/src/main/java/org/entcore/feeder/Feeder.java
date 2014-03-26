@@ -31,7 +31,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				container.config().getString("address", "entcore.feeder"), this);
 		switch (container.config().getString("feeder", "")) {
 			case "AAF" :
-				feed = new AafFeeder(vertx, container.config().getString("import-files"));
+				feed = new AafFeeder(vertx, container.config().getString("import-files"),
+						container.config().getString("neo4j-aaf-extension-uri"));
 				break;
 			case "BE1D" :
 				feed = new Be1dFeeder(vertx, container.config().getString("import-files"),

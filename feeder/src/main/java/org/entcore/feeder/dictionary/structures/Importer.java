@@ -132,6 +132,13 @@ public class Importer {
 		}
 	}
 
+	/**
+	 * Warning : all data in old uncommitted transaction will be lost.
+	 */
+	public void reinitTransaction() {
+		transactionHelper = new TransactionHelper(neo4j, 1000);
+	}
+
 	public Structure createOrUpdateStructure(JsonObject struct) {
 		final String error = structureValidator.validate(struct);
 		Structure s = null;
