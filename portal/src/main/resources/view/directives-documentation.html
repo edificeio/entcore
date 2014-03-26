@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title></title>
+	<script type="text/javascript" id="context" src="/infra/public/js/loader.js"></script>
+	<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+	<link rel="stylesheet" type="text/css" href="/public/css/html-theme.css" />
+	<title>Directives</title>
+	<style type="text/css">
+		label{
+			font-family: "Courier New";
+			background: #EEE;
+			padding: 3px;
+			border-radius: 3px;
+		}
+	</style>
+</head>
+<body>
+	<default-styles>
+		<div class="centered container row">
+			<section class="main">
+				<h1>Évènements</h1>
+				<h3>complete-change</h3>
+				<p>
+					La directive Angular <label>ng-change</label> est appelée pour toute modification d'un contenu - c'est-à-dire, pour une zone de texte,
+					à chaque appui sur une touche. Ce comportement n'est pas toujours le comportement voulu.
+				</p>
+				<p>
+					Au contraire, la directive ent-core <label>complete-change</label> est appelée lorsqu'un changement a été effectué, et que l'utilisateur
+					n'a plus le focus sur l'élément. Son utilisation est similaire à celle de <label>ng-change</label>.
+				</p>
+				<pre class="prettyprint row">
+
+  &lt;span ng-if="showContent"&gt;<span ng-non-bindable>[[myNewValue]]</span>&lt;/span&gt;
+  &lt;input type="text" complete-change="showContent = true;" ng-model="myNewValue" /&gt;
+				</pre>
+				<article class="row reduce-block-six">
+					<span ng-if="showContent">[[myNewValue]]</span>
+					<br /><input type="text" complete-change="showContent=true" ng-model="myNewValue" placeholder="Modifiez le contenu" />
+				</article>
+				<div class="row reduce-block-six"></div>
+
+				<h3>file-input-change</h3>
+				<p>
+					Il n'y a pas de directive native pour gérer la sélection de fichier. Cette directive d'ent-core déclenche la fonction lorsqu'un ou plusieurs
+					fichiers sont sélectionnés. Le contenu de <label>ng-model</label> est la liste des fichiers.
+				</p>
+				<pre class="prettyprint">
+
+  &lt;span ng-if="showFiles"&gt;Dans &lt;label&gt;ng-model&lt;/label&gt;, <span ng-non-bindable>[[myFiles.length]]</span> fichier(s) sélectionné(s)&lt;/span&gt;
+  &lt;input type="file" multiple ng-model="myFiles" files-input-change="showFiles=true" /&gt;
+				</pre>
+				<article class="row reduce-block-six">
+					<span ng-if="showFiles">Dans <label>ng-model</label>, [[myFiles.length]] fichier(s) sélectionné(s)</span>
+					<br /><input type="file" multiple files-input-change="showFiles=true" ng-model="myFiles" />
+				</article>
+				<div class="row reduce-block-six"></div>
+
+				<h3>bottom-scroll</h3>
+				<p>
+					Cet évènement sera déclenché lorsque l'utilisateur aura scrollé tout en bas de l'écran.
+				</p>
+				<pre class="prettyprint">
+
+  
+				</pre>
+
+				<h1>Composants graphiques</h1>
+				<h3>lightbox</h3>
+				<h3>drop-down</h3>
+				<h3>loading-icon</h3>
+				<h3>loading-panel</h3>
+				<h3>tooltip</h3>
+				<h3>widgets</h3>
+				<h1>Gestion des données</h1>
+				<h2>Formats</h2>
+				<h3>files-picker</h3>
+				<h3>icons-select</h3>
+				<h3>date-picker</h3>
+				<h2>Edition HTML</h2>
+				<h3>bind-html</h3>
+				<h3>rich-text-editor</h3>
+				<h3>html-editor</h3>
+				<h3>text-editor</h3>
+				<h2>Edition et placement d'éléments</h2>
+				<h3>resizable</h3>
+				<h3>draggable</h3>
+				<h3>placed-block</h3>
+				<h1>Outils du modèle</h1>
+				<h2>Traduction</h2>
+				<h3>translate</h3>
+				<h3>localized-class</h3>
+				<h2>Chargement de styles</h2>
+				<h3>portal</h3>
+				<h3>admin-portal</h3>
+				<h3>portal-styles</h3>
+				<h3>default-styles</h3>
+				<h3>skin-src</h3>
+				<h2>Ressources</h2>
+				<h3>workflow</h3>
+				<h3>behaviour</h3>
+				<h3>share-panel</h3>
+				<h1>Composants pour le contrôleur</h1>
+				<h2>Routes</h2>
+				<h2>Templates</h2>
+			</section>
+		</div>
+	</default-styles>
+</body>
+</html>

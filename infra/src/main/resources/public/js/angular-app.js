@@ -247,7 +247,9 @@ module.directive('completeChange', function() {
 					$scope.$apply('field');
 				}
 				$scope.$parent.$eval($scope.exec);
-
+				if(!$scope.$$phase){
+					$scope.$apply('field');
+				}
 			});
 		}
 	};
@@ -292,24 +294,6 @@ module.directive('documentsLibrary', function($compile){
 		templateUrl: '/infra/public/template/documents-library.html',
 		link: function(scope, element, attributes){
 
-		}
-	}
-});
-
-module.directive('fileInputChange', function($compile){
-	return {
-		restrict: 'A',
-		scope: {
-			fileInputChange: '&',
-			file: '=ngModel'
-		},
-		link: function($scope, $element){
-			$element.bind('change', function(){
-				$scope.file = $element[0].files[0];
-				$scope.$apply();
-				$scope.fileInputChange();
-				$scope.$apply();
-			})
 		}
 	}
 });
@@ -433,6 +417,7 @@ module.directive('translate', function($compile) {
 	};
 });
 
+//Deprecated
 module.directive('translateAttr', function($compile) {
 	return {
 		restrict: 'A',
@@ -541,6 +526,19 @@ module.directive('portalStyles', function($compile){
 			$.get('/theme?token=' + rand, function(data){
 				var css = data.skin;
 				$('[logout]').attr('href', '/auth/logout?callback=' + data.logoutCallback)
+				ui.setStyle(css);
+			})
+		}
+	}
+});
+
+module.directive('defaultStyles', function($compile){
+	return {
+		restrict: 'E',
+		compile: function($element, $attribute){
+			var rand = Math.random();
+			$.get('/skin?token=' + rand, function(data){
+				var css = '/assets/themes/' + data.skin + '/default/';
 				ui.setStyle(css);
 			})
 		}

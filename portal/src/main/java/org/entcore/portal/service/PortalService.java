@@ -93,6 +93,10 @@ public class PortalService extends Controller {
 		renderView(request);
 	}
 
+	public void directivesDocumentation(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void apps(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
