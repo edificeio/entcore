@@ -106,7 +106,8 @@ i[role=show-list].selected{
 }
 
 i[role=close]{
-	.icon(glyphicons_207_remove_2, 24px);
+	.icon(glyphicons_207_remove_2, 15px);
+	background-size: 100% 100%;
 }
 
 i[role=close2x]{
@@ -240,6 +241,13 @@ ul.icons-tabs{
 	}
 }
 
+a.button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled],
+a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:hover, input[type=submit][disabled]:hover{
+	color: #AAA;
+	background: #ddd;
+	border: 1px solid #ccc;
+}
+
 .navbar{
 	.vertical-gradient(#000, #222);
 	width: 100%;
@@ -254,6 +262,9 @@ ul.icons-tabs{
 		display: block;
 		margin-left: 10px;
 		margin-top: 10px;
+		font-family: Lato;
+		font-weight: 300;
+		font-size: 1.3em;
 	}
 }
 

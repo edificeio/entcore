@@ -2136,6 +2136,45 @@ span.no-style {
   background: #ddd;
   box-shadow: inset 1px 1px 2px #999;
 }
+.warning {
+  color: #c60c17;
+  background: #FFE7E8;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+.info {
+  color: #2F8CC9;
+  background: #EBF4F9;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+em.low-importance {
+  font-size: 12px !important;
+  height: 16px;
+  line-height: 16px;
+  text-align: right;
+}
+em.medium-importance {
+  font-style: normal;
+  color: #666;
+}
+em.high-importance {
+  font-style: normal;
+  font-weight: bold;
+  color: #666;
+}
 html,
 body {
   margin: 0;
@@ -2503,8 +2542,8 @@ i[role=show-list].selected {
   opacity: 1;
 }
 i[role=close] {
-  height: 24px;
-  width: 24px;
+  height: 15px;
+  width: 15px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -2515,6 +2554,7 @@ i[role=close] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  background-size: 100% 100%;
 }
 i[role=close2x] {
   height: 50px;
@@ -2647,6 +2687,18 @@ a {
 ul.icons-tabs li {
   border-radius: 25px;
 }
+a.button[disabled],
+button[disabled],
+input[type=button][disabled],
+input[type=submit][disabled],
+a.button[disabled]:hover,
+button[disabled]:hover,
+input[type=button][disabled]:hover,
+input[type=submit][disabled]:hover {
+  color: #AAA;
+  background: #ddd;
+  border: 1px solid #ccc;
+}
 .navbar {
   background: -webkit-linear-gradient(#000000, #222222);
   background: -moz-linear-gradient(#000000, #222222);
@@ -2667,6 +2719,9 @@ ul.icons-tabs li {
   display: block;
   margin-left: 10px;
   margin-top: 10px;
+  font-family: Lato;
+  font-weight: 300;
+  font-size: 1.3em;
 }
 .tag {
   color: #ccc;
