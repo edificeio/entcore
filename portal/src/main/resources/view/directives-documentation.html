@@ -16,7 +16,7 @@
 		}
 	</style>
 </head>
-<body>
+<body bottom-scroll="showBottomScroll = true">
 	<default-styles>
 		<div class="centered container row">
 			<section class="main">
@@ -32,12 +32,13 @@
 				</p>
 				<pre class="prettyprint row">
 
-  &lt;span ng-if="showContent"&gt;<span ng-non-bindable>[[myNewValue]]</span>&lt;/span&gt;
+  &lt;span ng-if="showContent"&gt;<span ng-non-bindable>Vous avez entré [[myNewValue]]</span>&lt;/span&gt;
   &lt;input type="text" complete-change="showContent = true;" ng-model="myNewValue" /&gt;
 				</pre>
 				<article class="row reduce-block-six">
-					<span ng-if="showContent">[[myNewValue]]</span>
-					<br /><input type="text" complete-change="showContent=true" ng-model="myNewValue" placeholder="Modifiez le contenu" />
+					<div class="row reduce-block-six" ng-if="showContent">Vous avez entré [[myNewValue]]</div>
+					<input type="text" complete-change="showContent=true" ng-model="myNewValue" placeholder="Modifiez le contenu" class="three cell" />
+					<div class="row"></div>
 				</article>
 				<div class="row reduce-block-six"></div>
 
@@ -46,13 +47,13 @@
 					Il n'y a pas de directive native pour gérer la sélection de fichier. Cette directive d'ent-core déclenche la fonction lorsqu'un ou plusieurs
 					fichiers sont sélectionnés. Le contenu de <label>ng-model</label> est la liste des fichiers.
 				</p>
-				<pre class="prettyprint">
+				<pre class="prettyprint row">
 
   &lt;span ng-if="showFiles"&gt;Dans &lt;label&gt;ng-model&lt;/label&gt;, <span ng-non-bindable>[[myFiles.length]]</span> fichier(s) sélectionné(s)&lt;/span&gt;
   &lt;input type="file" multiple ng-model="myFiles" files-input-change="showFiles=true" /&gt;
 				</pre>
 				<article class="row reduce-block-six">
-					<span ng-if="showFiles">Dans <label>ng-model</label>, [[myFiles.length]] fichier(s) sélectionné(s)</span>
+					<div ng-if="showFiles" class="row reduce-block-six">Dans <label>ng-model</label>, [[myFiles.length]] fichier(s) sélectionné(s)</div>
 					<br /><input type="file" multiple files-input-change="showFiles=true" ng-model="myFiles" />
 				</article>
 				<div class="row reduce-block-six"></div>
@@ -61,15 +62,67 @@
 				<p>
 					Cet évènement sera déclenché lorsque l'utilisateur aura scrollé tout en bas de l'écran.
 				</p>
-				<pre class="prettyprint">
+				<pre class="prettyprint row">
 
-  
+  &lt;body bottom-scroll="showBottomScroll=true"&gt;&lt;/body&gt;
 				</pre>
+				<article class="row reduce-block-six">
+					<span ng-if="showBottomScroll">Vous avez scrollé jusqu'au bout.</span>
+				</article>
+				<div class="row reduce-block-six"></div>
 
 				<h1>Composants graphiques</h1>
 				<h3>lightbox</h3>
-				<h3>drop-down</h3>
+				<pre class="prettyprint row">
+
+  &lt;button ng-click="showLightbox=true"&gt;Ouvrir la lightbox&lt;/button&gt;
+  &lt;lightbox show="showLightbox" on-close="showLightbox=false"&gt;
+    &lt;h2&gt;Lightbox&lt;/h2&gt;
+    &lt;p&gt;Contenu à afficher&lt;/p&gt;
+  &lt;/lightbox&gt;
+				</pre>
+				<article class="reduce-block-six">
+					<button ng-click="showLightbox=true">Ouvrir la lightbox</button>
+					<lightbox show="showLightbox" on-close="showLightbox=false">
+						<h2>Lightbox</h2>
+						<p>Contenu à afficher</p>
+					</lightbox>
+				</article>
+				<div class="row reduce-block-six"></div>
+
+				<h3>autocomplete</h3>
+				<p>
+					Cette directive est une simple liste déroulante, dans laquelle l'utilisateur peut choisir un élément en utilisant un système d'autocomplétion. Si les options
+					ne sont pas des chaînes de caractères, la méthode toString est utilisée pour les convertir ; vous pouvez la surcharger si besoin est.
+				</p>
+				<pre class="prettyprint row">
+
+  &lt;div class="row reduce-block-six" ng-if="showSelectedElement">Vous avez sélectionné [[selectedElement]]&lt;/div&gt;
+  &lt;autocomplete
+	options="['un', 'deux', 'trois', 'quatre', 'quatre et un', 'un et quatre', 'deux et trois', 'trois et deux']"
+	ng-change="showSelectedElement=true"
+	ng-model="selectedElement"&gt;
+  &lt;/autocomplete&gt;
+				</pre>
+				<article class="reduce-block-six">
+					<div class="row reduce-block-six" ng-if="showSelectedElement">Vous avez sélectionné [[selectedElement]]</div>
+					<autocomplete
+						options="['un', 'deux', 'trois', 'quatre', 'quatre et un', 'un et quatre', 'deux et trois', 'trois et deux']"
+						ng-change="showSelectedElement=true"
+						ng-model="selectedElement">
+					</autocomplete>
+					<div class="row"></div>
+				</article>
+
 				<h3>loading-icon</h3>
+				<p>
+					La directive <label>loading-icon</label> permet de suivre la progression d'une requête http. Elle doit être utilisée en parallèle
+					de l'objet <label>http()</label> de l'API d'ent-core.
+				</p>
+				<article class="reduce-block-six">
+					<button>Lancer la requête</button>
+					<loading-icon ></loading-icon>
+				</article>
 				<h3>loading-panel</h3>
 				<h3>tooltip</h3>
 				<h3>widgets</h3>

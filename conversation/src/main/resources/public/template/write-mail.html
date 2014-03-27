@@ -17,8 +17,8 @@
 			</div>
 			<drop-down
 					options="users.found"
-					change="addUser()"
-					current="newItem.currentReceiver"
+					ng-change="addUser()"
+					ng-model="newItem.currentReceiver"
 					for="to-users">
 			</drop-down>
 			<div class="row">
@@ -36,8 +36,8 @@
 			</div>
 			<drop-down
 					options="users.foundCC"
-					change="addCCUser()"
-					current="newItem.currentCCReceiver"
+					ng-change="addCCUser()"
+					ng-model="newItem.currentCCReceiver"
 					for="cc-users">
 			</drop-down>
 			<div class="row">

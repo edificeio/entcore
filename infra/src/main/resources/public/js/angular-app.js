@@ -142,14 +142,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			viewPath: '/' + appPrefix + '/public/template/',
 			containers: {},
 			open: function(name, view){
-				if(name === 'lightbox' && view === ''){
-					ui.hideLightbox();
-					this.containers.lightbox = 'empty';
-					return;
-				}
-				else if(name === 'lightbox'){
-					ui.showLightbox();
-				}
 				this.containers[name] = this.viewPath + view + '.html';
 			},
 			contains: function(name, view){
@@ -157,9 +149,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			},
 			close: function(name){
 				this.containers[name] = 'empty';
-				if(name === 'lightbox'){
-					ui.hideLightbox();
-				}
 			}
 		}
 	})
@@ -260,12 +249,13 @@ module.directive('lightbox', function($compile){
 		restrict: 'E',
 		transclude: true,
 		scope: {
-			show: '='
+			show: '=',
+			onClose: '&'
 		},
 		template: '<div>\
 					<section class="lightbox-backdrop"></section>\
 					<section class="lightbox-window five cell">\
-						<div class="twelve cell" ng-transclude></div>\
+						<div class="twelve cell reduce-block-six" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
 						</div>\
@@ -273,12 +263,28 @@ module.directive('lightbox', function($compile){
 					</section>\
 				</div>',
 		link: function(scope, element, attributes){
-			scope.$watch('visible', function(newVal){
+			element.find('.lightbox-backdrop, i').on('click', function(){
+				element.find('.lightbox-window').fadeOut();
+				element.find('.lightbox-backdrop').fadeOut();
+
+				scope.$eval(scope.onClose);
+				if(!scope.$$phase){
+					scope.$parent.$apply();
+				}
+			});
+			scope.$watch('show', function(newVal){
 				if(newVal){
-					element.find('.lightbox-window').fadeIn();
+					var lightboxWindow = element.find('.lightbox-window');
+					lightboxWindow.fadeIn();
+					lightboxWindow.css({
+						top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
+					});
+
+					element.find('.lightbox-backdrop').fadeIn();
 				}
 				else{
 					element.find('.lightbox-window').fadeOut();
+					element.find('.lightbox-backdrop').fadeOut();
 				}
 			})
 		}
@@ -576,8 +582,8 @@ module.directive('dropDown', function($compile, $timeout){
 		replace: true,
 		scope: {
 			options: '=',
-			change: '&',
-			current: '='
+			ngChange: '&',
+			ngModel: '='
 		},
 		template: '<div data-drop-down class="drop-down">\
 						<div>\
@@ -616,15 +622,93 @@ module.directive('dropDown', function($compile, $timeout){
 
 			$element.on('click', 'li', function(e){
 				$scope.current = $(this).scope().option;
-				$scope.$apply('current');
-				$scope.$eval($scope.change);
-				$scope.$apply('current');
+				$scope.ngModel = $(this).scope().option;
+				$scope.$apply('ngModel');
+				$scope.$eval($scope.ngChange);
+				$scope.$apply('ngModel');
 			});
 			$element.attr('data-opened-drop-down', true);
 
 		}
 	}
 });
+
+module.directive('autocomplete', function($compile){
+	return {
+		restrict: 'E',
+		replace: true,
+		scope: {
+			options: '&',
+			ngModel: '=',
+			ngChange: '&'
+		},
+		template: '' +
+			'<div class="row">' +
+				'<input type="text" class="twelve cell" ng-model="search" />' +
+				'<div data-drop-down class="drop-down">' +
+					'<div>' +
+						'<ul class="ten cell right-magnet">' +
+							'<li ng-repeat="option in match | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
+						'</ul>' +
+					'</div>' +
+				'</div>' +
+			'</div>',
+		link: function(scope, element, attributes){
+			var dropDownContainer = element.find('[data-drop-down]');
+			var linkedInput = element.find('input');
+			scope.match = [];
+
+			scope.$watch('search', function(newVal){
+				if(!newVal){
+					scope.match = [];
+					dropDownContainer.addClass('hidden');
+					return;
+				}
+				scope.match = _.filter(scope.options(), function(option){
+					var words = newVal.split(' ');
+					return _.find(words, function(word){
+						var formattedOption = lang.removeAccents(option).toLowerCase();
+						var formattedWord = lang.removeAccents(word).toLowerCase();
+						return formattedOption.indexOf(formattedWord) === -1
+					}) === undefined;
+				});
+				if(!scope.match || scope.match.length === 0){
+					dropDownContainer.addClass('hidden');
+					return;
+				}
+				dropDownContainer.removeClass('hidden');
+
+				var pos = linkedInput.offset();
+				var width = linkedInput.width() +
+					parseInt(linkedInput.css('padding-right')) +
+					parseInt(linkedInput.css('padding-left')) +
+					parseInt(linkedInput.css('border-width') || 1) * 2;
+				var height = linkedInput.height() +
+					parseInt(linkedInput.css('padding-top')) +
+					parseInt(linkedInput.css('padding-bottom')) +
+					parseInt(linkedInput.css('border-height') || 1) * 2;
+
+				pos.top = pos.top + height;
+				dropDownContainer.offset(pos);
+				dropDownContainer.width(width);
+			});
+
+			element.parent().on('remove', function(){
+				dropDownContainer.remove();
+			});
+			dropDownContainer.detach().appendTo('body');
+
+			dropDownContainer.on('click', 'li', function(e){
+				scope.ngModel = $(this).scope().option;
+				scope.$apply('ngModel');
+				scope.$eval(scope.ngChange);
+				scope.$apply('ngModel');
+				dropDownContainer.addClass('hidden');
+			});
+			dropDownContainer.attr('data-opened-drop-down', true);
+		}
+	}
+})
 
 var ckeEditorFixedPositionning = function(){
 	var editableElement;
@@ -1753,6 +1837,8 @@ function Admin($scope){
 
 	$scope.scrollUp = ui.scrollToTop;
 }
+
+function Widget(){}
 
 function Widgets($scope, model, lang, date){
 	model.makeModels([Widget]);
