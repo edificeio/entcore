@@ -2732,6 +2732,38 @@ input[type=button].cancel {
   background: #ccc;
   color: #333;
 }
+.label-badge {
+  background: #008cba;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+  border-radius: 2px;
+  color: #fff;
+  padding: 4px;
+  font-family: Lato;
+  margin: 2px;
+  border: 1px solid transparent;
+}
+.label-badge i[role=close] {
+  -webkit-filter: invert(100%);
+  -moz-filter: invert(100%);
+  filter: invert(100%);
+  height: 11px;
+  width: 11px;
+  margin-top: 1px;
+  margin-left: 4px;
+}
+.label-badge:hover {
+  color: #008cba;
+  background: #fff;
+  border: 1px solid #000;
+}
+.label-badge:hover i[role=close] {
+  -webkit-filter: invert(0%);
+  -moz-filter: invert(0%);
+  filter: invert(0%);
+}
 .panel {
   width: 400px;
   background: #fff;
@@ -2908,6 +2940,13 @@ table tr {
 table tr.checked {
   background: #fff;
 }
+table tr.new-element {
+  background: #e8e8e8;
+  border-bottom-color: #ddd;
+}
+table tr:hover {
+  background: #eee;
+}
 table thead tr {
   background: #fff;
   font-family: Lato;
@@ -2933,11 +2972,42 @@ thead {
 thead th {
   padding: 5px;
 }
-div[ng-controller=Widgets] {
-  display: none;
-}
 header {
   background: #eee;
+}
+.calendar {
+  padding-bottom: 49% !important;
+  margin-bottom: 22.7%;
+}
+.calendar .content {
+  margin-left: -1px;
+  box-sizing: content-box;
+}
+.calendar .content .day.today {
+  background: #008cba;
+}
+.calendar .content h2 {
+  color: #008cba;
+}
+.last-mails-widget {
+  background: #fff;
+  border: 1px solid #ccc;
+}
+.last-mails-widget h1 {
+  text-align: center;
+}
+.last-mails-widget ul {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+.last-mails-widget ul li {
+  list-style-type: none;
+  padding-left: 7px;
+  border-left: 5px solid #008cba;
+  line-height: 22px;
+}
+.last-mails-widget ul li a {
+  font-size: 14px;
 }
 .icons-view {
   background: #eee;
@@ -3012,8 +3082,12 @@ section.lightbox-backdrop {
   border-top: 10px solid #eee;
   margin-top: 7px;
 }
+.line:first-child {
+  border: none;
+}
 input[type=text],
-input[type=search] {
+input[type=search],
+input[type=password] {
   height: 25px;
   line-height: 25px;
   padding-left: 5px;

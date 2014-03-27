@@ -59,5 +59,10 @@
 	"admin.appRegistry": "Registre d'applications",
 	"notify.object.remove": "Cet élément a été supprimé",
 	"notify.object.trash": "Cet élément a été déplacé vers la corbeille",
-	"notify.object.saved": "Modifications enregistrées"
+	"notify.object.saved": "Modifications enregistrées",
+	"calendar.spring": "Printemps",
+	"calendar.summer": "Eté",
+	"calendar.fall": "Automne",
+	"calendar.winter": "Hiver",
+	"search": "Rechercher"
 }

@@ -481,7 +481,7 @@ function Collection(obj){
 		return col;
 	};
 
-	Model.prototype.resources = function(obj, methods){
+	Model.prototype.makePermanent = function(obj, methods){
 		function setCol(col){
 			col.composer = this;
 			for(var method in methods){

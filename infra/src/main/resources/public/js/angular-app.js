@@ -644,7 +644,7 @@ module.directive('autocomplete', function($compile){
 		},
 		template: '' +
 			'<div class="row">' +
-				'<input type="text" class="twelve cell" ng-model="search" />' +
+				'<input type="text" class="twelve cell" ng-model="search" translate attr="value" value="search" />' +
 				'<div data-drop-down class="drop-down">' +
 					'<div>' +
 						'<ul class="ten cell right-magnet">' +

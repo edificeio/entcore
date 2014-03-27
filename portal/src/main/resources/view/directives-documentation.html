@@ -119,9 +119,9 @@
 					La directive <label>loading-icon</label> permet de suivre la progression d'une requête http. Elle doit être utilisée en parallèle
 					de l'objet <label>http()</label> de l'API d'ent-core.
 				</p>
-				<article class="reduce-block-six">
-					<button>Lancer la requête</button>
-					<loading-icon ></loading-icon>
+				<article class="reduce-block-six" ng-controller="LoadingController">
+					<button ng-click="startRequest()">Lancer la requête</button>
+					<loading-icon request="loading-exemple"></loading-icon>
 				</article>
 				<h3>loading-panel</h3>
 				<h3>tooltip</h3>

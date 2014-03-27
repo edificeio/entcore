@@ -278,6 +278,35 @@ button.cancel, input[type=button].cancel{
 	color: #333;
 }
 
+.label-badge{
+	background: #008cba;
+	.run-transition(background);
+	border-radius: 2px;
+	color: #fff;
+	padding: 4px;
+	font-family: Lato;
+	margin: 2px;
+	border: 1px solid transparent;
+	i[role=close]{
+		.invert-colors();
+		height: 11px;
+		width: 11px;
+		margin-top: 1px;
+		margin-left: 4px;
+	}
+}
+
+.label-badge:hover{
+	color: @bright-blue;
+	background: #fff;
+	border: 1px solid #000;
+	i[role=close]{
+		-webkit-filter: invert(0%);
+		-moz-filter: invert(0%);
+		filter: invert(0%);
+	}
+}
+
 .panel{
 	width: 400px;
 	background: #fff;
@@ -435,6 +464,13 @@ table{
 	tr.checked{
 		background: #fff;
 	}
+	tr.new-element{
+		background: #e8e8e8;
+		border-bottom-color: #ddd;
+	}
+	tr:hover{
+		background: #eee;
+	}
 	thead{
 		tr{
 			background: #fff;
@@ -467,12 +503,44 @@ thead{
 	}
 }
 
-div[ng-controller=Widgets]{
-	display: none;
-}
-
 header{
 	background: #eee;
+}
+
+.calendar{
+	padding-bottom: 49% !important;
+	margin-bottom: 22.7%;
+	.content{
+		margin-left: -1px;
+		box-sizing: content-box;
+		.day.today{
+			background: @bright-blue;
+		}
+		h2{
+			color: @bright-blue;
+		}
+	}
+}
+
+.last-mails-widget{
+	background: #fff;
+	border: 1px solid #ccc;
+	h1{
+		text-align: center;
+	}
+	ul{
+		margin-bottom: 0;
+		padding-left: 0;
+		li{
+			list-style-type: none;
+			padding-left: 7px;
+			border-left: 5px solid @bright-blue;
+			line-height: 22px;
+			a{
+				font-size: 14px;
+			}
+		}
+	}
 }
 
 .icons-view{
@@ -556,8 +624,11 @@ section.lightbox-backdrop{
 	border-top: 10px solid #eee;
 	margin-top: 7px;
 }
+.line:first-child{
+	border: none;
+}
 
-input[type=text], input[type=search]{
+input[type=text], input[type=search], input[type=password]{
 	height: 25px;
 	line-height: 25px;
 	padding-left: 5px;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Ent-core</title>
+	<script type="text/javascript" id="context" src="/infra/public/js/loader.js"></script>
+	<script type="text/javascript">
+		function ApplicationController($scope){
+			http().get('/applications-list').done(function(app){
+				$scope.applications = app.apps;
+				$scope.$apply();
+			});
+		}
+	</script>
+</head>
+<body>
+	<portal>
+		<widgets></widgets>
+		<section class="nine cell reduce-block-six" ng-controller="ApplicationController">
+			<h1>Applications</h1>
+			<nav class="vertical">
+				<ul>
+					<li ng-repeat="application in applications">
+						<a translate content="[[application.displayName]]" ng-href="[[application.address]]"></a>
+					</li>
+				</ul>
+			</nav>
+		</section>
+	</portal>
+</body>
+</html>

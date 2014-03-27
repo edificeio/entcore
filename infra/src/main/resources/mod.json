@@ -79,6 +79,18 @@
 			{"name": "history", "url": "http://localhost:8090/history"},
 			{"name": "appRegistry", "url": "http://localhost:8090/appregistry"},
 			{"name": "communication", "url": "http://localhost:8090/communication"}
+		],
+		"widgets": [
+			{
+				"name": "calendar",
+				"path": "/timeline/calendar",
+				"js": "/timeline/public/js/calendar.js"
+			},{
+				"name": "lastMails",
+				"path": "/conversation/public/template/last-mails-widget.html",
+				"js": "/conversation/public/js/last-mails-widget.js",
+				"i18n": "/conversation/i18n"
+			}
 		]
       }
     },
