@@ -534,7 +534,7 @@ public class CommunicationController extends Controller {
 			badRequest(request);
 			return;
 		}
-		setDefaultCommunicationRules(schoolId, new Handler<Message<JsonObject>>() {
+		setDefaultCommunicationRules(new JsonArray().add(schoolId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				if ("ok".equals(r.body().getString("status"))) {
@@ -547,71 +547,89 @@ public class CommunicationController extends Controller {
 	}
 
 	private void setDefaultCommunicationRules(
-			String schoolId, Handler<Message<JsonObject>> handler) {
-		StatementsBuilder b = new StatementsBuilder();
-		final JsonObject params = new JsonObject().putString("schoolId", schoolId);
+			JsonArray schoolIds, Handler<Message<JsonObject>> handler) {
 		JsonArray r = container.config().getArray("defaultCommunicationRules");
-		if (r == null || r.size() == 0 || schoolId == null || schoolId.trim().isEmpty()) {
+		if (r == null || r.size() == 0 || schoolIds == null || schoolIds.size() == 0) {
 			handler.handle(null);
 			return;
 		}
-		for (Object o: r) {
-			if (!(o instanceof String) || ((String) o).trim().isEmpty()) continue;
-			if (((String) o).contains("RELATED")) {
-				b.add("MATCH " + o + " CREATE UNIQUE start-[:COMMUNIQUE_DIRECT]->end", params);
-			} else {
-				if (((String) o).contains("startStructureGroup") && ((String) o).contains("endStructureGroup")) {
-					b.add(
-						"MATCH (s:Structure)<-[:DEPENDS]-(startStructureGroup:ProfileGroup)" +
-						"-[:HAS_PROFILE]-(startProfile:Profile), " +
-						"s<-[:DEPENDS]-(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
-						"WHERE s.id = {schoolId} " + o +
-						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
-					);
-				} else if (((String) o).contains("endProfile")) {
-					b.add(
-						"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
-						"c<-[:DEPENDS]-(startClassGroup:ProfileGroup)-[:DEPENDS]->" +
-						"(startStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(startProfile:Profile), " +
-						"c<-[:DEPENDS]-(endClassGroup:ProfileGroup)-[:DEPENDS]->" +
-						"(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
-						"WHERE s.id = {schoolId} " + o +
-						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
-					);
-				} else if (((String) o).contains("userClass")) {
-					b.add(
-						"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
-						"c<-[:DEPENDS]-(classGroup:ProfileGroup)-[:DEPENDS]->" +
-						"(structureGroup:ProfileGroup)-[:HAS_PROFILE]-(profile:Profile), " +
-						"classGroup<-[:IN]-(userClass:User) " +
-						"WHERE s.id = {schoolId} " + o +
-						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
-					);
-				} else if (((String) o).contains("userStructure")) {
-					b.add(
-						"MATCH (s:Structure)<-[:DEPENDS]-(structureGroup:ProfileGroup)" +
-						"-[:HAS_PROFILE]-(profile:Profile), " +
-						"structureGroup<-[:IN]-(userStructure:User) " +
-						"WHERE s.id = {schoolId} " + o +
-						"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
-					);
+		StatementsBuilder b = new StatementsBuilder();
+		for (Object s : schoolIds) {
+			if (!(s instanceof String)) continue;
+			String schoolId = (String) s;
+			final JsonObject params = new JsonObject().putString("schoolId", schoolId);
+			for (Object o: r) {
+				if (!(o instanceof String) || ((String) o).trim().isEmpty()) continue;
+				if (((String) o).contains("RELATED")) {
+					b.add("MATCH " + o + " CREATE UNIQUE start-[:COMMUNIQUE_DIRECT]->end", params);
+				} else {
+					if (((String) o).contains("startStructureGroup") && ((String) o).contains("endStructureGroup")) {
+						b.add(
+							"MATCH (s:Structure)<-[:DEPENDS]-(startStructureGroup:ProfileGroup)" +
+							"-[:HAS_PROFILE]-(startProfile:Profile), " +
+							"s<-[:DEPENDS]-(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
+							"WHERE s.id = {schoolId} " + o +
+							"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+						);
+					} else if (((String) o).contains("endProfile")) {
+						b.add(
+							"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
+							"c<-[:DEPENDS]-(startClassGroup:ProfileGroup)-[:DEPENDS]->" +
+							"(startStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(startProfile:Profile), " +
+							"c<-[:DEPENDS]-(endClassGroup:ProfileGroup)-[:DEPENDS]->" +
+							"(endStructureGroup:ProfileGroup)-[:HAS_PROFILE]-(endProfile:Profile) " +
+							"WHERE s.id = {schoolId} " + o +
+							"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+						);
+					} else if (((String) o).contains("userClass")) {
+						b.add(
+							"MATCH (s:Structure)<-[:BELONGS]-(c:Class), " +
+							"c<-[:DEPENDS]-(classGroup:ProfileGroup)-[:DEPENDS]->" +
+							"(structureGroup:ProfileGroup)-[:HAS_PROFILE]-(profile:Profile), " +
+							"classGroup<-[:IN]-(userClass:User) " +
+							"WHERE s.id = {schoolId} " + o +
+							"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+						);
+					} else if (((String) o).contains("userStructure")) {
+						b.add(
+							"MATCH (s:Structure)<-[:DEPENDS]-(structureGroup:ProfileGroup)" +
+							"-[:HAS_PROFILE]-(profile:Profile), " +
+							"structureGroup<-[:IN]-(userStructure:User) " +
+							"WHERE s.id = {schoolId} " + o +
+							"CREATE UNIQUE start-[:COMMUNIQUE]->end", params
+						);
+					}
 				}
 			}
+			b.add(
+				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+				"WHERE s.id = {schoolId} AND NOT(v:Visible) " +
+				"WITH DISTINCT v " +
+				"SET v:Visible ", params
+			);
 		}
-		b.add(
-			"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
-			"WHERE s.id = {schoolId} AND NOT(v:Visible) " +
-			"WITH DISTINCT v " +
-			"SET v:Visible ", params
-		);
 		neo.executeTransaction(b.build(), null, true, handler);
 	}
 
 	public void communicationEventBusHandler(final Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
 			case "setDefaultCommunicationRules" :
+				setDefaultCommunicationRules(new JsonArray().add(
+						message.body().getString("schoolId")), new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						if (r != null) {
+							message.reply(r.body());
+						} else {
+							message.reply(new JsonObject().putString("status", "error")
+									.putString("message", "invalid.schoolId"));
+						}
+					}
+				});
+				break;
+			case "setMultipleDefaultCommunicationRules" :
 				setDefaultCommunicationRules(
-						message.body().getString("schoolId"), new Handler<Message<JsonObject>>() {
+						message.body().getArray("schoolIds"), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> r) {
 						if (r != null) {
