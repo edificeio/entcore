@@ -170,7 +170,7 @@
     "welcome.info" : "Bienvenue dans votre ENT One !",
     "welcome.class.admin.uri" : "Pour commencer, nous vous recommandons d'initialiser votre classe en saisissant les données des élèves et parents dans le service",
     "welcome.class.admin" : "« Paramétrage de la classe ».",
-    "welcome.class.admin.info" : "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes : soit les renseigner un par un, soit télécharger un export de BE1D.",
+    "welcome.class.admin.info" : "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes :",
     "welcome.class.admin.info2" : "  - soit les créer manuellement un par un,",
     "welcome.class.admin.info3" : "  - soit télécharger un export de BE1D.",
     "welcome.class.admin.info4" : "Vous pourrez ensuite distribuer les identifiants de connexion à tous les utilisateurs de votre classe.",
