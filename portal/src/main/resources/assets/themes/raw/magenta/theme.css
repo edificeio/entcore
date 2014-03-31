@@ -1229,10 +1229,6 @@ a {
 .v-center-container .v-center img {
   width: 100%;
 }
-.contextual-editor {
-  width: 500px;
-  height: 200px;
-}
 .contextual-editor.ck_editable {
   border: 1px solid #ccc;
   padding: 0;
@@ -1919,12 +1915,15 @@ div.hidden-content {
 }
 .drawing-zone {
   overflow: hidden;
+  position: absolute;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  height: 300px;
-  position: relative;
+  left: 50px;
+  top: 10px;
+  width: 823px;
+  height: 598px;
 }
 span.no-style {
   background: none !important;
@@ -1975,7 +1974,6 @@ span.no-style {
   -o-border-radius: 5px;
   border-radius: 5px;
   max-width: none;
-  display: block;
 }
 .drawing-zone article.media div {
   width: 100%;
@@ -2300,7 +2298,7 @@ i[role=send-mail] {
   float: left;
   vertical-align: middle;
   margin: 7px;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 i[role=view-folder] {
   height: 24px;
@@ -2316,7 +2314,7 @@ i[role=view-folder] {
   float: left;
   vertical-align: middle;
   margin: 7px;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 i[role=view-book] {
   height: 24px;
@@ -2332,7 +2330,7 @@ i[role=view-book] {
   float: left;
   vertical-align: middle;
   margin: 7px;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 i[role=angry] {
   height: 25px;
@@ -2702,20 +2700,13 @@ input[type=submit][disabled]:hover {
   background: #ddd;
   border: 1px solid #ccc;
 }
-.contextual-editor {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-}
-.drawing-zone article.media {
-  border: 1px dashed #008cba;
-}
-.drawing-zone article.media img {
-  display: block;
-}
 .navbar {
-  background: #444;
+  background: -webkit-linear-gradient(#000000, #222222);
+  background: -moz-linear-gradient(#000000, #222222);
+  background: -o-linear-gradient(#000000, #222222);
+  background: linear-gradient(#000000, #222222);
+  -pie-background: linear-gradient(#000000, #222222);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
   width: 100%;
 }
 .navbar .welcome-message {
@@ -3301,4 +3292,22 @@ i[role=folder-large] {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+}
+a {
+  color: #ff0b75;
+}
+button,
+input[type=button],
+input[type=submit],
+a.button {
+  background: #ff0b75;
+}
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover,
+a.button:hover {
+  border-color: #ff0b75;
+}
+nav.vertical ul li a {
+  border-color: #ff0b75;
 }

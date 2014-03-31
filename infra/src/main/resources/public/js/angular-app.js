@@ -321,6 +321,9 @@ module.directive('filesPicker', function($compile){
 				})
 					.hide()
 					.appendTo('body');
+				if($attributes.multiple !== undefined){
+					fileSelector.attr('multiple', true);
+				}
 
 				fileSelector.on('change', function(){
 					$scope.ngModel = fileSelector[0].files;
@@ -459,7 +462,7 @@ module.directive('preview', function($compile){
 				})
 			}
 		}
-})
+});
 
 module.directive('bindHtml', function($compile){
 	return {
@@ -816,7 +819,7 @@ module.directive('richTextEditor', function($compile){
 					{ customConfig: '/infra/public/ckeditor/rich-text-config.js' }
 				);
 
-				var positionning = createCKEditorInstance(editor, $scope, $compile);
+				createCKEditorInstance(editor, $scope, $compile);
 
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
@@ -831,7 +834,7 @@ module.directive('richTextEditor', function($compile){
 
 				$scope.$eval($scope.watchCollection).forEach(function(col){
 					$scope.$parent.$watchCollection(col, function(){
-						positionning();
+						ckeEditorFixedPositionning();
 					});
 				});
 			}
@@ -931,8 +934,7 @@ module.directive('htmlEditor', function($compile){
 				}
 				CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
 				var editor = $element.find('[contenteditable=true]');
-				var instance = CKEDITOR.inline(editor[0]);
-
+				CKEDITOR.inline(editor[0]);
 				createCKEditorInstance(editor, $scope, $compile);
 				$element.on('removed', function(){
 					setTimeout(function(){
@@ -1093,6 +1095,12 @@ module.directive('bottomScroll', function($compile){
 			})
 		}
 	}
+});
+
+module.directive('drawingZone', function($compile){
+	return function($scope, $element, $attributes){
+		$element.addClass('drawing-zone');
+	};
 });
 
 module.directive('resizable', function($compile){
@@ -1284,19 +1292,22 @@ module.directive('placedBlock', function($compile){
 			$scope.$watch('x', function(newVal){
 				$element.offset({
 					top: $element.offset().top,
-					left: newVal + $element.parent().offset().left
+					left: parseInt(newVal) + $element.parent().offset().left
 				});
 			});
 
 			$scope.$watch('y', function(newVal){
 				$element.offset({
 					left: $element.offset().left,
-					top: newVal + $element.parent().offset().top
+					top: parseInt(newVal) + $element.parent().offset().top
 				});
 			});
 
 			var toTop = function(){
 				$(':focus').blur();
+				if($scope.z === undefined){
+					return;
+				}
 				$element.parents('.drawing-zone').find('*').each(function(index, item){
 					var zIndex = $(item).css('z-index');
 					if(!$scope.z){
@@ -1306,7 +1317,9 @@ module.directive('placedBlock', function($compile){
 						$scope.z = parseInt(zIndex) + 1;
 					}
 				});
-				$scope.$apply('z');
+				if($scope.z){
+					$scope.$apply('z');
+				}
 			};
 
 			$element.on('startDrag', toTop);

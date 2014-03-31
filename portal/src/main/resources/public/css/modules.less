@@ -603,6 +603,11 @@ a{
 	}
 }
 
+.contextual-editor{
+	width: 500px;
+	height: 200px;
+}
+
 .contextual-editor.ck_editable{
 	border: 1px solid #ccc;
 	padding: 0;
@@ -1310,12 +1315,9 @@ div.hidden-content{
 
 .drawing-zone{
 	overflow: hidden;
-	position: absolute;
 	.border-box;
-	left: 50px;
-	top: 10px;
-	width: 823px;
-	height: 598px;
+	height: 300px;
+	position: relative;
 }
 
 span.no-style{
@@ -1368,6 +1370,7 @@ span.no-style{
 		img, div{
 			.border-radius();
 			max-width: none;
+			display: block;
 		}
 
 		div{

@@ -1226,6 +1226,10 @@ a {
 .v-center-container .v-center img {
   width: 100%;
 }
+.contextual-editor {
+  width: 500px;
+  height: 200px;
+}
 .contextual-editor.ck_editable {
   border: 1px solid #ccc;
   padding: 0;
@@ -1912,15 +1916,12 @@ div.hidden-content {
 }
 .drawing-zone {
   overflow: hidden;
-  position: absolute;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  left: 50px;
-  top: 10px;
-  width: 823px;
-  height: 598px;
+  height: 300px;
+  position: relative;
 }
 span.no-style {
   background: none !important;
@@ -1971,6 +1972,7 @@ span.no-style {
   -o-border-radius: 5px;
   border-radius: 5px;
   max-width: none;
+  display: block;
 }
 .drawing-zone article.media div {
   width: 100%;

@@ -17,19 +17,19 @@
 i[role=send-mail]{
 	.icon(glyphicons_010_envelope, 24px);
 	margin: 7px;
-	opacity: 0.3;
+	opacity: 0.6;
 }
 
 i[role=view-folder]{
 	.icon(glyphicons_144_folder_open, 24px);
 	margin: 7px;
-	opacity: 0.3;
+	opacity: 0.6;
 }
 
 i[role=view-book]{
 	.icon(glyphicons_071_book, 24px);
 	margin: 7px;
-	opacity: 0.3;
+	opacity: 0.6;
 }
 
 i[role=angry]{
@@ -248,8 +248,22 @@ a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:h
 	border: 1px solid #ccc;
 }
 
+.contextual-editor{
+	.border-box;
+}
+
+.drawing-zone{
+	article.media{
+		border: 1px dashed @bright-blue;
+		img{
+			display: block;
+		}
+	}
+}
+
+
 .navbar{
-	.vertical-gradient(#000, #222);
+	background: #444;
 	width: 100%;
 	.welcome-message{
 		display: none;

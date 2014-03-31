@@ -3,6 +3,9 @@
 <head lang="en">
 	<meta charset="UTF-8">
 	<title></title>
+	<script>
+		window.appPrefix = '.';
+	</script>
 	<script type="text/javascript" id="context" src="/infra/public/js/loader.js"></script>
 	<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
 	<link rel="stylesheet" type="text/css" href="/public/css/html-theme.css" />
@@ -25,8 +28,47 @@
 			};
 		}
 
+		function DrawingController($scope){
+			$scope.resizeWidth = 200;
+			$scope.resizeHeight = 200;
+
+			$scope.bloc1 = {
+				y: 20,
+				x: 50,
+				z: 0
+			};
+			$scope.bloc2 = {
+				y: 20,
+				x: 300,
+				z: 1
+			};
+			$scope.bloc3 = {
+				y: 20,
+				x: 600,
+				z: 2
+			};
+			$scope.yak = {
+				x: 20,
+				y: 20,
+				width: 100,
+				height: 100,
+				z: 0
+			};
+			$scope.frog = {
+				x: 130,
+				y: 20,
+				width: 100,
+				height: 100,
+				z: 0
+			}
+		}
+
 		function BindHtmlController($scope){
 			$scope.content = '<div class="img-container"><div class="clip"><img class="twelve" src="/public/img/exemples/filler1.png" /></div></div>';
+		}
+
+		function TemplateController($scope, template){
+			$scope.template = template;
 		}
 	</script>
 </head>
@@ -205,9 +247,30 @@
 				<h1>Gestion des données</h1>
 				<h2>Formats</h2>
 				<h3>files-picker</h3>
+				<p>
+					La directive <label>files-picker</label> remplace le bouton de sélection de fichier classique. Son comportement est le même, mais
+					il est possible de modifier son style.
+				</p>
+				<article class="reduce-block-six">
+					<div ng-if="showFilesPick">
+						Nombre de fichiers choisis : [[filesPickerFiles.length]]
+					</div>
+					<files-picker ng-model="filesPickerFiles" multiple ng-change="showFilesPick = true" value="Choisir"></files-picker>
+				</article>
 				<div class="reduce-block-six"></div>
-				<h3>icons-select</h3>
 				<h3>date-picker</h3>
+				<p>
+					Il s'agit d'un simple champ permettant de sélectionner une date.
+				</p>
+				<article class="reduce-block-six">
+					<div class="row" ng-if="showDate">
+						[[dateExemple]]
+					</div>
+					<date-picker
+							ng-model="dateExemple"
+							ng-change="showDate = true">
+					</date-picker>
+				</article>
 				<h2>Edition HTML</h2>
 				<h3>bind-html</h3>
 				<p>
@@ -236,45 +299,177 @@
 				<p>
 					Cet éditeur HTML permet de formatter du texte. Il ne gère pas les médias.
 				</p>
-				<rich-text-editor ng-model="formattedText"></rich-text-editor>
-				<div class="row reduce-block-six"></div>
+				<article class="reduce-block-six">
+					<rich-text-editor ng-model="formattedText"></rich-text-editor>
+					<div class="row reduce-block-six"></div>
+				</article>
 
 				<h3>html-editor</h3>
 				<p>
 					Cet éditeur HTML permet d'ajouter des médias et formatter du texte. Ajouter du son ou de la vidéo n'est possible que pour un utilisateur connecté ; il doit
 					également avoir de l'espace disponible sur son compte.
 				</p>
-				<html-editor ng-model="savedHtml"></html-editor>
-				<div class="row reduce-block-six"></div>
+				<article class="reduce-block-six">
+					<html-editor ng-model="savedHtml"></html-editor>
+					<div class="row reduce-block-six"></div>
+				</article>
 
 				<h3>text-editor</h3>
 				<p>
 					La directive <label>text-editor</label> permet de créer un éditeur de texte contextuel, qui s'ouvrira lors d'un clic sur le contenu.
 				</p>
-				<div class="media">
-					<text-editor ng-model="savedText"></text-editor>
-				</div>
+				<article class="reduce-block-six">
+					<text-editor ng-model="savedText" style="height: 200px"></text-editor>
+				</article>
+
+				<div class="row reduce-block-six"></div>
+
 				<h2>Edition et placement d'éléments</h2>
-				<h3>resizable</h3>
-				<h3>draggable</h3>
 				<h3>placed-block</h3>
+				<p>
+					Permet de positionner un bloc à un emplacement spécifique.
+				</p>
+				<article class="reduce-block-six" ng-controller="DrawingController">
+					<div class="row">
+						<div class="three cell">
+							<h2>Yak</h2>
+							<p>Position x
+								<br /><input type="number" ng-model="yak.x" />
+								<br />Position y
+								<br /><input type="number" ng-model="yak.y" />
+								<br />Position z
+								<br /><input type="number" ng-model="yak.z" />
+								<br />Largeur
+								<br /><input type="number" ng-model="yak.w" />
+								<br />Hauteur
+								<br /><input type="number" ng-model="yak.h" /></p>
+						</div>
+						<div class="three cell">
+							<h2>Grenouille</h2>
+							<p>Position x
+								<br /><input type="number" ng-model="frog.x" />
+								<br />Position y
+								<br /><input type="number" ng-model="frog.y" />
+								<br />Position z
+								<br /><input type="number" ng-model="frog.z" />
+								<br />Largeur
+								<br /><input type="number" ng-model="frog.w" />
+								<br />Hauteur
+								<br /><input type="number" ng-model="frog.h" /></p>
+						</div>
+						<div class="six cell" drawing-zone>
+							<placed-block x="frog.x" y="frog.y" z="frog.z" w="frog.w" h="frog.h">
+								<img src="/public/img/exemples/frog.png" class="extensible" />
+							</placed-block>
+							<placed-block x="yak.x" y="yak.y" z="yak.z" w="yak.w" h="yak.h">
+								<img src="/public/img/exemples/yak.png" class="extensible" />
+							</placed-block>
+						</div>
+					</div>
+					<div class="row"></div>
+				</article>
+				<h3>resizable</h3>
+				<p>
+					Cette propriété permet de changer la taille des éléments. Le conteneur ayant
+					la propriété <label>drawing-block</label> servira à marquer les limites de taille de l'élément.
+				</p>
+				<article drawing-zone ng-controller="DrawingController">
+					<p>
+						Largeur : [[resizeWidth]]
+						<br />Hauteur : [[resizeHeight]]
+					</p>
+					<placed-block class="media" resizable w="resizeWidth" h="resizeHeight"></placed-block>
+				</article>
+
+				<h3>draggable</h3>
+				<p>
+					Cette propriété permet à l'utilisateur de déplacer le bloc avec un glisser-déposer. Le conteneur ayant
+					la propriété <label>drawing-block</label> servira à marquer les limites de déplacement de l'élément.
+				</p>
+				<article drawing-zone ng-controller="DrawingController">
+					<placed-block class="media" draggable x="bloc1.x" y="bloc1.y" z="bloc1.z">
+						<img src="/public/img/exemples/filler2.png" />
+					</placed-block>
+					<placed-block class="media" draggable x="bloc2.x" y="bloc2.y" z="bloc2.z">
+						<div class="reduce-block-six">
+							Position x : [[bloc2.x]]
+							<br />Position y : [[bloc2.y]]
+							<br />Position dans la pile : [[bloc2.z]]
+						</div>
+					</placed-block>
+					<placed-block class="media" draggable x="bloc3.x" y="bloc3.y" z="bloc3.z">
+						<img src="/public/img/exemples/filler3.png" />
+					</placed-block>
+				</article>
+
 				<h1>Outils du modèle</h1>
 				<h2>Traduction</h2>
 				<h3>translate</h3>
+				<p>
+					Cette directive permet de traduire le contenu d'un élément, ou un attribut. La clef utilisée est référencée dans les fichiers i18n de l'application.
+				</p>
 				<h3>localized-class</h3>
+				<p>
+					Il est possible de générer des classes supplémentaires en fonction de la localisation pour traduire les images.
+				</p>
 				<h2>Chargement de styles</h2>
 				<h3>portal</h3>
+				<p>
+					<label>Portal</label> permet d'inclure le contenu dans le portail de l'ent. Il s'agit de la directive de base utilisée par toutes les applications.
+				</p>
 				<h3>admin-portal</h3>
+				<p>
+					Cette directive permet de charger l'application dans un portail d'administration. L'utilisateur doit être un administrateur pour avoir accès à
+					la vue générée.
+				</p>
 				<h3>portal-styles</h3>
+				<p>
+					A la différence de <label>portal</label>, <label>portal-styles</label> charge uniquement les styles de l'ent sans imbriquer l'application dans
+					le portail.
+				</p>
 				<h3>default-styles</h3>
+				<p>
+					<label>Default-styles</label> charge la skin par défaut dans l'application. Elle est utilisable pour les utilisateurs déconnectés.
+				</p>
 				<h3>skin-src</h3>
+				<p>
+					Cette directive récupère une image dans le répertoire de thème courant.
+				</p>
 				<h2>Ressources</h2>
 				<h3>workflow</h3>
+				<p>
+					Un élément marqué workflow ne sera affiché que si l'utilisateur courant a les droits d'accès au contenu indiqué.
+				</p>
 				<h3>behaviour</h3>
+				<p>
+					Le contenu d'un bloc <label>behaviour</label> ne sera affiché que si l'utilisateur courant a des droits d'accès suffisants à la ressource concernée.
+				</p>
 				<h3>share-panel</h3>
+				<p>
+					Cette directive permet d'afficher un panneau de partage pour une ressource spécifique.
+				</p>
 				<h1>Composants pour le contrôleur</h1>
 				<h2>Routes</h2>
+				<p>
+					Il est possible de gérer des routes côté client, qui seront ensuite gérées par le contrôleur.
+				</p>
 				<h2>Templates</h2>
+				<p>
+					Le système de templates d'ent-core est très simple. On indique d'abord un bloc "conteneur", dans lequel des templates seront
+					chargées :
+				</p>
+				<p>
+					On importe ensuite le composant template dans le contrôleur :
+				</p>
+				<p>
+					La fonction <label>open</label> permet de charger une template dans un conteneur.
+				</p>
+				<article class="reduce-block-six" ng-controller="TemplateController">
+					<button ng-click="template.open('exemple', 'ex1')">Template 1</button>
+					<button ng-click="template.open('exemple', 'ex2')">Template 2</button>
+					<button ng-click="template.close('exemple')">Fermer</button>
+					<div ng-include="template.containers.exemple"></div>
+				</article>
 			</section>
 		</div>
 	</default-styles>
