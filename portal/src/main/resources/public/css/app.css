@@ -1088,11 +1088,8 @@ p i {
 }
 img.text-sized {
   height: 20px;
-<<<<<<< HEAD
-=======
   vertical-align: top;
   display: inline-block;
->>>>>>> 6d9ffa2... [infra] framework update and corrected issues with editor
 }
 .autocomplete em {
   font-style: normal;
@@ -2136,6 +2133,45 @@ span.no-style {
 .cke_float.cke_chrome .cke_inner .cke_top .cke_button_on {
   background: #ddd;
   box-shadow: inset 1px 1px 2px #999;
+}
+.warning {
+  color: #c60c17;
+  background: #FFE7E8;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+.info {
+  color: #2F8CC9;
+  background: #EBF4F9;
+  padding: 7px;
+  font-size: 12px;
+  text-align: center;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+em.low-importance {
+  font-size: 12px !important;
+  height: 16px;
+  line-height: 16px;
+  text-align: right;
+}
+em.medium-importance {
+  font-style: normal;
+  color: #666;
+}
+em.high-importance {
+  font-style: normal;
+  font-weight: bold;
+  color: #666;
 }
 html,
 body {

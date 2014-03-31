@@ -644,7 +644,7 @@ module.directive('autocomplete', function($compile){
 		},
 		template: '' +
 			'<div class="row">' +
-				'<input type="text" class="twelve cell" ng-model="search" translate attr="value" value="search" />' +
+				'<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" />' +
 				'<div data-drop-down class="drop-down">' +
 					'<div>' +
 						'<ul class="ten cell right-magnet">' +
@@ -720,10 +720,13 @@ var ckeEditorFixedPositionning = function(){
 		if(!CKEDITOR.instances[instance].element){
 			toolbox.remove();
 			CKEDITOR.instances[instance].destroy();
-			return;
+			continue;
 		}
 
 		editableElement = $(CKEDITOR.instances[instance].element.$);
+		if(editableElement.hasClass('contextual-editor')){
+			continue;
+		}
 
 		toolbox.width(editableElement.width() + 2 + parseInt(editableElement.css('padding') || 4) * 2);
 		toolbox.offset({
@@ -814,17 +817,22 @@ module.directive('richTextEditor', function($compile){
 				);
 
 				var positionning = createCKEditorInstance(editor, $scope, $compile);
-				$scope.$eval($scope.watchCollection).forEach(function(col){
-					$scope.$parent.$watchCollection(col, function(){
-						positionning();
-					});
-				})
 
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						CKEDITOR.instances[instance].destroy()
 					}
 					$('.cke').remove();
+				});
+
+				if(!$scope.watchCollection){
+					return;
+				}
+
+				$scope.$eval($scope.watchCollection).forEach(function(col){
+					$scope.$parent.$watchCollection(col, function(){
+						positionning();
+					});
 				});
 			}
 		}
@@ -941,22 +949,23 @@ module.directive('loadingIcon', function($compile){
 		restrict: 'E',
 		link: function($scope, $element, $attributes){
 			var addImage = function(){
-				var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
+				var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
 				$('<img>')
 					.attr('src', loadingIllustrationPath)
 					.attr('class', $attributes.class)
 					.addClass('loading-icon')
 					.appendTo($element);
-			}
+			};
 			if($attributes.default=== 'loading'){
 				addImage();
 			}
 			http().bind('request-started.' + $attributes.request, function(e){
+				$element.find('img').remove();
 				addImage();
 			});
 
 			http().bind('request-ended.' + $attributes.request, function(e){
-				var loadingDonePath = $('link').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
+				var loadingDonePath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
 				$element.find('.loading-icon').remove();
 				$('<img>')
 					.attr('src', loadingDonePath)
@@ -972,7 +981,7 @@ module.directive('loadingPanel', function($compile){
 		link: function($scope, $element, $attributes){
 			$attributes.$observe('loadingPanel', function(val) {
 				http().bind('request-started.' + $attributes.loadingPanel, function(e){
-					var loadingIllustrationPath = $('link').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
+					var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
 					$element.append('<div class="loading-panel">' +
 						'<h1>' + lang.translate('loading') + '</h1>' +
 						'<img src="' + loadingIllustrationPath + '" />' +

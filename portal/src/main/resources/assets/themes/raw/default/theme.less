@@ -338,6 +338,69 @@ button.cancel, input[type=button].cancel{
 	}
 }
 
+@-moz-keyframes blink {
+	0% {
+		border-bottom-width: 1px;
+	}
+
+	100% {
+		border-bottom-width: 30px;
+	}
+}
+
+@-webkit-keyframes blink {
+	0% {
+		border-bottom-width: 1px;
+	}
+
+	100% {
+		border-bottom-width: 30px;
+	}
+}
+
+@keyframes blink {
+	0% {
+		border-bottom-width: 1px;
+	}
+
+	100% {
+		border-bottom-width: 30px;
+	}
+}
+
+.tooltip{
+	.content{
+		background: @bright-blue;
+		color: #fff;
+	}
+	.arrow{
+		color: @bright-blue;
+	}
+
+}
+
+.loading-panel{
+	background: #fff;
+	border: 1px solid @bright-blue;
+	img{
+		display: none;
+	}
+	h1{
+		color: #008cba;
+		text-align: center;
+		line-height: 100%;
+		font-size: 2em;
+		border-bottom: 1px solid;
+		height: 100%;
+		margin: 0;
+		box-sizing: border-box;
+		padding-top: 20px;
+		-webkit-animation: blink 3s linear infinite;
+		-moz-animation: blink 3s linear infinite;
+		animation: blink 3s linear infinite;
+	}
+}
+
 button, input[type=button], a.button, input[type=submit]{
 	background: @bright-blue;
 	padding: 4px;
@@ -543,14 +606,15 @@ header{
 	}
 }
 
+.img-container div.clip{
+	border: 1px solid #008cba;
+	background: #fff;
+	padding: 10px;
+}
+
 .icons-view{
 	background: #eee;
 	margin-top: 0;
-	.img-container div.clip{
-		border: 1px solid #008cba;
-		background: #fff;
-		padding: 10px;
-	}
 }
 
 .tabs{

@@ -15,6 +15,20 @@
 			border-radius: 3px;
 		}
 	</style>
+	<script type="text/javascript">
+		function LoadingController($scope){
+			$scope.startRequest1 = function(){
+				http().get('/', {}, {requestName: 'loading-exemple1' })
+			};
+			$scope.startRequest2 = function(){
+				http().get('/', {}, {requestName: 'loading-exemple2' })
+			};
+		}
+
+		function BindHtmlController($scope){
+			$scope.content = '<div class="img-container"><div class="clip"><img class="twelve" src="/public/img/exemples/filler1.png" /></div></div>';
+		}
+	</script>
 </head>
 <body bottom-scroll="showBottomScroll = true">
 	<default-styles>
@@ -68,6 +82,7 @@
 				</pre>
 				<article class="row reduce-block-six">
 					<span ng-if="showBottomScroll">Vous avez scrollé jusqu'au bout.</span>
+					<span ng-if="!showBottomScroll">Vous n'avez pas scrollé jusqu'au bout.</span>
 				</article>
 				<div class="row reduce-block-six"></div>
 
@@ -113,29 +128,132 @@
 					</autocomplete>
 					<div class="row"></div>
 				</article>
+				<div class="row reduce-block-six"></div>
 
 				<h3>loading-icon</h3>
 				<p>
 					La directive <label>loading-icon</label> permet de suivre la progression d'une requête http. Elle doit être utilisée en parallèle
 					de l'objet <label>http()</label> de l'API d'ent-core.
 				</p>
+				<p>Requête http :</p>
+				<pre class="prettyprint row">
+
+    http().get('/', {}, {requestName: 'loading-exemple1' })
+				</pre>
+
+				<p>Directive :</p>
+				<pre class="prettyprint row">
+
+  &lt;loading-icon request="loading-exemple1"&gt;&lt;/loading-icon&gt;
+				</pre>
 				<article class="reduce-block-six" ng-controller="LoadingController">
-					<button ng-click="startRequest()">Lancer la requête</button>
-					<loading-icon request="loading-exemple"></loading-icon>
+					<button ng-click="startRequest1()">Lancer la requête</button>
+					<loading-icon request="loading-exemple1"></loading-icon>
 				</article>
+				<div class="row reduce-block-six"></div>
+
 				<h3>loading-panel</h3>
+				<p>
+					La directive <label>loading-panel</label> est similaire à <label>loading-icon</label>, mais elle remplace le contenu de l'élément
+					dans lequel elle est utilisée avec un panneau de chargement au lieu d'afficher une icône.
+				</p>
+				<p>Requête http :</p>
+				<pre class="prettyprint row">
+
+    http().get('/', {}, {requestName: 'loading-exemple2' })
+				</pre>
+
+				<p>Directive :</p>
+				<pre class="prettyprint row">
+
+  &lt;div loading-panel="loading-exemple2"&gt;
+    &lt;button ng-click="startRequest2()"&gt;Lancer la requête&lt;/button&gt;
+  &lt;/div&gt;
+				</pre>
+				<div class="row">
+					<article class="two cell height-one" ng-controller="LoadingController">
+						<div class="absolute reduce-block-six" loading-panel="loading-exemple2">
+							<button ng-click="startRequest2()">Lancer la requête</button>
+						</div>
+					</article>
+				</div>
+				<div class="row reduce-block-six"></div>
+
 				<h3>tooltip</h3>
+				<p>
+					<label>Tooltip</label> permet d'affcher une bulle d'aide.
+				</p>
+				<pre class="prettyprint row">
+  &lt;a tooltip="Information d'aide"&gt;Mon lien&lt;/a&gt;
+				</pre>
+				<article class="reduce-block-six">
+					<a tooltip="Information d'aide">Mon lien</a>
+				</article>
+				<div class="row reduce-block-six"></div>
+
 				<h3>widgets</h3>
+				<p>
+					Ce composant permet d'afficher les widgets de l'utilisateur. Il nécessite d'être connecté pour l'utiliser. L'option permettant de spécifier la liste des widgets est optionnelle ;
+					par défaut, tous les widgets sont affichés.
+				</p>
+				<pre class="prettyprint row">
+
+  &lt;widgets list="['calendar']"&gt;&lt;/widgets&gt;
+				</pre>
+				<div class="row reduce-block-six"></div>
+
 				<h1>Gestion des données</h1>
 				<h2>Formats</h2>
 				<h3>files-picker</h3>
+				<div class="reduce-block-six"></div>
 				<h3>icons-select</h3>
 				<h3>date-picker</h3>
 				<h2>Edition HTML</h2>
 				<h3>bind-html</h3>
+				<p>
+					Cette directive permet d'afficher du contenu HTML. La directive d'Angular <label>ng-bind-html</label> remplit la même fonction,
+					mais ne permet pas d'afficher de contenu dynamique ou d'images, contrairement à celle-ci.
+				</p>
+				Contrôleur :
+				<pre class="prettyprint row">
+
+    function BindHtmlController($scope){
+      $scope.content = '&lt;div class="img-container"&gt;&lt;div class="clip"&gt;&lt;img class="twelve" src="/public/img/exemples/filler1.png" /&gt;&lt;/div&gt;&lt;/div&gt;';
+    }
+				</pre>
+				Vue :
+				<pre class="prettyprint row">
+
+  &lt;div bind-html=""&gt;&lt;/div&gt;
+				</pre>
+				<div class="row" ng-controller="BindHtmlController">
+					<div class="two cell height-two" bind-html="content"></div>
+					<div class="row"></div>
+				</div>
+				<div class="row reduce-block-six"></div>
+
 				<h3>rich-text-editor</h3>
+				<p>
+					Cet éditeur HTML permet de formatter du texte. Il ne gère pas les médias.
+				</p>
+				<rich-text-editor ng-model="formattedText"></rich-text-editor>
+				<div class="row reduce-block-six"></div>
+
 				<h3>html-editor</h3>
+				<p>
+					Cet éditeur HTML permet d'ajouter des médias et formatter du texte. Ajouter du son ou de la vidéo n'est possible que pour un utilisateur connecté ; il doit
+					également avoir de l'espace disponible sur son compte.
+				</p>
+				<html-editor ng-model="savedHtml"></html-editor>
+				<div class="row reduce-block-six"></div>
+
 				<h3>text-editor</h3>
+				<p>
+					La directive <label>text-editor</label> permet de créer un éditeur de texte contextuel, qui s'ouvrira lors d'un clic sur le contenu.
+				</p>
+				<div class="media">
+					<text-editor ng-model="savedText"></text-editor>
+				</div>
 				<h2>Edition et placement d'éléments</h2>
 				<h3>resizable</h3>
 				<h3>draggable</h3>
