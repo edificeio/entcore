@@ -49,6 +49,8 @@ public class AafFeeder implements Feed {
 						importer.fieldOfStudyConstraints();
 						importer.moduleConstraints();
 						importer.userConstraints();
+						importer.classConstraints();
+						importer.groupConstraints();
 						importer.persist(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {

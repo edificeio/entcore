@@ -15,6 +15,8 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	public void start(final Handler<Message<JsonObject>> handler) {
 		if (importer.isFirstImport()) {
 			importer.userConstraints();
+			importer.classConstraints();
+			importer.groupConstraints();
 			importer.persist(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {

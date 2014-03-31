@@ -313,6 +313,18 @@ public class Importer {
 		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.externalId IS UNIQUE;", j);
 	}
 
+	public void classConstraints() {
+		JsonObject j = new JsonObject();
+		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.id IS UNIQUE;", j);
+		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.externalId IS UNIQUE;", j);
+	}
+
+	public void groupConstraints() {
+		JsonObject j = new JsonObject();
+		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.id IS UNIQUE;", j);
+		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.externalId IS UNIQUE;", j);
+	}
+
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, String[][] linkClasses,
 			String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
