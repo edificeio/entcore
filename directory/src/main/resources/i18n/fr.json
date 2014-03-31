@@ -172,7 +172,7 @@
     "welcome.class.admin" : "« Paramétrage de la classe ».",
     "welcome.class.admin.info" : "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes :",
     "welcome.class.admin.info2" : "  - soit les créer manuellement un par un,",
-    "welcome.class.admin.info3" : "  - soit télécharger un export de BE1D.",
+    "welcome.class.admin.info3" : "  - soit télécharger un export de BE1D (Base Elève 1er degré, le logiciel de l'Education nationale à l'aide duquel le directeur de l'école gère les élèves).",
     "welcome.class.admin.info4" : "Vous pourrez ensuite distribuer les identifiants de connexion à tous les utilisateurs de votre classe.",
     "welcome.class.admin.info5" : "Pour toute information complémentaire sur la prise en main de ONE, vous trouverez des tutoriels, de l’aide et des documents sur le site <a href=\"http://one1d.fr\">http://one1d.fr</a>, et plus généralement toute l'actualité de l'ENT.",
     "welcome.class.admin.donotanswer" : "Ce message a été généré automatiquement, merci de ne pas y répondre.",
