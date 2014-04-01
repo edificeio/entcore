@@ -297,7 +297,7 @@ module.directive('documentsLibrary', function($compile){
 		scope: {
 
 		},
-		templateUrl: '/infra/public/template/documents-library.html',
+		templateUrl: '/' + infraPrefix + '/public/template/documents-library.html',
 		link: function(scope, element, attributes){
 
 		}
@@ -808,15 +808,15 @@ module.directive('richTextEditor', function($compile){
 		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
-			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
-				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 			}
 			return function($scope, $element, $attributes){
 				var editor = $('[contenteditable=true]');
 				CKEDITOR.inline(editor[0],
-					{ customConfig: '/infra/public/ckeditor/rich-text-config.js' }
+					{ customConfig: '/' + infraPrefix + '/public/ckeditor/rich-text-config.js' }
 				);
 
 				createCKEditorInstance(editor, $scope, $compile);
@@ -852,15 +852,15 @@ module.directive('textEditor', function($compile){
 		},
 		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>',
 		compile: function($element, $attributes, $transclude){
-			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
-				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 			}
 			return function($scope, $element, $attributes){
 				var editor = $element.find('[contenteditable=true]');
 				var instance = CKEDITOR.inline(editor[0],
-					{ customConfig: '/infra/public/ckeditor/text-config.js' }
+					{ customConfig: '/' + infraPrefix + '/public/ckeditor/text-config.js' }
 				);
 				CKEDITOR.on('instanceReady', function(ck){
 					editor.html($compile($scope.ngModel)($scope.$parent));
@@ -922,10 +922,10 @@ module.directive('htmlEditor', function($compile){
 		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
-			CKEDITOR_BASEPATH = '/infra/public/ckeditor/';
+			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
-				CKEDITOR.plugins.basePath = '/infra/public/ckeditor/plugins/';
+				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 
 			}
 			return function($scope, $element, $attributes){
@@ -1459,7 +1459,7 @@ module.directive('sharePanel', function($compile){
 			appPrefix: '='
 		},
 		restrict: 'E',
-		templateUrl: '/infra/public/template/share-panel.html',
+		templateUrl: '/' + infraPrefix + '/public/template/share-panel.html',
 		link: function($scope, $element, $attributes){
 
 		}
@@ -1472,7 +1472,7 @@ module.directive('widgets', function($compile){
 			list: '='
 		},
 		restrict: 'E',
-		templateUrl: '/infra/public/template/widgets.html',
+		templateUrl: '/' + infraPrefix + '/public/template/widgets.html',
 		link: function($scope, $element, $attributes){
 
 		}
@@ -1493,7 +1493,7 @@ module.directive('datePicker', function($compile){
 			$scope.$watch('ngModel', function(newVal){
 				$element.val(moment($scope.ngModel).format('DD/MM/YYYY'));
 			});
-			loader.asyncLoad('/infra/public/js/bootstrap-datepicker.js', function(){
+			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
 				$element.datepicker({
 						dates: {
 							months: moment.months(),
@@ -1587,7 +1587,7 @@ function Share($rootScope, $scope, ui, _, lang){
 
 	var actionsConfiguration = {};
 
-	http().get('/infra/public/json/sharing-rights.json').done(function(config){
+	http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function(config){
 		actionsConfiguration = config;
 	});
 

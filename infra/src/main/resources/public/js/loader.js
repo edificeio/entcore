@@ -4,6 +4,10 @@ if(window.appPrefix === undefined){
 	}
 }
 
+if(window.infraPrefix === undefined){
+	window.infraPrefix = 'infra';
+}
+
 var currentLanguage = '';
 (function(){
 	var request = new XMLHttpRequest();
