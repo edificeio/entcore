@@ -564,7 +564,7 @@ public class Importer {
 	public void linkRelativeToStructure(String profileExternalId) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
 		String query =
-				"MATCH (u:User)<-[:RELATED]-(s:Student)-[:IN]->(scg:ProfileGroup)" +
+				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Structure)<-[:DEPENDS]-(rcg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
 				"CREATE u-[:IN]->rcg";
@@ -574,7 +574,7 @@ public class Importer {
 	public void linkRelativeToClass(String profileExternalId) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
 		String query =
-				"MATCH (u:User)<-[:RELATED]-(s:Student)-[:IN]->(scg:ProfileGroup)" +
+				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Class)<-[:DEPENDS]-(rcg:ProfileGroup)" +
 				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
