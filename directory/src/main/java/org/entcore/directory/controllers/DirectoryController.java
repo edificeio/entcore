@@ -267,17 +267,19 @@ public class DirectoryController extends Controller {
 		String neoRequest = "";
 		Map<String, Object> params = new HashMap<>();
 		if (request.params().get("id").equals("all")){
-			neoRequest = "MATCH (m:User) " +
-					"WHERE NOT(m.activationCode IS NULL) "
-					+ "RETURN distinct m.lastName as lastName, m.firstName as firstName, "
-					+ "m.login as login, m.activationCode as activationCode, "
-					+ "HEAD(filter(x IN labels(m) WHERE x <> 'Visible' AND x <> 'User')) as type "
-					+ "ORDER BY type, login ";
+			neoRequest =
+					"MATCH (m:User)-[:IN]->g " +
+					"WHERE NOT(m.activationCode IS NULL) " +
+					"OPTIONAL MATCH g-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
+					"m.login as login, m.activationCode as activationCode, " +
+					"p.name as type " +
+					"ORDER BY type, login ";
 		} else if (request.params().get("id") != null) {
 			neoRequest =
 					"MATCH (m:User)-[:IN]->g-[:DEPENDS]->n " +
-					"OPTIONAL MATCH g-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 					"WHERE (n:Structure OR n:Class) AND n.id = {id} AND NOT(m.activationCode IS NULL) " +
+					"OPTIONAL MATCH g-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 					"RETURN distinct m.lastName as lastName, m.firstName as firstName, " +
 					"m.login as login, m.activationCode as activationCode, " +
 					"p.name as type " +
