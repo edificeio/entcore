@@ -53,6 +53,7 @@ object Auth {
     .param("""callBack""", """""")
     .param("""email""", login)
     .param("password", password))
+    .exitHereIfFailed
     .pause(71 milliseconds)
     .exec(http("Détermination de la locale")
     .get("""/locale""")
