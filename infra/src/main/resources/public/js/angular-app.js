@@ -703,6 +703,7 @@ module.directive('autocomplete', function($compile){
 
 			dropDownContainer.on('click', 'li', function(e){
 				scope.ngModel = $(this).scope().option;
+				scope.search = '';
 				scope.$apply('ngModel');
 				scope.$eval(scope.ngChange);
 				scope.$apply('ngModel');

@@ -60,7 +60,7 @@ Behaviours.register('workspace', {
 		}
 
 		if(model.me.userId === resource.owner){
-			resource.myRights.share = true;
+			resource.myRights.share = workspaceBehaviours.resources[behaviour];
 		}
 
 		return resource;

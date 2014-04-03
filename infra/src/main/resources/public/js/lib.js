@@ -116,6 +116,11 @@ var lang = (function(){
 				}
 			})
 		},
+		addKeys: function(keys){
+			for(var property in keys){
+				bundle[property] = keys[property];
+			}
+		},
 		removeAccents: function(str){
 			for(var i=0; i<defaultDiacriticsRemovalMap.length; i++) {
 				str = str.replace(defaultDiacriticsRemovalMap[i].letters, defaultDiacriticsRemovalMap[i].base);
@@ -360,11 +365,13 @@ function Collection(obj){
 			}
 			this.trigger('change');
 		},
-		remove: function(item){
+		remove: function(item, trigger){
 			this.all = _.reject(this.all, function(element){
 				return item === element;
 			});
-			this.trigger('change');
+			if(trigger !== false){
+				this.trigger('change');
+			}
 		},
 		removeAt: function(index){
 			var element = this.all[index];
@@ -435,6 +442,9 @@ function Collection(obj){
 					}
 				});
 			})
+		},
+		toJSON: function(){
+			return this.all;
 		}
 	};
 
@@ -481,6 +491,16 @@ function Collection(obj){
 		return col;
 	};
 
+	Model.prototype.toJSON = function(){
+		var dup = {};
+		for(var prop in this){
+			if(this.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== data){
+				dup[prop] = this[prop];
+			}
+		}
+		return dup;
+	}
+
 	Model.prototype.makePermanent = function(obj, methods){
 		function setCol(col){
 			col.composer = this;
@@ -496,19 +516,23 @@ function Collection(obj){
 		this[pluralizeName(obj)].mine = new Collection(obj);
 		this[pluralizeName(obj)].shared = new Collection(obj);
 		this[pluralizeName(obj)].trash = new Collection(obj);
+		this[pluralizeName(obj)].mixed = new Collection(obj);
 
 		var colContainer = this[pluralizeName(obj)];
 		var mine = this[pluralizeName(obj)].mine;
 		var trash = this[pluralizeName(obj)].trash;
 		var shared = this[pluralizeName(obj)].shared;
+		var mixed = this[pluralizeName(obj)].mixed;
 
 		mine.on('change', function(){ colContainer.trigger('change') });
 		shared.on('change', function(){ colContainer.trigger('change') });
 		trash.on('change', function(){ colContainer.trigger('change') });
+		mixed.on('change', function(){ colContainer.trigger('change') });
 
 		setCol.call(this, mine);
 		setCol.call(this, trash);
 		setCol.call(this, shared);
+		setCol.call(this, mixed);
 
 		mine.sync = function(){
 			http().get('/workspace/documents', { filter: 'owner', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
@@ -517,6 +541,16 @@ function Collection(obj){
 					return doc;
 				});
 				mine.load(docs);
+			});
+		};
+
+		mixed.sync = function(){
+			http().get('/workspace/documents', { application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+				docs = _.map(docs, function(doc){
+					doc.title = doc.name.split('.json')[0];
+					return doc;
+				});
+				mixed.load(docs);
 			});
 		};
 
@@ -541,8 +575,11 @@ function Collection(obj){
 
 		obj.prototype.save = function(){
 			var toJson = JSON.parse(JSON.stringify(this));
-			delete toJson.callbacks;
-			delete toJson._id;
+			var tdl = ['callbacks', '_id', 'created', 'myRights', 'file', 'owner', 'ownerName', 'opened', 'shared', 'modified', 'metadata'];
+			tdl.forEach(function(prop){
+				delete toJson[prop];
+			});
+
 			var blob = new Blob([JSON.stringify(toJson)], { type: 'application/json' });
 			var form = new FormData();
 			form.append('blob', blob, this.title + '.json');
@@ -554,7 +591,8 @@ function Collection(obj){
 			else{
 				http().postFile('/workspace/document?application=' + appPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
 					this._id = e._id;
-					mine.push(this);
+					mine.sync();
+					mixed.sync();
 				}.bind(this));
 			}
 		};
@@ -572,9 +610,10 @@ function Collection(obj){
 		obj.prototype.remove = function(){
 			notify.info('notify.object.remove');
 			http().delete('/workspace/document/' + this._id);
-			mine.remove(this);
-			trash.remove(this);
-			shared.remove(this);
+			mine.remove(this, false);
+			trash.remove(this, false);
+			shared.remove(this, false);
+			mixed.remove(this, false);
 		};
 
 		obj.prototype.open = function(){
@@ -594,6 +633,7 @@ function Collection(obj){
 		mine.sync();
 		shared.sync();
 		trash.sync();
+		mixed.sync();
 	};
 
 	Model.prototype.sync = function(){
@@ -614,7 +654,7 @@ function Collection(obj){
 			if(newData.hasOwnProperty(property) && !(this[property] instanceof Collection)){
 				this[property] = newData[property];
 			}
-			if(this[property] instanceof Collection){
+			if(newData.hasOwnProperty(property) && this[property] instanceof Collection){
 				this[property].load(newData[property]);
 			}
 		}

@@ -1232,7 +1232,7 @@ a {
   width: 500px;
   height: 200px;
 }
-.contextual-editor.ck_editable {
+.contextual-editor.cke_editable {
   border: 1px solid #ccc;
   padding: 0;
 }
@@ -2760,7 +2760,7 @@ input[type=button].cancel {
   filter: invert(100%);
   height: 11px;
   width: 11px;
-  margin-top: 1px;
+  margin-top: 2px;
   margin-left: 4px;
 }
 .label-badge:hover {
@@ -2772,6 +2772,11 @@ input[type=button].cancel {
   -webkit-filter: invert(0%);
   -moz-filter: invert(0%);
   filter: invert(0%);
+}
+h3,
+h4,
+h5 {
+  color: #008cba;
 }
 .panel {
   width: 400px;
@@ -3301,6 +3306,21 @@ i[role=folder-large] {
   float: left;
   vertical-align: middle;
 }
+.datepicker {
+  padding: 0;
+}
+.datepicker table tr {
+  background: #fff;
+}
+.datepicker table tr td,
+.datepicker table tr td:first-child,
+.datepicker table tr th {
+  width: 22px;
+  font-size: 12px;
+}
+.datepicker table tr td:hover {
+  background: #cccccc;
+}
 a {
   color: #ff0b75;
 }
@@ -3320,4 +3340,35 @@ nav.vertical ul li a:hover,
 nav.vertical ul li a.selected {
   border-color: #ff0b75;
   color: #ff0b75;
+}
+table thead tr {
+  border-bottom-color: #ff0b75;
+  border-top-color: #ff0b75;
+}
+.img-container div.clip {
+  border-color: #ff0b75;
+}
+.label-badge {
+  background: #ff0b75;
+}
+.label-badge:hover {
+  color: #ff0b75;
+}
+[data-drop-down] ul {
+  background: #ff0b75;
+}
+.loading-panel {
+  border-color: #ff0b75;
+}
+.loading-panel h1 {
+  color: #ff0b75;
+}
+.tooltip .content {
+  background: #ff0b75;
+}
+.tooltip .arrow {
+  color: #ff0b75;
+}
+.drawing-zone article.media {
+  border-color: #ff0b75;
 }

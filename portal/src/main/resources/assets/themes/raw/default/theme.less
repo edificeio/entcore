@@ -305,7 +305,7 @@ button.cancel, input[type=button].cancel{
 		.invert-colors();
 		height: 11px;
 		width: 11px;
-		margin-top: 1px;
+		margin-top: 2px;
 		margin-left: 4px;
 	}
 }
@@ -319,6 +319,10 @@ button.cancel, input[type=button].cancel{
 		-moz-filter: invert(0%);
 		filter: invert(0%);
 	}
+}
+
+h3, h4, h5{
+	color: @bright-blue;
 }
 
 .panel{
@@ -832,4 +836,20 @@ i[role=unknown-large], i[role=xls-large], i[role=ppt-large], i[role=pdf-large], 
 
 i[role=folder-large]{
 	.icon(folder-large, 135px);
+}
+
+.datepicker{
+	padding: 0;
+	table{
+		tr{
+			background: #fff;
+			td, td:first-child, th{
+				width: 22px;
+				font-size: 12px
+			}
+			td:hover{
+				background: #ccc
+			}
+		}
+	}
 }
