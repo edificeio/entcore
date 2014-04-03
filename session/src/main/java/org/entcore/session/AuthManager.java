@@ -69,6 +69,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "drop":
 			doDrop(message);
 			break;
+		case "addAttribute":
+			doAddAttribute(message);
+			break;
+		case "removeAttribute":
+			doRemoveAttribute(message);
+			break;
 		default:
 			sendError(message, "Invalid action: " + action);
 		}
@@ -177,6 +183,65 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		sendOK(message, new JsonObject().putString("status", "ok"));
 	}
 
+
+	private void doAddAttribute(Message<JsonObject> message) {
+		JsonObject session = getSessionByUserId(message);
+		if (session == null) {
+			return;
+		}
+
+		String key = message.body().getString("key");
+		if (key == null || key.trim().isEmpty()) {
+			sendError(message, "Invalid key.");
+			return;
+		}
+
+		Object value = message.body().getValue("value");
+		if (value == null) {
+			sendError(message, "Invalid value.");
+			return;
+		}
+
+		session.getObject("cache").putValue(key, value);
+		sendOK(message);
+	}
+
+	private JsonObject getSessionByUserId(Message<JsonObject> message) {
+		final String userId = message.body().getString("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "Invalid userId.");
+			return null;
+		}
+
+		LoginInfo info = logins.get(userId);
+		if (info == null) {
+			sendError(message, "Invalid userId.");
+			return null;
+		}
+		JsonObject session = sessions.get(info.sessionId);
+		if (session == null) {
+			sendError(message, "Session not found.");
+			return null;
+		}
+		return session;
+	}
+
+	private void doRemoveAttribute(Message<JsonObject> message) {
+		JsonObject session = getSessionByUserId(message);
+		if (session == null) {
+			return;
+		}
+
+		String key = message.body().getString("key");
+		if (key == null || key.trim().isEmpty()) {
+			sendError(message, "Invalid key.");
+			return;
+		}
+
+		session.getObject("cache").removeField(key);
+		sendOK(message);
+	}
+
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		String query =
 				"MATCH (n:User) " +
@@ -228,6 +293,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					}
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);
+					j.putObject("cache", new JsonObject());
 					handler.handle(j);
 				} else {
 					handler.handle(null);

@@ -31,6 +31,8 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import static org.entcore.common.user.SessionAttributes.*;
+
 public class PortalService extends Controller {
 
 	private final ConcurrentMap<String, String> staticRessources;
@@ -172,8 +174,13 @@ public class PortalService extends Controller {
 	public void getTheme(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
 				if (user != null) {
+					Object t = user.getAttribute(THEME_ATTRIBUTE);
+					if (t != null) {
+						renderJson(request, new JsonObject(t.toString()));
+						return;
+					}
 					JsonObject urls = container.config().getObject("urls", new JsonObject());
 					final JsonObject theme = new JsonObject()
 							.putString("template", "/public/template/portal.html")
@@ -199,6 +206,7 @@ public class PortalService extends Controller {
 								theme.putString("skin", themesPrefix + "/default/");
 							}
 							renderJson(request, theme);
+							UserUtils.addSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE, theme.encode(), null);
 						}
 					});
 				} else {

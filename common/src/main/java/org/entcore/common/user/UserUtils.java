@@ -240,10 +240,12 @@ public class UserUtils {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				if ("ok".equals(res.body().getString("status"))) {
-					handler.handle(res.body().getString("sessionId"));
-				} else {
-					handler.handle(null);
+				if (handler != null) {
+					if ("ok".equals(res.body().getString("status"))) {
+						handler.handle(res.body().getString("sessionId"));
+					} else {
+						handler.handle(null);
+					}
 				}
 			}
 		});
@@ -258,7 +260,44 @@ public class UserUtils {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				handler.handle("ok".equals(res.body().getString("status")));
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
+	public static void addSessionAttribute(EventBus eb, String userId,
+			String key, Object value, final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "addAttribute")
+				.putString("userId", userId)
+				.putString("key", key)
+				.putValue("value", value);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
+	public static void removeSessionAttribute(EventBus eb, String userId,
+			String key, final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "removeAttribute")
+				.putString("userId", userId)
+				.putString("key", key);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
 			}
 		});
 	}

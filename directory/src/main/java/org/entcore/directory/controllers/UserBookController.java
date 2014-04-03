@@ -29,6 +29,7 @@ import fr.wseduc.security.SecuredAction;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.user.SessionAttributes.*;
 
 public class UserBookController extends Controller {
 
@@ -107,12 +108,17 @@ public class UserBookController extends Controller {
 	public void person(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
 				if (user != null) {
 					String hobbyVisibility;
 					String personnalInfos;
 					Map<String, Object> params = new HashMap<>();
 					if (request.params().get("id") == null) {
+						Object person = user.getAttribute(PERSON_ATTRIBUTE);
+						if (person != null) {
+							renderJson(request, new JsonObject(person.toString()));
+							return;
+						}
 						params.put("userId",user.getUserId());
 						hobbyVisibility = "PUBLIC|PRIVE";
 						personnalInfos =
@@ -169,8 +175,16 @@ public class UserBookController extends Controller {
 									+ "COLLECT(h.values) as values";
 					params.put("defaultAvatar", userBookData.getString("default-avatar"));
 					params.put("defaultMood", userBookData.getString("default-mood"));
-
-					neo.send(query, params, request.response());
+					neo.send(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> message) {
+							JsonObject r = message.body();
+							if (request.params().get("id") == null) {
+								UserUtils.addSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, r.encode(), null);
+							}
+							renderJson(request, r);
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
@@ -284,6 +298,7 @@ public class UserBookController extends Controller {
 								renderJson(request, res.body());
 							}
 						});
+						UserUtils.removeSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE, null);
 					} else {
 						badRequest(request);
 					}

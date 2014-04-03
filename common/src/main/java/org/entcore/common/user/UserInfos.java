@@ -1,6 +1,7 @@
 package org.entcore.common.user;
 
 import java.util.List;
+import java.util.Map;
 
 public class UserInfos {
 
@@ -95,6 +96,7 @@ public class UserInfos {
 	private List<String> profilGroupsIds;
 	private List<String> classes;
 	private List<String> functionCodes;
+	private Map<String, Object> cache;
 
 	public String getUserId() {
 		return userId;
@@ -214,6 +216,21 @@ public class UserInfos {
 
 	public void setFunctionCodes(List<String> functionCodes) {
 		this.functionCodes = functionCodes;
+	}
+
+	public Map<String, Object> getCache() {
+		return cache;
+	}
+
+	public void setCache(Map<String, Object> cache) {
+		this.cache = cache;
+	}
+
+	public Object getAttribute(String attribute) {
+		if (cache != null) {
+			return cache.get(attribute);
+		}
+		return null;
 	}
 
 }

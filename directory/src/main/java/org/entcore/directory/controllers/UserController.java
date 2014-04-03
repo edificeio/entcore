@@ -31,6 +31,7 @@ import java.util.Map;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.user.SessionAttributes.*;
 
 
 public class UserController extends Controller {
@@ -60,6 +61,7 @@ public class UserController extends Controller {
 			public void handle(JsonObject body) {
 				String userId = request.params().get("userId");
 				userService.update(userId, body, notEmptyResponseHandler(request));
+				UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
 			}
 		});
 	}
@@ -82,6 +84,7 @@ public class UserController extends Controller {
 									}
 								}
 							});
+							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
 							renderJson(request, event.right().getValue());
 						} else {
 							JsonObject error = new JsonObject()
