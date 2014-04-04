@@ -110,7 +110,7 @@ public class DefaultClassService implements ClassService {
 									.putString("classId", classId)
 									.putString("uId", userId)
 									.putString("profile", t);
-							UserUtils.findVisibleUsers(eb, user.getUserId(), customReturn, params,
+							UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params,
 									new Handler<JsonArray>() {
 
 								@Override

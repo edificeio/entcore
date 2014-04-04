@@ -345,11 +345,12 @@ public class CommunicationController extends Controller {
 				JsonObject ap = message.body().getObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
 				boolean myGroup = message.body().getBoolean("mygroup", false);
+				boolean profile = message.body().getBoolean("profile", true);
 				Map<String, Object> additionnalParams = null;
 				if (ap != null) {
 					additionnalParams = ap.toMap();
 				}
-				visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup, customReturn,
+				visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup, profile, customReturn,
 						additionnalParams, responseHandler);
 				break;
 			case "usersCanSeeMe":
@@ -381,10 +382,11 @@ public class CommunicationController extends Controller {
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf,
 			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
-		visibleUsers(userId, schoolId, expectedTypes, itSelf, false, customReturn, additionnalParams, handler);
+		visibleUsers(userId, schoolId, expectedTypes, itSelf, false, true, customReturn, additionnalParams, handler);
 	}
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
+			boolean profile,
 			String customReturn, Map<String, Object> additionnalParams, final Handler<JsonArray> handler) {
 		StringBuilder query = new StringBuilder();
 		Map<String, Object> params = new HashMap<>();
@@ -411,14 +413,20 @@ public class CommunicationController extends Controller {
 			}
 			query.append(types.substring(4)).append(") ");
 		}
-		query.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
+		String pcr = " ";
+		String pr = "";
+		if (profile) {
+			query.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
+			pcr = ", profile ";
+			pr = "profile.name as type, ";
+		}
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
-			query.append("WITH DISTINCT m as visibles, profile ");
+			query.append("WITH DISTINCT m as visibles").append(pcr);
 			query.append(customReturn);
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
-				+ "m.login as login, m.displayName as username, profile.name as type, "
-				+ "m.lastName as lastName, m.firstName as firstName "
+				+ "m.login as login, m.displayName as username, ").append(pr)
+				.append("m.lastName as lastName, m.firstName as firstName "
 				+ "ORDER BY name, username ");
 		}
 		params.put("userId", userId);

@@ -52,43 +52,45 @@ public class UserUtils {
 		}
 	}
 
-	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean profile,
 										final Handler<JsonArray> handler) {
-		findVisibleUsers(eb, request, null, null, handler);
+		findVisibleUsers(eb, request, profile, null, null, handler);
 	}
 
-	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request,
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
-		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, false);
+		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, false, profile);
 		findUsers(eb, request, m, handler);
 	}
 
-	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean itSelf,
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean itSelf, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
-		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf);
+		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf, profile);
 		findUsers(eb, request, m, handler);
 	}
 
-	public static void findVisibleUsers(final EventBus eb, String userId,
+	public static void findVisibleUsers(final EventBus eb, String userId, boolean profile,
 				final Handler<JsonArray> handler) {
-		findVisibleUsers(eb, userId, null, null, handler);
+		findVisibleUsers(eb, userId, profile, null, null, handler);
 	}
 
-	public static void findVisibleUsers(final EventBus eb, String userId,
+	public static void findVisibleUsers(final EventBus eb, String userId, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
-		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, false);
+		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, false, profile);
 		findUsers(eb, userId, m, handler);
 	}
 
-	public static void findVisibleUsers(final EventBus eb, String userId, boolean itSelf,
+	public static void findVisibleUsers(final EventBus eb, String userId, boolean itSelf, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
-		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf);
+		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf, profile);
 		findUsers(eb, userId, m, handler);
 	}
 
-	private static JsonObject queryVisibleUsers(String customReturn, JsonObject additionnalParams, boolean itSelf) {
+	private static JsonObject queryVisibleUsers(String customReturn, JsonObject additionnalParams, boolean itSelf,
+			boolean profile) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
+				.putBoolean("profile", profile)
 				.putString("action", "visibleUsers")
 				.putArray("expectedTypes", usersTypes);
 		if (customReturn != null) {
@@ -101,10 +103,12 @@ public class UserUtils {
 	}
 
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
-			JsonObject additionnalParams, boolean itSelf, boolean myGroup, final Handler<JsonArray> handler) {
+			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
+			final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
 				.putBoolean("mygroup", myGroup)
+				.putBoolean("profile", profile)
 				.putString("action", "visibleUsers");
 		if (customReturn != null) {
 			m.putString("customReturn", customReturn);

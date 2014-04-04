@@ -81,7 +81,7 @@ public abstract class GenericShareService implements ShareService {
 						}
 					}
 				}
-				findVisibleUsers(eb, userId, new Handler<JsonArray>() {
+				findVisibleUsers(eb, userId, false, new Handler<JsonArray>() {
 					@Override
 					public void handle(JsonArray visibleUsers) {
 						JsonObject users = new JsonObject();
@@ -136,7 +136,7 @@ public abstract class GenericShareService implements ShareService {
 			handler.handle(false);
 			return;
 		}
-		findVisibleUsers(eb, userId, new Handler<JsonArray>() {
+		findVisibleUsers(eb, userId, false, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibleUsers) {
 				final List<String> visibleUsersIds = new ArrayList<>();

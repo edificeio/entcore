@@ -175,7 +175,7 @@ public class DefaultConversationService implements ConversationService {
 				"EXTRACT(u IN FIlTER(x IN users WHERE x.id IN sentIds AND NOT(x.activationCode IS NULL)) " +
 				"| u.displayName) as inactive, LENGTH(sentIds) as sent, " +
 				"sentIds, message.id as id, message.subject as subject";
-		findVisibles(eb, user.getUserId(), query, params, false, true, new Handler<JsonArray>() {
+		findVisibles(eb, user.getUserId(), query, params, false, true, false, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {
 				if (event != null && event.size() == 1 && (event.get(0) instanceof JsonObject)) {
@@ -359,7 +359,7 @@ public class DefaultConversationService implements ConversationService {
 				"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
 				replyProfileGroupQuery + " AND app.name = {conversation} " +
 				"RETURN DISTINCT pg.id as id, pg.name as name";
-		findVisibles(eb, user.getUserId(), groups, params, false, true, new Handler<JsonArray>() {
+		findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibleGroups) {
 				visible.putArray("groups", visibleGroups);

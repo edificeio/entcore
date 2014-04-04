@@ -1387,7 +1387,8 @@ public class WorkspaceService extends Controller {
 				"ORDER BY username ";
 		JsonObject params = new JsonObject()
 		.putString("action", "org.entcore.workspace.service.WorkspaceService|listRackDocuments");
-		UserUtils.findVisibleUsers(eb, request, customReturn, params, new Handler<JsonArray>() {
+		UserUtils.findVisibleUsers(eb, request, false, customReturn, params,
+				new Handler<JsonArray>() {
 
 			@Override
 			public void handle(JsonArray users) {
