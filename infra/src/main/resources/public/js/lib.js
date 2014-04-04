@@ -512,6 +512,9 @@ function Collection(obj){
 			col.behaviours = 'workspace';
 		}
 
+
+		var applicationPrefix = (methods && methods.fromApplication) || appPrefix;
+
 		this[pluralizeName(obj)] = new Model();
 		this[pluralizeName(obj)].mine = new Collection(obj);
 		this[pluralizeName(obj)].shared = new Collection(obj);
@@ -535,7 +538,7 @@ function Collection(obj){
 		setCol.call(this, mixed);
 
 		mine.sync = function(){
-			http().get('/workspace/documents', { filter: 'owner', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 					return doc;
@@ -545,7 +548,7 @@ function Collection(obj){
 		};
 
 		mixed.sync = function(){
-			http().get('/workspace/documents', { application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents', { application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 					return doc;
@@ -555,7 +558,7 @@ function Collection(obj){
 		};
 
 		shared.sync = function(){
-			http().get('/workspace/documents', { filter: 'shared', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents', { filter: 'shared', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 					return doc;
@@ -565,7 +568,7 @@ function Collection(obj){
 		};
 
 		trash.sync = function(){
-			http().get('/workspace/documents/Trash', { filter: 'owner', application: appPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
+			http().get('/workspace/documents/Trash', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
 				});
@@ -589,7 +592,7 @@ function Collection(obj){
 				http().putFile('/workspace/document/' + this._id, form);
 			}
 			else{
-				http().postFile('/workspace/document?application=' + appPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
+				http().postFile('/workspace/document?application=' + applicationPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
 					this._id = e._id;
 					mine.sync();
 					mixed.sync();
