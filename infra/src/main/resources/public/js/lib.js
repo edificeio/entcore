@@ -364,6 +364,7 @@ function Collection(obj){
 				return;
 			}
 			this.trigger('change');
+			this.trigger('push');
 		},
 		remove: function(item, trigger){
 			this.all = _.reject(this.all, function(element){
@@ -371,6 +372,7 @@ function Collection(obj){
 			});
 			if(trigger !== false){
 				this.trigger('change');
+				this.trigger('remove');
 			}
 		},
 		removeAt: function(index){
