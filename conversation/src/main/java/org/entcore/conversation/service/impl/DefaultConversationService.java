@@ -341,9 +341,9 @@ public class DefaultConversationService implements ConversationService {
 		if (validationParamsError(user, result)) return;
 		final JsonObject visible = new JsonObject();
 		String replyProfileGroupQuery;
-		final JsonObject params = new JsonObject()
-				.putString("conversation", applicationName);
+		final JsonObject params = new JsonObject();
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
+			params.putString("conversation", applicationName);
 			replyProfileGroupQuery =
 					", (m:ConversationMessage)<-[:HAS_CONVERSATION_MESSAGE]-f" +
 					"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
@@ -351,42 +351,61 @@ public class DefaultConversationService implements ConversationService {
 					"AND (pg.id = visibles.id OR pg.id IN m.to OR pg.id IN m.cc) ";
 			params.putString("userId", user.getUserId())
 					.putString("parentMessageId", parentMessageId);
-		} else {
-			replyProfileGroupQuery = " WHERE pg.id = visibles.id ";
-		}
-		String groups =
-				"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-				"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
-				replyProfileGroupQuery + " AND app.name = {conversation} " +
-				"RETURN DISTINCT pg.id as id, pg.name as name";
-		findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
-			@Override
-			public void handle(JsonArray visibleGroups) {
-				visible.putArray("groups", visibleGroups);
-				String replyUserQuery;
-				if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
-					replyUserQuery =
-							", (m:ConversationMessage)<-[:HAS_CONVERSATION_MESSAGE]-f" +
-							"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-							"WHERE m.id = {parentMessageId} AND c.userId = {userId} " +
-							"AND (u.id = visibles.id OR u.id IN m.to OR u.id IN m.cc) ";
-				} else {
-					replyUserQuery = " WHERE u.id = visibles.id ";
+			String groups =
+					"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
+					"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
+					replyProfileGroupQuery + " AND app.name = {conversation} " +
+					"RETURN DISTINCT pg.id as id, pg.name as name";
+			findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
+				@Override
+				public void handle(JsonArray visibleGroups) {
+					visible.putArray("groups", visibleGroups);
+					String replyUserQuery;
+						replyUserQuery =
+								", (m:ConversationMessage)<-[:HAS_CONVERSATION_MESSAGE]-f" +
+								"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
+								"WHERE m.id = {parentMessageId} AND c.userId = {userId} " +
+								"AND (u.id = visibles.id OR u.id IN m.to OR u.id IN m.cc) ";
+					String users =
+							"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
+							"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
+							replyUserQuery + "AND app.name = {conversation} " +
+							"RETURN DISTINCT u.id as id, u.displayName as displayName";
+					findVisibleUsers(eb, user.getUserId(), false, users, params, new Handler<JsonArray>() {
+						@Override
+						public void handle(JsonArray visibleUsers) {
+							visible.putArray("users", visibleUsers);
+							result.handle(new Either.Right<String,JsonObject>(visible));
+					   }
+					});
 				}
-				String users =
-						"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-						"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
-						replyUserQuery + "AND app.name = {conversation} " +
-						"RETURN DISTINCT u.id as id, u.displayName as displayName";
-				findVisibleUsers(eb, user.getUserId(), false, users, params, new Handler<JsonArray>() {
-					@Override
-					public void handle(JsonArray visibleUsers) {
-						visible.putArray("users", visibleUsers);
-						result.handle(new Either.Right<String,JsonObject>(visible));
+			});
+		} else {
+			params.putBoolean("true", true);
+			String groups =
+					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
+					"RETURN DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName";
+			findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
+				@Override
+				public void handle(JsonArray visibles) {
+					JsonArray users = new JsonArray();
+					JsonArray groups = new JsonArray();
+					visible.putArray("groups", groups).putArray("users", users);
+					for (Object o: visibles) {
+						if (!(o instanceof JsonObject)) continue;
+						JsonObject j = (JsonObject) o;
+						if (j.getString("name") != null) {
+							j.removeField("displayName");
+							groups.add(j);
+						} else {
+							j.removeField("name");
+							users.add(j);
+						}
 					}
-				});
-			}
-		});
+					result.handle(new Either.Right<String,JsonObject>(visible));
+				}
+			});
+		}
 	}
 
 	private boolean validationError(UserInfos user, Handler<Either<String, JsonArray>> results, String ... params) {
