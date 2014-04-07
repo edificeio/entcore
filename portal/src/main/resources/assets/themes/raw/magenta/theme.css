@@ -46,7 +46,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 8.33333333%;
+  padding-bottom: 8.333333333333334%;
 }
 .height-one .right-magnet.cell.absolute {
   right: 0 !important;
@@ -80,14 +80,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-one {
-    left: 8.33333333%;
+    left: 8.333333333333334%;
   }
 }
 .height-two {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 16.66666667%;
+  padding-bottom: 16.666666666666668%;
 }
 .height-two .right-magnet.cell.absolute {
   right: 0 !important;
@@ -103,7 +103,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-two {
-    left: 16.66666667%;
+    left: 16.666666666666668%;
   }
 }
 .height-three {
@@ -133,7 +133,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 33.33333333%;
+  padding-bottom: 33.333333333333336%;
 }
 .height-four .right-magnet.cell.absolute {
   right: 0 !important;
@@ -149,14 +149,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-four {
-    left: 33.33333333%;
+    left: 33.333333333333336%;
   }
 }
 .height-five {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 41.66666667%;
+  padding-bottom: 41.66666666666667%;
 }
 .height-five .right-magnet.cell.absolute {
   right: 0 !important;
@@ -172,7 +172,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-five {
-    left: 41.66666667%;
+    left: 41.66666666666667%;
   }
 }
 .height-six {
@@ -219,7 +219,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -235,14 +235,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-seven {
-    left: 58.33333333%;
+    left: 58.333333333333336%;
   }
 }
 .height-eight {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 66.66666667%;
+  padding-bottom: 66.66666666666667%;
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0 !important;
@@ -258,7 +258,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eight {
-    left: 66.66666667%;
+    left: 66.66666666666667%;
   }
 }
 .height-nine {
@@ -288,7 +288,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 83.33333333%;
+  padding-bottom: 83.33333333333334%;
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0 !important;
@@ -304,14 +304,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-ten {
-    left: 83.33333333%;
+    left: 83.33333333333334%;
   }
 }
 .height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -327,7 +327,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eleven {
-    left: 91.66666667%;
+    left: 91.66666666666667%;
   }
 }
 .height-twelve {
@@ -365,11 +365,11 @@
 }
 .one {
   width: 1;
-  width: 8.33333333%;
+  width: 8.333333333333334%;
 }
 .two {
   width: 1;
-  width: 16.66666667%;
+  width: 16.666666666666668%;
 }
 .three {
   width: 1;
@@ -377,11 +377,11 @@
 }
 .four {
   width: 1;
-  width: 33.33333333%;
+  width: 33.333333333333336%;
 }
 .five {
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
 }
 .six {
   width: 1;
@@ -389,11 +389,11 @@
 }
 .seven {
   width: 1;
-  width: 58.33333333%;
+  width: 58.333333333333336%;
 }
 .eight {
   width: 1;
-  width: 66.66666667%;
+  width: 66.66666666666667%;
 }
 .nine {
   width: 1;
@@ -401,11 +401,11 @@
 }
 .ten {
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
 }
 .eleven {
   width: 1;
-  width: 91.66666667%;
+  width: 91.66666666666667%;
 }
 .twelve {
   width: 1;
@@ -448,6 +448,7 @@
   /*.dow {
 		border-top: 1px solid #ddd !important;
 	}*/
+
 }
 .datepicker:before {
   content: '';
@@ -843,7 +844,7 @@ p i {
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
   height: 100%;
   line-height: 100%;
   vertical-align: middle;
@@ -889,7 +890,7 @@ p i {
 .calendar {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
   width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
@@ -1017,7 +1018,7 @@ p i {
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -1624,7 +1625,7 @@ section .contextual-buttons .action-buttons {
   display: block;
   position: relative;
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
   line-height: 50px;
   margin-bottom: 10px;
 }
@@ -3324,6 +3325,18 @@ i[role=folder-large] {
 a {
   color: #ff0b75;
 }
+nav.horizontal a:hover {
+  color: #ff0b75;
+}
+.calendar .content .day.today {
+  background: #ff0b75;
+}
+.calendar .content h2 {
+  color: #ff0b75;
+}
+.last-mails-widget ul li {
+  border-left: 5px solid #ff0b75;
+}
 button,
 input[type=button],
 input[type=submit],
@@ -3340,6 +3353,12 @@ nav.vertical ul li a:hover,
 nav.vertical ul li a.selected {
   border-color: #ff0b75;
   color: #ff0b75;
+}
+nav.vertical .classic-link {
+  background: #ff0b75;
+}
+table {
+  border-bottom: 2px solid #ff0b75;
 }
 table thead tr {
   border-bottom-color: #ff0b75;
