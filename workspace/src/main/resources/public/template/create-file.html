@@ -1,5 +1,5 @@
 <div class="twelve cell block-container">
-   <h4 translate key="files.header" class="subtitle"></h4>
+   <h2 translate key="files.header" class="subtitle"></h2>
    <table class="twelve unstyled">
 	   <tr ng-repeat="file in loadingFiles">
 		   <td>[[file.file.name]]</td>
@@ -17,7 +17,7 @@
 <hr class="solid row" />
 <form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
 	<div class="row fixed-block height-three">
-		<h4 translate key="files.select" class="subtitle"></h4>
+		<h2 translate key="files.select" class="subtitle"></h2>
 		<div class="eight cell select-file block-container input-block">
 			<div class="hidden-content">
 				<input type="file" multiple  files-input-change="setFilesName()" ng-model="newFile.files" />
