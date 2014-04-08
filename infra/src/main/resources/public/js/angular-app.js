@@ -135,6 +135,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 
 		return function(setRoutes){
 			routes = setRoutes;
+			//refreshing in case routechangeevent already fired
+			$route.reload();
 		}
 	})
 	.factory('template', function(){
@@ -210,7 +212,6 @@ if(routes.routing){
 }
 
 //directives
-
 module.directive('completeChange', function() {
 	return {
 		restrict: 'A',

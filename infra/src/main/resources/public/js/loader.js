@@ -147,6 +147,10 @@ var routes = {
 	}
 };
 
-function Model(){}
+function Model(data){
+	if(typeof this.updateData === 'function'){
+		this.updateData(data);
+	}
+}
 Model.prototype.build = function(){};
 var model = new Model();

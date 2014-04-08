@@ -286,9 +286,6 @@ function Collection(obj){
 
 (function(){
 	function pluralizeName(obj){
-		if(!obj.name){
-			obj.name = obj.toString().match(/^function\s*([^\s(]+)/)[1];
-		}
 		return obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
 	}
 
@@ -462,16 +459,30 @@ function Collection(obj){
 	}
 
 	Model.prototype.makeModel = function(fn, methods){
-		var additionnalProps = fn.prototype;
-		fn.prototype = new Model();
+		// this cryptic code is meant to :
+		// 1. make the instances of the constructor answer true to both instanceof ctr and instanceof Model
+		// 2. force ctr to run Model constructor before itself
+		// 3. apply name prop, which misses in IE (even modern versions)
+		// 4. extend fn prototype with whatever functions the user sent
+		if(!fn.name){
+			// grabs function name from function string
+			fn.name = fn.toString().match(/^function\s*([^\s(]+)/)[1];
+		}
+		// overwrites user ctr with a version calling parent ctr
+		// fn is passed as parameter to keep its written behaviour
+		var ctr = new Function("fn", "return function " + fn.name + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
+		ctr.prototype = new Model();
+		ctr.name = fn.name;
 
 		for(var method in methods){
-			fn.prototype[method] = methods[method];
+			ctr.prototype[method] = methods[method];
 		}
 
-		for(var prop in additionnalProps){
-			fn.prototype[prop] = additionnalProps[prop];
+		for(var prop in fn.prototype){
+			ctr.prototype[prop] = fn.prototype[prop];
 		}
+		// overwrites fn with custom ctr
+		window[ctr.name] = ctr;
 	};
 
 	Model.prototype.makeModels = function(constructors){
@@ -496,7 +507,7 @@ function Collection(obj){
 	Model.prototype.toJSON = function(){
 		var dup = {};
 		for(var prop in this){
-			if(this.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== data){
+			if(this.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data'){
 				dup[prop] = this[prop];
 			}
 		}
@@ -533,6 +544,10 @@ function Collection(obj){
 		shared.on('change', function(){ colContainer.trigger('change') });
 		trash.on('change', function(){ colContainer.trigger('change') });
 		mixed.on('change', function(){ colContainer.trigger('change') });
+		mine.on('sync', function(){ colContainer.trigger('sync') });
+		shared.on('sync', function(){ colContainer.trigger('sync') });
+		trash.on('sync', function(){ colContainer.trigger('sync') });
+		mixed.on('sync', function(){ colContainer.trigger('sync') });
 
 		setCol.call(this, mine);
 		setCol.call(this, trash);
@@ -543,9 +558,12 @@ function Collection(obj){
 			http().get('/workspace/documents', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
+					doc.modified = moment(doc.modified.split('.')[0]);
+					doc.created = moment(doc.created.split('.')[0]);
 					return doc;
 				});
 				mine.load(docs);
+				mine.trigger('sync');
 			});
 		};
 
@@ -553,9 +571,12 @@ function Collection(obj){
 			http().get('/workspace/documents', { application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
+					doc.modified = moment(doc.modified.split('.')[0]);
+					doc.created = moment(doc.created.split('.')[0]);
 					return doc;
 				});
 				mixed.load(docs);
+				mixed.trigger('sync');
 			});
 		};
 
@@ -563,9 +584,12 @@ function Collection(obj){
 			http().get('/workspace/documents', { filter: 'shared', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
+					doc.modified = moment(doc.modified.split('.')[0]);
+					doc.created = moment(doc.created.split('.')[0]);
 					return doc;
 				});
 				shared.load(docs);
+				shared.trigger('sync');
 			});
 		};
 
@@ -573,8 +597,11 @@ function Collection(obj){
 			http().get('/workspace/documents/Trash', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
 				docs = _.map(docs, function(doc){
 					doc.title = doc.name.split('.json')[0];
+					doc.modified = moment(doc.modified.split('.')[0]);
+					doc.created = moment(doc.created.split('.')[0]);
 				});
 				trash.load(docs);
+				trash.trigger('sync');
 			});
 		};
 
