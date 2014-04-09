@@ -31,6 +31,8 @@
 		<admin-portal>
 			<h1>{{#i18n}}directory.admin.header{{/i18n}}</h1>
 
+			<p><a onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">Générer des données de test</a></p>
+
 			<div id="annuaire">
 				<a href="api/export?id=all" id="export">{{#i18n}}directory.admin.export{{/i18n}}</a>
 				<div id="display">
