@@ -90,10 +90,6 @@
 				  "path": "/conversation/public/template/last-mails-widget.html",
 				  "js": "/conversation/public/js/last-mails-widget.js",
 				  "i18n": "/conversation/i18n"
-			  }, {
-				  "name": "pages",
-				  "path": "/pages/public/template/pages-widget.html",
-				  "js": "/pages/public/js/pages-widget.js"
 			  }
 		  ]
       }
