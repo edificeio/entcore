@@ -281,7 +281,10 @@ module.directive('lightbox', function($compile){
 						top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
 					});
 
-					element.find('.lightbox-backdrop').fadeIn();
+					var backdrop = element.find('.lightbox-backdrop');
+					setTimeout(function(){
+						backdrop.fadeIn();
+					}, 0);
 				}
 				else{
 					element.find('.lightbox-window').fadeOut();
