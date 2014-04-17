@@ -1,20 +1,45 @@
 <!doctype html>
 <html>
 <head>
-	<script>
-		function buildModel(){}
-	</script>
 	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
-	<link rel="stylesheet" type="text/css" href="/public/css/app.css" />
+	<script type="text/javascript">
+		(function(){
+			function Message(action, content){
+				this.action = action;
+				this.content = content;
+			}
+
+			var actions = {
+				'get-theme': function(){
+
+				},
+				'get-me': function(){
+					var message = new Message('')
+				}
+			};
+
+			window.addEventListener('message', function(e) {
+				var message = e.data;
+				actions[e.data.action](e.data.content);
+			});
+		}());
+	</script>
 </head>
 <body>
 
 <portal>
-	<iframe src="https://demo.web-education.net/eliot-textes-app/cahierDeTextes/accueil" seamless id="adapter"></iframe>
+	<iframe seamless id="adapter"></iframe>
 </portal>
 <script>
 	if(window.location.href.split('#').length > 1){
-		document.getElementById('adapter').setAttribute('src', window.location.href.split('#')[1]);
+		var appAddress = window.location.href.split('#')[1];
+		if(appAddress.indexOf('?') !== -1){
+			appAddress = appAddress + '&origin=' + window.location.href;
+		}
+		else{
+			appAddress = appAddress + '?origin=' + window.location.href;
+		}
+		document.getElementById('adapter').setAttribute('src', appAddress);
 	}
 </script>
 </body>

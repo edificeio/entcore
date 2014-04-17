@@ -444,6 +444,12 @@ function Collection(obj){
 		},
 		toJSON: function(){
 			return this.all;
+		},
+		contains: function(obj){
+			return this.all.indexOf(obj) !== -1;
+		},
+		last: function(){
+			return this.all[this.all.length - 1];
 		}
 	};
 
@@ -471,7 +477,7 @@ function Collection(obj){
 		// overwrites user ctr with a version calling parent ctr
 		// fn is passed as parameter to keep its written behaviour
 		var ctr = new Function("fn", "return function " + fn.name + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
-		ctr.prototype = new Model();
+		ctr.prototype = Object.create(Model.prototype);
 		ctr.name = fn.name;
 
 		for(var method in methods){

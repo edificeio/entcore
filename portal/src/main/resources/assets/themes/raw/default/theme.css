@@ -2502,6 +2502,25 @@ i[role=show-icons] {
   vertical-align: middle;
   opacity: 0.5;
 }
+i[role=disconnect] {
+  height: 35px;
+  width: 35px;
+  background-image: url("../img/icons/glyphicons_063_power.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -webkit-filter: invert(100%);
+  -moz-filter: invert(100%);
+  filter: invert(100%);
+  margin: 5px;
+  float: right;
+}
 i[role=show-details] {
   height: 24px;
   width: 24px;

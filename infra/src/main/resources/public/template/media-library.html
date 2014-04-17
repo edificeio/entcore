@@ -1,0 +1,15 @@
+<section class="row" ng-controller="MediaLibrary">
+	<h2>Recherche de documents</h2>
+	<ul>
+		<li>Charger un document</li>
+		<li>Parcourir mon espace documentaire</li>
+	</ul>
+	<h2>Sélectionner les fichiers</h2>
+	<div class="row">
+		<div class="hidden-content">
+			<input type="file" multiple  files-input-change="setFilesName()" ng-model="upload.files" />
+		</div>
+		<button class="file-button" translate content="choose"></button>
+		<input type="text" data-ng-model="newFile.name" data-display-file />
+	</div>
+</section>

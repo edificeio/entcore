@@ -276,7 +276,10 @@ module.directive('lightbox', function($compile){
 			scope.$watch('show', function(newVal){
 				if(newVal){
 					var lightboxWindow = element.find('.lightbox-window');
-					lightboxWindow.fadeIn();
+					setTimeout(function(){
+						lightboxWindow.fadeIn();
+					}, 0);
+
 					lightboxWindow.css({
 						top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
 					});
@@ -295,15 +298,39 @@ module.directive('lightbox', function($compile){
 	}
 });
 
-module.directive('documentsLibrary', function($compile){
+module.directive('mediaLibrary', function($compile){
 	return {
 		restrict: 'E',
 		scope: {
-
+			ngModel: '=',
+			type: '@',
+			ngChange: '&'
 		},
-		templateUrl: '/' + infraPrefix + '/public/template/documents-library.html',
+		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
 
+		}
+	}
+});
+
+module.directive('mediaSelect', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+			ngModel: '=',
+			ngChange: '&',
+			type: '@'
+		},
+		template: '<div><input type="button" ng-transclude />' +
+					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
+						'<media-library ng-model="ngModel" ng-change="ngChange();"></media-library>' +
+					'</lightbox>' +
+				  '</div>',
+		link: function(scope, element, attributes){
+			element.on('click', function(){
+				scope.userSelecting = true;
+			});
 		}
 	}
 });
@@ -395,36 +422,49 @@ module.directive('translate', function($compile) {
 	return {
 		restrict: 'A',
 		replace: true,
-		link: function ($scope, $element, $attributes) {
-			if($attributes.params){
-				var params = $scope.$eval($attributes.params);
+		link: function (scope, element, attributes) {
+			if(attributes.params){
+				var params = scope.$eval(attributes.params);
 				for(var i = 0; i < params.length; i++){
-					$scope[i] = params[i];
+					scope[i] = params[i];
 				}
 			}
 
-			$attributes.$observe('content', function(val) {
-				if(!$attributes.content){
+			attributes.$observe('content', function(val) {
+				if(!attributes.content){
 					return;
 				}
-				$element.html($compile('<span class="no-style">' + lang.translate($attributes.content) + '</span>')($scope));
+				element.html($compile('<span class="no-style">' + lang.translate(attributes.content) + '</span>')(scope));
 			});
 
-			$attributes.$observe('attr', function(val) {
-				if(!$attributes.attr){
+			attributes.$observe('attr', function(val) {
+				if(!attributes.attr){
 					return;
 				}
-				var compiled = $compile('<span>' + lang.translate($attributes[$attributes.attr]) + '</span>')($scope);
+				var compiled = $compile('<span>' + lang.translate(attributes[attributes.attr]) + '</span>')(scope);
 				setTimeout(function(){
-					$element.attr($attributes.attr, compiled.text());
+					element.attr(attributes.attr, compiled.text());
 				}, 10);
 			});
 
-			$attributes.$observe('key', function(val) {
-				if(!$attributes.key){
+			attributes.$observe('attributes', function(val){
+				if(!attributes.attributes){
 					return;
 				}
-				$element.html($compile('<span class="no-style">' + lang.translate($attributes.key) + '</span>')($scope));
+				var attrObj = scope.$eval(attributes.attributes);
+				for(var prop in attrObj){
+					var compiled = $compile('<span>' + lang.translate(attrObj[prop]) + '</span>')(scope);
+					setTimeout(function(){
+						element.attr(prop, compiled.text());
+					}, 0);
+				}
+			})
+
+			attributes.$observe('key', function(val) {
+				if(!attributes.key){
+					return;
+				}
+				element.html($compile('<span class="no-style">' + lang.translate(attributes.key) + '</span>')(scope));
 			});
 		}
 	};
@@ -1907,4 +1947,11 @@ function Widgets($scope, model, lang, date){
 	})
 
 	$scope.translate = lang.translate;
+}
+
+function MediaLibrary($scope){
+	$scope.upload = {};
+	$scope.uploadFiles = function(){
+
+	};
 }

@@ -1,10 +1,10 @@
-@import "../../../../public/css/app";
-@import "elements";
+@import "../../raw/default/theme";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
+@nav-width: 300px;
+
 header{
-	background: @dark-blue;
-	border-bottom: 10px solid @mid-blue;
+	background: #444;
 	position: absolute;
 	width: 100%;
 	height: 42px;
@@ -13,8 +13,7 @@ header{
 	z-index: 20;
 
 	h1:first-child{
-		font-size: 1.7em;
-		font-weight: normal;
+		font-size: 1.3em;
 		padding-left: 10px;
 		margin: 10px;
 		float: left;
@@ -59,12 +58,12 @@ i[role=nok]{
 
 .tooltip{
 	.content{
-		background: @mid-blue;
+		background: @bright-blue;
 		color: #fff;
 		max-width: 150px;
 	}
 	.arrow{
-		color: @mid-blue;
+		color: @bright-blue;
 	}
 }
 
@@ -96,14 +95,12 @@ h1, h2{
 
 html section.main, body section.main{
 	min-height: 100%;
-	border-left: 1px solid #ccc;
 	padding-top: 0;
 }
 
 article.main{
 	height: 100%;
 	padding-top: 0;
-
 }
 
 article{
@@ -120,39 +117,9 @@ article{
 nav.left{
 	z-index: 1;
 	position: fixed;
-	padding-top: 52px;
+	top: 0;
+	padding-top: 53px;
 	width: @nav-width;
-	ul{
-		padding: 0;
-		margin: 0;
-		background: #eAeAeA;
-		ul{
-			border-top: 1px solid #ccc;
-			li{
-				background: transparent;
-				border: none;
-				padding-left: 15px;
-			}
-		}
-	}
-	li{
-		list-style-type: none;
-		.vertical-gradient(#eee, #e5e5e5);
-		border-right: 0;
-		border-bottom: 0;
-	}
-	li:first-child{
-		border-top: 1px solid #ccc;
-	}
-	a{
-		color: @black;
-		padding: 7px;
-		display: block;
-		font-size: 13px;
-	}
-	a:hover{
-		color: @bright-blue;
-	}
 
 	button{
 		margin-bottom: 10px;
@@ -164,8 +131,12 @@ nav.left{
 	}
 }
 
+.container{
+	margin-top: 52px;
+}
+
 button{
-	background: @mid-blue;
+	background: @bright-blue;
 	font-family: Lato;
 	font-weight: 300;
 	padding: 4px;
@@ -181,7 +152,7 @@ button{
 button:hover{
 	background: #fff;
 	color: #000;
-	border: 1px solid @mid-blue;
+	border: 1px solid @bright-blue;
 }
 
 table{
@@ -218,9 +189,8 @@ input[type=text], select, label{
 
 input[type=text]{
 	.border-radius(5px);
-	background: #efefef;
+	background: #fff;
 	border: none;
-	color: @bright-blue;
 	padding-left: 5px;
 }
 
@@ -235,14 +205,14 @@ input[type=text]{
 		padding: 0;
 		li{
 			list-style-type: none;
-			padding: 5px;
+			padding: 10px;
 			color: @bright-blue;
-			background: #eee;
+			background: #ddd;
 			border-right: 1px solid @bright-blue;
 		}
 		li.selected{
 			color: @black;
-			background: #fff;
+			background: #eee;
 			border: 1px solid @bright-blue;
 			border-right: none;
 			border-left-width: 5px;
@@ -285,7 +255,7 @@ input[type=text]{
 			padding: 10px;
 			h3{
 				font-weight: normal;
-				color: @mid-blue;
+				color: @bright-blue;
 				font-size: 16px;
 			}
 		}
@@ -296,7 +266,7 @@ input[type=text]{
 	padding: 0;
 	li{
 		list-style-type: none;
-		border: 1px solid @mid-blue;
+		border: 1px solid @bright-blue;
 		padding: 5px;
 		.border-radius();
 		.run-transition(background);
@@ -304,7 +274,7 @@ input[type=text]{
 	}
 
 	li.selected{
-		background: @mid-blue;
+		background: @bright-blue;
 		color: #fff;
 	}
 }
@@ -335,5 +305,5 @@ input[type=text]{
 }
 
 .humane-original-info{
-	background: @mid-blue;
+	background: @bright-blue;
 }

@@ -1,15 +1,9 @@
 <div class="centered container row">
-	<header class="main">
-		<section class="navbar row" data-ng-controller="Account">
+	<header class="main" data-ng-controller="Account">
+		<section class="navbar row">
 			<div class="cell">
 				<img data-ng-src="/userbook/document/[[avatar]]?userbook-dimg=public%2Fimg%2Fno-avatar.jpg&v=[[pictureVersion]]&thumbnail=48x48" id="my-photo" />
 				<span class="welcome-message" translate key="welcome"></span>
-			</div>
-			<div class="cell">
-				<nav class="account">
-					<a logout>Déconnexion</a>
-					<div class="clear"></div>
-				</nav>
 			</div>
 		</section>
 		<section class="row">
@@ -17,6 +11,7 @@
 			<nav class="horizontal">
 				<a href="/userbook/annuaire?myClass" translate key="portal.header.navigation.classMembers"></a>
 				<a href="/welcome" translate key="portal.header.navigation.myapps"></a>
+				<a logout><i role="disconnect"></i></a>
 			</nav>
 		</section>
 
