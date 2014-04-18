@@ -11,6 +11,7 @@
 			<div class="twelve cell centered">
 				<button type="button" value="Supprimer" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
 				<files-picker ng-model="account.photo" id="photo" ng-change="updateAvatar()" translate attr="value" value="userBook.profile.changeavatar"></files-picker>
+				<media-select ng-model="account.picture" ng-change="account.saveChanges()" value="Choisir"></media-select>
 			</div>
 		</div>
 	</div>

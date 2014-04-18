@@ -255,7 +255,7 @@ module.directive('lightbox', function($compile){
 		},
 		template: '<div>\
 					<section class="lightbox-backdrop"></section>\
-					<section class="lightbox-window five cell">\
+					<section class="lightbox-window four cell">\
 						<div class="twelve cell reduce-block-six" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
@@ -308,7 +308,9 @@ module.directive('mediaLibrary', function($compile){
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
+			scope.$watch('ngModel', function(newVal){
 
+			})
 		}
 	}
 });
@@ -322,15 +324,19 @@ module.directive('mediaSelect', function($compile){
 			ngChange: '&',
 			type: '@'
 		},
-		template: '<div><input type="button" ng-transclude />' +
+		template: '<div><input type="button" ng-transclude class="pick-file" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
 						'<media-library ng-model="ngModel" ng-change="ngChange();"></media-library>' +
 					'</lightbox>' +
 				  '</div>',
 		link: function(scope, element, attributes){
-			element.on('click', function(){
+			element.find('.pick-file').on('click', function(){
 				scope.userSelecting = true;
+				scope.$apply('userSelecting');
 			});
+			scope.$watch('ngModel', function(newVal){
+				console.log(newVal);
+			})
 		}
 	}
 });
@@ -1576,7 +1582,7 @@ module.directive('datePicker', function($compile){
 
 		}
 	}
-})
+});
 
 $(document).ready(function(){
 
@@ -1944,12 +1950,32 @@ function Widgets($scope, model, lang, date){
 		if(!$scope.$$phase){
 			$scope.$apply('widgets');
 		}
-	})
+	});
 
 	$scope.translate = lang.translate;
 }
 
 function MediaLibrary($scope){
+	$scope.display = {
+		show: 'upload'
+	};
+
+	$scope.show = function(tab){
+		$scope.display.show = tab;
+	};
+
+	http().get('/workspace/documents?filter=owner').done(function(data){
+		$scope.documents = _.filter(data, function(document){
+			return document.metadata['content-type'].indexOf('image') !== -1;
+		});
+		$scope.$apply('documents');
+	});
+
+	$scope.selectDocument = function(document){
+		$scope.$parent.ngModel = document;
+		$scope.$parent.$apply('ngModel');
+	};
+
 	$scope.upload = {};
 	$scope.uploadFiles = function(){
 

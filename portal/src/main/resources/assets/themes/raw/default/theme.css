@@ -46,7 +46,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 8.33333333%;
+  padding-bottom: 8.333333333333334%;
 }
 .height-one .right-magnet.cell.absolute {
   right: 0 !important;
@@ -80,14 +80,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-one {
-    left: 8.33333333%;
+    left: 8.333333333333334%;
   }
 }
 .height-two {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 16.66666667%;
+  padding-bottom: 16.666666666666668%;
 }
 .height-two .right-magnet.cell.absolute {
   right: 0 !important;
@@ -103,7 +103,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-two {
-    left: 16.66666667%;
+    left: 16.666666666666668%;
   }
 }
 .height-three {
@@ -133,7 +133,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 33.33333333%;
+  padding-bottom: 33.333333333333336%;
 }
 .height-four .right-magnet.cell.absolute {
   right: 0 !important;
@@ -149,14 +149,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-four {
-    left: 33.33333333%;
+    left: 33.333333333333336%;
   }
 }
 .height-five {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 41.66666667%;
+  padding-bottom: 41.66666666666667%;
 }
 .height-five .right-magnet.cell.absolute {
   right: 0 !important;
@@ -172,7 +172,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-five {
-    left: 41.66666667%;
+    left: 41.66666666666667%;
   }
 }
 .height-six {
@@ -219,7 +219,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -235,14 +235,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-seven {
-    left: 58.33333333%;
+    left: 58.333333333333336%;
   }
 }
 .height-eight {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 66.66666667%;
+  padding-bottom: 66.66666666666667%;
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0 !important;
@@ -258,7 +258,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eight {
-    left: 66.66666667%;
+    left: 66.66666666666667%;
   }
 }
 .height-nine {
@@ -288,7 +288,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 83.33333333%;
+  padding-bottom: 83.33333333333334%;
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0 !important;
@@ -304,14 +304,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-ten {
-    left: 83.33333333%;
+    left: 83.33333333333334%;
   }
 }
 .height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -327,7 +327,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eleven {
-    left: 91.66666667%;
+    left: 91.66666666666667%;
   }
 }
 .height-twelve {
@@ -365,11 +365,11 @@
 }
 .one {
   width: 1;
-  width: 8.33333333%;
+  width: 8.333333333333334%;
 }
 .two {
   width: 1;
-  width: 16.66666667%;
+  width: 16.666666666666668%;
 }
 .three {
   width: 1;
@@ -377,11 +377,11 @@
 }
 .four {
   width: 1;
-  width: 33.33333333%;
+  width: 33.333333333333336%;
 }
 .five {
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
 }
 .six {
   width: 1;
@@ -389,11 +389,11 @@
 }
 .seven {
   width: 1;
-  width: 58.33333333%;
+  width: 58.333333333333336%;
 }
 .eight {
   width: 1;
-  width: 66.66666667%;
+  width: 66.66666666666667%;
 }
 .nine {
   width: 1;
@@ -401,11 +401,11 @@
 }
 .ten {
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
 }
 .eleven {
   width: 1;
-  width: 91.66666667%;
+  width: 91.66666666666667%;
 }
 .twelve {
   width: 1;
@@ -448,6 +448,7 @@
   /*.dow {
 		border-top: 1px solid #ddd !important;
 	}*/
+
 }
 .datepicker:before {
   content: '';
@@ -588,6 +589,9 @@ body.app {
 textarea {
   max-width: 100%;
   border: 1px solid #ccc;
+}
+textarea.inline-editing {
+  box-sizing: content-box;
 }
 nav.vertical {
   padding-right: 10px;
@@ -843,7 +847,7 @@ p i {
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
-  width: 41.66666667%;
+  width: 41.66666666666667%;
   height: 100%;
   line-height: 100%;
   vertical-align: middle;
@@ -889,7 +893,7 @@ p i {
 .calendar {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 58.33333333%;
+  padding-bottom: 58.333333333333336%;
   width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
@@ -1017,7 +1021,7 @@ p i {
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 91.66666667%;
+  padding-bottom: 91.66666666666667%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -1624,7 +1628,7 @@ section .contextual-buttons .action-buttons {
   display: block;
   position: relative;
   width: 1;
-  width: 83.33333333%;
+  width: 83.33333333333334%;
   line-height: 50px;
   margin-bottom: 10px;
 }
@@ -1685,6 +1689,12 @@ header h2 {
   width: 30%;
   display: inline-block;
   margin: 0;
+}
+hr {
+  display: block;
+  clear: both;
+  float: left;
+  width: 100%;
 }
 .clear {
   clear: both;
@@ -2285,6 +2295,37 @@ html.app body {
   min-height: 100%;
   height: auto;
 }
+.tabs header {
+  font-family: Lato;
+  color: #008cba;
+  font-size: 14px;
+}
+.tabs header.selected {
+  border-color: #ccc;
+  border-bottom-color: #fff;
+  color: #444;
+}
+.lightbox-window .icons-view {
+  background: transparent;
+  margin-top: 20px;
+}
+.lightbox-window .tabs {
+  margin-top: 20px;
+}
+.lightbox-window .tabs section {
+  background: #292929;
+  border: none;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.lightbox-window .tabs header {
+  border: none;
+  background: #222;
+}
+.lightbox-window .tabs header.selected {
+  color: #AAA;
+  background: #292929;
+}
 i[role=send-mail] {
   height: 24px;
   width: 24px;
@@ -2300,6 +2341,36 @@ i[role=send-mail] {
   vertical-align: middle;
   margin: 7px;
   opacity: 0.6;
+}
+i[role=public] {
+  height: 25px;
+  width: 25px;
+  background-image: url("../img/icons/public.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+i[role=prive] {
+  height: 25px;
+  width: 25px;
+  background-image: url("../img/icons/prive.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
 }
 i[role=view-folder] {
   height: 24px;
@@ -2520,6 +2591,7 @@ i[role=disconnect] {
   filter: invert(100%);
   margin: 5px;
   float: right;
+  margin-bottom: -6px;
 }
 i[role=show-details] {
   height: 24px;
@@ -2760,6 +2832,28 @@ input[type=button].cancel {
   background: #ccc;
   color: #333;
 }
+.small-text {
+  font-size: 14px !important;
+}
+.small-text label {
+  font-size: 14px !important;
+  line-height: 26px;
+}
+.icons-select {
+  display: none;
+}
+textarea.inline-editing {
+  color: #666;
+  border: 1px solid #ddd;
+  margin: 3px;
+  height: 45px;
+  line-height: 25px;
+  width: 100%;
+}
+input[type=text] {
+  border: 1px solid #ddd;
+  margin: 3px;
+}
 .label-badge {
   background: #008cba;
   -o-transition: background 250ms ease;
@@ -2987,9 +3081,6 @@ nav.horizontal {
 nav.horizontal a {
   color: #fff;
 }
-h1 {
-  font-size: 2em;
-}
 h1,
 h2,
 h3,
@@ -3007,6 +3098,11 @@ h3 a,
 h4 a,
 h5 a {
   color: #333;
+}
+h1 {
+  font-size: 2em;
+  margin-top: 0px;
+  margin-bottom: 20px;
 }
 h3 {
   font-size: 1.4em;
@@ -3041,7 +3137,7 @@ table thead tr {
   border-bottom: 2px solid #008cba;
 }
 article {
-  background: #fff;
+  background: transparent;
   border-radius: 3px;
   border: none;
 }
@@ -3109,18 +3205,10 @@ header {
   background: #eee;
   margin-top: 0;
 }
-.tabs header,
-.tabs section {
-  border-color: #ccc;
-}
-.tabs header {
-  font-family: serif;
-  color: #6868a7;
-}
-.tabs header.selected {
+.icons-view strong {
   font-style: italic;
-  font-size: 16px;
-  color: #000;
+  font-weight: normal;
+  font-size: 12px;
 }
 .tabs section {
   background: #fff;
@@ -3170,10 +3258,6 @@ section.lightbox-backdrop {
   opacity: 0.7;
 }
 .line {
-  border-top: 10px solid #eee;
-  margin-top: 7px;
-}
-.line:first-child {
   border: none;
 }
 input[type=text],

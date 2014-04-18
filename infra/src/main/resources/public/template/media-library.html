@@ -1,15 +1,37 @@
-<section class="row" ng-controller="MediaLibrary">
+<section class="row media-library" ng-controller="MediaLibrary">
 	<h2>Recherche de documents</h2>
-	<ul>
-		<li>Charger un document</li>
-		<li>Parcourir mon espace documentaire</li>
-	</ul>
-	<h2>Sélectionner les fichiers</h2>
-	<div class="row">
-		<div class="hidden-content">
-			<input type="file" multiple  files-input-change="setFilesName()" ng-model="upload.files" />
-		</div>
-		<button class="file-button" translate content="choose"></button>
-		<input type="text" data-ng-model="newFile.name" data-display-file />
-	</div>
+	<section class="twelve cell tabs row">
+		<header ng-class="{ selected: display.show === 'upload' }"
+				ng-click="show('upload')">
+			Charger un document
+		</header>
+		<header
+			ng-class="{ selected: display.show === 'select' }"
+			ng-click="show('select')">
+			Parcourir mon espace personnel
+		</header>
+		<section class="medium-text">
+			<div class="row reduce-block-four">
+				<h2>Sélectionner les fichiers</h2>
+				<input type="text" value="Rechercher" />
+			</div>
+			<div class="row">
+				<div class="cell twelve height-seven">
+					<div class="absolute icons-view" style="overflow: auto">
+						<div class="element reduce-block-six" ng-repeat="document in documents">
+							<div class="img-container" ng-click="selectDocument(document)">
+								<div class="clip">
+									<img class="twelve cell" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+								</div>
+							</div>
+							<input type="checkbox" />
+							<a class="medium-text">Titre</a>
+							<a><strong class="small-text">Auteur</strong></a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row"></div>
+		</section>
+	</section>
 </section>

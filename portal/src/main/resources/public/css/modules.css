@@ -589,6 +589,9 @@ textarea {
   max-width: 100%;
   border: 1px solid #ccc;
 }
+textarea.inline-editing {
+  box-sizing: content-box;
+}
 nav.vertical {
   padding-right: 10px;
 }
@@ -1683,6 +1686,12 @@ header h2 {
   width: 30%;
   display: inline-block;
   margin: 0;
+}
+hr {
+  display: block;
+  clear: both;
+  float: left;
+  width: 100%;
 }
 .clear {
   clear: both;

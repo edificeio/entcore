@@ -14,10 +14,57 @@
 @cyan: #50b9fa;
 @orange: #FD841C;
 
+.tabs{
+	header{
+		font-family: Lato;
+		color: @bright-blue;
+		font-size: 14px;
+	}
+	header.selected{
+		border-color: #ccc;
+		border-bottom-color: #fff;
+		color: #444;
+	}
+}
+
+.lightbox-window{
+	.icons-view{
+		background: transparent;
+		margin-top: 20px;
+	}
+	.tabs{
+		margin-top: 20px;
+		section{
+			background: #292929;
+			border: none;
+			padding-top: 20px;
+			padding-bottom: 20px;
+		}
+		header{
+			border: none;
+			background: #222;
+		}
+		header.selected{
+			color: #AAA;
+			background: #292929;
+		}
+	}
+}
+
 i[role=send-mail]{
 	.icon(glyphicons_010_envelope, 24px);
 	margin: 7px;
 	opacity: 0.6;
+}
+
+i[role=public]{
+	.icon(public, 25px);
+	cursor: pointer;
+}
+
+i[role=prive]{
+	.icon(prive, 25px);
+	cursor: pointer;
 }
 
 i[role=view-folder]{
@@ -86,6 +133,7 @@ i[role=disconnect]{
 	.invert-colors();
 	margin: 5px;
 	float: right;
+	margin-bottom: -6px;
 }
 
 i[role=show-details]{
@@ -297,6 +345,32 @@ a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:h
 button.cancel, input[type=button].cancel{
 	background: #ccc;
 	color: #333;
+}
+
+.small-text{
+	font-size: 14px !important;
+	label{
+		font-size: 14px !important;
+		line-height: 26px;
+	}
+}
+
+.icons-select{
+	display: none;
+}
+
+textarea.inline-editing{
+	color: #666;
+	border: 1px solid #ddd;
+	margin: 3px;
+	height: 45px;
+	line-height: 25px;
+	width: 100%;
+}
+
+input[type=text]{
+	border: 1px solid #ddd;
+	margin: 3px;
 }
 
 .label-badge{
@@ -520,10 +594,6 @@ nav.horizontal{
 	}
 }
 
-h1{
-	font-size: 2em;
-}
-
 h1, h2, h3, h4, h5{
 	a{
 		color: #333;
@@ -533,6 +603,12 @@ h1, h2, h3, h4, h5{
 	font-family: Lato;
 	margin-top: 5px;
 	margin-bottom: 5px;
+}
+
+h1{
+	font-size: 2em;
+	margin-top: 0px;
+	margin-bottom: 20px;
 }
 
 h3{
@@ -572,7 +648,7 @@ table{
 }
 
 article{
-	background: #fff;
+	background: transparent;
 	border-radius: 3px;
 	border: none;
 }
@@ -641,21 +717,14 @@ header{
 .icons-view{
 	background: #eee;
 	margin-top: 0;
+	strong{
+		font-style: italic;
+		font-weight: normal;
+		font-size: 12px;
+	}
 }
 
 .tabs{
-	header, section{
-		border-color: #ccc;
-	}
-	header{
-		font-family: serif;
-		color: rgb(104, 104, 167);
-	}
-	header.selected{
-		font-style: italic;
-		font-size: 16px;
-		color: #000;
-	}
 	section{
 		background: #fff;
 	}
@@ -711,10 +780,6 @@ section.lightbox-backdrop{
 }
 
 .line{
-	border-top: 10px solid #eee;
-	margin-top: 7px;
-}
-.line:first-child{
 	border: none;
 }
 
