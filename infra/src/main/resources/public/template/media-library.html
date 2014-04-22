@@ -6,32 +6,12 @@
 			Charger un document
 		</header>
 		<header
-			ng-class="{ selected: display.show === 'select' }"
-			ng-click="show('select')">
+			ng-class="{ selected: display.show === 'browse' }"
+			ng-click="show('browse')">
 			Parcourir mon espace personnel
 		</header>
-		<section class="medium-text">
-			<div class="row reduce-block-four">
-				<h2>Sélectionner les fichiers</h2>
-				<input type="text" value="Rechercher" />
-			</div>
-			<div class="row">
-				<div class="cell twelve height-seven">
-					<div class="absolute icons-view" style="overflow: auto">
-						<div class="element reduce-block-six" ng-repeat="document in documents">
-							<div class="img-container" ng-click="selectDocument(document)">
-								<div class="clip">
-									<img class="twelve cell" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
-								</div>
-							</div>
-							<input type="checkbox" />
-							<a class="medium-text">Titre</a>
-							<a><strong class="small-text">Auteur</strong></a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row"></div>
+		<section class="medium-text" ng-include="'/infra/public/template/media-library-' + display.show + '.html'">
+
 		</section>
 	</section>
 </section>

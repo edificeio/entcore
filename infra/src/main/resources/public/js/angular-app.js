@@ -255,7 +255,7 @@ module.directive('lightbox', function($compile){
 		},
 		template: '<div>\
 					<section class="lightbox-backdrop"></section>\
-					<section class="lightbox-window four cell">\
+					<section class="lightbox-window five cell">\
 						<div class="twelve cell reduce-block-six" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
@@ -304,13 +304,15 @@ module.directive('mediaLibrary', function($compile){
 		scope: {
 			ngModel: '=',
 			type: '@',
-			ngChange: '&'
+			ngChange: '&',
+			multiple: '&'
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
 			scope.$watch('ngModel', function(newVal){
-
-			})
+				scope.$parent.ngModel = newVal;
+				scope.ngChange();
+			});
 		}
 	}
 });
@@ -326,17 +328,19 @@ module.directive('mediaSelect', function($compile){
 		},
 		template: '<div><input type="button" ng-transclude class="pick-file" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
-						'<media-library ng-model="ngModel" ng-change="ngChange();"></media-library>' +
+						'<media-library ng-change="updateDocument()" ng-model="selectedFile"></media-library>' +
 					'</lightbox>' +
 				  '</div>',
 		link: function(scope, element, attributes){
+			scope.updateDocument = function(){
+				scope.userSelecting = false;
+				scope.ngModel = scope.selectedFile;
+				scope.ngChange();
+			}
 			element.find('.pick-file').on('click', function(){
 				scope.userSelecting = true;
 				scope.$apply('userSelecting');
 			});
-			scope.$watch('ngModel', function(newVal){
-				console.log(newVal);
-			})
 		}
 	}
 });
@@ -970,8 +974,9 @@ module.directive('htmlEditor', function($compile){
 			ngModel: '=',
 			notify: '='
 		},
-		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
-			'</div><div class="clear"></div></div>',
+		template: '<div class="twelve cell block-editor">' +
+			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
+			'</div><div class="clear"></div><lightbox show="selectFile"><media-library ng-model="selectedFile"></media-library></lightbox></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -979,19 +984,23 @@ module.directive('htmlEditor', function($compile){
 				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 
 			}
-			return function($scope, $element, $attributes){
-				if(!$attributes.fileUploadPath){
-					$attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
+			return function(scope, element, attributes){
+				if(!attributes.fileUploadPath){
+					attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
 				}
-				CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
-				var editor = $element.find('[contenteditable=true]');
+				CKEDITOR.fileUploadPath = scope.$eval(attributes.fileUploadPath);
+				var editor = element.find('[contenteditable=true]');
 				CKEDITOR.inline(editor[0]);
-				createCKEditorInstance(editor, $scope, $compile);
-				$element.on('removed', function(){
+				createCKEditorInstance(editor, scope, $compile);
+				element.on('removed', function(){
 					setTimeout(function(){
 						ckeEditorFixedPositionning();
 					}, 0);
-				})
+				});
+				$('body').on('click', '.cke_button__upload', function(){
+					scope.selectFile = true;
+					scope.$apply('selectFile');
+				});
 			}
 		}
 	}
@@ -1957,7 +1966,8 @@ function Widgets($scope, model, lang, date){
 
 function MediaLibrary($scope){
 	$scope.display = {
-		show: 'upload'
+		show: 'upload',
+		path: '/public/template/media-library-upload.html'
 	};
 
 	$scope.show = function(tab){
@@ -1973,11 +1983,14 @@ function MediaLibrary($scope){
 
 	$scope.selectDocument = function(document){
 		$scope.$parent.ngModel = document;
-		$scope.$parent.$apply('ngModel');
 	};
 
 	$scope.upload = {};
 	$scope.uploadFiles = function(){
 
 	};
+
+	$scope.duplicateFile = function(){
+
+	}
 }

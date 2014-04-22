@@ -46,7 +46,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 8.333333333333334%;
+  padding-bottom: 8.33333333%;
 }
 .height-one .right-magnet.cell.absolute {
   right: 0 !important;
@@ -80,14 +80,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-one {
-    left: 8.333333333333334%;
+    left: 8.33333333%;
   }
 }
 .height-two {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 16.666666666666668%;
+  padding-bottom: 16.66666667%;
 }
 .height-two .right-magnet.cell.absolute {
   right: 0 !important;
@@ -103,7 +103,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-two {
-    left: 16.666666666666668%;
+    left: 16.66666667%;
   }
 }
 .height-three {
@@ -133,7 +133,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 33.333333333333336%;
+  padding-bottom: 33.33333333%;
 }
 .height-four .right-magnet.cell.absolute {
   right: 0 !important;
@@ -149,14 +149,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-four {
-    left: 33.333333333333336%;
+    left: 33.33333333%;
   }
 }
 .height-five {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 41.66666666666667%;
+  padding-bottom: 41.66666667%;
 }
 .height-five .right-magnet.cell.absolute {
   right: 0 !important;
@@ -172,7 +172,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-five {
-    left: 41.66666666666667%;
+    left: 41.66666667%;
   }
 }
 .height-six {
@@ -219,7 +219,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 58.333333333333336%;
+  padding-bottom: 58.33333333%;
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -235,14 +235,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-seven {
-    left: 58.333333333333336%;
+    left: 58.33333333%;
   }
 }
 .height-eight {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 66.66666666666667%;
+  padding-bottom: 66.66666667%;
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0 !important;
@@ -258,7 +258,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eight {
-    left: 66.66666666666667%;
+    left: 66.66666667%;
   }
 }
 .height-nine {
@@ -288,7 +288,7 @@
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 83.33333333333334%;
+  padding-bottom: 83.33333333%;
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0 !important;
@@ -304,14 +304,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-ten {
-    left: 83.33333333333334%;
+    left: 83.33333333%;
   }
 }
 .height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 1px;
-  padding-bottom: 91.66666666666667%;
+  padding-bottom: 91.66666667%;
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -327,7 +327,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eleven {
-    left: 91.66666666666667%;
+    left: 91.66666667%;
   }
 }
 .height-twelve {
@@ -365,11 +365,11 @@
 }
 .one {
   width: 1;
-  width: 8.333333333333334%;
+  width: 8.33333333%;
 }
 .two {
   width: 1;
-  width: 16.666666666666668%;
+  width: 16.66666667%;
 }
 .three {
   width: 1;
@@ -377,11 +377,11 @@
 }
 .four {
   width: 1;
-  width: 33.333333333333336%;
+  width: 33.33333333%;
 }
 .five {
   width: 1;
-  width: 41.66666666666667%;
+  width: 41.66666667%;
 }
 .six {
   width: 1;
@@ -389,11 +389,11 @@
 }
 .seven {
   width: 1;
-  width: 58.333333333333336%;
+  width: 58.33333333%;
 }
 .eight {
   width: 1;
-  width: 66.66666666666667%;
+  width: 66.66666667%;
 }
 .nine {
   width: 1;
@@ -401,11 +401,11 @@
 }
 .ten {
   width: 1;
-  width: 83.33333333333334%;
+  width: 83.33333333%;
 }
 .eleven {
   width: 1;
-  width: 91.66666666666667%;
+  width: 91.66666667%;
 }
 .twelve {
   width: 1;
@@ -448,7 +448,6 @@
   /*.dow {
 		border-top: 1px solid #ddd !important;
 	}*/
-
 }
 .datepicker:before {
   content: '';
@@ -847,7 +846,7 @@ p i {
 .birthday nav.vertical ul li a .user {
   display: inline-block;
   width: 1;
-  width: 41.66666666666667%;
+  width: 41.66666667%;
   height: 100%;
   line-height: 100%;
   vertical-align: middle;
@@ -893,7 +892,7 @@ p i {
 .calendar {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 58.333333333333336%;
+  padding-bottom: 58.33333333%;
   width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
@@ -1021,7 +1020,7 @@ p i {
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 1px;
-  padding-bottom: 91.66666666666667%;
+  padding-bottom: 91.66666667%;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -1485,13 +1484,23 @@ ul.icons-view.two-cols li.element {
   box-sizing: border-box;
   float: left;
   display: block;
-  width: 24%;
+  width: 145px;
   margin: 2px;
   position: relative;
   list-style-type: none;
 }
 .icons-view .element img {
   max-width: 100%;
+}
+.icons-view .element .container {
+  height: 117px;
+  width: 117px;
+  display: block;
+  padding: 7px;
+  border: 1px solid transparent;
+}
+.icons-view .element .img.container {
+  border: 1px solid #ccc;
 }
 .icons-view .element img,
 .icons-view .element i {
@@ -1500,6 +1509,21 @@ ul.icons-view.two-cols li.element {
   margin-right: auto;
   cursor: pointer;
   max-width: 100%;
+}
+.icons-view .element legend {
+  width: 100%;
+  height: 36px;
+}
+.icons-view .element legend a {
+  display: block;
+  text-align: center;
+  margin: 0;
+  margin-top: 5px;
+  width: 100%;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .icons-view .element a i.inline {
   display: inline-block;
@@ -1520,17 +1544,24 @@ ul.icons-view.two-cols li.element {
 .icons-view .element em {
   display: none;
 }
-.icons-view .element a {
-  display: block;
-  text-align: center;
-  margin: 0;
-  margin-top: 5px;
-  width: 100%;
-  position: relative;
-  word-break: break-word;
+.select-file input[type=text] {
+  float: left;
+  margin-right: 0;
+  margin-top: 0;
 }
-.icons-view div.element:nth-child(8n + 9) {
-  clear: left;
+.select-file button {
+  margin-left: 0;
+  margin-top: 0px;
+  -webkit-border-top-left-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -moz-border-top-left-radius: 0;
+  -moz-border-bottom-left-radius: 0;
+  -ms-border-top-left-radius: 0;
+  -ms-border-bottom-left-radius: 0;
+  -o-border-top-left-radius: 0;
+  -o-border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .tabs header {
   display: inline-block;
@@ -1628,7 +1659,7 @@ section .contextual-buttons .action-buttons {
   display: block;
   position: relative;
   width: 1;
-  width: 83.33333333333334%;
+  width: 83.33333333%;
   line-height: 50px;
   margin-bottom: 10px;
 }
@@ -2193,6 +2224,7 @@ body {
   height: 100%;
   font-family: Arial;
   background: #eee;
+  z-index: 0;
 }
 html section.main,
 body section.main {
@@ -2307,24 +2339,61 @@ html.app body {
 }
 .lightbox-window .icons-view {
   background: transparent;
-  margin-top: 20px;
+}
+.lightbox-window .icons-view .element .img.container {
+  background: #555;
+  border-color: transparent;
+}
+.lightbox-window nav.vertical {
+  padding-right: 10px;
+}
+.lightbox-window nav.vertical a {
+  border-color: #555;
+  color: #777;
+}
+.lightbox-window nav.vertical a:hover {
+  background: #555;
+  color: #999;
+}
+.lightbox-window nav.vertical li {
+  padding-left: 10px;
 }
 .lightbox-window .tabs {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 .lightbox-window .tabs section {
-  background: #292929;
-  border: none;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  background: #444;
+  border-bottom: 7px solid;
+  border-color: #008cba;
 }
 .lightbox-window .tabs header {
-  border: none;
-  background: #222;
+  background: #393939;
+  -webkit-border-top-left-radius: 3px;
+  -webkit-border-top-right-radius: 3px;
+  -moz-border-top-left-radius: 3px;
+  -moz-border-top-right-radius: 3px;
+  -ms-border-top-left-radius: 3px;
+  -ms-border-top-right-radius: 3px;
+  -o-border-top-left-radius: 3px;
+  -o-border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  margin-left: -2px;
+  color: #777;
+  border: 1px solid #555;
+  border-bottom: none;
+}
+.lightbox-window .tabs header:first-child {
+  margin-left: 0px;
 }
 .lightbox-window .tabs header.selected {
-  color: #AAA;
-  background: #292929;
+  background: #444;
+  border-color: #008cba;
+  border-bottom: 1px solid #444;
+  color: #008cba;
+}
+.select-file input[type=text] {
+  height: 28px;
 }
 i[role=send-mail] {
   height: 24px;
@@ -2724,10 +2793,10 @@ i[role=tools] {
   background: #a04ac5;
 }
 .dominos .domino.cyan {
-  background: #50b9fa;
+  background: #008cba;
 }
 .dominos .domino.pink {
-  background: #fa4860;
+  background: #ff0b75;
 }
 .calendar {
   padding-bottom: 35% !important;
@@ -2852,7 +2921,8 @@ textarea.inline-editing {
 }
 input[type=text] {
   border: 1px solid #ddd;
-  margin: 3px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 .label-badge {
   background: #008cba;
@@ -3013,8 +3083,7 @@ input[type=submit]:hover {
   border: 1px solid #008cba;
 }
 nav.vertical {
-  margin-right: 50px;
-  margin-left: -20px;
+  padding-right: 50px;
 }
 nav.vertical h2 {
   display: none;
@@ -3089,8 +3158,8 @@ h5 {
   color: #333;
   font-weight: 300;
   font-family: Lato;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 h1 a,
 h2 a,
@@ -3103,6 +3172,9 @@ h1 {
   font-size: 2em;
   margin-top: 0px;
   margin-bottom: 20px;
+}
+h2 {
+  font-size: 18px;
 }
 h3 {
   font-size: 1.4em;
@@ -3196,11 +3268,6 @@ header {
 .pages-widget ul li a {
   font-size: 14px;
 }
-.img-container div.clip {
-  border: 1px solid #008cba;
-  background: #fff;
-  padding: 10px;
-}
 .icons-view {
   background: #eee;
   margin-top: 0;
@@ -3209,6 +3276,16 @@ header {
   font-style: italic;
   font-weight: normal;
   font-size: 12px;
+}
+.icons-view .element {
+  width: 150px;
+}
+.icons-view .element .container {
+  padding: 10px;
+}
+.icons-view .element .img.container {
+  border: 1px solid #008cba;
+  background: #fff;
 }
 .tabs section {
   background: #fff;
@@ -3267,10 +3344,10 @@ input[type=password] {
   line-height: 25px;
   padding-left: 5px;
   font-family: Lato;
-  font-size: 1.2em;
+  font-size: 14px;
 }
 section.lightbox-window {
-  border: 3px solid #888;
+  border: 5px solid #555;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   -ms-border-radius: 3px;
@@ -3302,8 +3379,8 @@ section.lightbox-window thead tr {
 }
 section.lightbox-window input[type=text],
 section.lightbox-window input[type=search] {
-  background: #666;
-  border: 1px solid #888;
+  background: #494949;
+  border: 1px solid #595959;
   color: #999;
 }
 [data-drop-down] {

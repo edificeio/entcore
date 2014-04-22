@@ -323,7 +323,7 @@ function ClassAdmin(){
 				this.sync();
 			}.bind(this))
 			.e400(function(e){
-				this.sync()
+				this.sync();
 				var error = JSON.parse(e.responseText).message;
 				var errWithIdx = error.split(/\s/);
 				if (errWithIdx.length === 2) {

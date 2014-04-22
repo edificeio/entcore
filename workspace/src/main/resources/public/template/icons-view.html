@@ -1,14 +1,16 @@
 <header>&nbsp;</header>
 <div class="icons-view">
 	<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container">
-		<a>
+		<a class="container">
 			<i role="folder-large" data-ng-click="openFolder(folder)"></i>
 		</a>
-		<a data-ng-click="openFolder(value)">[[folder.name]]</a>
+		<legend>
+			<a data-ng-click="openFolder(value)">[[folder.name]]</a>
+		</legend>
 	</div>
 	<section data-ng-repeat-end></section>
-	<div ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ selected: document.selected, element: true, 'mini-block-container': true }">
-			<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]]-container">
+	<div ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" class="element reduce-block-six" ng-class="{ selected: document.selected }">
+			<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]] container">
 				<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'">
@@ -16,15 +18,17 @@
 						<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />
 					</div>
 				</div>
-
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			<a ng-href="[[documentPath(document)]]">
-				<i ng-if="document.shared.length > 0" role="shared" class="inline"></i>
-				[[document.name]] <span class="badge" ng-if="document.comments.length > 0" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-			</a>
 
-			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
+			<legend>
+				<a ng-href="[[documentPath(document)]]">
+					<i ng-if="document.shared.length > 0" role="shared" class="inline"></i>
+					[[document.name]]
+					<span class="badge" ng-if="document.comments.length > 0" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+				</a>
+				<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
+			</legend>
 	</div>
 	<section ng-repeat-end>
 		<section class="row text-container" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||

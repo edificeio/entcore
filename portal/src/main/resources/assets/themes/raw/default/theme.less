@@ -2,7 +2,6 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
 @dark-blue: #074e68;
-@bright-blue: #085a78;
 @light-blue: #008cba;
 @black: #2A2829;
 @bright-blue: #008cba;
@@ -10,8 +9,8 @@
 //legend colors
 @green: #6fbd2c;
 @purple: #a04ac5;
-@pink: #fa4860;
-@cyan: #50b9fa;
+@pink: #FF0B75;
+@cyan: #008cba;
 @orange: #FD841C;
 
 .tabs{
@@ -30,24 +29,58 @@
 .lightbox-window{
 	.icons-view{
 		background: transparent;
-		margin-top: 20px;
+		.element{
+			.img.container{
+				background: #555;
+				border-color: transparent;
+			}
+		}
+
+	}
+	nav.vertical{
+		padding-right: 10px;
+		a{
+			border-color: #555;
+			color: #777;
+		}
+		a:hover{
+			background: #555;
+			color: #999;
+		}
+		li{
+			padding-left: 10px;
+		}
 	}
 	.tabs{
-		margin-top: 20px;
+		margin-top: 10px;
 		section{
-			background: #292929;
-			border: none;
-			padding-top: 20px;
-			padding-bottom: 20px;
+			background: #444;
+			border-bottom: 7px solid;
+			border-color: @bright-blue;
 		}
 		header{
-			border: none;
-			background: #222;
+			background: #393939;
+			.border-radius-top(3px);
+			margin-left: -2px;
+			color: #777;
+			border: 1px solid #555;
+			border-bottom: none;
+		}
+		header:first-child{
+			margin-left: 0px;
 		}
 		header.selected{
-			color: #AAA;
-			background: #292929;
+			background: #444;
+			border-color: @bright-blue;
+			border-bottom: 1px solid #444;
+			color: @bright-blue;
 		}
+	}
+}
+
+.select-file{
+	input[type=text]{
+		height: 28px;
 	}
 }
 
@@ -370,7 +403,8 @@ textarea.inline-editing{
 
 input[type=text]{
 	border: 1px solid #ddd;
-	margin: 3px;
+	margin-top: 3px;
+	margin-bottom: 3px;
 }
 
 .label-badge{
@@ -534,8 +568,7 @@ button:hover, input[type=button]:hover, a.button:hover, input[type=submit]:hover
 }
 
 nav.vertical{
-	margin-right: 50px;
-	margin-left: -20px;
+	padding-right: 50px;
 	h2{
 		display: none;
 	}
@@ -601,14 +634,18 @@ h1, h2, h3, h4, h5{
 	color: #333;
 	font-weight: 300;
 	font-family: Lato;
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 h1{
 	font-size: 2em;
 	margin-top: 0px;
 	margin-bottom: 20px;
+}
+
+h2{
+	font-size: 18px;
 }
 
 h3{
@@ -686,32 +723,26 @@ header{
 	}
 }
 
-.last-mails-widget, .pages-widget{
+.last-mails-widget, .pages-widget {
 	background: #fff;
 	margin-bottom: 12px;
 	border: 1px solid #ccc;
-	h1{
+	h1 {
 		text-align: center;
 	}
-	ul{
+	ul {
 		margin-bottom: 0;
 		padding-left: 0;
-		li{
+		li {
 			list-style-type: none;
 			padding-left: 7px;
 			border-left: 5px solid @bright-blue;
 			line-height: 22px;
-			a{
+			a {
 				font-size: 14px;
 			}
 		}
 	}
-}
-
-.img-container div.clip{
-	border: 1px solid #008cba;
-	background: #fff;
-	padding: 10px;
 }
 
 .icons-view{
@@ -721,6 +752,16 @@ header{
 		font-style: italic;
 		font-weight: normal;
 		font-size: 12px;
+	}
+	.element{
+		width: 150px;
+		.container{
+			padding: 10px;
+		}
+		.img.container{
+			border: 1px solid #008cba;
+			background: #fff;
+		}
 	}
 }
 
@@ -788,11 +829,11 @@ input[type=text], input[type=search], input[type=password]{
 	line-height: 25px;
 	padding-left: 5px;
 	font-family: Lato;
-	font-size: 1.2em;
+	font-size: 14px;
 }
 
 section.lightbox-window{
-	border: 3px solid #888;
+	border: 5px solid #555;
 	.border-radius(3px);
 	box-shadow: none;
 	background: #444;
@@ -813,9 +854,9 @@ section.lightbox-window{
 	thead tr{
 		background: #5f5f5f;
 	}
-	input[type=text], input[type=search]{
-		background: #666;
-		border: 1px solid #888;
+	input[type=text], input[type=search] {
+		background: #494949;
+		border: 1px solid #595959;
 		color: #999;
 	}
 }

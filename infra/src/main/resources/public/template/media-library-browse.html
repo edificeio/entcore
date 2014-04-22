@@ -1,0 +1,37 @@
+<div class="row reduce-block-four">
+	<h2>Sélectionner les fichiers</h2>
+	<input type="text" placeholder="Rechercher" class="six cell" />
+	<hr />
+</div>
+<div class="row">
+	<nav class="four cell vertical">
+		<ul>
+			<li><a ng-click="">Mes documents</a></li>
+			<li><a>Documents partagés avec moi</a></li>
+			<li><a>Documents ajoutés dans les applis</a></li>
+		</ul>
+	</nav>
+	<div class="cell eight height-five">
+		<div class="absolute" ng-if="!documents.length">
+			Aucun document ne correspond à votre recherche
+		</div>
+		<div class="absolute icons-view" style="overflow: auto">
+			<div class="element reduce-block-six" ng-repeat="document in documents">
+				<div class="img container" ng-click="selectDocument(document)">
+					<div class="clip">
+						<img class="twelve cell" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+					</div>
+				</div>
+				<input type="checkbox" ng-if="multiple" />
+				<legend>
+					<a class="medium-text">[[document.title]]</a>
+					<a><strong class="small-text">[[document.ownerName]]</strong></a>
+				</legend>
+			</div>
+		</div>
+	</div>
+	<div class="row" ng-if="multiple">
+		<button class="right-magnet vertical-spacing-twice">Ajouter</button>
+	</div>
+</div>
+<div class="row"></div>

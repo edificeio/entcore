@@ -1,0 +1,10 @@
+<h2>Sélectionner les fichiers</h2>
+
+<div class="twelve cell select-file input-block">
+	<div class="hidden-content">
+		<input type="file" multiple  files-input-change="setFilesName()" ng-model="newFile.files" />
+	</div>
+	<button class="file-button" translate content="media.library.file.choose"></button>
+	<input type="text" data-ng-model="newFile.name" data-display-file />
+</div>
+<div class="row"></div>
