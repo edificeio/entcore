@@ -166,8 +166,8 @@ public class DefaultConversationService implements ConversationService {
 				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
 				"DELETE r " +
 				"WITH u, message " +
-				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder) " +
-				"WHERE c.userId = u.id AND c.active = {true} AND f.name = {inbox} " +
+				"MATCH u-[:HAS_CONVERSATION]->(c:Conversation {active:{true}})" +
+				"-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder {name:{inbox}}) " +
 				"CREATE UNIQUE f-[:HAS_CONVERSATION_MESSAGE { unread: {true} }]->message " +
 				"WITH COLLECT(c.userId) as sentIds, COLLECT(u) as users, message " +
 				"SET message.state = {sent} " +
@@ -221,10 +221,9 @@ public class DefaultConversationService implements ConversationService {
 		if (validationParamsError(user, result)) return;
 		String query =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
-				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation), " +
-				"(c2)-[:HAS_CONVERSATION_FOLDER]->(df:ConversationSystemFolder) " +
+				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)-[:HAS_CONVERSATION_FOLDER]->" +
+				"(df:ConversationSystemFolder) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND df.name = {trash} " +
-				"AND c2.userId = {userId} AND c2.active = {true}" +
 				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE { restoreFolder: f.name }]->m " +
 				"DELETE r ";
 		StatementsBuilder b = new StatementsBuilder();
@@ -244,10 +243,10 @@ public class DefaultConversationService implements ConversationService {
 		if (validationParamsError(user, result)) return;
 		String query =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
-				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation), " +
-				"(c2)-[:HAS_CONVERSATION_FOLDER]->(df:ConversationSystemFolder) " +
+				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)-[:HAS_CONVERSATION_FOLDER]->" +
+				"(df:ConversationSystemFolder) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
-				"AND c2.userId = {userId} AND c2.active = {true} AND df.name = r.restoreFolder " +
+				"AND df.name = r.restoreFolder " +
 				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE]->m " +
 				"DELETE r ";
 		StatementsBuilder b = new StatementsBuilder();
