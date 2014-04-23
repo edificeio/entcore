@@ -2063,7 +2063,7 @@ var workspace = {
 	AppDocuments: function(){
 		this.collection(workspace.Document, {
 			sync: function(){
-				http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
+				http().get('/workspace/documents', { filter: 'protected' }).done(function(documents){
 					this.load(documents);
 				}.bind(this))
 			}
