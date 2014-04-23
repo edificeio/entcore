@@ -1236,8 +1236,13 @@ public class WorkspaceService extends Controller {
 				if (user != null && user.getUserId() != null) {
 					String filter = request.params().get("filter");
 					String query = "{ ";
+					String forApplication = ", \"application\": \"" + getOrElse(request.params()
+							.get("application"), WorkspaceService.WORKSPACE_NAME) + "\"";
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
+					} else if ("protected".equals(filter)) {
+						query += "\"owner\": \"" + user.getUserId() + "\", \"protected\":true";
+						forApplication = "";
 					} else if ("shared".equals(filter)) {
 						query += "\"owner\": { \"$ne\":\"" + user.getUserId() +
 								"\"},\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
@@ -1245,14 +1250,12 @@ public class WorkspaceService extends Controller {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
-					String forApplication = getOrElse(request.params()
-							.get("application"), WorkspaceService.WORKSPACE_NAME);
+
 					if (request.params().get("hierarchical") != null) {
-						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
-								forApplication + "\", \"folder\" : { \"$exists\" : false }}";
+						query += ", \"file\" : { \"$exists\" : true }" +
+								forApplication + ", \"folder\" : { \"$exists\" : false }}";
 					} else {
-						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
-								forApplication + "\" }";
+						query += ", \"file\" : { \"$exists\" : true }" + forApplication + "}";
 					}
 					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 						@Override
