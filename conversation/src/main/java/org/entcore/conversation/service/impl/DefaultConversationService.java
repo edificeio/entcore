@@ -268,7 +268,7 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
-				"OPTIONAL MATCH message-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
+				"OPTIONAL MATCH m-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
 				"CREATE f-[:HAD_CONVERSATION_MESSAGE]->m " +
 				"DELETE r " +
 				"WITH m as message, pr " +
