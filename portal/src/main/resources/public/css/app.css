@@ -1541,6 +1541,25 @@ ul.icons-view.two-cols li.element {
 .icons-view .element em {
   display: none;
 }
+.select-file input[type=text] {
+  float: left;
+  margin-right: 0;
+  margin-top: 0;
+}
+.select-file button {
+  margin-left: 0;
+  margin-top: 0px;
+  -webkit-border-top-left-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -moz-border-top-left-radius: 0;
+  -moz-border-bottom-left-radius: 0;
+  -ms-border-top-left-radius: 0;
+  -ms-border-bottom-left-radius: 0;
+  -o-border-top-left-radius: 0;
+  -o-border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
 .tabs header {
   display: inline-block;
   padding: 6px;
@@ -2224,14 +2243,12 @@ html.print body section {
   height: 150px;
   width: 100%;
   position: relative;
-  z-index: 2;
 }
 .container .main.wrapper {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  z-index: 1;
   padding-top: 150px;
   position: absolute;
   top: 0;

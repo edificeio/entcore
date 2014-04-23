@@ -310,7 +310,6 @@ module.directive('mediaLibrary', function($compile){
 		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
 			scope.$watch('ngModel', function(newVal){
-				scope.$parent.ngModel = newVal;
 				scope.ngChange();
 			});
 		}
@@ -976,7 +975,8 @@ module.directive('htmlEditor', function($compile){
 		},
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
-			'</div><div class="clear"></div><lightbox show="selectFile"><media-library ng-model="selectedFile"></media-library></lightbox></div>',
+			'</div><div class="clear"></div><lightbox show="selectFile" on-close="selectFile = false;">' +
+			'<media-library ng-model="selectedFile.file" ng-change="addContent()"></media-library></lightbox></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -988,19 +988,45 @@ module.directive('htmlEditor', function($compile){
 				if(!attributes.fileUploadPath){
 					attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
 				}
+
 				CKEDITOR.fileUploadPath = scope.$eval(attributes.fileUploadPath);
 				var editor = element.find('[contenteditable=true]');
-				CKEDITOR.inline(editor[0]);
+				var contextEditor = CKEDITOR.inline(editor[0]);
+
 				createCKEditorInstance(editor, scope, $compile);
+
 				element.on('removed', function(){
 					setTimeout(function(){
 						ckeEditorFixedPositionning();
 					}, 0);
 				});
+
 				$('body').on('click', '.cke_button__upload', function(){
 					scope.selectFile = true;
 					scope.$apply('selectFile');
 				});
+
+				scope.selectedFile = { file: {} };
+				scope.addContent = function(){
+					if(!scope.selectedFile.file._id){
+						return;
+					}
+					var image = contextEditor.document.createElement('img');
+					image.setAttribute('src', '/workspace/document/' + scope.selectedFile.file._id);
+					contextEditor.insertElement(image);
+
+					var content = editor.html();
+					if(content.indexOf(';base64,') !== -1){
+						scope.notify.error('Une image est corrompue')
+					}
+					editor.find('img').each(function(index, item){
+						if($(item).attr('src').indexOf(';base64,') !== -1){
+							$(item).remove();
+						}
+					})
+					scope.selectFile = false;
+					scope.ngModel = editor.html();
+				};
 			}
 		}
 	}
@@ -1964,22 +1990,144 @@ function Widgets($scope, model, lang, date){
 	$scope.translate = lang.translate;
 }
 
+var workspace = {
+	Document: function(){
+
+	},
+	Folder: function(data){
+		this.updateData(data);
+
+		this.collection(workspace.Folder, {
+			sync: function(){
+				this.load(_.filter(model.mediaLibrary.myDocuments.folders.list, function(folder){
+					return folder.folder.indexOf(data.folder + '_') !== -1;
+				}));
+			}
+		});
+
+		this.collection(workspace.Document,  {
+			sync: function(){
+				http().get('/workspace/documents/' + data.folder, { filter: 'owner', hierarchical: true }).done(function(documents){
+					this.load(documents);
+				}.bind(this));
+			}
+		});
+
+		this.closeFolder = function(){
+			this.folders.all = [];
+		}
+
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	MyDocuments: function(){
+		this.collection(workspace.Folder, {
+			sync: function(){
+				if(model.me.workflow.workspace.documents.create){
+					http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
+						this.list = data;
+						this.load(_.filter(data, function(folder){
+							return folder.folder.indexOf('_') === -1;
+						}))
+					}.bind(this));
+				}
+			},
+			list: []
+		});
+
+		this.collection(workspace.Document,  {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'owner', hierarchical: true }).done(function(documents){
+					this.load(documents);
+				}.bind(this))
+			}
+		});
+
+		this.on('folders.sync, documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	SharedDocuments: function(){
+		this.collection(workspace.Document,  {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
+					this.load(documents);
+				}.bind(this))
+			}
+		});
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	AppDocuments: function(){
+		this.collection(workspace.Document, {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
+					this.load(documents);
+				}.bind(this))
+			}
+		});
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	}
+};
+
 function MediaLibrary($scope){
+	model.makeModels(workspace);
+	model.mediaLibrary = new Model();
+	model.mediaLibrary.myDocuments = new workspace.MyDocuments();
+	model.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
+	model.mediaLibrary.appDocuments = new workspace.AppDocuments();
+
+	model.me.workflow.load(['workspace']);
+
+	$scope.myDocuments = model.mediaLibrary.myDocuments;
+
 	$scope.display = {
-		show: 'upload',
-		path: '/public/template/media-library-upload.html'
+		show: 'browse',
+		listFrom: 'appDocuments'
 	};
 
 	$scope.show = function(tab){
 		$scope.display.show = tab;
 	};
 
-	http().get('/workspace/documents?filter=owner').done(function(data){
-		$scope.documents = _.filter(data, function(document){
+	$scope.listFrom = function(listName){
+		$scope.display.listFrom = listName;
+		model.mediaLibrary[listName].sync();
+	};
+
+	$scope.openFolder = function(folder){
+		if($scope.openedFolder.closeFolder && folder.folder.indexOf($scope.openedFolder.folder + '_') === -1){
+			$scope.openedFolder.closeFolder();
+		}
+
+		$scope.openedFolder = folder;
+		folder.sync();
+		folder.on('sync', function(){
+			$scope.documents = folder.documents.all;
+			$scope.$apply('documents');
+			$scope.$apply('folders');
+		});
+	}
+
+	model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync', function(){
+		$scope.documents = model.mediaLibrary[$scope.display.listFrom].documents.filter(function(document){
 			return document.metadata['content-type'].indexOf('image') !== -1;
 		});
+		$scope.folder = model.mediaLibrary[$scope.display.listFrom];
+		$scope.openedFolder = $scope.folder;
 		$scope.$apply('documents');
 	});
+
+	if(model.me.workflow.workspace.documents.create){
+		$scope.listFrom('appDocuments')
+	}
+	else{
+		$scope.listFrom('sharedDocuments')
+	}
 
 	$scope.selectDocument = function(document){
 		$scope.$parent.ngModel = document;
@@ -1992,5 +2140,5 @@ function MediaLibrary($scope){
 
 	$scope.duplicateFile = function(){
 
-	}
+	};
 }

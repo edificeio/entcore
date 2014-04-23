@@ -2,7 +2,8 @@
 	<h2>Recherche de documents</h2>
 	<section class="twelve cell tabs row">
 		<header ng-class="{ selected: display.show === 'upload' }"
-				ng-click="show('upload')">
+				ng-click="show('upload')"
+				workflow="workspace.documents.create">
 			Charger un document
 		</header>
 		<header

@@ -43,6 +43,9 @@
 			border-color: #555;
 			color: #777;
 		}
+		a.selected{
+			background: #353535;
+		}
 		a:hover{
 			background: #555;
 			color: #999;
@@ -80,7 +83,7 @@
 
 .select-file{
 	input[type=text]{
-		height: 28px;
+		height: 24px;
 	}
 }
 
@@ -334,6 +337,7 @@ a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:h
 	color: #AAA;
 	background: #ddd;
 	border: 1px solid #ccc;
+	cursor: default;
 }
 
 .contextual-editor{
@@ -841,6 +845,10 @@ section.lightbox-window{
 	border-radius: 0;
 	h1, h2, h3, h4, h5{
 		color: #AAA;
+	}
+	a:hover{
+		color: #ccc;
+		.run-transition(background);
 	}
 	.line{
 		border: 0;

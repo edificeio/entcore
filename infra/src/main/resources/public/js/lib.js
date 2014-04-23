@@ -286,7 +286,7 @@ function Collection(obj){
 
 (function(){
 	function pluralizeName(obj){
-		return obj.name[0].toLowerCase() + obj.name.substr(1) + 's';
+		return (obj.name[0].toLowerCase() || obj._name[0].toLowerCase()) + obj.name.substr(1) + 's';
 	}
 
 	Collection.prototype = {
@@ -411,10 +411,12 @@ function Collection(obj){
 			}
 			this.model.trigger(pluralizeName(this.obj) + '.change');
 			this.trigger('change');
+			this.trigger('push');
 		},
 		load: function(data, cb, notify){
 			this.all = [];
 			this.addRange(data, cb, notify);
+			this.trigger('sync');
 		},
 		empty: function(){
 			return this.all.length === 0;
@@ -464,19 +466,22 @@ function Collection(obj){
 		}());
 	}
 
-	Model.prototype.makeModel = function(fn, methods){
+	Model.prototype.makeModel = function(fn, methods, namespace){
+		if(!namespace){
+			namespace = window;
+		}
 		// this cryptic code is meant to :
 		// 1. make the instances of the constructor answer true to both instanceof ctr and instanceof Model
 		// 2. force ctr to run Model constructor before itself
 		// 3. apply name prop, which misses in IE (even modern versions)
 		// 4. extend fn prototype with whatever functions the user sent
-		if(!fn.name){
+		if(fn.name === undefined){
 			// grabs function name from function string
 			fn.name = fn.toString().match(/^function\s*([^\s(]+)/)[1];
 		}
 		// overwrites user ctr with a version calling parent ctr
 		// fn is passed as parameter to keep its written behaviour
-		var ctr = new Function("fn", "return function " + fn.name + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
+		var ctr = new Function("fn", "return function " + (fn.name || fn._name) + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
 		ctr.prototype = Object.create(Model.prototype);
 		ctr.name = fn.name;
 
@@ -488,13 +493,25 @@ function Collection(obj){
 			ctr.prototype[prop] = fn.prototype[prop];
 		}
 		// overwrites fn with custom ctr
-		window[ctr.name] = ctr;
+		namespace[(ctr.name || ctr._name)] = ctr;
 	};
 
 	Model.prototype.makeModels = function(constructors){
-		constructors.forEach(function(item){
-			this.makeModel(item);
-		}.bind(this));
+		if(!(constructors instanceof Array)){
+			for(var ctr in constructors){
+				if(constructors.hasOwnProperty(ctr)){
+					if(ctr[0] === ctr.toUpperCase()[0]){
+						constructors[ctr]._name = ctr;
+						this.makeModel(constructors[ctr], {}, constructors);
+					}
+				}
+			}
+		}
+		else{
+			constructors.forEach(function(item){
+				this.makeModel(item);
+			}.bind(this));
+		}
 	};
 
 	Model.prototype.collection = function(obj, methods){

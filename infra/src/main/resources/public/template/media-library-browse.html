@@ -1,3 +1,11 @@
+<script type="text/ng-template" id="list-folders">
+	<li ng-repeat="folder in folder.folders.all">
+		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder }">[[folder.name]]</a>
+		<ul ng-include="'list-folders'">
+		</ul>
+	</li>
+</script>
+
 <div class="row reduce-block-four">
 	<h2>Sélectionner les fichiers</h2>
 	<input type="text" placeholder="Rechercher" class="six cell" />
@@ -6,13 +14,23 @@
 <div class="row">
 	<nav class="four cell vertical">
 		<ul>
-			<li><a ng-click="">Mes documents</a></li>
-			<li><a>Documents partagés avec moi</a></li>
-			<li><a>Documents ajoutés dans les applis</a></li>
+			<li workflow="workspace.documents.create">
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: openedFolder === myDocuments }">Mes documents</a>
+				<div>
+					<ul ng-include="'list-folders'">
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }">Documents partagés avec moi</a>
+			</li>
+			<li workflow="workspace.documents.create">
+				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }">Documents ajoutés dans les applis</a>
+			</li>
 		</ul>
 	</nav>
 	<div class="cell eight height-five">
-		<div class="absolute" ng-if="!documents.length">
+		<div class="absolute" ng-if="!documents.length" style="text-align: center">
 			Aucun document ne correspond à votre recherche
 		</div>
 		<div class="absolute icons-view" style="overflow: auto">

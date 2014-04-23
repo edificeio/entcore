@@ -1484,6 +1484,8 @@ ul.icons-view.two-cols li.element {
   box-sizing: border-box;
   float: left;
   display: block;
+  height: 192px;
+  overflow: hidden;
   width: 145px;
   margin: 2px;
   position: relative;
@@ -2147,6 +2149,7 @@ span.no-style {
 }
 .cke_float.cke_chrome {
   box-shadow: none;
+  z-index: 9 !important;
 }
 .cke_float.cke_chrome .cke_inner {
   background: #F6F6F6;
@@ -2246,14 +2249,12 @@ html.print body section {
   height: 40px;
   width: 100%;
   position: relative;
-  z-index: 2;
 }
 .container .main.wrapper {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  z-index: 1;
   padding-top: 40px;
   position: absolute;
   top: 0;
@@ -2351,6 +2352,9 @@ html.app body {
   border-color: #555;
   color: #777;
 }
+.lightbox-window nav.vertical a.selected {
+  background: #353535;
+}
 .lightbox-window nav.vertical a:hover {
   background: #555;
   color: #999;
@@ -2393,7 +2397,7 @@ html.app body {
   color: #008cba;
 }
 .select-file input[type=text] {
-  height: 28px;
+  height: 24px;
 }
 i[role=send-mail] {
   height: 24px;
@@ -2860,6 +2864,7 @@ input[type=submit][disabled]:hover {
   color: #AAA;
   background: #ddd;
   border: 1px solid #ccc;
+  cursor: default;
 }
 .contextual-editor {
   -webkit-box-sizing: border-box;
@@ -3364,6 +3369,13 @@ section.lightbox-window h3,
 section.lightbox-window h4,
 section.lightbox-window h5 {
   color: #AAA;
+}
+section.lightbox-window a:hover {
+  color: #ccc;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 section.lightbox-window .line {
   border: 0;

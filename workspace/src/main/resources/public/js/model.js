@@ -60,6 +60,16 @@ function SharedDocuments(){
 	});
 }
 
+function AppDocuments(){
+	this.collection(Document, {
+		sync: function(){
+			http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
+				this.load(documents);
+			})
+		}
+	})
+}
+
 function Rack(){
 	this.collection(User, {
 		sync: function(){

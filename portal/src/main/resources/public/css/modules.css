@@ -1481,6 +1481,8 @@ ul.icons-view.two-cols li.element {
   box-sizing: border-box;
   float: left;
   display: block;
+  height: 192px;
+  overflow: hidden;
   width: 145px;
   margin: 2px;
   position: relative;
@@ -2144,6 +2146,7 @@ span.no-style {
 }
 .cke_float.cke_chrome {
   box-shadow: none;
+  z-index: 9 !important;
 }
 .cke_float.cke_chrome .cke_inner {
   background: #F6F6F6;
