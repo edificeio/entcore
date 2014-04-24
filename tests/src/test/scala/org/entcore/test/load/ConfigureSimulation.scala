@@ -1,15 +1,9 @@
 package org.entcore.test.load
 
 import io.gatling.core.Predef._
-import io.gatling.core.session.Expression
 import io.gatling.http.Predef._
-import io.gatling.jdbc.Predef._
-import io.gatling.http.Headers.Names._
-import io.gatling.http.Headers.Values._
-import scala.concurrent.duration._
 import bootstrap._
-import assertions._
-import net.minidev.json.{JSONArray, JSONObject, JSONValue}
+import net.minidev.json.{JSONObject, JSONValue}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
@@ -42,7 +36,11 @@ class ConfigureSimulation extends Simulation {
         }
       }).saveAs("rolesIds")))
     .foreach("${schoolsIds}", "schoolId") {
-    exec(http("Find profile groups with roles")
+    exec(http("Apply default communication rules")
+      .put("/communication/rules/${schoolId}")
+      .header("Content-Length", "0"))
+      .pause(5)
+    .exec(http("Find profile groups with roles")
     .get("""/appregistry/groups/roles?schoolId=${schoolId}""")
     .check(status.is(200), jsonPath("status").is("ok"),
       jsonPath("$.result").find.transform(_.map{res =>
