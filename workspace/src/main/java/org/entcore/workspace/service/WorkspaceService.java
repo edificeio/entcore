@@ -888,6 +888,7 @@ public class WorkspaceService extends Controller {
 							final JsonObject dest = orig.copy();
 							String now = MongoDb.formatDate(new Date());
 							dest.removeField("_id");
+							dest.removeField("protected");
 							if (owner != null) {
 								dest.putString("owner", owner);
 								dest.putString("ownerName", dest.getString("toName"));
@@ -980,6 +981,7 @@ public class WorkspaceService extends Controller {
 					final JsonObject dest = orig.copy();
 					String now = MongoDb.formatDate(new Date());
 					dest.removeField("_id");
+					dest.removeField("protected");
 					if (owner != null) {
 						dest.putString("owner", owner);
 						dest.putString("ownerName", dest.getString("toName"));
