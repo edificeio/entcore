@@ -89,23 +89,25 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
-									String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
-									neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> message) {
-											JsonArray ids = message.body().getArray("result", new JsonArray());
-											if ("ok".equals(message.body().getString("status")) && ids != null &&
-													ids.size() == 1) {
-												JsonObject j = new JsonObject()
-														.putString("action", "setMultipleDefaultCommunicationRules")
-														.putArray("schoolIds", ((JsonObject) ids.get(0))
-																.getArray("ids", new JsonArray()));
-												eb.send("wse.communication", j);
-											} else {
-												logger.error(message.body().getString("message"));
-											}
-										}
-									});
+									if (config.getBoolean("apply-communication-rules", false)) {
+										String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
+										neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> message) {
+												JsonArray ids = message.body().getArray("result", new JsonArray());
+												if ("ok".equals(message.body().getString("status")) && ids != null &&
+														ids.size() == 1) {
+													JsonObject j = new JsonObject()
+															.putString("action", "setMultipleDefaultCommunicationRules")
+															.putArray("schoolIds", ((JsonObject) ids.get(0))
+																	.getArray("ids", new JsonArray()));
+													eb.send("wse.communication", j);
+												} else {
+													logger.error(message.body().getString("message"));
+												}
+										 }
+										});
+									}
 									sendOK(message);
 								} else if (m != null) {
 									logger.error(m.body().getString("message"));
