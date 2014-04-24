@@ -1,7 +1,21 @@
 ONE : Notes de versions
 =======================
 
-# v1.5.1
+# v1.5.2 (27/03/2014)
+
+## Améliorations mineures
+
+* \#1082: Déclinaison du thème sélectionné par défaut
+* \#1083: Notification d'erreur après import d'un fichier non conforme
+* \#1084: [Oss] ajouter un message de bienvenue dans la boite de l'enseignant
+* \#1087: Gestion de l'ajout de fragment html d'intégration Video dans CK editor
+* \#1092: [Auth] Validation d'une charte d'utilisation à l'activation des comptes
+* \#1094: [Espace documentaire] Fichiers en .xls non reconnus comme des éléments de type tableur
+
+## Anomalies corrigées
+* \#1110: La liste des messages est parfois longue à charger
+
+# v1.5.1 (13/03/2014)
 
 ## Améliorations mineures
 
@@ -18,7 +32,7 @@ ONE : Notes de versions
 * \#1019 : [Messagerie] création de l'utilisateur après la création des rôles de la classe
 * \#1020 : [Administration] Correction du modèles des applications configurées par défaut
 
-# v1.5.0
+# v1.5.0 (19/02/2014)
 
 ## Administration de la classe
 
@@ -57,7 +71,7 @@ ONE : Notes de versions
 * \#895	Bloquer la connexion pour un utilisateur
 * \#904	Authentifier directement les utilisateurs après l'activation
 
-# v1.4.0
+# v1.4.0 (15/01/2014)
 
 ## Messagerie
 
@@ -97,11 +111,11 @@ ONE : Notes de versions
 * \#749 [registre d'application] Broadcaster un message lors de la modification des habilitations associées à un groupe de profil
 * \#754 [registre d'application] Collecter la liste des utilisateurs ou des groupes qui ont accès à mon application
 
-# v1.3.0-neo4j2
+# v1.3.0-neo4j2 (18/12/2013)
 
 * Migration de la base données neo4j de la version 1.9.2 à 2.0.0
 
-# v1.3.0
+# v1.3.0 (10/12/2014)
 
 ## Activation et connexion
 
@@ -145,13 +159,13 @@ ONE : Notes de versions
 
 * \#676 [alimentation] Supprimer tous les envois à wordpress
 
-# v1.2.1
+# v1.2.1 (04/12/2013)
 
 ## Widgets
 
 * Calendrier : Correction de la boucle infinie qui se produisait au mois de décembre.
 
-# v1.2.0
+# v1.2.0 (19/11/2013)
 
 ## Portail
 
@@ -196,7 +210,7 @@ ONE : Notes de versions
 * [infra] \#179 : Ecriture d'module vertx de redimensionnement d'image basé sur _org.imgscalr_
 * [test] Test d'intégration et performance. Ecriture de simulations Gatlin pour  : AppRegistry, Auth, Blog, Directory, Import
 
-# v1.1.0
+# v1.1.0 (30/10/2013)
 
 ## Blog
 
@@ -216,7 +230,7 @@ ONE : Notes de versions
 * [infra] \#211: Sortir les librairies utilitaires pour vertx dans un dépôt séparé
 * [dictionnaire des données] \#344:  pourvoir charger des fichiers ressource depuis le classpath
 
-# v1.0.0
+# v1.0.0 (28/09/2013)
 
 ## Console d’administration
 
