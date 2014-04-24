@@ -303,14 +303,31 @@ module.directive('mediaLibrary', function($compile){
 		restrict: 'E',
 		scope: {
 			ngModel: '=',
-			type: '@',
 			ngChange: '&',
-			multiple: '&'
+			multiple: '=',
+			fileFormat: '='
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
+			scope.upload = {
+				loading: []
+			};
+
 			scope.$watch('ngModel', function(newVal){
 				scope.ngChange();
+				scope.upload = {
+					loading: []
+				};
+			});
+
+			scope.$watch('fileFormat', function(newVal){
+				console.log(newVal);
+			})
+
+			$('body').on('click', '.lightbox-backdrop', function(){
+				scope.upload = {
+					loading: []
+				};
 			});
 		}
 	}
@@ -322,12 +339,13 @@ module.directive('mediaSelect', function($compile){
 		transclude: true,
 		scope: {
 			ngModel: '=',
+			multiple: '=',
 			ngChange: '&',
 			type: '@'
 		},
 		template: '<div><input type="button" ng-transclude class="pick-file" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
-						'<media-library ng-change="updateDocument()" ng-model="selectedFile"></media-library>' +
+						'<media-library ng-change="updateDocument()" ng-model="selectedFile" multiple="multiple"></media-library>' +
 					'</lightbox>' +
 				  '</div>',
 		link: function(scope, element, attributes){
@@ -975,8 +993,9 @@ module.directive('htmlEditor', function($compile){
 		},
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
-			'</div><div class="clear"></div><lightbox show="selectFile" on-close="selectFile = false;">' +
-			'<media-library ng-model="selectedFile.file" ng-change="addContent()"></media-library></lightbox></div>',
+			'</div><div class="clear"></div><lightbox show="selectFiles" on-close="selectFiles = false;">' +
+			'<media-library ng-model="selectedFiles.files" ng-change="addContent()" multiple="true" file-format="format">' +
+			'</media-library></lightbox></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -1002,30 +1021,53 @@ module.directive('htmlEditor', function($compile){
 				});
 
 				$('body').on('click', '.cke_button__upload', function(){
-					scope.selectFile = true;
-					scope.$apply('selectFile');
+					scope.selectFiles = true;
+					scope.format = 'img';
+					scope.$apply('selectFiles');
+					scope.$apply('format');
 				});
 
-				scope.selectedFile = { file: {} };
-				scope.addContent = function(){
-					if(!scope.selectedFile.file._id){
-						return;
-					}
-					var image = contextEditor.document.createElement('img');
-					image.setAttribute('src', '/workspace/document/' + scope.selectedFile.file._id);
-					contextEditor.insertElement(image);
+				$('body').on('click', '.cke_button__audio', function(){
+					scope.selectFiles = true;
+					scope.format = 'audio';
+					scope.$apply('selectFiles');
+					scope.$apply('format');
+				});
 
-					var content = editor.html();
-					if(content.indexOf(';base64,') !== -1){
-						scope.notify.error('Une image est corrompue')
-					}
-					editor.find('img').each(function(index, item){
-						if($(item).attr('src').indexOf(';base64,') !== -1){
-							$(item).remove();
+				scope.selectedFiles = { files: [] };
+				scope.addContent = function(){
+					scope.selectedFiles.files.forEach(function(file){
+						if(!file._id){
+							return;
 						}
-					})
-					scope.selectFile = false;
-					scope.ngModel = editor.html();
+
+						if(scope.format === 'img'){
+							var image = contextEditor.document.createElement('img');
+							image.setAttribute('src', '/workspace/document/' + file._id);
+							contextEditor.insertElement(image);
+						}
+						if(scope.format === 'audio'){
+							var sound = contextEditor.document.createElement('audio');
+
+							sound.setAttribute('src', '/workspace/document/' + file._id);
+							sound.setAttribute('controls', 'controls');
+
+							contextEditor.insertElement(sound);
+						}
+
+						var content = editor.html();
+						if(content.indexOf(';base64,') !== -1){
+							scope.notify.error('Une image est corrompue')
+						}
+						editor.find('img').each(function(index, item){
+							if($(item).attr('src').indexOf(';base64,') !== -1){
+								$(item).remove();
+							}
+						})
+
+						scope.ngModel = editor.html();
+					});
+					scope.selectFiles = false;
 				};
 			}
 		}
@@ -1991,8 +2033,68 @@ function Widgets($scope, model, lang, date){
 }
 
 var workspace = {
-	Document: function(){
+	Document: function(data){
+		if(data.metadata){
+			var dotSplit = data.metadata.filename.split('.');
+			if(dotSplit.length > 1){
+				dotSplit.length = dotSplit.length - 1;
+			}
+			this.title = dotSplit.join('.');
+		}
 
+		this.protectedDuplicate = function(callback){
+			var document = this;
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/workspace/document/' + this._id, true);
+			xhr.responseType = 'blob';
+			xhr.onload = function(e) {
+				if (this.status == 200) {
+					var blobDocument = this.response;
+					var formData = new FormData();
+					formData.append('file', blobDocument, document.metadata.filename);
+					http().postFile('/workspace/document?protected=true&application=media-library&thumbnail=120x120', formData).done(function(data){
+						if(typeof callback === 'function'){
+							callback(new workspace.Document(data));
+						}
+					});
+				}
+			};
+			xhr.send();
+		};
+
+		this.role = function(){
+			var types = {
+				'doc': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+				},
+				'xls': function(type){
+					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
+				},
+				'img': function(type){
+					return type.indexOf('image') !== -1;
+				},
+				'pdf': function(type){
+					return type.indexOf('pdf') !== -1;
+				},
+				'ppt': function(type){
+					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
+				},
+				'video': function(type){
+					return type.indexOf('video') !== -1;
+				},
+				'audio': function(type){
+					return type.indexOf('audio') !== -1;
+				}
+			};
+
+			for(var type in types){
+				if(types[type](this.metadata['content-type'])){
+					return type;
+				}
+			}
+
+			return 'unknown';
+		}
 	},
 	Folder: function(data){
 		this.updateData(data);
@@ -2064,7 +2166,9 @@ var workspace = {
 		this.collection(workspace.Document, {
 			sync: function(){
 				http().get('/workspace/documents', { filter: 'protected' }).done(function(documents){
-					this.load(documents);
+					this.load(_.filter(documents, function(doc){
+						return doc.folder !== 'Trash';
+					}));
 				}.bind(this))
 			}
 		});
@@ -2072,6 +2176,14 @@ var workspace = {
 			this.trigger('sync');
 		}.bind(this));
 	}
+};
+
+workspace.Document.prototype.upload = function(file, requestName){
+	var formData = new FormData();
+	formData.append('file', file, file.name);
+	http().postFile('/workspace/document?protected=true&thumbnail=120x120&application=media-library', formData, { requestName: requestName }, function(data){
+
+	});
 };
 
 function MediaLibrary($scope){
@@ -2087,11 +2199,13 @@ function MediaLibrary($scope){
 
 	$scope.display = {
 		show: 'browse',
-		listFrom: 'appDocuments'
+		listFrom: 'appDocuments',
+		search: ''
 	};
 
 	$scope.show = function(tab){
 		$scope.display.show = tab;
+		$scope.upload.loading = [];
 	};
 
 	$scope.listFrom = function(listName){
@@ -2107,16 +2221,34 @@ function MediaLibrary($scope){
 		$scope.openedFolder = folder;
 		folder.sync();
 		folder.on('sync', function(){
-			$scope.documents = folder.documents.all;
+			$scope.documents = filteredDocuments(folder);
+			$scope.folders = folder.folders.all;
 			$scope.$apply('documents');
 			$scope.$apply('folders');
 		});
 	}
 
-	model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync', function(){
-		$scope.documents = model.mediaLibrary[$scope.display.listFrom].documents.filter(function(document){
-			return document.metadata['content-type'].indexOf('image') !== -1;
+	$scope.$watch('fileFormat', function(newVal){
+		$scope.documents = filteredDocuments(model.mediaLibrary[$scope.display.listFrom]);
+		$scope.openedFolder = model.mediaLibrary[$scope.display.listFrom];
+	});
+
+	function filteredDocuments(source){
+		return source.documents.filter(function(doc){
+			return doc.role() === $scope.fileFormat &&
+				lang.removeAccents(doc.metadata.filename.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
 		});
+	}
+
+	model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync', function(){
+		$scope.documents = filteredDocuments(model.mediaLibrary[$scope.display.listFrom]);
+		if(model.mediaLibrary[$scope.display.listFrom].folders){
+			$scope.folders = model.mediaLibrary[$scope.display.listFrom].folders.filter(function(folder){
+				return lang.removeAccents(folder.name.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
+			});
+			$scope.$apply('folders');
+		}
+
 		$scope.folder = model.mediaLibrary[$scope.display.listFrom];
 		$scope.openedFolder = $scope.folder;
 		$scope.$apply('documents');
@@ -2130,15 +2262,71 @@ function MediaLibrary($scope){
 	}
 
 	$scope.selectDocument = function(document){
-		$scope.$parent.ngModel = document;
+		if($scope.folder === model.mediaLibrary.appDocuments){
+			if($scope.multiple){
+				$scope.$parent.ngModel = [document];
+			}
+			else{
+				$scope.$parent.ngModel = document;
+			}
+		}
+		else{
+			document.protectedDuplicate(function(newFile){
+
+				if($scope.multiple){
+					$scope.$parent.ngModel = [newFile];
+					$scope.$parent.$apply('ngModel');
+				}
+				else{
+					$scope.$parent.ngModel = newFile;
+					$scope.$parent.$apply('ngModel');
+				}
+			});
+		}
 	};
 
-	$scope.upload = {};
-	$scope.uploadFiles = function(){
-
+	$scope.selectDocuments = function(){
+		var selectedDocuments = _.where($scope.documents, { selected: true });
+		if($scope.folder === model.mediaLibrary.appDocuments){
+			$scope.$parent.ngModel = selectedDocuments;
+		}
+		else{
+			var duplicateDocuments = [];
+			var documentsCount = 0;
+			selectedDocuments.forEach(function(doc){
+				doc.protectedDuplicate(function(newFile){
+					duplicateDocuments.push(newFile);
+					documentsCount++;
+					if(documentsCount === selectedDocuments.length){
+						$scope.$parent.ngModel = duplicateDocuments;
+						$scope.$parent.$apply('ngModel');
+					}
+				})
+			})
+		}
 	};
 
-	$scope.duplicateFile = function(){
-
+	$scope.setFilesName = function(){
+		for(var i = 0; i < $scope.upload.files.length; i++){
+			if(i > 0){
+				$scope.upload.names += ', '
+			}
+			$scope.upload.names += $scope.upload.files[i].name;
+		}
 	};
+
+	$scope.importFiles = function(){
+		for(var i = 0; i < $scope.upload.files.length; i++){
+			$scope.upload.loading.push($scope.upload.files[i]);
+			workspace.Document.prototype.upload($scope.upload.files[i], 'file-upload-' + $scope.upload.files[i].name + '-' + i, function(){
+				model.mediaLibrary.appDocuments.documents.sync();
+			});
+		}
+		$scope.upload.files = undefined;
+		$scope.upload.names = '';
+	};
+
+	$scope.updateSearch = function(){
+		$scope.documents = filteredDocuments($scope.openedFolder);
+	}
 }

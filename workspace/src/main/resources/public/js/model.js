@@ -26,50 +26,6 @@ function Folder(data){
 	});
 }
 
-function MyDocuments(){
-	this.collection(Folder, {
-		sync: function(){
-			if(model.me.workflow.workspace.documents.create){
-				http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
-					this.list = data;
-					this.load(_.filter(data, function(folder){
-						return folder.folder.indexOf('_') === -1;
-					}))
-				}.bind(this));
-			}
-		},
-		list: []
-	});
-
-	this.collection(Document,  {
-		sync: function(){
-			http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
-				this.load(documents);
-			})
-		}
-	});
-}
-
-function SharedDocuments(){
-	this.collection(Document,  {
-		sync: function(){
-			http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
-				this.load(documents);
-			})
-		}
-	});
-}
-
-function AppDocuments(){
-	this.collection(Document, {
-		sync: function(){
-			http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
-				this.load(documents);
-			})
-		}
-	})
-}
-
 function Rack(){
 	this.collection(User, {
 		sync: function(){
@@ -80,13 +36,21 @@ function Rack(){
 	})
 }
 
+function Trash(){
+
+}
 
 model.build = function(){
-	this.makeModels([User, Folder, Document, MyDocuments, SharedDocuments, Rack]);
-	model.me.workflow.load(['workspace']);
+	this.makeModels([User, Rack]);
+	this.makeModels(workspace);
+
+	this.me.workflow.load(['workspace']);
+
+	this.mediaLibrary = new Model();
+	this.mediaLibrary.myDocuments = new workspace.MyDocuments();
+	this.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
+	this.mediaLibrary.appDocuments = new workspace.AppDocuments();
 
 	this.rack = new Rack();
-	this.myDocuments = new MyDocuments();
-	this.shared = new SharedDocuments();
-	this.trash = new Folder();
+	this.trash = new Trash();
 };

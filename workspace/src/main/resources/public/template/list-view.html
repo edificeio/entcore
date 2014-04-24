@@ -49,7 +49,7 @@
 		<td><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 		<td>[[longDate(document.created)]]</td>
 	</tr>
-	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }">
+	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }" ng-show="document === selectedDocuments()[0] && document.showComments">
 		<td colspan="6" class="container-cell">
 
 			<section class="row text-container" ng-if="document === selectedDocuments()[0] && document.showComments">

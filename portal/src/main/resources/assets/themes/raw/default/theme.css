@@ -3351,6 +3351,16 @@ input[type=password] {
   font-family: Lato;
   font-size: 14px;
 }
+.warning {
+  background: #444;
+  color: #aaa;
+  border-left: 10px solid #ff0b75;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  -ms-border-radius: 0px;
+  -o-border-radius: 0px;
+  border-radius: 0px;
+}
 section.lightbox-window {
   border: 5px solid #555;
   -webkit-border-radius: 3px;
@@ -3390,7 +3400,8 @@ section.lightbox-window thead tr {
   background: #5f5f5f;
 }
 section.lightbox-window input[type=text],
-section.lightbox-window input[type=search] {
+section.lightbox-window input[type=search],
+section.lightbox-window textarea {
   background: #494949;
   border: 1px solid #595959;
   color: #999;
@@ -3475,11 +3486,24 @@ i[role=unknown-large],
 i[role=xls-large],
 i[role=ppt-large],
 i[role=pdf-large],
-i[role=video-large],
-i[role=audio-large] {
+i[role=video-large] {
   height: 135px;
   width: 135px;
   background-image: url("../img/icons/unknown-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+i[role=audio-large] {
+  height: 135px;
+  width: 135px;
+  background-image: url("../img/icons/audio.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;

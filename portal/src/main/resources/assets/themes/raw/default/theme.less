@@ -836,6 +836,13 @@ input[type=text], input[type=search], input[type=password]{
 	font-size: 14px;
 }
 
+.warning{
+	background: #444;
+	color: #aaa;
+	border-left: 10px solid @pink;
+	.border-radius(0px);
+}
+
 section.lightbox-window{
 	border: 5px solid #555;
 	.border-radius(3px);
@@ -862,7 +869,7 @@ section.lightbox-window{
 	thead tr{
 		background: #5f5f5f;
 	}
-	input[type=text], input[type=search] {
+	input[type=text], input[type=search], textarea {
 		background: #494949;
 		border: 1px solid #595959;
 		color: #999;
@@ -952,8 +959,12 @@ article.selected{
 	}
 }
 
-i[role=unknown-large], i[role=xls-large], i[role=ppt-large], i[role=pdf-large], i[role=video-large], i[role=audio-large]{
+i[role=unknown-large], i[role=xls-large], i[role=ppt-large], i[role=pdf-large], i[role=video-large]{
 	.icon(unknown-large, 135px);
+}
+
+i[role=audio-large]{
+	.icon(audio, 135px);
 }
 
 i[role=folder-large]{

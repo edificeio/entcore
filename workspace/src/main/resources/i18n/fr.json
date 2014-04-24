@@ -84,5 +84,6 @@
 	"files.select.please": "Veuillez sélectionner un document",
 	"files.header": "Charger plusieurs fichiers",
 	"share.me":"Moi",
-	"comments": "[[document.comments.length]] commentaire(s)"
+	"comments": "[[document.comments.length]] commentaire(s)",
+	"appDocuments": "Documents ajoutés dans les applis"
 }

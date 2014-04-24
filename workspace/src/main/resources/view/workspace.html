@@ -29,7 +29,6 @@
 	</head>
 	<body data-ng-controller="Workspace">
 	<portal>
-
 		<div class="row">
 			<section class="four cell">
 				<h1><a data-reload><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
@@ -60,7 +59,6 @@
 				<article data-ng-include="currentViews.documents" class="row toggle-bottom-spacer"></article>
 			</section>
 		</div>
-
 		<div class="clear"></div>
 	</portal>
 	<section class="lightbox-window five cell" loading-panel="file-upload">
@@ -82,11 +80,11 @@
 				</div>
 				<button ng-click="openShareView(selectedDocuments()[0])"
 						translate key="workspace.share"
-						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share')"
+						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share') && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						ng-class="{ cell: true }">
 				</button>
 				<button ng-click="openCommentView(selectedDocuments()[0])"
-						ng-if="selectedDocuments()[0].myRights.comment.post"
+						ng-if="selectedDocuments()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						translate key="workspace.document.comment"
 						ng-class="{ cell: true, hide: selectedDocuments().length > 1 }">
 				</button>
