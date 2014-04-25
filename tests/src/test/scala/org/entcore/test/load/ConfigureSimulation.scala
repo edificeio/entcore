@@ -3,7 +3,7 @@ package org.entcore.test.load
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import bootstrap._
-import net.minidev.json.{JSONObject, JSONValue}
+import net.minidev.json.{JSONArray, JSONObject, JSONValue}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
@@ -25,6 +25,34 @@ class ConfigureSimulation extends Simulation {
     .check(status.is(200), jsonPath("status").is("ok"),
       jsonPath("$.result..id").findAll.saveAs("schoolsIds"),
       jsonPath("$.result..name").findAll.saveAs("schoolsNames")))
+    .exec(http("Find workflow habilitations")
+    .get("""/appregistry/applications/actions?actionType=WORKFLOW""")
+    .check(status.is(200), jsonPath("status").is("ok"),
+      jsonPath("$.result").find.transform(_.map{res =>
+        val json = JSONValue.parse(res).asInstanceOf[JSONObject]
+        json.values.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
+          val app = c.asInstanceOf[JSONObject]
+          lazy val actions: List[String] = app.get("actions").asInstanceOf[JSONArray].asScala.toList.map(
+            _.asInstanceOf[JSONArray].get(0).asInstanceOf[String]
+          )
+          app.get("name").asInstanceOf[String] match {
+            case "Espace documentaire" =>
+              val r = List("workspace-all", actions.mkString(","))
+              r :: acc
+            case "Messagerie" =>
+              val r = List("conversation-all", actions.mkString(","))
+              r :: acc
+            case _ => acc
+          }
+        }
+      }).saveAs("roles")))
+    .foreach("${roles}", "role") {
+      exec(http("Create role ${role(0)}")
+        .post("""/appregistry/role""")
+        .param("""role""", """${role(0)}""")
+        .param("""actions""", """${role(1)}""")
+        .check(status.is(200), jsonPath("status").is("ok")))
+    }
     .exec(http("Find roles")
     .get("""/appregistry/roles""")
     .check(status.is(200), jsonPath("status").is("ok"),
