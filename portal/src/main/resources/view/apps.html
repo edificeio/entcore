@@ -12,19 +12,20 @@
 				<h1><i role="apps"></i>{{#i18n}}portal.header.navigation.myapps{{/i18n}}</h1>
 				<nav class="list icons-view">
 					<article class="block-container">
-						<ul class="list icons-view">
+						<div class="list icons-view apps">
 							{{#apps}}
-							<li class="element fixed-block height-two">
-								<div class="fixed twelve cell">
+							<div class="element reduce-block-six">
+								<div class="container">
 									<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>
-									<i role="{{icon}}"></i>
+										<i role="{{icon}}"></i>
 									</a>
-									<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>{{displayName}}</a>
 								</div>
-
-							</li>
+								<legend>
+									<a href="{{address}}" {{#target}}target="{{target}}"{{/target}}>{{displayName}}</a>
+								</legend>
+							</div>
 							{{/apps}}
-						</ul>
+						</div>
 						<div class="clear"></div>
 					</article>
 				</nav>

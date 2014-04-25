@@ -254,8 +254,8 @@ module.directive('lightbox', function($compile){
 			onClose: '&'
 		},
 		template: '<div>\
-					<section class="lightbox-backdrop"></section>\
-					<section class="lightbox-window five cell">\
+					<section class="lightbox-background"></section>\
+					<section class="lightbox-view five cell">\
 						<div class="twelve cell reduce-block-six" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
@@ -314,15 +314,14 @@ module.directive('mediaLibrary', function($compile){
 			};
 
 			scope.$watch('ngModel', function(newVal){
-				scope.ngChange();
+				if(newVal && newVal._id){
+					scope.ngChange();
+				}
+
 				scope.upload = {
 					loading: []
 				};
 			});
-
-			scope.$watch('fileFormat', function(newVal){
-				console.log(newVal);
-			})
 
 			$('body').on('click', '.lightbox-backdrop', function(){
 				scope.upload = {
@@ -333,7 +332,7 @@ module.directive('mediaLibrary', function($compile){
 	}
 });
 
-module.directive('mediaSelect', function($compile){
+module.directive('imageSelect', function($compile){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -341,19 +340,63 @@ module.directive('mediaSelect', function($compile){
 			ngModel: '=',
 			multiple: '=',
 			ngChange: '&',
-			type: '@'
+			default: '@'
 		},
-		template: '<div><input type="button" ng-transclude class="pick-file" />' +
+		template: '<div><img ng-src="[[ngModel]]" class="pick-file" ng-if="ngModel" />' +
+			'<img ng-src="[[default]]" class="pick-file" ng-if="!ngModel" />' +
+			'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
+			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="\'img\'"></media-library>' +
+			'</lightbox>' +
+			'</div>',
+		link: function(scope, element, attributes){
+			scope.selectedFile = { file: {}};
+
+			scope.updateDocument = function(){
+				scope.userSelecting = false;
+				scope.ngModel = '/workspace/document/' + scope.selectedFile.file._id;
+				scope.ngChange();
+			};
+			element.on('click', '.pick-file', function(){
+				scope.userSelecting = true;
+				scope.$apply('userSelecting');
+			});
+		}
+	}
+});
+
+module.directive('mediaSelect', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		scope: {
+			ngModel: '=',
+			multiple: '=',
+			ngChange: '&',
+			fileFormat: '=',
+			label: "@"
+		},
+		template: '<div><input type="button" class="pick-file" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
-						'<media-library ng-change="updateDocument()" ng-model="selectedFile" multiple="multiple"></media-library>' +
+						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat"></media-library>' +
 					'</lightbox>' +
 				  '</div>',
 		link: function(scope, element, attributes){
+			scope.selectedFile = { file: {}};
+			attributes.$observe('label', function(newVal){
+				element.find('[type=button]').attr('value', lang.translate(newVal));
+			});
+
+			scope.$watch('fileFormat', function(newVal){
+				if(newVal === undefined){
+					scope.fileFormat = 'img'
+				}
+			});
 			scope.updateDocument = function(){
 				scope.userSelecting = false;
-				scope.ngModel = scope.selectedFile;
+				scope.ngModel = '/workspace/document/' + scope.selectedFile.file._id;
 				scope.ngChange();
-			}
+			};
 			element.find('.pick-file').on('click', function(){
 				scope.userSelecting = true;
 				scope.$apply('userSelecting');
@@ -2033,6 +2076,7 @@ function Widgets($scope, model, lang, date){
 }
 
 var workspace = {
+	thumbnails: "thumbnail=120x120&thumbnail=100x100",
 	Document: function(data){
 		if(data.metadata){
 			var dotSplit = data.metadata.filename.split('.');
@@ -2052,7 +2096,7 @@ var workspace = {
 					var blobDocument = this.response;
 					var formData = new FormData();
 					formData.append('file', blobDocument, document.metadata.filename);
-					http().postFile('/workspace/document?protected=true&application=media-library&thumbnail=120x120', formData).done(function(data){
+					http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
 						if(typeof callback === 'function'){
 							callback(new workspace.Document(data));
 						}
@@ -2117,7 +2161,7 @@ var workspace = {
 
 		this.closeFolder = function(){
 			this.folders.all = [];
-		}
+		};
 
 		this.on('documents.sync', function(){
 			this.trigger('sync');
@@ -2181,19 +2225,21 @@ var workspace = {
 workspace.Document.prototype.upload = function(file, requestName){
 	var formData = new FormData();
 	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?protected=true&thumbnail=120x120&application=media-library', formData, { requestName: requestName }, function(data){
+	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }, function(data){
 
 	});
 };
 
 function MediaLibrary($scope){
-	model.makeModels(workspace);
-	model.mediaLibrary = new Model();
-	model.mediaLibrary.myDocuments = new workspace.MyDocuments();
-	model.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
-	model.mediaLibrary.appDocuments = new workspace.AppDocuments();
+	if(!model.mediaLibrary){
+		model.makeModels(workspace);
+		model.mediaLibrary = new Model();
+		model.mediaLibrary.myDocuments = new workspace.MyDocuments();
+		model.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
+		model.mediaLibrary.appDocuments = new workspace.AppDocuments();
 
-	model.me.workflow.load(['workspace']);
+		model.me.workflow.load(['workspace']);
+	}
 
 	$scope.myDocuments = model.mediaLibrary.myDocuments;
 
@@ -2226,11 +2272,19 @@ function MediaLibrary($scope){
 			$scope.$apply('documents');
 			$scope.$apply('folders');
 		});
-	}
+	};
 
 	$scope.$watch('fileFormat', function(newVal){
-		$scope.documents = filteredDocuments(model.mediaLibrary[$scope.display.listFrom]);
-		$scope.openedFolder = model.mediaLibrary[$scope.display.listFrom];
+		if(!newVal){
+			return;
+		}
+
+		if(model.me.workflow.workspace.documents.create){
+			$scope.listFrom('appDocuments')
+		}
+		else{
+			$scope.listFrom('sharedDocuments')
+		}
 	});
 
 	function filteredDocuments(source){
@@ -2253,13 +2307,6 @@ function MediaLibrary($scope){
 		$scope.openedFolder = $scope.folder;
 		$scope.$apply('documents');
 	});
-
-	if(model.me.workflow.workspace.documents.create){
-		$scope.listFrom('appDocuments')
-	}
-	else{
-		$scope.listFrom('sharedDocuments')
-	}
 
 	$scope.selectDocument = function(document){
 		if($scope.folder === model.mediaLibrary.appDocuments){
