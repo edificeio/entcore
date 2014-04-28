@@ -111,53 +111,26 @@ public class UserController extends Controller {
 
 	@SecuredAction(value = "user.update.avatar", type = ActionType.RESOURCE)
 	public void updateAvatar(final HttpServerRequest request) {
-		request.pause();
 		final String userId = request.params().get("userId");
-		userBookService.get(userId, new Handler<Either<String, JsonObject>>() {
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(final Either<String, JsonObject> r) {
-				if (r.isRight()) {
-					final String picture = r.right().getValue().getString("picture");
-					JsonArray thumbs = new JsonArray(request.params().getAll("thumbnail").toArray());
-					if (StringValidation.isUUID(picture)) { // update
-						workspaceHelper.updateDocument(request, picture, null, thumbs,
-								new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> message) {
-								if ("ok".equals(message.body().getString("status"))) {
-									renderJson(request, new JsonObject().putString("picture", picture));
-								} else {
-									renderJson(request, message.body(), 400);
-								}
-							}
-						});
-					} else { // create
-						workspaceHelper.createDocument(request, null, "userbook", true, thumbs,
-								new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> message) {
-								if ("ok".equals(message.body().getString("status"))) {
-									final JsonObject j = new JsonObject().putString("picture",
-											message.body().getString("_id"));
-									userBookService.update(userId, j, new Handler<Either<String, JsonObject>>() {
-										@Override
-										public void handle(Either<String, JsonObject> u) {
-											if (u.isRight()) {
-												renderJson(request, j);
-											} else {
-												leftToResponse(request, r.left());
-											}
-										}
-									});
-								} else {
-									renderJson(request, message.body(), 400);
-								}
-							}
-						});
-					}
-				} else {
-					leftToResponse(request, r.left());
+			public void handle(JsonObject body) {
+				String p = body.getString("picture");
+				if (!StringValidation.isAbsoluteDocumentUri(p)) {
+					badRequest(request);
+					return;
 				}
+				final JsonObject j = new JsonObject().putString("picture", p);
+				userBookService.update(userId, j, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> u) {
+						if (u.isRight()) {
+							renderJson(request, j);
+						} else {
+							leftToResponse(request, u.left());
+						}
+					}
+				});
 			}
 		});
 	}
