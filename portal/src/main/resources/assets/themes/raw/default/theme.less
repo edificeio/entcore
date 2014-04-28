@@ -18,6 +18,7 @@
 		font-family: Lato;
 		color: @bright-blue;
 		font-size: 14px;
+		.border-radius-top(6px);
 	}
 	header.selected{
 		border-color: #ccc;
@@ -63,7 +64,6 @@
 		}
 		header{
 			background: #393939;
-			.border-radius-top(3px);
 			margin-left: -2px;
 			color: #777;
 			border: 1px solid #555;
@@ -819,7 +819,7 @@ a:hover{
 	color: #000;
 }
 
-section.lightbox-backdrop{
+.lightbox-backdrop{
 	background: #fff;
 	opacity: 0.7;
 }
@@ -843,7 +843,7 @@ input[type=text], input[type=search], input[type=password]{
 	.border-radius(0px);
 }
 
-section.lightbox-window{
+.lightbox-window{
 	border: 5px solid #555;
 	.border-radius(3px);
 	box-shadow: none;
@@ -964,7 +964,7 @@ i[role=unknown-large], i[role=xls-large], i[role=ppt-large], i[role=pdf-large], 
 }
 
 i[role=audio-large]{
-	.icon(audio, 135px);
+	.icon(audio-large, 135px);
 }
 
 i[role=folder-large]{
@@ -985,4 +985,12 @@ i[role=folder-large]{
 			}
 		}
 	}
+}
+
+.lightbox-view{
+	.lightbox-window;
+}
+
+.lightbox-background{
+	.lightbox-backdrop;
 }

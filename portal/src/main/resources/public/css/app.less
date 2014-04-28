@@ -53,7 +53,7 @@ html.print{
 	}
 }
 
-section.lightbox-backdrop{
+.lightbox-backdrop{
 	position: fixed;
 	background: #222;
 	top: 0;
@@ -67,7 +67,7 @@ section.lightbox-backdrop{
 	display: none;
 }
 
-section.lightbox-window{
+.lightbox-window{
 	position: fixed;
 	z-index: 25;
 	background: #fff;
@@ -87,6 +87,14 @@ section.lightbox-window{
 	top: 0;
 	margin: 10px;
 	cursor: pointer;
+}
+
+.lightbox-view{
+	.lightbox-window;
+}
+
+.lightbox-background{
+	.lightbox-backdrop;
 }
 
 body.lightbox-body{

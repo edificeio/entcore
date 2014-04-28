@@ -7,32 +7,30 @@
 </script>
 
 <div class="row reduce-block-four search">
-	<h2>Sélectionner les fichiers</h2>
-	<input type="text" ng-model="display.search" placeholder="Rechercher" ng-change="updateSearch()" class="six cell" />
+	<h2 translate content="library.browse.title"></h2>
+	<input type="search" ng-model="display.search" translate attr="placeholder" placeholder="search" ng-change="updateSearch()" class="six cell" />
 	<hr />
 </div>
 <div class="row browse">
 	<nav class="four cell vertical">
 		<ul>
 			<li workflow="workspace.documents.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: openedFolder === myDocuments }">Mes documents</a>
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: openedFolder === myDocuments }" translate content="workspace.myDocuments"></a>
 				<div>
 					<ul ng-include="'list-folders'">
 					</ul>
 				</div>
 			</li>
 			<li>
-				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }">Documents partagés avec moi</a>
+				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }" translate content="workspace.sharedDocuments"></a>
 			</li>
 			<li workflow="workspace.documents.create">
-				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }">Documents ajoutés dans les applis</a>
+				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }" translate content="workspace.appDocuments"></a>
 			</li>
 		</ul>
 	</nav>
 	<div class="cell eight height-five">
-		<div class="absolute" ng-if="!documents.length && !folders.length" style="text-align: center">
-			Aucun document ne correspond à votre recherche
-		</div>
+		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center" translate content="library.browse.notfound"></div>
 		<div class="absolute icons-view" style="overflow: auto">
 			<div class="element reduce-block-six" ng-repeat="folder in folders">
 				<div class="container" ng-click="openFolder(folder)">
@@ -48,7 +46,7 @@
 						<img class="twelve cell" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
 					</div>
 				</div>
-				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
+				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
 					<i role="[[document.role()]]-large"></i>
 				</div>
 				<input type="checkbox" ng-if="multiple" ng-model="document.selected" />
@@ -60,7 +58,7 @@
 		</div>
 	</div>
 	<div class="row" ng-if="multiple">
-		<button class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()">Ajouter</button>
+		<button class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()" translate content="library.browse.add"></button>
 	</div>
 </div>
 <div class="row"></div>

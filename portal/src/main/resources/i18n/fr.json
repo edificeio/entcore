@@ -64,5 +64,17 @@
 	"calendar.summer": "Eté",
 	"calendar.fall": "Automne",
 	"calendar.winter": "Hiver",
-	"search": "Rechercher"
+	"search": "Rechercher",
+	"library.title": "Recherche de documents",
+	"library.header.upload": "Charger un document",
+	"library.header.browse": "Parcourir mon espace personnel",
+	"library.browse.title": "Sélectionner les fichiers",
+	"workspace.myDocuments": "Mes documents",
+	"workspace.sharedDocuments": "Documents partagés avec moi",
+	"workspace.appDocuments": "Documents ajoutés dans les applis",
+	"library.browse.notfound": "Aucun document ne correspond à votre recherche",
+	"library.browse.add": "Ajouter",
+	"library.upload.title": "Sélectionner les fichiers",
+	"library.file.choose": "Parcourir",
+	"library.upload.import": "Importer"
 }

@@ -256,7 +256,7 @@ module.directive('lightbox', function($compile){
 		template: '<div>\
 					<section class="lightbox-background"></section>\
 					<section class="lightbox-view five cell">\
-						<div class="twelve cell reduce-block-six" ng-transclude></div>\
+						<div class="twelve cell reduce-block-eight" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
 						</div>\
@@ -264,9 +264,9 @@ module.directive('lightbox', function($compile){
 					</section>\
 				</div>',
 		link: function(scope, element, attributes){
-			element.find('.lightbox-backdrop, i').on('click', function(){
-				element.find('.lightbox-window').fadeOut();
-				element.find('.lightbox-backdrop').fadeOut();
+			element.find('.lightbox-background, i').on('click', function(){
+				element.find('.lightbox-view').fadeOut();
+				element.find('.lightbox-background').fadeOut();
 
 				scope.$eval(scope.onClose);
 				if(!scope.$$phase){
@@ -275,7 +275,7 @@ module.directive('lightbox', function($compile){
 			});
 			scope.$watch('show', function(newVal){
 				if(newVal){
-					var lightboxWindow = element.find('.lightbox-window');
+					var lightboxWindow = element.find('.lightbox-view');
 					setTimeout(function(){
 						lightboxWindow.fadeIn();
 					}, 0);
@@ -284,14 +284,14 @@ module.directive('lightbox', function($compile){
 						top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
 					});
 
-					var backdrop = element.find('.lightbox-backdrop');
+					var backdrop = element.find('.lightbox-background');
 					setTimeout(function(){
 						backdrop.fadeIn();
 					}, 0);
 				}
 				else{
-					element.find('.lightbox-window').fadeOut();
-					element.find('.lightbox-backdrop').fadeOut();
+					element.find('.lightbox-view').fadeOut();
+					element.find('.lightbox-background').fadeOut();
 				}
 			})
 		}
@@ -314,7 +314,7 @@ module.directive('mediaLibrary', function($compile){
 			};
 
 			scope.$watch('ngModel', function(newVal){
-				if(newVal && newVal._id){
+				if((newVal && newVal._id) || (newVal && scope.multiple && newVal.length)){
 					scope.ngChange();
 				}
 
@@ -2197,9 +2197,11 @@ var workspace = {
 	SharedDocuments: function(){
 		this.collection(workspace.Document,  {
 			sync: function(){
-				http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
-					this.load(documents);
-				}.bind(this))
+				if(model.me.workflow.workspace.documents.list){
+					http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
+						this.load(documents);
+					}.bind(this));
+				}
 			}
 		});
 		this.on('documents.sync', function(){
@@ -2222,11 +2224,13 @@ var workspace = {
 	}
 };
 
-workspace.Document.prototype.upload = function(file, requestName){
+workspace.Document.prototype.upload = function(file, requestName, callback){
 	var formData = new FormData();
 	formData.append('file', file, file.name);
 	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }, function(data){
-
+		if(typeof callback === 'function'){
+			callback(data);
+		}
 	});
 };
 
@@ -2282,8 +2286,11 @@ function MediaLibrary($scope){
 		if(model.me.workflow.workspace.documents.create){
 			$scope.listFrom('appDocuments')
 		}
-		else{
+		else if(model.me.workflow.workspace.documents.list){
 			$scope.listFrom('sharedDocuments')
+		}
+		else{
+			notify.error('Vous n\'avez pas accès à la bibliothèque multimédia.');
 		}
 	});
 
