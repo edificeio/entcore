@@ -1,25 +1,29 @@
 package org.entcore.session;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.eventbus.impl.hazelcast.HazelcastClusterManager;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
-	protected final Map<String, JsonObject> sessions = new HashMap<>();
-	protected final Map<String, LoginInfo> logins = new HashMap<>();
+	protected Map<String, String> sessions;
+	protected Map<String, LoginInfo> logins;
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 
 	private long sessionTimeout;
 
-	private static final class LoginInfo {
+	private static final class LoginInfo implements Serializable {
 		final long timerId;
 		final String sessionId;
 
@@ -32,6 +36,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	public void start() {
 		super.start();
 
+		if (getOptionalBooleanConfig("cluster", false)) {
+			HazelcastClusterManager cm = new HazelcastClusterManager((VertxInternal) vertx);
+			HazelcastInstance instance = cm.getInstance();
+			sessions = instance.getMap("sessions");
+			logins = instance.getMap("logins");
+		} else {
+			sessions = new HashMap<>();
+			logins = new HashMap<>();
+		}
 		final String address = getOptionalStringConfig("address", "wse.session");
 		Number timeout = config.getNumber("session_timeout");
 		if (timeout != null) {
@@ -106,12 +119,19 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			});
 			return;
 		}
-		JsonObject session = sessions.get(info.sessionId);
+		JsonObject session = unmarshal(sessions.get(info.sessionId));
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return;
 		}
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+	}
+
+	private JsonObject unmarshal(String s) {
+		if (s != null) {
+			return new JsonObject(s);
+		}
+		return null;
 	}
 
 	private void doFind(Message<JsonObject> message) {
@@ -121,7 +141,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		JsonObject session = sessions.get(sessionId);
+		JsonObject session =  unmarshal(sessions.get(sessionId));
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return;
@@ -148,7 +168,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							logins.remove(userId);
 						}
 					});
-					sessions.put(sessionId, infos);
+					sessions.put(sessionId, infos.encode());
 					logins.put(userId, new LoginInfo(timerId, sessionId));
 					sendOK(message, new JsonObject()
 					.putString("status", "ok")
@@ -167,13 +187,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		JsonObject session = sessions.get(sessionId);
+		JsonObject session =  unmarshal(sessions.get(sessionId));
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return;
 		}
 
-		JsonObject s = sessions.remove(sessionId);
+		JsonObject s =  unmarshal(sessions.remove(sessionId));
 		if (s != null) {
 			LoginInfo info = logins.remove(s.getString("userId"));
 			if (info != null) {
@@ -218,7 +238,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "Invalid userId.");
 			return null;
 		}
-		JsonObject session = sessions.get(info.sessionId);
+		JsonObject session =  unmarshal(sessions.get(info.sessionId));
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return null;
