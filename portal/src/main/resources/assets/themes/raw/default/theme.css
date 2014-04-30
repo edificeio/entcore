@@ -2324,7 +2324,8 @@ html.print body section {
   background: #444;
   color: #888;
   border-radius: 0;
-  width: 900px;
+  width: 800px;
+  text-align: left;
 }
 .lightbox-view .icons-view {
   background: transparent;
@@ -3418,7 +3419,7 @@ header {
   width: 100%;
   left: 0;
   margin-left: 0;
-  background: #333;
+  background: #444;
 }
 .toggle-buttons button {
   background: none;
