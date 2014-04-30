@@ -1449,10 +1449,6 @@ ul.icons-tabs li i {
   margin-right: auto;
   float: none;
 }
-ul.icons-view.two-cols li.element {
-  width: 45%;
-  margin: 2.5%;
-}
 .mini-block-container {
   padding: 7px;
 }
@@ -2315,6 +2311,8 @@ html.print body section {
   right: 0;
   display: none;
   border-radius: 5px;
+  width: 800px;
+  text-align: left;
 }
 .lightbox-background {
   position: fixed;

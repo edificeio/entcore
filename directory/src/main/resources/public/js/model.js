@@ -46,7 +46,7 @@ User.prototype.saveUserbookProperty = function(prop){
 		data.mood = data.mood.id;
 	}
 	http().putJson('/directory/userbook/' + this.id, data);
-}
+};
 
 User.prototype.saveInfos = function(){
 	var userData = {
@@ -112,8 +112,11 @@ User.prototype.loadUserbook = function(){
 		if(!data.mood){
 			data.mood = 'default';
 		}
+		if(data.picture === 'no-avatar.jpg'){
+			data.picture = '';
+		}
 		data.mood = _.findWhere(User.prototype.moods, { id: data.mood });
-		data.photo = {};
+
 		if(this.edit.visibility){
 			this.loadVisibility();
 		}

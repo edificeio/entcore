@@ -255,7 +255,7 @@ module.directive('lightbox', function($compile){
 		},
 		template: '<div>\
 					<section class="lightbox-background"></section>\
-					<section class="lightbox-view five cell">\
+					<section class="lightbox-view">\
 						<div class="twelve cell reduce-block-eight" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i role="close-2x"></i>\
@@ -338,12 +338,13 @@ module.directive('imageSelect', function($compile){
 		transclude: true,
 		scope: {
 			ngModel: '=',
+			thumbnails: '&',
 			multiple: '=',
 			ngChange: '&',
 			default: '@'
 		},
-		template: '<div><img ng-src="[[ngModel]]" class="pick-file" ng-if="ngModel" />' +
-			'<img ng-src="[[default]]" class="pick-file" ng-if="!ngModel" />' +
+		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" ng-if="ngModel" style="cursor: pointer" />' +
+			'<img ng-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
 			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="\'img\'"></media-library>' +
 			'</lightbox>' +
@@ -351,9 +352,24 @@ module.directive('imageSelect', function($compile){
 		link: function(scope, element, attributes){
 			scope.selectedFile = { file: {}};
 
+			scope.$watch('thumbnails', function(thumbs){
+				var evaledThumbs = scope.$eval(thumbs);
+				if(!evaledThumbs){
+					return;
+				}
+				scope.getThumbnails = function(){
+					var link = '';
+					evaledThumbs.forEach(function(th){
+						link += 'thumbnail=' + th.width + 'x' + th.height + '&';
+					});
+					return link;
+				}
+			});
+
 			scope.updateDocument = function(){
 				scope.userSelecting = false;
 				scope.ngModel = '/workspace/document/' + scope.selectedFile.file._id;
+				scope.$apply('ngModel');
 				scope.ngChange();
 			};
 			element.on('click', '.pick-file', function(){
@@ -374,14 +390,19 @@ module.directive('mediaSelect', function($compile){
 			multiple: '=',
 			ngChange: '&',
 			fileFormat: '=',
-			label: "@"
+			label: "@",
+			class: "@",
+			tooltip: "@"
 		},
-		template: '<div><input type="button" class="pick-file" />' +
-					'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
+		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[tooltip]]" />' +
+					'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat"></media-library>' +
 					'</lightbox>' +
-				  '</div>',
+				'</div>',
 		link: function(scope, element, attributes){
+			if(!scope.tooltip){
+				element.find('input').removeAttr('tooltip');
+			}
 			scope.selectedFile = { file: {}};
 			attributes.$observe('label', function(newVal){
 				element.find('[type=button]').attr('value', lang.translate(newVal));
@@ -395,6 +416,7 @@ module.directive('mediaSelect', function($compile){
 			scope.updateDocument = function(){
 				scope.userSelecting = false;
 				scope.ngModel = '/workspace/document/' + scope.selectedFile.file._id;
+				scope.$apply('ngModel');
 				scope.ngChange();
 			};
 			element.find('.pick-file').on('click', function(){
@@ -1064,6 +1086,10 @@ module.directive('htmlEditor', function($compile){
 				});
 
 				$('body').on('click', '.cke_button__upload', function(){
+					var resize = editor.width();
+					if(workspace.thumbnails.indexOf(resize) === -1){
+						workspace.thumbnails += '&thumbnail=' + resize + 'x0';
+					}
 					scope.selectFiles = true;
 					scope.format = 'img';
 					scope.$apply('selectFiles');
@@ -1086,7 +1112,7 @@ module.directive('htmlEditor', function($compile){
 
 						if(scope.format === 'img'){
 							var image = contextEditor.document.createElement('img');
-							image.setAttribute('src', '/workspace/document/' + file._id);
+							image.setAttribute('src', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
 							contextEditor.insertElement(image);
 						}
 						if(scope.format === 'audio'){
@@ -1194,19 +1220,22 @@ module.directive('workflow', function($compile){
 module.directive('tooltip', function($compile){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
-			$element.on('mouseover', function(){
+		link: function(scope, element, attributes){
+			element.on('mouseover', function(){
+				if(!attributes.tooltip){
+					return;
+				}
 				var tip = $('<div />')
 					.addClass('tooltip')
-					.html('<div class="arrow"></div><div class="content">' + lang.translate($attributes.tooltip) + '</div> ')
+					.html('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')
 					.appendTo('body');;
 
 				tip.offset({
-					top: parseInt($element.offset().top + $element.height()),
-					left: parseInt($element.offset().left + $element.width() / 2 - tip.width() / 2)
+					top: parseInt(element.offset().top + element.height()),
+					left: parseInt(element.offset().left + element.width() / 2 - tip.width() / 2)
 				});
 				tip.fadeIn();
-				$element.one('mouseout', function(){
+				element.one('mouseout', function(){
 					tip.fadeOut(200, function(){
 						tip.remove();
 					})
@@ -1723,6 +1752,9 @@ function Account($scope){
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
+			if(!$scope.avatar || $scope.avatar === 'no-avatar.jpg'){
+				$scope.avatar = '/directory/public/img/no-avatar.jpg';
+			}
 			$scope.username = result.result['0'].displayName;
 			$scope.$apply();
 		});
@@ -2076,7 +2108,7 @@ function Widgets($scope, model, lang, date){
 }
 
 var workspace = {
-	thumbnails: "thumbnail=120x120&thumbnail=100x100",
+	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82",
 	Document: function(data){
 		if(data.metadata){
 			var dotSplit = data.metadata.filename.split('.');
@@ -2227,7 +2259,7 @@ var workspace = {
 workspace.Document.prototype.upload = function(file, requestName, callback){
 	var formData = new FormData();
 	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }, function(data){
+	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
 		if(typeof callback === 'function'){
 			callback(data);
 		}

@@ -40,7 +40,7 @@ var workspaceBehaviours = {
 			}
 		}
 	}
-}
+};
 
 Behaviours.register('workspace', {
 	resource: function(resource){

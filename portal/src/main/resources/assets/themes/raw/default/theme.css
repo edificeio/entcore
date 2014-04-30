@@ -2324,6 +2324,7 @@ html.print body section {
   background: #444;
   color: #888;
   border-radius: 0;
+  width: 900px;
 }
 .lightbox-view .icons-view {
   background: transparent;
