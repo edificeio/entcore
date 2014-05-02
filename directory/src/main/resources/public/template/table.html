@@ -1,5 +1,5 @@
 <article class="row">
-	<div class="row reduce-block-six" ng-if="users.match(search.text).length === 0 && !users.loading" translate content="noresult"></div>
+	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
 	<table class="twelve">
 		<thead>
 		<tr>

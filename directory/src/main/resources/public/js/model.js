@@ -241,10 +241,7 @@ function Classroom(){
 }
 
 function School(){
-	this.collection(User, {
-
-	});
-
+	this.collection(User);
 	this.users.match = usersMatch.bind(this.users);
 
 	this.collection(Classroom, {
@@ -258,12 +255,22 @@ function School(){
 			});
 		}
 	});
+
+	this.sync = function(){
+		http().get('/userbook/structure/' + this.id).done(function(d){
+			this.classrooms.load(d.classes);
+			this.users.load(d.users);
+			this.trigger('sync');
+		}.bind(this));
+	}
 }
 
-function EntProject(){
+function Network(){
 	this.collection(School, {
 		sync: function(){
-			http().get()
+			http().get('/userbook/structures').done(function(d){
+				this.load(d);
+			}.bind(this))
 		}
 	});
 }
@@ -368,10 +375,11 @@ function ClassAdmin(){
 }
 
 model.build = function(){
-	this.makeModels([User, MyClass, Directory, ClassAdmin, EntProject, Classroom, School]);
+	this.makeModels([User, MyClass, Directory, ClassAdmin, Network, Classroom, School]);
 	this.myClass = new MyClass();
 	this.directory = new Directory();
 	this.classAdmin = new ClassAdmin();
+	this.network = new Network();
 
 	http().get('/userbook/api/person').done(function(data){
 		model.me.email = data.result[0].email;

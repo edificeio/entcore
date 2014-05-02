@@ -16,11 +16,11 @@
 				<div class="row">
 					<div class="right-magnet">
 						<i role="show-icons"
-						   ng-click="view.open('list', 'dominos')"
-						   ng-class="{ selected: view.contains('list', 'dominos') }" class="right-magnet"></i>
+						   ng-click="template.open('list', 'dominos')"
+						   ng-class="{ selected: template.contains('list', 'dominos') }" class="right-magnet"></i>
 						<i role="show-list"
-						   ng-click="view.open('list', 'table')"
-						   ng-class="{ selected: view.contains('list', 'table') }" class="right-magnet"></i>
+						   ng-click="template.open('list', 'table')"
+						   ng-class="{ selected: template.contains('list', 'table') }" class="right-magnet"></i>
 
 					</div>
 
@@ -39,26 +39,14 @@
 	</div>
 
 	<nav class="vertical four cell">
+		<input type="search" placeholder="Saisissez le nom d'une école" class="twelve cell" />
 		<ul>
-			<li>
-				<a>Les écoles</a>
-				<ul>
-					<li>
-						<input type="text" placeholder="Saisissez le nom d'une école" />
-						<ul>
-							<li>
-								<a>Ecole 1</a>
-							</li>
-							<li>
-								<a>Ecole 2</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
+			<li ng-repeat="school in schools.all">
+				<a ng-click="openSchool(school)" ng-class="{ selected: currentSchool === school }">[[school.name]]</a>
 			</li>
 		</ul>
 	</nav>
-	<div class="eight cell" ng-include="view.containers.list">
+	<div class="eight cell" ng-include="template.containers.list">
 
 	</div>
 </portal>

@@ -1,5 +1,5 @@
 <div class="dominos">
-	<div class="row reduce-block-six" ng-if="users.match(search.text).length === 0 && !users.loading" translate content="noresult"></div>
+	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
 	<div class="item" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
 		<section class="domino" ng-class="colorFromType(user.type)">
 			<div class="top" ng-click="selectUser(user)">

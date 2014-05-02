@@ -291,20 +291,32 @@ function ClassAdminController($scope, model, date, notify){
 	};
 }
 
-function SchoolController($scope, view){
-	$scope.view = view;
-	$scope.view.open('list', 'table');
+function SchoolController($scope, template){
+	$scope.template = template;
+	$scope.template.open('list', 'table');
 
 	$scope.search = {
 		text: '',
 		maxLength: 20
 	};
 
-	model.myClass.users.sync();
+	model.network.schools.sync();
+	$scope.schools = model.network.schools;
+	model.network.schools.on('sync', function(){
+		$scope.$apply('schools');
+	});
 
-	$scope.users = model.myClass.users;
-	model.myClass.classrooms.push(new Classroom({ name: 'CM1' }));
-	$scope.classrooms = model.myClass.classrooms;
+	$scope.openSchool = function(school){
+		$scope.currentSchool = school;
+		school.sync();
+		school.on('sync', function(){
+			$scope.users = school.users;
+			$scope.classrooms = school.classrooms;
+
+			$scope.$apply('users');
+			$scope.$apply('classrooms');
+		})
+	};
 
 	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange' };
 	$scope.colorFromType = function(type){
@@ -316,8 +328,8 @@ function SchoolController($scope, view){
 	};
 
 	$scope.updateSearch = function(){
-		if($scope.view.contains('list', 'user-infos')){
-			$scope.view.open('list', 'table');
+		if($scope.template.contains('list', 'user-infos')){
+			$scope.template.open('list', 'table');
 		}
 	};
 
@@ -330,6 +342,6 @@ function SchoolController($scope, view){
 			$scope.$apply('users')
 		});
 
-		$scope.view.open('list', 'user-infos');
+		$scope.template.open('list', 'user-infos');
 	}
 }
