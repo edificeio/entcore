@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.registry.service;
 
 import fr.wseduc.security.SecuredAction;

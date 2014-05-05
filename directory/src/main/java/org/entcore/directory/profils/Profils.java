@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.directory.profils;
 
 import org.vertx.java.core.Handler;

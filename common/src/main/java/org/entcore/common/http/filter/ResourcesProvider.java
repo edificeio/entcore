@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.common.http.filter;
 
 import org.entcore.common.user.UserInfos;

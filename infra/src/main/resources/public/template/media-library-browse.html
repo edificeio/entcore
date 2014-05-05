@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright. Tous droits réservés. WebServices pour l’Education.
+  -->
+
 <script type="text/ng-template" id="list-folders">
 	<li ng-repeat="folder in folder.folders.all">
 		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder }">[[folder.name]]</a>

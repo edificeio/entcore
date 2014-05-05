@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

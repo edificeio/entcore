@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.auth.security;
 
 import fr.wseduc.webutils.http.Binding;

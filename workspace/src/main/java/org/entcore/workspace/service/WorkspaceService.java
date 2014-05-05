@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.workspace.service;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;

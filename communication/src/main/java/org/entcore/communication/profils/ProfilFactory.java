@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.communication.profils;
 
 import org.vertx.java.core.json.JsonObject;

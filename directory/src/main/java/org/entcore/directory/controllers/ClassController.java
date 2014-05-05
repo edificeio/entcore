@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.directory.controllers;
 
 import fr.wseduc.webutils.Controller;

@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.auth.adapter;
 
 import fr.wseduc.webutils.Utils;

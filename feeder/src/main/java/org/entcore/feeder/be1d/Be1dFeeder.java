@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.feeder.be1d;
 
 import au.com.bytecode.opencsv.CSV;

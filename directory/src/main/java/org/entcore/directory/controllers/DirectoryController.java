@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.directory.controllers;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -121,11 +125,11 @@ public class DirectoryController extends Controller {
 										config.getBoolean("classDefaultRoles", false)) {
 									ApplicationUtils.setDefaultClassRoles(eb, classId,
 											new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> message) {
-											renderJson(request, event.right().getValue(), 201);
-										}
-									});
+												@Override
+												public void handle(Message<JsonObject> message) {
+													renderJson(request, event.right().getValue(), 201);
+												}
+											});
 								} else {
 									renderJson(request, event.right().getValue(), 201);
 								}
@@ -229,7 +233,7 @@ public class DirectoryController extends Controller {
 													.putString("schoolId", s.right().getValue().getString("id"));
 											eb.send("wse.communication", j);
 										}
-								  }
+									}
 								});
 								JsonArray a = new JsonArray().addString(r.getString("id"));
 								ApplicationUtils.publishModifiedUserGroup(eb, a);
@@ -237,7 +241,7 @@ public class DirectoryController extends Controller {
 							} else {
 								leftToResponse(request, res.left());
 							}
-					   }
+						}
 					});
 				} else {
 					userService.createInStructure(structureId, user, new Handler<Either<String, JsonObject>>() {

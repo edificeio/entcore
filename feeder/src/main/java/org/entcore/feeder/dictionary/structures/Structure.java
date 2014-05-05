@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.feeder.utils.Neo4j;

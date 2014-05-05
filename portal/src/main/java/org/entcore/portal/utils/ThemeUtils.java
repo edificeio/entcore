@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.portal.utils;
 
 import org.vertx.java.core.AsyncResult;

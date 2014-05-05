@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.workspace.service.impl;
 
 import static org.entcore.workspace.dao.DocumentDao.DOCUMENTS_COLLECTION;
