@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 function AppRegistry($scope, $sce, model){
 	var previewPath = '';
 	$scope.display = {

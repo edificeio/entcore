@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 function Authorization(data){
 
 }

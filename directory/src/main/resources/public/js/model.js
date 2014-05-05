@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 function User(data){
 	this.updateData(data);
 	this.relatives = [];

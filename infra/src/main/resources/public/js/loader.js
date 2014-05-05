@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 if(window.appPrefix === undefined){
 	if(window.location.pathname.split('/').length > 0){
 		window.appPrefix = window.location.pathname.split('/')[1]

@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 var admin = function() {
 	var app = Object.create(protoApp);
 	app.scope = "#main";

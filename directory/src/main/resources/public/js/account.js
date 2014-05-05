@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 routes.define(function($routeProvider){
 	$routeProvider
 		.when('/edit-user/:id', {

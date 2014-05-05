@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 var protoApp = {
   scope : '#main',
 			init : function() {

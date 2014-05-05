@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 var admin = function(){
 
 	var dataExtractor = function (d) { return {list : _.values(d.result)}; };

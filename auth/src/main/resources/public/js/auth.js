@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 window.addEventListener('load', function(e){
 	[].forEach.call(document.querySelectorAll('.remove-fout'), function(item){
 		item.className = item.className.replace('remove-fout','');

@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 (function(){
 	var Birthday = model.widgets.findWidget('birthday');
 	Birthday.classes = [];

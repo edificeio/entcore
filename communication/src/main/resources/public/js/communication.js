@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 var communication = function(){
 	var app = Object.create(protoApp);
 	app.scope = "#main";

@@ -1,3 +1,4 @@
+//Copyright. Tous droits réservés. WebServices pour l’Education.
 var lang = (function(){
 	var bundle = {};
 	$.ajax({url: '/' + appPrefix + '/i18n', async: false})

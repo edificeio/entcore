@@ -1,3 +1,1 @@
-/**
- * Created by cwin on 27/02/2014.
- */
+//Copyright. Tous droits réservés. WebServices pour l’Education.
