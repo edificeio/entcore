@@ -754,6 +754,9 @@ function Collection(obj){
 			if(propertiesChain.length > 1){
 				var prop = propertiesChain[0];
 				propertiesChain.splice(0, 1);
+				if(!this[prop] || !this[prop].on){
+					throw "Property " + prop + " is undefined in " + eventName;
+				}
 				this[prop].on(propertiesChain.join('.'), cb);
 			}
 		}.bind(this));
@@ -809,8 +812,9 @@ function bootstrap(func){
 					this[serviceName] = Behaviours.findWorkflow(serviceName);
 				}.bind(this));
 			}
-		}
+		};
 
+		model.me.workflow.load(['workspace']);
 		model.trigger('me.change');
 		func();
 	});
@@ -830,12 +834,44 @@ function bootstrap(func){
 				return this.applicationsBehaviours[serviceName].resource(resource);
 			},
 			findWorkflow: function(serviceName){
+				var returnWorkflows = function(){
+					if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){
+						return this.applicationsBehaviours[serviceName].workflow();
+					}
+					else{
+						if(typeof this.applicationsBehaviours[serviceName].rights === 'object' && this.applicationsBehaviours[serviceName].rights.workflow){
+							return this.workflowsFrom(this.applicationsBehaviours[serviceName].rights.workflow, this.applicationsBehaviours[serviceName].dependencies.workflow)
+						}
+					}
+				}.bind(this);
+
 				if(this.applicationsBehaviours[serviceName]){
-					return this.applicationsBehaviours[serviceName].workflow();
+					return returnWorkflows();
 				}
 
-				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
-				return this.applicationsBehaviours[serviceName].workflow();
+				if(window.loader){
+					loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+					return returnWorkflows();
+				}
+			},
+			workflowsFrom: function(obj, dependencies){
+				if(typeof obj !== 'object'){
+					return {};
+				}
+				if(typeof dependencies !== 'object'){
+					dependencies = {};
+				}
+				var workflow = { };
+				for(var prop in obj){
+					if(model.me.hasWorkflow(obj[prop])){
+						workflow[prop] = true;
+						if(typeof dependencies[prop] === 'string'){
+							workflow[prop] = workflow[prop] && model.me.hasWorkflow(dependencies[prop]);
+						}
+					}
+				}
+
+				return workflow;
 			}
 		}
 	}());

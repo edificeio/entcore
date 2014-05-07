@@ -3477,6 +3477,7 @@ input[type=password] {
   -ms-border-radius: 0px;
   -o-border-radius: 0px;
   border-radius: 0px;
+  text-align: left;
 }
 .info {
   background: #ccc;
@@ -3487,6 +3488,7 @@ input[type=password] {
   -ms-border-radius: 0px;
   -o-border-radius: 0px;
   border-radius: 0px;
+  text-align: left;
 }
 .lightbox-window {
   border: 5px solid #555;
