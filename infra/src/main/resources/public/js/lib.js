@@ -478,7 +478,7 @@ function Collection(obj){
 		// 4. extend fn prototype with whatever functions the user sent
 		if(fn.name === undefined){
 			// grabs function name from function string
-			fn.name = fn.toString().match(/^function\s*([^\s(]+)/)[1];
+			fn.name = fn._name || fn.toString().match(/^function\s*([^\s(]+)/)[1];
 		}
 		// overwrites user ctr with a version calling parent ctr
 		// fn is passed as parameter to keep its written behaviour

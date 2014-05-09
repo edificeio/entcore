@@ -2407,6 +2407,7 @@ html.print body section {
   background: #494949;
   border: 1px solid #595959;
   color: #999;
+  margin-left: 1px;
 }
 .lightbox-background {
   position: fixed;
@@ -3468,6 +3469,11 @@ input[type=password] {
   font-family: Lato;
   font-size: 14px;
 }
+textarea {
+  padding-left: 5px;
+  font-family: Lato;
+  font-size: 14px;
+}
 .warning {
   background: #ccc;
   color: #666;
@@ -3544,6 +3550,7 @@ input[type=password] {
   background: #494949;
   border: 1px solid #595959;
   color: #999;
+  margin-left: 1px;
 }
 [data-drop-down] {
   box-shadow: 3px 3px 3px #AAA;
@@ -3785,6 +3792,7 @@ i[role=folder-large] {
   background: #494949;
   border: 1px solid #595959;
   color: #999;
+  margin-left: 1px;
 }
 .lightbox-background {
   position: fixed;
