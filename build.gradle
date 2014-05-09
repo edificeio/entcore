@@ -10,7 +10,7 @@ subprojects {
 		maven {
 			credentials {
 				username 'admin'
-				password 'We_1234'
+				password 'admin'
 			}
 			url "http://maven.web-education.net:8081/nexus/content/groups/public"
 		}
