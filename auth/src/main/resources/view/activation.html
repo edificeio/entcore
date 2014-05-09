@@ -7,54 +7,55 @@
 	<head>
 		<title>{{#i18n}}auth.activation.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script type="text/javascript" src="{{#infra}}js/jquery-1.10.2.min.js{{/infra}}"></script>
-		<script type="text/javascript" src="{{#static}}js/auth.js{{/static}}"></script>
+		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>
+		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
 	</head>
-	<body style="display: none">
-	<div class="centered container row">
-		<div class="logo">
+	<body ng-controller="AuthController">
+	<default-styles>
+		<div class="centered container row">
+			<div class="logo">
 
-		</div>
-		<section class="main">
-			<div class="welcome-text">
-				<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
-				<p>{{#i18n}}auth.welcome.p1{{/i18n}}</p>
-				<p>{{#i18n}}auth.welcome.p2{{/i18n}}</p>
-				<p>{{#i18n}}auth.welcome.p3{{/i18n}}</p>
 			</div>
+			<section class="main">
+				<div class="welcome-text">
+					<h1 translate content="auth.welcome"></h1>
+					<p translate content="auth.welcome.p1"></p>
+					<p translate content="auth.welcome.p2"></p>
+					<p translate content="auth.welcome.p3"></p>
+				</div>
 
-			<div class="panel">
-			<h1><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.activation.header{{/i18n}}</h1>
-			{{#error}}<p style="color:red">{{#i18n}}{{message}}{{/i18n}}</p>{{/error}}
+				<div class="panel">
+					<h1><img src="/auth/public/img/auth.png" /><span translate content="auth.activation.header"></span></h1>
+					<p class="warning" translate content="[[error]]" ng-if="error"></p>
 
-			<form method="post" action="activation">
-				<p>
-					<label>{{#i18n}}auth.email{{/i18n}}</label>
-					<input type="text" name="login" value="{{login}}" />
-				</p>
-				<p>
-					<label>{{#i18n}}auth.activation.code{{/i18n}}</label>
-					<input type="text" name="activationCode" value="{{activationCode}}" />
-				</p>
-				<p>
-					<label>{{#i18n}}auth.activation.password{{/i18n}}</label>
-					<input type="password" name="password" />
-				</p>
-				<p>
-					<label>{{#i18n}}auth.activation.confirm.password{{/i18n}}</label>
-					<input type="password" name="confirmPassword" />
-				</p>
-				{{#cgu}}
-				<p>
-					<input type="checkbox" name="acceptCGU" value="true"><a href="/auth/cgu" target="_blank">{{#i18n}}label.accept.cgu{{/i18n}}</a>
-				</p>
-				{{/cgu}}
-				<input type="submit" value="{{#i18n}}auth.activate{{/i18n}}" />
-				<a href="/auth/login" class="right cell">{{#i18n}}auth.cancel{{/i18n}}</a>
-				<div class="clear"></div>
-			</form>
-		</div>
+					<form method="post" ng-submit="activate()">
+						<p>
+							<label translate content="auth.email"></label>
+							<input type="text" ng-model="user.login" />
+						</p>
+						<p>
+							<label translate content="auth.activation.code"></label>
+							<input type="text" ng-model="activationCode" />
+						</p>
+						<p>
+							<label translate content="auth.activation.password"></label>
+							<input type="password" ng-model="user.password" />
+						</p>
+						<p>
+							<label translate content="auth.activation.confirm.password"></label>
+							<input type="password" ng-model="user.confirmPassword" />
+						</p>
+						<p ng-if="cgu">
+							<input type="checkbox" ng-model="user.acceptCGU" value="true"><a href="/auth/cgu" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
+						</p>
+						<input type="submit" translate attr="value" value="auth.activate" ng-click="activate()" />
+						<a href="/auth/login" class="right cell" translate content="auth.cancel"></a>
+						<div class="clear"></div>
+					</form>
+				</div>
 			</section>
 		</div>
+	</default-styles>
+
 	</body>
 </html>

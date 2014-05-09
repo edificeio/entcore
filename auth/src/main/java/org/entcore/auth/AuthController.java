@@ -160,6 +160,29 @@ public class AuthController extends Controller {
 		});
 	}
 
+	private void loginResult(HttpServerRequest request, String error, String callBack) {
+		JsonObject context = new JsonObject();
+		if (callBack != null && !callBack.trim().isEmpty()) {
+			try {
+				context.putString("callBack", URLEncoder.encode(callBack, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		if (error != null && !error.trim().isEmpty()) {
+			context.putObject("error", new JsonObject()
+					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
+		}
+		renderJson(request, context);
+	}
+
+	public void context(final HttpServerRequest request) {
+		JsonObject context = new JsonObject();
+		context.putString("callBack", container.config().getObject("authenticationServer").getString("loginCallback"));
+		context.putBoolean("cgu", container.config().getBoolean("cgu", true));
+		renderJson(request, context);
+	}
+
 	private void viewLogin(HttpServerRequest request, String error, String callBack) {
 		JsonObject context = new JsonObject();
 		if (callBack != null && !callBack.trim().isEmpty()) {
@@ -212,7 +235,7 @@ public class AuthController extends Controller {
 							createSession(userId, request, c);
 						} else {
 							trace.info("Erreur de connexion pour l'utilisateur " + login);
-							viewLogin(request, "auth.error.authenticationFailed", c);
+							loginResult(request, "auth.error.authenticationFailed", c);
 						}
 					}
 				});
@@ -233,7 +256,7 @@ public class AuthController extends Controller {
 									request.response());
 							redirect(request, callBack, "");
 						} else {
-							viewLogin(request, "auth.error.authenticationFailed", callBack);
+							loginResult(request, "auth.error.authenticationFailed", callBack);
 						}
 					}
 				});
@@ -363,7 +386,7 @@ public class AuthController extends Controller {
 					if (login != null) {
 						error.putString("login", login);
 					}
-					renderView(request, error);
+					renderJson(request, error);
 				} else if (login == null || activationCode == null|| password == null ||
 						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
 						password.trim().isEmpty() || !password.equals(confirmPassword)) {
@@ -380,7 +403,7 @@ public class AuthController extends Controller {
 					if (container.config().getBoolean("cgu", true)) {
 						error.putBoolean("cgu", true);
 					}
-					renderView(request, error);
+					renderJson(request, error);
 				} else {
 					userAuthAccount.activateAccount(login, activationCode, password,
 							new org.vertx.java.core.Handler<Either<String, String>>() {
@@ -402,7 +425,7 @@ public class AuthController extends Controller {
 								.putObject("error", new JsonObject()
 								.putString("message", I18n.getInstance().translate("activation.error", request.headers().get("Accept-Language"))));
 								error.putString("activationCode", activationCode);
-								renderView(request, error);
+								renderJson(request, error);
 							}
 						}
 					});

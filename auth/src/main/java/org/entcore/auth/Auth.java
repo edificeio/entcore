@@ -23,7 +23,7 @@ public class Auth extends Server {
 		Controller auth = new AuthController(vertx, container, rm, trace, securedActions);
 
 		auth.get("/login", "login");
-
+		auth.get("/context", "context");
 		auth.post("/login", "loginSubmit");
 
 		auth.get("/logout", "logout");

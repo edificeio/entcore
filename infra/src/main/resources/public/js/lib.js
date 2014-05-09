@@ -783,6 +783,11 @@ var Behaviours = {};
 
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
+		if(typeof data !== 'object'){
+			func();
+			return;
+		}
+
 		model.me = data;
 
 		model.me.hasWorkflow = function(workflow){
@@ -816,6 +821,9 @@ function bootstrap(func){
 
 		model.me.workflow.load(['workspace']);
 		model.trigger('me.change');
+		func();
+	})
+	.e404(function(){
 		func();
 	});
 

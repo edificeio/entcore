@@ -1,21 +1,54 @@
-//Copyright. Tous droits réservés. WebServices pour l’Education.
-window.addEventListener('load', function(e){
-	[].forEach.call(document.querySelectorAll('.remove-fout'), function(item){
-		item.className = item.className.replace('remove-fout','');
-	});
-	if(parent !== window){
-		var url = window.location.href.split('callback=');
-		var callback = escape('/#app=' + url[1]);
-		var base = url[0];
-		parent.location.href = base + 'callback=' + callback;
+// Copyright. Tous droits réservés. WebServices pour l’Education.
+
+function AuthController($scope, template){
+	$scope.template = template;
+	$scope.user = {};
+
+	if(window.location.href.indexOf('?') !== -1){
+		if(window.location.href.split('login=').length > 1){
+			$scope.login = window.location.href.split('login=')[1].split('&')[0];
+		}
+		if(window.location.href.split('activationCode=').length > 1){
+			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
+		}
 	}
-});
 
-$.get('/skin').done(function(skin){
-	$('head').append('<link rel="stylesheet" href="/assets/themes/' + skin.skin + '/default/theme.css" />')
+	http().get('/auth/context').done(function(data){
+		$scope.callBack = data.callBack;
+		$scope.cgu = data.cgu;
+		$scope.$apply('cgu');
+	});
 
-	setTimeout(function(){
-		$('body').show();
-	}, 300);
-});
+	$scope.connect = function(){
+		http().post('/auth/login', http().serialize({
+			email: $scope.user.email,
+			password: $scope.user.password,
+			callBack: $scope.callBack
+		}))
+		.done(function(data){
+			if(typeof data !== 'object'){
+				window.location.href = $scope.callBack;
+			}
+			$scope.error = data.error.message;
+			$scope.$apply('error');
+		});
+	};
 
+	$scope.activate = function(){
+		http().post('/auth/activation', http().serialize({
+			login: $scope.user.login,
+			password: $scope.user.password,
+			confirmPassword: $scope.user.confirmPassword,
+			acceptCGU: $scope.user.acceptCGU,
+			activationCode: $scope.activationCode,
+			callBack: $scope.callBack
+		}))
+			.done(function(data){
+				if(typeof data !== 'object'){
+					window.location.href = '/';
+				}
+				$scope.error = data.error.message;
+				$scope.$apply('error');
+			});
+	}
+}
