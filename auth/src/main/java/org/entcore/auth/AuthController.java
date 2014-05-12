@@ -455,8 +455,8 @@ public class AuthController extends Controller {
 						public void handle(Boolean sent) {
 							if (Boolean.TRUE.equals(sent)) {
 								String message = i18n.translate("auth.resetCodeSent", language);
-								renderView(request, new JsonObject()
-								.putString("message", message), "message.html", null);
+								renderJson(request, new JsonObject()
+								.putString("message", message));
 							} else {
 								error(request, i18n, language);
 							}
@@ -569,7 +569,7 @@ public class AuthController extends Controller {
 					if (resetCode != null) {
 						error.putString("resetCode", resetCode);
 					}
-					resetPasswordView(request, error);
+					renderJson(request, error);
 				} else {
 					final org.vertx.java.core.Handler<Boolean> resultHandler =
 							new org.vertx.java.core.Handler<Boolean>() {
@@ -613,7 +613,7 @@ public class AuthController extends Controller {
 				if (resetCode != null) {
 					error.putString("resetCode", resetCode);
 				}
-				resetPasswordView(request, error);
+				renderJson(request, error);
 			}
 		});
 	}

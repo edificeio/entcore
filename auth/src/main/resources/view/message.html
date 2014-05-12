@@ -8,28 +8,11 @@
 		<title>{{#i18n}}auth.message.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>
+		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
 	</head>
-	<body style="display: none">
-	<div class="centered container row">
-		<div class="logo">
-
-		</div>
-		<section class="main">
-			<div class="welcome-text">
-				<h1>{{#i18n}}auth.welcome{{/i18n}}</h1>
-				<p>{{#i18n}}auth.welcome.p1{{/i18n}}</p>
-				<p>{{#i18n}}auth.welcome.p2{{/i18n}}</p>
-				<p>{{#i18n}}auth.welcome.p3{{/i18n}}</p>
-			</div>
-
-			<div class="panel">
-				<h1 class="remove-fout"><img src="{{#static}}img/auth.png{{/static}}" />{{#i18n}}auth.message.header{{/i18n}}</h1>
-				<form>
-				<p style="color:green">{{#i18n}}{{message}}{{/i18n}}</p>
-					<a href="/auth/login" class="right cell">{{#i18n}}auth.cancel{{/i18n}}</a>
-					</form>
-				</div>
-			</section>
-		</div>
+	<body ng-controller="ForgotController">
+		<default-styles>
+			<div ng-include="template.containers.main"></div>
+		</default-styles>
 	</body>
 </html>

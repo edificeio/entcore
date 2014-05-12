@@ -105,6 +105,13 @@ var protoApp = {
 		}
 };
 
+
+var theme = (function(){
+	return {
+		templateMapping: {}
+	}
+}());
+
 var notify = {
 	message: function(type, message){
 		message = lang.translate(message);
@@ -145,7 +152,11 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			viewPath: '/' + appPrefix + '/public/template/',
 			containers: {},
 			open: function(name, view){
-				this.containers[name] = this.viewPath + view + '.html';
+				var path = this.viewPath + view + '.html';
+				if(theme.templateMapping[appPrefix] && theme.templateMapping[appPrefix].indexOf(view) !== -1){
+					path = '/assets/themes/' + theme.skin + '/template/' + appPrefix + '/' + view + '.html';
+				}
+				this.containers[name] = path;
 			},
 			contains: function(name, view){
 				return this.containers[name] === this.viewPath + view + '.html';
@@ -681,11 +692,22 @@ module.directive('portalStyles', function($compile){
 module.directive('defaultStyles', function($compile){
 	return {
 		restrict: 'E',
-		compile: function($element, $attribute){
+		link: function($scope, $element, $attribute){
 			var rand = Math.random();
 			$.get('/skin?token=' + rand, function(data){
 				var css = '/assets/themes/' + data.skin + '/default/';
-				ui.setStyle(css);
+				$.getJSON('/assets/themes/' + data.skin + '/template/override.json?token=' + rand, function(override){
+					theme.templateMapping = override;
+					theme.skin = data.skin;
+					ui.setStyle(css);
+					if($scope.template){
+						for(var container in $scope.template.containers){
+							var view = $scope.template.containers[container].split('.html')[0].split('template/')[1];
+							$scope.template.open(container, view);
+						}
+					}
+					$scope.$apply('template');
+				})
 			})
 		}
 	}

@@ -1,0 +1,34 @@
+<div class="centered container row">
+	<div class="logo">
+
+	</div>
+	<section class="main">
+		<div class="welcome-text">
+			<h1 translate content="auth.welcome"></h1>
+			<p translate content="auth.welcome.p1"></p>
+			<p translate content="auth.welcome.p2"></p>
+			<p translate content="auth.welcome.p3"></p>
+		</div>
+
+		<div class="panel">
+			<h1 class="remove-fout"><img src="/auth/public/img/auth.png" /><span translate content="auth.reset.header"></span></h1>
+			<p class="warning" translate content="[[error]]" ng-if="error"></p>
+			<form method="post" ng-submit="reset()">
+				<p>
+					<label translate content="auth.login"></label>
+					<input type="text" name="login" ng-model="user.login" />
+				</p>
+				<p>
+					<label translate content="auth.activation.password"></label>
+					<input type="password" name="password" ng-model="user.password" />
+				</p>
+				<p>
+					<label translate content="auth.activation.confirm.password"></label>
+					<input type="password" name="confirmPassword" ng-model="user.confirmPassword" />
+				</p>
+				<input type="submit" translate attr="value" value="auth.reset" ng-click="reset()" />
+				<div class="clear"></div>
+			</form>
+		</div>
+	</section>
+</div>

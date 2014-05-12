@@ -108,7 +108,7 @@ function MyAccount($scope, lang, date, notify, route){
 				callback: '/userbook/mon-compte'
 			})
 			.done(function(response){
-				if(response.indexOf('html') === -1){
+				if(response.error){
 					notify.error('Le formulaire contient des erreurs');
 				}
 				else{

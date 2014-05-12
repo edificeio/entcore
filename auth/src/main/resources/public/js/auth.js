@@ -1,7 +1,8 @@
 // Copyright. Tous droits réservés. WebServices pour l’Education.
 
-function AuthController($scope, template){
+function LoginController($scope, template){
 	$scope.template = template;
+	$scope.template.open('main', 'login-form');
 	$scope.user = {};
 
 	if(window.location.href.indexOf('?') !== -1){
@@ -20,19 +21,73 @@ function AuthController($scope, template){
 	});
 
 	$scope.connect = function(){
+		// picking up values manually because the browser autofill isn't registered by angular
 		http().post('/auth/login', http().serialize({
-			email: $scope.user.email,
-			password: $scope.user.password,
+			email: $('#email').val(),
+			password: $('#password').val(),
 			callBack: $scope.callBack
 		}))
-		.done(function(data){
-			if(typeof data !== 'object'){
-				window.location.href = $scope.callBack;
-			}
-			$scope.error = data.error.message;
-			$scope.$apply('error');
-		});
+			.done(function(data){
+				if(typeof data !== 'object'){
+					window.location.href = $scope.callBack;
+				}
+				$scope.error = data.error.message;
+				$scope.$apply('error');
+			});
 	};
+}
+
+function ForgotController($scope, template){
+	$scope.template = template;
+	$scope.template.open('main', 'forgot-form');
+	$scope.user = {};
+
+	if(window.location.href.indexOf('?') !== -1){
+		if(window.location.href.split('login=').length > 1){
+			$scope.login = window.location.href.split('login=')[1].split('&')[0];
+		}
+		if(window.location.href.split('activationCode=').length > 1){
+			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
+		}
+	}
+
+	$scope.forgot = function(){
+		http().post('/auth/forgot', http().serialize({
+			login: $scope.user.login
+		}))
+			.done(function(data){
+				if(data.message){
+					template.open('main', 'forgot-message')
+					$scope.message = data.message;
+					$scope.$apply('message');
+				}
+				else{
+					$scope.error = data.error.message;
+					$scope.$apply('error');
+				}
+			});
+	};
+}
+
+function ActivationController($scope, template){
+	$scope.template = template;
+	$scope.template.open('main', 'activation-form');
+	$scope.user = {};
+
+	if(window.location.href.indexOf('?') !== -1){
+		if(window.location.href.split('login=').length > 1){
+			$scope.login = window.location.href.split('login=')[1].split('&')[0];
+		}
+		if(window.location.href.split('activationCode=').length > 1){
+			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
+		}
+	}
+
+	http().get('/auth/context').done(function(data){
+		$scope.callBack = data.callBack;
+		$scope.cgu = data.cgu;
+		$scope.$apply('cgu');
+	});
 
 	$scope.activate = function(){
 		http().post('/auth/activation', http().serialize({
@@ -40,7 +95,7 @@ function AuthController($scope, template){
 			password: $scope.user.password,
 			confirmPassword: $scope.user.confirmPassword,
 			acceptCGU: $scope.user.acceptCGU,
-			activationCode: $scope.activationCode,
+			activationCode: $scope.user.activationCode,
 			callBack: $scope.callBack
 		}))
 			.done(function(data){
@@ -50,5 +105,41 @@ function AuthController($scope, template){
 				$scope.error = data.error.message;
 				$scope.$apply('error');
 			});
+	};
+}
+
+function ResetController($scope, template){
+	$scope.template = template;
+	$scope.template.open('main', 'reset-form');
+	$scope.user = {};
+
+	if(window.location.href.indexOf('?') !== -1){
+		if(window.location.href.split('login=').length > 1){
+			$scope.login = window.location.href.split('login=')[1].split('&')[0];
+		}
+		if(window.location.href.split('activationCode=').length > 1){
+			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
+		}
 	}
+
+	$scope.reset = function(){
+		http().post('/auth/reset', http().serialize({
+			login: $scope.user.login,
+			password: $scope.user.password,
+			confirmPassword: $scope.user.confirmPassword,
+			resetCode: resetCode
+		}))
+		.done(function(data){
+			if(typeof data !== 'object'){
+				window.location.href = '/';
+			}
+			$scope.error = data.error.message;
+			$scope.$apply('error');
+		});
+	};
+}
+
+function CGUController($scope, template){
+	$scope.template = template;
+	$scope.template.open('main', 'cgu-content');
 }

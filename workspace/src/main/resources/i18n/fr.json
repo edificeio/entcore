@@ -95,4 +95,5 @@
 	"group.class.Teacher" : "Tous les enseignants de la classe {0}.",
 	"group.class.Student" : "Tous les élèves de la classe {0}.",
 	"group.class.Relative" : "Tous les parents de la classe {0}."
+	"confirm.remove": "Attention, si vous supprimez une image ou du son, il ne sera plus visible dans les applications qui l'utilisent (blog, actualités...). Êtes-vous sûr de vouloir supprimer le document ?"
 }

@@ -11,41 +11,9 @@
 		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
 
 	</head>
-	<body>
+	<body ng-controller="LoginController">
 		<default-styles>
-			<div class="centered container row">
-				<div class="logo">
-
-				</div>
-				<section class="main" ng-controller="AuthController">
-					<div class="row" ng-include="template.containers.main"></div>
-					<div class="welcome-text">
-						<h1 translate content="auth.welcome"></h1>
-						<p translate content="auth.welcome.p1"></p>
-						<p translate content="auth.welcome.p2"></p>
-						<p translate content="auth.welcome.p3"></p>
-					</div>
-
-					<div class="panel">
-						<h1 class="remove-fout"><img src="/auth/public/img/auth.png" /><span translate content="auth.header"></span></h1>
-						<p style="color:red">[[error]]</p>
-						<form method="post" ng-submit="connect()">
-							<p>
-								<label translate content="auth.email"></label>
-								<input type="text" ng-model="user.email" name="email" />
-							</p>
-							<p>
-								<label translate content="auth.password"></label>
-								<input type="password" ng-model="user.password" name="password" />
-							</p>
-							<a href="/auth/forgot" translate content="missing.password"></a>
-							<input type="submit" translate attr="value" value="auth.login" class="remove-fout" ng-click="connect()" />
-							<a href="/auth/activation" class="cell reduce-block-six right-magnet" translate content="auth.activateAccount"></a>
-						</form>
-						<div style="clear:both"></div>
-					</div>
-				</section>
-			</div>
+			<div ng-include="template.containers.main" class="absolute"></div>
 		</default-styles>
 	</body>
 </html>

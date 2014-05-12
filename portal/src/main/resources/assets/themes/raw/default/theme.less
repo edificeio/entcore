@@ -4,13 +4,13 @@
 @dark-blue: #074e68;
 @light-blue: #008cba;
 @black: #2A2829;
-@bright-blue: #008cba;
+@bright-blue: #008BB8;
 
 //legend colors
-@green: #6fbd2c;
+@green: #60CD12;
 @purple: #a04ac5;
 @pink: #FF0B75;
-@cyan: #008cba;
+@cyan: #00A3D8;
 @orange: #FD841C;
 
 .tabs{
@@ -842,29 +842,29 @@ textarea{
 	font-size: 14px;
 }
 
+
+.message{
+	background: #ccc;
+	color: #666;
+	text-align: left;
+	.border-radius(0px);
+}
+
 .warning{
-	background: #ccc;
-	color: #666;
+	.message;
 	border-left: 10px solid @pink;
-	.border-radius(0px);
-	text-align: left;
 }
 
 
 .info{
-	background: #ccc;
-	color: #666;
+	.message;
 	border-left: 10px solid @bright-blue;
-	.border-radius(0px);
-	text-align: left;
 }
 
 
-.info{
-	background: #ccc;
-	color: #666;
-	border-left: 10px solid @bright-blue;
-	.border-radius(0px);
+.success{
+	.message;
+	border-left: 10px solid @green;
 }
 
 .lightbox-window{
