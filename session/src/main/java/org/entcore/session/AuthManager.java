@@ -43,6 +43,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		if (getOptionalBooleanConfig("cluster", false)) {
 			HazelcastClusterManager cm = new HazelcastClusterManager((VertxInternal) vertx);
 			HazelcastInstance instance = cm.getInstance();
+			logger.info(instance.getName());
 			sessions = instance.getMap("sessions");
 			logins = instance.getMap("logins");
 		} else {
