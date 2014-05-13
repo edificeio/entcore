@@ -29,7 +29,7 @@ public class Starter extends Server {
 			}
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
-					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK") + Math.random());
+					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 			deployModule(config.getObject("neo4j-persistor"), false, new Handler<AsyncResult<String>>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
