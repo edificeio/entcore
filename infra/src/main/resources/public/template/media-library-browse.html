@@ -38,7 +38,7 @@
 		<div class="absolute icons-view" style="overflow: auto">
 			<div class="element reduce-block-six" ng-repeat="folder in folders">
 				<div class="container" ng-click="openFolder(folder)">
-					<i role="folder-large"></i>
+					<i class="folder-large"></i>
 				</div>
 				<legend>
 					<a class="medium-text">[[folder.name]]</a>
@@ -51,7 +51,7 @@
 					</div>
 				</div>
 				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
-					<i role="[[document.role()]]-large"></i>
+					<i class="[[document.role()]]-large"></i>
 				</div>
 				<input type="checkbox" ng-if="multiple" ng-model="document.selected" />
 				<legend>

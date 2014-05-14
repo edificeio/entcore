@@ -35,7 +35,7 @@
 	<portal>
 		<div class="row">
 			<section class="four cell">
-				<h1><a data-reload><i role="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
+				<h1><a data-reload><i class="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
 				<nav class="vertical">
 					<ul data-ng-include="'folder-content'"></ul>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
@@ -47,14 +47,14 @@
 						<div class="cell" ng-repeat="button in currentTree.buttons"><button
 								ng-click="button.action(button.url)"
 								ng-if="button.allow()">
-							<i role="add" ng-if="button.icon"></i> [[translate(button.text)]]
+							<i class="add" ng-if="button.icon"></i> [[translate(button.text)]]
 						</button></div>
 					</div>
 					<div class="display-buttons">
-						<i role="show-list"
+						<i class="show-list"
 						   ng-class="{ selected: currentViews.documents === views.documents.list }"
 						   ng-click="switchView('documents', 'list')"></i>
-						<i role="show-icons"
+						<i class="show-icons"
 							ng-class="{ selected: currentViews.documents === views.documents.icons }"
 							ng-click="switchView('documents', 'icons')"></i>
 					</div>
@@ -68,7 +68,7 @@
 	<section class="lightbox-window five cell" loading-panel="file-upload">
 		<div class="twelve cell" ng-include="currentViews.lightbox"></div>
 		<div class="close-lightbox">
-			<i role="close-2x"></i>
+			<i class="close-2x"></i>
 		</div>
 		<div class="clear"></div>
 	</section>

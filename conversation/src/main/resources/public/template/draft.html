@@ -1,7 +1,7 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
 		<button class="cell" ng-click="openView('write-mail', 'main')">
-			<i role="add"></i><span translate key="create"></span>
+			<i class="add"></i><span translate key="create"></span>
 		</button>
 		<button class="cell" ng-click="removeSelection()" translate key="remove" ng-if="folders.current.mails.selection().length"></button>
 	</div>
@@ -27,7 +27,7 @@
 				<span ng-if="mail.to.length > 2">...</span>
 			</td>
 			<td><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
-			<td><i role="attachment"></i></td>
+			<td><i class="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
 		<tr ng-if="folders.current.mails.empty()">

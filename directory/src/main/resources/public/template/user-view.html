@@ -27,25 +27,25 @@
 		<div class="row">
 			<div class="four cell"><label translate content="userBook.profile.email"></label></div>
 			<input type="text" class="six cell" data-complete-change="saveInfos()" data-ng-model="account.email" />
-			<i role="[[account.visible.email]]" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)" class="right-magnet"></i>
+			<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 			<div class="clear"></div>
 		</div>
 		<div class="row">
 			<div class="four cell"><label translate content="userBook.profile.telephone"></label></div>
 			<em class="six cell">[[account.tel]]</em>
-			<i role="[[account.visible.phone]]" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)" class="right-magnet"></i>
+			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
 			<div class="clear"></div>
 		</div>
 		<div class="row">
 			<div class="four cell"><label translate content="userBook.profile.address"></label></div>
 			<em class="six cell">[[account.address]]</em>
-			<i role="[[account.visible.mail]]" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)" class="right-magnet"></i>
+			<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
 			<div class="clear"></div>
 		</div>
 		<div class="row">
 			<div class="four cell"><label translate content="userBook.profile.birthdate"></label></div>
 			<em class="six cell">[[birthDate(account.birthDate)]]</em>
-			<i role="[[account.visible.birthdate]]" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)" class="right-magnet"></i>
+			<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
 			<div class="clear"></div>
 		</div>
 		<div class="row">

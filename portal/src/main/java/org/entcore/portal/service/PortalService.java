@@ -161,7 +161,7 @@ public class PortalService extends Controller {
 			}
 		});
 	}
-	
+
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
@@ -269,7 +269,7 @@ public class PortalService extends Controller {
 	public void widgets(HttpServerRequest request){
 		renderJson(request, container.config().getArray("widgets", new JsonArray()));
 	}
-	
+
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
 		redirectPermanent(request, "/directory/admin");

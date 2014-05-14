@@ -16,10 +16,10 @@
 	<portal>
 
 		<h1 ng-if="me.userId === account.id">
-			<a data-reload><i role="orange-user"></i><span translate content="account.myaccount"></span></a>
+			<a data-reload><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
 		</h1>
 		<h1 ng-if="me.userId !== account.id">
-			<a href="/userbook/classAdmin"><i role="orange-user"></i><span translate content="account.useraccount"></span></a>
+			<a href="/userbook/classAdmin"><i class="orange-user"></i><span translate content="account.useraccount"></span></a>
 		</h1>
 
 		<div class="row height-four" ng-include="viewsContainers.user"></div>
@@ -31,7 +31,7 @@
 
 		<div class="clear"></div>
 		<div class="close-lightbox">
-			<i role="close-2x"></i>
+			<i class="close-2x"></i>
 		</div>
 	</section>
 	</body>

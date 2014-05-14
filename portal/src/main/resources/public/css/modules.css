@@ -1991,7 +1991,7 @@ span.no-style {
   min-width: 30px;
   min-height: 30px;
 }
-.drawing-zone article.media i[role=close] {
+.drawing-zone article.media i.close {
   position: absolute;
   right: 15px;
   top: 15px;

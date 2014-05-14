@@ -200,7 +200,9 @@ var http = (function(){
 							messenger.notify('error', 'e' + e.status);
 						}
 						else{
-							humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
+							if(!params.disableNotifications){
+								humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
+							}
 						}
 					}
 
@@ -778,16 +780,241 @@ function Collection(obj){
 	};
 }());
 
+var theme = (function(){
+	return {
+		templateMapping: {},
+		skin: 'raw',
+		theme: '/assets/themes/raw/default/',
+		portalTemplate: '/assets/themes/raw/portal.html',
+		logoutCallback: '/',
+		loadDisconnected: function(){
+			var rand = Math.random();
+			var that = this;
+			http().get('/skin', { token: rand }, {
+				async: false,
+					success: function(data){
+						that.skin = data.skin;
+						that.theme = '/assets/themes/' + data.skin + '/default/';
+					http().get('/assets/themes/' + data.skin + '/i18n/' + (currentLanguage || 'en') + '.json', { token: rand }, {
+						async: false,
+						disableNotifications: true,
+						success: function(translations){
+							lang.addKeys(translations);
+						}
+					}).e404(function(){});
+
+					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
+						async: false,
+						disableNotifications: true,
+						success: function(override){
+							that.templateMapping = override;
+						}
+					}).e404(function(){});
+				}
+			});
+		},
+		loadConnected: function(){
+			var rand = Math.random();
+			var that = this;
+			http().get('/theme', {}, {
+				async: false,
+				success: function(data){
+					that.theme = data.skin;
+					that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
+					that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
+					that.logoutCallback = data.logoutCallback
+
+					http().get('/assets/themes/' + that.skin + '/i18n/' + (window.currentLanguage || 'en') + '.json', { token: rand }, {
+						async: false,
+						disableNotifications: true,
+						success: function(translations){
+							lang.addKeys(translations);
+						}
+					});
+
+					http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }, {
+						async: false,
+						disableNotifications: true,
+						success: function(override){
+							that.templateMapping = override;
+						}
+					});
+				}
+			});
+		}
+	}
+}());
+
+var workspace = {
+	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82",
+	Document: function(data){
+		if(data.metadata){
+			var dotSplit = data.metadata.filename.split('.');
+			if(dotSplit.length > 1){
+				dotSplit.length = dotSplit.length - 1;
+			}
+			this.title = dotSplit.join('.');
+		}
+
+		this.protectedDuplicate = function(callback){
+			var document = this;
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/workspace/document/' + this._id, true);
+			xhr.responseType = 'blob';
+			xhr.onload = function(e) {
+				if (this.status == 200) {
+					var blobDocument = this.response;
+					var formData = new FormData();
+					formData.append('file', blobDocument, document.metadata.filename);
+					http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
+						if(typeof callback === 'function'){
+							callback(new workspace.Document(data));
+						}
+					});
+				}
+			};
+			xhr.send();
+		};
+
+		this.role = function(){
+			var types = {
+				'doc': function(type){
+					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+				},
+				'xls': function(type){
+					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
+				},
+				'img': function(type){
+					return type.indexOf('image') !== -1;
+				},
+				'pdf': function(type){
+					return type.indexOf('pdf') !== -1;
+				},
+				'ppt': function(type){
+					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
+				},
+				'video': function(type){
+					return type.indexOf('video') !== -1;
+				},
+				'audio': function(type){
+					return type.indexOf('audio') !== -1;
+				}
+			};
+
+			for(var type in types){
+				if(types[type](this.metadata['content-type'])){
+					return type;
+				}
+			}
+
+			return 'unknown';
+		}
+	},
+	Folder: function(data){
+		this.updateData(data);
+
+		this.collection(workspace.Folder, {
+			sync: function(){
+				this.load(_.filter(model.mediaLibrary.myDocuments.folders.list, function(folder){
+					return folder.folder.indexOf(data.folder + '_') !== -1;
+				}));
+			}
+		});
+
+		this.collection(workspace.Document,  {
+			sync: function(){
+				http().get('/workspace/documents/' + data.folder, { filter: 'owner', hierarchical: true }).done(function(documents){
+					this.load(documents);
+				}.bind(this));
+			}
+		});
+
+		this.closeFolder = function(){
+			this.folders.all = [];
+		};
+
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	MyDocuments: function(){
+		this.collection(workspace.Folder, {
+			sync: function(){
+				if(model.me.workflow.workspace.documents.create){
+					http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
+						this.list = data;
+						this.load(_.filter(data, function(folder){
+							return folder.folder.indexOf('_') === -1;
+						}))
+					}.bind(this));
+				}
+			},
+			list: []
+		});
+
+		this.collection(workspace.Document,  {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'owner', hierarchical: true }).done(function(documents){
+					this.load(documents);
+				}.bind(this))
+			}
+		});
+
+		this.on('folders.sync, documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	SharedDocuments: function(){
+		this.collection(workspace.Document,  {
+			sync: function(){
+				if(model.me.workflow.workspace.documents.list){
+					http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
+						this.load(documents);
+					}.bind(this));
+				}
+			}
+		});
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
+	AppDocuments: function(){
+		this.collection(workspace.Document, {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'protected' }).done(function(documents){
+					this.load(_.filter(documents, function(doc){
+						return doc.folder !== 'Trash';
+					}));
+				}.bind(this))
+			}
+		});
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	}
+};
+
+workspace.Document.prototype.upload = function(file, requestName, callback){
+	var formData = new FormData();
+	formData.append('file', file, file.name);
+	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
+		if(typeof callback === 'function'){
+			callback(data);
+		}
+	});
+};
 
 var Behaviours = {};
 
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		if(typeof data !== 'object'){
+			theme.loadDisconnected();
 			func();
 			return;
 		}
 
+		theme.loadConnected();
 		model.me = data;
 
 		model.me.hasWorkflow = function(workflow){

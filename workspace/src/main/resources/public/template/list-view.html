@@ -11,26 +11,26 @@
 			<th scope="col"></th>
 			<th scope="col" class="five" ng-click="orderByField('name')">
 				<span translate content="name"></span>
-				<i role="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
-				<i role="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
+				<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
+				<i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
 			</th>
 			<th scope="col" class="four" ng-click="orderByField('ownerName')">
 				<span translate content="owner"></span>
-				<i role="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
-				<i role="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
+				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
+				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
 			</th>
 			<th></th>
 			<th scope="col" class="two" ng-click="orderByField('created')">
 				<span translate content="modified"></span>
-				<i role="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
-				<i role="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
+				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
+				<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
 			</th>
 		</tr>
 	</thead>
 	<tbody>
 	<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
 		<td><input type="checkbox" data-ng-model="folder.selected" /></td>
-		<td><i role="folder"></i></td>
+		<td><i class="folder"></i></td>
 		<td colspan="2">
 			<strong>
 				<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
@@ -44,8 +44,8 @@
 		<td><input type="checkbox" data-ng-model="document.selected" /></td>
 		<td class="icon">
 			<div class="twelve cell">
-				<i role="[[document.metadata.contentType]]"></i>
-				<i ng-if="document.shared.length > 0" role="shared"></i>
+				<i class="[[document.metadata.contentType]]"></i>
+				<i ng-if="document.shared.length > 0" class="shared"></i>
 			</div>
 		</td>
 		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>

@@ -1,10 +1,10 @@
 <nav class="contextual-buttons row">
 	<div class="action-buttons">
-		<button class="cell" ng-click="openView('write-mail', 'main')"><i role="add"></i><span translate key="create"></span></button>
+		<button class="cell" ng-click="openView('write-mail', 'main')"><i class="add"></i><span translate key="create"></span></button>
 		<button class="cell" ng-click="removeSelection()" ng-if="folders.current.mails.selection().length" translate key="remove"></button>
 	</div>
 	<div class="display-buttons">
-		<i role="refresh" ng-click="refresh()"></i>
+		<i class="refresh" ng-click="refresh()"></i>
 	</div>
 </nav>
 <article class="list list-view row">
@@ -26,7 +26,7 @@
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td><a ng-click="readMail(mail)">[[mail.sender().displayName]]</a></td>
 			<td><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
-			<td><i role="attachment"></i></td>
+			<td><i class="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
 		<tr ng-if="folders.current.mails.empty()">

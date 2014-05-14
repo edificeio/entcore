@@ -105,13 +105,6 @@ var protoApp = {
 		}
 };
 
-
-var theme = (function(){
-	return {
-		templateMapping: {}
-	}
-}());
-
 var notify = {
 	message: function(type, message){
 		message = lang.translate(message);
@@ -143,8 +136,12 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 
 		return function(setRoutes){
 			routes = setRoutes;
-			//refreshing in case routechangeevent already fired
-			$route.reload();
+			// refreshing in case routechangeevent already fired
+			// an amusing quirk of FF is that routing is refreshed before being analyzed, thus we push it
+			// at the end of the execution thread
+			setTimeout(function(){
+				$route.reload();
+			}, 1);
 		}
 	})
 	.factory('template', function(){
@@ -270,7 +267,7 @@ module.directive('lightbox', function($compile){
 					<section class="lightbox-view">\
 						<div class="twelve cell reduce-block-eight" ng-transclude></div>\
 						<div class="close-lightbox">\
-						<i role="close-2x"></i>\
+						<i class="close-2x"></i>\
 						</div>\
 						<div class="clear"></div>\
 					</section>\
@@ -509,12 +506,12 @@ module.directive('iconsSelect', function($compile) {
 		template: '\
 			<div>\
 				<div class="current fixed cell twelve" data-selected="[[current.id]]">\
-					<i role="[[current.icon]]"></i>\
+					<i class="[[current.icon]]"></i>\
 					<span>[[current.text]]</span>\
 				</div>\
 				<div class="options-list icons-view">\
 				<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">\
-					<i role="[[option.icon]]"></i>\
+					<i class="[[option.icon]]"></i>\
 					<span>[[option.text]]</span>\
 				</div>\
 				</div>\
@@ -635,42 +632,27 @@ module.directive('bindHtml', function($compile){
 });
 
 module.directive('portal', function($compile){
-	var skin = 'raw';
-	var theme = '/assets/themes/raw/default/';
-	var template = '/assets/themes/raw/portal.html';
-	var logout = '/';
-	http().get('/theme', {}, {
-		async: false,
-		success: function(data){
-			logout = data.logoutCallback;
-			theme = data.skin;
-			skin = theme.split('/assets/themes/')[1].split('/')[0];
-			template = '/assets/themes/' + skin + '/portal.html';
-		}
-	});
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: template,
-		compile: function($element, $attribute, $transclude){
-			$('[logout]').attr('href', '/auth/logout?callback=' + logout);
-			ui.setStyle(theme);
+		templateUrl: theme.portalTemplate,
+		compile: function(element, attributes, transclude){
+			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback);
+			ui.setStyle(theme.theme);
 		}
 	}
 });
 
 module.directive('adminPortal', function($compile){
-	var skin = 'admin';
-	var theme = '/assets/themes/admin/default/';
-	var template = '/assets/themes/admin/portal.html';
-	var logout = '/';
+	theme.skin = 'admin';
+	theme.theme = '/assets/themes/admin/default/';
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: template,
-		compile: function($element, $attribute, $transclude){
-			$('[logout]').attr('href', '/auth/logout?callback=' + logout);
-			ui.setStyle(theme);
+		templateUrl: '/assets/themes/admin/portal.html',
+		compile: function(element, attributes, transclude){
+			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback);
+			ui.setStyle(theme.theme);
 		}
 	}
 });
@@ -678,13 +660,9 @@ module.directive('adminPortal', function($compile){
 module.directive('portalStyles', function($compile){
 	return {
 		restrict: 'E',
-		compile: function($element, $attribute){
-			var rand = Math.random();
-			$.get('/theme?token=' + rand, function(data){
-				var css = data.skin;
-				$('[logout]').attr('href', '/auth/logout?callback=' + data.logoutCallback)
-				ui.setStyle(css);
-			})
+		compile: function(element, attributes){
+			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback)
+			ui.setStyle(theme.theme);
 		}
 	}
 });
@@ -692,23 +670,8 @@ module.directive('portalStyles', function($compile){
 module.directive('defaultStyles', function($compile){
 	return {
 		restrict: 'E',
-		link: function($scope, $element, $attribute){
-			var rand = Math.random();
-			$.get('/skin?token=' + rand, function(data){
-				var css = '/assets/themes/' + data.skin + '/default/';
-				$.getJSON('/assets/themes/' + data.skin + '/template/override.json?token=' + rand, function(override){
-					theme.templateMapping = override;
-					theme.skin = data.skin;
-					ui.setStyle(css);
-					if($scope.template){
-						for(var container in $scope.template.containers){
-							var view = $scope.template.containers[container].split('.html')[0].split('template/')[1];
-							$scope.template.open(container, view);
-						}
-					}
-					$scope.$apply('template');
-				})
-			})
+		link: function(scope, element, attributes){
+			ui.setStyle(theme.theme);
 		}
 	}
 });
@@ -1789,6 +1752,7 @@ function Account($scope){
 	});
 
 	$scope.refreshAvatar();
+	$scope.currentURL = window.location.href;
 }
 
 function Share($rootScope, $scope, ui, _, lang){

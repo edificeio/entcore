@@ -1,16 +1,6 @@
-<div class="logo">
-
-</div>
 <section class="main">
-	<div class="welcome-text">
-		<h1 translate content="auth.welcome"></h1>
-		<p translate content="auth.welcome.p1"></p>
-		<p translate content="auth.welcome.p2"></p>
-		<p translate content="auth.welcome.p3"></p>
-	</div>
-
 	<div class="panel">
-		<h1><img src="/auth/public/img/auth.png" /><span translate content="auth.forgot.header"></span></h1>
+		<h1 translate content="auth.forgot.header"></h1>
 		<p class="warning" ng-if="error" translate content="error"></p>
 		<form method="post" action="forgot" ng-submit="forgot()">
 			<p>

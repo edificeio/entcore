@@ -14,7 +14,7 @@
 <script type="text/ng-template" id="empty"></script>
 <body bottom-scroll="showMore()">
 <portal>
-	<h1 data-reload><i role="admin"></i> <span translate content="classAdmin.title"></span></h1>
+	<h1 data-reload><i class="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
 	<section class="row">
 		<h1 class="text" translate content="classAdmin.globalParams"></h1>
@@ -106,7 +106,7 @@
 									<div class="row">
 										<div class="label-badge cell" ng-repeat="relative in newUser.relatives" ng-click="removeRelative(relative)">
 											<span class="cell">[[relative.firstName]] [[relative.lastName]]</span>
-											<i role="close" class="right-magnet"></i>
+											<i class="close" class="right-magnet"></i>
 										</div>
 										<input type="text" class="twelve cell inline-editing" ng-model="display.relativeSearch"
 												ng-change="updateFoundRelatives()" id="relative"

@@ -1994,7 +1994,7 @@ span.no-style {
   min-width: 30px;
   min-height: 30px;
 }
-.drawing-zone article.media i[role=close] {
+.drawing-zone article.media i.close {
   position: absolute;
   right: 15px;
   top: 15px;
@@ -2517,7 +2517,7 @@ html.app body {
 .select-file input[type=text] {
   height: 24px;
 }
-i[role=send-mail] {
+i.send-mail {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_010_envelope.png");
@@ -2533,7 +2533,7 @@ i[role=send-mail] {
   margin: 7px;
   opacity: 0.6;
 }
-i[role=public] {
+i.public {
   height: 25px;
   width: 25px;
   background-image: url("../img/icons/public.png");
@@ -2548,7 +2548,7 @@ i[role=public] {
   vertical-align: middle;
   cursor: pointer;
 }
-i[role=prive] {
+i.prive {
   height: 25px;
   width: 25px;
   background-image: url("../img/icons/prive.png");
@@ -2563,7 +2563,7 @@ i[role=prive] {
   vertical-align: middle;
   cursor: pointer;
 }
-i[role=view-folder] {
+i.view-folder {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_144_folder_open.png");
@@ -2579,7 +2579,7 @@ i[role=view-folder] {
   margin: 7px;
   opacity: 0.6;
 }
-i[role=view-book] {
+i.view-book {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_071_book.png");
@@ -2595,7 +2595,7 @@ i[role=view-book] {
   margin: 7px;
   opacity: 0.6;
 }
-i[role=angry] {
+i.angry {
   height: 25px;
   width: 25px;
   background-image: url("../img/icons/default.png");
@@ -2609,7 +2609,7 @@ i[role=angry] {
   float: left;
   vertical-align: middle;
 }
-i[role=default] {
+i.default {
   height: 25px;
   width: 25px;
   background-image: url("../img/icons/default.png");
@@ -2623,7 +2623,7 @@ i[role=default] {
   float: left;
   vertical-align: middle;
 }
-i[role=dreamy] {
+i.dreamy {
   height: 25px;
   width: 25px;
   background-image: url("../img/icons/default.png");
@@ -2764,7 +2764,7 @@ i[role=show-icons] {
   vertical-align: middle;
   opacity: 0.5;
 }
-i[role=disconnect] {
+i.disconnect {
   height: 35px;
   width: 35px;
   background-image: url("../img/icons/glyphicons_063_power.png");
@@ -2800,7 +2800,7 @@ i[role=show-details] {
   opacity: 0.5;
   background-size: 100% 93%;
 }
-i[role=show-list] {
+i.show-list {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_158_show_lines.png");
@@ -2816,16 +2816,16 @@ i[role=show-list] {
   opacity: 0.5;
   background-size: 100% 93%;
 }
-i[role=show-icons].selected {
+i.show-icons.selected {
   opacity: 1;
 }
-i[role=show-details].selected {
+i.show-details.selected {
   opacity: 1;
 }
-i[role=show-list].selected {
+i.show-list.selected {
   opacity: 1;
 }
-i[role=close] {
+i.close {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -2840,7 +2840,7 @@ i[role=close] {
   vertical-align: middle;
   background-size: 100% 100%;
 }
-i[role=close2x] {
+i.close2x {
   height: 50px;
   width: 50px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -3412,6 +3412,7 @@ header {
 }
 .tabs section {
   background: #fff;
+  border-color: #ccc;
 }
 .toggle-panel h2 {
   display: none;

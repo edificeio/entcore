@@ -6,7 +6,7 @@
 <div class="icons-view">
 	<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container">
 		<a class="container">
-			<i role="folder-large" data-ng-click="openFolder(folder)"></i>
+			<i class="folder-large" data-ng-click="openFolder(folder)"></i>
 		</a>
 		<legend>
 			<a data-ng-click="openFolder(value)">[[folder.name]]</a>
@@ -15,7 +15,7 @@
 	<section data-ng-repeat-end></section>
 	<div ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" class="element reduce-block-six" ng-class="{ selected: document.selected }">
 			<a ng-href="/workspace/document/[[document._id]]" class="[[document.metadata.contentType]] container cell">
-				<i role="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
+				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'" class="twelve cell height-twelve">
 					<div class="clip absolute">
@@ -27,7 +27,7 @@
 
 			<legend>
 				<a ng-href="[[documentPath(document)]]">
-					<i ng-if="document.shared.length > 0" role="shared" class="inline"></i>
+					<i ng-if="document.shared.length > 0" class="shared inline"></i>
 					[[document.name]]
 					<span class="badge" ng-if="document.comments.length > 0" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 				</a>

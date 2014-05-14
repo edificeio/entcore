@@ -37,14 +37,14 @@
 		<div class="nine cell">
 			<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
 		</div>
-		<div class="one cell"><i role="[[hobby.visibility.toLowerCase()]]" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)" class="right-magnet"></i></div>
+		<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)"></i></div>
 		<div class="clear"></div>
 	</div>
 </article>
 <div class="clear"></div>
 <h1 class="vertical-spacing">
 	<span translate content="userBook.profile.health"></span>
-	<i role="[[account.visible.health]]" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)" class="right-magnet"></i></h1>
+	<i class="[[account.visible.health]] right-magnet" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)"></i></h1>
 <article class="reduce-block-six">
 	<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
 </article>

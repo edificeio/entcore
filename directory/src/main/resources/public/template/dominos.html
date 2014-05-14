@@ -14,12 +14,12 @@
 					<a ng-click="selectUser(user)">[[user.displayName]]</a>
 					<br /><span class="medium-text" translate content="directory.[[user.type.toLowerCase()]]"></span>
 					<div class="mood three">
-						<i class="liquid" role="[[user.mood]]"></i>
+						<i class="liquid [[user.mood]]"></i>
 					</div>
 					<div class="bottom-locked">
-						<a ng-href="/conversation/conversation#/write-mail/[[user.id]]"><i role="send-mail"></i></a>
-						<i role="view-book"></i>
-						<i role="view-folder"></i>
+						<a ng-href="/conversation/conversation#/write-mail/[[user.id]]"><i class="send-mail"></i></a>
+						<i class="view-book"></i>
+						<i class="view-folder"></i>
 					</div>
 				</div>
 			</div>

@@ -1,7 +1,7 @@
 <div class="centered container row">
 	<section class="main">
 		<div class="panel">
-			<h1 class="remove-fout" translate content="auth.header"></h1>
+			<h1 translate content="auth.header"></h1>
 			<p class="warning" translate content="[[error]]" ng-if="error"></p>
 			<form method="post" ng-submit="connect()">
 				<p>
@@ -13,7 +13,7 @@
 					<input type="password" ng-model="user.password" name="password" id="password" />
 				</p>
 				<a href="/auth/forgot" translate content="missing.password"></a>
-				<input type="submit" translate attr="value" value="auth.login" class="remove-fout" ng-click="connect()" />
+				<input type="submit" translate attr="value" value="auth.login" ng-click="connect()" />
 				<a href="/auth/activation" class="cell reduce-block-six right-magnet" translate content="auth.activateAccount"></a>
 			</form>
 			<div style="clear:both"></div>
