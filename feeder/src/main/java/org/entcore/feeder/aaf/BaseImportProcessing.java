@@ -13,10 +13,12 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.Arrays;
 
 public abstract class BaseImportProcessing implements ImportProcessing {
@@ -54,6 +56,27 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 						AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
 						XMLReader xr = XMLReaderFactory.createXMLReader();
 						xr.setContentHandler(sh);
+						xr.setEntityResolver(new EntityResolver2() {
+							@Override
+							public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
+								return null;
+							}
+
+							@Override
+							public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+								return resolveEntity(publicId, systemId);
+							}
+
+							@Override
+							public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+								if (systemId.equals("ficAlimMENESR.dtd")) {
+									Reader reader = new FileReader(path + File.separator + "ficAlimMENESR.dtd");
+									return new InputSource(reader);
+								} else {
+									return null;
+								}
+							}
+						});
 						xr.parse(in);
 						importer.flush(new Handler<Message<JsonObject>>() {
 							@Override
