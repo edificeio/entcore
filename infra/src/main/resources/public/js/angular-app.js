@@ -2394,6 +2394,7 @@ function MediaLibrary($scope){
 	};
 
 	$scope.setFilesName = function(){
+		$scope.upload.names = '';
 		for(var i = 0; i < $scope.upload.files.length; i++){
 			if(i > 0){
 				$scope.upload.names += ', '
