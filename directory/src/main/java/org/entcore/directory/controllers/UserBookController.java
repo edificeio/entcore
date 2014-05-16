@@ -153,7 +153,7 @@ public class UserBookController extends Controller {
 								+ "OPTIONAL MATCH n-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Structure)"
 								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
 								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
-								+ "OPTIONAL MATCH (n)-[:EN_RELATION_AVEC]-(n2) "
+								+ "OPTIONAL MATCH (n)-[:RELATED]-(n2) "
 								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
 								+ personnalInfos
 								+ "RETURN DISTINCT "
