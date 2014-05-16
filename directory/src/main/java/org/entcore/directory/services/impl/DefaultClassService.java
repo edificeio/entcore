@@ -134,6 +134,24 @@ public class DefaultClassService implements ClassService {
 		});
 	}
 
+	@Override
+	public void link(String classId, String userId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-user")
+				.putString("classId", classId)
+				.putString("userId", userId);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void unlink(String classId, String userId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-user")
+				.putString("classId", classId)
+				.putString("userId", userId);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
 	private boolean validationParamsError(Handler<Either<String, JsonObject>> result, String ... params) {
 		if (params.length > 0) {
 			for (String s : params) {

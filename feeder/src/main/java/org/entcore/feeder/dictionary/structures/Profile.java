@@ -64,7 +64,7 @@ public class Profile {
 
 	public void create() {
 		String query =
-				"CREATE (p:Profile {props}) ";
+				"CREATE (p:Profile {props})<-[:HAS_PROFILE]-(g:Group:ProfileGroup:DefaultProfileGroup) ";
 		JsonObject params = new JsonObject()
 				.putString("id", id)
 				.putString("externalId", externalId)

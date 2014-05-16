@@ -10,6 +10,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.List;
+
 public interface UserService {
 
 	void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result);
@@ -23,5 +25,7 @@ public interface UserService {
 	void get(String id, Handler<Either<String, JsonObject>> result);
 
 	void list(String structureId, String classId, JsonArray expectedProfiles, Handler<Either<String, JsonArray>> results);
+
+	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
 
 }

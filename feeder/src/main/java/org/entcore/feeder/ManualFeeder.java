@@ -206,6 +206,79 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void addUser(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		if (userId == null) return;
+
+		final String structureId = message.body().getString("structureId");
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			addUserInStructure(message, userId, structureId);
+			return;
+		}
+		final String classId = message.body().getString("classId");
+		if (classId != null && !classId.trim().isEmpty()) {
+			addUserInClass(message, userId, classId);
+			return;
+		}
+		sendError(message, "structureId or classId must be specified");
+	}
+
+	private void addUserInStructure(final Message<JsonObject> message,
+			String userId, String structureId) {
+		JsonObject params = new JsonObject()
+				.putString("structureId", structureId)
+				.putString("userId", userId);
+		String query =
+				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"WITH u, p " +
+				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
+				"CREATE UNIQUE pg<-[:IN]-u " +
+				"RETURN DISTINCT u.id as id";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				message.reply(m.body());
+			}
+		});
+	}
+
+	public void removeUser(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		if (userId == null) return;
+
+		final String structureId = message.body().getString("structureId");
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			removeUserFromStructure(message, userId, structureId);
+			return;
+		}
+		final String classId = message.body().getString("classId");
+		if (classId != null && !classId.trim().isEmpty()) {
+			removeUserFromClass(message, userId, classId);
+			return;
+		}
+		sendError(message, "structureId or classId must be specified");
+	}
+
+	private void removeUserFromStructure(final Message<JsonObject> message,
+			String userId, String structureId) {
+		JsonObject params = new JsonObject()
+				.putString("structureId", structureId)
+				.putString("userId", userId);
+		String query =
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
+				"(pg:ProfileGroup)-[:DEPENDS]->(s:Structure { id : {structureId}}), " +
+				"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+				"CREATE UNIQUE dpg<-[:IN]-u " +
+				"DELETE r " +
+				"RETURN DISTINCT u.id as id";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				message.reply(m.body());
+			}
+		});
+	}
+
 	private void createUserInClass(final Message<JsonObject> message,
 			JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		String related = "";
@@ -226,6 +299,46 @@ public class ManualFeeder extends BusModBase {
 				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
 				"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
 				related +
+				"RETURN DISTINCT u.id as id";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				message.reply(m.body());
+			}
+		});
+	}
+
+	private void addUserInClass(final Message<JsonObject> message,
+			String userId, String classId) {
+		JsonObject params = new JsonObject()
+				.putString("classId", classId)
+				.putString("userId", userId);
+		String query =
+				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"WITH u, p " +
+				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+				"(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
+				"CREATE UNIQUE pg<-[:IN]-u, cpg<-[:IN]-u " +
+				"RETURN DISTINCT u.id as id";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				message.reply(m.body());
+			}
+		});
+	}
+
+	private void removeUserFromClass(final Message<JsonObject> message,
+								String userId, String classId) {
+		JsonObject params = new JsonObject()
+				.putString("classId", classId)
+				.putString("userId", userId);
+		String query =
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+				"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+				"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+				"CREATE UNIQUE dpg<-[:IN]-u " +
+				"DELETE r " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override

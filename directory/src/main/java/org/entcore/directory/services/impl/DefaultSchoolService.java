@@ -55,4 +55,22 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query, new JsonObject().putString("id", userId), validResultHandler(results));
 	}
 
+	@Override
+	public void link(String structureId, String userId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-user")
+				.putString("structureId", structureId)
+				.putString("userId", userId);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void unlink(String structureId, String userId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-user")
+				.putString("structureId", structureId)
+				.putString("userId", userId);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
 }

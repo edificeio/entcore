@@ -65,4 +65,5 @@ MATCH (r:Relative)
 REMOVE r:Relative;
 MATCH (t:Teacher)
 REMOVE t:Teacher;
+MATCH (p:Profile) CREATE p<-[:HAS_PROFILE]-(dpg:Group:ProfileGroup:DefaultProfileGroup) ;
 commit

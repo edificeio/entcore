@@ -23,4 +23,8 @@ public interface ClassService {
 
 	void addUser(String classId, String userId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
+	void link(String classId, String userId, Handler<Either<String, JsonObject>> result);
+
+	void unlink(String classId, String userId, Handler<Either<String, JsonObject>> result);
+
 }

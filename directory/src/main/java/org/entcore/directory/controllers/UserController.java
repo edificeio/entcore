@@ -21,7 +21,6 @@ import org.entcore.directory.services.impl.DefaultUserBookService;
 import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.user.SessionAttributes.*;
@@ -174,6 +174,13 @@ public class UserController extends Controller {
 				}
 			}
 		});
+	}
+
+	@SecuredAction("user.list.isolated")
+	public void listIsolated(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		final List<String> expectedProfile = request.params().getAll("profile");
+		userService.listIsolated(structureId, expectedProfile, arrayResponseHandler(request));
 	}
 
 }

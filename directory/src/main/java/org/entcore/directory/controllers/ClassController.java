@@ -32,7 +32,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -315,6 +314,34 @@ public class ClassController extends Controller {
 		} else {
 			ApplicationUtils.publishModifiedUserGroup(eb, userIds);
 		}
+	}
+
+	@SecuredAction("class.link.user")
+	public void linkUser(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		final String classId = request.params().get("classId");
+		classService.link(classId, userId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> r) {
+				if (r.isRight()) {
+					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
+						initPostCreate(classId, new JsonArray().add(userId));
+						renderJson(request, r.right().getValue(), 200);
+					} else {
+						notFound(request);
+					}
+				} else {
+					renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+				}
+			}
+		});
+	}
+
+	@SecuredAction("class.unlink.user")
+	public void unlinkUser(final HttpServerRequest request) {
+		final String classId = request.params().get("classId");
+		final String userId = request.params().get("userId");
+		classService.unlink(classId, userId, notEmptyResponseHandler(request));
 	}
 
 }

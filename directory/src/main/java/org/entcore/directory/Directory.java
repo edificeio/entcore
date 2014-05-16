@@ -7,15 +7,12 @@ package org.entcore.directory;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.directory.controllers.ClassController;
-import org.entcore.directory.controllers.DirectoryController;
-import org.entcore.directory.controllers.UserBookController;
+import org.entcore.directory.controllers.*;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.ActionFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
-import org.entcore.directory.controllers.UserController;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -42,6 +39,7 @@ public class Directory extends Server {
 
 		DirectoryController directoryController = new DirectoryController(vertx, container, rm, securedActions, config);
 		UserBookController userBookController = new UserBookController(vertx, container, rm, securedActions, config);
+		StructureController structureController = new StructureController(vertx, container, rm, securedActions);
 		ClassController classController = new ClassController(vertx, container, rm, securedActions);
 		UserController userController = new UserController(vertx, container, rm, securedActions);
 
@@ -85,17 +83,24 @@ public class Directory extends Server {
 				.get("/class/:classId", "get")
 				.put("/class/:classId", "update")
 				.post("/class/:classId/user", "createUser")
+				.put("/class/:classId/link/:userId", "linkUser")
+				.delete("/class/:classId/unlink/:userId", "unlinkUser")
 				.get("/class/:classId/users", "findUsers")
 				.post("/csv/:userType/class/:classId", "csv")
 				.put("/class/:classId/add/:userId",  "addUser")
 				.put("/class/:classId/apply", "applyComRulesAndRegistryEvent");
+
+		structureController
+				.put("/structure/:structureId/link/:userId", "linkUser")
+				.delete("/structure/:structureId/unlink/:userId", "unlinkUser");
 
 		userController
 				.get("/user/:userId", "get")
 				.put("/user/:userId", "update")
 				.get("/userbook/:userId", "getUserBook")
 				.put("/userbook/:userId", "updateUserBook")
-				.put("/avatar/:userId", "updateAvatar");
+				.put("/avatar/:userId", "updateAvatar")
+				.get("/list/isolated", "listIsolated");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
@@ -115,6 +120,7 @@ public class Directory extends Server {
 		List<Set<Binding>> securedUriBinding = new ArrayList<>();
 		securedUriBinding.add(directoryController.securedUriBinding());
 		securedUriBinding.add(userBookController.securedUriBinding());
+		securedUriBinding.add(structureController.securedUriBinding());
 		securedUriBinding.add(classController.securedUriBinding());
 		securedUriBinding.add(userController.securedUriBinding());
 		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),

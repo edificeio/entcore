@@ -190,7 +190,7 @@ public class DirectoryController extends Controller {
 		params.put("id", request.params().get("id"));
 		neo.send("MATCH (n:User) " +
 				"WHERE n.id = {id} " +
-				"RETURN distinct n.login as login, n.address as address, n.activationCode as code;"
+				"RETURN distinct n.id as id, n.login as login, n.address as address, n.activationCode as code;"
 				, params, request.response());
 	}
 

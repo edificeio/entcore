@@ -19,4 +19,7 @@ public interface SchoolService {
 
 	void listByUserId(String userId, Handler<Either<String, JsonArray>> results);
 
+	void link(String structureId, String userId, Handler<Either<String, JsonObject>> result);
+
+	void unlink(String structureId, String userId, Handler<Either<String, JsonObject>> result);
 }

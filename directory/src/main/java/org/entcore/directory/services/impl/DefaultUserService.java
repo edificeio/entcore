@@ -18,6 +18,8 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.util.List;
+
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
 public class DefaultUserService implements UserService {
@@ -143,6 +145,32 @@ public class DefaultUserService implements UserService {
 				"(u:User)-[:IN]->g-[:DEPENDS*0..1]->pg-[:HAS_PROFILE]->(p:Profile) " +
 				filterProfile +
 				"RETURN DISTINCT u.id as id, p.name as type, " +
+				"u.activationCode as code, u.firstName as firstName," +
+				"u.lastName as lastName, u.displayName as displayName " +
+				"ORDER BY type DESC, displayName ASC ";
+		neo.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results) {
+		JsonObject params = new JsonObject();
+		String query;
+		// users without class
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			query = "MATCH  (s:Structure { id : {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
+					"g-[:HAS_PROFILE]->(p:Profile) " +
+					"WHERE  NOT(u-[:IN]->()-[:DEPENDS]->(:Class)) ";
+			params.putString("structureId", structureId);
+			if (profile != null && !profile.isEmpty()) {
+				query += "AND p.name IN {profile} ";
+				params.putArray("profile", new JsonArray(profile.toArray()));
+			}
+		} else { // users without structure
+			query = "MATCH (u:User)" +
+					"WHERE NOT(u-[:IN]->()-[:DEPENDS]->(:Structure)) " +
+					"OPTIONAL MATCH u-[:IN]->(dpg:DefaultProfileGroup)-[:HAS_PROFILE]->(p:Profile) ";
+		}
+		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
 				"u.lastName as lastName, u.displayName as displayName " +
 				"ORDER BY type DESC, displayName ASC ";

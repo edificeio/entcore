@@ -16,27 +16,29 @@ var admin = function(){
 	app.define({
 		template : {
 			ecole : "\
-				{{#list}}<h3>{{name}}</h3>\
+				{{#list}}<div class=\"schoolId\" id=\"{{id}}\"><h3>{{name}}</h3>\
 				<a call='classes' href='api/classes?id={{id}}'>\
 				{{#i18n}}directory.admin.see-classes{{/i18n}}</a> - \
 				<a call='users' href='users?profile=Personnel&structureId={{id}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a> - \
+				<a call='users' href='list/isolated?profile=Teacher&profile=Student&profile=Relative&structureId={{id}}'>\
+				{{#i18n}}directory.admin.see-lost{{/i18n}}</a> - \
 				<a href=\"{{id}}\" call=\"addStructureUser\">\
 				{{#i18n}}directory.admin.create-user{{/i18n}}</a> - \
 				<a href='api/export?id={{id}}'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a>\
 				<div id='classes-{{id}}'></div>\
-				<div id='people-{{id}}'></div>{{/list}}"
+				<div id='people-{{id}}'></div></div>{{/list}}"
 			,
 			classes: "\
 				{{#list}}<h4><a>{{name}}</a></h4>\
 				<a call='personnes' href='api/personnes?id={{classId}}'>\
 				{{#i18n}}directory.admin.see-people{{/i18n}}</a>\
-				 - <a href=\"{{classId}}\" call=\"addUser\">\
+				 - <a href=\"{{classId}}\" call=\"addUser\" class=\"classId\">\
 				{{#i18n}}directory.admin.create-user{{/i18n}}</a>\
 				 - <a href='api/export?id={{classId}}'>\
 				{{#i18n}}directory.admin.exports{{/i18n}}</a><br />\
-				<div id='people-{{classId}}'></div>{{/list}}"
+				<div id='people-{{classId}}' class=\"classId\"></div>{{/list}}"
 			,
 			personnes: "\
 				<br /><span>\
@@ -60,7 +62,11 @@ var admin = function(){
 			personne : '\
 				{{#list}}{{#i18n}}directory.admin.login{{/i18n}} : {{login}} / {{code}} - \
 				{{#i18n}}directory.admin.address{{/i18n}} : {{address}} - \
-				<a call="sendResetPassword" href="{{login}}">{{#i18n}}directory.admin.reset.password{{/i18n}}</a> {{/list}}'
+				<a call="sendResetPassword" href="{{login}}">{{#i18n}}directory.admin.reset.password{{/i18n}}</a> - \
+				<a call="linkSchool" href="{{id}}">{{#i18n}}directory.admin.link.school{{/i18n}}</a> - \
+				<a call="unlinkSchool" href="{{id}}">{{#i18n}}directory.admin.unlink.school{{/i18n}}</a> - \
+				<a call="linkClass" href="{{id}}">{{#i18n}}directory.admin.link.class{{/i18n}}</a> - \
+				<a call="unlinkClass" href="{{id}}">{{#i18n}}directory.admin.unlink.class{{/i18n}}</a> {{/list}}'
 			,
 			personnesEcole :'\
 				{{#list}}<input type="checkbox" name="{{userId}}" value="{{userId}}"/>\
@@ -105,7 +111,29 @@ var admin = function(){
                     <label>{{#i18n}}directory.admin.email{{/i18n}}</label>\
                     <input type="text" name="email" />\
                     <input call="sendResetPasswordSubmit" type="button" value="{{#i18n}}directory.admin.send{{/i18n}}" />\
-            	</form>'
+            	</form>',
+			linkClass : '\
+				<form action="{{userId}}">\
+					<label>{{login}}</label>\
+					<label>{{#i18n}}directory.admin.class{{/i18n}}</label>\
+					<select name="classId">\
+					{{#classes}}\
+						<option value="{{classId}}">{{name}}</option>\
+					{{/classes}}\
+					</select>\
+					<input call="linkClassSubmit" type="button" value="{{#i18n}}directory.admin.send{{/i18n}}" />\
+				</form>',
+			linkSchool : '\
+				<form action="{{userId}}">\
+					<label>{{login}}</label>\
+					<label>{{#i18n}}directory.admin.school{{/i18n}}</label>\
+					<select name="schoolId">\
+					{{#schools}}\
+						<option value="{{id}}">{{name}}</option>\
+					{{/schools}}\
+					</select>\
+					<input call="linkSchoolSubmit" type="button" value="{{#i18n}}directory.admin.send{{/i18n}}" />\
+				</form>'
 		},
 		action : {
 			ecole : function(o) {
@@ -200,7 +228,90 @@ var admin = function(){
                 .error(function(data) {
                     app.notify.error(app.i18n.bundle["directory.admin.reset.code.send.error"]);
                 });
-            }
+            },
+            unlinkSchool : function(o) {
+            	var userId = $(o.target).attr("href");
+            	var schoolId = $(o.target).parents(".schoolId").attr("id");
+				//schoolId = schoolId.slice(schoolId.indexOf('-') + 1);
+				$.ajax({type: "DELETE", url : "/directory/structure/" + schoolId + "/unlink/" + userId})
+				.done(function(response) {
+					app.notify.done(app.i18n.bundle["directory.admin.unlinked.school"]);
+				})
+				.error(function(data) {
+					app.notify.error(app.i18n.bundle["directory.admin.unlinked.school"]);
+				});
+			},
+			unlinkClass : function(o) {
+				var userId = $(o.target).attr("href");
+				var classId = $(o.target).parents(".classId").attr("id")
+				classId = classId.slice(classId.indexOf('-') + 1);
+				$.ajax({type: "DELETE", url : "/directory/class/" + classId + "/unlink/" + userId})
+				.done(function(response) {
+					app.notify.done(app.i18n.bundle["directory.admin.unlinked.class"]);
+				})
+				.error(function(data) {
+					app.notify.error(app.i18n.bundle["directory.admin.unlinked.class"]);
+				});
+			},
+			linkClass : function(o) {
+				var userId = $(o.target).attr("href");
+				var schoolId = $(o.target).parents(".schoolId").attr("id");
+				//schoolId = schoolId.slice(schoolId.indexOf('-') + 1);
+				$.get("api/classes?id=" + schoolId)
+				.done(function(data){
+					if(undefined !== data.result[0]) {
+						$('#details').html(app.template.render(
+							"linkClass", { userId : userId, classes : dataExtractor(data).list }));
+					} else {
+						app.notify.info("Aucun résultat");
+					}
+				})
+				.error(function(data){app.notify.error(data);})
+			},
+			linkClassSubmit : function(o) {
+				var form = $(o.target).parents("form");
+				var userId = form.attr("action");
+				var classId = form.children("select[name='classId']").val();
+				$.ajax({type: "PUT", url : "/directory/class/" + classId + "/link/" + userId})
+				.done(function(response) {
+					app.notify.done(app.i18n.bundle["directory.admin.linked.class"]);
+				})
+				.error(function(data) {
+					app.notify.error(app.i18n.bundle["directory.admin.linked.class"]);
+				});
+			},
+			linkSchool : function(o) {
+				var userId = $(o.target).attr("href");
+				$.get("api/ecole")
+				.done(function(data){
+					if(undefined !== data.result[0]) {
+						$('#details').html(app.template.render(
+							"linkSchool", { userId : userId, schools : dataExtractor(data).list }));
+					} else {
+						app.notify.info("Aucun résultat");
+					}
+				})
+				.error(function(data){app.notify.error(data);})
+			},
+			linkSchoolSubmit : function(o) {
+				var form = $(o.target).parents("form");
+				var userId = form.attr("action");
+				var schoolId = form.children("select[name='schoolId']").val();
+				$.ajax({type: "PUT", url : "/directory/structure/" + schoolId + "/link/" + userId})
+				.done(function(response) {
+					app.notify.done(app.i18n.bundle["directory.admin.linked.school"]);
+				})
+				.error(function(data) {
+					app.notify.error(app.i18n.bundle["directory.admin.linked.school"]);
+				});
+			},
+			lost : function(o) {
+				$.get(o.url)
+				.done(function(data){
+					$("#lost").html(app.template.render('personnes', {list : data}));
+				})
+				.error(function(data){app.notify.error(data)})
+			},
 		}
 	})
 	return app;

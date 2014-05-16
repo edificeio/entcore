@@ -180,5 +180,15 @@
     "welcome.class.admin.donotanswer" : "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "welcome.regards" : "Bonne découverte !",
     "welcome.signature" : "L'équipe One",
-    "no-reply" : "L'équipe One"
+    "no-reply" : "L'équipe One",
+	"directory.admin.see-lost" : "Voir les personnes disparues",
+	"directory.admin.link.school" : "Lier à une école",
+	"directory.admin.link.class" : "Lier à une classe",
+	"directory.admin.unlink.school" : "Supprimer le lien avec l'école",
+	"directory.admin.unlink.class" : "Supprimer le lien avec la classe",
+	"directory.admin.linked.school" : "Lien avec l'école créé",
+	"directory.admin.linked.class" : "Lien avec la classe créé",
+	"directory.admin.unlinked.school" : "Lien avec l'école supprimé",
+	"directory.admin.unlinked.class" : "Lien avec la classe supprimé",
+	"directory.admin.lost" : "Personnes sans structure"
 }
