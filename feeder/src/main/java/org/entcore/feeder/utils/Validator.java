@@ -121,7 +121,11 @@ public class Validator {
 				String err;
 				switch (type) {
 					case "string" :
-						err = validString(attr, value, validator);
+						if (!required.contains(attr) && value instanceof String && ((String) value).isEmpty()) {
+							err = null;
+						} else {
+							err = validString(attr, value, validator);
+						}
 						break;
 					case "array-string" :
 						err = validStringArray(attr, value, validator);
