@@ -49,6 +49,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'appDocuments' }, { name: 'trash', children: [] }] };
 	$scope.users = [];
+	$scope.me = model.me;
 
 	var setDocumentRights = function(document){
 		document.myRights = {
@@ -443,9 +444,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if($scope.folder.children.indexOf(folder) !== -1){
 			currentTree();
 		}
-
+		$scope.openedFolder.content = [];
 		if($scope.currentTree.filter instanceof Array){
-			$scope.openedFolder.content = [];
 			for(var i = 0; i < $scope.currentTree.filter.length; i++){
 				var params = {
 					filter: $scope.currentTree.filter[i]
@@ -704,22 +704,18 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	};
 
 	updateFolders();
-	$scope.me = { authorizedActions: [] };
-	http().get('/auth/oauth2/userinfo').done(function(data){
-		$scope.me = data;
-		$scope.openFolder($scope.folder.children[0]);
-		if(_.where($scope.me.authorizedActions, {name: 'org.entcore.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
-			$scope.folder.children = _.reject($scope.folder.children, function(folder){
-				return folder.name === 'rack';
-			});
-			refreshFolders();
-		}
-		else{
-			http().get("users/available-rack").done(function(response){
-				$scope.users = response;
-			});
-		}
-	});
+	$scope.openFolder($scope.folder.children[0]);
+	if(_.where($scope.me.authorizedActions, {name: 'org.entcore.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
+		$scope.folder.children = _.reject($scope.folder.children, function(folder){
+			return folder.name === 'rack';
+		});
+		refreshFolders();
+	}
+	else{
+		http().get("users/available-rack").done(function(response){
+			$scope.users = response;
+		});
+	}
 
 	$scope.boxes = { selectAll: false }
 	$scope.switchSelectAll = function(){
