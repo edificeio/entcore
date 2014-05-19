@@ -246,36 +246,27 @@ public class UserBookController extends Controller {
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
+		String classId = request.params().get("id");
+		String matchClass;
+		JsonObject params = new JsonObject();
+		if (classId == null || classId.trim().isEmpty()) {
+			matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
+		} else {
+			matchClass = "(c:Class {id : {classId}}) ";
+			params.putString("classId", classId);
+		}
+		String query =
+				"MATCH " + matchClass + ", visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
+				"WHERE profile.name IN ['Student', 'Teacher'] " +
+				"OPTIONAL MATCH m-[:USERBOOK]->u " +
+				"RETURN distinct profile.name as type, visibles.id as id, " +
+				"visibles.displayName as displayName, u.mood as mood, " +
+				"u.userid as userId, u.picture as photo " +
+				"ORDER BY type DESC, displayName ";
+		UserUtils.findVisibleUsers(eb, request, true, true, query, params, new Handler<JsonArray>() {
 			@Override
-			public void handle(UserInfos user) {
-				if (user != null) {
-					String classId = request.params().get("id");
-					String matchClass;
-					Map<String, Object> params = new HashMap<>();
-					if (classId == null || classId.trim().isEmpty()) {
-						matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
-						params.put("userId", user.getUserId());
-					} else {
-						matchClass = "(c:Class {id : {classId}}) ";
-						params.put("classId", classId);
-					}
-					String query =
-							"MATCH " + matchClass +
-							"WITH c " +
-							"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)" +
-							"-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
-							"WHERE p.name IN ['Student','Teacher'] AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
-							"OPTIONAL MATCH m-[:USERBOOK]->u " +
-							"RETURN distinct p.name as type, m.id as id, " +
-							"m.displayName as displayName, u.mood as mood, " +
-							"u.userid as userId, u.picture as photo " +
-							"ORDER BY type DESC, displayName ";
-					neo.send(query, params, request.response());
-				} else {
-					unauthorized(request);
-				}
+			public void handle(JsonArray users) {
+				renderJson(request, users);
 			}
 		});
 	}
