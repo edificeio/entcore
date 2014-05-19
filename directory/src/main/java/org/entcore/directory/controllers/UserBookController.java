@@ -389,41 +389,21 @@ public class UserBookController extends Controller {
 
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void personBirthday(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>(){
+		Calendar c = Calendar.getInstance();
+		int month = c.get(Calendar.MONTH);
+		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
+				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
+		String query =
+				"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WHERE profile.name = 'Student' AND visibles.birthDate=~{regex} " +
+				"RETURN distinct visibles.id as id, visibles.displayName as username, " +
+				"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
+		JsonObject params = new JsonObject();
+		params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
+		UserUtils.findVisibleUsers(eb, request, true, true, query, params, new Handler<JsonArray>() {
 			@Override
-			public void handle(UserInfos user) {
-				if (user != null) {
-					Calendar c = Calendar.getInstance();
-					int month = c.get(Calendar.MONTH);
-					String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
-							"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
-					String query =
-							"MATCH (n:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-							"WHERE n.id = {id} " +
-							"WITH c " +
-							"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)" +
-							"-[:HAS_PROFILE]->(p:Profile {name : 'Student'}), cpg<-[:IN]-(m:User) " +
-							"WHERE m.birthDate=~{regex} " +
-							"RETURN distinct m.id as id, m.displayName as username, " +
-							"m.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
-					JsonObject params = new JsonObject();
-					params.putString("id", user.getUserId());
-					params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
-					neo.execute(query, params, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							JsonArray res;
-							if ("ok".equals(event.body().getString("status"))) {
-								res = event.body().getArray("result", new JsonArray());
-							} else {
-								res = new JsonArray();
-							}
-							renderJson(request, res);
-						}
-					});
-				} else {
-					badRequest(request);
-				}
+			public void handle(JsonArray users) {
+				renderJson(request, users);
 			}
 		});
 	}
