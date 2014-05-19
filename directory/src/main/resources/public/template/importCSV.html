@@ -3,7 +3,7 @@
   -->
 
 <div class="twelve cell block-container">
-	<h2 class="vertical-spacing-twice" translate content="classAdmin.importFile">Importer un fichier d'utilisateurs</h2>
+	<h2 class="vertical-spacing-twice" translate content="classAdmin.importFile"></h2>
 
 	<div class="info vertical-spacing-twice">
 		<strong translate content="classAdmin.importType"></strong>
@@ -13,9 +13,9 @@
 	<div class="row vertical-spacing-twice">
 		<div class="twelve cell select-file input-block">
 			<div class="hidden-content">
-				<input type="file" file-input-change  data-ng-model="import.csv" />
+				<input type="file" files-input-change ng-model="import.csv" />
 			</div>
-			<input type="text" data-ng-model="import.csv.name" class="cell" />
+			<input type="text" ng-model="import.csv[0].name" class="cell" />
 			<button class="file-button" translate key="choose"></button>
 		</div>
 	</div>

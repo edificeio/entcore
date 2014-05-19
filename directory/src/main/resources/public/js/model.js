@@ -340,7 +340,12 @@ function ClassAdmin(){
 				if (errWithIdx.length === 2) {
 					notify.error(lang.translate(errWithIdx[0]) + errWithIdx[1]);
 				} else {
-					notify.error(error);
+					if(error.indexOf('already exists') !== -1){
+						notify.error('directory.import.already.exists');
+					}
+					else{
+						notify.error(error);
+					}
 				}
 			}.bind(this));
 	};

@@ -191,5 +191,6 @@
 	"directory.admin.unlinked.school" : "Lien avec l'école supprimé",
 	"directory.admin.unlinked.class" : "Lien avec la classe supprimé",
 	"directory.admin.lost" : "Personnes sans structure",
-	"directory.personnel": "Personnel"
+	"directory.personnel": "Personnel",
+	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents"
 }

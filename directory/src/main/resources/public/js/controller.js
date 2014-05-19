@@ -237,7 +237,7 @@ function ClassAdminController($scope, model, date, notify){
 
 	$scope.importCSV = function(){
 		$scope.display.importing = true;
-		model.classAdmin.importFile($scope.import.csv, $scope.display.show.toLowerCase());
+		model.classAdmin.importFile($scope.import.csv[0], $scope.display.show.toLowerCase());
 		ui.hideLightbox();
 	};
 
