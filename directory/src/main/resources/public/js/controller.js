@@ -124,7 +124,7 @@ function DirectoryController($scope, model, route, date){
 		$scope.openView('user-selected', 'main');
 	};
 
-	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange' };
+	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
 	$scope.colorFromType = function(type){
 		return colorsMatch[type.toLowerCase()];
 	};
@@ -319,7 +319,7 @@ function SchoolController($scope, template){
 		})
 	};
 
-	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange' };
+	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
 	$scope.colorFromType = function(type){
 		return colorsMatch[type.toLowerCase()];
 	};

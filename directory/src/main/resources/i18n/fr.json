@@ -190,5 +190,6 @@
 	"directory.admin.linked.class" : "Lien avec la classe créé",
 	"directory.admin.unlinked.school" : "Lien avec l'école supprimé",
 	"directory.admin.unlinked.class" : "Lien avec la classe supprimé",
-	"directory.admin.lost" : "Personnes sans structure"
+	"directory.admin.lost" : "Personnes sans structure",
+	"directory.personnel": "Personnel"
 }
