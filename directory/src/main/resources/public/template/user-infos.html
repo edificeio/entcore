@@ -10,7 +10,12 @@
 	</div>
 	<div class="eight cell absolute right-magnet reduce-block-six">
 		<article class="fluid twelve cell reduce-block-six medium-text">
-			<h2 class="reduce-block-four">[[users.current.displayName]]</h2>
+			<div class="row">
+				<h2 class="reduce-block-four cell">[[users.current.displayName]]</h2>
+				<div class="right-magnet">
+					<i role="[[users.current.mood]]" class="liquid text-flow"></i>
+				</div>
+			</div>
 			<div class="row" ng-if="users.current.email">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.email"></div>
 				<em class="eight cell reduce-block-four">
@@ -42,10 +47,6 @@
 				</em>
 			</div>
 			<div class="row"></div>
-			<div class="row vertical-spacing reduce-block-four">
-				<i role="[[users.current.mood]]" class="liquid text-flow"></i>
-				<em translate content="userBook.mood.[[users.current.mood]]"></em>
-			</div>
 		</article>
 	</div>
 </div>
