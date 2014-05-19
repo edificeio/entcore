@@ -346,7 +346,7 @@ module.directive('imageSelect', function($compile){
 		},
 		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" ng-if="ngModel" style="cursor: pointer" />' +
 			'<img ng-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
-			'<lightbox show="userSelecting" on-close="userSelecting = false; ngChange();">' +
+			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="\'img\'"></media-library>' +
 			'</lightbox>' +
 			'</div>',
