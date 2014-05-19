@@ -121,14 +121,20 @@ public class Validator {
 				String err;
 				switch (type) {
 					case "string" :
-						if (!required.contains(attr) && value instanceof String && ((String) value).isEmpty()) {
+						if (!required.contains(attr) &&
+								(value == null || (value instanceof String && ((String) value).isEmpty()))) {
 							err = null;
 						} else {
 							err = validString(attr, value, validator);
 						}
 						break;
 					case "array-string" :
-						err = validStringArray(attr, value, validator);
+						if (!required.contains(attr) &&
+								(value == null || (value instanceof JsonArray && ((JsonArray) value).size() == 0))) {
+							err = null;
+						} else {
+							err = validStringArray(attr, value, validator);
+						}
 						break;
 					case "boolean" :
 						err = validBoolean(attr, value);
