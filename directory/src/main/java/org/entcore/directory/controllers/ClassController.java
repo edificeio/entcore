@@ -280,40 +280,38 @@ public class ClassController extends Controller {
 		initPostCreate(classId, userIds, false, null);
 	}
 
-	private void initPostCreate(String classId, final JsonArray userIds, boolean welcomeMessage,
+	private void initPostCreate(final String classId, final JsonArray userIds, final boolean welcomeMessage,
 			final HttpServerRequest request) {
-		schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+		ApplicationUtils.sendModifiedUserGroup(eb, userIds, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Either<String, JsonObject> s) {
-				if (s.isRight()) {
-					JsonObject j = new JsonObject()
-							.putString("action", "setDefaultCommunicationRules")
-							.putString("schoolId", s.right().getValue().getString("id"));
-					eb.send("wse.communication", j);
-				}
-			}
-		});
-		if (welcomeMessage) {
-			ApplicationUtils.sendModifiedUserGroup(eb, userIds, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
+			public void handle(Message<JsonObject> message) {
+				schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> s) {
+						if (s.isRight()) {
+							JsonObject j = new JsonObject()
+									.putString("action", "setDefaultCommunicationRules")
+									.putString("schoolId", s.right().getValue().getString("id"));
+							eb.send("wse.communication", j);
+						}
+					}
+				});
+				if (welcomeMessage) {
 					JsonObject params = new JsonObject().putString("host", conversationNotification.getHost());
 					conversationNotification.notify(request, "", userIds, null,
-							"welcome.subject", "email/welcome.html", params,
-							new Handler<Either<String, JsonObject>>() {
+						"welcome.subject", "email/welcome.html", params,
+						new Handler<Either<String, JsonObject>>() {
 
-								@Override
-								public void handle(Either<String, JsonObject> r) {
-									if (r.isLeft()) {
-										log.error(r.left().getValue());
-									}
+							@Override
+							public void handle(Either<String, JsonObject> r) {
+								if (r.isLeft()) {
+									log.error(r.left().getValue());
 								}
-							});
+						  }
+						});
 				}
-			});
-		} else {
-			ApplicationUtils.publishModifiedUserGroup(eb, userIds);
-		}
+		   }
+		});
 	}
 
 	@SecuredAction("class.link.user")
