@@ -2119,6 +2119,10 @@ var workspace = {
 			this.title = dotSplit.join('.');
 		}
 
+		if(data.created){
+			this.created = moment(data.created.split('.')[0]);
+		}
+
 		this.protectedDuplicate = function(callback){
 			var document = this;
 			var xhr = new XMLHttpRequest();
@@ -2404,10 +2408,16 @@ function MediaLibrary($scope){
 	};
 
 	$scope.importFiles = function(){
+		var waitNumber = $scope.upload.files.length;
 		for(var i = 0; i < $scope.upload.files.length; i++){
 			$scope.upload.loading.push($scope.upload.files[i]);
 			workspace.Document.prototype.upload($scope.upload.files[i], 'file-upload-' + $scope.upload.files[i].name + '-' + i, function(){
+				waitNumber--;
 				model.mediaLibrary.appDocuments.documents.sync();
+				if(!waitNumber){
+					$scope.display.show = 'browse';
+				}
+				$scope.$apply('display');
 			});
 		}
 		$scope.upload.files = undefined;

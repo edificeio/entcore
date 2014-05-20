@@ -44,7 +44,7 @@
 					<a class="medium-text">[[folder.name]]</a>
 				</legend>
 			</div>
-			<div class="element reduce-block-six" ng-repeat="document in documents" ng-class="{ selected: document.selected }">
+			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true" ng-class="{ selected: document.selected }">
 				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
 					<div class="clip twelve cell height-twelve">
 						<img class="absolute" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
