@@ -63,7 +63,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			comment: {
 				post: true
 			}
-		}
+		};
 
 		if(document.owner === $scope.me.userId){
 			document.myRights.share = document.myRights.share &&
@@ -87,7 +87,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument');
 		document.myRights.document.share = false;
-	}
+	};
 
 	$scope.documentPath = function(document){
 		if($scope.currentTree.name === 'rack'){
@@ -174,7 +174,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		ui.showLightbox();
 		$scope.newFolder = { name: '' };
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFolder;
-	}
+	};
 
 	$scope.targetDocument = {};
 	$scope.openCommentView = function(document){
@@ -704,7 +704,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	};
 
 	updateFolders();
-	$scope.openFolder($scope.folder.children[0]);
 	if(_.where($scope.me.authorizedActions, {name: 'org.entcore.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
 		$scope.folder.children = _.reject($scope.folder.children, function(folder){
 			return folder.name === 'rack';
