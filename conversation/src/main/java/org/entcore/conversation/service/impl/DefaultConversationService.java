@@ -159,7 +159,7 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH v<-[:IN*0..1]-(u:User), " +
 				"(message:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder), " +
 				"(sender:Conversation)-[:HAS_CONVERSATION_FOLDER]->(fOut:ConversationSystemFolder) " +
-				"WHERE (v:Visible) AND u.id <> {userId} " +
+				"WHERE (v: User or v:ProfileGroup) AND u.id <> {userId} " +
 				"AND message.id = {messageId} AND message.state = {draft} AND message.from = {userId} AND " +
 				"fDraft.name = {draft} AND sender.userId = {userId} AND " +
 				"(v.id IN message.to OR v.id IN message.cc) AND fOut.name = {outbox} " +
