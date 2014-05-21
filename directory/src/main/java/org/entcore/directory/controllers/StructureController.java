@@ -13,6 +13,7 @@ import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -43,12 +44,16 @@ public class StructureController extends Controller {
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
 					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
-						JsonObject j = new JsonObject()
-								.putString("action", "setDefaultCommunicationRules")
-								.putString("schoolId", structureId);
-						eb.send("wse.communication", j);
 						JsonArray a = new JsonArray().addString(userId);
-						ApplicationUtils.publishModifiedUserGroup(eb, a);
+						ApplicationUtils.sendModifiedUserGroup(eb, a, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> message) {
+								JsonObject j = new JsonObject()
+										.putString("action", "setDefaultCommunicationRules")
+										.putString("schoolId", structureId);
+								eb.send("wse.communication", j);
+							}
+						});
 						renderJson(request, r.right().getValue(), 200);
 					} else {
 						notFound(request);

@@ -224,19 +224,23 @@ public class DirectoryController extends Controller {
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
 								JsonObject r = res.right().getValue();
-								schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+								JsonArray a = new JsonArray().addString(r.getString("id"));
+								ApplicationUtils.sendModifiedUserGroup(eb, a, new Handler<Message<JsonObject>>() {
 									@Override
-									public void handle(Either<String, JsonObject> s) {
-										if (s.isRight()) {
-											JsonObject j = new JsonObject()
-													.putString("action", "setDefaultCommunicationRules")
-													.putString("schoolId", s.right().getValue().getString("id"));
-											eb.send("wse.communication", j);
-										}
+									public void handle(Message<JsonObject> message) {
+										schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
+											@Override
+											public void handle(Either<String, JsonObject> s) {
+												if (s.isRight()) {
+													JsonObject j = new JsonObject()
+															.putString("action", "setDefaultCommunicationRules")
+															.putString("schoolId", s.right().getValue().getString("id"));
+													eb.send("wse.communication", j);
+												}
+											}
+										});
 									}
 								});
-								JsonArray a = new JsonArray().addString(r.getString("id"));
-								ApplicationUtils.publishModifiedUserGroup(eb, a);
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
@@ -249,12 +253,16 @@ public class DirectoryController extends Controller {
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
 								JsonObject r = res.right().getValue();
-								JsonObject j = new JsonObject()
-										.putString("action", "setDefaultCommunicationRules")
-										.putString("schoolId", structureId);
-								eb.send("wse.communication", j);
 								JsonArray a = new JsonArray().addString(r.getString("id"));
-								ApplicationUtils.publishModifiedUserGroup(eb, a);
+								ApplicationUtils.sendModifiedUserGroup(eb, a, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> message) {
+										JsonObject j = new JsonObject()
+												.putString("action", "setDefaultCommunicationRules")
+												.putString("schoolId", structureId);
+										eb.send("wse.communication", j);
+									}
+								});
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
