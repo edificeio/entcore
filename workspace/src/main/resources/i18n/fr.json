@@ -85,5 +85,14 @@
 	"files.header": "Charger plusieurs fichiers",
 	"share.me":"Moi",
 	"comments": "[[document.comments.length]] commentaire(s)",
-	"appDocuments": "Documents ajoutés dans les applis"
+	"appDocuments": "Documents ajoutés dans les applis",
+	"group.Teacher" : "Tous les enseignants du groupe {0}.",
+	"group.Student" : "Tous les élèves du groupe {0}.",
+	"group.Relative" : "Tous les parents du groupe {0}.",
+	"group.school.Teacher" : "Tous les enseignants de l'{0}.",
+	"group.school.Student" : "Tous les élèves de l'{0}.",
+	"group.school.Relative" : "Tous les parents de l'{0}.",
+	"group.class.Teacher" : "Tous les enseignants de la classe {0}.",
+	"group.class.Student" : "Tous les élèves de la classe {0}.",
+	"group.class.Relative" : "Tous les parents de la classe {0}."
 }

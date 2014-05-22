@@ -33,7 +33,7 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	public void shareInfos(final String userId, String resourceId,
+	public void shareInfos(final String userId, String resourceId, final String acceptLanguage,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid userId."));
@@ -74,7 +74,7 @@ public class MongoDbShareService extends GenericShareService {
 							}
 							s.putArray(userOrGroupId, a);
 						}
-						getShareInfos(userId, actions, s, new Handler<JsonObject>() {
+						getShareInfos(userId, actions, s, acceptLanguage, new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject event) {
 								if (event != null && event.size() == 3) {

@@ -4,6 +4,7 @@
 
 package org.entcore.common.share.impl;
 
+import fr.wseduc.webutils.I18n;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
 import fr.wseduc.webutils.Either;
@@ -24,6 +25,7 @@ public abstract class GenericShareService implements ShareService {
 	protected final EventBus eb;
 	protected final Map<String, SecuredAction> securedActions;
 	protected final Map<String, List<String>> groupedActions;
+	protected static final I18n i18n = I18n.getInstance();
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
@@ -51,22 +53,8 @@ public abstract class GenericShareService implements ShareService {
 		return new JsonArray(resourceActions.toMap().values().toArray());
 	}
 
-	private void groupDisplayName(JsonObject group) {
-		String name = group.getString("name");
-		if (name != null && name.contains("_")) {
-			int idx = name.lastIndexOf('_');
-			if (name.length() > idx && idx > 0) {
-				String type = name.substring(idx + 1).toLowerCase();
-				String value = name.substring(0, idx);
-				String schoolOrClass = (group.getString("type", "")
-						.startsWith("GROUP_CLASSE")) ? "class" : "school";
-				group.putString("displayName", value);
-			}
-		}
-	}
-
 	protected void getShareInfos(final String userId, final JsonArray actions,
-				final JsonObject checkedActions, final Handler<JsonObject> handler) {
+			final JsonObject checkedActions, final String acceptLanguage, final Handler<JsonObject> handler) {
 		UserUtils.findVisibleProfilsGroups(eb, userId, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibleGroups) {
@@ -77,6 +65,7 @@ public abstract class GenericShareService implements ShareService {
 				for (Object u : visibleGroups) {
 					if (!(u instanceof JsonObject)) continue;
 					JsonObject group = (JsonObject) u;
+					UserUtils.groupDisplayName(group, acceptLanguage);
 					String groupId = group.getString("id");
 					if (groupId != null) {
 						JsonArray a = checkedActions.getArray(groupId);

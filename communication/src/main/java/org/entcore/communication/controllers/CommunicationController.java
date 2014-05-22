@@ -480,7 +480,8 @@ public class CommunicationController extends Controller {
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			r = "WITH gp as profileGroup, profile " + customReturn;
 		} else {
-			r = "RETURN distinct gp.id as id, gp.name as name, profile.name as type " +
+			r = "RETURN distinct gp.id as id, gp.name as name, profile.name as type, " +
+				"gp.groupDisplayName as groupDisplayName " +
 				"ORDER BY type DESC, name ";
 		}
 		Map<String, Object> params =

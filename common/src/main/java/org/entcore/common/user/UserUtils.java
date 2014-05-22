@@ -5,6 +5,7 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.vertx.java.core.Handler;
@@ -23,6 +24,7 @@ public class UserUtils {
 	private static final JsonArray usersTypes = new JsonArray().addString("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.putString("action", "visibleProfilsGroups");
+	private static final I18n i18n = I18n.getInstance();
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
@@ -107,8 +109,14 @@ public class UserUtils {
 	}
 
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
+		JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
+		final Handler<JsonArray> handler) {
+		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, null, handler);
+	}
+
+	public static void findVisibles(EventBus eb, String userId, String customReturn,
 			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
-			final Handler<JsonArray> handler) {
+			final String acceptLanguage, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
 				.putBoolean("mygroup", myGroup)
@@ -125,9 +133,42 @@ public class UserUtils {
 
 			@Override
 			public void handle(Message<JsonArray> res) {
-				handler.handle(res.body());
+				JsonArray r = res.body();
+				if (acceptLanguage != null) {
+					translateGroupsNames(r, acceptLanguage);
+				}
+				handler.handle(r);
 			}
 		});
+	}
+
+	public static void translateGroupsNames(JsonArray groups, String acceptLanguage) {
+		for (Object u : groups) {
+			if (!(u instanceof JsonObject)) continue;
+			JsonObject group = (JsonObject) u;
+			groupDisplayName(group, acceptLanguage);
+		}
+	}
+
+	public static void groupDisplayName(JsonObject group, String acceptLanguage) {
+		String name = group.getString("name");
+		int idx = name.lastIndexOf('-');
+		if (name == null || idx < 0) { return; }
+		String arg = name.substring(0, idx);
+		String type = name.substring(idx + 1);
+		String displayName = group.getString("groupDisplayName", "group." + type);
+		group.putString("name", i18n.translate(displayName, acceptLanguage, arg));
+	}
+
+	public static String groupDisplayName(String name, String groupDisplayName, String acceptLanguage) {
+		int idx = name.lastIndexOf('-');
+		if (name == null || idx < 0) {
+			return name;
+		}
+		String arg = name.substring(0, idx);
+		String type = name.substring(idx + 1);
+		String displayName = groupDisplayName != null ? groupDisplayName : "group." + type;
+		return i18n.translate(displayName, acceptLanguage, arg);
 	}
 
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,

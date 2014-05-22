@@ -103,7 +103,8 @@ public class WorkspaceService extends Controller {
 						@Override
 						public void handle(Boolean event) {
 							if (Boolean.TRUE.equals(event)) {
-								shareService.shareInfos(user.getUserId(), id, defaultResponseHandler(request));
+								shareService.shareInfos(user.getUserId(), id,
+										I18n.acceptLanguage(request), defaultResponseHandler(request));
 							} else {
 								unauthorized(request);
 							}

@@ -9,6 +9,7 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.conversation.service.ConversationService;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
@@ -205,7 +206,7 @@ public class DefaultConversationService implements ConversationService {
 				"WHERE dn.id = m.from OR dn.id IN m.to " +
 				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.subject as subject, m.date as date, r.unread as unread, " +
-				"COLLECT(distinct [dn.id, CASE WHEN dn.displayName IS NULL THEN dn.name ELSE dn.displayName END]) " +
+				"COLLECT(distinct [dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
 				"as displayNames ";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
@@ -300,7 +301,7 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH (dn:Visible) " +
 				"WHERE dn.id = from OR dn.id IN to OR dn.id IN cc " +
 				"RETURN id, to, cc, from, state, subject, date, body, " +
-				"COLLECT([dn.id, CASE WHEN dn.displayName IS NULL THEN dn.name ELSE dn.displayName END]) " +
+				"COLLECT([dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
 				"as displayNames";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
@@ -336,7 +337,7 @@ public class DefaultConversationService implements ConversationService {
 
 	@Override
 	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
-			final Handler<Either<String, JsonObject>> result) {
+			final String acceptLanguage, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
 		final JsonObject visible = new JsonObject();
 		String replyProfileGroupQuery;
@@ -354,8 +355,9 @@ public class DefaultConversationService implements ConversationService {
 					"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
 					"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
 					replyProfileGroupQuery + " AND app.name = {conversation} " +
-					"RETURN DISTINCT pg.id as id, pg.name as name";
-			findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
+					"RETURN DISTINCT pg.id as id, pg.name as name, pg.groupDisplayName as groupDisplayName";
+			findVisibles(eb, user.getUserId(), groups, params, false, true, false,
+					acceptLanguage, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibleGroups) {
 					visible.putArray("groups", visibleGroups);
@@ -383,7 +385,8 @@ public class DefaultConversationService implements ConversationService {
 			params.putBoolean("true", true);
 			String groups =
 					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
-					"RETURN DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName";
+					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName";
 			findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
@@ -395,6 +398,7 @@ public class DefaultConversationService implements ConversationService {
 						JsonObject j = (JsonObject) o;
 						if (j.getString("name") != null) {
 							j.removeField("displayName");
+							UserUtils.groupDisplayName(j, acceptLanguage);
 							groups.add(j);
 						} else {
 							j.removeField("name");

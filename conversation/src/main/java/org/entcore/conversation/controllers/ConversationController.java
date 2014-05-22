@@ -1,9 +1,12 @@
 package org.entcore.conversation.controllers;
 
 
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.DefaultConversationService;
@@ -172,12 +175,52 @@ public class ConversationController extends Controller {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.list(folder, user, page, arrayResponseHandler(request));
+					conversationService.list(folder, user, page, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								for (Object o : r.right().getValue()) {
+									if (!(o instanceof JsonObject)) {
+										continue;
+									}
+									translateGroupsNames((JsonObject) o, request);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
+	}
+
+	private void translateGroupsNames(JsonObject message, HttpServerRequest request) {
+		JsonArray d3 = new JsonArray();
+		for (Object o2 : message.getArray("displayNames")) {
+			if (!(o2 instanceof JsonArray)) {
+				continue;
+			}
+			JsonArray d = (JsonArray) o2;
+			if (d.size() != 4) {
+				continue;
+			}
+			JsonArray d2 = new JsonArray().add(d.get(0));
+			if (d.get(2) != null) {
+				d2.addString(UserUtils.groupDisplayName(
+						d.get(2).toString(), (String) d.get(3),
+						I18n.acceptLanguage(request)));
+			} else {
+				d2.add(d.get(1));
+			}
+			d3.addArray(d2);
+		}
+		message.putArray("displayNames", d3);
 	}
 
 	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
@@ -212,7 +255,7 @@ public class ConversationController extends Controller {
 				if (user != null) {
 					String parentMessageId = request.params().get("In-Reply-To");
 					conversationService.findVisibleRecipients(parentMessageId, user,
-							defaultResponseHandler(request));
+							I18n.acceptLanguage(request), defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
@@ -231,7 +274,19 @@ public class ConversationController extends Controller {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					conversationService.get(id, user, defaultResponseHandler(request));
+					conversationService.get(id, user, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> r) {
+							if (r.isRight()) {
+								translateGroupsNames(r.right().getValue(), request);
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}

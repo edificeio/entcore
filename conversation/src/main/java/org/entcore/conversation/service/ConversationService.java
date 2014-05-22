@@ -46,6 +46,7 @@ public interface ConversationService {
 
 	void count(String folder, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
-	void findVisibleRecipients(String parentMessageId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void findVisibleRecipients(String parentMessageId, UserInfos user,
+		String acceptLanguage, Handler<Either<String, JsonObject>> result);
 
 }
