@@ -66,4 +66,6 @@ REMOVE r:Relative;
 MATCH (t:Teacher)
 REMOVE t:Teacher;
 MATCH (p:Profile) CREATE p<-[:HAS_PROFILE]-(dpg:Group:ProfileGroup:DefaultProfileGroup) ;
+MATCH (s:Class) WHERE NOT(HAS(s.externalId)) SET s.externalId = id(s)+'-'+timestamp();
+MATCH (s:Structure) WHERE NOT(HAS(s.externalId)) SET s.externalId = id(s)+'-'+timestamp();
 commit
