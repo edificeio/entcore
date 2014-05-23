@@ -281,7 +281,6 @@ var http = (function(){
 
 function Collection(obj){
 	this.all = [];
-	this.current = null;
 	this.obj = obj;
 	this.callbacks = {};
 	this.sync = function(){}
@@ -297,16 +296,45 @@ function Collection(obj){
 			if(typeof cb !== 'function'){
 				return;
 			}
-			this.callbacks[eventName] = cb;
+			if(!this.callbacks[eventName]){
+				this.callbacks[eventName] = [];
+			}
+			this.callbacks[eventName].push(cb);
 		},
 		trigger: function(event){
 			if(this.composer && this.composer.trigger){
 				this.composer.trigger(pluralizeName(this.obj) + '.' + event);
 			}
 
-			if(typeof this.callbacks[event] === 'function'){
-				this.callbacks[event]();
+			if(this.callbacks[event] instanceof Array){
+				this.callbacks[event].forEach(function(cb){
+					if(typeof cb === 'function'){
+						cb();
+					}
+				});
 			}
+		},
+		unbind: function(event){
+			var events = event.split(',');
+			var that = this;
+			events.forEach(function(e){
+				var eventName = e.trim();
+				if(!that.callbacks){
+					that.callbacks = {};
+				}
+				if(!that.callbacks[eventName]){
+					that.callbacks[eventName] = [];
+				}
+				that.callbacks[eventName].pop();
+			}.bind(this));
+		},
+		one: function(event, cb){
+			this.on(event, function(){
+				this.unbind(event);
+				if(typeof cb === 'function'){
+					cb();
+				}
+			}.bind(this));
 		},
 		forEach: function(cb){
 			this.all.forEach(cb);
@@ -378,10 +406,6 @@ function Collection(obj){
 		removeAt: function(index){
 			var element = this.all[index];
 			this.remove(element);
-		},
-		setCurrent: function(item){
-			this.current = item;
-			this.trigger('change');
 		},
 		selectItem: function(item){
 			item.selected = true;
@@ -760,6 +784,40 @@ function Collection(obj){
 					throw "Property " + prop + " is undefined in " + eventName;
 				}
 				this[prop].on(propertiesChain.join('.'), cb);
+			}
+		}.bind(this));
+	};
+
+	Model.prototype.unbind = function(event){
+		var events = event.split(',');
+		var that = this;
+		events.forEach(function(e){
+			var eventName = e.trim();
+			if(!that.callbacks){
+				that.callbacks = {};
+			}
+			if(!that.callbacks[eventName]){
+				that.callbacks[eventName] = [];
+			}
+			that.callbacks[eventName].pop();
+
+			var propertiesChain = eventName.split('.');
+			if(propertiesChain.length > 1){
+				var prop = propertiesChain[0];
+				propertiesChain.splice(0, 1);
+				if(!this[prop] || !this[prop].on){
+					throw "Property " + prop + " is undefined in " + eventName;
+				}
+				this[prop].unbind(propertiesChain.join('.'));
+			}
+		}.bind(this));
+	};
+
+	Model.prototype.one = function(event, cb){
+		this.on(event, function(){
+			this.unbind(event);
+			if(typeof cb === 'function'){
+				cb();
 			}
 		}.bind(this));
 	};

@@ -5,45 +5,45 @@
 <div class="row height-four">
 	<div class="four cell absolute reduce-block-six">
 		<div class="twelve cell fluid clip">
-			<img ng-src="/userbook/avatar/[[users.current.id]]?thumbnail=290x290" />
+			<img ng-src="/userbook/avatar/[[currentUser.id]]?thumbnail=290x290" />
 		</div>
 	</div>
 	<div class="eight cell absolute right-magnet reduce-block-six">
 		<article class="fluid twelve cell reduce-block-six medium-text">
 			<div class="row">
-				<h2 class="reduce-block-four ten cell">[[users.current.displayName]]</h2>
+				<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
 				<div class="right-magnet">
-					<i role="[[users.current.mood]]" class="liquid text-flow"></i>
+					<i role="[[currentUser.mood]]" class="liquid text-flow"></i>
 				</div>
 			</div>
 			<div class="row" ng-if="users.current.email">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.email"></div>
 				<em class="eight cell reduce-block-four">
-					[[users.current.email]]
+					[[currentUser.email]]
 				</em>
 			</div>
 			<div class="row" ng-if="users.current.address">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.address"></div>
 				<em class="eight cell reduce-block-four">
-					[[users.current.address]]
+					[[currentUser.address]]
 				</em>
 			</div>
 			<div class="row" ng-if="users.current.tel">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.telephone"></div>
 				<em class="eight cell reduce-block-four">
-					[[users.current.tel]]
+					[[currentUser.tel]]
 				</em>
 			</div>
 			<div class="row" ng-if="users.current.birthdate">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.birthdate"></div>
 				<em class="eight cell reduce-block-four">
-					[[longDate(users.current.birthdate)]]
+					[[longDate(currentUser.birthdate)]]
 				</em>
 			</div>
 			<div class="row" ng-if="users.current.motto">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.motto"></div>
 				<em class="eight cell reduce-block-four">
-					[[users.current.motto]]
+					[[currentUser.motto]]
 				</em>
 			</div>
 			<div class="row"></div>
@@ -54,7 +54,7 @@
 <div class="row reduce-block-six">
 	<article class="twelve cell reduce-block-six">
 		<div class="row">
-			<a ng-href="/conversation/conversation#/write-mail/[[users.current.id]]" class="twelve cell">
+			<a ng-href="/conversation/conversation#/write-mail/[[currentUser.id]]" class="twelve cell">
 				<i class="send-mail inline"></i>
 				<div translate key="userBook.class.write-message" class="block-container cell"></div>
 			</a>
@@ -83,9 +83,9 @@
 		class="vertical-spacing horizontal-spacing"
 		ng-if="users.current.relatives.length"
 		></h1>
-<div class="row reduce-block-six" ng-if="users.current.relatives.length">
+<div class="row reduce-block-six" ng-if="currentUser.relatives.length">
 	<article class="reduce-block-six row">
-		<div class="row" ng-repeat="relative in users.current.relatives">
+		<div class="row" ng-repeat="relative in currentUser.relatives">
 			<a ng-click="selectUser(relative)" class="reduce-block-four twelve cell">[[relative.displayName]]</a>
 		</div>
 		<div class="row"></div>
@@ -95,11 +95,11 @@
 <h1
 		translate key="userBook.interests"
 		class="vertical-spacing horizontal-spacing"
-		ng-if="users.current.hobbies.length"
+		ng-if="currentUser.hobbies.length"
 		></h1>
-<div class="row reduce-block-six" ng-if="users.current.hobbies.length">
+<div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
 	<article>
-		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in users.current.hobbies | orderBy:'category'">
+		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
 			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
 			<em class="ten cell reduce-block-six user-content">[[hobby.value]]</em>
 		</div>
@@ -110,8 +110,8 @@
 <h1
 		translate key="userBook.profile.health"
 		class="vertical-spacing horizontal-spacing"
-		ng-if="users.current.health"
+		ng-if="currentUser.health"
 		></h1>
-<div class="row reduce-block-six" ng-if="users.current.health">
-	<article class="user-content reduce-block-six">[[users.current.health]]</article>
+<div class="row reduce-block-six" ng-if="currentUser.health">
+	<article class="user-content reduce-block-six">[[currentUser.health]]</article>
 </div>

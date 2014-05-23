@@ -3,7 +3,7 @@
   -->
 
 <div class="row">
-	<div class="four cell horizontal-spacing-twice">
+	<nav class="four cell horizontal-spacing-twice stamps">
 		<div class="row" ng-if="users.match(search.text).length === 0" translate content="noresult"></div>
 		<div class="row height-four vertical-spacing-twice" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
 			<div class="fixed twelve cell">
@@ -16,7 +16,7 @@
 					<div class="eight fluid cell right-magnet">
 						<a class="nine cell reduce-block-six">[[user.displayName]]</a>
 						<div class="three cell right-magnet reduce-block-two">
-							<i class="liquid" role="[[user.mood]]"></i>
+							<i class="liquid [[user.mood]]"></i>
 						</div>
 						<div class="bottom-locked">
 							<a ng-href="/conversation/conversation#/write-mail/[[user.id]]"><i class="send-mail"></i></a>
@@ -28,7 +28,7 @@
 			</div>
 		</div>
 
-	</div>
+	</nav>
 
-	<div class="eight cell right-magnet" ng-include="viewsContainers.details"></div>
+	<div class="eight cell right-magnet" ng-include="template.containers.details"></div>
 </div>

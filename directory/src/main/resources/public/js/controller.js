@@ -18,18 +18,22 @@ routes.define(function($routeProvider){
 		})
 });
 
-function DirectoryController($scope, model, route, date){
+function DirectoryController($scope, model, route, date, template){
+	$scope.template = template;
 	$scope.users = [];
 	$scope.lang = lang;
 	$scope.search = {
 		text: '',
 		field: '',
+		schoolField: '',
 		maxLength: 15,
 		clear: function(){
 			this.text = '';
 			this.field = '';
 		}
 	};
+
+	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
 
 	$scope.increaseSearchSize = function(){
 		$scope.search.maxLength += 15;
@@ -42,67 +46,74 @@ function DirectoryController($scope, model, route, date){
 		return moment(dateString).format('DD MMMM YYYY')
 	};
 
-	$scope.viewsContainers = {};
-	$scope.openView = function(view, name){
-		$scope.search.maxLength = 15;
-		var viewsPath = '/directory/public/template/';
-		$scope.viewsContainers[name] = viewsPath + view + '.html';
-	};
-
-	$scope.containsView = function(name, view){
-		var viewsPath = '/directory/public/template/';
-		return $scope.viewsContainers[name] === viewsPath + view + '.html';
-	};
-
-	$scope.openView('class', 'page');
-	$scope.openView('user-infos', 'details');
-
 	route({
 		viewUser: function(params){
 			new User({ id: params.userId }).select();
 			$scope.users = model.directory.users;
-			$scope.openView('profile', 'page');
+			template.open('page', 'profile');
 			$scope.title = 'profile';
 		},
 		directory: function(){
 			$scope.users = model.directory.users;
-			$scope.openView('directory', 'page');
-			$scope.viewsContainers.main = 'empty';
+			template.open('page', 'directory');
+			template.close('main');
 			$scope.title = 'directory';
 		},
 		myClass: function(){
-			$scope.users = model.myClass.users;
-			$scope.myClass = model.myClass;
-			model.myClass.sync();
-			$scope.openView('class', 'page');
-			$scope.title = 'class';
+			model.network.schools.sync();
+			model.network.schools.on('sync', function(){
+				$scope.schools = model.network.schools;
+				$scope.currentSchool = $scope.schools.first();
+				$scope.currentSchool.sync();
+				$scope.currentSchool.one('sync', function(){
+					$scope.users = $scope.currentSchool.users;
+					$scope.classrooms = $scope.currentSchool.classrooms;
+
+					template.open('page', 'class');
+
+					if($scope.classrooms.length() === 1){
+						template.open('main', 'mono-class');
+					}
+					else{
+						template.open('main', 'multi-class');
+
+					}
+
+					template.open('list', 'dominos');
+					$scope.title = 'class';
+					$scope.$apply();
+				});
+
+			});
 		}
 	});
+
+	model.directory.on('users.change', function(){
+		$scope.$apply('users');
+	});
+
+	$scope.showSchool = function(school){
+		$scope.currentSchool = school;
+		school.sync();
+		school.one('sync', function(){
+			$scope.users = school.users;
+			$scope.classrooms = school.classrooms;
+			$scope.$apply('users');
+			$scope.$apply('classrooms');
+		});
+	};
 
 	$scope.searchDirectory = function(){
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field);
 
-		$scope.openView('dominos', 'main');
-	};
-
-	$scope.selectFirstUser = function(){
-		if(model.myClass.users.length()){
-			$scope.selectUser(model.myClass.users.first());
-		}
-		else{
-			$scope.selectUser(model.directory.users.first());
-		}
+		template.open('main', 'mono-class');
+		template.open('list', 'dominos');
 	};
 
 	$scope.deselectUser = function(){
-		if(model.directory.users.current){
-			model.directory.users.current.deselect();
-		}
-		if(model.myClass.users.current){
-			model.myClass.users.current.deselect();
-		}
-		$scope.openView('dominos', 'main');
+		$scope.currentUser = undefined;
+		template.open('list', 'dominos');
 	};
 
 	$scope.selectUser = function(user){
@@ -110,32 +121,36 @@ function DirectoryController($scope, model, route, date){
 			$scope.$apply('search');
 		}
 
-		if($scope.containsView('main', 'user-selected')){
+		if(template.contains('list', 'user-selected')){
 			ui.scrollToTop();
 		}
 		else{
 			window.scrollTo(0, 200);
 		}
 
-		model.directory.users.deselectAll();
-		model.myClass.users.deselectAll();
-		user.select();
+		user.open();
+		user.one('sync', function(){
+			$scope.currentUser = user;
+			$scope.$apply('currentUser');
+		});
 
-		$scope.openView('user-selected', 'main');
+		template.open('list', 'user-selected');
+		template.open('details', 'user-infos');
 	};
 
-	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
+	$scope.selectClassroom = function(classroom){
+		classroom.sync();
+		$scope.classrooms = undefined;
+		classroom.one('users.sync', function(){
+			$scope.users = classroom.users;
+			$scope.$apply('users');
+		});
+	};
+
+
 	$scope.colorFromType = function(type){
 		return colorsMatch[type.toLowerCase()];
 	};
-
-	model.on('directory.users.change, myClass.users.change', function(e){
-		if(!$scope.$$phase){
-			$scope.$apply('users');
-		}
-	});
-
-	$scope.openView('dominos', 'main');
 }
 
 function ClassAdminController($scope, model, date, notify){
@@ -290,59 +305,4 @@ function ClassAdminController($scope, model, date, notify){
 	$scope.uploadPhoto = function(){
 		$scope.newUser.uploadAvatar()
 	};
-}
-
-function SchoolController($scope, template){
-	$scope.template = template;
-	$scope.template.open('list', 'table');
-
-	$scope.search = {
-		text: '',
-		maxLength: 20
-	};
-
-	model.network.schools.sync();
-	$scope.schools = model.network.schools;
-	model.network.schools.on('sync', function(){
-		$scope.$apply('schools');
-	});
-
-	$scope.openSchool = function(school){
-		$scope.currentSchool = school;
-		school.sync();
-		school.on('sync', function(){
-			$scope.users = school.users;
-			$scope.classrooms = school.classrooms;
-
-			$scope.$apply('users');
-			$scope.$apply('classrooms');
-		})
-	};
-
-	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
-	$scope.colorFromType = function(type){
-		return colorsMatch[type.toLowerCase()];
-	};
-
-	$scope.increaseSearchSize = function(){
-		$scope.search.maxLength += 20;
-	};
-
-	$scope.updateSearch = function(){
-		if($scope.template.contains('list', 'user-infos')){
-			$scope.template.open('list', 'table');
-		}
-	};
-
-	$scope.selectUser = function(user){
-		window.scrollTo(0, 200);
-		model.myClass.users.deselectAll();
-		user.select();
-
-		user.on('change', function(){
-			$scope.$apply('users')
-		});
-
-		$scope.template.open('list', 'user-infos');
-	}
 }

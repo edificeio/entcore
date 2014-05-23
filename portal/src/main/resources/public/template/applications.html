@@ -1,0 +1,11 @@
+<widgets></widgets>
+<section class="nine cell reduce-block-six">
+	<h1>Applications</h1>
+	<nav class="vertical">
+		<ul>
+			<li ng-repeat="application in applications">
+				<a translate content="[[application.displayName]]" ng-href="[[application.address]]"></a>
+			</li>
+		</ul>
+	</nav>
+</section>

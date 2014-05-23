@@ -109,35 +109,6 @@ public class PortalService extends Controller {
 	}
 
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
-	public void apps(final HttpServerRequest request) {
-		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
-
-			@Override
-			public void handle(JsonObject session) {
-				JsonArray apps = session.getArray("apps", new JsonArray());
-				I18n i18n = I18n.getInstance();
-				for (Object o : apps) {
-					if (!(o instanceof JsonObject)) continue;
-					JsonObject j = (JsonObject) o;
-					String d = j.getString("displayName");
-					if (d == null || d.trim().isEmpty()) {
-						d = j.getString("name");
-					}
-					if (d != null) {
-						j.putString("displayName",
-								i18n.translate(d, request.headers().get("Accept-Language")));
-					}
-				}
-				JsonObject json = new JsonObject()
-						.putArray("apps", apps);
-				assetTemplateLambda(request, json);
-				renderView(request, json);
-			}
-		});
-
-	}
-
-	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void applicationsList(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 

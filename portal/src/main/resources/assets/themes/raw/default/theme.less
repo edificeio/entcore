@@ -1,4 +1,4 @@
-@import "../../../../public/css/app";
+@import "../../../../../../../../../css-lib/app";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
 @dark-blue: #074e68;
@@ -90,7 +90,11 @@
 i.send-mail{
 	.icon(glyphicons_010_envelope, 24px);
 	margin: 7px;
-	opacity: 0.6;
+	.run-transition(background);
+}
+
+i.send-mail:hover{
+
 }
 
 i.public{
@@ -103,63 +107,51 @@ i.prive{
 	cursor: pointer;
 }
 
-i.view-folder{
-	.icon(glyphicons_144_folder_open, 24px);
-	margin: 7px;
-	opacity: 0.6;
-}
-
-i.view-book{
-	.icon(glyphicons_071_book, 24px);
-	margin: 7px;
-	opacity: 0.6;
-}
-
 i.angry{
-	.icon(default, 25px);
+	.icon(angry, 50px);
 }
 
 i.default{
-	.icon(default, 25px);
+	.icon(default, 50px);
 }
 
 i.dreamy{
-	.icon(default, 25px);
+	.icon(dreamy, 50px);
 }
 
-i[role=happy]{
-	.icon(default, 25px);
+i.happy{
+	.icon(happy, 50px);
 }
 
-i[role=joker]{
-	.icon(default, 25px);
+i.joker{
+	.icon(joker, 50px);
 }
 
-i[role=love]{
-	.icon(default, 25px);
+i.love{
+	.icon(love, 50px);
 }
 
-i[role=proud]{
-	.icon(default, 25px);
+i.proud{
+	.icon(proud, 50px);
 }
 
-i[role=sad]{
-	.icon(default, 25px);
+i.sad{
+	.icon(sad, 50px);
 }
 
-i[role=sick]{
-	.icon(default, 25px);
+i.sick{
+	.icon(sick, 50px);
 }
 
-i[role=tired]{
-	.icon(default, 25px);
+i.tired{
+	.icon(tired, 50px);
 }
 
-i[role=worried]{
-	.icon(default, 25px);
+i.worried{
+	.icon(worried, 50px);
 }
 
-i[role=show-icons]{
+i.show-icons{
 	.icon(glyphicons_156_show_thumbnails, 24px);
 	opacity: 0.5;
 }
@@ -172,7 +164,7 @@ i.disconnect{
 	margin-bottom: -6px;
 }
 
-i[role=show-details]{
+i.show-details{
 	.icon(glyphicons_157_show_thumbnails_with_lines, 24px);
 	opacity: 0.5;
 	background-size: 100% 93%;
@@ -205,7 +197,7 @@ i.close2x{
 	.icon(glyphicons_207_remove_2, 50px);
 }
 
-i[role=tools]{
+i.tools{
 	.icon(glyphicons_280_settings, 25px);
 }
 
@@ -253,25 +245,75 @@ i[role=tools]{
 	max-width: 100%;
 }
 
+nav.stamps{
+	padding: 0;
+	padding-right: 35px;
+	article{
+		background: #444;
+		border-radius: 0;
+	}
+	article:hover{
+		a{
+			color: #fff;
+		}
+		i.send-mail{
+			.icon(glyphicons_010_envelope_white, 24px);
+			margin: 7px;
+		}
+	}
+	article.selected{
+		background: @bright-blue;
+		i.send-mail{
+			.icon(glyphicons_010_envelope_white, 24px);
+			margin: 7px;
+		}
+	}
+}
+
 .dominos{
 	.item{
 		width: 14%;
+		border: 0;
+		padding: 6px;
+		.mood{
+			top: 63px;
+		}
+
+		.domino{
+			border: 0;
+			.bottom{
+				background: #444;
+				color: #aaa;
+				a:hover{
+					color: #fff;
+				}
+				.mood{
+					top: 53px;
+					width: 42px;
+				}
+				i.send-mail:hover{
+					.icon(glyphicons_010_envelope_white, 24px);
+					margin: 7px;
+				}
+			}
+		}
 	}
-	.domino.green{
-		background: @green;
-	}
-	.domino.orange{
-		background: @orange;
-	}
-	.domino.purple{
-		background: @purple;
-	}
-	.domino.cyan{
-		background: @cyan;
-	}
-	.domino.pink{
-		background: @pink;
-	}
+}
+
+.green{
+	background: @green;
+}
+.orange{
+	background: @orange;
+}
+.purple{
+	background: @purple;
+}
+.cyan{
+	background: @cyan;
+}
+.pink{
+	background: @pink;
 }
 
 .calendar{
@@ -290,6 +332,10 @@ i[role=tools]{
 		margin-top: 18%;
 		.day{
 			font-size: 10px;
+			height: 21px;
+		}
+		.previous-month, .next-month{
+			color: #aaa;
 		}
 		.day.today{
 			color: #fff;
@@ -393,7 +439,45 @@ button.cancel, input[type=button].cancel{
 }
 
 .icons-select{
-	display: none;
+	font-family: Lato;
+
+	i{
+		float: none;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	span{
+		text-align: center;
+		width: 100%;
+	}
+
+	.current{
+		.border-radius(3px);
+		padding-left: 0;
+		font-size: 18px;
+		.run-transition(padding-left);
+		i{
+			float: left;
+		}
+	}
+
+	.current.editing{
+		background: #444;
+		color: #aaa;
+		padding-left: 50px;
+	}
+
+	.options-list{
+		background: #444;
+		color: #aaa;
+		font-size: 14px;
+		.border-radius-bottom(3px);
+		box-shadow: 3px 3px 5px rgba(0,0,0,0.4);
+	}
+
+	.wrapper{
+		padding: 12px;
+	}
 }
 
 textarea.inline-editing{
@@ -446,25 +530,35 @@ h3, h4, h5{
 
 .panel{
 	width: 400px;
-	background: #fff;
+	background: #444;
 	margin-left:auto;
 	margin-right: auto;
 	.border-radius;
 	padding: 15px;
+	color: #aaa;
 
 	label{
 		width: 150px;
+	}
+
+	h1{
+		color: #ccc;
 	}
 
 	input[type=text], input[type=password]{
 		width: 200px;
 		float: right;
 		line-height: 20px;
-		border: 1px solid #ccc;
+		border: 0;
+		color: #aaa;
+		background: #333;
 	}
 	a{
 		display: block;
 		clear: both;
+	}
+	a:hover{
+		color: #fff;
 	}
 	h1 img{
 		display: none;
@@ -585,16 +679,16 @@ nav.vertical{
 			.border-box;
 			a{
 				color: #000;
-				.run-transition(color);
+				.run-transition(background);
 				font-family: Lato;
 				font-weight: 300;
 				margin-left: 0;
 				border-right: 8px solid #ccc;
 			}
 			a.selected{
-				font-style: italic;
-				color: @bright-blue;
+				color: #aaa;
 				border-right: 8px solid @bright-blue;
+				background: #444;
 			}
 			a:hover{
 				color: @bright-blue;
@@ -631,6 +725,11 @@ nav.horizontal{
 	}
 }
 
+.vertical-spacing {
+	margin-top: 30px !important;
+	margin-bottom: 30px !important;
+}
+
 h1, h2, h3, h4, h5{
 	a{
 		color: #333;
@@ -640,6 +739,7 @@ h1, h2, h3, h4, h5{
 	font-family: Lato;
 	margin-top: 10px;
 	margin-bottom: 10px;
+	line-height: 30px;
 }
 
 h1{
@@ -664,17 +764,27 @@ table{
 	}
 	tr{
 		border: 2px solid #fff;
+		border-right: 0;
+		border-left: 0;
 		background: #f5f5f5;
 	}
 	tr.checked{
-		background: #fff;
+		background: #444;
+		color: #aaa;
+		border-color: #333;
+		a:hover{
+			color: #aaa;
+		}
+	}
+	tr.checked:hover{
+		background: #333;
 	}
 	tr.new-element{
 		background: #e8e8e8;
 		border-bottom-color: #ddd;
 	}
 	tr:hover{
-		background: #eee;
+		background: #ccc;
 	}
 	thead{
 		tr{
@@ -698,11 +808,12 @@ body{
 	section.main{
 		background: #eee;
 	}
-	font-size: 12px;
+	font-size: 14px;
+	line-height: 20px;
 }
 
 thead{
-	font-size: 12px;
+	font-size: 14px;
 	th{
 		padding: 5px;
 	}
@@ -755,7 +866,7 @@ header{
 	strong{
 		font-style: italic;
 		font-weight: normal;
-		font-size: 12px;
+		font-size: 14px;
 	}
 	.element{
 		width: 150px;
@@ -985,15 +1096,15 @@ article.selected{
 	}
 }
 
-i[role=unknown-large], i[role=xls-large], i[role=ppt-large], i[role=pdf-large], i[role=video-large]{
+i.unknown-large, i.xls-large, i.ppt-large, i.pdf-large, i.video-large{
 	.icon(unknown-large, 135px);
 }
 
-i[role=audio-large]{
+i.audio-large{
 	.icon(audio-large, 135px);
 }
 
-i[role=folder-large]{
+i.folder-large{
 	.icon(folder-large, 135px);
 }
 

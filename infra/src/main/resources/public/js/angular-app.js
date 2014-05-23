@@ -150,8 +150,12 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 			containers: {},
 			open: function(name, view){
 				var path = this.viewPath + view + '.html';
-				if(theme.templateMapping[appPrefix] && theme.templateMapping[appPrefix].indexOf(view) !== -1){
-					path = '/assets/themes/' + theme.skin + '/template/' + appPrefix + '/' + view + '.html';
+				var folder = appPrefix;
+				if(appPrefix === '.'){
+					folder = 'portal';
+				}
+				if(theme.templateMapping[folder] && theme.templateMapping[folder].indexOf(view) !== -1){
+					path = '/assets/themes/' + theme.skin + '/template/' + folder + '/' + view + '.html';
 				}
 				this.containers[name] = path;
 			},
@@ -510,9 +514,11 @@ module.directive('iconsSelect', function($compile) {
 					<span>[[current.text]]</span>\
 				</div>\
 				<div class="options-list icons-view">\
-				<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">\
-					<i class="[[option.icon]]"></i>\
-					<span>[[option.text]]</span>\
+				<div class="wrapper"> \
+					<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">\
+						<i class="[[option.icon]]"></i>\
+						<span>[[option.text]]</span>\
+					</div>\
 				</div>\
 				</div>\
 			</div>'

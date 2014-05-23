@@ -176,27 +176,36 @@ var ui = (function(){
 			$(this).val(' ');
 		})
 
-		$('body').on('mousedown', '.icons-select .current', function(e){
+		$('body').on('click', '.icons-select .current', function(e){
+			e.stopPropagation();
 			var select = $(this).parent();
 			var optionsList = select.children('.options-list');
 
 			if($(this).hasClass('editing')){
 				$(this).removeClass('editing');
-				optionsList.slideUp();
+				optionsList.removeClass('toggle-visible');
+				$(document).unbind('click.close');
 				e.preventDefault();
 				return;
 			}
 
 			var that = this;
 			$(that).addClass('editing');
-			optionsList.slideDown();
-			optionsList.children('.option').on('mousedown', function(){
+			optionsList.addClass('toggle-visible');
+			optionsList.find('.option').on('click', function(){
 				$(that).removeClass('editing');
 				$(that).data('selected', $(this).data('value'));
 				$(that).html($(this).html());
-				optionsList.slideUp();
+				optionsList.removeClass('toggle-visible');
 				select.change();
 			});
+
+			$(document).on('click.close', function(e){
+				$(that).removeClass('editing');
+				optionsList.removeClass('toggle-visible');
+				$(document).unbind('click.close');
+				e.preventDefault();
+			})
 		});
 	});
 

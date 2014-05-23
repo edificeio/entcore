@@ -1,9 +1,12 @@
 //Copyright. Tous droits réservés. WebServices pour l’Education.
 function User(data){
+	if(data && !data.mood){
+		data.mood = 'default';
+	}
 	this.updateData(data);
 	this.relatives = [];
 
-	this.select = function(){
+	this.open = function(){
 		var that = this;
 		http().get('/userbook/api/person?id=' + this.id + '&type=' + this.type).done(function(data){
 			data.result[0].hobbies = _.map(data.result[0].category, function(cat, i){
@@ -16,19 +19,9 @@ function User(data){
 				return user.id !== '';
 			});
 
-			that.selected = true;
-
-			model.directory.users.setCurrent(that);
-			model.myClass.users.setCurrent(that);
-
-			that.updateData(data.result[0]);
-		});
-	};
-
-	this.deselect = function(){
-		this.selected = false;
-		model.directory.users.setCurrent(undefined);
-		model.myClass.users.setCurrent(undefined);
+			this.updateData(data.result[0]);
+			this.trigger('sync');
+		}.bind(this));
 	};
 }
 
@@ -213,29 +206,16 @@ function usersMatch(search){
 	});
 }
 
-function MyClass(){
-	this.name = '';
+function Classroom(){
+	var that = this;
 
 	this.collection(User, {
 		sync: function(){
-			var that = this;
-			http().get('/userbook/api/class').done(function(data){
-				that.load(_.map(data.result, function(user){
-					if(!user.mood){
-						user.mood = 'default';
-					}
-					return user;
-				}));
-			});
+			http().get('/userbook/api/class', { id: that.id }).done(function(users){
+				this.load(users);
+				this.trigger('sync');
+			}.bind(this))
 		}
-	});
-
-	this.users.match = usersMatch.bind(this.users);
-}
-
-function Classroom(){
-	this.collection(User, {
-
 	});
 
 	this.users.match = usersMatch.bind(this.users);
@@ -259,8 +239,12 @@ function School(){
 
 	this.sync = function(){
 		http().get('/userbook/structure/' + this.id).done(function(d){
-			this.classrooms.load(d.classes);
+			this.classrooms.load(_.filter(d.classes, function(classroom){
+					return model.me.classes.indexOf(classroom.id) !== -1;
+				})
+			);
 			this.users.load(d.users);
+			this.classrooms.trigger('sync');
 			this.trigger('sync');
 		}.bind(this));
 	}
@@ -381,8 +365,7 @@ function ClassAdmin(){
 }
 
 model.build = function(){
-	this.makeModels([User, MyClass, Directory, ClassAdmin, Network, Classroom, School]);
-	this.myClass = new MyClass();
+	this.makeModels([User, Directory, ClassAdmin, Network, Classroom, School]);
 	this.directory = new Directory();
 	this.classAdmin = new ClassAdmin();
 	this.network = new Network();

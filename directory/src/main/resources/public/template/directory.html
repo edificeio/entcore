@@ -9,11 +9,11 @@
 	<div class="right-magnet three cell">
 		<div class="row" ng-if="users.all.length > 0">
 			<i class="show-details"
-			   ng-click="selectFirstUser()"
-			   ng-class="{ selected: containsView('main', 'user-selected') }" class="right-magnet"></i>
+			   ng-click="selectUser(users.first())"
+			   ng-class="{ selected: template.contains('list', 'user-selected') }" class="right-magnet"></i>
 			<i class="show-icons"
 			   ng-click="deselectUser()"
-			   ng-class="{ selected: containsView('main', 'dominos') }" class="right-magnet"></i>
+			   ng-class="{ selected: template.contains('list', 'dominos') }" class="right-magnet"></i>
 		</div>
 	</div>
 </div>
@@ -31,4 +31,4 @@
 		</div>
 	</div>
 </form>
-<div class="row  vertical-spacing-twice" ng-include="viewsContainers.main"></div>
+<div class="row  vertical-spacing-twice" ng-include="template.containers.main"></div>
