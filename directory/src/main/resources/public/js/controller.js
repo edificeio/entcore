@@ -20,13 +20,15 @@ routes.define(function($routeProvider){
 
 function DirectoryController($scope, model, route, date, template){
 	$scope.template = template;
+	template.open('userActions', 'user-actions');
 	$scope.users = [];
 	$scope.lang = lang;
 	$scope.search = {
 		text: '',
 		field: '',
 		schoolField: '',
-		maxLength: 15,
+		maxLength: 20,
+		maxSchoolsLength: 7,
 		clear: function(){
 			this.text = '';
 			this.field = '';
@@ -42,48 +44,64 @@ function DirectoryController($scope, model, route, date, template){
 		}
 	};
 
+	$scope.increaseSchoolsSize = function(){
+		$scope.search.maxSchoolsLength += 7;
+		if(!$scope.$$phase){
+			$scope.$apply('search');
+		}
+	};
+
 	$scope.longDate = function(dateString){
 		return moment(dateString).format('DD MMMM YYYY')
 	};
 
 	route({
 		viewUser: function(params){
-			new User({ id: params.userId }).select();
+			$scope.currentUser = new User({ id: params.userId });
+			$scope.currentUser.open();
+			$scope.currentUser.on('sync', function(){
+				$scope.$apply('currentUser');
+			});
 			$scope.users = model.directory.users;
 			template.open('page', 'profile');
+			template.open('details', 'user-infos');
 			$scope.title = 'profile';
 		},
 		directory: function(){
 			$scope.users = model.directory.users;
 			template.open('page', 'directory');
-			template.close('main');
 			$scope.title = 'directory';
 		},
 		myClass: function(){
+			if($scope.network !== undefined){
+				return;
+			}
+			$scope.network = model.network;
 			model.network.schools.sync();
 			model.network.schools.on('sync', function(){
 				$scope.schools = model.network.schools;
 				$scope.currentSchool = $scope.schools.first();
 				$scope.currentSchool.sync();
+
 				$scope.currentSchool.one('sync', function(){
 					$scope.users = $scope.currentSchool.users;
-					$scope.classrooms = $scope.currentSchool.classrooms;
 
 					template.open('page', 'class');
 
+					$scope.classrooms = $scope.currentSchool.classrooms;
 					if($scope.classrooms.length() === 1){
 						template.open('main', 'mono-class');
+						$scope.myClass = $scope.classrooms.first();
+						$scope.selectClassroom($scope.classrooms.first());
 					}
 					else{
 						template.open('main', 'multi-class');
-
 					}
 
 					template.open('list', 'dominos');
 					$scope.title = 'class';
 					$scope.$apply();
 				});
-
 			});
 		}
 	});
@@ -98,6 +116,7 @@ function DirectoryController($scope, model, route, date, template){
 		school.one('sync', function(){
 			$scope.users = school.users;
 			$scope.classrooms = school.classrooms;
+			$scope.deselectUser('dominos');
 			$scope.$apply('users');
 			$scope.$apply('classrooms');
 		});
@@ -106,14 +125,20 @@ function DirectoryController($scope, model, route, date, template){
 	$scope.searchDirectory = function(){
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field);
+		model.directory.users.one('change', function(){
+			$scope.users = model.directory.users;
+			$scope.$apply('users');
+		});
 
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
 	};
 
-	$scope.deselectUser = function(){
+	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;
-		template.open('list', 'dominos');
+		template.open('list', tpl);
+		template.close('details');
+		template.close('classNav');
 	};
 
 	$scope.selectUser = function(user){
@@ -121,7 +146,7 @@ function DirectoryController($scope, model, route, date, template){
 			$scope.$apply('search');
 		}
 
-		if(template.contains('list', 'user-selected')){
+		if($scope.currentUser !== undefined){
 			ui.scrollToTop();
 		}
 		else{
@@ -134,13 +159,15 @@ function DirectoryController($scope, model, route, date, template){
 			$scope.$apply('currentUser');
 		});
 
-		template.open('list', 'user-selected');
+		template.open('classNav', 'class-vertical-content');
 		template.open('details', 'user-infos');
+		template.close('list');
 	};
 
 	$scope.selectClassroom = function(classroom){
 		classroom.sync();
 		$scope.classrooms = undefined;
+		$scope.users = { loading: true };
 		classroom.one('users.sync', function(){
 			$scope.users = classroom.users;
 			$scope.$apply('users');
@@ -154,11 +181,24 @@ function DirectoryController($scope, model, route, date, template){
 }
 
 function ClassAdminController($scope, model, date, notify){
-	model.classAdmin.sync();
+	model.network.sync();
+	model.network.one('schools.sync', function(){
+		model.network.schools.forEach(function(school){
+			school.sync();
+		});
+	});
+
 	$scope.classAdmin = model.classAdmin;
 	$scope.users = model.classAdmin.users;
 	$scope.newUser = new User();
 	$scope.import = {};
+	$scope.me = model.me;
+
+	model.network.on('classrooms-sync', function(){
+		$scope.classrooms = model.network.schools.allClassrooms();
+		model.classAdmin.sync();
+		$scope.$apply();
+	});
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){

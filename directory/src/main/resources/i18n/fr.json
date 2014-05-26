@@ -192,5 +192,6 @@
 	"directory.admin.unlinked.class" : "Lien avec la classe supprimé",
 	"directory.admin.lost" : "Personnes sans structure",
 	"directory.personnel": "Personnel",
-	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents"
+	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
+	"loading": "Chargement en cours..."
 }

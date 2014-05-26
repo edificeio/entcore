@@ -9,10 +9,15 @@
 				<div class="right-magnet">
 					<i class="show-details"
 					   ng-click="selectUser(users.first())"
-					   ng-class="{ selected: template.contains('list', 'user-selected') }" class="right-magnet"></i>
+					   ng-class="{ selected: currentUser }" class="right-magnet"
+					   ng-if="users.first()"></i>
 					<i class="show-icons"
-					   ng-click="deselectUser()"
+					   ng-click="deselectUser('dominos')"
 					   ng-class="{ selected: template.contains('list', 'dominos') }" class="right-magnet"></i>
+					<i class="show-list"
+					   ng-click="deselectUser('table')"
+					   ng-class="{ selected: template.contains('list', 'table') }" class="right-magnet"
+					   ng-if="!myClass"></i>
 				</div>
 
 				<div class="right-magnet cell reduce-block-four">

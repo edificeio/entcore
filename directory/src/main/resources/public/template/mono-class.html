@@ -1,1 +1,9 @@
-<article data-ng-include="template.containers.list" class="twelve cell"></article>
+<div ng-if="currentUser !== undefined">
+	<div ng-include="template.containers.classNav" class="four cell"></div>
+</div>
+<div ng-if="currentUser !== undefined">
+	<article data-ng-include="template.containers.details" class="eight cell"></article>
+</div>
+<div ng-if="currentUser === undefined">
+	<article data-ng-include="template.containers.list" class="twelve cell"></article>
+</div>

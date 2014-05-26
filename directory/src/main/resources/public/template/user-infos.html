@@ -13,34 +13,34 @@
 			<div class="row">
 				<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
 				<div class="right-magnet">
-					<i role="[[currentUser.mood]]" class="liquid text-flow"></i>
+					<i class="[[currentUser.mood]] liquid text-flow"></i>
 				</div>
 			</div>
-			<div class="row" ng-if="users.current.email">
+			<div class="row" ng-if="currentUser.email">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.email"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.email]]
 				</em>
 			</div>
-			<div class="row" ng-if="users.current.address">
+			<div class="row" ng-if="currentUser.address">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.address"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.address]]
 				</em>
 			</div>
-			<div class="row" ng-if="users.current.tel">
+			<div class="row" ng-if="currentUser.tel">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.telephone"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.tel]]
 				</em>
 			</div>
-			<div class="row" ng-if="users.current.birthdate">
+			<div class="row" ng-if="currentUser.birthdate">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.birthdate"></div>
 				<em class="eight cell reduce-block-four">
 					[[longDate(currentUser.birthdate)]]
 				</em>
 			</div>
-			<div class="row" ng-if="users.current.motto">
+			<div class="row" ng-if="currentUser.motto">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.motto"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.motto]]
@@ -52,38 +52,17 @@
 </div>
 
 <div class="row reduce-block-six">
-	<article class="twelve cell reduce-block-six">
-		<div class="row">
-			<a ng-href="/conversation/conversation#/write-mail/[[currentUser.id]]" class="twelve cell">
-				<i class="send-mail inline"></i>
-				<div translate key="userBook.class.write-message" class="block-container cell"></div>
-			</a>
-		</div>
-		<div class="row">
-			<a class="twelve cell">
-				<i class="view-book inline"></i>
-				<div translate key="userBook.class.edit-notebook" class="block-container cell"></div>
-			</a>
-		</div>
-		<div class="row">
-			<a class="twelve cell">
-				<i class="view-folder inline"></i>
-				<div translate key="userBook.class.see-portfolio" class="block-container cell"></div>
-			</a>
-		</div>
+	<article class="twelve cell reduce-block-six actions-list" ng-include="template.containers.userActions">
 
-		<div class="row"></div>
 	</article>
 </div>
+<div class="row"></div>
 
-<div class="row reduce-block-six"></div>
-
-<h1
-		translate key="userBook.profile.family"
-		class="vertical-spacing horizontal-spacing"
-		ng-if="users.current.relatives.length"
-		></h1>
 <div class="row reduce-block-six" ng-if="currentUser.relatives.length">
+	<h1
+		translate content="userBook.profile.family"
+		class="vertical-spacing horizontal-spacing"
+	></h1>
 	<article class="reduce-block-six row">
 		<div class="row" ng-repeat="relative in currentUser.relatives">
 			<a ng-click="selectUser(relative)" class="reduce-block-four twelve cell">[[relative.displayName]]</a>
@@ -91,13 +70,13 @@
 		<div class="row"></div>
 	</article>
 </div>
+<div class="row"></div>
 
-<h1
+<div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
+	<h1
 		translate key="userBook.interests"
 		class="vertical-spacing horizontal-spacing"
-		ng-if="currentUser.hobbies.length"
-		></h1>
-<div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
+	></h1>
 	<article>
 		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
 			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>

@@ -1,18 +1,23 @@
 <div class="row">
 	<section class="four cell reduce-block-eight">
 		<nav class="vertical">
-			<div class="row">
-				<input type="text" ng-model="search.schoolField" />
-			</div>
+
 			<div class="row">
 				<ul>
-					<li ng-repeat="school in schools.all">
+					<li ng-if="schools.length() > search.maxSchoolsLength">
+						<input type="text" ng-model="search.schoolField" class="row" />
+					</li>
+					<li ng-repeat="school in schools.match(search.schoolField) | limitTo:search.maxSchoolsLength">
 						<a ng-click="showSchool(school)" ng-class="{ selected: school === currentSchool }">[[school.name]]</a>
 					</li>
 				</ul>
 			</div>
+			<a class="static-link" ng-click="increaseSchoolsSize()" ng-if="schools.length() > search.maxSchoolsLength">Voir la suite</a>
 		</nav>
+		<div ng-include="template.containers.classNav" class="twelve cell"></div>
 	</section>
 
+
 	<article data-ng-include="template.containers.list" class="eight cell"></article>
+	<article data-ng-include="template.containers.details" class="eight cell"></article>
 </div>

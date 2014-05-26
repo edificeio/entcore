@@ -16,6 +16,19 @@
 <portal>
 	<h1 data-reload><i class="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
+	<article class="twelve cell">
+		<div class="two cell reduce-block-eight">
+			Classe à modifier
+		</div>
+		<div class="ten cell reduce-block-two">
+			<select ng-model="me.preferences.selectedClass"
+					ng-change="me.preferences.save('selectedClass')"
+					ng-options="classroom.id as classroom.name for classroom in classrooms"
+					class="twelve cell">
+			</select>
+		</div>
+	</article>
+
 	<section class="row">
 		<h1 class="text" translate content="classAdmin.globalParams"></h1>
 		<article class="twelve cell">
@@ -46,7 +59,7 @@
 				<div class="cell" ng-if="display.importing">
 					<loading-icon class="cell" request="loadingUsers" default="loading" />
 				</div>
-				<div class="eleven cell reduce-block-six vertical-spacing">
+				<div class="eleven cell reduce-block-eight">
 
 					<span translate content="fill.manual"></span>
 					<a translate content="classAdmin.importFile" ng-click="openView('importCSV', 'lightbox')"></a>

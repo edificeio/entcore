@@ -4,7 +4,8 @@
 
 <article class="row">
 	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
-	<table class="twelve">
+	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
+	<table class="twelve" ng-if="!users.loading">
 		<thead>
 		<tr>
 			<th></th>
@@ -13,7 +14,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="openClassroom(classroom)">
+		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="selectClassroom(classroom)">
 			<td class="action-cell">
 				<img ng-src="/userbook/avatar/[[classroom.id]]?thumbnail=48x48" />
 			</td>
@@ -22,7 +23,7 @@
 					[[classroom.name]]
 				</a>
 			</td>
-			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
+			<td></td>
 		</tr>
 		<tr ng-repeat="user in users.match(search.text) | limitTo:search.maxLength - classrooms.length()" ng-click="selectUser(user)">
 			<td class="action-cell">

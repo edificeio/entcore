@@ -14,6 +14,9 @@ function User(data){
 			});
 			data.result[0].relatives = _.map(data.result, function(item){
 				return new User({ displayName: item.relatedName, id: item.relatedId, type: item.relatedType });
+			})
+			.filter(function(relative){
+				return relative.id;
 			});
 			data.result[0].relatives = _.filter(data.result[0].relatives, function(user){
 				return user.id !== '';
@@ -240,12 +243,13 @@ function School(){
 	this.sync = function(){
 		http().get('/userbook/structure/' + this.id).done(function(d){
 			this.classrooms.load(_.filter(d.classes, function(classroom){
-					return model.me.classes.indexOf(classroom.id) !== -1;
+					return model.me.classes.indexOf(classroom.id) !== -1 || model.me.classes.length === 0;
 				})
 			);
 			this.users.load(d.users);
 			this.classrooms.trigger('sync');
 			this.trigger('sync');
+			model.network.trigger('classrooms-sync');
 		}.bind(this));
 	}
 }
@@ -255,7 +259,25 @@ function Network(){
 		sync: function(){
 			http().get('/userbook/structures').done(function(d){
 				this.load(d);
+				this.trigger('sync');
 			}.bind(this))
+		},
+		match: function(search){
+			return _.filter(this.all, function(school){
+				var words = search.split(' ');
+				return _.find(words, function(word){
+					var formattedOption = lang.removeAccents(school.name).toLowerCase();
+					var formattedWord = lang.removeAccents(word).toLowerCase();
+					return formattedOption.indexOf(formattedWord) === -1
+				}) === undefined;
+			});
+		},
+		allClassrooms: function(){
+			var classrooms = [];
+			this.forEach(function(school){
+				classrooms = classrooms.concat(school.classrooms.all);
+			});
+			return classrooms;
 		}
 	});
 }
@@ -266,26 +288,28 @@ function Directory(){
 			return this.all;
 		},
 		searchDirectory: function(search){
-			var that = this;
 			var searchTerm = lang.removeAccents(search).toLowerCase();
 			this.loading = true;
 			http().get('/userbook/api/search?name=' + searchTerm).done(function(result){
-				that.loading = false;
-				that.load(_.map(result, function(user){
+				this.loading = false;
+				this.load(_.map(result, function(user){
 					if(!user.mood){
 						user.mood = 'default';
 					}
 					return user;
 				}));
-			});
+			}.bind(this));
 		}
 	})
 }
 
 function ClassAdmin(){
 	this.sync = function(){
-		http().get('/directory/class/' + model.me.classes[0]).done(function(data){
-			this.id = model.me.classes[0];
+		if(model.me.preferences.selectedClass === undefined){
+			model.me.preferences.save('selectedClass', model.me.classes[0]);
+		}
+		http().get('/directory/class/' + model.me.preferences.selectedClass).done(function(data){
+			this.id = model.me.preferences.selectedClass;
 			this.updateData(data);
 		}.bind(this));
 		this.users.sync();
@@ -299,7 +323,7 @@ function ClassAdmin(){
 
 	this.collection(User, {
 		sync: function(){
-			http().get('/directory/class/' + model.me.classes[0] + '/users', { requestName: 'loadingUsers' }).done(function(data){
+			http().get('/directory/class/' + model.me.preferences.selectedClass + '/users', { requestName: 'loadingUsers' }).done(function(data){
 				data.sort(function(a, b) {
 					return a.lastName > b.lastName?1:-1;
 				});
@@ -361,7 +385,11 @@ function ClassAdmin(){
 				email: model.me.email
 			});
 		});
-	}
+	};
+
+	model.on('preferences-updated', function(){
+		this.sync();
+	}.bind(this));
 }
 
 model.build = function(){

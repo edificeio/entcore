@@ -372,6 +372,11 @@ function Collection(obj){
 				}
 			})
 		},
+		current: null,
+		setCurrent: function(item){
+			this.current = item;
+			this.trigger('change');
+		},
 		push: function(element, notify){
 			var newItem = element;
 			if(this.obj === undefined){
@@ -1074,6 +1079,16 @@ function bootstrap(func){
 
 		theme.loadConnected();
 		model.me = data;
+		model.me.preferences = {
+			save: function(pref, data){
+				if(data !== undefined){
+					this[pref] = data;
+				}
+
+				model.trigger('preferences-updated');
+			}
+		};
+		model.trigger('preferences-updated');
 
 		model.me.hasWorkflow = function(workflow){
 			return _.find(model.me.authorizedActions, function(workflowRight){

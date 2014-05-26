@@ -1613,8 +1613,12 @@ ul.icons-tabs li i {
   background: #eee;
 }
 .icons-select .options-list {
-  display: none;
   position: absolute;
+  height: 0;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
   width: 175%;
   top: 49px;
   -webkit-box-sizing: border-box;
@@ -1622,6 +1626,10 @@ ul.icons-tabs li i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   background: #eee;
+  overflow: hidden;
+}
+.icons-select .options-list.toggle-visible {
+  height: 260px;
 }
 .icons-select .option i {
   background-size: 100% auto;
@@ -2971,6 +2979,29 @@ nav.stamps article.selected i.send-mail {
 .pink {
   background: #ff0b75;
 }
+.grey {
+  background: #555;
+}
+.actions-list {
+  background: #444;
+}
+.actions-list a:hover {
+  color: #FFF;
+}
+.actions-list .send-mail:hover {
+  height: 24px;
+  width: 24px;
+  background-image: url("../img/icons/glyphicons_010_envelope_white.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 .calendar {
   padding-bottom: 35% !important;
   border: 1px solid #ccc;
@@ -3189,8 +3220,12 @@ h4,
 h5 {
   color: #008bb8;
 }
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #555 inset;
+  -webkit-text-fill-color: #aaa!important;
+}
 .panel {
-  width: 400px;
+  width: 415px;
   background: #444;
   margin-left: auto;
   margin-right: auto;

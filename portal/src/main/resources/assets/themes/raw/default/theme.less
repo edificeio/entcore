@@ -315,6 +315,19 @@ nav.stamps{
 .pink{
 	background: @pink;
 }
+.grey{
+	background: #555;
+}
+
+.actions-list{
+	background: #444;
+	a:hover{
+		color: #FFF;
+	}
+	.send-mail:hover{
+		.icon(glyphicons_010_envelope_white, 24px);
+	}
+}
 
 .calendar{
 	padding-bottom: 35% !important;
@@ -528,8 +541,15 @@ h3, h4, h5{
 	color: @bright-blue;
 }
 
+//weird chrome hack for background color in prefilled inputs
+input:-webkit-autofill {
+	-webkit-box-shadow: 0 0 0px 1000px #555 inset;
+	-webkit-text-fill-color: #aaa!important;
+}
+
+
 .panel{
-	width: 400px;
+	width: 415px;
 	background: #444;
 	margin-left:auto;
 	margin-right: auto;
