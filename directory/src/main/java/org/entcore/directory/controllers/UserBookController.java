@@ -250,15 +250,16 @@ public class UserBookController extends Controller {
 		String matchClass;
 		JsonObject params = new JsonObject();
 		if (classId == null || classId.trim().isEmpty()) {
-			matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
+			matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+					"WITH c, profile, visibles MATCH";
 		} else {
-			matchClass = "(c:Class {id : {classId}}) ";
+			matchClass = "(c:Class {id : {classId}}),";
 			params.putString("classId", classId);
 		}
 		String query =
-				"MATCH " + matchClass + ", visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
+				"MATCH " + matchClass + " visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
 				"WHERE profile.name IN ['Student', 'Teacher'] " +
-				"OPTIONAL MATCH m-[:USERBOOK]->u " +
+				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct profile.name as type, visibles.id as id, " +
 				"visibles.displayName as displayName, u.mood as mood, " +
 				"u.userid as userId, u.picture as photo " +
