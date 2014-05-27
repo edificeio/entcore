@@ -428,7 +428,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 		http().get(path, params).done(function(documents){
 			formatDocuments(documents, function(result){
-				$scope.openedFolder.content = $scope.openedFolder.content.concat(result);
+				$scope.openedFolder.content = result;
 				$scope.$apply();
 			});
 
@@ -444,7 +444,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if($scope.folder.children.indexOf(folder) !== -1){
 			currentTree();
 		}
-		$scope.openedFolder.content = [];
 		if($scope.currentTree.filter instanceof Array){
 			for(var i = 0; i < $scope.currentTree.filter.length; i++){
 				var params = {
@@ -457,7 +456,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			var params = {
 				filter: $scope.currentTree.filter
 			};
-			$scope.openedFolder.content = [];
 			$scope.loadFolderContent($scope.currentTree.path, folder, params);
 		}
 	};
