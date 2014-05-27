@@ -37,9 +37,9 @@
 		<div ng-include="template.containers.classNav" class="four cell"></div>
 	</div>
 	<div ng-if="currentUser !== undefined">
-		<article data-ng-include="template.containers.details" class="eight cell"></article>
+		<div data-ng-include="template.containers.details" class="eight cell"></div>
 	</div>
 	<div ng-if="currentUser === undefined">
-		<article data-ng-include="template.containers.list" class="twelve cell"></article>
+		<div data-ng-include="template.containers.list" class="twelve cell"></div>
 	</div>
 </div>

@@ -1,5 +1,5 @@
 <div class="row">
-	<section class="four cell reduce-block-eight">
+	<section class="four cell">
 		<nav class="vertical">
 
 			<div class="row">
@@ -14,10 +14,10 @@
 			</div>
 			<a class="static-link" ng-click="increaseSchoolsSize()" ng-if="schools.length() > search.maxSchoolsLength">Voir la suite</a>
 		</nav>
-		<div ng-include="template.containers.classNav" class="twelve cell"></div>
+		<div ng-include="template.containers.classNav" class="twelve cell reduce-block-eight"></div>
 	</section>
 
 
-	<article data-ng-include="template.containers.list" class="eight cell"></article>
-	<article data-ng-include="template.containers.details" class="eight cell"></article>
+	<div data-ng-include="template.containers.list" class="eight cell"></div>
+	<div data-ng-include="template.containers.details" class="eight cell"></div>
 </div>
