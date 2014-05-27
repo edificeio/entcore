@@ -17,10 +17,10 @@
 	<h1 data-reload><i class="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
 	<article class="twelve cell">
-		<div class="two cell reduce-block-eight">
-			Classe à modifier
+		<div class="two cell reduce-block-eight" translate content="classAdmin.select.classroom">
+
 		</div>
-		<div class="ten cell reduce-block-two">
+		<div class="ten cell reduce-block-two" ng-if="classrooms.length > 1">
 			<select ng-model="me.preferences.selectedClass"
 					ng-change="me.preferences.save('selectedClass')"
 					ng-options="classroom.id as classroom.name for classroom in classrooms"

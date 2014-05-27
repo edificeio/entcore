@@ -193,5 +193,6 @@
 	"directory.admin.lost" : "Personnes sans structure",
 	"directory.personnel": "Personnel",
 	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
-	"loading": "Chargement en cours..."
+	"loading": "Chargement en cours...",
+	"classAdmin.select.classroom": "Classe à modifier"
 }
