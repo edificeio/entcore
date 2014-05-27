@@ -735,6 +735,30 @@ nav.horizontal a {
   margin: 0;
   float: left;
 }
+.search input[type=submit],
+.search input[type=button] {
+  height: 25px;
+  line-height: 18px;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-top-right-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  -ms-border-top-right-radius: 5px;
+  -ms-border-bottom-right-radius: 5px;
+  -o-border-top-right-radius: 5px;
+  -o-border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-left: 0;
+}
+.display-buttons {
+  padding-bottom: 10px;
+}
 .filters h5 {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -1121,6 +1145,18 @@ section.selected,
 article.selected {
   background: #ccc;
 }
+i.show-details {
+  float: right !important;
+  margin: 1px;
+}
+i.show-icons {
+  float: right !important;
+  margin: 1px;
+}
+i.show-list {
+  float: right !important;
+  margin: 1px;
+}
 article.media {
   border: 2px dashed #ccc;
 }
@@ -1180,6 +1216,10 @@ table {
 table tr {
   border-top: 1px solid #ccc;
   background: transparent;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 table tr.checked {
   background: #eee;
@@ -1221,6 +1261,10 @@ table.list-view td a {
 }
 a {
   color: blue;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
 }
 .v-center-container {
   display: table;
@@ -1615,11 +1659,6 @@ ul.icons-tabs li i {
 }
 .icons-select .options-list {
   position: absolute;
-  height: 0;
-  -o-transition: height 250ms ease;
-  -moz-transition: height 250ms ease;
-  -webkit-transition: height 250ms ease;
-  transition: height 250ms ease;
   width: 175%;
   top: 49px;
   -webkit-box-sizing: border-box;
@@ -1627,7 +1666,12 @@ ul.icons-tabs li i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   background: #eee;
+  height: 0;
   overflow: hidden;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
 }
 .icons-select .options-list.toggle-visible {
   height: 260px;
@@ -1652,7 +1696,6 @@ ul.icons-tabs li i {
   vertical-align: middle;
   max-height: 100%;
   background-size: auto 100%;
-  transform: rotate(0.0001deg);
 }
 .icons-select .current span {
   clear: none;
@@ -1754,7 +1797,7 @@ article h2:first-child {
   margin-top: 0px;
 }
 .text-container {
-  padding: 10px;
+  padding: 40px;
 }
 .text-container h1 {
   margin-top: 1em;
@@ -3469,6 +3512,10 @@ table tr {
   border-right: 0;
   border-left: 0;
   background: #f5f5f5;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 table tr.checked {
   background: #444;
