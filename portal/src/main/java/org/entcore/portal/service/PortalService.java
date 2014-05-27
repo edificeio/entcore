@@ -226,7 +226,11 @@ public class PortalService extends Controller {
 	}
 
 	public void locale(HttpServerRequest request) {
-		String[] langs = request.headers().get("Accept-Language").split(",");
+		String lang = request.headers().get("Accept-Language");
+		if (lang == null) {
+			lang = "fr";
+		}
+		String[] langs = lang.split(",");
 		renderJson(request, new JsonObject().putString("locale",
 				Locale.forLanguageTag(langs[0].split("-")[0]).toString()));
 	}
