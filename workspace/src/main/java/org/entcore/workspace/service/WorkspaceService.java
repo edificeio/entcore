@@ -66,8 +66,7 @@ public class WorkspaceService extends Controller {
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
-		mongo = new MongoDb(Server.getEventBus(vertx),
-				container.config().getString("mongo-address", "wse.mongodb.persistor"));
+		mongo = MongoDb.getInstance();
 		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);

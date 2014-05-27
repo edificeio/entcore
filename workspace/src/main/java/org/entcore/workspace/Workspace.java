@@ -18,7 +18,8 @@ public class Workspace extends Server {
 	public void start(final Future<Void> result) {
 		super.start();
 
-		final MongoDb mongo = new MongoDb(Server.getEventBus(vertx),
+		final MongoDb mongo = MongoDb.getInstance();
+		mongo.init(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);

@@ -37,7 +37,7 @@ public abstract class GenericShareService implements ShareService {
 	protected JsonArray getResoureActions(Map<String, SecuredAction> securedActions) {
 		JsonObject resourceActions = new JsonObject();
 		for (SecuredAction action: securedActions.values()) {
-			if (ActionType.RESOURCE.name().equals(action.getType())) {
+			if (ActionType.RESOURCE.name().equals(action.getType()) && !action.getDisplayName().isEmpty()) {
 				JsonObject a = resourceActions.getObject(action.getDisplayName());
 				if (a == null) {
 					a = new JsonObject()

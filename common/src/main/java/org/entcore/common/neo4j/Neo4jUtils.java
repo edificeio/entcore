@@ -10,7 +10,8 @@ public class Neo4jUtils {
 
 	public static String nodeSetPropertiesFromJson(String nodeAlias, JsonObject json) {
 		StringBuilder sb = new StringBuilder();
-		for (String attr: json.getFieldNames()) {
+		for (String a: json.getFieldNames()) {
+			String attr = a.replaceAll("\\W+", "");
 			sb.append(", ").append(nodeAlias).append(".").append(attr).append(" = {").append(attr).append("}");
 		}
 		if (sb.length() > 2) {

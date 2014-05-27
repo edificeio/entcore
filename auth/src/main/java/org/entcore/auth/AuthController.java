@@ -74,10 +74,9 @@ public class AuthController extends Controller {
 		super(vertx, container, rm, securedActions);
 		Neo neo = new Neo(eb, log);
 		this.trace = trace;
-		this.oauthDataFactory = new OAuthDataHandlerFactory(
-				neo,
-				new MongoDb(eb, container.config()
-						.getString("mongo.address", "wse.mongodb.persistor")));
+		MongoDb mongo = MongoDb.getInstance();
+		mongo.init(eb, container.config().getString("mongo.address", "wse.mongodb.persistor"));
+		this.oauthDataFactory = new OAuthDataHandlerFactory(neo, mongo);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		this.token = new Token();
