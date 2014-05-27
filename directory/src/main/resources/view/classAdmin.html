@@ -16,11 +16,11 @@
 <portal>
 	<h1 data-reload><i class="admin"></i> <span translate content="classAdmin.title"></span></h1>
 
-	<article class="twelve cell">
+	<article class="twelve cell" ng-if="classrooms.length > 1">
 		<div class="two cell reduce-block-eight" translate content="classAdmin.select.classroom">
 
 		</div>
-		<div class="ten cell reduce-block-two" ng-if="classrooms.length > 1">
+		<div class="ten cell reduce-block-two">
 			<select ng-model="me.preferences.selectedClass"
 					ng-change="me.preferences.save('selectedClass')"
 					ng-options="classroom.id as classroom.name for classroom in classrooms"
