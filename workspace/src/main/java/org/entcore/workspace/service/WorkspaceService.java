@@ -83,10 +83,6 @@ public class WorkspaceService extends Controller {
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
-	
-	public void scrapbook(HttpServerRequest request) {
-		renderView(request);
-	}
 
 	@SecuredAction("workspace.share.json")
 	public void shareJson(final HttpServerRequest request) {
