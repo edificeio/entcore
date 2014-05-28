@@ -128,8 +128,6 @@ project(':workspace') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-    testCompile 'com.ning:async-http-client:1.7.17'
-    testCompile 'commons-codec:commons-codec:1.8'
   }
 }
 
