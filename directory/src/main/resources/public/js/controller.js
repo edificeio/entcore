@@ -89,7 +89,7 @@ function DirectoryController($scope, model, route, date, template){
 					template.open('page', 'class');
 
 					$scope.classrooms = $scope.currentSchool.classrooms;
-					if($scope.classrooms.length() === 1){
+					if(model.me.classes.length === 1){
 						template.open('main', 'mono-class');
 						$scope.myClass = $scope.classrooms.first();
 						$scope.selectClassroom($scope.classrooms.first());

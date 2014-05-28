@@ -9,14 +9,14 @@
 		<thead>
 		<tr>
 			<th></th>
-			<th>Nom</th>
-			<th class="right-magnet">Profil</th>
+			<th translate content="userBook.profile.lastName"></th>
+			<th class="right-magnet" translate content="directory.admin.profile"></th>
 		</tr>
 		</thead>
 		<tbody>
 		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="selectClassroom(classroom)">
 			<td class="action-cell">
-				<img ng-src="/userbook/avatar/[[classroom.id]]?thumbnail=48x48" class="eight" />
+				<img skin-src="/img/illustrations/classroom.png" class="eight cell" />
 			</td>
 			<td>
 				<a>
