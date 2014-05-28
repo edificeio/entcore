@@ -4063,6 +4063,12 @@ a.button:hover {
 nav.vertical ul li a:hover,
 nav.vertical ul li a.selected {
   border-color: #ff0b75;
+}
+nav.vertical ul li a.selected {
+  color: #FFF;
+}
+nav.vertical ul li a:hover,
+nav.vertical ul li a.selected:hover {
   color: #ff0b75;
 }
 nav.vertical .classic-link {

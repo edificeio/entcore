@@ -100,14 +100,6 @@ public class PortalService extends Controller {
 		});
 	}
 
-	public void themeDocumentation(HttpServerRequest request) {
-		renderView(request);
-	}
-
-	public void directivesDocumentation(HttpServerRequest request) {
-		renderView(request);
-	}
-
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void applicationsList(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {

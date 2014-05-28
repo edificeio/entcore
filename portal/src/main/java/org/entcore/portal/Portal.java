@@ -18,8 +18,6 @@ public class Portal extends Server {
 		PortalService service = new PortalService(vertx, container, rm, securedActions);
 
 		service.get("/", "portal")
-				.get("/theme-documentation", "themeDocumentation")
-				.get("/directives-documentation", "directivesDocumentation")
 				.get("/welcome", "welcome")
 				.get("/applications-list", "applicationsList")
 				.get("/adapter", "adapter")
