@@ -706,6 +706,12 @@ module.directive('localizedClass', function($compile){
 	}
 });
 
+module.directive('pullDownMenu', function($compile, $timeout){
+	return {
+		restrict: 'E'
+	}
+});
+
 module.directive('dropDown', function($compile, $timeout){
 	return {
 		restrict: 'E',
@@ -1741,7 +1747,7 @@ function Account($scope){
 	$scope.nbNewMessages = 0;
 	$scope.me = model.me;
 	$scope.rand = Math.random();
-
+	$scope.theme = theme;
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
