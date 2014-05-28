@@ -471,9 +471,10 @@ public class UserBookController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
+					String application = request.params().get("application").replaceAll("\\W+", "");
 					String query =
 							"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf)"
-									+" RETURN uac."+ request.params().get("application") +" AS preference";
+									+" RETURN uac."+ application +" AS preference";
 					neo.execute(query,
 							new JsonObject().putString("userId", user.getUserId()),
 							validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
@@ -500,7 +501,7 @@ public class UserBookController extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					final JsonObject params = new JsonObject().putString("userId", user.getUserId());
-					final String application = request.params().get("application");
+					final String application = request.params().get("application").replaceAll("\\W+", "");
 					request.bodyHandler(new Handler<Buffer>() {
 						@Override
 						public void handle(Buffer body) {
