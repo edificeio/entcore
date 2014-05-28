@@ -21,6 +21,7 @@ function LoginController($scope, template){
 	});
 
 	$scope.connect = function(){
+		console.log('connect');
 		// picking up values manually because the browser autofill isn't registered by angular
 		http().post('/auth/login', http().serialize({
 			email: $('#email').val(),
@@ -29,9 +30,12 @@ function LoginController($scope, template){
 		}))
 			.done(function(data){
 				if(typeof data !== 'object'){
+					console.log('redirect');
 					window.location.href = $scope.callBack;
 				}
-				$scope.error = data.error.message;
+				if(data.error){
+					$scope.error = data.error.message;
+				}
 				$scope.$apply('error');
 			});
 	};
@@ -102,7 +106,10 @@ function ActivationController($scope, template){
 				if(typeof data !== 'object'){
 					window.location.href = '/';
 				}
-				$scope.error = data.error.message;
+				if(data.error){
+					$scope.error = data.error.message;
+				}
+
 				$scope.$apply('error');
 			});
 	};
@@ -133,7 +140,10 @@ function ResetController($scope, template){
 			if(typeof data !== 'object'){
 				window.location.href = '/';
 			}
-			$scope.error = data.error.message;
+			if(data.error){
+				$scope.error = data.error.message;
+			}
+
 			$scope.$apply('error');
 		});
 	};
