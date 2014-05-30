@@ -30,8 +30,12 @@ function LoginController($scope, template){
 		}))
 			.done(function(data){
 				if(typeof data !== 'object'){
-					console.log('redirect');
-					window.location.href = $scope.callBack;
+					if(window.location.href.indexOf('callback=') !== -1){
+						window.location.href = unescape(window.location.href.split('callback=')[1]);
+					}
+					else{
+						window.location.href = $scope.callBack;
+					}
 				}
 				if(data.error){
 					$scope.error = data.error.message;
