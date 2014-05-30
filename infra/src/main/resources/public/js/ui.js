@@ -124,7 +124,7 @@ var ui = (function(){
 		$('body').on('focus', 'textarea.inline-editing', resizeTextarea);
 
 		$('body').on('click', '[data-reload]', function(){
-			window.location.href = window.location.href;
+			window.location.href = window.location.href.split('#')[0];
 		});
 
 		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel, .lightbox-window .cancel', function(){
