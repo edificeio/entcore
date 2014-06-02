@@ -159,7 +159,7 @@ public class DefaultUserService implements UserService {
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			query = "MATCH  (s:Structure { id : {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
 					"g-[:HAS_PROFILE]->(p:Profile) " +
-					"WHERE  NOT(u-[:IN]->()-[:DEPENDS]->(:Class)) ";
+					"WHERE  NOT(u-[:IN]->()-[:DEPENDS]->(:Class)-[:BELONGS]->s) ";
 			params.putString("structureId", structureId);
 			if (profile != null && !profile.isEmpty()) {
 				query += "AND p.name IN {profile} ";
