@@ -232,26 +232,26 @@ module.directive('completeChange', function() {
 			exec: '&completeChange',
 			field: '=ngModel'
 		},
-		link: function($scope, $linkElement, $attributes) {
-			$scope.$watch('field', function(newVal) {
-				$linkElement.val(newVal);
-				if($linkElement[0].type === 'textarea' && $linkElement.hasClass('inline-editing')){
+		link: function(scope, element, attributes) {
+			scope.$watch('field', function(newVal) {
+				element.val(newVal);
+				if(element[0].type === 'textarea' && element.hasClass('inline-editing')){
 					setTimeout(function(){
-						$linkElement.height(1);
-						$linkElement.height($linkElement[0].scrollHeight - 1);
-					}, 500);
+						element.height(1);
+						element.height(element[0].scrollHeight - 1);
+					}, 100);
 
 				}
 			});
 
-			$linkElement.bind('change', function() {
-				$scope.field = $linkElement.val();
-				if(!$scope.$$phase){
-					$scope.$apply('field');
+			element.bind('change', function() {
+				scope.field = element.val();
+				if(!scope.$$phase){
+					scope.$apply('field');
 				}
-				$scope.$parent.$eval($scope.exec);
-				if(!$scope.$$phase){
-					$scope.$apply('field');
+				scope.$parent.$eval(scope.exec);
+				if(!scope.$$phase){
+					scope.$apply('field');
 				}
 			});
 		}
@@ -708,7 +708,42 @@ module.directive('localizedClass', function($compile){
 
 module.directive('pullDownMenu', function($compile, $timeout){
 	return {
-		restrict: 'E'
+		restrict: 'E',
+		transclude: true,
+		template: '<div class="pull-down-menu hide" ng-transclude></div>',
+		controller: function($scope){
+		}
+	}
+});
+
+module.directive('pullDownOpener', function($compile, $timeout){
+	return {
+		restrict: 'E',
+		require: '^pullDownMenu',
+		transclude: true,
+		template: '<div class="pull-down-opener" ng-transclude></div>',
+		link: function(scope, element, attributes){
+			element.find('.pull-down-opener').on('click', function(){
+				var container = element.parents('.pull-down-menu');
+				if(container.hasClass('hide')){
+					container.removeClass('hide');
+				}
+				else{
+					container.addClass('hide');
+				}
+			});
+		}
+	}
+});
+
+module.directive('pullDownContent', function($compile, $timeout){
+	return {
+		restrict: 'E',
+		require: '^pullDownMenu',
+		transclude: true,
+		template: '<div class="wrapper"><div class="arrow"></div><div class="pull-down-content" ng-transclude></div></div>',
+		link: function(scope, element, attributes){
+		}
 	}
 });
 
