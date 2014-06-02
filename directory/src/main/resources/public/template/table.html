@@ -14,17 +14,6 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="selectClassroom(classroom)">
-			<td class="action-cell">
-				<img skin-src="/img/illustrations/classroom.png" class="eight cell" />
-			</td>
-			<td>
-				<a>
-					[[classroom.name]]
-				</a>
-			</td>
-			<td></td>
-		</tr>
 		<tr ng-repeat="user in users.match(search.text) | limitTo:search.maxLength - classrooms.length()" ng-click="selectUser(user)">
 			<td class="action-cell">
 				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" class="eight" />
@@ -36,6 +25,17 @@
 			</td>
 			<td class="right-magnet" translate content="directory.[[user.type.toLowerCase()]]"></td>
 		</tr>
+        <tr ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength" ng-click="selectClassroom(classroom)">
+            <td class="action-cell">
+                <img skin-src="/img/illustrations/classroom.png" class="eight cell" />
+            </td>
+            <td>
+                <a>
+                    [[classroom.name]]
+                </a>
+            </td>
+            <td></td>
+        </tr>
 		</tbody>
 	</table>
 </article>

@@ -5,18 +5,6 @@
 <div class="dominos">
 	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
 	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
-	<div class="item" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
-		<section class="domino grey">
-			<div class="top" ng-click="selectClassroom(classroom)">
-				<img skin-src="/img/illustrations/classroom.png" class="fixed twelve cell" />
-			</div>
-			<div class="bottom">
-				<div class="content">
-					<a ng-click="selectClassroom(classroom)">[[classroom.name]]</a>
-				</div>
-			</div>
-		</section>
-	</div>
 	<div class="item" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
 		<section class="domino" ng-class="colorFromType(user.type)">
 			<div class="top" ng-click="selectUser(user)">
@@ -38,5 +26,17 @@
 			</div>
 		</section>
 	</div>
+    <div class="item" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
+        <section class="domino grey">
+            <div class="top" ng-click="selectClassroom(classroom)">
+                <img skin-src="/img/illustrations/classroom.png" class="fixed twelve cell" />
+            </div>
+            <div class="bottom">
+                <div class="content">
+                    <a ng-click="selectClassroom(classroom)">[[classroom.name]]</a>
+                </div>
+            </div>
+        </section>
+    </div>
 
 </div>
