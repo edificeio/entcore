@@ -35,9 +35,9 @@
 			</legend>
 	</div>
 	<section ng-repeat-end>
-		<section class="row text-container" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||
+		<section class="row reduce-block-eight" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||
 		($index === openedFolder.content.length - 1 && inInterval(selectedDocuments()[0], $index - (($index + nbFolders()) % 4), $index))) && selectedDocuments()[0].showComments">
-			<article class="twelve cell comment content-line text-container" data-ng-repeat="comment in selectedDocuments()[0].comments">
+			<article class="twelve cell comment content-line reduce-block-eight" data-ng-repeat="comment in selectedDocuments()[0].comments">
 				<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 				<em>[[longDate(comment.posted)]]</em>
 				<p>[[comment.comment]]</p>
