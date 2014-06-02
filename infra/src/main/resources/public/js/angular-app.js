@@ -1740,6 +1740,7 @@ function Account($scope){
 
 	$scope.nbNewMessages = 0;
 	$scope.me = model.me;
+	$scope.rand = Math.random();
 
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
