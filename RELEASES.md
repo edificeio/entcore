@@ -1,5 +1,42 @@
-ONE : Notes de versions
+ENT Core : Notes de versions
 =======================
+
+# v1.6.0 (21/05/2014)
+
+__Importants__ : _Cette version conclue la séparation physique complète entre ENT Core et One. A partir ce celle-ci les évolutions et corrections de la base de code ne concernent qu'ENT Core_
+
+## Modules
+
+* Fusion _d'Admin_ dans _Portal_
+* Fusion des modules _dataDictionnary_ et _Sync_ dans un module _Feeder_ (responsable de l'alimentation de l'annuaire)
+* Extraction blog
+* Extraction timeline
+
+## Annuaire et Alimentation
+
+* Modification du modèle d'annuaire pour gérer les personnels aux niveaux école et classe (+ migration des requêtes impliquant l'annuaire)
+* Injecteur AAF 2D
+* Injecteur Manuel
+* Injecteur BE1D (portage nouveau modèle)
+* Application des règle de communication par défaut après l'import
+* \#1196 : affectation d'utilisateur à une ou plusieurs classes et ou structures
+* \#1075 Création de personnel dans une structure
+
+## Portail
+
+* extraction du thème _Panda_
+* paramétrisation du dossier contenant les Assets
+* finalisation du thème _Raw_
+
+## Framework
+
+* Ajout d'une bibliothèque multi-média pour laisser les utilisateurs mutualiser leurs ressources dans toutes les applications ENT Core
+
+## Évolution techique
+
+* [HA] Stockage des sesseion dans des Map Hazelcast pour le déploiement en cluster
+* [HA] Partage de la clé de signature de cookie pour des instances d'un cluster
+* [Test] Test de montée en charge
 
 # v1.5.2 (27/03/2014)
 
