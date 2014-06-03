@@ -84,10 +84,10 @@ function ActivationController($scope, template){
 
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
-			$scope.login = window.location.href.split('login=')[1].split('&')[0];
+			$scope.user.login = window.location.href.split('login=')[1].split('&')[0];
 		}
 		if(window.location.href.split('activationCode=').length > 1){
-			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
+			$scope.user.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
 	}
 
