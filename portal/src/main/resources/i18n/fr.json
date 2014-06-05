@@ -76,5 +76,6 @@
 	"library.browse.add": "Ajouter",
 	"library.upload.title": "Sélectionner les fichiers",
 	"library.file.choose": "Parcourir",
-	"library.upload.import": "Importer"
+	"library.upload.import": "Importer",
+	"widget.notes.placeholder": "Entrez ici vos notes personnelles"
 }

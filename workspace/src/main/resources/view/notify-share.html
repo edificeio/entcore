@@ -2,8 +2,9 @@
   ~ Copyright. Tous droits réservés. WebServices pour l’Education.
   -->
 
-<span ng-if="'{{resourceName}}'.indexOf('.json') === -1"><a href="{{uri}}">{{username}}</a> <span translate key="timeline.workspace.shared.document"></span> <a href="{{resourceUri}}">{{resourceName}}</a>.</span>
+<span ng-if="'{{resourceName}}'.indexOf('.json') === -1"><a href="{{uri}}">{{username}}</a>
+	<br /><span translate key="timeline.workspace.shared.document"></span> <a href="{{resourceUri}}">{{resourceName}}</a>.
+</span>
 <span ng-if="'{{resourceName}}'.indexOf('.json') !== -1"><a href="{{uri}}">{{username}}</a>
-	<span translate key="timeline.workspace.shared.scrapbook"></span>
-	<a ng-href="/scrapbook#/view-scrapbook/[[('{{resourceUri}}'.split('/document/')[1])]]">[[('{{resourceName}}'.split('.json')[0])]]</a>.
+	<br /><span translate key="timeline.workspace.shared.scrapbook"></span> <a ng-href="/scrapbook#/view-scrapbook/[[('{{resourceUri}}'.split('/document/')[1])]]">[[('{{resourceName}}'.split('.json')[0])]]</a>.
 </span>

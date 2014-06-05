@@ -499,6 +499,9 @@ function Collection(obj){
 	}
 
 	Model.prototype.makeModel = function(fn, methods, namespace){
+		if(typeof fn !== 'function'){
+			throw 'Error: only functions can be models';
+		}
 		if(!namespace){
 			namespace = window;
 		}
@@ -708,6 +711,7 @@ function Collection(obj){
 			http().get('/workspace/document/' + this._id).done(function(content){
 				delete content.$$hashKey;
 				this.updateData(content);
+				this.trigger('sync');
 			}.bind(this))
 		};
 

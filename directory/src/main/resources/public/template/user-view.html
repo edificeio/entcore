@@ -4,10 +4,10 @@
 
 <div class="cell absolute four reduce-block-six">
 	<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
-		<image-select ng-model="account.picture" default="/directory/public/img/no-avatar.jpg" thumbnails="[{ width: 290, height: 290 }]" ng-change="saveChanges()"></image-select>
+		<image-select ng-model="account.picture" default="/directory/public/img/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
 	</div>
 	<div class="fluid cell twelve" ng-if="!account.edit.userbook">
-		<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
+		<img ng-src="[[account.picture]]?thumbnail=381x381" ng-if="account.picture" class="absolute" />
 		<img ng-src="/directory/public/img/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
 	</div>
 </div>

@@ -500,11 +500,11 @@ module.directive('iconsSelect', function($compile) {
 			current: '=',
 			change: '&'
 		},
-		link: function($scope, $element, $attributes){
-			$element.bind('change', function(){
-				$scope.current.id = $element.find('.current').data('selected');
-				$scope.$eval($scope.change);
-				$element.unbind('change');
+		link: function(scope, element, attributes){
+			element.bind('change', function(){
+				scope.current.id = element.find('.current').data('selected');
+				scope.$eval(scope.change);
+				element.unbind('change');
 			})
 		},
 		template: '\
@@ -575,6 +575,28 @@ module.directive('translate', function($compile) {
 			});
 		}
 	};
+});
+
+module.directive('i18n', function($compile){
+	return {
+		restrict: 'E',
+		link: function(scope, element, attributes){
+			element.html($compile('<span class="no-style">' + lang.translate(element.text()) + '</span>')(scope));
+		}
+	}
+});
+
+module.directive('i18nPlaceholder', function($compile){
+	return {
+		link: function(scope, element, attributes){
+			attributes.$observe('i18nPlaceholder', function(val) {
+				var compiled = $compile('<span>' + lang.translate(attributes.i18nPlaceholder) + '</span>')(scope);
+				setTimeout(function(){
+					element.attr('placeholder', compiled.text());
+				}, 10);
+			});
+		}
+	}
 });
 
 //Deprecated
@@ -1018,7 +1040,8 @@ module.directive('textEditor', function($compile){
 		scope: {
 			ngModel: '=',
 			watchCollection: '@',
-			notify: '='
+			notify: '=',
+			ngChange: '&'
 		},
 		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>',
 		compile: function($element, $attributes, $transclude){
@@ -1068,6 +1091,9 @@ module.directive('textEditor', function($compile){
 					$scope.ngModel = editor.html();
 					$scope.$apply('ngModel');
 					$(document).unbind('keyup.editor');
+					if($scope.ngChange){
+						$scope.ngChange();
+					}
 				})
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
@@ -2109,7 +2135,11 @@ function Widgets($scope, model, lang, date){
 				data = data.filter(function(widget){
 					return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
 				});
+
 				that.load(data, function(widget){
+					if(theme.templateMapping.widgets && theme.templateMapping.widgets.indexOf(widget.name) !== -1){
+						widget.path = '/assets/themes/' + theme.skin + '/template/widgets/' + widget.name + '.html';
+					}
 					if(widget.i18n){
 						lang.addBundle(widget.i18n, function(){
 							loader.loadFile(widget.js);
@@ -2143,7 +2173,7 @@ function Widgets($scope, model, lang, date){
 }
 
 var workspace = {
-	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82",
+	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
 	Document: function(data){
 		if(data.metadata){
 			var dotSplit = data.metadata.filename.split('.');
