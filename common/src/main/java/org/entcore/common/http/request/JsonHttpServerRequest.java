@@ -7,11 +7,7 @@ package org.entcore.common.http.request;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerFileUpload;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.http.HttpVersion;
-import org.vertx.java.core.impl.CaseInsensitiveMultiMap;
+import org.vertx.java.core.http.*;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.net.NetSocket;
 
@@ -89,6 +85,11 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public InetSocketAddress remoteAddress() {
+		return null;
+	}
+
+	@Override
+	public InetSocketAddress localAddress() {
 		return null;
 	}
 

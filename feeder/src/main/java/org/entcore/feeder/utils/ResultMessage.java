@@ -4,6 +4,7 @@
 
 package org.entcore.feeder.utils;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
@@ -23,6 +24,11 @@ public class ResultMessage implements Message<JsonObject> {
 		body.putString("status", "error");
 		body.putString("message", message);
 		return this;
+	}
+
+	@Override
+	public String address() {
+		return null;
 	}
 
 	@Override
@@ -111,7 +117,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Object message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Object message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -121,7 +137,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(JsonObject message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(JsonArray message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(JsonArray message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -131,7 +157,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(String message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Buffer message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Buffer message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -141,7 +177,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(byte[] message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Integer message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Integer message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -151,7 +197,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(Long message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Short message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Short message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -161,7 +217,17 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(Character message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Boolean message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Boolean message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
 
 	}
 
@@ -171,7 +237,22 @@ public class ResultMessage implements Message<JsonObject> {
 	}
 
 	@Override
+	public <T> void replyWithTimeout(Float message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
 	public <T1> void reply(Double message, Handler<Message<T1>> replyHandler) {
+
+	}
+
+	@Override
+	public <T> void replyWithTimeout(Double message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+
+	}
+
+	@Override
+	public void fail(int failureCode, String message) {
 
 	}
 

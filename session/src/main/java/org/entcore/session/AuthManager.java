@@ -4,19 +4,18 @@
 
 package org.entcore.session;
 
+import org.vertx.java.busmods.BusModBase;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.VertxInternal;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.spi.cluster.ClusterManager;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import com.hazelcast.core.HazelcastInstance;
-import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.eventbus.impl.hazelcast.HazelcastClusterManager;
-import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -41,11 +40,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		super.start();
 
 		if (getOptionalBooleanConfig("cluster", false)) {
-			HazelcastClusterManager cm = new HazelcastClusterManager((VertxInternal) vertx);
-			HazelcastInstance instance = cm.getInstance();
-			logger.info(instance.getName());
-			sessions = instance.getMap("sessions");
-			logins = instance.getMap("logins");
+			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+			sessions = cm.getSyncMap("sessions");
+			logins = cm.getSyncMap("logins");
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
