@@ -1,6 +1,30 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.7.0 (04/06/2014)
+
+## Annuaire
+* \#603 : API de personnalisation des noms d'affichage des groupes
+* Le widget "Anniversaire de la classe" se conforme désormais aux règles de communication
+* Le service "Ma Classe" se conforme désormais aux règles de communication
+* Ajout d'un écran qui propose une vue du réseau direct de l'utilisateur connecté. Cet écran liste les structures et les classes accessibles à l'utilisateur
+
+## Anomalies corrigées
+
+* [Espace documentaire] fixed files duplication when sharing
+* [Userbook] get myclass without id
+* [Portail] Branchement de la déconnexion dans la console d'admin
+* [Annuaire] Chaînage des requêtes sources potentielles de Dead Lock pour Neo4j
+* [Annuaire] \#1240 : Collecte des utilisateurs sans classe à l'intérieur d'une structure
+* [infra] NPE si l'en-tête "accept-language" est absente
+* [Annuaire] procédure de récupération de mot passe pour les élèves sans emails
+
+## Évolutions technique
+
+* [auth] Migration sur Angular
+* [auth] Utilisation des template dynamique pour gérer le message d'information
+* [infra] Passage à web-utils version 1.6.2
+
 # v1.6.0 (21/05/2014)
 
 __Importants__ : _Cette version conclue la séparation physique complète entre ENT Core et One. A partir ce celle-ci les évolutions et corrections de la base de code ne concernent qu'ENT Core_
