@@ -177,4 +177,12 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, params, validResultHandler(results));
 	}
 
+	@Override
+	public void delete(String id, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-delete-user")
+				.putString("userId", id);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
 }

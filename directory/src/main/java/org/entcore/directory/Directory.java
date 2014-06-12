@@ -97,6 +97,7 @@ public class Directory extends Server {
 		userController
 				.get("/user/:userId", "get")
 				.put("/user/:userId", "update")
+				.delete("/user/:userId", "delete")
 				.get("/userbook/:userId", "getUserBook")
 				.put("/userbook/:userId", "updateUserBook")
 				.put("/avatar/:userId", "updateAvatar")

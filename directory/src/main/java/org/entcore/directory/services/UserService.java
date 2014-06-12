@@ -28,4 +28,6 @@ public interface UserService {
 
 	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
 
+	void delete(String id, Handler<Either<String, JsonObject>> result);
+
 }

@@ -61,6 +61,14 @@ public class Neo4jResult {
 		}
 	}
 
+	public static Either<String, JsonObject> validEmpty(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			return new Either.Right<>(new JsonObject());
+		} else {
+			return new Either.Left<>(res.body().getString("message", ""));
+		}
+	}
+
 	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
 			JsonArray r = res.body().getArray("result", new JsonArray());
@@ -104,6 +112,16 @@ public class Neo4jResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle(validResult(event));
+			}
+		};
+	}
+
+	public static Handler<Message<JsonObject>> validEmptyHandler(
+			final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validEmpty(event));
 			}
 		};
 	}

@@ -161,4 +161,8 @@ public class TransactionHelper {
 		return neo4j;
 	}
 
+	boolean isEmpty() {
+		return statements == null || statements.size() == 0;
+	}
+
 }

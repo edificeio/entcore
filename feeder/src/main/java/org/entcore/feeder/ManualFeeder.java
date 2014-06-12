@@ -7,10 +7,9 @@ package org.entcore.feeder;
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.feeder.be1d.Be1dFeeder;
-import org.entcore.feeder.utils.Hash;
-import org.entcore.feeder.utils.Neo4j;
-import org.entcore.feeder.utils.StatementsBuilder;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.dictionary.structures.User;
+import org.entcore.feeder.exceptions.TransactionException;
+import org.entcore.feeder.utils.*;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -387,6 +386,27 @@ public class ManualFeeder extends BusModBase {
 				} else {
 					sendError(message, "Invalid profile.");
 				}
+			}
+		});
+	}
+
+	public void deleteUser(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		if (userId == null) return;
+		TransactionHelper tx;
+		try {
+			tx = TransactionManager.getInstance().begin();
+		} catch (TransactionException e) {
+			logger.error(e.getMessage(), e);
+			sendError(message, e.getMessage());
+			return;
+		}
+		User.backupRelationship(userId, tx);
+		User.preDelete(userId, tx);
+		tx.commit(new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				message.reply(event.body());
 			}
 		});
 	}

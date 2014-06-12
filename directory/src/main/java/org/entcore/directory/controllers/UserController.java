@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.SessionAttributes.*;
 
 
@@ -181,6 +179,12 @@ public class UserController extends Controller {
 		final String structureId = request.params().get("structureId");
 		final List<String> expectedProfile = request.params().getAll("profile");
 		userService.listIsolated(structureId, expectedProfile, arrayResponseHandler(request));
+	}
+
+	@SecuredAction("user.delete")
+	public void delete(final HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		userService.delete(userId, defaultResponseHandler(request));
 	}
 
 }

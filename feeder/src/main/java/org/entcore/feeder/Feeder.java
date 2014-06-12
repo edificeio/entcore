@@ -8,6 +8,7 @@ import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.Neo4j;
+import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -30,6 +31,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			return;
 		}
 		neo4j = new Neo4j(vertx.eventBus(), neo4jAddress);
+		TransactionManager.getInstance().setNeo4j(neo4j);
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
 		vertx.eventBus().registerHandler(
@@ -68,6 +70,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-add-user" : manual.addUser(message);
 				break;
 			case "manual-remove-user" : manual.removeUser(message);
+				break;
+			case "manual-delete-user" : manual.deleteUser(message);
 				break;
 			case "manual-csv-class-student" : manual.csvClassStudent(message);
 				break;
