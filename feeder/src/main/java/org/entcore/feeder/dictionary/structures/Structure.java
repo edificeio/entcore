@@ -6,13 +6,19 @@ package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.TransactionManager;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.*;
 
 public class Structure {
 
+	private static final Logger log = LoggerFactory.getLogger(Structure.class);
 	protected final String id;
 	protected final String externalId;
 	protected final Importer importer = Importer.getInstance();
@@ -179,6 +185,71 @@ public class Structure {
 
 	public String getExternalId() {
 		return externalId;
+	}
+
+	public void transition(final Handler<Message<JsonObject>> handler) {
+		final TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
+		String query =
+				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
+				"<-[:DEPENDS]-(cpg:ProfileGroup)<-[:IN]-(u:User) " +
+				"OPTIONAL MATCH s<-[:DEPENDS]-(fg:FunctionalGroup) " +
+				"RETURN collect(distinct u.id) as users, collect(distinct cpg.id) as profileGroups, " +
+				"collect(distinct fg.id) as functionalGroups";
+		JsonObject params = new JsonObject().putString("id", id);
+		tx.getNeo4j().execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonArray r = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && r != null && r.size() == 1) {
+					final JsonObject res = r.get(0);
+					usersInGroups(new Handler<Message<JsonObject>>() {
+
+						@Override
+						public void handle(Message<JsonObject> event) {
+							for (Object u : res.getArray("users")) {
+								User.backupRelationship(u.toString(), tx);
+								User.transition(u.toString(), tx);
+							}
+							transitionClassGroup();
+							handler.handle(event);
+						}
+					});
+				} else {
+					log.error("Structure " + id + " transition error.");
+					log.error(event.body().encode());
+					handler.handle(event);
+				}
+			}
+		});
+	}
+
+	private void usersInGroups(Handler<Message<JsonObject>> handler) {
+		final Neo4j neo4j = TransactionManager.getInstance().getNeo4j();
+		final JsonObject params = new JsonObject().putString("id", id);
+		String query =
+				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
+				"<-[:DEPENDS]-(cpg:ProfileGroup) " +
+				"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
+				"RETURN cpg.id as group, cpg.name as groupName, collect(u.id) as users " +
+				"UNION " +
+				"MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
+				"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
+				"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
+		neo4j.execute(query, params, handler);
+	}
+
+	private void transitionClassGroup() {
+		TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
+		JsonObject params = new JsonObject().putString("id", id);
+		String query =
+				"MATCH (s:Structure {id : {id}})<-[r:BELONGS]-(c:Class)" +
+				"<-[r1:DEPENDS]-(cpg:ProfileGroup)-[r2]-() " +
+				"DELETE r, r1, r2, c, cpg ";
+		tx.add(query, params);
+		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
+				"OPTIONAL MATCH fg-[r1]-() " +
+				"DELETE r, r1, fg";
+		tx.add(query, params);
 	}
 
 }

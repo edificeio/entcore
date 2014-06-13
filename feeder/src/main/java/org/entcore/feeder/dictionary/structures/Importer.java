@@ -21,8 +21,8 @@ import java.util.concurrent.ConcurrentMap;
 public class Importer {
 
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
-	private final ConcurrentMap<String, Structure> structures = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, Profile> profiles = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, Structure> structures;
+	private ConcurrentMap<String, Profile> profiles;
 	private TransactionHelper transactionHelper;
 	private final Validator structureValidator;
 	private final Validator profileValidator;
@@ -55,46 +55,14 @@ public class Importer {
 	public void init(final Neo4j neo4j, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.transactionHelper = new TransactionHelper(neo4j, 1000);
-		String query =
-				"MATCH (s:Structure) " +
-				"OPTIONAL MATCH s<-[:DEPENDS]-(g:FunctionalGroup) " +
-				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
-				"return s, collect(g.externalId) as groups, collect(c.externalId) as classes ";
-		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
+		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> message) {
-				String query =
-						"MATCH (p:Profile) " +
-						"OPTIONAL MATCH p<-[:COMPOSE]-(f:Function) " +
-						"return p, collect(f.externalId) as functions ";
-				neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> message) {
-						JsonArray res = message.body().getArray("result");
-						if ("ok".equals(message.body().getString("status")) && res != null) {
-							for (Object o : res) {
-								if (!(o instanceof JsonObject)) continue;
-								JsonObject r = (JsonObject) o;
-								JsonObject p = r.getObject("p", new JsonObject()).getObject("data");
-								profiles.putIfAbsent(p.getString("externalId"),
-										new Profile(p, r.getArray("functions")));
-							}
-						}
-						if (handler != null) {
-							handler.handle(message);
-						}
-					}
-				});
-				JsonArray res = message.body().getArray("result");
-				if ("ok".equals(message.body().getString("status")) && res != null) {
-					firstImport = res.size() == 0;
-					for (Object o : res) {
-						if (!(o instanceof JsonObject)) continue;
-						JsonObject r = (JsonObject) o;
-						JsonObject s = r.getObject("s", new JsonObject()).getObject("data");
-						structures.putIfAbsent(s.getString("externalId"),
-								new Structure(s, r.getArray("groups"), r.getArray("classes")));
-					}
+			public void handle(Message<JsonObject> event) {
+				firstImport = GraphData.getStructures().isEmpty();
+				structures = GraphData.getStructures();
+				profiles = GraphData.getProfiles();
+				if (handler != null) {
+					handler.handle(event);
 				}
 			}
 		});

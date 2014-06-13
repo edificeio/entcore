@@ -6,7 +6,9 @@ package org.entcore.feeder;
 
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
+import org.entcore.feeder.dictionary.structures.GraphData;
 import org.entcore.feeder.dictionary.structures.Importer;
+import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -18,6 +20,7 @@ import org.vertx.java.core.json.JsonObject;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
+	public static final String USER_REPOSITORY = "user.repository";
 	private Feed feed;
 	private ManualFeeder manual;
 	private Neo4j neo4j;
@@ -77,10 +80,39 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-csv-class-relative" : manual.csvClassRelative(message);
 				break;
+			case "transition" : launchTransition(message);
+				break;
 			case "import" : launchImport(message);
 				break;
 			default:
 				sendError(message, "invalid.action");
+		}
+	}
+
+	private void launchTransition(final Message<JsonObject> message) {
+		if (GraphData.isReady()) { // TODO else manage queue
+			String structureExternalId = message.body().getString("structureExternalId");
+			Transition transition = new Transition();
+			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> m) {
+					if (m != null && "ok".equals(m.body().getString("status"))) {
+						logger.info("Delete groups : " + m.body().encode());
+						eb.publish(USER_REPOSITORY, new JsonObject()
+								.putString("action", "delete-groups")
+								.putArray("old-groups", m.body().getArray("result", new JsonArray())));
+						sendOK(message, m.body());
+					} else if (m != null) {
+						logger.error(m.body().getString("message"));
+						sendError(message, m.body().getString("message"));
+					} else {
+						logger.error("Transition return null value.");
+						sendError(message, "Transition return null value.");
+					}
+					GraphData.clear();
+				}
+			});
+
 		}
 	}
 

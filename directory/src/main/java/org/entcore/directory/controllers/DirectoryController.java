@@ -73,6 +73,22 @@ public class DirectoryController extends Controller {
 		request.response().end();
 	}
 
+	@SecuredAction("directory.transition")
+	public void launchTransition(final HttpServerRequest request) {
+		JsonObject t = new JsonObject().putString("action", "transition");
+		String structureId = request.params().get("structureExternalId");
+		if (structureId != null) {
+			t.putString("structureExternalId", structureId);
+		}
+		eb.send("entcore.feeder", t, new Handler<Message<JsonObject>> () {
+
+			@Override
+			public void handle(Message<JsonObject> event) {
+				renderJson(request, event.body());
+			}
+		});
+	}
+
 	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request, null, "annuaire.html", null);

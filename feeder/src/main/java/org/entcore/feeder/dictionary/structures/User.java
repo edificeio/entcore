@@ -1,3 +1,7 @@
+/*
+ * Copyright. Tous droits réservés. WebServices pour l’Education.
+ */
+
 package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.feeder.utils.TransactionHelper;
@@ -65,6 +69,18 @@ public class User {
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED]-() " +
 				"SET u.deleteDate = timestamp() " +
 				"CREATE UNIQUE dg<-[:IN]-u " +
+				"DELETE r ";
+		transaction.add(query, params);
+	}
+
+	public static void transition(String userId, TransactionHelper transaction) {
+		JsonObject params = new JsonObject().putString("userId", userId);
+		String query =
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"DELETE r ";
+		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:FunctionalGroup)-[:DEPENDS]->(c:Structure) " +
 				"DELETE r ";
 		transaction.add(query, params);
 	}

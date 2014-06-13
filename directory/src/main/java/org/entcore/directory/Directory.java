@@ -46,6 +46,7 @@ public class Directory extends Server {
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
 				.post("/import", "launchImport")
+				.post("/transition", "launchTransition")
 				.get("/annuaire", "annuaire")
 				.get("/schools", "schools")
 				.get("/api/ecole", "school")

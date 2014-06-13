@@ -99,4 +99,8 @@ public class TransactionManager {
 		this.neo4j = neo4j;
 	}
 
+	public Neo4j getNeo4j() {
+		return neo4j;
+	}
+
 }
