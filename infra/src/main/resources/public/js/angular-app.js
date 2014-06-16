@@ -357,7 +357,7 @@ module.directive('imageSelect', function($compile){
 			default: '@'
 		},
 		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" ng-if="ngModel" style="cursor: pointer" />' +
-			'<img ng-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
+			'<img skin-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="\'img\'"></media-library>' +
 			'</lightbox>' +
@@ -714,7 +714,12 @@ module.directive('skinSrc', function($compile){
 			}
 			var skinPath = $('#theme').attr('href').split('/');
 			var path = skinPath.slice(0, skinPath.length - 2).join('/');
-			$element.attr('src', path + $attributes.skinSrc);
+			if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
+				$element.attr('src', path + $attributes.skinSrc);
+			}
+			else{
+				$element.attr('src', $attributes.skinSrc);
+			}
 		}
 	}
 })

@@ -196,7 +196,7 @@ var http = (function(){
 						that.statusCallbacks.error.call(that, e);
 					}
 					else{
-						if(parent !== window){
+						if(parent !== window && e.status !== 0){
 							messenger.notify('error', 'e' + e.status);
 						}
 						else{
