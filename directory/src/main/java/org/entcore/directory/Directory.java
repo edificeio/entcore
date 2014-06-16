@@ -7,6 +7,9 @@ package org.entcore.directory;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Binding;
@@ -14,6 +17,7 @@ import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.ActionFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.directory.security.DirectoryResourcesProvider;
+import org.entcore.directory.services.impl.UserbookRepositoryEvents;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -29,7 +33,8 @@ public class Directory extends Server {
 	@Override
 	public void start() {
 		super.start();
-
+		Neo4j.getInstance().init(getEventBus(vertx),
+				config.getString("neo4j-address", "wse.neo4j.persistor"));
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -42,6 +47,9 @@ public class Directory extends Server {
 		StructureController structureController = new StructureController(vertx, container, rm, securedActions);
 		ClassController classController = new ClassController(vertx, container, rm, securedActions);
 		UserController userController = new UserController(vertx, container, rm, securedActions);
+
+		vertx.eventBus().registerHandler("user.repository",
+				new RepositoryHandler(new UserbookRepositoryEvents()));
 
 		directoryController.createSuperAdmin();
 		directoryController.get("/admin", "directory")
