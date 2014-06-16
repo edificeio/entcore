@@ -781,6 +781,23 @@ nav.horizontal a {
   padding-left: 10px;
   padding-right: 10px;
 }
+.widgets {
+  width: 228px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+  padding: 6px;
+}
+.widgets img {
+  max-width: 100%;
+}
+.widgets-friend {
+  margin-left: 235px;
+}
 .user-content {
   white-space: pre-line;
 }
@@ -800,8 +817,6 @@ p i {
   display: none;
 }
 .birthday {
-  width: 1;
-  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -809,9 +824,10 @@ p i {
   float: left;
   display: block;
   position: relative;
+  width: 215px;
   background-size: contain;
   background-repeat: no-repeat;
-  margin-bottom: 45px;
+  margin-bottom: 15px;
   padding-right: 1px;
   margin-bottom: 25px;
   background-color: #eee;
@@ -915,11 +931,7 @@ p i {
   margin-bottom: 10px !important;
 }
 .calendar {
-  box-sizing: content-box;
-  height: 1px;
-  padding-bottom: 58.33333333%;
-  width: 1;
-  width: 100%;
+  height: 160px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -927,29 +939,17 @@ p i {
   float: left;
   display: block;
   position: relative;
+  width: 215px;
   background-size: contain;
   background-repeat: no-repeat;
-  margin-bottom: 35.7%;
+  margin-bottom: 15px;
   padding-right: 1px;
-  padding-bottom: 49.4% !important;
-}
-.calendar .right-magnet.cell.absolute {
-  right: 0 !important;
-  left: auto;
-}
-.calendar .cell.fluid {
-  position: relative;
-  height: 100%;
-}
-.calendar .bottom-magnet.cell {
-  bottom: 0;
-  position: absolute;
 }
 .calendar img {
   max-width: 100%;
 }
 .calendar .content {
-  margin-top: 25.7%;
+  margin-top: 55px;
   width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
@@ -982,7 +982,7 @@ p i {
   width: 100%;
   top: 0;
   left: 0;
-  height: 98%;
+  height: 104px;
 }
 .calendar .day {
   width: 14.2%;
@@ -1161,8 +1161,9 @@ article.media {
 }
 .mood-widget {
   padding-top: 25px;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   height: 45px;
+  width: 215px;
 }
 .mood-widget h1 {
   position: absolute;
@@ -2269,6 +2270,62 @@ em.high-importance {
   font-style: normal;
   font-weight: bold;
   color: #666;
+}
+.pull-down-menu {
+  position: relative;
+}
+.pull-down-menu .wrapper {
+  width: 220px;
+  overflow: hidden;
+  position: absolute;
+  left: -226px;
+}
+.pull-down-menu .wrapper .arrow {
+  float: right;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 10px solid #fff;
+}
+.pull-down-menu .pull-down-content {
+  margin-right: 0px;
+  background: #fff;
+  -o-transition: margin-right 250ms ease;
+  -moz-transition: margin-right 250ms ease;
+  -webkit-transition: margin-right 250ms ease;
+  transition: margin-right 250ms ease;
+  float: right;
+}
+.pull-down-menu .pull-down-content li {
+  list-style-type: none;
+}
+.pull-down-menu .pull-down-content ul {
+  padding: 0;
+  margin: 0;
+}
+.pull-down-menu.hide .pull-down-content {
+  margin-right: -220px;
+}
+.pull-down-menu.hide .arrow {
+  display: none;
+}
+.notification article {
+  margin-bottom: 15px;
+  padding: 9px;
+  margin-left: 110px;
+  height: 84px;
+}
+.notification .avatar {
+  width: 84px;
+  height: 84px;
+  float: left;
+}
+.notification .avatar img {
+  height: auto;
+}
+.notification i.type {
+  float: left;
 }
 html,
 body {
