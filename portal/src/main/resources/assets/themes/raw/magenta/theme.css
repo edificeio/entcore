@@ -2327,6 +2327,15 @@ em.high-importance {
 .notification i.type {
   float: left;
 }
+.calendar {
+  width: 256px;
+  height: 151px;
+}
+.widgets {
+  display: table-cell;
+  width: 276px;
+  paddng: 10px;
+}
 html,
 body {
   margin: 0;
@@ -3621,8 +3630,7 @@ header {
   background: #eee;
 }
 .calendar {
-  padding-bottom: 49% !important;
-  margin-bottom: 22.7%;
+  width: 254px;
 }
 .calendar .content {
   margin-left: -1px;
