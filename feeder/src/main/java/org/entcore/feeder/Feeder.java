@@ -9,6 +9,7 @@ import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.GraphData;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
+import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -35,6 +36,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		neo4j = new Neo4j(vertx.eventBus(), neo4jAddress);
 		TransactionManager.getInstance().setNeo4j(neo4j);
+		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
+		final long deleteTaskDelay = container.config().getLong("delete-task-delay", 24 * 3600 * 1000l);
+		vertx.setPeriodic(deleteTaskDelay, new User.DeleteTask(deleteUserDelay, eb));
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
 		vertx.eventBus().registerHandler(
