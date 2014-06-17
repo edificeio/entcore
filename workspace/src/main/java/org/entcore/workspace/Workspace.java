@@ -8,8 +8,10 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
+import org.entcore.common.user.RepositoryHandler;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.vertx.java.core.Future;
 
 public class Workspace extends Server {
@@ -21,6 +23,10 @@ public class Workspace extends Server {
 		final MongoDb mongo = MongoDb.getInstance();
 		mongo.init(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));
+
+		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
+		vertx.eventBus().registerHandler("user.repository",
+				new RepositoryHandler(new WorkspaceRepositoryEvents(getEventBus(vertx), gridfsAddress)));
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);
 
