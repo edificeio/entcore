@@ -2331,6 +2331,9 @@ em.high-importance {
   width: 256px;
   height: 151px;
 }
+.last-mails-widget {
+  width: 256px;
+}
 .widgets {
   display: table-cell;
   width: 276px;
@@ -3647,6 +3650,11 @@ header {
   background: #fff;
   margin-bottom: 12px;
   border: 1px solid #ccc;
+  width: 254px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
 }
 .last-mails-widget h1,
 .pages-widget h1 {
