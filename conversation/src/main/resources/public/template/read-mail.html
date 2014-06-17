@@ -2,7 +2,7 @@
 	<div class="row">
 		<div class="twelve cell line block-container">
 			<div class="row">
-				<a class="eight cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
+				<a class="eight cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a><strong>[[mail.fromName]]</strong>
 				<span class="four cell floating-badge">
 					[[mail.sentDate()]]
 				</span>
@@ -15,6 +15,9 @@
 					<span translate key="to"></span>
 					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
 					</a>
+					<span ng-repeat="receiverName in mail.toName">
+						[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
+					</span>
 				</em>
 			</div>
 			<div class="row">
@@ -23,6 +26,9 @@
 					<a ng-repeat="receiver in mail.cc" href="/userbook/annuaire#[[mail.map(receiver).id]]">
 						[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
 					</a>
+					<span ng-repeat="receiverName in mail.ccName">
+						[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
+					</span>
 				</em>
 			</div>
 			<div class="row">

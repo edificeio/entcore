@@ -1,7 +1,10 @@
 package org.entcore.conversation;
 
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.RepositoryHandler;
 import org.entcore.conversation.controllers.ConversationController;
+import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
 import org.entcore.conversation.service.impl.ConversationServiceManager;
 import fr.wseduc.webutils.Server;
 
@@ -10,6 +13,11 @@ public class Conversation extends Server {
 	@Override
 	public void start() {
 		super.start();
+		Neo4j.getInstance().init(getEventBus(vertx),
+				config.getString("neo4j-address", "wse.neo4j.persistor"));
+
+		vertx.eventBus().registerHandler("user.repository",
+				new RepositoryHandler(new ConversationRepositoryEvents()));
 
 		final ConversationController conversationController =
 				new ConversationController(vertx, container, rm, securedActions);

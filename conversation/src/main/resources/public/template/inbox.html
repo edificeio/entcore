@@ -24,7 +24,7 @@
 				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
 		>
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td><a ng-click="readMail(mail)">[[mail.sender().displayName]]</a></td>
+			<td><a ng-click="readMail(mail)">[[mail.sender().displayName]][[mail.fromName]]</a></td>
 			<td><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
 			<td><i class="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>

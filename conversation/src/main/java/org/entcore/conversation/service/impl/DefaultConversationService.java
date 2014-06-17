@@ -205,6 +205,7 @@ public class DefaultConversationService implements ConversationService {
 				"-[:IN*0..1]->(dn:Visible) " +
 				"WHERE dn.id = m.from OR dn.id IN m.to " +
 				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
+				"m.toName as toName, m.fromName as fromName, " +
 				"m.subject as subject, m.date as date, r.unread as unread, " +
 				"COLLECT(distinct [dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
 				"as displayNames ";
@@ -297,10 +298,11 @@ public class DefaultConversationService implements ConversationService {
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} " +
 				"SET r.unread = {false} " +
 				"WITH distinct m.id as id, m.to as to, m.cc as cc, m.from as from, m.state as state, " +
-				"m.subject as subject, m.date as date, m.body as body " +
+				"m.subject as subject, m.date as date, m.body as body, m.toName as toName, " +
+				"m.ccName as ccName, m.fromName as fromName " +
 				"MATCH (dn:Visible) " +
 				"WHERE dn.id = from OR dn.id IN to OR dn.id IN cc " +
-				"RETURN id, to, cc, from, state, subject, date, body, " +
+				"RETURN id, to, cc, from, state, subject, date, body, toName, ccName, fromName," +
 				"COLLECT([dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
 				"as displayNames";
 		JsonObject params = new JsonObject()
