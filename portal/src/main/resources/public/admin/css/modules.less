@@ -1,9 +1,9 @@
-@import "../../raw/default/theme";
+@import "../../../assets/themes/raw/magenta/theme";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
 @nav-width: 300px;
 
-header{
+header.navbar{
 	background: #444;
 	position: absolute;
 	width: 100%;
@@ -26,18 +26,18 @@ header{
 	}
 }
 
-i[role=disconnect]{
+i.disconnect{
 	.icon(glyphicons_063_power, 35px);
 	.invert-colors();
 	margin: 5px;
 	float: right;
 }
 
-i[role=ok]{
+i.ok{
 	.icon(glyphicons_206_ok_2, 31px);
 }
 
-i[role=nok]{
+i.nok{
 	.icon(glyphicons_207_remove_2, 31px);
 }
 
@@ -133,51 +133,6 @@ nav.left{
 
 .container{
 	margin-top: 52px;
-}
-
-button{
-	background: @bright-blue;
-	font-family: Lato;
-	font-weight: 300;
-	padding: 4px;
-	padding-left: 10px;
-	padding-right: 10px;
-	color: #fff;
-	border-radius: 5px;
-	font-size: 15px;
-	border: 1px solid transparent;
-	.run-transition(background);
-}
-
-button:hover{
-	background: #fff;
-	color: #000;
-	border: 1px solid @bright-blue;
-}
-
-table{
-	border: 1px solid #ccc;
-	max-width: 850px;
-	margin-left: auto;
-	margin-right: auto;
-	thead{
-		background: #ddd;
-		color: @bright-blue;
-	}
-	th, td{
-		text-align: center;
-		width: 150px;
-		padding: 5px;
-	}
-	th:first-child, td:first-child{
-		text-align: left;
-	}
-	tr{
-		border: none;
-	}
-	tr:nth-child(2n){
-		background: #eee;
-	}
 }
 
 input[type=text], select, label{

@@ -2276,26 +2276,19 @@ em.high-importance {
   position: relative;
 }
 .pull-down-menu .wrapper {
-  width: 220px;
+  height: 190px;
   overflow: hidden;
   position: absolute;
-  left: -226px;
-}
-.pull-down-menu .wrapper .arrow {
-  float: right;
-  width: 0;
-  height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 10px solid #fff;
+  top: 30px;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
 }
 .pull-down-menu .pull-down-content {
-  margin-right: 0px;
+  top: 0px;
+  height: 100%;
   background: #fff;
-  -o-transition: margin-right 250ms ease;
-  -moz-transition: margin-right 250ms ease;
-  -webkit-transition: margin-right 250ms ease;
-  transition: margin-right 250ms ease;
   float: right;
 }
 .pull-down-menu .pull-down-content li {
@@ -2305,11 +2298,8 @@ em.high-importance {
   padding: 0;
   margin: 0;
 }
-.pull-down-menu.hide .pull-down-content {
-  margin-right: -220px;
-}
-.pull-down-menu.hide .arrow {
-  display: none;
+.pull-down-menu.hide .wrapper {
+  height: 0px;
 }
 .notification article {
   margin-bottom: 15px;
@@ -4107,7 +4097,82 @@ i.folder-large {
   background: #fff;
   opacity: 0.7;
 }
-header {
+a {
+  color: #ff0b75;
+}
+nav.horizontal a:hover {
+  color: #ff0b75;
+}
+.calendar .content .day.today {
+  background: #ff0b75;
+}
+.calendar .content h2 {
+  color: #ff0b75;
+}
+.last-mails-widget ul li {
+  border-left: 5px solid #ff0b75;
+}
+button,
+input[type=button],
+input[type=submit],
+a.button {
+  background: #ff0b75;
+}
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover,
+a.button:hover {
+  border-color: #ff0b75;
+}
+nav.vertical ul li a:hover,
+nav.vertical ul li a.selected {
+  border-color: #ff0b75;
+}
+nav.vertical ul li a.selected {
+  color: #FFF;
+}
+nav.vertical ul li a:hover,
+nav.vertical ul li a.selected:hover {
+  color: #ff0b75;
+}
+nav.vertical .classic-link {
+  background: #ff0b75;
+}
+table {
+  border-bottom: 2px solid #ff0b75;
+}
+table thead tr {
+  border-bottom-color: #ff0b75;
+  border-top-color: #ff0b75;
+}
+.icons-view .element .img.container {
+  border-color: #ff0b75;
+}
+.label-badge {
+  background: #ff0b75;
+}
+.label-badge:hover {
+  color: #ff0b75;
+}
+[data-drop-down] ul {
+  background: #ff0b75;
+}
+.loading-panel {
+  border-color: #ff0b75;
+}
+.loading-panel h1 {
+  color: #ff0b75;
+}
+.tooltip .content {
+  background: #ff0b75;
+}
+.tooltip .arrow {
+  color: #ff0b75;
+}
+.drawing-zone article.media {
+  border-color: #ff0b75;
+}
+header.navbar {
   background: #444;
   position: absolute;
   width: 100%;
@@ -4116,7 +4181,7 @@ header {
   left: 0;
   z-index: 20;
 }
-header h1:first-child {
+header.navbar h1:first-child {
   font-size: 1.3em;
   padding-left: 10px;
   margin: 10px;
@@ -4124,10 +4189,10 @@ header h1:first-child {
   color: #fff;
   border-bottom: 0;
 }
-header a {
+header.navbar a {
   float: right;
 }
-i[role=disconnect] {
+i.disconnect {
   height: 35px;
   width: 35px;
   background-image: url("../img/icons/glyphicons_063_power.png");
@@ -4146,7 +4211,7 @@ i[role=disconnect] {
   margin: 5px;
   float: right;
 }
-i[role=ok] {
+i.ok {
   height: 31px;
   width: 31px;
   background-image: url("../img/icons/glyphicons_206_ok_2.png");
@@ -4160,7 +4225,7 @@ i[role=ok] {
   float: left;
   vertical-align: middle;
 }
-i[role=nok] {
+i.nok {
   height: 31px;
   width: 31px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -4265,53 +4330,6 @@ nav.left button {
 }
 .container {
   margin-top: 52px;
-}
-button {
-  background: #008bb8;
-  font-family: Lato;
-  font-weight: 300;
-  padding: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
-  color: #fff;
-  border-radius: 5px;
-  font-size: 15px;
-  border: 1px solid transparent;
-  -o-transition: background 250ms ease;
-  -moz-transition: background 250ms ease;
-  -webkit-transition: background 250ms ease;
-  transition: background 250ms ease;
-}
-button:hover {
-  background: #fff;
-  color: #000;
-  border: 1px solid #008bb8;
-}
-table {
-  border: 1px solid #ccc;
-  max-width: 850px;
-  margin-left: auto;
-  margin-right: auto;
-}
-table thead {
-  background: #ddd;
-  color: #008bb8;
-}
-table th,
-table td {
-  text-align: center;
-  width: 150px;
-  padding: 5px;
-}
-table th:first-child,
-table td:first-child {
-  text-align: left;
-}
-table tr {
-  border: none;
-}
-table tr:nth-child(2n) {
-  background: #eee;
 }
 input[type=text],
 select,
