@@ -27,6 +27,7 @@ public class Portal extends Server {
 				.get("/admin", "admin")
 				.get("/admin-urls", "adminURLS")
 				.get("/widgets", "widgets")
+				.get("/themes", "themes")
 				.getWithRegEx("/assets/.+", "assets");
 
 		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), getEventBus(vertx)));

@@ -237,6 +237,11 @@ public class PortalService extends Controller {
 		renderJson(request, container.config().getArray("widgets", new JsonArray()));
 	}
 
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void themes(HttpServerRequest request){
+		renderJson(request, container.config().getArray("themes", new JsonArray()));
+	}
+
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
 		redirectPermanent(request, "/directory/admin");

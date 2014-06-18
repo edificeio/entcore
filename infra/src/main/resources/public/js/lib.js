@@ -847,7 +847,7 @@ function Collection(obj){
 	};
 }());
 
-var theme = (function(){
+var skin = (function(){
 	return {
 		templateMapping: {},
 		skin: 'raw',
@@ -859,9 +859,9 @@ var theme = (function(){
 			var that = this;
 			http().get('/skin', { token: rand }, {
 				async: false,
-					success: function(data){
-						that.skin = data.skin;
-						that.theme = '/assets/themes/' + data.skin + '/default/';
+				success: function(data){
+					that.skin = data.skin;
+					that.theme = '/assets/themes/' + data.skin + '/default/';
 					http().get('/assets/themes/' + data.skin + '/i18n/' + (currentLanguage || 'en') + '.json', { token: rand }, {
 						async: false,
 						disableNotifications: true,
@@ -879,6 +879,17 @@ var theme = (function(){
 					}).e404(function(){});
 				}
 			});
+		},
+		listThemes: function(cb){
+			http().get('/themes').done(function(themes){
+				if(typeof cb === 'function'){
+					cb(themes);
+				}
+			});
+		},
+		setTheme: function(theme){
+			ui.setStyle(theme.path);
+			http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + theme._id);
 		},
 		loadConnected: function(){
 			var rand = Math.random();
@@ -1076,12 +1087,12 @@ var Behaviours = {};
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		if(typeof data !== 'object'){
-			theme.loadDisconnected();
+			skin.loadDisconnected();
 			func();
 			return;
 		}
 
-		theme.loadConnected();
+		skin.loadConnected();
 		model.me = data;
 		model.me.preferences = {
 			save: function(pref, data){

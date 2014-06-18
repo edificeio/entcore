@@ -154,8 +154,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 				if(appPrefix === '.'){
 					folder = 'portal';
 				}
-				if(theme.templateMapping[folder] && theme.templateMapping[folder].indexOf(view) !== -1){
-					path = '/assets/themes/' + theme.skin + '/template/' + folder + '/' + view + '.html';
+				if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
+					path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html';
 				}
 				this.containers[name] = path;
 			},
@@ -663,24 +663,24 @@ module.directive('portal', function($compile){
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: theme.portalTemplate,
+		templateUrl: skin.portalTemplate,
 		compile: function(element, attributes, transclude){
-			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback);
-			ui.setStyle(theme.theme);
+			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
+			ui.setStyle(skin.theme);
 		}
 	}
 });
 
 module.directive('adminPortal', function($compile){
-	theme.skin = 'admin';
-	theme.theme = '/assets/themes/admin/default/';
+	skin.skin = 'admin';
+	skin.theme = '/assets/themes/admin/default/';
 	return {
 		restrict: 'E',
 		transclude: true,
 		templateUrl: '/assets/themes/admin/portal.html',
 		compile: function(element, attributes, transclude){
-			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback);
-			ui.setStyle(theme.theme);
+			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
+			ui.setStyle(skin.theme);
 		}
 	}
 });
@@ -689,8 +689,8 @@ module.directive('portalStyles', function($compile){
 	return {
 		restrict: 'E',
 		compile: function(element, attributes){
-			$('[logout]').attr('href', '/auth/logout?callback=' + theme.logoutCallback)
-			ui.setStyle(theme.theme);
+			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback)
+			ui.setStyle(skin.theme);
 		}
 	}
 });
@@ -699,7 +699,7 @@ module.directive('defaultStyles', function($compile){
 	return {
 		restrict: 'E',
 		link: function(scope, element, attributes){
-			ui.setStyle(theme.theme);
+			ui.setStyle(skin.theme);
 		}
 	}
 });
@@ -753,9 +753,17 @@ module.directive('pullDownOpener', function($compile, $timeout){
 			element.find('.pull-down-opener').on('click', function(){
 				var container = element.parents('.pull-down-menu');
 				if(container.hasClass('hide')){
+					setTimeout(function(){
+						$('body').on('click.pulldown', function(){
+							container.addClass('hide');
+							$('body').unbind('click.pulldown');
+						});
+					}, 0);
 					container.removeClass('hide');
+
 				}
 				else{
+					$('body').unbind('click.pulldown');
 					container.addClass('hide');
 				}
 			});
@@ -1813,7 +1821,7 @@ function Account($scope){
 	$scope.nbNewMessages = 0;
 	$scope.me = model.me;
 	$scope.rand = Math.random();
-	$scope.theme = theme;
+	$scope.skin = skin;
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
@@ -1828,6 +1836,11 @@ function Account($scope){
 	http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
 		$scope.nbNewMessages = nbMessages.count;
 		$scope.$apply('nbNewMessages');
+	});
+
+	skin.listThemes(function(themes){
+		$scope.themes = themes;
+		$scope.$apply('themes');
 	});
 
 	$scope.refreshAvatar();
@@ -2142,8 +2155,8 @@ function Widgets($scope, model, lang, date){
 				});
 
 				that.load(data, function(widget){
-					if(theme.templateMapping.widgets && theme.templateMapping.widgets.indexOf(widget.name) !== -1){
-						widget.path = '/assets/themes/' + theme.skin + '/template/widgets/' + widget.name + '.html';
+					if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
+						widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 					}
 					if(widget.i18n){
 						lang.addBundle(widget.i18n, function(){
