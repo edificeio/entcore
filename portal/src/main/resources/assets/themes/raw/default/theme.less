@@ -245,12 +245,21 @@ i.tools{
 	max-width: 100%;
 }
 
-nav.stamps{
+nav.vertical.stamps{
 	padding: 0;
 	padding-right: 35px;
 	article{
 		background: #444;
 		border-radius: 0;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		h3{
+			font-size: 14px;
+			border: 0;
+		}
+	}
+	article{
+		background: #444;
 	}
 	article:hover{
 		a{
@@ -746,8 +755,8 @@ nav.horizontal{
 }
 
 .vertical-spacing {
-	margin-top: 30px !important;
-	margin-bottom: 30px !important;
+	margin-top: 60px !important;
+	margin-bottom: 60px !important;
 }
 
 h1, h2, h3, h4, h5{
@@ -778,12 +787,12 @@ h3{
 }
 
 table{
-	border-bottom: 2px solid @bright-blue;
+	border-bottom: 1px solid @bright-blue;
 	td{
 		padding: 5px;
 	}
 	tr{
-		border: 2px solid #fff;
+		border: 1px solid #fff;
 		border-right: 0;
 		border-left: 0;
 		background: #f5f5f5;
@@ -813,9 +822,22 @@ table{
 			font-family: Lato;
 			font-weight: 300;
 			font-size: 1.3em;
-			border-top: 2px solid @bright-blue;
-			border-bottom: 2px solid @bright-blue;
+			border-top: 5px solid @bright-blue;
+			border-bottom: 1px solid @bright-blue;
 		}
+		tr:hover{
+			background: #fff;
+		}
+	}
+}
+
+.notes-widget{
+	width: 251px;
+	textarea{
+		.border-box;
+	}
+	h1{
+		display: none;
 	}
 }
 
@@ -827,7 +849,7 @@ article{
 
 body{
 	section.main{
-		background: #eee;
+		background: transparent;
 	}
 	font-size: 14px;
 	line-height: 20px;
@@ -841,7 +863,7 @@ thead{
 }
 
 header{
-	background: #eee;
+	background: transparent;
 }
 
 .calendar{
@@ -883,7 +905,7 @@ header{
 }
 
 .icons-view{
-	background: #eee;
+	background: transparent;
 	margin-top: 0;
 	strong{
 		font-style: italic;

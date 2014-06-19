@@ -2275,26 +2275,19 @@ em.high-importance {
   position: relative;
 }
 .pull-down-menu .wrapper {
-  width: 220px;
+  height: 190px;
   overflow: hidden;
   position: absolute;
-  left: -226px;
-}
-.pull-down-menu .wrapper .arrow {
-  float: right;
-  width: 0;
-  height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 10px solid #fff;
+  top: 30px;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
 }
 .pull-down-menu .pull-down-content {
-  margin-right: 0px;
+  top: 0px;
+  height: 100%;
   background: #fff;
-  -o-transition: margin-right 250ms ease;
-  -moz-transition: margin-right 250ms ease;
-  -webkit-transition: margin-right 250ms ease;
-  transition: margin-right 250ms ease;
   float: right;
 }
 .pull-down-menu .pull-down-content li {
@@ -2304,11 +2297,8 @@ em.high-importance {
   padding: 0;
   margin: 0;
 }
-.pull-down-menu.hide .pull-down-content {
-  margin-right: -220px;
-}
-.pull-down-menu.hide .arrow {
-  display: none;
+.pull-down-menu.hide .wrapper {
+  height: 0px;
 }
 .notification article {
   margin-bottom: 15px;
@@ -2995,18 +2985,27 @@ i.tools {
 .row {
   max-width: 100%;
 }
-nav.stamps {
+nav.vertical.stamps {
   padding: 0;
   padding-right: 35px;
 }
-nav.stamps article {
+nav.vertical.stamps article {
   background: #444;
   border-radius: 0;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
-nav.stamps article:hover a {
+nav.vertical.stamps article h3 {
+  font-size: 14px;
+  border: 0;
+}
+nav.vertical.stamps article {
+  background: #444;
+}
+nav.vertical.stamps article:hover a {
   color: #fff;
 }
-nav.stamps article:hover i.send-mail {
+nav.vertical.stamps article:hover i.send-mail {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_010_envelope_white.png");
@@ -3021,10 +3020,10 @@ nav.stamps article:hover i.send-mail {
   vertical-align: middle;
   margin: 7px;
 }
-nav.stamps article.selected {
+nav.vertical.stamps article.selected {
   background: #008bb8;
 }
-nav.stamps article.selected i.send-mail {
+nav.vertical.stamps article.selected i.send-mail {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_010_envelope_white.png");
@@ -3535,8 +3534,8 @@ nav.horizontal a {
   color: #fff;
 }
 .vertical-spacing {
-  margin-top: 30px !important;
-  margin-bottom: 30px !important;
+  margin-top: 60px !important;
+  margin-bottom: 60px !important;
 }
 h1,
 h2,
@@ -3570,13 +3569,13 @@ h3 {
   font-style: italic;
 }
 table {
-  border-bottom: 2px solid #008bb8;
+  border-bottom: 1px solid #008bb8;
 }
 table td {
   padding: 5px;
 }
 table tr {
-  border: 2px solid #fff;
+  border: 1px solid #fff;
   border-right: 0;
   border-left: 0;
   background: #f5f5f5;
@@ -3608,8 +3607,23 @@ table thead tr {
   font-family: Lato;
   font-weight: 300;
   font-size: 1.3em;
-  border-top: 2px solid #008bb8;
-  border-bottom: 2px solid #008bb8;
+  border-top: 5px solid #008bb8;
+  border-bottom: 1px solid #008bb8;
+}
+table thead tr:hover {
+  background: #fff;
+}
+.notes-widget {
+  width: 251px;
+}
+.notes-widget textarea {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.notes-widget h1 {
+  display: none;
 }
 article {
   background: transparent;
@@ -3621,7 +3635,7 @@ body {
   line-height: 20px;
 }
 body section.main {
-  background: #eee;
+  background: transparent;
 }
 thead {
   font-size: 14px;
@@ -3630,7 +3644,7 @@ thead th {
   padding: 5px;
 }
 header {
-  background: #eee;
+  background: transparent;
 }
 .calendar {
   width: 254px;
@@ -3677,7 +3691,7 @@ header {
   font-size: 14px;
 }
 .icons-view {
-  background: #eee;
+  background: transparent;
   margin-top: 0;
 }
 .icons-view strong {
