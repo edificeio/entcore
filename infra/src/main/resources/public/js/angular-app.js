@@ -673,11 +673,11 @@ module.directive('portal', function($compile){
 
 module.directive('adminPortal', function($compile){
 	skin.skin = 'admin';
-	skin.theme = '/assets/themes/admin/default/';
+	skin.theme = '/public/admin/default/';
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: '/assets/themes/admin/portal.html',
+		templateUrl: '/public/admin/portal.html',
 		compile: function(element, attributes, transclude){
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
