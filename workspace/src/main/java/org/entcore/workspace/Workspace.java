@@ -26,7 +26,7 @@ public class Workspace extends Server {
 
 		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		vertx.eventBus().registerHandler("user.repository",
-				new RepositoryHandler(new WorkspaceRepositoryEvents(getEventBus(vertx), gridfsAddress)));
+				new RepositoryHandler(new WorkspaceRepositoryEvents(vertx, gridfsAddress)));
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);
 

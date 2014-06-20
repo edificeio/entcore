@@ -26,6 +26,14 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 	public void handle(Message<JsonObject> message) {
 		String action = message.body().getString("action", "");
 		switch (action) {
+			case "export" :
+				String exportId = message.body().getString("exportId", "");
+				String userId = message.body().getString("userId", "");
+				String path = message.body().getString("path", "");
+				String locale = message.body().getString("locale", "fr");
+				JsonArray groupIds = message.body().getArray("groups", new JsonArray());
+				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale);
+				break;
 			case "delete-groups" :
 				JsonArray groups = message.body().getArray("old-groups", new JsonArray());
 				repositoryEvents.deleteGroups(groups);

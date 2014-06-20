@@ -109,6 +109,11 @@
 	  "name": "org.entcore~feeder~1.8-SNAPSHOT",
 	  "config": {
 	  }
+    },
+    {
+	  "name": "org.entcore~archive~1.8-SNAPSHOT",
+	  "config": {
+	  }
     }
   ],
   "external-modules": [
@@ -123,7 +128,7 @@
       }
     },
     {
-      "name": "com.wse~gridfs-persistor~1.0.0",
+      "name": "com.wse~gridfs-persistor~1.1-SNAPSHOT",
       "config": {
         "address": "wse.gridfs.persistor",
         "host": "localhost",
@@ -197,14 +202,10 @@
             "location": "/conversation",
             "proxy_pass": "http://localhost:8019"
           },
-			{
-				"location": "/actualites",
-				"proxy_pass": "http://localhost:8022"
-			},
-			{
-				"location": "/blog",
-				"proxy_pass": "http://localhost:8018"
-			}
+          {
+            "location": "/archive",
+            "proxy_pass": "http://localhost:8024"
+          }
         ]
       }
     },
@@ -216,29 +217,11 @@
         "address": "log.address"
       }
     },
-	  {
-		  "name": "fr.wseduc~actualites~0.1-SNAPSHOT",
-		  "config": {
-			  "main" : "fr.wseduc.actualites.Actualites",
-			  "port" : 8022,
-			  "app-name" : "Actualites",
-			  "app-address" : "/actualites",
-			  "app-icon" : "actualites-large",
-			  "host": "http://localhost:8090",
-			  "auto-redeploy": false,
-			  "integration-mode" : "HTTP",
-			  "app-registry.port" : 8012,
-			  "entcore.port" : 8009
-		  }
-	  }, {
-		  "name": "org.entcore~blog~1.8-SNAPSHOT",
-		  "config": {
-			  "main":"org.entcore.blog.Blog",
-			  "app-address" : "/blog",
-			  "port": 8018,
-			  "host": "http://localhost:8090",
-			  "auto-redeploy": false
-		  }
-	  }
+    {
+      "name": "fr.wseduc~mod-zip~1.0-SNAPSHOT",
+      "config": {
+        "address": "entcore.zipper"
+      }
+	}
   ]
 }

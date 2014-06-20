@@ -1,0 +1,20 @@
+{
+	"e400" : "O cliente encontrou um erro",
+	"e401" : "Não tem permissão para este conteúdo",
+	"e403" : "Proibido",
+	"e404" : "A página solicitada não existe",
+	"e408" : "Tempo limite da solicitação",
+	"e500" : "Erro interno de servidor",
+	"export.hi" : "Bonjour,",
+	"export.info" : "Vous avez demandé un export de vos données.",
+	"export.download.uri" : "Pour télécharger votre archive cliquez ",
+	"export.download" : "ici.",
+	"export.class.admin.donotanswer" : "Ce message a été généré automatiquement, merci de ne pas y répondre.",
+	"export.regards" : "Cordialement,",
+	"export.signature" : "L'équipe ONE",
+	"export.error" : "Nous ne sommes pas en mesure de réaliser cet export actuellement. Veuillez réessayer plus tard.",
+	"get.export.path.error" : "Erreur lors de la recherche de l'export.",
+	"exportId.not.found" : "L'export demandé n'existe pas.",
+	"zip.export.error" : "Erreur durant la création de l'archive"
+}
+

@@ -1,0 +1,9 @@
+{
+	"main":"org.entcore.archive.Archive",
+	"port": 8024,
+	"mode": "dev",
+    "app-name" : "Archive",
+    "app-address" : "/archive",
+    "app-icon" : "archive-large",
+    "expected-exports" : ["workspace"]
+}

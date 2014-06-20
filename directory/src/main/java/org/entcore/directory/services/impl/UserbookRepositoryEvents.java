@@ -19,6 +19,12 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(UserbookRepositoryEvents.class);
 
 	@Override
+	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
+			String locale) {
+
+	}
+
+	@Override
 	public void deleteGroups(JsonArray groups) {
 
 	}

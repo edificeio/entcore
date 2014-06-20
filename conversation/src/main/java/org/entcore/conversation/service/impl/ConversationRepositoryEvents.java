@@ -16,6 +16,12 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 	private final Neo4j neo4j = Neo4j.getInstance();
 
 	@Override
+	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
+			String locale) {
+
+	}
+
+	@Override
 	public void deleteGroups(JsonArray groups) {
 		String q1 = "MATCH (m:ConversationMessage {from : {group}}) SET m.fromName = {groupName} ";
 		String q2 =
