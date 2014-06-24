@@ -1156,6 +1156,15 @@ function bootstrap(func){
 				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
 				return this.applicationsBehaviours[serviceName].resource(resource);
 			},
+			loadBehaviours: function(serviceName, callback){
+				if(this.applicationsBehaviours[serviceName]){
+					callback(this.applicationsBehaviours[serviceName]);
+				}
+
+				loader.loadFile('/' + serviceName + '/public/js/behaviours.js', function(){
+					callback(this.applicationsBehaviours[serviceName])
+				}.bind(this));
+			},
 			findWorkflow: function(serviceName){
 				var returnWorkflows = function(){
 					if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){

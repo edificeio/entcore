@@ -6,6 +6,7 @@
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
 	config.removePlugins = 'magicline';
+	config.extraPlugins = 'linker';
 	config.allowedContent = true;
 	config.toolbar = [
 		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
@@ -14,7 +15,7 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-		{ name: 'links', items: ['Link', 'Unlink'] },
+		{ name: 'links', items: ['Linker', 'Unlink'] },
 		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }

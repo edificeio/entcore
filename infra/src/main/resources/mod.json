@@ -91,6 +91,9 @@
 				  "js": "/conversation/public/js/last-mails-widget.js",
 				  "i18n": "/conversation/i18n"
 			  }
+		  ],
+		  "resources-applications": [
+			  "workspace", "blog", "actualites"
 		  ]
       }
     },
@@ -193,7 +196,15 @@
           {
             "location": "/conversation",
             "proxy_pass": "http://localhost:8019"
-          }
+          },
+			{
+				"location": "/actualites",
+				"proxy_pass": "http://localhost:8022"
+			},
+			{
+				"location": "/blog",
+				"proxy_pass": "http://localhost:8018"
+			}
         ]
       }
     },
@@ -204,6 +215,30 @@
         "log-path": "/opt/one/history/",
         "address": "log.address"
       }
-    }
+    },
+	  {
+		  "name": "fr.wseduc~actualites~0.1-SNAPSHOT",
+		  "config": {
+			  "main" : "fr.wseduc.actualites.Actualites",
+			  "port" : 8022,
+			  "app-name" : "Actualites",
+			  "app-address" : "/actualites",
+			  "app-icon" : "actualites-large",
+			  "host": "http://localhost:8090",
+			  "auto-redeploy": false,
+			  "integration-mode" : "HTTP",
+			  "app-registry.port" : 8012,
+			  "entcore.port" : 8009
+		  }
+	  }, {
+		  "name": "org.entcore~blog~1.8-SNAPSHOT",
+		  "config": {
+			  "main":"org.entcore.blog.Blog",
+			  "app-address" : "/blog",
+			  "port": 8018,
+			  "host": "http://localhost:8090",
+			  "auto-redeploy": false
+		  }
+	  }
   ]
 }

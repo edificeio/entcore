@@ -233,6 +233,11 @@ public class PortalService extends Controller {
 	}
 
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void resourcesApplications(HttpServerRequest request){
+		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
+	}
+
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void widgets(HttpServerRequest request){
 		renderJson(request, container.config().getArray("widgets", new JsonArray()));
 	}

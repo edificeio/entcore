@@ -345,6 +345,47 @@ module.directive('mediaLibrary', function($compile){
 	}
 });
 
+module.directive('linker', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+			ngModel: '=',
+			ngChange: '&'
+		},
+		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
+		link: function(scope, element, attributes){
+			scope.me = model.me;
+			http().get('/resources-applications').done(function(apps){
+				scope.apps = _.filter(model.me.apps, function(app){
+					return _.find(apps, function(match){
+						return app.address.indexOf(match) !== -1
+					});
+				});
+				$scope.application = scope.apps[0];
+				scope.$apply('apps');
+			});
+
+			scope.searchApplication = function(){
+				var split = scope.application.address.split('/');
+				var prefix = split[split.length - 1];
+				Behaviours.loadBehaviours(prefix, function(appBehaviour){
+					appBehaviour.search(scope.searchText, function(res){
+						scope.resources = res;
+						scope.$apply('resources');
+					});
+				});
+			};
+
+			scope.applyLink = function(link){
+				scope.ngModel = link;
+				scope.$apply('ngModel');
+				scope.ngChange();
+				scope.$apply();
+			};
+		}
+	}
+});
+
 module.directive('imageSelect', function($compile){
 	return {
 		restrict: 'E',
@@ -714,12 +755,15 @@ module.directive('skinSrc', function($compile){
 			}
 			var skinPath = $('#theme').attr('href').split('/');
 			var path = skinPath.slice(0, skinPath.length - 2).join('/');
-			if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
-				$element.attr('src', path + $attributes.skinSrc);
-			}
-			else{
-				$element.attr('src', $attributes.skinSrc);
-			}
+			$attributes.$observe('skinSrc', function(){
+				if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
+					$element.attr('src', path + $attributes.skinSrc);
+				}
+				else{
+					$element.attr('src', $attributes.skinSrc);
+				}
+			});
+
 		}
 	}
 })
@@ -1011,34 +1055,60 @@ module.directive('richTextEditor', function($compile){
 			notify: '='
 		},
 		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell">' +
-			'</div><div class="clear"></div></div>',
+			'</div><lightbox show="chooseLink" on-close="chooseLink = false;">' +
+			'<linker ng-model="selected.link" ng-change="setLink()"></linker>' +
+			'</lightbox>' +
+			'<div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
 				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 			}
-			return function($scope, $element, $attributes){
+			return function(scope, element, attributes){
+				scope.selected = { link: '' };
 				var editor = $('[contenteditable=true]');
-				CKEDITOR.inline(editor[0],
+				var contextEditor = CKEDITOR.inline(editor[0],
 					{ customConfig: '/' + infraPrefix + '/public/ckeditor/rich-text-config.js' }
 				);
 
-				createCKEditorInstance(editor, $scope, $compile);
+				createCKEditorInstance(editor, scope, $compile);
 
-				$element.on('removed', function(){
+				element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						CKEDITOR.instances[instance].destroy()
 					}
 					$('.cke').remove();
 				});
 
-				if(!$scope.watchCollection){
+				$('body').on('click', '.cke_button__linker', function(){
+					scope.chooseLink = true;
+					scope.$apply('chooseLink');
+				});
+
+				scope.setLink = function(){
+					var bookmarks = contextEditor.getSelection().createBookmarks(),
+						range = contextEditor.getSelection().getRanges()[0],
+						fragment = range.clone().cloneContents();
+					contextEditor.getSelection().selectBookmarks(bookmarks);
+
+					var appendText = "",
+						childList = fragment.getChildren(),
+						childCount = childList.count();
+					for(var i = 0; i < childCount; i++){
+						var child = childList.getItem(i);
+						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
+					}
+					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link + '">' + appendText + '</a>'));
+					scope.chooseLink = false;
+				}
+
+				if(!scope.watchCollection){
 					return;
 				}
 
-				$scope.$eval($scope.watchCollection).forEach(function(col){
-					$scope.$parent.$watchCollection(col, function(){
+				scope.$eval(scope.watchCollection).forEach(function(col){
+					scope.$parent.$watchCollection(col, function(){
 						ckeEditorFixedPositionning();
 					});
 				});
@@ -1130,8 +1200,12 @@ module.directive('htmlEditor', function($compile){
 		},
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
-			'</div><div class="clear"></div><lightbox show="selectFiles" on-close="selectFiles = false;">' +
-			'<media-library ng-model="selectedFiles.files" ng-change="addContent()" multiple="true" file-format="format">' +
+			'</div><div class="clear"></div>' +
+			'<lightbox show="chooseLink" on-close="chooseLink = false;">' +
+			'<linker ng-model="selected.link" ng-change="setLink()"></linker>' +
+			'</lightbox>' +
+			'<lightbox show="selectFiles" on-close="selectFiles = false;">' +
+			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
 			'</media-library></lightbox></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
@@ -1141,6 +1215,8 @@ module.directive('htmlEditor', function($compile){
 
 			}
 			return function(scope, element, attributes){
+				scope.selected = { files: [], link: '' };
+
 				if(!attributes.fileUploadPath){
 					attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
 				}
@@ -1175,9 +1251,31 @@ module.directive('htmlEditor', function($compile){
 					scope.$apply('format');
 				});
 
-				scope.selectedFiles = { files: [] };
+				$('body').on('click', '.cke_button__linker', function(){
+					scope.chooseLink = true;
+					scope.$apply('chooseLink');
+				});
+
+				scope.setLink = function(){
+					var bookmarks = contextEditor.getSelection().createBookmarks(),
+						range = contextEditor.getSelection().getRanges()[0],
+						fragment = range.clone().cloneContents();
+					contextEditor.getSelection().selectBookmarks(bookmarks);
+
+					var appendText = "",
+						childList = fragment.getChildren(),
+						childCount = childList.count();
+					for(var i = 0; i < childCount; i++){
+						var child = childList.getItem(i);
+						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
+					}
+					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link + '">' + appendText + '</a>'));
+					scope.chooseLink = false;
+				}
+
+
 				scope.addContent = function(){
-					scope.selectedFiles.files.forEach(function(file){
+					scope.selected.files.forEach(function(file){
 						if(!file._id){
 							return;
 						}

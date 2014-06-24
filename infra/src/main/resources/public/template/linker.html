@@ -1,0 +1,38 @@
+<div class="accordions">
+	<div class="accordion" ng-class="{ opened: externalLink }">
+		<h2 ng-click="externalLink = true">Adresse d'un site internet</h2>
+		<div class="twelve cell toggle">
+			<div class="content">
+				<input type="text" placeholder="http://adresse-du-site.com" ng-model="externalLink" />
+				<button ng-click="applyLink(externalLink)">OK</button>
+			</div>
+		</div>
+	</div>
+	<div class="accordion" ng-class="{ opened: !externalLink }">
+		<h2 ng-click="externalLink = false">Rechercher dans l'ENT</h2>
+		<div class="twelve cell toggle">
+			<div class="content">
+				<input type="text" placeholder="Rechercher" ng-model="searchText" />
+				<select ng-model="application" ng-options="app.displayName for app in apps"></select>
+				<div class="row">
+					<button ng-click="searchApplication()">Rechercher</button>
+				</div>
+				<div class="row">
+					<div class="height-six twelve cell">
+						<div class="absolute icons-view" style="overflow: auto">
+							<div class="element" ng-repeat="resource in resources" ng-click="applyLink(resource.path)">
+								<div class="img container">
+									<img skin-src="[[resource.icon]]" />
+								</div>
+								<legend>
+									<a>[[resource.title]]</a>
+								</legend>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

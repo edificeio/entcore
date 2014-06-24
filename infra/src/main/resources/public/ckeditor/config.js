@@ -7,7 +7,7 @@ CKEDITOR.editorConfig = function(config){
 	config.title = false;
 	config.removePlugins = 'magicline';
 	config.allowedContent = true;
-	config.extraPlugins = 'upload,audio,video';
+	config.extraPlugins = 'upload,audio,video,linker';
 	config.toolbar = [
 		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
 		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Undo', 'Redo' ] },
@@ -15,7 +15,7 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-		{ name: 'links', items: ['Link', 'Unlink'] },
+		{ name: 'links', items: ['Linker', 'Unlink'] },
 		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload', 'Audio', 'Video'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
 		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }

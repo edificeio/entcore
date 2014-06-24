@@ -166,36 +166,6 @@ input[type=text]{
 	border-bottom-width: 5px;
 }
 
-.accordion{
-	h2{
-		font-family: Arial;
-		padding: 4px;
-		padding-left: 10px;
-		padding-right: 10px;
-		.vertical-gradient(#eee, #e5e5e5);
-		border: 1px solid #ccc;
-		.border-radius();
-		font-size: 20px;
-		margin-bottom: 0;
-		color: #666;
-		margin-top: 15px !important;
-	}
-	.toggle{
-		height: 0px;
-		.run-transition(height);
-		overflow: hidden;
-		padding: 0px;
-		.content{
-			padding: 10px;
-			h3{
-				font-weight: normal;
-				color: @bright-blue;
-				font-size: 16px;
-			}
-		}
-	}
-}
-
 .selectable-list{
 	padding: 0;
 	li{
@@ -210,21 +180,6 @@ input[type=text]{
 	li.selected{
 		background: @bright-blue;
 		color: #fff;
-	}
-}
-
-.accordion.opened{
-	h2{
-		border: 1px solid #ccc;
-		.border-radius(0px);
-		.border-radius-top();
-
-	}
-	.toggle{
-		height: 300px;
-		overflow: hidden;
-		border: 1px solid #ccc;
-		border-top: 0;
 	}
 }
 

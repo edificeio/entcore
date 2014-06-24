@@ -26,6 +26,7 @@ public class Portal extends Server {
 				.get("/locale", "locale")
 				.get("/admin", "admin")
 				.get("/admin-urls", "adminURLS")
+				.get("/resources-applications", "resourcesApplications")
 				.get("/widgets", "widgets")
 				.get("/themes", "themes")
 				.getWithRegEx("/assets/.+", "assets");

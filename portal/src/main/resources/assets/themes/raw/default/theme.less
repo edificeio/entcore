@@ -203,6 +203,10 @@ i.tools{
 
 @header-height: 40px;
 
+.row{
+	max-width: 1200px;
+}
+
 .container{
 	header.main{
 		height: @header-height;
@@ -215,7 +219,7 @@ i.tools{
 
 	}
 	.main{
-		max-width: 960px;
+		max-width: 1200px;
 		margin-left: auto;
 		margin-right: auto;
 	}
@@ -247,19 +251,25 @@ i.tools{
 
 nav.vertical.stamps{
 	padding: 0;
-	padding-right: 35px;
+	padding-right: 50px;
 	article{
 		background: #444;
 		border-radius: 0;
 		margin-top: 10px;
 		margin-bottom: 10px;
+		line-height: 20px;
+		color: #aaa;
 		h3{
-			font-size: 14px;
+			font-size: 18px;
 			border: 0;
+			color: #aaa;
+			line-height: 20px;
+			font-style: normal;
+			margin: 0;
 		}
-	}
-	article{
-		background: #444;
+		a{
+			margin: 0;
+		}
 	}
 	article:hover{
 		a{
@@ -272,9 +282,16 @@ nav.vertical.stamps{
 	}
 	article.selected{
 		background: @bright-blue;
+		color: #fff;
 		i.send-mail{
 			.icon(glyphicons_010_envelope_white, 24px);
 			margin: 7px;
+		}
+		h3{
+			color: #fff;
+		}
+		a{
+			color: #fff;
 		}
 	}
 }
@@ -458,6 +475,10 @@ button.cancel, input[type=button].cancel{
 		font-size: 14px !important;
 		line-height: 26px;
 	}
+}
+
+.small-text a, .small-text em, .small-text label, .small-text span {
+	font-size: 14px;
 }
 
 .icons-select{
@@ -730,7 +751,6 @@ nav.vertical{
 		margin-left: 20px;
 	}
 	a.classic-link{
-		margin-left: 20px;
 		display: block;
 		padding: 5px;
 		padding-left: 11px;
@@ -739,6 +759,8 @@ nav.vertical{
 		font-size: 1.2em;
 		font-family: Lato;
 		font-weight: 300;
+		width: 100%;
+		.border-box;
 		.run-transition(background);
 	}
 	a.classic-link:hover{
@@ -755,8 +777,8 @@ nav.horizontal{
 }
 
 .vertical-spacing {
-	margin-top: 60px !important;
-	margin-bottom: 60px !important;
+	margin-top: 30px !important;
+	margin-bottom: 30px !important;
 }
 
 h1, h2, h3, h4, h5{
@@ -831,8 +853,23 @@ table{
 	}
 }
 
+.notification article{
+	margin-left: 20px;
+}
+
+.toggle-panel{
+	background: #444;
+	padding: 20px;
+	color: #AAA;
+	.run-transition(opacity);
+	h1, h2, h3{
+		color: #AAA;
+	}
+	box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.4);
+}
+
 .notes-widget{
-	width: 251px;
+	width: 253px;
 	textarea{
 		.border-box;
 	}
@@ -845,6 +882,7 @@ article{
 	background: transparent;
 	border-radius: 3px;
 	border: none;
+	margin-bottom: 45px;
 }
 
 body{
@@ -958,13 +996,18 @@ header{
 	.run-transition(opacity);
 }
 
-.filters{
-	position: absolute;
+.filters.line{
 	right: 0;
-	top: -50px;
+	background: #444;
+	color: #aaa;
+	border-left: 10px solid @bright-blue;
+	height: 40px;
+	padding: 11px;
+
 	li{
 		display: block;
 		float: right;
+		font-size: 14px;
 	}
 	li:first-child{
 		display: none;
@@ -1074,42 +1117,8 @@ textarea{
 }
 
 .comment{
-	background: #eee;
-	border: 1px solid #ccc;
-}
-
-nav.vertical{
-	article{
-		background: transparent;
-		border: none;
-		h3{
-			font-family: Arial;
-			font-style: normal;
-			margin-left: -10px;
-			margin-top: -10px;
-			margin-right: 10px;
-			padding-left: 10px;
-			border-top: 5px solid;
-			padding-top: 5px;
-			.run-transition(color);
-		}
-		a{
-			margin-left: 0;
-			color: #000;
-		}
-		strong{
-			font-weight: normal;
-		}
-	}
-	article.selected{
-		background: transparent;
-		a{
-			color: @bright-blue;
-		}
-		h3{
-			color: @bright-blue;
-		}
-	}
+	background: #444;
+	color: #aaa;
 }
 
 article.selected{
@@ -1174,4 +1183,91 @@ i.folder-large{
 
 .lightbox-background{
 	.lightbox-backdrop;
+}
+
+.warning-text{
+	color: rgb(245, 103, 103);
+}
+
+
+
+.accordions{
+	.accordion{
+		h2{
+			font-family: Arial;
+			padding: 4px;
+			padding-left: 10px;
+			padding-right: 10px;
+			.vertical-gradient(#383838, #333);
+			border: 1px solid #555;
+			border-bottom: 0;
+			font-size: 20px;
+			margin-bottom: 0;
+			color: #666;
+		}
+		.toggle{
+			height: 0px;
+			.run-transition(height);
+			overflow: hidden;
+			padding: 0px;
+			border: 0;
+			background: #333;
+			.content{
+				padding: 10px;
+				h3{
+					font-weight: normal;
+					color: @bright-blue;
+					font-size: 16px;
+				}
+			}
+		}
+	}
+
+	.accordion:first-child{
+		h2{
+			.border-radius-top();
+		}
+	}
+
+	.accordion:last-child{
+		h2{
+			.border-radius-bottom();
+			border-bottom: 1px solid #555;
+		}
+	}
+
+	.accordion.opened{
+		h2{
+			border: 1px solid #555;
+			border-bottom: 0;
+
+		}
+		.toggle{
+			height: 300px;
+			overflow: hidden;
+			border: 1px solid #555;
+			border-top: 0;
+			.border-radius(0);
+			.content{
+				padding: 10px;
+			}
+		}
+	}
+
+	.accordion:last-child.opened{
+		.toggle{
+			.border-radius-bottom();
+		}
+		h2{
+			.border-radius(0);
+		}
+	}
+}
+
+select{
+	background: #494949;
+	color: #999;
+	border: 1px solid #595959;
+	height: 25px;
+	margin: 3px;
 }

@@ -79,5 +79,31 @@ Behaviours.register('workspace', {
 	},
 	resourceRights: function(){
 		return ['comment', 'copy', 'move', 'moveTrash']
+	},
+	search: function(searchText, callback){
+		http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
+			callback(
+				_.map(
+					_.filter(documents, function(doc) {
+						return lang.removeAccents(doc.name.toLowerCase()).indexOf(lang.removeAccents(searchText).toLowerCase()) !== -1;
+					}),
+					function(doc){
+						if(doc.metadata['content-type'].indexOf('image') !== -1){
+							doc.icon = '/workspace/document/' + doc._id;
+						}
+						else{
+							doc.icon = '/img/icons/unknown-large.png';
+						}
+						return {
+							title: doc.name,
+							ownerName: doc.ownerName,
+							owner: doc.owner,
+							icon: doc.icon,
+							path: '/workspace/document/' + doc._id
+						};
+					}
+				)
+			);
+		})
 	}
 });
