@@ -133,7 +133,7 @@ public class Be1dFeeder implements Feed {
 		handlers[0].handle(null);
 	}
 
-	private void importSchool(String p, Handler<Message<JsonObject>> handler) {
+	private void importSchool(String p, final Handler<Message<JsonObject>> handler) {
 		try {
 			JsonObject structure = getStructure(p);
 			if (importer.getStructure(structure.getString("externalId")) != null) {
@@ -152,7 +152,16 @@ public class Be1dFeeder implements Feed {
 			importPersonnel(s, p);
 			importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
 			importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
-			importer.persist(handler);
+			if (isUpdate) {
+				importer.markMissingUsers(s.getExternalId(), new Handler<Void>() {
+					@Override
+					public void handle(Void event) {
+						importer.persist(handler);
+					}
+				});
+			} else {
+				importer.persist(handler);
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			handler.handle(null);

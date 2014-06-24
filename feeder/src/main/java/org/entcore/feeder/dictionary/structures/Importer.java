@@ -9,12 +9,16 @@ import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,6 +27,7 @@ public class Importer {
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
 	private ConcurrentMap<String, Structure> structures;
 	private ConcurrentMap<String, Profile> profiles;
+	private Set<String> userImportedExternalId = new HashSet<>();
 	private TransactionHelper transactionHelper;
 	private final Validator structureValidator;
 	private final Validator profileValidator;
@@ -76,6 +81,7 @@ public class Importer {
 	public void clear() {
 		structures.clear();
 		profiles.clear();
+		userImportedExternalId.clear();
 		transactionHelper = null;
 	}
 
@@ -212,6 +218,7 @@ public class Importer {
 		if (error != null) {
 			log.warn(error);
 		} else {
+			userImportedExternalId.add(object.getString("externalId"));
 			String query;
 			JsonObject params;
 			if (!firstImport) {
@@ -304,6 +311,7 @@ public class Importer {
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
+				userImportedExternalId.add(object.getString("externalId"));
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
 				if (!firstImport) {
@@ -404,6 +412,7 @@ public class Importer {
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
+				userImportedExternalId.add(object.getString("externalId"));
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
 				if (!firstImport) {
@@ -556,6 +565,50 @@ public class Importer {
 
 	public Structure getStructure(String externalId) {
 		return structures.get(externalId);
+	}
+
+	public void markMissingUsers(Handler<Void> handler) {
+		markMissingUsers(null, handler);
+	}
+
+	public void markMissingUsers(String structureExternalId, final Handler<Void> handler) {
+		String query;
+		JsonObject params = new JsonObject();
+		if (structureExternalId != null) {
+			query = "MATCH (:Structure {externalId : {externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"RETURN u.externalId as externalId";
+			params.putString("externalId", structureExternalId);
+		} else {
+			query = "MATCH (u:User) RETURN u.externalId as externalId";
+		}
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonArray res = message.body().getArray("result");
+				if ("ok".equals(message.body().getString("status")) && res != null) {
+					Set<String> existingUser = new TreeSet<>();
+					for (Object o : res) {
+						if (!(o instanceof JsonObject)) continue;
+						existingUser.add(((JsonObject) o).getString("externalId"));
+					}
+					existingUser.removeAll(userImportedExternalId); // set difference
+					String q = // mark missing users
+							"MATCH (u:User) WHERE u.externalId in {externalIds} " +
+							"SET u.disappearanceDate = {date} ";
+					JsonObject p = new JsonObject()
+							.putArray("externalIds", new JsonArray(existingUser.toArray()))
+							.putNumber("date", System.currentTimeMillis());
+					transactionHelper.add(q, p);
+					String q2 = // remove mark of imported users
+							"MATCH (u:User) WHERE u.externalId in {externalIds} AND HAS(u.disappearanceDate) " +
+							"REMOVE u.disappearanceDate ";
+					JsonObject p2 = new JsonObject()
+							.putArray("externalIds", new JsonArray(userImportedExternalId.toArray()));
+					transactionHelper.add(q2, p2);
+				}
+				handler.handle(null);
+			}
+		});
 	}
 
 }

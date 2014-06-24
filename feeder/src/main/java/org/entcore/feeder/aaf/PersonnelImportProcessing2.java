@@ -32,7 +32,12 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 				}
 			});
 		} else {
-			parse(handler, new StudentImportProcessing2(path, vertx));
+			importer.markMissingUsers(new Handler<Void>() {
+				@Override
+				public void handle(Void event) {
+					parse(handler, new StudentImportProcessing2(path, vertx));
+				}
+			});
 		}
 	}
 
