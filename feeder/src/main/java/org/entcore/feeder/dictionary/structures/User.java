@@ -62,6 +62,57 @@ public class User {
 
 	}
 
+	public static class PreDeleteTask implements Handler<Long> {
+
+		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
+		private final long delay;
+
+		public PreDeleteTask(long delay) {
+			this.delay = delay;
+		}
+
+		@Override
+		public void handle(Long event) {
+			log.info("Execute task pre-delete user.");
+			JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+			String query =
+					"MATCH (u:User) " +
+					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) AND u.disappearanceDate < {date} " +
+					"RETURN u.id as id ";
+			TransactionManager.getInstance().getNeo4j().execute(query, params, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					final JsonArray res = message.body().getArray("result");
+					if ("ok".equals(message.body().getString("status")) && res != null && res.size() > 0) {
+						try {
+							TransactionHelper tx = TransactionManager.getInstance().begin();
+							for (Object o : res) {
+								if (!(o instanceof JsonObject)) continue;
+								String userId = ((JsonObject) o).getString("id");
+								backupRelationship(userId, tx);
+								preDelete(userId, tx);
+							}
+							tx.commit(new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> m) {
+									if ("ok".equals(m.body().getString("status"))) {
+										log.info("PreDelete users : " + res.encode());
+									} else {
+										log.error(m.body().encode());
+									}
+								}
+							});
+						} catch (Exception e) {
+							log.error("PreDelete task error");
+							log.error(e.getMessage(), e);
+						}
+					}
+				}
+			});
+		}
+
+	}
+
 	public static void backupRelationship(String userId, TransactionHelper transaction) {
 		JsonObject params = new JsonObject().putString("userId", userId);
 		String query =

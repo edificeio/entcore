@@ -19,7 +19,6 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Importer {

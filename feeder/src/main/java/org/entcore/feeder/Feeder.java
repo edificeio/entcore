@@ -37,8 +37,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		neo4j = new Neo4j(vertx.eventBus(), neo4jAddress);
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
+		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long deleteTaskDelay = container.config().getLong("delete-task-delay", 24 * 3600 * 1000l);
+		final long preDeleteTaskDelay = container.config().getLong("pre-delete-task-delay", 24 * 3600 * 1000l);
 		vertx.setPeriodic(deleteTaskDelay, new User.DeleteTask(deleteUserDelay, eb));
+		vertx.setPeriodic(preDeleteTaskDelay, new User.PreDeleteTask(preDeleteUserDelay));
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
 		vertx.eventBus().registerHandler(
