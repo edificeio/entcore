@@ -1161,7 +1161,7 @@ function bootstrap(func){
 					callback(this.applicationsBehaviours[serviceName]);
 				}
 
-				loader.loadFile('/' + serviceName + '/public/js/behaviours.js', function(){
+				loader.asyncLoad('/' + serviceName + '/public/js/behaviours.js', function(){
 					callback(this.applicationsBehaviours[serviceName])
 				}.bind(this));
 			},

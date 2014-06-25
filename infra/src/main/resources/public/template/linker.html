@@ -1,39 +1,61 @@
-<div class="accordions linker">
-	<div class="accordion" ng-class="{ opened: externalLink }">
-		<h2 ng-click="externalLink = true">Adresse d'un site internet</h2>
-		<div class="twelve cell toggle">
-			<div class="content">
-				<input type="text" placeholder="http://adresse-du-site.com" ng-model="externalLinkContent" />
-				<button ng-click="applyLink(externalLinkContent)">OK</button>
-			</div>
-		</div>
-	</div>
-	<div class="accordion" ng-class="{ opened: !externalLink }">
-		<h2 ng-click="externalLink = false">Rechercher dans l'ENT</h2>
-		<div class="twelve cell toggle">
-			<div class="content">
-				<article class="row">
-					<input type="text" placeholder="Rechercher" ng-model="searchText" class="four cell" />
-					<select ng-model="application" ng-options="app.displayName for app in apps" class="four cell"></select>
-					<button ng-click="searchApplication()" class="right-magnet">Rechercher</button>
-				</article>
-				<article class="row">
-					<div class="found-resources">
-						<div class="icons-view">
-							<div class="element" ng-repeat="resource in resources" ng-click="applyLink(resource.path)">
-								<div class="img container">
-									<img skin-src="[[resource.icon]]" />
-								</div>
-								<legend>
-									<a>[[resource.title]]</a>
-									<a><strong class="small-text">[[resource.ownerName]]</strong></a>
-								</legend>
-							</div>
-						</div>
-					</div>
+<div class="tabs linker">
+	<header ng-click="externalLink = false" ng-class="{ selected: !externalLink }">Rechercher dans l'ENT</header>
+	<header ng-click="externalLink = true" ng-class="{ selected: externalLink }">Adresse d'un site internet</header>
 
-				</article>
+	<section ng-if="externalLink">
+			<div class="row">
+				<label class="four cell">Adresse du site</label>
+				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="externalLinkContent" />
 			</div>
-		</div>
+			<div class="row">
+				<label class="four cell">Bulle d'information</label>
+				<input class="four cell" type="text" placeholder="Bulle d'aide" />
+			</div>
+			<div class="row">
+				<div class="four cell">&nbsp;</div>
+				<input type="checkbox" />Ouvrir le lien dans un nouvel onglet
+			</div>
+	</section>
+	<section ng-if="!externalLink">
+
+		<article class="row">
+			<div class="row">
+				<label class="four cell">Bulle d'information</label>
+				<input class="four cell" type="text" ng-model="ngModel.tooltip" placeholder="Bulle d'aide" />
+			</div>
+			<div class="row">
+				<div class="four cell">&nbsp;</div>
+				<input type="checkbox" ng-model="ngModel.blank" />Ouvrir le lien dans un nouvel onglet
+			</div>
+			<article class="row">
+				<div class="twelve cell vertical-spacing">
+					<input type="text" placeholder="Rechercher" ng-model="search.text" class="four cell" />
+					<select ng-model="search.application" ng-options="app.displayName for app in apps" class="four cell"></select>
+					<input type="button" ng-click="searchApplication()" class="right-magnet" value="Rechercher" />
+				</div>
+
+			</article>
+			<div class="found-resources">
+				<div class="icons-view">
+					<div class="element" ng-repeat="resource in resources" ng-click="applyLink(resource.path)" ng-class="{ selected: resource.path === ngModel.link }">
+						<div class="img container">
+							<img skin-src="[[resource.icon]]" />
+						</div>
+						<legend>
+							<a>[[resource.title]]</a>
+							<a><strong class="small-text">[[resource.ownerName]]</strong></a>
+						</legend>
+					</div>
+				</div>
+			</div>
+
+		</article>
+	</section>
+</div>
+
+<div class="row">
+	<div class="twelve cell reduce-block-four">
+		<input type="button" value="Créer un lien" ng-click="saveLink()" ng-disabled="!ngModel.link" class="right-magnet" />
+		<input type="button" class="cancel right-magnet" value="Annuler" />
 	</div>
 </div>

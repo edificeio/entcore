@@ -2367,6 +2367,102 @@ em.high-importance {
   top: 0;
   left: 0;
 }
+.accordions .accordion h2 {
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background: -webkit-linear-gradient(#eeeeee, #e5e5e5);
+  background: -moz-linear-gradient(#eeeeee, #e5e5e5);
+  background: -o-linear-gradient(#eeeeee, #e5e5e5);
+  background: linear-gradient(#eeeeee, #e5e5e5);
+  -pie-background: linear-gradient(#eeeeee, #e5e5e5);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+  border: 1px solid #555;
+  border-bottom: 0;
+  font-size: 20px;
+  margin-bottom: 0;
+  color: #666;
+}
+.accordions .accordion .toggle {
+  height: 0px;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
+  overflow: hidden;
+  padding: 0px;
+  border: 0;
+  background: #e5e5e5;
+}
+.accordions .accordion .toggle .content {
+  padding: 10px;
+}
+.accordions .accordion .toggle .content h3 {
+  font-weight: normal;
+  font-size: 16px;
+}
+.accordions .accordion:first-child h2 {
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-top-left-radius: 5px;
+  -moz-border-top-right-radius: 5px;
+  -ms-border-top-left-radius: 5px;
+  -ms-border-top-right-radius: 5px;
+  -o-border-top-left-radius: 5px;
+  -o-border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.accordions .accordion:last-child h2 {
+  -webkit-border-bottom-left-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-bottom-left-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  -ms-border-bottom-left-radius: 5px;
+  -ms-border-bottom-right-radius: 5px;
+  -o-border-bottom-left-radius: 5px;
+  -o-border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-bottom: 1px solid #555;
+}
+.accordions .accordion.opened h2 {
+  border: 1px solid #555;
+  border-bottom: 0;
+}
+.accordions .accordion.opened .toggle {
+  height: 350px;
+  overflow: hidden;
+  border: 1px solid #555;
+  border-top: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+}
+.accordions .accordion.opened .toggle .content {
+  padding: 10px;
+}
+.accordions .accordion:last-child.opened .toggle {
+  -webkit-border-bottom-left-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-bottom-left-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  -ms-border-bottom-left-radius: 5px;
+  -ms-border-bottom-right-radius: 5px;
+  -o-border-bottom-left-radius: 5px;
+  -o-border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+.accordions .accordion:last-child.opened h2 {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+}
 html,
 body {
   margin: 0;
@@ -4178,9 +4274,6 @@ i.folder-large {
 }
 .accordions .accordion h2 {
   font-family: Arial;
-  padding: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
   background: -webkit-linear-gradient(#383838, #333333);
   background: -moz-linear-gradient(#383838, #333333);
   background: -o-linear-gradient(#383838, #333333);
@@ -4190,51 +4283,18 @@ i.folder-large {
   border: 1px solid #555;
   border-bottom: 0;
   font-size: 20px;
-  margin-bottom: 0;
   color: #666;
 }
 .accordions .accordion .toggle {
-  height: 0px;
-  -o-transition: height 250ms ease;
-  -moz-transition: height 250ms ease;
-  -webkit-transition: height 250ms ease;
-  transition: height 250ms ease;
-  overflow: hidden;
-  padding: 0px;
   border: 0;
   background: #333;
-}
-.accordions .accordion .toggle .content {
-  padding: 10px;
 }
 .accordions .accordion .toggle .content h3 {
   font-weight: normal;
   color: #008bb8;
   font-size: 16px;
 }
-.accordions .accordion:first-child h2 {
-  -webkit-border-top-left-radius: 5px;
-  -webkit-border-top-right-radius: 5px;
-  -moz-border-top-left-radius: 5px;
-  -moz-border-top-right-radius: 5px;
-  -ms-border-top-left-radius: 5px;
-  -ms-border-top-right-radius: 5px;
-  -o-border-top-left-radius: 5px;
-  -o-border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-}
 .accordions .accordion:last-child h2 {
-  -webkit-border-bottom-left-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-bottom-left-radius: 5px;
-  -moz-border-bottom-right-radius: 5px;
-  -ms-border-bottom-left-radius: 5px;
-  -ms-border-bottom-right-radius: 5px;
-  -o-border-bottom-left-radius: 5px;
-  -o-border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
   border-bottom: 1px solid #555;
 }
 .accordions .accordion.opened h2 {
@@ -4243,36 +4303,9 @@ i.folder-large {
 }
 .accordions .accordion.opened .toggle {
   height: 350px;
-  overflow: hidden;
   border: 1px solid #555;
   border-top: 0;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  -ms-border-radius: 0;
-  -o-border-radius: 0;
-  border-radius: 0;
-}
-.accordions .accordion.opened .toggle .content {
   padding: 10px;
-}
-.accordions .accordion:last-child.opened .toggle {
-  -webkit-border-bottom-left-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-bottom-left-radius: 5px;
-  -moz-border-bottom-right-radius: 5px;
-  -ms-border-bottom-left-radius: 5px;
-  -ms-border-bottom-right-radius: 5px;
-  -o-border-bottom-left-radius: 5px;
-  -o-border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-}
-.accordions .accordion:last-child.opened h2 {
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  -ms-border-radius: 0;
-  -o-border-radius: 0;
-  border-radius: 0;
 }
 select {
   background: #494949;

@@ -1195,25 +1195,16 @@ i.folder-large{
 	.accordion{
 		h2{
 			font-family: Arial;
-			padding: 4px;
-			padding-left: 10px;
-			padding-right: 10px;
 			.vertical-gradient(#383838, #333);
 			border: 1px solid #555;
 			border-bottom: 0;
 			font-size: 20px;
-			margin-bottom: 0;
 			color: #666;
 		}
 		.toggle{
-			height: 0px;
-			.run-transition(height);
-			overflow: hidden;
-			padding: 0px;
 			border: 0;
 			background: #333;
 			.content{
-				padding: 10px;
 				h3{
 					font-weight: normal;
 					color: @bright-blue;
@@ -1223,15 +1214,8 @@ i.folder-large{
 		}
 	}
 
-	.accordion:first-child{
-		h2{
-			.border-radius-top();
-		}
-	}
-
 	.accordion:last-child{
 		h2{
-			.border-radius-bottom();
 			border-bottom: 1px solid #555;
 		}
 	}
@@ -1244,22 +1228,9 @@ i.folder-large{
 		}
 		.toggle{
 			height: 350px;
-			overflow: hidden;
 			border: 1px solid #555;
 			border-top: 0;
-			.border-radius(0);
-			.content{
-				padding: 10px;
-			}
-		}
-	}
-
-	.accordion:last-child.opened{
-		.toggle{
-			.border-radius-bottom();
-		}
-		h2{
-			.border-radius(0);
+			padding: 10px;
 		}
 	}
 }

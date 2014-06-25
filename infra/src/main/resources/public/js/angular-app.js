@@ -355,21 +355,23 @@ module.directive('linker', function($compile){
 		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
 		link: function(scope, element, attributes){
 			scope.me = model.me;
+			scope.search = { text: '', application: {} };
+			scope.ngModel = {};
 			http().get('/resources-applications').done(function(apps){
 				scope.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
 						return app.address.indexOf(match) !== -1
 					});
 				});
-				scope.application = scope.apps[0];
+				scope.search.application = scope.apps[0];
 				scope.$apply('apps');
 			});
 
 			scope.searchApplication = function(){
-				var split = scope.application.address.split('/');
+				var split = scope.search.application.address.split('/');
 				var prefix = split[split.length - 1];
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
-					appBehaviour.search(scope.searchText, function(res){
+					appBehaviour.search(scope.search.text, function(res){
 						scope.resources = res;
 						scope.$apply('resources');
 					});
@@ -377,11 +379,18 @@ module.directive('linker', function($compile){
 			};
 
 			scope.applyLink = function(link){
-				scope.ngModel = link;
+				scope.ngModel.link = link;
+				scope.$apply('ngModel');
+			};
+
+			scope.saveLink = function(){
+				if(scope.ngModel.blank){
+					scope.ngModel.target = '_blank';
+				}
 				scope.$apply('ngModel');
 				scope.ngChange();
 				scope.$apply();
-			};
+			}
 		}
 	}
 });
@@ -1099,7 +1108,8 @@ module.directive('richTextEditor', function($compile){
 						var child = childList.getItem(i);
 						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
 					}
-					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link + '">' + appendText + '</a>'));
+					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link.link + '" target="' +
+						scope.selected.link.target + '" tooltip="' + scope.selected.link.tooltip + '">' + appendText + '</a>'));
 					scope.chooseLink = false;
 				}
 
@@ -1256,6 +1266,20 @@ module.directive('htmlEditor', function($compile){
 					scope.$apply('chooseLink');
 				});
 
+				function updateContent(){
+					var content = editor.html();
+					if(content.indexOf(';base64,') !== -1){
+						scope.notify.error('Une image est corrompue')
+					}
+					editor.find('img').each(function(index, item){
+						if($(item).attr('src').indexOf(';base64,') !== -1){
+							$(item).remove();
+						}
+					})
+
+					scope.ngModel = editor.html();
+				}
+
 				scope.setLink = function(){
 					var bookmarks = contextEditor.getSelection().createBookmarks(),
 						range = contextEditor.getSelection().getRanges()[0],
@@ -1269,8 +1293,11 @@ module.directive('htmlEditor', function($compile){
 						var child = childList.getItem(i);
 						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
 					}
-					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link + '">' + appendText + '</a>'));
+					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link.link + '" target="' +
+						scope.selected.link.target + '" tooltip="' + scope.selected.link.tooltip + '">' + appendText + '</a>'));
 					scope.chooseLink = false;
+
+					updateContent();
 				}
 
 
@@ -1294,17 +1321,7 @@ module.directive('htmlEditor', function($compile){
 							contextEditor.insertElement(sound);
 						}
 
-						var content = editor.html();
-						if(content.indexOf(';base64,') !== -1){
-							scope.notify.error('Une image est corrompue')
-						}
-						editor.find('img').each(function(index, item){
-							if($(item).attr('src').indexOf(';base64,') !== -1){
-								$(item).remove();
-							}
-						})
-
-						scope.ngModel = editor.html();
+						updateContent();
 					});
 					scope.selectFiles = false;
 				};
@@ -1392,7 +1409,7 @@ module.directive('tooltip', function($compile){
 		restrict: 'A',
 		link: function(scope, element, attributes){
 			element.on('mouseover', function(){
-				if(!attributes.tooltip){
+				if(!attributes.tooltip || attributes.tooltip === 'undefined'){
 					return;
 				}
 				var tip = $('<div />')
