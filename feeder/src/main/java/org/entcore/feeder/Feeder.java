@@ -53,7 +53,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "BE1D" :
 				feed = new Be1dFeeder(vertx, container.config().getString("import-files"),
-						container.config().getString("uai-separator","|"));
+						container.config().getString("uai-separator","_"));
 				break;
 			default: throw new IllegalArgumentException("Invalid importer");
 		}

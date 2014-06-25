@@ -39,6 +39,14 @@ public class Be1dFeeder implements Feed {
 			"#skip#", "mobile" };
 	private static final String [] personnelHeader = new String[] { "title", "surname", "lastName", "firstName",
 			"address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
+	public static final String [] studentUpdateHeader = new String[] { "externalId", "lastName", "surname", "firstName",
+			"birthDate", "gender", "address", "zipCode", "city", "country", "#skip#", "#skip#",
+			"#skip#", "#skip#", "sector", "level", "classes", "#break#" };
+	public static final String [] relativeUpdateHeader = new String[] { "externalId", "title", "surname", "lastName",
+			"firstName", "address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
+			"#skip#", "mobile" };
+	private static final String [] personnelUpdateHeader = new String[] { "externalId", "title", "surname", "lastName",
+			"firstName", "address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private final Vertx vertx;
 	private final String path;
@@ -136,20 +144,17 @@ public class Be1dFeeder implements Feed {
 	private void importSchool(String p, final Handler<Message<JsonObject>> handler) {
 		try {
 			JsonObject structure = getStructure(p);
-			if (importer.getStructure(structure.getString("externalId")) != null) {
-				log.warn("Directory " + p + " is ignored.");
-				handler.handle(new ResultMessage());
-				return;
-			}
+			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
 			Structure s = importer.createOrUpdateStructure(structure);
 			if (s == null) {
 				log.error("Structure error with directory " + p + ".");
 				handler.handle(new ResultMessage().error("Structure error with directory " + p + "."));
 				return;
 			}
-			importStudent(s, p);
-			importRelative(s, p);
-			importPersonnel(s, p);
+			final long seed = System.currentTimeMillis();
+			importStudent(s, p, isUpdate, seed);
+			importRelative(s, p, isUpdate, seed);
+			importPersonnel(s, p, isUpdate, seed);
 			importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
 			importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
 			if (isUpdate) {
@@ -168,7 +173,8 @@ public class Be1dFeeder implements Feed {
 		}
 	}
 
-	private void importPersonnel(final Structure structure, String p) throws FileNotFoundException {
+	private void importPersonnel(final Structure structure, String p, final boolean isUpdate, final long seed)
+			throws FileNotFoundException {
 		String charset = "ISO-8859-1"; //detectCharset(csv);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
@@ -176,6 +182,7 @@ public class Be1dFeeder implements Feed {
 				.skipLines(1)
 				.charset(charset)
 				.create();
+		final String [] header = isUpdate ? personnelUpdateHeader : personnelHeader;
 
 		csvParser.read(p + File.separator + fileNames[1], new CSVReadProc() {
 
@@ -183,10 +190,10 @@ public class Be1dFeeder implements Feed {
 			public void procRow(int rowIdx, String... values) {
 				int i = 0;
 				JsonObject props = new JsonObject();
-				while (i < personnelHeader.length) {
-					if (!"#skip#".equals(personnelHeader[i])) {
+				while (i < header.length) {
+					if (!"#skip#".equals(header[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
-							props.putString(personnelHeader[i], values[i].trim());
+							props.putString(header[i], values[i].trim());
 						}
 					}
 					i++;
@@ -210,54 +217,16 @@ public class Be1dFeeder implements Feed {
 					cs[j - i][0] = structure.getExternalId();
 					cs[j - i][1] = eId;
 				}
-				generateUserExternalId(props, String.valueOf(rowIdx), structure);
+				String externalId = props.getString("externalId");
+				if (externalId == null || externalId.trim().isEmpty()) {
+					generateUserExternalId(props, String.valueOf(rowIdx), structure, seed);
+				}
 				importer.createOrUpdatePersonnel(props, TEACHER_PROFILE_EXTERNAL_ID, cs, null, true, true);
 			}
 		});
 	}
 
-	private void importRelative(final Structure structure, String p) throws FileNotFoundException {
-		String charset = "ISO-8859-1"; //detectCharset(csv);
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(1)
-				.charset(charset)
-				.create();
-		//csv = csv.split("(;;;;;;;;;;;;;;;;;;;;|\n\n|\r\n\r\n)")[0];
-
-		csvParser.read(p + File.separator + fileNames[2], new CSVReadProc() {
-
-			@Override
-			public void procRow(int rowIdx, String... values) {
-				int i = 0;
-				JsonObject props = new JsonObject();
-				while (i < relativeHeader.length) {
-					if (!"#skip#".equals(relativeHeader[i])) {
-						if (values[i] != null && !values[i].trim().isEmpty()) {
-							props.putString(relativeHeader[i], values[i].trim());
-						}
-					}
-					i++;
-				}
-				JsonArray linkStudents = new JsonArray();
-				for (i = 13; i < values.length; i += 4) {
-					String mapping = structure.getExternalId()+values[i].trim()+
-							values[i+1].trim()+values[i+2].trim()+values[i+3].trim();
-					if (mapping.trim().isEmpty()) continue;
-					try {
-						linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-					} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
-						log.error(e.getMessage(), e);
-					}
-				}
-				generateUserExternalId(props, String.valueOf(rowIdx), structure);
-				importer.createOrUpdateUser(props, linkStudents);
-			}
-		});
-	}
-
-	private void importStudent(final Structure structure, String p)
+	private void importRelative(final Structure structure, String p, final boolean isUpdate, final long seed)
 			throws FileNotFoundException {
 		String charset = "ISO-8859-1"; //detectCharset(csv);
 		CSV csvParser = CSV
@@ -266,24 +235,78 @@ public class Be1dFeeder implements Feed {
 				.skipLines(1)
 				.charset(charset)
 				.create();
+		//csv = csv.split("(;;;;;;;;;;;;;;;;;;;;|\n\n|\r\n\r\n)")[0];
+		final String [] header = isUpdate ? relativeUpdateHeader : relativeHeader;
+		final int startClassesMapping = isUpdate ? 14 : 13;
+
+		csvParser.read(p + File.separator + fileNames[2], new CSVReadProc() {
+
+			@Override
+			public void procRow(int rowIdx, String... values) {
+				int i = 0;
+				JsonObject props = new JsonObject();
+				while (i < header.length) {
+					if (!"#skip#".equals(header[i])) {
+						if (values[i] != null && !values[i].trim().isEmpty()) {
+							props.putString(header[i], values[i].trim());
+						}
+					}
+					i++;
+				}
+				JsonArray linkStudents = new JsonArray();
+				for (i = startClassesMapping; i < values.length; i += 4) {
+					if (isUpdate && !values[i].trim().isEmpty() && values[i+1].trim().isEmpty() &&
+							values[i+2].trim().isEmpty() && values[i+3].trim().isEmpty()) {
+						linkStudents.add(values[i].trim());
+					} else {
+						String mapping = structure.getExternalId()+values[i].trim()+
+								values[i+1].trim()+values[i+2].trim()+values[i+3].trim()+seed;
+						if (mapping.trim().isEmpty()) continue;
+						try {
+							linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
+						} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+							log.error(e.getMessage(), e);
+						}
+					}
+				}
+				String externalId = props.getString("externalId");
+				if (externalId == null || externalId.trim().isEmpty()) {
+					generateUserExternalId(props, String.valueOf(rowIdx), structure, seed);
+				}
+				importer.createOrUpdateUser(props, linkStudents);
+			}
+		});
+	}
+
+	private void importStudent(final Structure structure, String p, final boolean isUpdate, final long seed)
+			throws FileNotFoundException {
+		String charset = "ISO-8859-1"; //detectCharset(csv);
+		CSV csvParser = CSV
+				.ignoreLeadingWhiteSpace()
+				.separator(';')
+				.skipLines(1)
+				.charset(charset)
+				.create();
+		final String [] header = isUpdate ? studentUpdateHeader : studentHeader;
+
 		csvParser.read(p + File.separator + fileNames[0], new CSVReadProc() {
 
 			@Override
 			public void procRow(int rowIdx, String... values) {
 				int i = 0;
 				JsonObject props = new JsonObject();
-				while (i < values.length && !"#break#".equals(studentHeader[i])) {
-					if ("birthDate".equals(studentHeader[i]) && values[i] != null) {
+				while (i < values.length && !"#break#".equals(header[i])) {
+					if ("birthDate".equals(header[i]) && values[i] != null) {
 						Matcher m;
 						if (values[i] != null &&
 								(m = frenchDatePatter.matcher(values[i])).find()) {
-							props.putString(studentHeader[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+							props.putString(header[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
 						} else {
-							props.putString(studentHeader[i], values[i].trim());
+							props.putString(header[i], values[i].trim());
 						}
-					} else if (!"#skip#".equals(studentHeader[i])) {
+					} else if (!"#skip#".equals(header[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
-							props.putString(studentHeader[i], values[i].trim());
+							props.putString(header[i], values[i].trim());
 						}
 					}
 					i++;
@@ -303,7 +326,10 @@ public class Be1dFeeder implements Feed {
 						log.error(e.getMessage(), e);
 					}
 				}
-				generateUserExternalId(props, c, structure);
+				String externalId = props.getString("externalId");
+				if (externalId == null || externalId.trim().isEmpty()) {
+					generateUserExternalId(props, c, structure, seed);
+				}
 				importer.createOrUpdateStudent(props, STUDENT_PROFILE_EXTERNAL_ID, null, null, cs,
 						null, null, true, true);
 			}
@@ -311,11 +337,11 @@ public class Be1dFeeder implements Feed {
 		});
 	}
 
-	private void generateUserExternalId(JsonObject props, String c, Structure structure) {
+	private void generateUserExternalId(JsonObject props, String c, Structure structure, long seed) {
 		String mapping = structure.getExternalId()+props.getString("surname", "")+
 				props.getString("lastName", "")+props.getString("firstName", "")+
 				props.getString("email","")+props.getString("title","")+
-				props.getString("homePhone","")+props.getString("mobile","")+c;
+				props.getString("homePhone","")+props.getString("mobile","")+c+seed;
 		try {
 			props.putString("externalId", Hash.sha1(mapping.getBytes("UTF-8")));
 		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
@@ -327,13 +353,17 @@ public class Be1dFeeder implements Feed {
 		String dirName = p.substring(p.lastIndexOf(File.separatorChar) + 1);
 		String [] n = dirName.split(separator);
 		JsonObject structure = new JsonObject();
-		if (n.length == 2) {
-			structure.putString("name", n[0]);
-			structure.putString("UAI", n[1]);
+		int idx = n[0].indexOf("@");
+		if (idx >= 0) {
+			structure.putString("name", n[0].substring(0, idx));
+			structure.putString("externalId", n[0].substring(idx + 1));
 		} else {
-			structure.putString("name", dirName);
+			structure.putString("name", n[0]);
+			structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
 		}
-		structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
+		if (n.length == 2) {
+			structure.putString("UAI", n[1]);
+		}
 		return structure;
 	}
 
