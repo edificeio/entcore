@@ -89,7 +89,7 @@ Behaviours.register('workspace', {
 					}),
 					function(doc){
 						if(doc.metadata['content-type'].indexOf('image') !== -1){
-							doc.icon = '/workspace/document/' + doc._id;
+							doc.icon = '/workspace/document/' + doc._id + '?thumbnail=120x120';
 						}
 						else{
 							doc.icon = '/img/icons/unknown-large.png';

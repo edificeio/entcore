@@ -2351,6 +2351,22 @@ em.high-importance {
   width: 276px;
   paddng: 10px;
 }
+.linker .found-resources {
+  position: relative;
+  top: 9px;
+  height: 285px;
+  width: 636px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.linker .found-resources .icons-view {
+  overflow: auto;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
 html,
 body {
   margin: 0;
@@ -4226,7 +4242,7 @@ i.folder-large {
   border-bottom: 0;
 }
 .accordions .accordion.opened .toggle {
-  height: 300px;
+  height: 350px;
   overflow: hidden;
   border: 1px solid #555;
   border-top: 0;

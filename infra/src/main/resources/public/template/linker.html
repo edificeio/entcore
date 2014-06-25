@@ -1,10 +1,10 @@
-<div class="accordions">
+<div class="accordions linker">
 	<div class="accordion" ng-class="{ opened: externalLink }">
 		<h2 ng-click="externalLink = true">Adresse d'un site internet</h2>
 		<div class="twelve cell toggle">
 			<div class="content">
-				<input type="text" placeholder="http://adresse-du-site.com" ng-model="externalLink" />
-				<button ng-click="applyLink(externalLink)">OK</button>
+				<input type="text" placeholder="http://adresse-du-site.com" ng-model="externalLinkContent" />
+				<button ng-click="applyLink(externalLinkContent)">OK</button>
 			</div>
 		</div>
 	</div>
@@ -12,26 +12,27 @@
 		<h2 ng-click="externalLink = false">Rechercher dans l'ENT</h2>
 		<div class="twelve cell toggle">
 			<div class="content">
-				<input type="text" placeholder="Rechercher" ng-model="searchText" />
-				<select ng-model="application" ng-options="app.displayName for app in apps"></select>
-				<div class="row">
-					<button ng-click="searchApplication()">Rechercher</button>
-				</div>
-				<div class="row">
-					<div class="height-six twelve cell">
-						<div class="absolute icons-view" style="overflow: auto">
+				<article class="row">
+					<input type="text" placeholder="Rechercher" ng-model="searchText" class="four cell" />
+					<select ng-model="application" ng-options="app.displayName for app in apps" class="four cell"></select>
+					<button ng-click="searchApplication()" class="right-magnet">Rechercher</button>
+				</article>
+				<article class="row">
+					<div class="found-resources">
+						<div class="icons-view">
 							<div class="element" ng-repeat="resource in resources" ng-click="applyLink(resource.path)">
 								<div class="img container">
 									<img skin-src="[[resource.icon]]" />
 								</div>
 								<legend>
 									<a>[[resource.title]]</a>
+									<a><strong class="small-text">[[resource.ownerName]]</strong></a>
 								</legend>
 							</div>
 						</div>
 					</div>
 
-				</div>
+				</article>
 			</div>
 		</div>
 	</div>

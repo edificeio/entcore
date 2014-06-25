@@ -361,7 +361,7 @@ module.directive('linker', function($compile){
 						return app.address.indexOf(match) !== -1
 					});
 				});
-				$scope.application = scope.apps[0];
+				scope.application = scope.apps[0];
 				scope.$apply('apps');
 			});
 
