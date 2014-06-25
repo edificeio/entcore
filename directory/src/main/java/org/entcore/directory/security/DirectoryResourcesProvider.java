@@ -47,6 +47,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(UserController.class.getName().length() + 1);
 			switch (method) {
+				case "delete" :
+					isTeacherOf(request, user, handler);
+					break;
 				case "updateAvatar" :
 				case "get" :
 				case "getUserBook" :
@@ -71,6 +74,15 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		// me
 		if (userId.equals(user.getUserId())) {
 			handler.handle(true);
+			return;
+		}
+		isTeacherOf(request, user, handler);
+	}
+
+	private void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+		String userId = request.params().get("userId");
+		if (userId == null || userId.trim().isEmpty() || userId.equals(user.getUserId())) {
+			handler.handle(false);
 			return;
 		}
 		String query =
