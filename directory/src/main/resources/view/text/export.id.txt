@@ -1,0 +1,4 @@
+"Id";"Type";"Nom";"Prénom";"Login";"Code d'activation"
+{{#list}}
+"{{externalId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{code}}"
+{{/list}}

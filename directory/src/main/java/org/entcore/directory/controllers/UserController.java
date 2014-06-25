@@ -187,4 +187,40 @@ public class UserController extends Controller {
 		userService.delete(userId, defaultResponseHandler(request));
 	}
 
+	@SecuredAction("user.export")
+	public void export(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		final String classId = request.params().get("classId");
+		JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
+		Handler<Either<String, JsonArray>> handler;
+		if ("csv".equals(request.params().get("format"))) {
+			handler = new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> r) {
+					if (r.isRight()) {
+						processTemplate(request, "text/export.id.txt",
+								new JsonObject().putArray("list", r.right().getValue()), new Handler<String>() {
+							@Override
+							public void handle(final String export) {
+								if (export != null) {
+									request.response().putHeader("Content-Type", "application/csv");
+									request.response().putHeader("Content-Disposition",
+											"attachment; filename=export.csv");
+									request.response().end(export);
+								} else {
+									renderError(request);
+								}
+							}
+						});
+					} else {
+						renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+					}
+				}
+			};
+		} else {
+			handler = arrayResponseHandler(request);
+		}
+		userService.list(structureId, classId, types, handler);
+	}
+
 }

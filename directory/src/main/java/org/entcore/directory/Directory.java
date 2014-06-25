@@ -110,7 +110,8 @@ public class Directory extends Server {
 				.get("/userbook/:userId", "getUserBook")
 				.put("/userbook/:userId", "updateUserBook")
 				.put("/avatar/:userId", "updateAvatar")
-				.get("/list/isolated", "listIsolated");
+				.get("/list/isolated", "listIsolated")
+				.get("/export/users", "export");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
