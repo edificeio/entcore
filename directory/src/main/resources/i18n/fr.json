@@ -122,7 +122,7 @@
 	"classAdmin.importFile": "importez un fichier d'utilisateurs",
 	"classAdmin.exportFile": "Exporter les codes d'activation",
 	"classAdmin.importType": "Le fichier CSV doit être un export BE1D.",
-	"classAdmin.fileHelp": "Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice).",
+	"classAdmin.fileHelp": "Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice). Si ce n'est pas possible, vous pouvez récupérer et compléter les modèles proposés dans la rubrique Aide et Support du <u><a href=\"http://one1d.fr/aide-support/aide-support/parametrage-de-la-classe/creer-des-utilisateurs-dans-la-classe/\" target=\"_blank\">site ONE</a></u>. Chaque tableau doit au moins contenir le nom, le prénom, la date de naissance et la classe des utilisateurs concernés.",
 	"classAdmin.import": "Importer",
 	"directory.firstName": "Prénom",
 	"directory.lastName": "Nom",
