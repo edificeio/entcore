@@ -7,6 +7,7 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.ActionType;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -18,8 +19,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -61,6 +60,9 @@ public class HttpActionFilter implements Filter {
 						request.resume();
 						JsonObject session = new JsonObject(body.toString());
 						if (response.statusCode() == 200) {
+							if (request instanceof SecureHttpServerRequest) {
+								((SecureHttpServerRequest) request).setSession(session);
+							}
 							userIsAuthorized(request, session, handler);
 						} else {
 							handler.handle(false);
