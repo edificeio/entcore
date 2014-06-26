@@ -349,14 +349,58 @@ module.directive('linker', function($compile){
 	return {
 		restrict: 'E',
 		scope: {
-			ngModel: '=',
-			ngChange: '&'
+			chooseLink: '=ngShow',
+			editor: '=',
+			onChange: '&'
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
 		link: function(scope, element, attributes){
 			scope.me = model.me;
 			scope.search = { text: '', application: {} };
-			scope.ngModel = {};
+			scope.params = {};
+
+
+			var linkNode = $('<a />');
+			var appendText = '';
+			scope.$watch('chooseLink', function(newVal){
+				if(newVal){
+					var contextEditor = scope.editor;
+					var bookmarks = contextEditor.getSelection().createBookmarks(),
+						range = contextEditor.getSelection().getRanges()[0],
+						fragment = range.clone().cloneContents();
+					contextEditor.getSelection().selectBookmarks(bookmarks);
+
+					var node = $(range.startContainer.getParent().$);
+					if(node[0].nodeName !== 'A'){
+						node = $(range.startContainer.$)
+						if(node[0].nodeName !== 'A'){
+							scope.newNode = true;
+							return;
+						}
+
+					}
+
+					scope.params.link = node.attr('href');
+					scope.externalLink = !node.attr('data-id');
+					scope.params.appPrefix = node.attr('data-app-prefix');
+					scope.params.id = node.attr('data-id');
+					scope.params.blank = node.attr('target') === '_blank';
+					scope.params.target = node.attr('target');
+					scope.params.tooltip = node.attr('tooltip');
+
+					scope.search.application = _.find(scope.apps, function(app){
+						return app.address.indexOf(node.attr('data-app-prefix')) !== -1;
+					});
+
+					scope.search.text = scope.params.id;
+					scope.searchApplication();
+				}
+				else{
+					scope.params = {};
+					scope.search.text = '';
+				}
+			});
+
 			http().get('/resources-applications').done(function(apps){
 				scope.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
@@ -364,14 +408,18 @@ module.directive('linker', function($compile){
 					});
 				});
 				scope.search.application = scope.apps[0];
+				var split = scope.search.application.address.split('/');
+				scope.params.appPrefix = split[split.length - 1];
 				scope.$apply('apps');
 			});
 
 			scope.searchApplication = function(){
 				var split = scope.search.application.address.split('/');
 				var prefix = split[split.length - 1];
+				scope.params.appPrefix = prefix;
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
 					appBehaviour.search(scope.search.text, function(res){
+						scope.search.text = '';
 						scope.resources = res;
 						scope.$apply('resources');
 					});
@@ -379,17 +427,68 @@ module.directive('linker', function($compile){
 			};
 
 			scope.applyLink = function(link){
-				scope.ngModel.link = link;
-				scope.$apply('ngModel');
+				scope.params.link = link;
 			};
 
+			scope.applyResource = function(resource){
+				scope.params.link = resource.path;
+				scope.params.id = resource.id;
+			}
+
 			scope.saveLink = function(){
-				if(scope.ngModel.blank){
-					scope.ngModel.target = '_blank';
+				if(scope.params.blank){
+					scope.params.target = '_blank';
 				}
-				scope.$apply('ngModel');
-				scope.ngChange();
+
+				var contextEditor = scope.editor;
+				var bookmarks = contextEditor.getSelection().createBookmarks(),
+					range = contextEditor.getSelection().getRanges()[0],
+					fragment = range.clone().cloneContents();
+				contextEditor.getSelection().selectBookmarks(bookmarks);
+
+				var linkNode = scope.editor.document.createElement('a');
+				if(scope.params.link){
+					linkNode.setAttribute('href', scope.params.link);
+
+					if(scope.params.appPrefix){
+						linkNode.setAttribute('data-app-prefix', scope.params.appPrefix);
+					}
+					if(scope.params.id){
+						linkNode.setAttribute('data-id', scope.params.id);
+					}
+					if(scope.params.blank){
+						scope.params.target = '_blank';
+						linkNode.setAttribute('target', scope.params.target);
+					}
+					if(scope.params.tooltip){
+						linkNode.setAttribute('tooltip', scope.params.tooltip);
+					}
+				}
+
+				var appendText = "",
+					childList = fragment.getChildren(),
+					childCount = childList.count();
+				for(var i = 0; i < childCount; i++){
+					var child = childList.getItem(i);
+					if(child.$.nodeName === 'A' || !child.getOuterHtml){
+						appendText += child.getText();
+					}
+					else{
+						appendText += child.getOuterHtml();
+					}
+				}
+
+
+				linkNode.appendHtml(appendText);
+				scope.editor.insertElement(linkNode);
+
+				scope.chooseLink = false;
+				scope.onChange();
 				scope.$apply();
+			}
+
+			scope.cancel = function(){
+				scope.chooseLink = false;
 			}
 		}
 	}
@@ -1211,9 +1310,7 @@ module.directive('htmlEditor', function($compile){
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div>' +
-			'<lightbox show="chooseLink" on-close="chooseLink = false;">' +
-			'<linker ng-model="selected.link" ng-change="setLink()"></linker>' +
-			'</lightbox>' +
+			'<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<lightbox show="selectFiles" on-close="selectFiles = false;">' +
 			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
 			'</media-library></lightbox></div>',
@@ -1234,6 +1331,7 @@ module.directive('htmlEditor', function($compile){
 				CKEDITOR.fileUploadPath = scope.$eval(attributes.fileUploadPath);
 				var editor = element.find('[contenteditable=true]');
 				var contextEditor = CKEDITOR.inline(editor[0]);
+				scope.contextEditor = contextEditor;
 
 				createCKEditorInstance(editor, scope, $compile);
 
@@ -1266,7 +1364,7 @@ module.directive('htmlEditor', function($compile){
 					scope.$apply('chooseLink');
 				});
 
-				function updateContent(){
+				scope.updateContent = function(){
 					var content = editor.html();
 					if(content.indexOf(';base64,') !== -1){
 						scope.notify.error('Une image est corrompue')
@@ -1279,27 +1377,6 @@ module.directive('htmlEditor', function($compile){
 
 					scope.ngModel = editor.html();
 				}
-
-				scope.setLink = function(){
-					var bookmarks = contextEditor.getSelection().createBookmarks(),
-						range = contextEditor.getSelection().getRanges()[0],
-						fragment = range.clone().cloneContents();
-					contextEditor.getSelection().selectBookmarks(bookmarks);
-
-					var appendText = "",
-						childList = fragment.getChildren(),
-						childCount = childList.count();
-					for(var i = 0; i < childCount; i++){
-						var child = childList.getItem(i);
-						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
-					}
-					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link.link + '" target="' +
-						scope.selected.link.target + '" tooltip="' + scope.selected.link.tooltip + '">' + appendText + '</a>'));
-					scope.chooseLink = false;
-
-					updateContent();
-				}
-
 
 				scope.addContent = function(){
 					scope.selected.files.forEach(function(file){
@@ -1321,7 +1398,7 @@ module.directive('htmlEditor', function($compile){
 							contextEditor.insertElement(sound);
 						}
 
-						updateContent();
+						scope.updateContent();
 					});
 					scope.selectFiles = false;
 				};

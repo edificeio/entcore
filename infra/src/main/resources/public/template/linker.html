@@ -1,61 +1,69 @@
-<div class="tabs linker">
-	<header ng-click="externalLink = false" ng-class="{ selected: !externalLink }">Rechercher dans l'ENT</header>
-	<header ng-click="externalLink = true" ng-class="{ selected: externalLink }">Adresse d'un site internet</header>
+<lightbox show="chooseLink" on-close="chooseLink = false;">
+	<div class="tabs linker">
+		<header ng-click="externalLink = false" ng-class="{ selected: !externalLink }">Rechercher dans l'ENT</header>
+		<header ng-click="externalLink = true" ng-class="{ selected: externalLink }">Adresse d'un site internet</header>
 
-	<section ng-if="externalLink">
-			<div class="row">
-				<label class="four cell">Adresse du site</label>
-				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="externalLinkContent" />
-			</div>
-			<div class="row">
-				<label class="four cell">Bulle d'information</label>
-				<input class="four cell" type="text" placeholder="Bulle d'aide" />
-			</div>
-			<div class="row">
-				<div class="four cell">&nbsp;</div>
-				<input type="checkbox" />Ouvrir le lien dans un nouvel onglet
-			</div>
-	</section>
-	<section ng-if="!externalLink">
+		<section ng-if="externalLink">
+				<div class="row">
+					<label class="four cell">Adresse du site</label>
+					<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="params.link" />
+				</div>
+				<div class="row">
+					<label class="four cell">Bulle d'information</label>
+					<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="params.tooltip" />
+				</div>
+				<div class="row">
+					<div class="four cell">&nbsp;</div>
+					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+				</div>
+		</section>
+		<section ng-if="!externalLink">
 
-		<article class="row">
-			<div class="row">
-				<label class="four cell">Bulle d'information</label>
-				<input class="four cell" type="text" ng-model="ngModel.tooltip" placeholder="Bulle d'aide" />
-			</div>
-			<div class="row">
-				<div class="four cell">&nbsp;</div>
-				<input type="checkbox" ng-model="ngModel.blank" />Ouvrir le lien dans un nouvel onglet
-			</div>
 			<article class="row">
-				<div class="twelve cell vertical-spacing">
-					<input type="text" placeholder="Rechercher" ng-model="search.text" class="four cell" />
-					<select ng-model="search.application" ng-options="app.displayName for app in apps" class="four cell"></select>
-					<input type="button" ng-click="searchApplication()" class="right-magnet" value="Rechercher" />
+				<div class="row">
+					<label class="four cell">Bulle d'information</label>
+					<input class="four cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
+				</div>
+				<div class="row">
+					<div class="four cell">&nbsp;</div>
+					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+				</div>
+				<article class="row">
+					<div class="twelve cell vertical-spacing">
+						<input type="text" placeholder="Rechercher" ng-model="search.text" class="four cell" />
+						<select ng-model="search.application" ng-options="app.displayName for app in apps" class="four cell"></select>
+						<input type="button" ng-click="searchApplication()" class="right-magnet" value="Rechercher" />
+					</div>
+
+				</article>
+				<div class="found-resources">
+					<div ng-if="!resources.length" class="reduce-block-six">
+						<div class="info">
+							Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
+							à vos lecteurs.
+						</div>
+					</div>
+					<div class="icons-view">
+						<div class="element" ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
+							<div class="img container">
+								<img skin-src="[[resource.icon]]" />
+							</div>
+							<legend>
+								<a>[[resource.title]]</a>
+								<a><strong class="small-text">[[resource.ownerName]]</strong></a>
+							</legend>
+						</div>
+					</div>
 				</div>
 
 			</article>
-			<div class="found-resources">
-				<div class="icons-view">
-					<div class="element" ng-repeat="resource in resources" ng-click="applyLink(resource.path)" ng-class="{ selected: resource.path === ngModel.link }">
-						<div class="img container">
-							<img skin-src="[[resource.icon]]" />
-						</div>
-						<legend>
-							<a>[[resource.title]]</a>
-							<a><strong class="small-text">[[resource.ownerName]]</strong></a>
-						</legend>
-					</div>
-				</div>
-			</div>
-
-		</article>
-	</section>
-</div>
-
-<div class="row">
-	<div class="twelve cell reduce-block-four">
-		<input type="button" value="Créer un lien" ng-click="saveLink()" ng-disabled="!ngModel.link" class="right-magnet" />
-		<input type="button" class="cancel right-magnet" value="Annuler" />
+		</section>
 	</div>
-</div>
+
+	<div class="row">
+		<div class="twelve cell reduce-block-four">
+			<input type="button" value="Créer un lien" ng-click="saveLink()" ng-disabled="!params.link" class="right-magnet" />
+			<input type="button" class="cancel right-magnet" value="Annuler" ng-click="cancel()" />
+		</div>
+	</div>
+</lightbox>

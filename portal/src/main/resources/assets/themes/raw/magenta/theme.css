@@ -2641,6 +2641,9 @@ html.print body section {
   background: #555;
   border-color: transparent;
 }
+.lightbox-view .icons-view .element legend {
+  text-shadow: none;
+}
 .lightbox-view nav.vertical {
   padding-right: 10px;
 }
@@ -2779,6 +2782,9 @@ html.app body {
 .lightbox-window .icons-view .element .img.container {
   background: #555;
   border-color: transparent;
+}
+.lightbox-window .icons-view .element legend {
+  text-shadow: none;
 }
 .lightbox-window nav.vertical {
   padding-right: 10px;
@@ -4239,6 +4245,9 @@ i.folder-large {
 .lightbox-view .icons-view .element .img.container {
   background: #555;
   border-color: transparent;
+}
+.lightbox-view .icons-view .element legend {
+  text-shadow: none;
 }
 .lightbox-view nav.vertical {
   padding-right: 10px;

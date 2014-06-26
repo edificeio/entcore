@@ -85,7 +85,7 @@ Behaviours.register('workspace', {
 			callback(
 				_.map(
 					_.filter(documents, function(doc) {
-						return lang.removeAccents(doc.name.toLowerCase()).indexOf(lang.removeAccents(searchText).toLowerCase()) !== -1;
+						return lang.removeAccents(doc.name.toLowerCase()).indexOf(lang.removeAccents(searchText).toLowerCase()) !== -1 || doc._id === searchText;
 					}),
 					function(doc){
 						if(doc.metadata['content-type'].indexOf('image') !== -1){
@@ -99,7 +99,8 @@ Behaviours.register('workspace', {
 							ownerName: doc.ownerName,
 							owner: doc.owner,
 							icon: doc.icon,
-							path: '/workspace/document/' + doc._id
+							path: '/workspace/document/' + doc._id,
+							id: doc._id
 						};
 					}
 				)
