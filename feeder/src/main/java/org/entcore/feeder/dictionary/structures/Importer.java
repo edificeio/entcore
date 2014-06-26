@@ -493,7 +493,7 @@ public class Importer {
 									"(u:User) " +
 									"USING INDEX s:Structure(externalId) " +
 									"USING INDEX u:User(externalId) " +
-									"WHERE s.externalId : {structure} AND g.externalId = {group} " +
+									"WHERE s.externalId = {structure} AND g.externalId = {group} " +
 									"AND u.externalId = {userExternalId} " +
 									"CREATE UNIQUE u-[:IN]->g";
 							JsonObject p = new JsonObject()
