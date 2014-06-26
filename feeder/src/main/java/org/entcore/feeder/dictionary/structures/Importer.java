@@ -9,7 +9,6 @@ import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -237,7 +236,7 @@ public class Importer {
 				String query2 =
 						"START u=node:node_auto_index(externalId={externalId}), " +
 						"s=node:node_auto_index({studentExternalIds}) " +
-						"CREATE u<-[:RELATED]-s ";
+						"MERGE u<-[:RELATED]-s ";
 				JsonObject p = new JsonObject()
 						.putString("externalId", object.getString("externalId"))
 						.putString("studentExternalIds",
@@ -340,8 +339,9 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId = {structureAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"CREATE u-[:ADMINISTRATIVE_ATTACHMENT]->s, " +
-								"u-[:IN]->g";
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+								"WITH u, g " +
+								"MERGE u-[:IN]->g";
 						p.putString("structureAdmin", (String) structures.get(0))
 								.putString("profileExternalId", profileExternalId);
 					} else {
@@ -352,8 +352,9 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"CREATE u-[:ADMINISTRATIVE_ATTACHMENT]->s, " +
-								"u-[:IN]->g";
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+								"WITH u, g " +
+								"MERGE u-[:IN]->g";
 						p.putArray("structuresAdmin", structures)
 								.putString("profileExternalId", profileExternalId);
 					}
@@ -441,8 +442,9 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId = {structureAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"CREATE u-[:ADMINISTRATIVE_ATTACHMENT]->s, " +
-								"u-[:IN]->g";
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+								"WITH u, g " +
+								"MERGE u-[:IN]->g";
 						p.putString("structureAdmin", (String) structures.get(0))
 								.putString("profileExternalId", profileExternalId);
 					} else {
@@ -453,8 +455,9 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"CREATE u-[:ADMINISTRATIVE_ATTACHMENT]->s, " +
-								"u-[:IN]->g";
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
+								"WITH u, g " +
+								"MERGE u-[:IN]->g";
 						p.putArray("structuresAdmin", structures)
 								.putString("profileExternalId", profileExternalId);
 					}
@@ -547,7 +550,7 @@ public class Importer {
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Structure)<-[:DEPENDS]-(rcg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
-				"CREATE u-[:IN]->rcg";
+				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 	}
 
@@ -558,7 +561,7 @@ public class Importer {
 				"-[:DEPENDS]->(c:Class)<-[:DEPENDS]-(rcg:ProfileGroup)" +
 				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
-				"CREATE u-[:IN]->rcg";
+				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 	}
 
