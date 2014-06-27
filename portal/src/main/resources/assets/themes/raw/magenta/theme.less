@@ -102,3 +102,39 @@ table{
 		border-color: @magenta;
 	}
 }
+
+.selectable-list{
+	li{
+		border: none;
+		.border-radius(0);
+		border-left: 10px solid #ccc;
+		background: transparent;
+		color: #999;
+	}
+
+	li.selected{
+		border: none;
+		.border-radius(0);
+		background: #444;
+		border-left: 10px solid @magenta;
+		color: #aaa;
+	}
+}
+
+.side-tabs{
+	ul{
+		li{
+			border-color: @magenta;
+		}
+		li.selected{
+			border-color: @magenta;
+		}
+		li.selected:first-child{
+			border-top: 1px solid @magenta;
+		}
+	}
+}
+
+.side-tabs-content{
+	border-color: @magenta;
+}

@@ -24,7 +24,7 @@
 	"app.registry.application.scope" : "Scope",
 	"tooltip.displayName": "La clef utilisée dans les fichiers de traduction pour le nom de l'application",
 	"tooltip.icon": "Icône à affichier dans la page des applications, sous la forme &lt;i role=\"icone\"&gt;",
-	"tooltip.password": "Mot de passe permettant à l'application de communiquer avec ent-core",
+	"tooltip.password": "Code secret OAuth permettant de communiquer avec ENT Core",
 	"tooltip.url": "URL de l'application",
 	"tooltip.target": "Cible du lien dans la page des application, sous la forme &lt;a target=\"cible\"&gt;",
 	"tooltip.transferSession": "Transmettre la session de l'utilisateur courant à l'application",

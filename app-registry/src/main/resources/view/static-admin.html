@@ -32,10 +32,11 @@
 					<h2>Prévisualiser</h2>
 					<iframe ng-src="[[previewPath(application)]]"></iframe>
 				</div>
-			<div class="row">
-				<label class="cell"><span tooltip="tooltip.name">Nom</span></label>
-				<input type="text" ng-model="application.name" class="cell" />
-			</div>
+
+				<div class="row">
+					<label class="cell"><span tooltip="tooltip.name">Nom</span></label>
+					<input type="text" ng-model="application.name" class="cell" />
+				</div>
 				<div class="row">
 					<label class="cell"><span tooltip="tooltip.displayName">Clef i18n</span></label>
 					<input type="text" ng-model="application.displayName" complete-change="updatePath()" class="cell" />
@@ -45,12 +46,12 @@
 					<input type="text" ng-model="application.icon" complete-change="updatePath()" class="cell" />
 				</div>
 				<div class="row" ng-if="application.external">
-					<label class="cell"><span tooltip="tooltip.password">Mot de passe</span></label>
-					<input type="text" ng-model="application.password" class="cell" />
+					<label class="cell"><span tooltip="tooltip.password">Code secret</span></label>
+					<input type="text" ng-model="application.secret" class="cell" />
 				</div>
 				<div class="row">
 					<label class="cell"><span tooltip="tooltip.url">URL</span></label>
-					<input type="text" ng-model="application.url" complete-change="updatePath()" class="cell" />
+					<input type="text" ng-model="application.address" complete-change="updatePath()" class="cell" />
 				</div>
 
 				<div class="row">
@@ -63,7 +64,7 @@
 				</div>
 				<div class="row" ng-if="application.external">
 					<input type="checkbox" ng-model="application.transferSession" />
-					<label class="four cell"><span tooltip="tooltip.transferSession">Transmettre la session</span></label>
+					<label class="three cell"><span tooltip="tooltip.transferSession">Transmettre la session</span></label>
 				</div>
 				<div class="row">
 					<a ng-if="!display.advanced" ng-click="showAdvanced()" class="right-magnet">Paramètres avancés</a>
@@ -73,8 +74,8 @@
 						<label class="cell">Scope</label><input class="cell" type="text" />
 					</div>
 					<div class="row" ng-id="!application.external">
-						<label class="cell"><span tooltip="tooltip.password">Mot de passe</span></label>
-						<input type="text" ng-model="application.password" class="cell" />
+						<label class="cell"><span tooltip="tooltip.password">Code secret</span></label>
+						<input type="text" ng-model="application.secret" class="cell" />
 					</div>
 					<div class="row">
 						<label class="cell">Mode d'identification</label>
@@ -87,9 +88,13 @@
 				<div class="row">
 					<a ng-if="display.advanced" ng-click="hideAdvanced()" class="right-magnet">Mode simple</a>
 				</div>
+				<div class="row">
+					<input type="button" class="right-magnet" ng-click="application.save()" value="Enregistrer" />
+				</div>
+			<div class="row reduce-block-six"></div>
 			<h1>Gestion des rôles</h1>
 			<div class="row">
-				<button>Créer un rôle</button>
+				<button ng-click="newRole()">Créer un rôle</button>
 				<div ng-repeat="role in roles.applicationRoles(application)" class="accordion" ng-class="{ opened: role.selected }">
 					<h2 ng-click="selectRole(role)">[[role.name]]</h2>
 					<div class="twelve cell toggle">
@@ -101,8 +106,8 @@
 
 							<h3>Autorisations</h3>
 							<ul class="selectable-list">
-								<li ng-repeat="authorization in application.authorizations.all" ng-click="role.switch(authorization)" ng-class="{ selected: role.hasAuthorization(authorization) }">
-									[[authorization.displayName]]
+								<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+									[[action.displayName]]
 								</li>
 							</ul>
 						</div>

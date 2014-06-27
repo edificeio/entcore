@@ -64,14 +64,6 @@ h1:first-child{
 	margin-top: 0;
 }
 
-h1, h2{
-	color: @black;
-	border-bottom: 1px solid @black;
-	font-weight: 300;
-	font-family: Lato;
-	margin-bottom: 10px;
-}
-
 html section.main, body section.main{
 	min-height: 100%;
 	padding-top: 0;
@@ -126,61 +118,6 @@ input[type=text]{
 	background: #fff;
 	border: none;
 	padding-left: 5px;
-}
-
-.side-tabs{
-	z-index: 2;
-	border-right: none;
-	background: #eee;
-	width: 180px;
-	margin-top: 5px;
-	ul{
-		margin: 0;
-		padding: 0;
-		li{
-			list-style-type: none;
-			padding: 10px;
-			color: @bright-blue;
-			background: #ddd;
-			border-right: 1px solid @bright-blue;
-		}
-		li.selected{
-			color: @black;
-			background: #eee;
-			border: 1px solid @bright-blue;
-			border-right: none;
-			border-left-width: 5px;
-			box-sizing: content-box;
-			margin-left: -5px;
-		}
-	}
-
-}
-
-.side-tabs-content{
-	.border-radius(0);
-	z-index: 1;
-	border: 1px solid @bright-blue;
-	margin-left: -1px;
-	border-top-width: 5px;
-	border-bottom-width: 5px;
-}
-
-.selectable-list{
-	padding: 0;
-	li{
-		list-style-type: none;
-		border: 1px solid @bright-blue;
-		padding: 5px;
-		.border-radius();
-		.run-transition(background);
-		margin: 5px;
-	}
-
-	li.selected{
-		background: @bright-blue;
-		color: #fff;
-	}
 }
 
 .preview iframe{

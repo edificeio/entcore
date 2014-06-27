@@ -24,14 +24,16 @@
 </head>
 <body>
 <portal-styles></portal-styles>
-	<div class="row height-mark">
+	<div class="row">
 	<ul class="list icons-view" ng-controller="Preview" style="margin: 0;">
-		<li class="element fixed-block height-two">
+		<li class="element">
 			<div class="fixed twelve cell">
 				<a href="[[path]]" target="[[target]]">
-					<i role="[[icon]]"></i>
+					<i class="[[icon]]"></i>
 				</a>
-				<a href="[[path]]" target="[[target]]">[[displayName]]</a>
+				<legend>
+					<a href="[[path]]" target="[[target]]">[[displayName]]</a>
+				</legend>
 			</div>
 		</li>
 		<li class="clear"></li>

@@ -31,8 +31,10 @@ function AppRegistry($scope, $sce, model){
 	$scope.viewApplication = function(application){
 		$scope.application = application;
 		$scope.updatePath();
+		$scope.application.open();
 		$scope.application.on('change', function(){
 			$scope.updatePath();
+			$scope.$apply('application');
 		});
 	};
 

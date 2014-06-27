@@ -1242,3 +1242,51 @@ select{
 	height: 25px;
 	margin: 3px;
 }
+
+.selectable-list{
+	li{
+		border: 1px solid @bright-blue;
+	}
+
+	li.selected{
+		background: @bright-blue;
+		color: #fff;
+	}
+}
+
+.side-tabs{
+	ul{
+		li{
+			color: #AAA;
+			background: #444;
+			border-color: @bright-blue;
+			border-right: none;
+		}
+		li:first-child{
+			border-top-left-radius: 5px;
+		}
+		li:last-child{
+			border-bottom-left-radius: 5px
+		}
+		li.selected:first-child{
+			border-top: 1px solid @bright-blue;
+		}
+		li.selected{
+			color: @black;
+			background: #eee;
+			border-color: @bright-blue;
+			border-right: none;
+			border-top: none;
+			border-bottom: none;
+		}
+	}
+}
+
+.side-tabs-content{
+	.border-radius(0);
+	border-color: @bright-blue;
+}
+
+.humane-original-success{
+	background: @green;
+}

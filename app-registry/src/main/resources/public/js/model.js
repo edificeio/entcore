@@ -1,67 +1,140 @@
 //Copyright. Tous droits réservés. WebServices pour l’Education.
-function Authorization(data){
+function Action(data){
 
 }
 
 function Application(data){
+	this.grantType = 'authorization_code';
 	if(data && data.scope){
 		this.transferSession = data.scope.indexOf('userinfo') !== -1;
 	}
 
 	this.updateData(data);
 
-	this.collection(Authorization, {
+	this.collection(Action, {
 
 	});
 
-	if(data.authorizations){
-		this.authorizations.load(data.authorizations);
+	if(data.actions){
+		this.actions.load(_.map(data.actions, function(action){
+			return {
+				name: action[0],
+				displayName: action[1],
+				type: action[2]
+			}
+		}));
 	}
 }
 
+Application.prototype.open = function(){
+	if(!this.id){
+		return;
+	}
+
+	http().get('/appregistry/application/conf/' + this.id).done(function(data){
+		data.result[0].target = data.result[0].target || '';
+		this.updateData(data.result[0]);
+	}.bind(this));
+};
+
+Application.prototype.createApplication = function(){
+	http().post('/appregistry/application/external', {
+		grantType: this.grantType,
+		displayName: this.displayName,
+		secret: this.secret || '',
+		address: this.address,
+		icon: this.icon || '',
+		target: this.target || '',
+		scope: this.scope || ''
+	})
+	.done(function(){
+		model.applications.sync();
+	});
+};
+
+Application.prototype.saveChanges = function(){
+	http().post('/appregistry/application/conf', {
+		applicationId: this.id,
+		grantType: this.grantType,
+		displayName: this.displayName,
+		secret: this.secret,
+		address: this.address,
+		icon: this.icon,
+		target: this.target,
+		scope: this.scope
+	})
+	.done(function(){
+		model.applications.sync();
+		notify.success('Application créée');
+	});
+};
+
+Application.prototype.save = function(){
+	if(this.id){
+		this.saveChanges();
+	}
+	else{
+		this.createApplication();
+	}
+};
+
 function Role(data){
-	this.switch = function(authorization){
-		var existingAuth = this.authorizations.findWhere({ name: authorization.name });
+	this.switch = function(action){
+		var existingAuth = this.actions.findWhere({ name: action.name });
 		if(existingAuth){
-			this.authorizations.remove(existingAuth);
+			this.actions.remove(existingAuth);
 		}
 		else{
-			this.authorizations.push(authorization);
+			this.actions.push(action);
 		}
 	};
 
-	this.hasAuthorization = function(authorization){
-		return this.authorizations.findWhere({ name: authorization.name }) !== undefined;
+	this.hasAction = function(action){
+		return this.actions.findWhere({ name: action.name }) !== undefined;
 	};
 
-	this.collection(Authorization, {
+	this.collection(Action, {
 
 	});
 
-	this.authorizations.load(data.authorizations);
+	this.actions.load(data.actions);
 }
 
 model.build = function(){
-	this.makeModels([Application, Role, Authorization]);
+	this.makeModels([Application, Role, Action]);
 
 	this.collection(Application, {
 		sync: function(){
-			http().get('/appregistry/public/json/applications.json').done(function(apps){
-				this.load(apps);
+			http().get('/appregistry/applications/actions?actionType=WORKFLOW').done(function(data){
+				this.load(_.map(data.result, function(app){
+					return app;
+				}));
 			}.bind(this))
 		}
 	});
 
 	this.collection(Role, {
 		sync: function(){
-			http().get('/appregistry/public/json/roles.json').done(function(roles){
-				this.load(roles);
+			http().get('/appregistry/roles/actions').done(function(data){
+				this.load(_.map(data.result, function(role){
+					return {
+						id: role.id,
+						name: role.name,
+						actions: _.map(role.actions, function(action){
+							return {
+								name: action[0],
+								displayName: action[1],
+								type: action[2]
+							};
+						})
+					};
+				}));
 			}.bind(this));
 		},
 		applicationRoles: function(application){
 			return this.filter(function(role){
-				return role.authorizations.find(function(auth){
-					return application.authorizations.findWhere({ name: auth.name }) !== undefined;
+				return role.actions.find(function(action){
+					return application.actions.findWhere({ name: action.name }) !== undefined;
 				}) !== undefined;
 			});
 		}
