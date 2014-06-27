@@ -1,0 +1,1822 @@
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1301" -->
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716398</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716398</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JEOCQUAE</value></attr>
+<attr name="sn"><value>Gomez</value></attr>
+<attr name="givenName"><value>Irène</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>30650</value></attr>
+<attr name="ENTPersonVille"><value>ROCHEFORT DU GARD</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716400</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716400</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>QOQYROA CYAK</value></attr>
+<attr name="sn"><value>Gomez</value></attr>
+<attr name="givenName"><value>Françoise</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13210</value></attr>
+<attr name="ENTPersonVille"><value>ST REMY DE PROVENCE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716408</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716408</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>KIVJOQ</value></attr>
+<attr name="sn"><value>Castillo</value></attr>
+<attr name="givenName"><value>Geneviève</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716411</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716411</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>NYAN</value></attr>
+<attr name="sn"><value>Olson</value></attr>
+<attr name="givenName"><value>Camélia</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716417</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716417</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WIVID</value></attr>
+<attr name="sn"><value>Gordon</value></attr>
+<attr name="givenName"><value>Vérane</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716420</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716420</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WYRTYV</value></attr>
+<attr name="sn"><value>Ramos</value></attr>
+<attr name="givenName"><value>Rachèle</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716424</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716424</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>LYMHIG</value></attr>
+<attr name="sn"><value>Bryant</value></attr>
+<attr name="givenName"><value>Andréanne</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716563</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716563</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>ECDU</value></attr>
+<attr name="sn"><value>Gonzales</value></attr>
+<attr name="givenName"><value>Stéphanie</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13090</value></attr>
+<attr name="ENTPersonVille"><value>AIX EN PROVENCE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716609</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716609</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>DYKAV</value></attr>
+<attr name="sn"><value>Woods</value></attr>
+<attr name="givenName"><value>Cécilia</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13009</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716763</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716763</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>QYNUFX</value></attr>
+<attr name="sn"><value>Myers</value></attr>
+<attr name="givenName"><value>Bérénice</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84270</value></attr>
+<attr name="ENTPersonVille"><value>VEDENE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716764</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716764</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BAISRILR</value></attr>
+<attr name="sn"><value>Myers</value></attr>
+<attr name="givenName"><value>Inès</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716794</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716794</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SUKICC</value></attr>
+<attr name="sn"><value>Hernandez</value></attr>
+<attr name="givenName"><value>Lauréna</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716813</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716813</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>DYIKRYKU</value></attr>
+<attr name="sn"><value>Richardson</value></attr>
+<attr name="givenName"><value>Camélia</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716826</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716826</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>YRXATS</value></attr>
+<attr name="sn"><value>Reynolds</value></attr>
+<attr name="givenName"><value>Maï</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04500</value></attr>
+<attr name="ENTPersonVille"><value>RIEZ</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2716991</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2716991</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SPIPYNI</value></attr>
+<attr name="sn"><value>Hawkins</value></attr>
+<attr name="givenName"><value>Intéressant</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13013</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717454</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717454</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>YADOPU</value></attr>
+<attr name="sn"><value>Weaver</value></attr>
+<attr name="givenName"><value>Zoé</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04350</value></attr>
+<attr name="ENTPersonVille"><value>MALIJAI</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717457</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717457</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>UAXIVA</value></attr>
+<attr name="sn"><value>Weaver</value></attr>
+<attr name="givenName"><value>Adélaïde</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04350</value></attr>
+<attr name="ENTPersonVille"><value>MALIJAI</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717541</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717541</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JAICOUP</value></attr>
+<attr name="sn"><value>Willis</value></attr>
+<attr name="givenName"><value>Célia</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04000</value></attr>
+<attr name="ENTPersonVille"><value>ENTRAGES</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717544</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717544</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JE</value></attr>
+<attr name="sn"><value>Wells</value></attr>
+<attr name="givenName"><value>Cécilia</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84140</value></attr>
+<attr name="ENTPersonVille"><value>MONTFAVET</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717545</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717545</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WE</value></attr>
+<attr name="sn"><value>Wells</value></attr>
+<attr name="givenName"><value>Lyséa</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717548</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717548</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>ZIMTUEG</value></attr>
+<attr name="sn"><value>Tucker</value></attr>
+<attr name="givenName"><value>Gwenaëlle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84210</value></attr>
+<attr name="ENTPersonVille"><value>PERNES LES FONTAINES</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717550</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717550</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>AC XEHA</value></attr>
+<attr name="sn"><value>Tucker</value></attr>
+<attr name="givenName"><value>Josée</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13001</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717743</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717743</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>PIKIELP</value></attr>
+<attr name="sn"><value>Daniels</value></attr>
+<attr name="givenName"><value>Adèle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04230</value></attr>
+<attr name="ENTPersonVille"><value>ST ETIENNE LES ORGUES</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717744</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717744</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JESIRHABU</value></attr>
+<attr name="sn"><value>Daniels</value></attr>
+<attr name="givenName"><value>Marie-noël</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04300</value></attr>
+<attr name="ENTPersonVille"><value>PIERRERUE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717745</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717745</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>KYUGEUYFQ</value></attr>
+<attr name="sn"><value>Daniels</value></attr>
+<attr name="givenName"><value>Intéressant</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717852</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717852</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>COLAH</value></attr>
+<attr name="sn"><value>Wells</value></attr>
+<attr name="givenName"><value>Joséphine</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13008</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717957</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717957</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SUAXQEG</value></attr>
+<attr name="sn"><value>Daniels</value></attr>
+<attr name="givenName"><value>Marie-noël</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717969</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717969</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JEKUDY</value></attr>
+<attr name="sn"><value>Ferguson</value></attr>
+<attr name="givenName"><value>Tú</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13013</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717970</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717970</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XAKYWU</value></attr>
+<attr name="sn"><value>Ferguson</value></attr>
+<attr name="givenName"><value>Ruò</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13013</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717979</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717979</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>QUXZIQCA</value></attr>
+<attr name="sn"><value>Gonzalez</value></attr>
+<attr name="givenName"><value>Athéna</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13400</value></attr>
+<attr name="ENTPersonVille"><value>AUBAGNE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2717980</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2717980</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>LYFFYXZI</value></attr>
+<attr name="sn"><value>Gonzalez</value></attr>
+<attr name="givenName"><value>Chloé</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13400</value></attr>
+<attr name="ENTPersonVille"><value>AUBAGNE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718098</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718098</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>TYLAZA UTU</value></attr>
+<attr name="sn"><value>Martin</value></attr>
+<attr name="givenName"><value>Jú</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718181</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718181</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>REPXUIG</value></attr>
+<attr name="sn"><value>Murray</value></attr>
+<attr name="givenName"><value>Josée</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04310</value></attr>
+<attr name="ENTPersonVille"><value>PEYRUIS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718182</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718182</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>TESGIUD</value></attr>
+<attr name="sn"><value>Murray</value></attr>
+<attr name="givenName"><value>Åslög</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04310</value></attr>
+<attr name="ENTPersonVille"><value>PEYRUIS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718183</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718183</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>DIPMAYS</value></attr>
+<attr name="sn"><value>Murray</value></attr>
+<attr name="givenName"><value>Léonie</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718313</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718313</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XAIRO</value></attr>
+<attr name="sn"><value>Ellis</value></attr>
+<attr name="givenName"><value>Irène</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13400</value></attr>
+<attr name="ENTPersonVille"><value>AUBAGNE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718314</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718314</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>PEYCI</value></attr>
+<attr name="sn"><value>Ellis</value></attr>
+<attr name="givenName"><value>Andréanne</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13400</value></attr>
+<attr name="ENTPersonVille"><value>AUBAGNE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718315</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718315</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SYODO</value></attr>
+<attr name="sn"><value>Ellis</value></attr>
+<attr name="givenName"><value>Mélissandre</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718316</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718316</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BEUQY OTE</value></attr>
+<attr name="sn"><value>Ellis</value></attr>
+<attr name="givenName"><value>Joséphine</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718399</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718399</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>AGEZZ</value></attr>
+<attr name="sn"><value>Crawford</value></attr>
+<attr name="givenName"><value>Åsa</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718477</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718477</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>VOEFS VPUC</value></attr>
+<attr name="sn"><value>Webb</value></attr>
+<attr name="givenName"><value>Solène</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value/></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718509</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718509</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CEXYH WUEP</value></attr>
+<attr name="sn"><value>Fields</value></attr>
+<attr name="givenName"><value>Marie-hélène</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718586</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718586</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>HUVTU NOGMTEFO</value></attr>
+<attr name="sn"><value>Mendoza</value></attr>
+<attr name="givenName"><value>Léana</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718597</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718597</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MIXMO</value></attr>
+<attr name="sn"><value>Morrison</value></attr>
+<attr name="givenName"><value>Åke</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13700</value></attr>
+<attr name="ENTPersonVille"><value>MARIGNANE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718772</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718772</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BYRYOB</value></attr>
+<attr name="sn"><value>Mccoy</value></attr>
+<attr name="givenName"><value>Maïlys</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04200</value></attr>
+<attr name="ENTPersonVille"><value>SISTERON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718773</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718773</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>PIZUER</value></attr>
+<attr name="sn"><value>Mccoy</value></attr>
+<attr name="givenName"><value>Åslög</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04200</value></attr>
+<attr name="ENTPersonVille"><value>SISTERON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2718880</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2718880</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WUQUIAP</value></attr>
+<attr name="sn"><value>Owens</value></attr>
+<attr name="givenName"><value>Maëline</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13001</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719038</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719038</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>VUDTEPAQ</value></attr>
+<attr name="sn"><value>Taylor</value></attr>
+<attr name="givenName"><value>Bérénice</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>51490</value></attr>
+<attr name="ENTPersonVille"><value>PONTFAVERGER MORONVILLIERS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719039</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719039</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>UEMTOA</value></attr>
+<attr name="sn"><value>Taylor</value></attr>
+<attr name="givenName"><value>Mélia</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04000</value></attr>
+<attr name="ENTPersonVille"><value>DIGNE LES BAINS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719175</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719175</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SEUFY</value></attr>
+<attr name="sn"><value>Gray</value></attr>
+<attr name="givenName"><value>Kévina</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13015</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719212</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719212</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SOCRI</value></attr>
+<attr name="sn"><value>Woods</value></attr>
+<attr name="givenName"><value>Eliès</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13190</value></attr>
+<attr name="ENTPersonVille"><value>ALLAUCH</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719213</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719213</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>LEBHA</value></attr>
+<attr name="sn"><value>Woods</value></attr>
+<attr name="givenName"><value>Wá</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13190</value></attr>
+<attr name="ENTPersonVille"><value>ALLAUCH</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719214</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719214</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>HYRWY</value></attr>
+<attr name="sn"><value>Woods</value></attr>
+<attr name="givenName"><value>Åsa</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719251</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719251</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XOEIM</value></attr>
+<attr name="sn"><value>Jacobs</value></attr>
+<attr name="givenName"><value>Kallisté</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13112</value></attr>
+<attr name="ENTPersonVille"><value>LA DESTROUSSE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719252</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719252</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>QEOON</value></attr>
+<attr name="sn"><value>Jacobs</value></attr>
+<attr name="givenName"><value>Kévina</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13112</value></attr>
+<attr name="ENTPersonVille"><value>LA DESTROUSSE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719283</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719283</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>KUHOHYZ</value></attr>
+<attr name="sn"><value>Vasquez</value></attr>
+<attr name="givenName"><value>Océanne</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84300</value></attr>
+<attr name="ENTPersonVille"><value>CAVAILLON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719305</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719305</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>NYOJCTYUFIN</value></attr>
+<attr name="sn"><value>Gardner</value></attr>
+<attr name="givenName"><value>Bécassine</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13850</value></attr>
+<attr name="ENTPersonVille"><value>GREASQUE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719306</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719306</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JOET</value></attr>
+<attr name="sn"><value>Gardner</value></attr>
+<attr name="givenName"><value>Crééz</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13850</value></attr>
+<attr name="ENTPersonVille"><value>GREASQUE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719307</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719307</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>ZAUQAT</value></attr>
+<attr name="sn"><value>Gardner</value></attr>
+<attr name="givenName"><value>Ráo</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719512</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719512</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WEKKUSAHI</value></attr>
+<attr name="sn"><value>Gomez</value></attr>
+<attr name="givenName"><value>Maéna</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84270</value></attr>
+<attr name="ENTPersonVille"><value>VEDENE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2719513</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2719513</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>FOWSOTASA</value></attr>
+<attr name="sn"><value>Gomez</value></attr>
+<attr name="givenName"><value>Danièle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84270</value></attr>
+<attr name="ENTPersonVille"><value>VEDENE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720063</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720063</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CQUDLENU</value></attr>
+<attr name="sn"><value>Harvey</value></attr>
+<attr name="givenName"><value>Märta</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13720</value></attr>
+<attr name="ENTPersonVille"><value>LA BOUILLADISSE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720064</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720064</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MCADVOPA</value></attr>
+<attr name="sn"><value>Harvey</value></attr>
+<attr name="givenName"><value>Loïca</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13720</value></attr>
+<attr name="ENTPersonVille"><value>LA BOUILLADISSE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720241</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720241</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WZYFEV</value></attr>
+<attr name="sn"><value>Gray</value></attr>
+<attr name="givenName"><value>Göran</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84120</value></attr>
+<attr name="ENTPersonVille"><value>BEAUMONT DE PERTUIS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720243</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720243</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>QMECEB</value></attr>
+<attr name="sn"><value>Gray</value></attr>
+<attr name="givenName"><value>Lóng</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84120</value></attr>
+<attr name="ENTPersonVille"><value>BEAUMONT DE PERTUIS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720519</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720519</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>YTXIAIUQ</value></attr>
+<attr name="sn"><value>Fox</value></attr>
+<attr name="givenName"><value>Mélanie</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720634</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720634</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CODEUHY GIXTU</value></attr>
+<attr name="sn"><value>Banks</value></attr>
+<attr name="givenName"><value>Cécilia</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2720743</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2720743</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>KUHIHI PYQISE</value></attr>
+<attr name="sn"><value>Reynolds</value></attr>
+<attr name="givenName"><value>Publicité</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2721094</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2721094</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CIBOAFVE</value></attr>
+<attr name="sn"><value>Wallace</value></attr>
+<attr name="givenName"><value>Judicaël</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2721095</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2721095</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>RIXAZYOL</value></attr>
+<attr name="sn"><value>Wallace</value></attr>
+<attr name="givenName"><value>Méghane</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2721096</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2721096</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>NEBUHEIL</value></attr>
+<attr name="sn"><value>Wallace</value></attr>
+<attr name="givenName"><value>Crééz</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2721235</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2721235</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>JYCLOR ZIDVYFM</value></attr>
+<attr name="sn"><value>Lee</value></attr>
+<attr name="givenName"><value>Méng</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2721955</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2721955</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>TBOYEZS NORAHA</value></attr>
+<attr name="sn"><value>Diaz</value></attr>
+<attr name="givenName"><value>Gérald</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722002</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722002</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CHIVL</value></attr>
+<attr name="sn"><value>Ramirez</value></attr>
+<attr name="givenName"><value>Mahélie</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04160</value></attr>
+<attr name="ENTPersonVille"><value>CHATEAU ARNOUX ST AUBAN</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722003</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722003</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>FDURQ</value></attr>
+<attr name="sn"><value>Ramirez</value></attr>
+<attr name="givenName"><value>Ráo</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>04160</value></attr>
+<attr name="ENTPersonVille"><value>CHATEAU ARNOUX ST AUBAN</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722320</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722320</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>HYQYL KYNUIJO</value></attr>
+<attr name="sn"><value>Day</value></attr>
+<attr name="givenName"><value>Jú</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722396</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722396</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>TANAPYRYNY</value></attr>
+<attr name="sn"><value>West</value></attr>
+<attr name="givenName"><value>Gaëlle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13140</value></attr>
+<attr name="ENTPersonVille"><value>MIRAMAS</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722413</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722413</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XUSEVUDEPY</value></attr>
+<attr name="sn"><value>West</value></attr>
+<attr name="givenName"><value>Célestine</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722789</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722789</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>DAJQWYAG</value></attr>
+<attr name="sn"><value>Greene</value></attr>
+<attr name="givenName"><value>Léana</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13010</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2722794</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2722794</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>TTYABIW IUPU</value></attr>
+<attr name="sn"><value>Lee</value></attr>
+<attr name="givenName"><value>Cécile</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2723419</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2723419</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MVARUDGU</value></attr>
+<attr name="sn"><value>Brown</value></attr>
+<attr name="givenName"><value>Marie-françoise</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2725106</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2725106</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>RUNBANH</value></attr>
+<attr name="sn"><value>Rose</value></attr>
+<attr name="givenName"><value>Océane</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13013</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2725208</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2725208</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>AMDINCA</value></attr>
+<attr name="sn"><value>Greene</value></attr>
+<attr name="givenName"><value>Clémentine</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2725782</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2725782</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XYZOKUIQ</value></attr>
+<attr name="sn"><value>Robinson</value></attr>
+<attr name="givenName"><value>Dorothée</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2725963</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2725963</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BADEVB EFUH</value></attr>
+<attr name="sn"><value>Morrison</value></attr>
+<attr name="givenName"><value>Aloïs</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2726345</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2726345</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BYAJA</value></attr>
+<attr name="sn"><value>Harris</value></attr>
+<attr name="givenName"><value>Gaïa</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2726558</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2726558</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BEPWO FATJY</value></attr>
+<attr name="sn"><value>Anderson</value></attr>
+<attr name="givenName"><value>Danièle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13001</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2726694</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2726694</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>XYLGY</value></attr>
+<attr name="sn"><value>Jackson</value></attr>
+<attr name="givenName"><value>Séréna</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2726934</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2726934</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>GIEIT</value></attr>
+<attr name="sn"><value>Stevens</value></attr>
+<attr name="givenName"><value>Renée</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>05500</value></attr>
+<attr name="ENTPersonVille"><value>LAYE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727578</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727578</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MAKESIAW</value></attr>
+<attr name="sn"><value>Russell</value></attr>
+<attr name="givenName"><value>Laurélie</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>29140</value></attr>
+<attr name="ENTPersonVille"><value>ROSPORDEN</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727579</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727579</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>AXQOJJ</value></attr>
+<attr name="sn"><value>Russell</value></attr>
+<attr name="givenName"><value>Léa</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13790</value></attr>
+<attr name="ENTPersonVille"><value>PEYNIER</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727580</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727580</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>IRSOMD</value></attr>
+<attr name="sn"><value>Russell</value></attr>
+<attr name="givenName"><value>Gisèle</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13790</value></attr>
+<attr name="ENTPersonVille"><value>PEYNIER</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727635</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727635</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>WODOZ</value></attr>
+<attr name="sn"><value>Ferguson</value></attr>
+<attr name="givenName"><value>Magdalène</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727636</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727636</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CVE VYPOK</value></attr>
+<attr name="sn"><value>Ferguson</value></attr>
+<attr name="givenName"><value>Audréanne</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2727637</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2727637</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>NIKAV</value></attr>
+<attr name="sn"><value>Ferguson</value></attr>
+<attr name="givenName"><value>Lyséa</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>84000</value></attr>
+<attr name="ENTPersonVille"><value>AVIGNON</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2728670</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2728670</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>SEBYEX</value></attr>
+<attr name="sn"><value>Day</value></attr>
+<attr name="givenName"><value>Béatrice</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13008</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2728687</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2728687</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>HUEWFIIO</value></attr>
+<attr name="sn"><value>Phillips</value></attr>
+<attr name="givenName"><value>Marylène</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13011</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2728695</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2728695</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MAXCAP</value></attr>
+<attr name="sn"><value>Gray</value></attr>
+<attr name="givenName"><value>Léonore</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2728833</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2728833</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>CAYPHIEE</value></attr>
+<attr name="sn"><value>Phillips</value></attr>
+<attr name="givenName"><value>Cunégonde</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13011</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2729191</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2729191</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>RIKKOC</value></attr>
+<attr name="sn"><value>Carpenter</value></attr>
+<attr name="givenName"><value>Danièle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value>XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX</value></attr>
+<attr name="ENTPersonCodePostal"><value>13008</value></attr>
+<attr name="ENTPersonVille"><value>MARSEILLE</value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+</attributes>
+</addRequest>
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2729332</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2729332</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>MACWAXDO REIC</value></attr>
+<attr name="sn"><value>Johnson</value></attr>
+<attr name="givenName"><value>Maëline</value></attr>
+<attr name="personalTitle"><value/></attr>
+<attr name="homePhone"><value>0000000000</value></attr>
+<attr name="telephoneNumber"><value>0000000000</value></attr>
+<attr name="ENTPersonAdresse"><value/></attr>
+<attr name="ENTPersonCodePostal"><value/></attr>
+<attr name="ENTPersonVille"><value/></attr>
+<attr name="ENTPersonPays"><value/></attr>
+</attributes>
+</addRequest>
+</ficAlimMENESR>

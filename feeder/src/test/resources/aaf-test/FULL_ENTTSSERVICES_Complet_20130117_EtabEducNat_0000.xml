@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1301" -->
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52000</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52000</value></attr>
+<attr name="ENTStructureUAI"><value>1004001V</value></attr>
+<attr name="ENTEtablissementUAI"><value>1004001V</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-DIGNE-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52001</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52001</value></attr>
+<attr name="ENTStructureUAI"><value>1004002D</value></attr>
+<attr name="ENTEtablissementUAI"><value>1004002D</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-MANOSQUE-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value></value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52002</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52002</value></attr>
+<attr name="ENTStructureUAI"><value>0049951V</value></attr>
+<attr name="ENTEtablissementUAI"><value>0049951V</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-DE DIGNE-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value>DIGNE</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52003</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52003</value></attr>
+<attr name="ENTStructureUAI"><value>0049952W</value></attr>
+<attr name="ENTEtablissementUAI"><value>0049952W</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-DE MANOSQUE-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value>MANOSQUE</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52004</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52004</value></attr>
+<attr name="ENTStructureUAI"><value>1005001R</value></attr>
+<attr name="ENTEtablissementUAI"><value>1005001R</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-BRIANCON-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value></value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52005</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52005</value></attr>
+<attr name="ENTStructureUAI"><value>1005002Z</value></attr>
+<attr name="ENTEtablissementUAI"><value>1005002Z</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-GAP-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value></value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52006</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52006</value></attr>
+<attr name="ENTStructureUAI"><value>0059951P</value></attr>
+<attr name="ENTEtablissementUAI"><value>0059951P</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-DE GAP-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value>GAP</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52007</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52007</value></attr>
+<attr name="ENTStructureUAI"><value>0059952R</value></attr>
+<attr name="ENTEtablissementUAI"><value>0059952R</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-DE BRIANCON-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value>BRIANCON</value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52008</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52008</value></attr>
+<attr name="ENTStructureUAI"><value>1013001F</value></attr>
+<attr name="ENTEtablissementUAI"><value>1013001F</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-NORD EST 13-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value></value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>52009</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>52009</value></attr>
+<attr name="ENTStructureUAI"><value>1013002Z</value></attr>
+<attr name="ENTEtablissementUAI"><value>1013002Z</value></attr>
+<attr name="ENTStructureSIREN"><value></value></attr>
+<attr name="ENTStructureNomCourant"><value>Z.REMP-OUEST 13-AIX_MARS.</value></attr>
+<attr name="ENTStructureTypeStruct"><value>SANS OBJET</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value/></attr>
+<attr name="ENTEtablissementContrat"><value></value></attr>
+<attr name="postOfficeBox"><value/></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="facsimileTelephoneNumber"><value/></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value/></attr>
+<attr name="ENTServAcAcademie"><value>AIX-MARSEILLE</value></attr>
+<attr name="ENTStructureClasses"><value/></attr>
+<attr name="ENTStructureGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
