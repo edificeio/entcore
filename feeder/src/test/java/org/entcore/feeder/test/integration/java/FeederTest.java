@@ -9,12 +9,14 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 import java.io.IOException;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 public class FeederTest extends TestVerticle {
@@ -77,7 +79,7 @@ public class FeederTest extends TestVerticle {
 			container.undeployModule(neo4jDeploymentId, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
-					vertx.setTimer(100, new Handler<Long>() {
+					vertx.setTimer(1000, new Handler<Long>() {
 						@Override
 						public void handle(Long event) {
 							if (tmpFolder != null) {
@@ -101,7 +103,63 @@ public class FeederTest extends TestVerticle {
 		importAAF(new VoidHandler() {
 			@Override
 			protected void handle() {
-				testComplete();
+				transition(new VoidHandler() {
+					@Override
+					protected void handle() {
+						testComplete();
+					}
+				});
+			}
+		});
+	}
+
+	private void transition(final VoidHandler handler) {
+		eb.registerHandler("user.repository", new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				String action = message.body().getString("action", "");
+				switch (action) {
+					case "delete-groups" :
+						JsonArray groups = message.body().getArray("old-groups", new JsonArray());
+						assertEquals(177 * 4 + 177, groups.size());
+						String countQuery =
+								"MATCH (s:Structure) " +
+								"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
+								"OPTIONAL MATCH s<-[:DEPENDS]-(f:FunctionalGroup) " +
+								"OPTIONAL MATCH s<-[:DEPENDS*2]-(p:ProfileGroup) " +
+								"RETURN count(distinct s) as nbStructures, count(distinct c) as nbClasses, " +
+								"count(distinct p) as nbClassProfileGroups, count(distinct f) as nbFunctionalGroups";
+						neo4j.execute(countQuery, new JsonObject(), new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								assertEquals("ok", event.body().getString("status"));
+								JsonObject r = event.body().getArray("result").get(0);
+								assertEquals(10, (int) r.getInteger("nbStructures", 0));
+								assertEquals(0, (int) r.getInteger("nbClasses", 0));
+								assertEquals(0, (int) r.getInteger("nbFunctionalGroups", 0));
+								assertEquals(0, (int) r.getInteger("nbClassProfileGroups", 0));
+								handler.handle(null);
+							}
+						});
+						break;
+					default:
+						fail("invalid.action");
+				}
+			}
+		}, new AsyncResultHandler<Void>() {
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				if (event.succeeded()) {
+					eb.send("entcore.feeder", new JsonObject().putString("action", "transition"),
+							new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> message) {
+							assertEquals("ok", message.body().getString("status"));
+						}
+					});
+				} else {
+					fail();
+				}
 			}
 		});
 	}
@@ -111,14 +169,14 @@ public class FeederTest extends TestVerticle {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				assertEquals("ok", message.body().getString("status"));
-				String query =
+				String countQuery =
 						"MATCH (:User) WITH count(*) as nbUsers " +
-						"MATCH (:Structure) WITH count(*) as nbStructures, nbUsers " +
-						"MATCH (:Class) WITH nbUsers, nbStructures, count(*) as nbClasses " +
-						"MATCH (:FunctionalGroup) WITH nbUsers, nbStructures, nbClasses, count(*) as nbFunctionalGroups " +
-						"MATCH (:ProfileGroup) " +
-						"RETURN nbUsers, nbStructures, nbClasses, nbFunctionalGroups, count(*) as nbProfileGroups";
-				neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
+								"MATCH (:Structure) WITH count(*) as nbStructures, nbUsers " +
+								"MATCH (:Class) WITH nbUsers, nbStructures, count(*) as nbClasses " +
+								"MATCH (:FunctionalGroup) WITH nbUsers, nbStructures, nbClasses, count(*) as nbFunctionalGroups " +
+								"MATCH (:ProfileGroup) " +
+								"RETURN nbUsers, nbStructures, nbClasses, nbFunctionalGroups, count(*) as nbProfileGroups";
+				neo4j.execute(countQuery, new JsonObject(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						assertEquals("ok", event.body().getString("status"));
@@ -131,7 +189,6 @@ public class FeederTest extends TestVerticle {
 						handler.handle(null);
 					}
 				});
-
 			}
 		});
 	}
