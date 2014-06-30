@@ -42,8 +42,12 @@ function AppRegistry($scope, $sce, model){
 	};
 
 	$scope.updatePath = function(){
+		var path = $scope.application.address;
+		if($scope.application.target === 'adapter'){
+			path = '/adapter#' + path;
+		}
 		previewPath = $sce.trustAsResourceUrl('/appregistry/app-preview?displayName=' + lang.translate($scope.application.displayName) + '&icon=' + $scope.application.icon
-			+ '&target=' + $scope.application.target + '&path=' + $scope.application.url);
+			+ '&target=' + $scope.application.target + '&path=' + path);
 		if(!$scope.$$phase){
 			$scope.$apply('application');
 		}

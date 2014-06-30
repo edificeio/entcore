@@ -9,8 +9,6 @@ function Application(data){
 		this.transferSession = data.scope.indexOf('userinfo') !== -1;
 	}
 
-	this.updateData(data);
-
 	this.collection(Action, {
 
 	});
@@ -33,6 +31,10 @@ Application.prototype.open = function(){
 
 	http().get('/appregistry/application/conf/' + this.id).done(function(data){
 		data.result[0].target = data.result[0].target || '';
+		if(data.result[0].address && data.result[0].address.indexOf('/adapter#') !== -1){
+			data.result[0].target = 'adapter';
+			data.result[0].address = data.result[0].address.split('/adapter#')[1];
+		}
 		this.updateData(data.result[0]);
 	}.bind(this));
 };
@@ -45,10 +47,12 @@ Application.prototype.createApplication = function(){
 		address: this.address,
 		icon: this.icon || '',
 		target: this.target || '',
-		scope: this.scope || ''
+		scope: this.scope || '',
+		name: this.name
 	})
 	.done(function(){
 		model.applications.sync();
+		notify.success('Application créée');
 	});
 };
 
@@ -61,15 +65,20 @@ Application.prototype.saveChanges = function(){
 		address: this.address,
 		icon: this.icon,
 		target: this.target,
-		scope: this.scope
+		scope: this.scope,
+		name: this.name
 	})
 	.done(function(){
 		model.applications.sync();
-		notify.success('Application créée');
+		notify.info('Modifications enregistrées');
 	});
 };
 
 Application.prototype.save = function(){
+	if(this.target === 'adapter' && this.target.indexOf('/adapter#') === -1){
+		this.target = '';
+		this.address = '/adapter#' + this.address;
+	}
 	if(this.id){
 		this.saveChanges();
 	}
