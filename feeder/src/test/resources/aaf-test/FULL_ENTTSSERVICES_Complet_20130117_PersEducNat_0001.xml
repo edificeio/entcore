@@ -1,0 +1,83 @@
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1301" -->
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>2397809</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2397809</value></attr>
+<attr name="ENTPersonDateNaissance"><value>26/04/1978</value></attr>
+<attr name="ENTPersonNomPatro"><value>ALBERTO</value></attr>
+<attr name="sn"><value>ALBERTO</value></attr>
+<attr name="givenName"><value>ALMUDENA</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonStructRattach"><value>52008</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value>17$EDUCATION MUSICALE</value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value>EDUCATION MUSICALE$17</value></attr>
+<attr name="ENTAuxEnsMEF"><value>50187$1031000F11A$3EME BILANGUE ITALIEN-ANGLAIS</value><value>50187$10310019110$3EME</value><value>50187$1001000B11A$6EME BILANGUE ITALIEN ANGLAIS</value><value>50187$1021000E11A$4EME BILANGUE ITALIEN ANGLAIS</value><value>50187$10010012110$6EME</value><value>50187$10210001110$4EME</value><value>50187$1031000E11A$3EME BILANGUE ALLEMAND-ANGLAIS</value><value>50187$10110001110$5EME</value><value>50187$1011000B11A$5EME BILANGUE ITALIEN ANGLAIS</value></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value>50187$CHANT CHORAL</value><value>50187$EDUCATION MUSICALE</value></attr>
+<attr name="ENTAuxEnsClasses"><value>52008$208</value><value>52008$208</value><value>52008$208</value><value>52008$5E1</value><value>52008$213</value><value>52008$213</value><value>52008$208</value><value>52008$1S8</value><value>52008$208</value><value>52008$6E2</value><value>52008$1S8</value><value>52008$1S8</value><value>52008$208</value><value>52008$213</value><value>52008$213</value></attr>
+<attr name="ENTAuxEnsGroupes"><value>52008$208</value><value>52008$5E2</value></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value>50187$3A$081300</value><value>50187$3B$081300</value><value>50187$3C$081300</value><value>50187$3D$081300</value><value>50187$4A$081300</value><value>50187$4B$081300</value><value>50187$4C$081300</value><value>50187$5A$081300</value><value>50187$5B$081300</value><value>50187$5C$081300</value><value>50187$5D$081300</value><value>50187$6A$081300</value><value>50187$6B$081300</value><value>50187$6C$081300</value><value>50187$6D$081300</value></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value>50187$MCHANKGR$080900</value><value>50187$6IDAUTGD$081300</value></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>50187$ENS$ENSEIGNEMENT$L1700$EDUCATION MUSICALE</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>O</value></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>2397810</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2397810</value></attr>
+<attr name="ENTPersonDateNaissance"><value>30/09/1961</value></attr>
+<attr name="ENTPersonNomPatro"><value>COTREZ</value></attr>
+<attr name="sn"><value>DEVAUX</value></attr>
+<attr name="givenName"><value>MARIE-CLAUDE</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonStructRattach"><value>52002</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value>00$NON SPECIALISE</value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value>READAPTATION$00</value></attr>
+<attr name="ENTAuxEnsMEF"><value/></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+<attr name="ENTAuxEnsClasses"><value/></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value/></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>50045$ADA$READAPTATION$R0098$READAPTATION</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>2397811</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2397811</value></attr>
+<attr name="ENTPersonDateNaissance"><value>25/06/1976</value></attr>
+<attr name="ENTPersonNomPatro"><value>CIBRAY</value></attr>
+<attr name="sn"><value>DONIKIAN</value></attr>
+<attr name="givenName"><value>HAMIDA</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonStructRattach"><value>52003</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value>13$MATHEMATIQUES</value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value>MATHEMATIQUES$13</value></attr>
+<attr name="ENTAuxEnsMEF"><value>51098$10210001110$4EME</value><value>51098$10110001110$5EME</value><value>51098$10310019110$3EME</value></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value>51098$MATHEMATIQUES</value></attr>
+<attr name="ENTAuxEnsClasses"><value>52003$1L1 GRA</value><value>52003$3 DPB</value><value>52003$1L1 GRA</value><value>52003$5EME6</value><value>52003$1L1 GRA</value><value>52003$1L1 GRA</value></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value>51098$402$061300</value><value>51098$403$061300</value><value>51098$502$061300</value><value>51098$504$061300</value><value>51098$305$061300</value><value>51098$405$061300</value></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>51098$ENS$ENSEIGNEMENT$L1300$MATHEMATIQUES</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>O</value></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
