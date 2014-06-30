@@ -595,18 +595,21 @@ public class Importer {
 					}
 					existingUser.removeAll(userImportedExternalId); // set difference
 					String q = // mark missing users
-							"MATCH (u:User) WHERE u.externalId in {externalIds} " +
+							"START u=node:node_auto_index(externalId={externalId}) " +
+							"WHERE NOT(HAS(u.disappearanceDate)) " +
 							"SET u.disappearanceDate = {date} ";
 					JsonObject p = new JsonObject()
-							.putArray("externalIds", new JsonArray(existingUser.toArray()))
 							.putNumber("date", System.currentTimeMillis());
-					transactionHelper.add(q, p);
+					for (String eId : existingUser) {
+						transactionHelper.add(q, p.copy().putString("externalId", eId));
+					}
 					String q2 = // remove mark of imported users
-							"MATCH (u:User) WHERE u.externalId in {externalIds} AND HAS(u.disappearanceDate) " +
+							"START u=node:node_auto_index(externalId={externalId}) " +
+							"WHERE HAS(u.disappearanceDate) " +
 							"REMOVE u.disappearanceDate ";
-					JsonObject p2 = new JsonObject()
-							.putArray("externalIds", new JsonArray(userImportedExternalId.toArray()));
-					transactionHelper.add(q2, p2);
+					for (String eId : userImportedExternalId) {
+						transactionHelper.add(q2, new JsonObject().putString("externalId", eId));
+					}
 				}
 				handler.handle(null);
 			}
