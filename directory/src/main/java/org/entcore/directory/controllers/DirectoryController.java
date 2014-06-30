@@ -350,6 +350,7 @@ public class DirectoryController extends Controller {
 			+ "WHERE exists=0 "
 			+ "CREATE (m:User {id:'" + admin.getString("id") + "', "
 			+ "externalId:'" + UUID.randomUUID().toString() + "', "
+			+ "manual:true, "
 			+ "lastName:'"+ admin.getString("firstname") +"', "
 			+ "firstName:'"+ admin.getString("lastname") +"', "
 			+ "login:'"+ admin.getString("login") +"', "

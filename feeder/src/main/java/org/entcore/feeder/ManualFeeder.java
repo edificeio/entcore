@@ -163,6 +163,7 @@ public class ManualFeeder extends BusModBase {
 			sendError(message, error);
 			return;
 		}
+		user.putBoolean("manual", true);
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			createUserInStructure(message, user, profile, structureId, childrenIds);

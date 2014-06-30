@@ -578,10 +578,11 @@ public class Importer {
 		JsonObject params = new JsonObject();
 		if (structureExternalId != null) {
 			query = "MATCH (:Structure {externalId : {externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WHERE NOT(HAS(u.manual)) " +
 					"RETURN u.externalId as externalId";
 			params.putString("externalId", structureExternalId);
 		} else {
-			query = "MATCH (u:User) RETURN u.externalId as externalId";
+			query = "MATCH (u:User) WHERE NOT(HAS(u.manual)) RETURN u.externalId as externalId";
 		}
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
