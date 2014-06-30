@@ -2521,8 +2521,8 @@ em.high-importance {
   z-index: 1;
   border: 1px solid #ccc;
   margin-left: -1px;
-  border-top-width: 10px;
-  border-bottom-width: 10px;
+  border-top-width: 11px;
+  border-bottom-width: 11px;
 }
 html,
 body {
@@ -2643,6 +2643,9 @@ html.print body section {
 }
 .lightbox-view .icons-view .element legend {
   text-shadow: none;
+}
+.lightbox-view .icons-view .element.selected .img.container {
+  background: #008bb8;
 }
 .lightbox-view nav.vertical {
   padding-right: 10px;
@@ -2785,6 +2788,9 @@ html.app body {
 }
 .lightbox-window .icons-view .element legend {
   text-shadow: none;
+}
+.lightbox-window .icons-view .element.selected .img.container {
+  background: #008bb8;
 }
 .lightbox-window nav.vertical {
   padding-right: 10px;
@@ -3954,6 +3960,14 @@ header {
 .icons-view .element .img.container {
   border: 1px solid #008cba;
   background: #fff;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+.icons-view .element.selected .container {
+  border: none;
+  background: #008bb8;
 }
 .tabs section {
   background: #fff;
@@ -4249,6 +4263,9 @@ i.folder-large {
 .lightbox-view .icons-view .element legend {
   text-shadow: none;
 }
+.lightbox-view .icons-view .element.selected .img.container {
+  background: #008bb8;
+}
 .lightbox-view nav.vertical {
   padding-right: 10px;
 }
@@ -4530,6 +4547,9 @@ table thead tr {
 }
 .side-tabs ul li.selected:first-child {
   border-top: 1px solid #ff0b75;
+}
+.side-tabs ul li.selected:last-child {
+  border-bottom: 1px solid #ff0b75;
 }
 .side-tabs-content {
   border-color: #ff0b75;

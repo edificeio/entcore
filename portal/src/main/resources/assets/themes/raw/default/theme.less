@@ -39,6 +39,11 @@
 				text-shadow: none;
 			}
 		}
+		.element.selected{
+			.img.container{
+				background: @bright-blue;
+			}
+		}
 	}
 	nav.vertical{
 		padding-right: 10px;
@@ -960,6 +965,13 @@ header{
 		.img.container{
 			border: 1px solid #008cba;
 			background: #fff;
+			.run-transition(background)
+		}
+	}
+	.element.selected{
+		.container{
+			border: none;
+			background: @bright-blue;
 		}
 	}
 }

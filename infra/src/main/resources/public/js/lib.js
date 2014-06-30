@@ -146,6 +146,9 @@ var http = (function(){
 				if (obj.hasOwnProperty(p)) {
 					if(obj[p] instanceof Array){
 						for(var i = 0; i < obj[p].length; i++){
+							if(typeof obj[p] === 'object'){
+								throw new TypeError("Arrays sent as URIs can't contain objects");
+							}
 							str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p][i]))
 						}
 					}
@@ -500,7 +503,7 @@ function Collection(obj){
 
 	Model.prototype.makeModel = function(fn, methods, namespace){
 		if(typeof fn !== 'function'){
-			throw 'Error: only functions can be models';
+			throw new TypeError('Only functions can be models');
 		}
 		if(!namespace){
 			namespace = window;

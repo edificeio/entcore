@@ -1163,9 +1163,7 @@ module.directive('richTextEditor', function($compile){
 			notify: '='
 		},
 		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell">' +
-			'</div><lightbox show="chooseLink" on-close="chooseLink = false;">' +
-			'<linker ng-model="selected.link" ng-change="setLink()"></linker>' +
-			'</lightbox>' +
+			'</div><linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<div class="clear"></div></div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
@@ -1176,7 +1174,7 @@ module.directive('richTextEditor', function($compile){
 			return function(scope, element, attributes){
 				scope.selected = { link: '' };
 				var editor = $('[contenteditable=true]');
-				var contextEditor = CKEDITOR.inline(editor[0],
+				scope.contextEditor = CKEDITOR.inline(editor[0],
 					{ customConfig: '/' + infraPrefix + '/public/ckeditor/rich-text-config.js' }
 				);
 
@@ -1194,22 +1192,18 @@ module.directive('richTextEditor', function($compile){
 					scope.$apply('chooseLink');
 				});
 
-				scope.setLink = function(){
-					var bookmarks = contextEditor.getSelection().createBookmarks(),
-						range = contextEditor.getSelection().getRanges()[0],
-						fragment = range.clone().cloneContents();
-					contextEditor.getSelection().selectBookmarks(bookmarks);
-
-					var appendText = "",
-						childList = fragment.getChildren(),
-						childCount = childList.count();
-					for(var i = 0; i < childCount; i++){
-						var child = childList.getItem(i);
-						appendText += (child.getOuterHtml ? child.getOuterHtml() : child.getText());
+				scope.updateContent = function(){
+					var content = editor.html();
+					if(content.indexOf(';base64,') !== -1){
+						scope.notify.error('Une image est corrompue')
 					}
-					editor.html(editor.html().replace(appendText, '<a href="' + scope.selected.link.link + '" target="' +
-						scope.selected.link.target + '" tooltip="' + scope.selected.link.tooltip + '">' + appendText + '</a>'));
-					scope.chooseLink = false;
+					editor.find('img').each(function(index, item){
+						if($(item).attr('src').indexOf(';base64,') !== -1){
+							$(item).remove();
+						}
+					})
+
+					scope.ngModel = editor.html();
 				}
 
 				if(!scope.watchCollection){
