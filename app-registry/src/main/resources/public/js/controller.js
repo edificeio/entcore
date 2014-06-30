@@ -1,5 +1,7 @@
 //Copyright. Tous droits réservés. WebServices pour l’Education.
 function AppRegistry($scope, $sce, model){
+	$scope.lang = lang;
+
 	var previewPath = '';
 	$scope.display = {
 		advanced: false
@@ -29,6 +31,7 @@ function AppRegistry($scope, $sce, model){
 	});
 
 	$scope.viewApplication = function(application){
+		$scope.role = undefined;
 		$scope.application = application;
 		$scope.updatePath();
 		$scope.application.open();
@@ -62,7 +65,16 @@ function AppRegistry($scope, $sce, model){
 		});
 	};
 
+	$scope.newRole = function(){
+		$scope.role = new Role();
+	};
+
+	$scope.createRole = function(){
+		$scope.role.save();
+		$scope.role = undefined;
+	};
+
 	$scope.selectRole = function(role){
 		role.selected = !role.selected;
-	}
+	};
 }

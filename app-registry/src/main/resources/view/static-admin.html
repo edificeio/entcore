@@ -92,10 +92,22 @@
 					<input type="button" class="right-magnet" ng-click="application.save()" value="Enregistrer" />
 				</div>
 			<div class="row reduce-block-six"></div>
-			<h1>Gestion des rôles</h1>
-			<div class="row">
+			<h1 ng-if="application.id">Gestion des rôles</h1>
+			<div class="row" ng-if="application.id">
 				<button ng-click="newRole()">Créer un rôle</button>
-				<div ng-repeat="role in roles.applicationRoles(application)" class="accordion" ng-class="{ opened: role.selected }">
+				<article ng-if="role">
+					<label class="cell">Nom du rôle</label>
+					<input type="text" ng-model="role.name" />
+					<h3>Autorisations</h3>
+					<ul class="selectable-list">
+						<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+							[[lang.translate(action.displayName)]]
+						</li>
+					</ul>
+					<button class="right-magnet" ng-click="createRole()">Enregistrer</button>
+				</article>
+
+				<article ng-repeat="role in roles.applicationRoles(application)" class="accordion" ng-class="{ opened: role.selected }">
 					<h2 ng-click="selectRole(role)">[[role.name]]</h2>
 					<div class="twelve cell toggle">
 						<div class="row content">
@@ -107,13 +119,14 @@
 							<h3>Autorisations</h3>
 							<ul class="selectable-list">
 								<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
-									[[action.displayName]]
+									[[lang.translate(action.displayName)]]
 								</li>
 							</ul>
 						</div>
 
 					</div>
-				</div>
+					<div class="row"></div>
+				</article>
 			</div>
 		</article>
 		<div class="clear"></div>

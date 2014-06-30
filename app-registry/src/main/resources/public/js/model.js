@@ -97,8 +97,27 @@ function Role(data){
 
 	});
 
-	this.actions.load(data.actions);
+	if(data){
+		this.actions.load(data.actions);
+	}
 }
+
+Role.prototype.createRole = function(){
+	http().post('/appregistry/role', { role: this.name, actions:
+		_.map(this.actions.all, function(action){
+			return action.name;
+		}).join(',')
+	})
+		.done(function(){
+			model.roles.sync();
+		});
+};
+
+Role.prototype.save = function(){
+	if(!this.id){
+		this.createRole();
+	}
+};
 
 model.build = function(){
 	this.makeModels([Application, Role, Action]);
