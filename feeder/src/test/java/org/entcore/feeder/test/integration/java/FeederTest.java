@@ -23,6 +23,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
 public class FeederTest extends TestVerticle {
 
 	public static final String NEO4J_PERSISTOR = "neo4j.persistor";
+	public static final String ENTCORE_FEEDER = "entcore.feeder";
 	private String neo4jDeploymentId;
 	private TemporaryFolder neo4jTmpFolder;
 	private TemporaryFolder importTmpFolder;
@@ -116,18 +117,53 @@ public class FeederTest extends TestVerticle {
 		importAAF(new VoidHandler() {
 			@Override
 			protected void handle() {
-				transition(new VoidHandler() {
+				addStructure(new Handler<String>() {
 					@Override
-					protected void handle() {
-						deleteUsersInImport();
-						importUpdate(new VoidHandler() {
+					public void handle(final String structureId) {
+						addManualUser(structureId, "ok");
+						transition(new VoidHandler() {
 							@Override
 							protected void handle() {
-								testComplete();
+								deleteUsersInImport();
+								importUpdate(new VoidHandler() {
+									@Override
+									protected void handle() {
+										testComplete();
+									}
+								});
 							}
 						});
 					}
 				});
+			}
+		});
+	}
+
+	private void addStructure(final Handler<String> handler) {
+		JsonObject action = new JsonObject().putString("action", "manual-create-structure")
+				.putObject("data", new JsonObject().putString("name", "bla"));
+		eb.send(ENTCORE_FEEDER, action,new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				assertEquals("ok", event.body().getString("status"));
+				JsonObject r = event.body().getArray("result").get(0);
+				handler.handle(r.getString("id"));
+			}
+		});
+
+	}
+
+	private void addManualUser(String structureId, final String expectedStatus) {
+		JsonObject j = new JsonObject()
+				.putString("action", "manual-create-user")
+				.putString("profile", "Personnel")
+				.putString("structureId", structureId)
+				.putObject("data", new JsonObject()
+						.putString("firstName", "blip").putString("lastName", "blop"));
+		eb.send(ENTCORE_FEEDER, j, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				assertEquals(expectedStatus, event.body().getString("status"));
 			}
 		});
 	}
@@ -160,7 +196,7 @@ public class FeederTest extends TestVerticle {
 							public void handle(Message<JsonObject> event) {
 								assertEquals("ok", event.body().getString("status"));
 								JsonObject r = event.body().getArray("result").get(0);
-								assertEquals(10, (int) r.getInteger("nbStructures", 0));
+								assertEquals(11, (int) r.getInteger("nbStructures", 0));
 								assertEquals(0, (int) r.getInteger("nbClasses", 0));
 								assertEquals(0, (int) r.getInteger("nbFunctionalGroups", 0));
 								assertEquals(0, (int) r.getInteger("nbClassProfileGroups", 0));
@@ -177,7 +213,7 @@ public class FeederTest extends TestVerticle {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
-					eb.send("entcore.feeder", new JsonObject().putString("action", "transition"),
+					eb.send(ENTCORE_FEEDER, new JsonObject().putString("action", "transition"),
 							new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> message) {
@@ -192,7 +228,7 @@ public class FeederTest extends TestVerticle {
 	}
 
 	private void importAAF(final VoidHandler handler) {
-		eb.send("entcore.feeder", new JsonObject().putString("action", "import"), new Handler<Message<JsonObject>>() {
+		eb.send(ENTCORE_FEEDER, new JsonObject().putString("action", "import"), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				assertEquals("ok", message.body().getString("status"));
@@ -235,7 +271,7 @@ public class FeederTest extends TestVerticle {
 							public void handle(Message<JsonObject> event) {
 								assertEquals("ok", event.body().getString("status"));
 								JsonObject r = event.body().getArray("result").get(0);
-								assertEquals(15290 - 3972 - 698, (int) r.getInteger("nbUsers", 0));
+								assertEquals(15290 - 3972 - 698 + 1, (int) r.getInteger("nbUsers", 0));
 								handler.handle(null);
 							}
 						});
@@ -248,7 +284,7 @@ public class FeederTest extends TestVerticle {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
-					eb.send("entcore.feeder", new JsonObject().putString("action", "import"),
+					eb.send(ENTCORE_FEEDER, new JsonObject().putString("action", "import"),
 							new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> message) {
