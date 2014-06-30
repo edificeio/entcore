@@ -63,7 +63,7 @@
 					</select>
 				</div>
 				<div class="row" ng-if="application.external">
-					<input type="checkbox" ng-model="application.transferSession" />
+					<input type="checkbox" ng-model="application.transferSession" ng-change="setUserinfoScope()" />
 					<label class="three cell"><span tooltip="tooltip.transferSession">Transmettre la session</span></label>
 				</div>
 				<div class="row">
@@ -71,7 +71,7 @@
 				</div>
 				<div class="row" ng-if="display.advanced">
 					<div class="row">
-						<label class="cell">Scope</label><input class="cell" type="text" />
+						<label class="cell">Scope</label><input class="cell" type="text" ng-model="application.scope" />
 					</div>
 					<div class="row" ng-id="!application.external">
 						<label class="cell"><span tooltip="tooltip.password">Code secret</span></label>

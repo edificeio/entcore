@@ -81,4 +81,13 @@ function AppRegistry($scope, $sce, model){
 	$scope.selectRole = function(role){
 		role.selected = !role.selected;
 	};
+
+	$scope.setUserinfoScope = function(){
+		if((!$scope.application.scope || $scope.application.scope.indexOf('userinfo') === -1)  && $scope.application.transferSession){
+			$scope.application.scope = 'userinfo' + ($scope.application.scope || '');
+		}
+		if($scope.application.scope && $scope.application.scope.indexOf('userinfo') !== -1 && !$scope.application.transferSession){
+			$scope.application.scope = $scope.application.scope.replace('userinfo', '');
+		}
+	};
 }

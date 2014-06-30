@@ -35,6 +35,7 @@ Application.prototype.open = function(){
 			data.result[0].target = 'adapter';
 			data.result[0].address = data.result[0].address.split('/adapter#')[1];
 		}
+
 		this.updateData(data.result[0]);
 	}.bind(this));
 };
