@@ -3,6 +3,7 @@ package org.entcore.test.load
 import Auth._
 import Directory._
 import Conversation._
+import org.entcore.test.workspace.Workspace
 import Workspace._
 import io.gatling.core.Predef._
 import bootstrap._

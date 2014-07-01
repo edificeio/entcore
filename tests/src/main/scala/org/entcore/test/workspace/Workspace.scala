@@ -1,16 +1,18 @@
-package org.entcore.test.load
+package org.entcore.test.workspace
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
 import bootstrap._
 
-import org.entcore.test.load.Headers._
 import scala.collection.mutable.ArrayBuffer
+import scala.Some
+
+import org.entcore.test.load.Headers._
 
 object Workspace {
 
-  val folders = csv("folders.csv").random
+  lazy val folders = csv("folders.csv").random
 
   val workspaceAccess =
     exec(http("Accès à l'espace doc")

@@ -34,6 +34,10 @@ object AppRegistryScenario {
               val tmt = List("conversation-enseignants-" + now, actions.mkString(","))
               val tms = List("conversation-eleves-" + now, actions.mkString(","))
               tmt :: tms :: acc
+            case "Archive" =>
+              val tat = List("archive-enseignants-" + now, actions.mkString(","))
+              val tas = List("archive-eleves-" + now, actions.mkString(","))
+              tat :: tas :: acc
             case _ => acc
           }
         }
