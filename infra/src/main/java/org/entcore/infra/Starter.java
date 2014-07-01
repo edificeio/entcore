@@ -142,7 +142,7 @@ public class Starter extends Server {
 								handler = new Handler<JsonArray>() {
 									@Override
 									public void handle(JsonArray scripts) {
-										execute("MATCH (n:System) WHERE n.name = 'neo4j' SET n.scripts = {scripts}}",
+										execute("MATCH (n:System) WHERE n.name = 'neo4j' SET n.scripts = {scripts}",
 												new JsonObject().putArray("scripts", scripts), null);
 									}
 								};
