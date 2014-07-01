@@ -407,7 +407,15 @@ module.directive('linker', function($compile){
 						return app.address.indexOf(match) !== -1
 					});
 				});
+				var currentApp = _.find(scope.apps, function(app){
+					return app.address.indexOf(appPrefix) !== -1;
+				});
+
 				scope.search.application = scope.apps[0];
+				if(currentApp){
+					scope.search.application = currentApp;
+				}
+
 				var split = scope.search.application.address.split('/');
 				scope.params.appPrefix = split[split.length - 1];
 				scope.$apply('apps');
