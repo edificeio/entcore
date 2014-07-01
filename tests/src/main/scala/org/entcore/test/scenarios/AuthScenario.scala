@@ -59,7 +59,7 @@ object AuthScenario {
       .header("Accept", "application/json; charset=UTF-8")
       .param("""grant_type""", """authorization_code""")
       .param("""code""", """${oauth2Code}""")
-      .param("""redirect_uri""", """http%3A%2F%2Flocalhost%3A1500%2Fcode""")
+      .param("""redirect_uri""", "http://localhost:1500/code")
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("oauth2AccessToken")))
     .exec(http("Get userinfo with access token")

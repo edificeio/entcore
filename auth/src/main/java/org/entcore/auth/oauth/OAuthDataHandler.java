@@ -24,7 +24,6 @@ import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.security.BCrypt;
 
 public class OAuthDataHandler extends DataHandler {
-
 	private final Neo neo;
 	private final MongoDb mongo;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
@@ -183,7 +182,7 @@ public class OAuthDataHandler extends DataHandler {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status")) &&
-							event.body().getNumber("count", 1) == 0) {
+							event.body().getInteger("count", 1) == 0) {
 						final JsonObject token = new JsonObject()
 								.putString("authId", authInfo.getId())
 								.putString("token", UUID.randomUUID().toString())
