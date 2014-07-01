@@ -3,6 +3,17 @@ Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.md or http://ckeditor.com/license
 */
 
+@font-face {
+	font-family: KGJune;
+	src: url(/public/fonts/KGJuneBug.ttf);
+}
+
+@font-face {
+	font-family: EcritureA;
+	src: url(/public/fonts/EcritureA-Romain-Orne.otf);
+	font-size: 2em;
+}
+
 body
 {
 	/* Font */

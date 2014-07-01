@@ -5,20 +5,19 @@
 
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
-	config.removePlugins = 'magicline';
-	config.extraPlugins = 'linker';
+	config.extraPlugins = 'linker,mathjax';
 	config.allowedContent = true;
 	config.toolbar = [
-		{ name: 'document', groups: [ 'mode', 'document', 'doctools' ], items: ['Templates' ] },
-		{ name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Undo', 'Redo' ] },
+		{ name: 'document', items: ['Templates' ] },
+		{ name: 'clipboard', items: [ 'Undo', 'Redo' ] },
 		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
-		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
+		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
-		{ name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
+		{ name: 'paragraph',items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Linker', 'Unlink'] },
-		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar'] },
+		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Mathjax'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] },
-		{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker' ], items: [] }
+		{ name: 'editing', items: [] }
 	];
 
 	config.linkShowAdvancedTab = false;
@@ -35,11 +34,12 @@ CKEDITOR.editorConfig = function(config){
 		.split('/theme.css')[0] + '/../img/icons/';
 
 	config.smiley_path = moodsPath;
-	config.smiley_images= ['angry-panda-small.png', 'dreamy-panda-small.png', 'happy-panda-small.png',
-		'joker-panda-small.png', 'love-panda-small.png', 'proud-panda-small.png', 'sad-panda-small.png',
-		'tired-panda-small.png', 'worried-panda-small.png'];
+	config.smiley_images= ['angry.png', 'dreamy.png', 'happy.png',
+		'joker.png', 'love.png', 'proud.png', 'sad.png',
+		'tired.png', 'worried.png'];
 	config.smiley_descriptions= ['En colère', 'Rêveur', 'Content', 'Farceur', 'Amoureux',
 		'Fier', 'Triste', 'Fatigué', 'Embêté'];
 	config.templates_replaceContent = false;
 	config.font_names = 'Arial;Times New Roman;Verdana;EcritureA;KGJune;Comic Sans MS';
+	config.fontSize_sizes = "8/8px;10/10px;12/12px;14/14px;16/16px;18/18px;20/20px;22/22px;24/24px;26/26px;28/28px;36/36px;48/48px;72/72px";
 };
