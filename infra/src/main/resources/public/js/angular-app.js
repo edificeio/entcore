@@ -212,7 +212,21 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		}
 		return _;
 	})
-	.factory('model', function(){
+	.factory('model', function($timeout){
+		var fa = Collection.prototype.trigger;
+		Collection.prototype.trigger = function(event){
+			$timeout(function(){
+				fa(event);
+			});
+		};
+
+		var fn = Collection.prototype.trigger;
+		Collection.prototype.trigger = function(event){
+			$timeout(function(){
+				fn(event);
+			});
+		};
+
 		return model;
 	})
 	.factory('ui', function(){

@@ -88,7 +88,7 @@
 			  }, {
 				  "name": "lastMails",
 				  "path": "/conversation/public/template/last-mails-widget.html",
-				  "js": "/conversation/public/js/last-mails-widget.js",
+				  "js": ["/conversation/public/js/last-mails-widget.js"],
 				  "i18n": "/conversation/i18n"
 			  }
 		  ],

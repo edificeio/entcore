@@ -146,7 +146,7 @@ var http = (function(){
 				if (obj.hasOwnProperty(p)) {
 					if(obj[p] instanceof Array){
 						for(var i = 0; i < obj[p].length; i++){
-							if(typeof obj[p] === 'object'){
+							if(typeof obj[p][i] === 'object'){
 								throw new TypeError("Arrays sent as URIs can't contain objects");
 							}
 							str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p][i]))
@@ -307,6 +307,10 @@ function Collection(obj){
 		trigger: function(event){
 			if(this.composer && this.composer.trigger){
 				this.composer.trigger(pluralizeName(this.obj) + '.' + event);
+			}
+
+			if(!this.callbacks){
+				this.callbacks = {};
 			}
 
 			if(this.callbacks[event] instanceof Array){
