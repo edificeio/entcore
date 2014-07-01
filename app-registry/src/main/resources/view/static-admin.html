@@ -116,7 +116,11 @@
 								<input type="text" ng-model="role.name" />
 							</div>
 
-							<h3>Autorisations</h3>
+							<div class="row">
+								<h3 class="cell">Autorisations</h3>
+								<a class="right-magnet">Affecter à des groupes</a>
+							</div>
+
 							<ul class="selectable-list">
 								<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
 									[[lang.translate(action.displayName)]]

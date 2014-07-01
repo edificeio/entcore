@@ -129,8 +129,12 @@ Role.prototype.save = function(){
 	}
 };
 
+function Group(){
+
+}
+
 model.build = function(){
-	this.makeModels([Application, Role, Action]);
+	this.makeModels([Application, Role, Action, Group]);
 
 	this.collection(Application, {
 		sync: function(){
@@ -166,6 +170,12 @@ model.build = function(){
 					return application.actions.findWhere({ name: action.name }) !== undefined;
 				}) !== undefined;
 			});
+		}
+	});
+
+	this.collection(Group, {
+		sync: function(){
+			http().get('/appregistry/groups/roles')
 		}
 	});
 };
