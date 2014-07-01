@@ -2524,6 +2524,21 @@ em.high-importance {
   border-top-width: 11px;
   border-bottom-width: 11px;
 }
+@font-face {
+  font-family: KGJune;
+  src: url(/public/fonts/KGJuneBug.ttf);
+}
+@font-face {
+  font-family: EcritureA;
+  src: url(/public/fonts/EcritureA-Romain-Orne.otf);
+  font-size-adjust: 80;
+}
+body {
+  cursor: default !important;
+}
+a.cke_smile img {
+  width: 40px;
+}
 html,
 body {
   margin: 0;
@@ -3795,7 +3810,7 @@ h1 {
   margin-bottom: 20px;
 }
 h2 {
-  font-size: 18px;
+  font-size: 24px;
 }
 h3 {
   font-size: 1.4em;

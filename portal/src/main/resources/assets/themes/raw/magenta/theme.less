@@ -126,14 +126,19 @@ table{
 		li{
 			border-color: @magenta;
 		}
+		li:hover{
+			color: @magenta;
+		}
 		li.selected{
 			border-color: @magenta;
 		}
 		li.selected:first-child{
 			border-top: 1px solid @magenta;
+			.border-radius(0);
 		}
 		li.selected:last-child{
 			border-bottom: 1px solid @magenta;
+			.border-radius(0);
 		}
 	}
 }

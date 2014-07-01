@@ -2524,6 +2524,21 @@ em.high-importance {
   border-top-width: 11px;
   border-bottom-width: 11px;
 }
+@font-face {
+  font-family: KGJune;
+  src: url(/public/fonts/KGJuneBug.ttf);
+}
+@font-face {
+  font-family: EcritureA;
+  src: url(/public/fonts/EcritureA-Romain-Orne.otf);
+  font-size-adjust: 80;
+}
+body {
+  cursor: default !important;
+}
+a.cke_smile img {
+  width: 40px;
+}
 html,
 body {
   margin: 0;
@@ -3795,7 +3810,7 @@ h1 {
   margin-bottom: 20px;
 }
 h2 {
-  font-size: 18px;
+  font-size: 24px;
 }
 h3 {
   font-size: 1.4em;
@@ -4542,14 +4557,27 @@ table thead tr {
 .side-tabs ul li {
   border-color: #ff0b75;
 }
+.side-tabs ul li:hover {
+  color: #ff0b75;
+}
 .side-tabs ul li.selected {
   border-color: #ff0b75;
 }
 .side-tabs ul li.selected:first-child {
   border-top: 1px solid #ff0b75;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
 }
 .side-tabs ul li.selected:last-child {
   border-bottom: 1px solid #ff0b75;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
 }
 .side-tabs-content {
   border-color: #ff0b75;
