@@ -59,8 +59,8 @@ public class FeederTest extends TestVerticle {
 						.putString("import-files", importTmpFolder.getRoot().getAbsolutePath())
 						.putNumber("delete-user-delay", 1000l)
 						.putNumber("pre-delete-user-delay", 1000l)
-						.putNumber("delete-task-delay", 3 * 60 * 1000l)
-						.putNumber("pre-delete-task-delay", 2 * 60 * 1000l);
+						.putString("delete-cron", "0 */3 * * * ? *")
+						.putString("pre-delete-cron", "0 */2 * * * ? *");
 				container.deployModule(System.getProperty("vertx.modulename"), config, 1,
 						new AsyncResultHandler<String>() {
 							public void handle(AsyncResult<String> ar) {

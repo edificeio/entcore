@@ -4,6 +4,7 @@
 
 package org.entcore.feeder;
 
+import fr.wseduc.cron.CronTrigger;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.GraphData;
@@ -18,6 +19,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.text.ParseException;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -38,10 +41,16 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
-		final long deleteTaskDelay = container.config().getLong("delete-task-delay", 24 * 3600 * 1000l);
-		final long preDeleteTaskDelay = container.config().getLong("pre-delete-task-delay", 24 * 3600 * 1000l);
-		vertx.setPeriodic(deleteTaskDelay, new User.DeleteTask(deleteUserDelay, eb));
-		vertx.setPeriodic(preDeleteTaskDelay, new User.PreDeleteTask(preDeleteUserDelay));
+		final String deleteCron = container.config().getString("delete-cron", "0 0 2 * * ? *");
+		final String preDeleteCron = container.config().getString("pre-delete-cron", "0 0 3 * * ? *");
+		try {
+			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
+			new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
+		} catch (ParseException e) {
+			logger.fatal(e.getMessage(), e);
+			vertx.stop();
+			return;
+		}
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
 		vertx.eventBus().registerHandler(
