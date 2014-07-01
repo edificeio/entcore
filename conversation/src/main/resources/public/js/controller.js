@@ -26,15 +26,6 @@ function Conversation($scope, date, notify, route, model){
 		}
 	});
 
-
-	model.folders.systemFolders.forEach(function(folderName){
-		model.folders[folderName].on('mails.change', function(e){
-			$scope.$apply(folderName);
-			$scope.$apply('newItem');
-			$scope.$apply('mail');
-		});
-	});
-
 	$scope.resetScope = function(){
 		$scope.openInbox();
 	};
