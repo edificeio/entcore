@@ -57,10 +57,10 @@ public class FeederTest extends TestVerticle {
 						.putString("neo4j-address", NEO4J_PERSISTOR)
 						.putString("feeder", "AAF")
 						.putString("import-files", importTmpFolder.getRoot().getAbsolutePath())
-						.putNumber("delete-user-delay", 1000l)
+						.putNumber("delete-user-delay", 10000l)
 						.putNumber("pre-delete-user-delay", 1000l)
-						.putString("delete-cron", "0 */3 * * * ? *")
-						.putString("pre-delete-cron", "0 */2 * * * ? *");
+						.putString("delete-cron", "0 */1 * * * ? *")
+						.putString("pre-delete-cron", "0 */1 * * * ? *");
 				container.deployModule(System.getProperty("vertx.modulename"), config, 1,
 						new AsyncResultHandler<String>() {
 							public void handle(AsyncResult<String> ar) {
