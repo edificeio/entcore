@@ -344,8 +344,8 @@ public class WorkspaceService extends Controller {
 							public void handle(Message<JsonObject> res) {
 								request.resume();
 								if ("ok".equals(res.body().getString("status")) &&
-										"1".equals(res.body().getObject("result")
-												.getObject("0").getString("nb"))) {
+										1 == res.body().getObject("result")
+												.getObject("0").getInteger("nb")) {
 									JsonObject doc = new JsonObject();
 									doc.putString("to", to);
 									doc.putString("toName", res.body().getObject("result")

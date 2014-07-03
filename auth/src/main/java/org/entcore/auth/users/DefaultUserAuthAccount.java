@@ -209,7 +209,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
-						"1".equals(((JsonObject) event.body().getArray("result").get(0)).getString("nb"))) {
+						1 == ((JsonObject) event.body().getArray("result").get(0)).getInteger("nb")) {
 					sendResetPasswordLink(request, login, email, code, handler);
 				} else {
 					handler.handle(false);

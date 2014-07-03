@@ -48,17 +48,14 @@ public class OAuthDataHandler extends DataHandler {
 		params.put("clientId", clientId);
 		params.put("secret", clientSecret);
 		params.put("grantType", grantType);
-		neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+		neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				if ("ok".equals(res.body().getString("status"))) {
-					JsonObject r = res.body().getObject("result").getObject("0");
-					if (r != null && "1".equals(r.getString("nb"))) {
-						handler.handle(true);
-					} else {
-						handler.handle(false);
-					}
+				JsonArray a = res.body().getArray("result");
+				if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
+					JsonObject r = a.get(0);
+					handler.handle(r != null && r.getInteger("nb") == 1);
 				} else {
 					handler.handle(false);
 				}
@@ -272,17 +269,14 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("clientId", clientId);
-			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result").getObject("0");
-						if (r != null && "1".equals(r.getString("nb"))) {
-							handler.handle(true);
-						} else {
-							handler.handle(false);
-						}
+					JsonArray a = res.body().getArray("result");
+					if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
+						JsonObject r = a.get(0);
+						handler.handle(r != null && r.getInteger("nb") == 1);
 					} else {
 						handler.handle(false);
 					}
@@ -302,17 +296,14 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("userId", userId);
-			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result").getObject("0");
-						if (r != null && "1".equals(r.getString("nb"))) {
-							handler.handle(true);
-						} else {
-							handler.handle(false);
-						}
+					JsonArray a = res.body().getArray("result");
+					if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
+						JsonObject r = a.get(0);
+						handler.handle(r != null && r.getInteger("nb") == 1);
 					} else {
 						handler.handle(false);
 					}

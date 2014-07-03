@@ -45,6 +45,8 @@ public class Starter extends Server {
 								}
 							}
 						});
+					} else {
+						log.error("Error deploying neo4j-persistor", event.cause());
 					}
 				}
 			});
