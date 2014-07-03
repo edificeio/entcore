@@ -133,8 +133,20 @@ function Group(){
 
 }
 
+function School(){
+	this.collection(Group, {
+		sync: function(){
+			http().get('/appregistry/groups/roles', { schoolId: this.id }).done(function(groups){
+				this.load(_.map(groups, function(group){
+					return group;
+				}));
+			}.bind(this));
+		}
+	});
+}
+
 model.build = function(){
-	this.makeModels([Application, Role, Action, Group]);
+	this.makeModels([Application, Role, Action, School, Group]);
 
 	this.collection(Application, {
 		sync: function(){
@@ -173,9 +185,13 @@ model.build = function(){
 		}
 	});
 
-	this.collection(Group, {
+	this.collection(School, {
 		sync: function(){
-			http().get('/appregistry/groups/roles')
+			http().get('/directory/api/ecole').done(function(data){
+				this.load(_.map(data.result, function(school){
+					return school;
+				}));
+			}.bind(this));
 		}
 	});
 };
