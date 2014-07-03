@@ -33,9 +33,9 @@ CKEDITOR.editorConfig = function(config){
 		.split('/theme.css')[0] + '/../img/icons/';
 
 	config.smiley_path = moodsPath;
-	config.smiley_images= ['angry-panda-small.png', 'dreamy-panda-small.png', 'happy-panda-small.png',
-	'joker-panda-small.png', 'love-panda-small.png', 'proud-panda-small.png', 'sad-panda-small.png',
-	'tired-panda-small.png', 'worried-panda-small.png'];
+	config.smiley_images= ['angry.png', 'dreamy.png', 'happy.png',
+	'joker.png', 'love.png', 'proud.png', 'sad.png',
+	'tired.png', 'worried.png'];
 	config.smiley_descriptions= ['En colère', 'Rêveur', 'Content', 'Farceur', 'Amoureux',
 	'Fier', 'Triste', 'Fatigué', 'Embêté'];
 	config.templates_replaceContent = false;

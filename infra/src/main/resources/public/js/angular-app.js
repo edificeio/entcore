@@ -105,6 +105,52 @@ var protoApp = {
 		}
 };
 
+var template = {
+	viewPath: '/' + appPrefix + '/public/template/',
+	containers: {},
+	open: function(name, view){
+		var path = this.viewPath + view + '.html';
+		var folder = appPrefix;
+		if(appPrefix === '.'){
+			folder = 'portal';
+		}
+		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
+			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html';
+		}
+
+		this.containers[name] = path;
+
+		if(this.callbacks && this.callbacks[name]){
+			this.callbacks[name].forEach(function(cb){
+				cb();
+			});
+		}
+	},
+	contains: function(name, view){
+		return this.containers[name] === this.viewPath + view + '.html';
+	},
+	close: function(name){
+		this.containers[name] = 'empty';
+		if(this.callbacks && this.callbacks[name]){
+			this.callbacks[name].forEach(function(cb){
+				cb();
+			});
+		}
+	},
+	watch: function(container, fn){
+		if(typeof fn !== 'function'){
+			throw TypeError('template.watch(string, function) called with wrong parameters');
+		}
+		if(!this.callbacks){
+			this.callbacks = {};
+		}
+		if(!this.callbacks[container]){
+			this.callbacks[container] = [];
+		}
+		this.callbacks[container].push(fn);
+	}
+};
+
 var notify = {
 	message: function(type, message){
 		message = lang.translate(message);
@@ -145,27 +191,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		}
 	})
 	.factory('template', function(){
-		return {
-			viewPath: '/' + appPrefix + '/public/template/',
-			containers: {},
-			open: function(name, view){
-				var path = this.viewPath + view + '.html';
-				var folder = appPrefix;
-				if(appPrefix === '.'){
-					folder = 'portal';
-				}
-				if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
-					path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html';
-				}
-				this.containers[name] = path;
-			},
-			contains: function(name, view){
-				return this.containers[name] === this.viewPath + view + '.html';
-			},
-			close: function(name){
-				this.containers[name] = 'empty';
-			}
-		}
+		return template;
 	})
 	.factory('date', function() {
 		if(window.moment === undefined){
@@ -511,6 +537,75 @@ module.directive('linker', function($compile){
 
 			scope.cancel = function(){
 				scope.chooseLink = false;
+			}
+		}
+	}
+});
+
+function serializeScope(scope){
+	var result = {};
+	for(var prop in scope){
+		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this'){
+			result[prop] = JSON.parse(JSON.stringify(scope[prop]));
+		}
+	}
+
+	if(scope.$parent === null){
+		return result;
+	}
+	return {
+		parent: serializeScope(scope.$parent),
+		scope: result
+	}
+}
+
+function applyScope(input, scope){
+	if(!input || !scope){
+		return;
+	}
+	for(var prop in input.scope){
+		if(scope[prop] instanceof Collection){
+			scope[prop].load(input.scope[prop]);
+		}
+		if(scope[prop] instanceof Model){
+			scope[prop].updateData(input.scope[prop]);
+		}
+		if(!(scope[prop] instanceof Model) && !(scope[prop] instanceof Collection)){
+			scope[prop] = input.scope[prop];
+		}
+	}
+	scope.$apply();
+	applyScope(input.parent, scope.$parent);
+}
+
+module.directive('container', function($compile){
+	return {
+		restrict: 'E',
+		template: '<div ng-include="templateContainer"></div>',
+		link: function(scope, element, attributes){
+			scope.tpl = template;
+			window.addEventListener('popstate', function(event){
+				if(history.state && history.state.template){
+					template.containers[history.state.template.name] = history.state.template.view;
+					scope.templateContainer = template.containers[attributes.template];
+					applyScope(history.state.scope.parent, scope.$parent);
+				}
+			});
+
+			//register current state
+			history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
+
+			template.watch(attributes.template, function(){
+				//timer to get scope after requests have been executed... to be improved some day
+				setTimeout(function(){
+					history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
+				}, 2000);
+
+				scope.templateContainer = template.containers[attributes.template];
+			});
+
+			if(attributes.template){
+				scope.templateContainer = template.containers[attributes.template];
 			}
 		}
 	}
@@ -1176,72 +1271,6 @@ function createCKEditorInstance(editor, $scope, $compile){
 	return ckeEditorFixedPositionning;
 };
 
-module.directive('richTextEditor', function($compile){
-	return {
-		restrict: 'E',
-		scope: {
-			ngModel: '=',
-			watchCollection: '@',
-			notify: '='
-		},
-		template: '<div class="twelve cell block-editor"><div contenteditable="true" class="editor-container twelve cell">' +
-			'</div><linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
-			'<div class="clear"></div></div>',
-		compile: function($element, $attributes, $transclude){
-			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
-			if(window.CKEDITOR === undefined){
-				loader.syncLoad('ckeditor');
-				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
-			}
-			return function(scope, element, attributes){
-				scope.selected = { link: '' };
-				var editor = $('[contenteditable=true]');
-				scope.contextEditor = CKEDITOR.inline(editor[0],
-					{ customConfig: '/' + infraPrefix + '/public/ckeditor/rich-text-config.js' }
-				);
-
-				createCKEditorInstance(editor, scope, $compile);
-
-				element.on('removed', function(){
-					for(var instance in CKEDITOR.instances){
-						CKEDITOR.instances[instance].destroy()
-					}
-					$('.cke').remove();
-				});
-
-				$('body').on('click', '.cke_button__linker', function(){
-					scope.chooseLink = true;
-					scope.$apply('chooseLink');
-				});
-
-				scope.updateContent = function(){
-					var content = editor.html();
-					if(content.indexOf(';base64,') !== -1){
-						scope.notify.error('Une image est corrompue')
-					}
-					editor.find('img').each(function(index, item){
-						if($(item).attr('src').indexOf(';base64,') !== -1){
-							$(item).remove();
-						}
-					})
-
-					scope.ngModel = editor.html();
-				}
-
-				if(!scope.watchCollection){
-					return;
-				}
-
-				scope.$eval(scope.watchCollection).forEach(function(col){
-					scope.$parent.$watchCollection(col, function(){
-						ckeEditorFixedPositionning();
-					});
-				});
-			}
-		}
-	}
-});
-
 module.directive('textEditor', function($compile){
 	return {
 		restrict: 'E',
@@ -1321,7 +1350,8 @@ module.directive('htmlEditor', function($compile){
 		replace: true,
 		scope: {
 			ngModel: '=',
-			notify: '='
+			notify: '=',
+			watchCollections: '@'
 		},
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
@@ -1418,6 +1448,16 @@ module.directive('htmlEditor', function($compile){
 					});
 					scope.selectFiles = false;
 				};
+
+				if(!scope.watchCollections){
+					return;
+				}
+
+				scope.$eval(scope.watchCollections).forEach(function(col){
+					scope.$parent.$watchCollection(col, function(){
+						ckeEditorFixedPositionning();
+					});
+				});
 			}
 		}
 	}

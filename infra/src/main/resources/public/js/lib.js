@@ -291,7 +291,11 @@ function Collection(obj){
 
 (function(){
 	function pluralizeName(obj){
-		return (obj.name[0].toLowerCase() || obj._name[0].toLowerCase()) + obj.name.substr(1) + 's';
+		var name = (obj.name || obj._name);
+		if(name[name.length - 1] === 'y'){
+			return name[0].toLowerCase() + name.substr(1, name.length - 2) + 'ies';
+		}
+		return name[0].toLowerCase() + name.substr(1) + 's';
 	}
 
 	Collection.prototype = {
