@@ -192,7 +192,7 @@ function Conversation($scope, date, notify, route, model){
 		$scope.users.foundCC = [];
 		$scope.users.search = '';
 		$scope.users.searchCC = '';
-	}
+	};
 
 	$scope.updateFoundCCUsers = function(){
 		var include = [];
