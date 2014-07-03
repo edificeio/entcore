@@ -2,68 +2,70 @@
   ~ Copyright. Tous droits réservés. WebServices pour l’Education.
   -->
 
-<table class="list-view">
-	<thead>
-		<tr>
-			<th scope="col">
-				<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
-			</th>
-			<th scope="col"></th>
-			<th scope="col" class="five" ng-click="orderByField('name')">
-				<span translate content="name"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
-			</th>
-			<th scope="col" class="four" ng-click="orderByField('ownerName')">
-				<span translate content="owner"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
-			</th>
-			<th></th>
-			<th scope="col" class="two" ng-click="orderByField('created')">
-				<span translate content="modified"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
-			</th>
-		</tr>
-	</thead>
-	<tbody>
-	<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
-		<td><input type="checkbox" data-ng-model="folder.selected" /></td>
-		<td><i class="folder"></i></td>
-		<td colspan="2">
-			<strong>
-				<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
-				<a ng-if="currentTree.name === 'trash'">[[folder.name]]</a>
-			</strong>
-		</td>
-		<td></td>
-		<td>[[longDate(folder.created)]]</td>
-	</tr>
-	<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
-		<td><input type="checkbox" data-ng-model="document.selected" /></td>
-		<td class="icon">
-			<div class="twelve cell">
-				<i class="[[document.metadata.contentType]]"></i>
-				<i ng-if="document.shared.length > 0" class="shared"></i>
-			</div>
-		</td>
-		<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
-		<td><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
-		<td><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
-		<td>[[longDate(document.created)]]</td>
-	</tr>
-	<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }" ng-show="document === selectedDocuments()[0] && document.showComments">
-		<td colspan="6" class="container-cell">
+		<article class="list-view">
+			<table class="list-view">
+				<thead>
+				<tr>
+					<th scope="col">
+						<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
+					</th>
+					<th scope="col"></th>
+					<th scope="col" class="five" ng-click="orderByField('name')">
+						<span translate content="name"></span>
+						<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
+						<i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
+					</th>
+					<th scope="col" class="four" ng-click="orderByField('ownerName')">
+						<span translate content="owner"></span>
+						<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
+						<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
+					</th>
+					<th></th>
+					<th scope="col" class="two" ng-click="orderByField('created')">
+						<span translate content="modified"></span>
+						<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
+						<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
+					</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
+					<td><input type="checkbox" data-ng-model="folder.selected" /></td>
+					<td><i class="folder"></i></td>
+					<td colspan="2">
+						<strong>
+							<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
+							<a ng-if="currentTree.name === 'trash'">[[folder.name]]</a>
+						</strong>
+					</td>
+					<td></td>
+					<td>[[longDate(folder.created)]]</td>
+				</tr>
+				<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
+					<td><input type="checkbox" data-ng-model="document.selected" /></td>
+					<td class="icon">
+						<div class="twelve cell">
+							<i class="[[document.metadata.contentType]]"></i>
+							<i ng-if="document.shared.length > 0" class="shared"></i>
+						</div>
+					</td>
+					<td><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
+					<td><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
+					<td><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
+					<td>[[longDate(document.created)]]</td>
+				</tr>
+				<tr data-ng-repeat-end ng-class="{ underline: true, checked: document.selected }" ng-show="document === selectedDocuments()[0] && document.showComments">
+					<td colspan="6" class="container-cell">
 
-			<section class="row reduce-block-eight" ng-if="document === selectedDocuments()[0] && document.showComments">
-				<article class="twelve cell comment content-line reduce-block-eight" data-ng-repeat="comment in document.comments">
-					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-					<em>[[longDate(comment.posted)]]</em>
-					<p>[[comment.comment]]</p>
-				</article>
-			</section>
-		</td>
-	</tr>
-	</tbody>
-</table>
+						<section class="row reduce-block-eight" ng-if="document === selectedDocuments()[0] && document.showComments">
+							<article class="twelve cell comment content-line reduce-block-eight" data-ng-repeat="comment in document.comments">
+								<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+								<em>[[longDate(comment.posted)]]</em>
+								<p>[[comment.comment]]</p>
+							</article>
+						</section>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</article>
