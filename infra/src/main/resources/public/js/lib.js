@@ -199,13 +199,8 @@ var http = (function(){
 						that.statusCallbacks.error.call(that, e);
 					}
 					else{
-						if(parent !== window && e.status !== 0){
-							messenger.notify('error', 'e' + e.status);
-						}
-						else{
-							if(!params.disableNotifications){
-								humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
-							}
+						if(!params.disableNotifications){
+							humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
 						}
 					}
 
@@ -576,12 +571,16 @@ function Collection(obj){
 	Model.prototype.toJSON = function(){
 		var dup = {};
 		for(var prop in this){
-			if(this.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data'){
+			if(this.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey'){
 				dup[prop] = this[prop];
 			}
 		}
 		return dup;
-	}
+	};
+
+	Model.prototype.toURL = function(){
+
+	};
 
 	Model.prototype.makePermanent = function(obj, methods){
 		function setCol(col){
