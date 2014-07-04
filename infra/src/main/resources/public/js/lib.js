@@ -315,7 +315,7 @@ function Collection(obj){
 			if(this.callbacks[event] instanceof Array){
 				this.callbacks[event].forEach(function(cb){
 					if(typeof cb === 'function'){
-						cb();
+						cb.call(this);
 					}
 				});
 			}
@@ -847,7 +847,7 @@ function Collection(obj){
 		}
 		for(var i = 0; i < this.callbacks[event].length; i++){
 			if(typeof this.callbacks[event][i] === 'function'){
-				this.callbacks[event][i]();
+				this.callbacks[event][i].call(this);
 			}
 		}
 	};

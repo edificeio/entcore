@@ -242,15 +242,15 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		var fa = Collection.prototype.trigger;
 		Collection.prototype.trigger = function(event){
 			$timeout(function(){
-				fa(event);
-			});
+				fa.call(this, event);
+			}.bind(this));
 		};
 
-		var fn = Collection.prototype.trigger;
-		Collection.prototype.trigger = function(event){
+		var fn = Model.prototype.trigger;
+		Model.prototype.trigger = function(event){
 			$timeout(function(){
-				fn(event);
-			});
+				fn.call(this, event);
+			}.bind(this));
 		};
 
 		return model;
@@ -596,11 +596,7 @@ module.directive('container', function($compile){
 			history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
 
 			template.watch(attributes.template, function(){
-				//timer to get scope after requests have been executed... to be improved some day
-				setTimeout(function(){
-					history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
-				}, 2000);
-
+				history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
 				scope.templateContainer = template.containers[attributes.template];
 			});
 
