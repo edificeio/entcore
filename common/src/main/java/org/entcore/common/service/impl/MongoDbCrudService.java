@@ -25,11 +25,20 @@ import static org.entcore.common.mongodb.MongoDbResult.*;
 
 public class MongoDbCrudService implements CrudService {
 
-	private MongoDb mongo;
-	private String collection;
+	protected final MongoDb mongo;
+	protected final String collection;
+	protected final JsonObject defaultRetrieveProjection;
+	protected final JsonObject defaultListProjection;
 
 	public MongoDbCrudService(String collection) {
+		this(collection, null, null);
+	}
+
+	public MongoDbCrudService(String collection,
+			JsonObject defaultRetrieveProjection, JsonObject defaultListProjection) {
 		this.collection = collection;
+		this.defaultRetrieveProjection = defaultRetrieveProjection;
+		this.defaultListProjection = defaultListProjection;
 		this.mongo = MongoDb.getInstance();
 	}
 
@@ -44,12 +53,25 @@ public class MongoDbCrudService implements CrudService {
 	}
 
 	@Override
+	public void retrieve(String id, Handler<Either<String, JsonObject>> handler) {
+		QueryBuilder builder = QueryBuilder.start("_id").is(id);
+		mongo.findOne(collection, MongoQueryBuilder.build(builder),
+				defaultRetrieveProjection, validResultHandler(handler));
+	}
+
+	@Override
 	public void retrieve(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		QueryBuilder builder = QueryBuilder.start("_id").is(id);
 		if (user == null) {
 			builder.put("visibility").is(VisibilityFilter.PUBLIC.name());
 		}
-		mongo.findOne(collection,  MongoQueryBuilder.build(builder), validResultHandler(handler));
+		mongo.findOne(collection, MongoQueryBuilder.build(builder),
+				defaultRetrieveProjection,validResultHandler(handler));
+	}
+
+	@Override
+	public void update(String id, JsonObject data, Handler<Either<String, JsonObject>> handler) {
+		update(id, data, null, handler);
 	}
 
 	@Override
@@ -65,9 +87,20 @@ public class MongoDbCrudService implements CrudService {
 	}
 
 	@Override
+	public void delete(String id, Handler<Either<String, JsonObject>> handler) {
+		delete(id, null, handler);
+	}
+
+	@Override
 	public void delete(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		QueryBuilder q = QueryBuilder.start("_id").is(id);
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
+	}
+
+	@Override
+	public void list(Handler<Either<String, JsonArray>> handler) {
+		JsonObject sort = new JsonObject().putNumber("modified", -1);
+		mongo.find(collection, new JsonObject(), sort, defaultListProjection, validResultsHandler(handler));
 	}
 
 	@Override
@@ -114,7 +147,8 @@ public class MongoDbCrudService implements CrudService {
 			query = QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name());
 		}
 		JsonObject sort = new JsonObject().putNumber("modified", -1);
-		mongo.find(collection, MongoQueryBuilder.build(query), sort, null, validResultsHandler(handler));
+		mongo.find(collection, MongoQueryBuilder.build(query), sort,
+				defaultListProjection, validResultsHandler(handler));
 	}
 
 }

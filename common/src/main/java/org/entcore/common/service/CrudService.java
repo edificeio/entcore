@@ -14,11 +14,19 @@ public interface CrudService {
 
 	void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
+	void retrieve(String id, Handler<Either<String, JsonObject>> handler);
+
 	void retrieve(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+	void update(String id, JsonObject data, Handler<Either<String, JsonObject>> handler);
 
 	void update(String id, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
+	void delete(String id, Handler<Either<String, JsonObject>> handler);
+
 	void delete(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+	void list(Handler<Either<String, JsonArray>> handler);
 
 	void list(VisibilityFilter filter, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
