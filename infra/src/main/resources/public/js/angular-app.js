@@ -545,7 +545,7 @@ module.directive('linker', function($compile){
 function serializeScope(scope){
 	var result = {};
 	for(var prop in scope){
-		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this'){
+		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && result[prop] !== undefined){
 			result[prop] = JSON.parse(JSON.stringify(scope[prop]));
 		}
 	}
@@ -2094,10 +2094,11 @@ function Account($scope){
 function Share($rootScope, $scope, ui, _, lang){
 	if(!$scope.appPrefix){
 		$scope.appPrefix = 'workspace';
-		if($scope.resources instanceof Model){
-			$scope.resources = [$scope.resources];
-		}
 	}
+	if($scope.resources instanceof Model){
+		$scope.resources = [$scope.resources];
+	}
+
 	$scope.sharing = {};
 	$scope.found = [];
 	$scope.maxResults = 5;

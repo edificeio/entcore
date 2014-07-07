@@ -9,13 +9,18 @@
 		"default": false,
 		"requires": ["read"]
 	},
-	"manager": {
+	"publish": {
 		"priority": 2,
 		"default": false,
 		"requires": ["read", "contrib"]
 	},
-	"comment": {
+	"manager": {
 		"priority": 3,
+		"default": false,
+		"requires": ["read", "contrib"]
+	},
+	"comment": {
+		"priority": 4,
 		"default": true,
 		"requires": ["read"]
 	}
