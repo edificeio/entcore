@@ -36,9 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
 public abstract class MongoDbControllerHelper extends BaseController {
@@ -110,21 +108,16 @@ public abstract class MongoDbControllerHelper extends BaseController {
 			badRequest(request);
 			return;
 		}
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
 			@Override
-			public void handle(JsonObject object) {
-				final JsonArray a = object.getArray("actions");
-				final String groupId = object.getString("groupId");
-				final String userId = object.getString("userId");
-				if (a == null || a.size() == 0) {
+			protected void handle() {
+				final List<String> actions = request.formAttributes().getAll("actions");
+				final String groupId = request.formAttributes().get("groupId");
+				final String userId = request.formAttributes().get("userId");
+				if (actions == null || actions.isEmpty()) {
 					badRequest(request);
 					return;
-				}
-				final List<String> actions = new ArrayList<>();
-				for (Object o: a) {
-					if (o != null && o instanceof String) {
-						actions.add(o.toString());
-					}
 				}
 				getUserInfos(eb, request, new Handler<UserInfos>() {
 					@Override
@@ -180,21 +173,16 @@ public abstract class MongoDbControllerHelper extends BaseController {
 			return;
 		}
 
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
 			@Override
-			public void handle(JsonObject object) {
-				final JsonArray a = object.getArray("actions");
-				final String groupId = object.getString("groupId");
-				final String userId = object.getString("userId");
-				if (a == null || a.size() == 0) {
+			protected void handle() {
+				final List<String> actions = request.formAttributes().getAll("actions");
+				final String groupId = request.formAttributes().get("groupId");
+				final String userId = request.formAttributes().get("userId");
+				if (actions == null || actions.isEmpty()) {
 					badRequest(request);
 					return;
-				}
-				final List<String> actions = new ArrayList<>();
-				for (Object o: a) {
-					if (o != null && o instanceof String) {
-						actions.add(o.toString());
-					}
 				}
 				getUserInfos(eb, request, new Handler<UserInfos>() {
 					@Override
