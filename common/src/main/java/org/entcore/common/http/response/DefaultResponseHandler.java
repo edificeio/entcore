@@ -62,7 +62,6 @@ public class DefaultResponseHandler {
 
 	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
 			final HttpServerRequest request, final int successCode, final int emptyCode) {
-
 		return new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {

@@ -15,28 +15,28 @@ object AppRegistryScenario {
 		.check(status.is(200)))
 		.exec(http("Find workflow habilitations")
 			.get("""/appregistry/applications/actions?actionType=WORKFLOW""")
-		.check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result").find.transform(_.map{res =>
-        val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-        json.values.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
+		.check(status.is(200),
+      bodyString.find.transform(_.map{res =>
+        val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+        json.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
           lazy val actions: List[String] = app.get("actions").asInstanceOf[JSONArray].asScala.toList.map(
             _.asInstanceOf[JSONArray].get(0).asInstanceOf[String]
           )
           app.get("name").asInstanceOf[String] match {
             case "Espace documentaire" =>
-              val twt = List("workspace-enseignants-" + now, actions.mkString(","))
+              val twt = List("workspace-enseignants-" + now, actions.mkString("\",\""))
               val fa = actions.filterNot(action =>
                 action.toLowerCase.contains("share") || action.toLowerCase.contains("rack"))
-              val tws = List("workspace-eleves-" + now, fa.mkString(","))
+              val tws = List("workspace-eleves-" + now, fa.mkString("\",\""))
               twt :: tws :: acc
             case "Messagerie" =>
-              val tmt = List("conversation-enseignants-" + now, actions.mkString(","))
-              val tms = List("conversation-eleves-" + now, actions.mkString(","))
+              val tmt = List("conversation-enseignants-" + now, actions.mkString("\",\""))
+              val tms = List("conversation-eleves-" + now, actions.mkString("\",\""))
               tmt :: tms :: acc
             case "Archive" =>
-              val tat = List("archive-enseignants-" + now, actions.mkString(","))
-              val tas = List("archive-eleves-" + now, actions.mkString(","))
+              val tat = List("archive-enseignants-" + now, actions.mkString("\",\""))
+              val tas = List("archive-eleves-" + now, actions.mkString("\",\""))
               tat :: tas :: acc
             case _ => acc
           }
@@ -45,19 +45,41 @@ object AppRegistryScenario {
     .foreach("${roles}", "role") {
       exec(http("Create role ${role(0)}")
         .post("""/appregistry/role""")
-        .param("""role""", """${role(0)}""")
-        .param("""actions""", """${role(1)}""")
-        .check(status.is(200), jsonPath("status").is("ok")))
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{"role":"${role(0)}","actions":["${role(1)}"]}"""))
+        .check(status.is(201)))
+      .exec(http("Create role ${role(0)} twice")
+        .post("""/appregistry/role""")
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{"role":"${role(0)}","actions":["${role(1)}"]}"""))
+        .check(status.is(409)))
     }
+    .exec{session =>
+      val roles = session("roles").as[List[List[String]]]
+      session.set("testRole", roles.head)
+    }
+    .exec(http("Create role ${testRole(0)}-test")
+    .post("""/appregistry/role""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"role":"${testRole(0)}-test","actions":["${testRole(1)}"]}"""))
+    .check(status.is(201), jsonPath("$.id").find.saveAs("test-id")))
+    .exec(http("Update role ${testRole(0)}-test")
+    .put("""/appregistry/role/${test-id}""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"role":"${testRole(0)}-bla-test"}"""))
+    .check(status.is(200), jsonPath("$.id").find.exists))
+//    .exec(http("Delete role ${testRole(0)}-test")
+//    .delete("/appregistry/role/${test-id}")
+//    .check(status.is(204)))
     .exec(http("Find roles with actions")
       .get("""/appregistry/roles/actions""")
-      .check(status.is(200), jsonPath("status").is("ok")))
+      .check(status.is(200)))
     .exec(http("Find roles")
       .get("""/appregistry/roles""")
-      .check(status.is(200), jsonPath("status").is("ok"),
-        jsonPath("$.result").find.transform(_.map{res =>
-          val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-          json.values.asScala.foldLeft[List[List[String]]](List(Nil, Nil)){(acc, c) =>
+      .check(status.is(200),
+        bodyString.find.transform(_.map{res =>
+          val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+          json.asScala.foldLeft[List[List[String]]](List(Nil, Nil)){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
             if (app.get("name").asInstanceOf[String].contains("enseignants-" + now)) {
               List(app.get("id").asInstanceOf[String] :: acc.head, acc.last)
@@ -66,14 +88,14 @@ object AppRegistryScenario {
             } else {
               acc
             }
-          }
+          }.map(_.mkString("\",\""))
         }).saveAs("rolesIds")))
     .exec(http("Find profil groups with roles")
-      .get("""/appregistry/groups/roles?schoolId=${schoolId}""")
-      .check(status.is(200), jsonPath("status").is("ok"),
-        jsonPath("$.result").find.transform(_.map{res =>
-          val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-          json.values.asScala.foldLeft[List[String]](List("","")){(acc, c) =>
+      .get("""/appregistry/groups/roles?structureId=${schoolId}""")
+      .check(status.is(200),
+        bodyString.find.transform(_.map{res =>
+          val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+          json.asScala.foldLeft[List[String]](List("","")){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
             app.get("name").asInstanceOf[String] match {
               case "Ecole primaire Emile Zola-Teacher" => List(app.get("id").asInstanceOf[String], acc.last)
@@ -84,26 +106,35 @@ object AppRegistryScenario {
         }).saveAs("profilGroupIds")))
     .exec(http("Link teacher profil groups with roles")
       .post("""/appregistry/authorize/group?schoolId=${schoolId}""")
-      .param("""groupId""", """${profilGroupIds(0)}""")
-      .multiValuedParam("""roleIds""", """${rolesIds(0)}""")
-      .check(status.is(200), jsonPath("status").is("ok")))
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"groupId":"${profilGroupIds(0)}", "roleIds":["${rolesIds(0)}"]}"""))
+      .check(status.is(200)))
     .exec(http("Link student profil groups with roles")
       .post("""/appregistry/authorize/group?schoolId=${schoolId}""")
-      .param("""groupId""", """${profilGroupIds(1)}""")
-      .multiValuedParam("""roleIds""", """${rolesIds(1)}""")
-      .check(status.is(200), jsonPath("status").is("ok")))
-    .exec(http("Create external applications")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"groupId":"${profilGroupIds(1)}", "roleIds":["${rolesIds(1)}"]}"""))
+      .check(status.is(200)))
+    .exec(http("Create external application")
     .post("""/appregistry/application/external""")
-      .param("""grantType""", """authorization_code""")
-      .param("""name""", "test" + now)
-      .param("""secret""", "clientSecret")
-      .param("""scope""", "userinfo")
-      .check(status.is(200), jsonPath("status").is("ok")))
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"grantType" : "authorization_code", "name":"test""" + now +
+          """", "secret":"clientSecret", "address" : "http://localhost"}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("app-id")))
     .exec(http("Create external applications with client_credentials")
     .post("""/appregistry/application/external""")
-      .param("""grantType""", """client_credentials""")
-      .param("""name""", "MyExternalApp" + now)
-      .param("""secret""", "clientSecret")
-      .param("""scope""", "org.entcore.timeline.controllers.TimelineController|publish")
-      .check(status.is(200), jsonPath("status").is("ok")))
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"grantType" : "client_credentials", "name":"MyExternalApp""" + now +
+          """", "secret":"clientSecret",  "address" : "http://localhost", "scope" : "org.entcore.timeline.controllers.TimelineController|publish"}"""))
+      .check(status.is(201)))
+    .exec(http("Create external application twice")
+      .post("""/appregistry/application/external""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"grantType" : "authorization_code", "name":"test""" + now +
+        """", "secret":"clientSecret", "address" : "http://localhost", "scope" : "userinfo"}"""))
+      .check(status.is(409)))
+    .exec(http("Update external application")
+      .put("""/appregistry/application/conf/${app-id}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"scope" : "userinfo"}"""))
+      .check(status.is(200), jsonPath("$.id").find.exists))
 }

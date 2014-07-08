@@ -27,20 +27,20 @@ class ConfigureSimulation extends Simulation {
       jsonPath("$.result..name").findAll.saveAs("schoolsNames")))
     .exec(http("Find workflow habilitations")
     .get("""/appregistry/applications/actions?actionType=WORKFLOW""")
-    .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result").find.transform(_.map{res =>
-        val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-        json.values.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
+    .check(status.is(200),
+      bodyString.find.transform(_.map{res =>
+        val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+        json.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
           lazy val actions: List[String] = app.get("actions").asInstanceOf[JSONArray].asScala.toList.map(
             _.asInstanceOf[JSONArray].get(0).asInstanceOf[String]
           )
           app.get("name").asInstanceOf[String] match {
             case "Espace documentaire" =>
-              val r = List("workspace-all", actions.mkString(","))
+              val r = List("workspace-all", actions.mkString("\",\""))
               r :: acc
             case "Messagerie" =>
-              val r = List("conversation-all", actions.mkString(","))
+              val r = List("conversation-all", actions.mkString("\",\""))
               r :: acc
             case _ => acc
           }
@@ -49,19 +49,19 @@ class ConfigureSimulation extends Simulation {
     .foreach("${roles}", "role") {
       exec(http("Create role ${role(0)}")
         .post("""/appregistry/role""")
-        .param("""role""", """${role(0)}""")
-        .param("""actions""", """${role(1)}""")
-        .check(status.is(200), jsonPath("status").is("ok")))
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{"role":"${role(0)}","actions":["${role(1)}"]}"""))
+        .check(status.is(201)))
     }
     .exec(http("Find roles")
     .get("""/appregistry/roles""")
-    .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result").find.transform(_.map{res =>
-        val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-        json.values.asScala.foldLeft[List[String]](Nil){(acc, c) =>
+    .check(status.is(200),
+      bodyString.find.transform(_.map{res =>
+        val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+        json.asScala.foldLeft[List[String]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
           app.get("id").asInstanceOf[String] :: acc
-        }
+        }.mkString("\",\"")
       }).saveAs("rolesIds")))
     .foreach("${schoolsIds}", "schoolId") {
     exec(http("Apply default communication rules")
@@ -69,11 +69,11 @@ class ConfigureSimulation extends Simulation {
       .header("Content-Length", "0"))
       .pause(5)
     .exec(http("Find profile groups with roles")
-    .get("""/appregistry/groups/roles?schoolId=${schoolId}""")
-    .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result").find.transform(_.map{res =>
-        val json = JSONValue.parse(res).asInstanceOf[JSONObject]
-        json.values.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
+    .get("""/appregistry/groups/roles?structureId=${schoolId}""")
+    .check(status.is(200),
+      bodyString.find.transform(_.map{res =>
+        val json = JSONValue.parse(res).asInstanceOf[JSONArray]
+        json.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
           (app.get("id").asInstanceOf[String], app.get("name").asInstanceOf[String]) :: acc
         }
@@ -94,9 +94,9 @@ class ConfigureSimulation extends Simulation {
       .foreach("${profilGroupIds}", "profilGroupId") {
       exec(http("Link profil groups with roles")
         .post("""/appregistry/authorize/group?schoolId=${schoolId}""")
-        .param("""groupId""", """${profilGroupId}""")
-        .multiValuedParam("""roleIds""", """${rolesIds}""")
-        .check(status.is(200), jsonPath("status").is("ok")))
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{"groupId":"${profilGroupId}", "roleIds":["${rolesIds}"]}"""))
+        .check(status.is(200)))
       }
     }
 

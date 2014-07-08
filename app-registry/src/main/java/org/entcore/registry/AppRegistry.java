@@ -19,60 +19,15 @@
 
 package org.entcore.registry;
 
-import fr.wseduc.webutils.Server;
-import org.entcore.common.http.filter.ActionFilter;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
-import org.entcore.registry.service.AppRegistryService;
+import org.entcore.common.http.BaseServer;
+import org.entcore.registry.controllers.AppRegistryController;
 
-public class AppRegistry extends Server {
+public class AppRegistry extends BaseServer {
 
 	@Override
 	public void start() {
 		super.start();
-
-		AppRegistryService service = new AppRegistryService(vertx, container, rm, securedActions);
-		try {
-			service.registerMethod(config.getString("address"), "collectApps");
-			service.registerMethod(config.getString("address") + ".applications", "applications");
-			service.registerMethod(config.getString("address") + ".bus", "registryEventBusHandler");
-		} catch (NoSuchMethodException | IllegalAccessException e) {
-			log.error(e.getMessage(), e);
-		}
-
-		service.get("/admin", "view");
-		service.get("/static-admin", "staticAdmin");
-		service.get("/app-preview", "appPreview");
-
-		service.get("/applications", "listApplications");
-
-		service.get("/application/:name", "listApplicationActions");
-
-		service.get("/applications/actions", "listApplicationsWithActions");
-
-		service.post("/role", "createRole");
-
-		service.get("/roles", "listRoles");
-
-		service.get("/roles/actions", "listRolesWithActions");
-
-		service.get("/groups", "listGroups");
-
-		service.get("/groups/roles", "listGroupsWithRoles");
-
-		service.post("/authorize/group", "linkGroup");
-
-		service.get("/schools", "listStructures");
-
-		service.post("/application/conf", "applicationConf");
-
-		service.get("/application/conf/:id", "application");
-
-		service.post("/application/external", "createExternalApp");
-
-		service.put("/application", "recordApplication");
-
-		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), Server.getEventBus(vertx)));
-
+		addController(new AppRegistryController());
 	}
 
 }
