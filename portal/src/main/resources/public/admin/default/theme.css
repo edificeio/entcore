@@ -2496,16 +2496,6 @@ em.high-importance {
   margin-left: -5px;
 }
 .selectable-list {
-  max-width: 960px;
-  width: 100%;
-  position: relative;
-  clear: both;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  max-width: 1200px;
-  max-width: 100%;
   padding: 0;
 }
 .selectable-list li {
@@ -4734,8 +4724,6 @@ select,
 label {
   height: 25px;
   line-height: 25px;
-  width: 200px;
-  margin: 3px;
 }
 input[type=text] {
   -webkit-border-radius: 5px;
@@ -4758,4 +4746,7 @@ input[type=text] {
 }
 .humane-original-info {
   background: #008bb8;
+}
+section.container {
+  padding-left: 300px;
 }

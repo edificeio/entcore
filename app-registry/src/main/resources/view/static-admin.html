@@ -34,29 +34,29 @@
 				</div>
 
 				<div class="row">
-					<label class="cell"><span tooltip="tooltip.name">Nom</span></label>
+					<label class="four cell"><span tooltip="tooltip.name">Nom</span></label>
 					<input type="text" ng-model="application.name" class="cell" />
 				</div>
 				<div class="row">
-					<label class="cell"><span tooltip="tooltip.displayName">Clef i18n</span></label>
+					<label class="four cell"><span tooltip="tooltip.displayName">Clef i18n</span></label>
 					<input type="text" ng-model="application.displayName" complete-change="updatePath()" class="cell" />
 				</div>
 				<div class="row">
-					<label class="cell"><span tooltip="tooltip.icon">Icône</span></label>
+					<label class="four cell"><span tooltip="tooltip.icon">Icône</span></label>
 					<input type="text" ng-model="application.icon" complete-change="updatePath()" class="cell" />
 				</div>
 				<div class="row" ng-if="application.external">
-					<label class="cell"><span tooltip="tooltip.password">Code secret</span></label>
+					<label class="four cell"><span tooltip="tooltip.password">Code secret</span></label>
 					<input type="text" ng-model="application.secret" class="cell" />
 				</div>
 				<div class="row">
-					<label class="cell"><span tooltip="tooltip.url">URL</span></label>
+					<label class="four cell"><span tooltip="tooltip.url">URL</span></label>
 					<input type="text" ng-model="application.address" complete-change="updatePath()" class="cell" />
 				</div>
 
 				<div class="row">
 					<label class="cell"><span tooltip="tooltip.target">Cible</span></label>
-					<select ng-model="application.target" ng-change="updatePath()" class="cell">
+					<select ng-model="application.target" ng-change="updatePath()" class="four cell">
 						<option value="">Portail</option>
 						<option value="_blank">Nouvelle page</option>
 						<option value="adapter">Adaptateur</option>
@@ -71,15 +71,15 @@
 				</div>
 				<div class="row" ng-if="display.advanced">
 					<div class="row">
-						<label class="cell">Scope</label><input class="cell" type="text" ng-model="application.scope" />
+						<label class="four cell">Scope</label><input class="cell" type="text" ng-model="application.scope" />
 					</div>
 					<div class="row" ng-id="!application.external">
-						<label class="cell"><span tooltip="tooltip.password">Code secret</span></label>
+						<label class="four cell"><span tooltip="tooltip.password">Code secret</span></label>
 						<input type="text" ng-model="application.secret" class="cell" />
 					</div>
 					<div class="row">
-						<label class="cell">Mode d'identification</label>
-						<select>
+						<label class="four cell">Mode d'identification</label>
+						<select class="four cell">
 							<option>Code</option>
 							<option>Identifiants du client</option>
 						</select>
