@@ -545,7 +545,7 @@ module.directive('linker', function($compile){
 function serializeScope(scope){
 	var result = {};
 	for(var prop in scope){
-		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && result[prop] !== undefined){
+		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && scope[prop] !== undefined){
 			result[prop] = JSON.parse(JSON.stringify(scope[prop]));
 		}
 	}
@@ -587,8 +587,10 @@ module.directive('container', function($compile){
 			window.addEventListener('popstate', function(event){
 				if(history.state && history.state.template){
 					template.containers[history.state.template.name] = history.state.template.view;
-					scope.templateContainer = template.containers[attributes.template];
+
 					applyScope(history.state.scope.parent, scope.$parent);
+					scope.templateContainer = template.containers[attributes.template];
+					scope.$apply('templateContainer');
 				}
 			});
 
@@ -855,6 +857,19 @@ module.directive('i18nPlaceholder', function($compile){
 				var compiled = $compile('<span>' + lang.translate(attributes.i18nPlaceholder) + '</span>')(scope);
 				setTimeout(function(){
 					element.attr('placeholder', compiled.text());
+				}, 10);
+			});
+		}
+	}
+});
+
+module.directive('i18nValue', function($compile){
+	return {
+		link: function(scope, element, attributes){
+			attributes.$observe('i18nValue', function(val) {
+				var compiled = $compile('<span>' + lang.translate(attributes.i18nValue) + '</span>')(scope);
+				setTimeout(function(){
+					element.attr('value', compiled.text());
 				}, 10);
 			});
 		}
