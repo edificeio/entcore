@@ -51,27 +51,27 @@
 
 				<div class="row">
 					<label class="four cell"><span tooltip="tooltip.name">Nom</span></label>
-					<input type="text" ng-model="application.name" class="cell" />
+					<input type="text" ng-model="application.name" class="four cell" />
 				</div>
 				<div class="row">
 					<label class="four cell"><span tooltip="tooltip.displayName">Clef i18n</span></label>
-					<input type="text" ng-model="application.displayName" complete-change="updatePath()" class="cell" />
+					<input type="text" ng-model="application.displayName" complete-change="updatePath()" class="four cell" />
 				</div>
 				<div class="row">
 					<label class="four cell"><span tooltip="tooltip.icon">Icône</span></label>
-					<input type="text" ng-model="application.icon" complete-change="updatePath()" class="cell" />
+					<input type="text" ng-model="application.icon" complete-change="updatePath()" class="four cell" />
 				</div>
 				<div class="row" ng-if="application.external">
 					<label class="four cell"><span tooltip="tooltip.password">Code secret</span></label>
-					<input type="text" ng-model="application.secret" class="cell" />
+					<input type="text" ng-model="application.secret" class="four cell" />
 				</div>
 				<div class="row">
 					<label class="four cell"><span tooltip="tooltip.url">URL</span></label>
-					<input type="text" ng-model="application.address" complete-change="updatePath()" class="cell" />
+					<input type="text" ng-model="application.address" complete-change="updatePath()" class="four cell" />
 				</div>
 
 				<div class="row">
-					<label class="cell"><span tooltip="tooltip.target">Cible</span></label>
+					<label class="four cell"><span tooltip="tooltip.target">Cible</span></label>
 					<select ng-model="application.target" ng-change="updatePath()" class="four cell">
 						<option value="">Portail</option>
 						<option value="_blank">Nouvelle page</option>
@@ -87,11 +87,12 @@
 				</div>
 				<div class="row" ng-if="display.advanced">
 					<div class="row">
-						<label class="four cell">Scope</label><input class="cell" type="text" ng-model="application.scope" />
+						<label class="four cell">Scope</label>
+						<input class="four cell" type="text" ng-model="application.scope" />
 					</div>
 					<div class="row" ng-id="!application.external">
 						<label class="four cell"><span tooltip="tooltip.password">Code secret</span></label>
-						<input type="text" ng-model="application.secret" class="cell" />
+						<input type="text" ng-model="application.secret" class="four cell" />
 					</div>
 					<div class="row">
 						<label class="four cell">Mode d'identification</label>
@@ -112,8 +113,8 @@
 			<div class="row" ng-if="application.id">
 				<button ng-click="newRole()">Créer un rôle</button>
 				<article ng-if="role">
-					<label class="cell">Nom du rôle</label>
-					<input type="text" ng-model="role.name" />
+					<label class="four cell">Nom du rôle</label>
+					<input type="text" ng-model="role.name" class="four cell" />
 					<h3>Autorisations</h3>
 					<ul class="selectable-list">
 						<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
@@ -136,6 +137,7 @@
 								<h3 class="cell">Autorisations</h3>
 								<a class="right-magnet" ng-click="selectGroup = true;">Affecter à des groupes</a>
 							</div>
+							<div class="row"></div>
 
 							<ul class="selectable-list">
 								<li ng-repeat="action in application.actions.all" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
