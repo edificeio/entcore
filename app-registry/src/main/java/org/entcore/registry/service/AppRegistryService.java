@@ -484,8 +484,8 @@ public class AppRegistryService extends Controller {
 								q.putString("query",
 									"MATCH (n:Application) " +
 									"WHERE n.name = {application} " +
-									"CREATE UNIQUE n-[r:PROVIDE]->(a:Action:" + type + "Action {type: {type}, " +
-									"name:{name}, displayName:{displayName}}) " +
+									"MERGE n-[r:PROVIDE]->(a:Action:" + type + "Action {name:{name}}) " +
+									"SET a.displayName = {displayName}, a.type = {type} " +
 									"RETURN a.name as name"
 								);
 								q.putObject("params", json
