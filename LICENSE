@@ -1,0 +1,20 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ENT Core'S LICENCE
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+URI: http://www.ent-core.org
+////////////////////////////////////////////
+// English version (French version below) //
+////////////////////////////////////////////
+ENT Core is free software, licensed under the terms of the GNU Affero General Public License as published by the Free Software Foundation, version 3 of the License.
+For the sake of explanation, any module that communicate over native Web protocols, such as HTTP, with ENT Core is outside the scope of this license and could be license under its own terms. This is merely considered normal use of ENT Core, and does not fall under the heading of "covered work".
+You can redistribute it and/or modify since you respect the terms of this License.
+
+
+You should have received a copy of the GNU Affero General Public License along with ENT Core. If not, see : <http://www.gnu.org/licenses/>.
+Finally, ENT Core is made using external components and libraries. They are listed at the end of this file.
+//////////////////// // French version // ////////////////////
+ENT Core est un logiciel libre, diffusé selon les termes de la GNU Affero General Public License telle que publiée par la Free Software Foundation dans sa version 3.
+Par souci de clarté, un module qui communique avec ENT Core au travers de protocoles Web standards natifs, tels que HTTP, est en dehors de l'étendue de cette licence et peut être diffusé sous ses propres termes. Cet usage est simplement considéré comme une utilisation normale de ENT Core, et ne tombe pas sous la qualification de « Covered Work ».
+Vous ne pouvez redistribuer ou modifier ces fichiers que si vous respectez les termes de cette licence. Vous devriez avoir reçu une copie de la GNU Affero General Public License avec le logiciel ENT Core. Si n'est pas le cas, vous la trouverez sur : <http://www.gnu.org/licenses/>
+Enfin, ENT Core utilise des composants et bibliothèques externes. Ils sont listés à la fin de ce fichier.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
