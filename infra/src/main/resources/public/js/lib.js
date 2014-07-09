@@ -949,7 +949,7 @@ var skin = (function(){
 }());
 
 var workspace = {
-	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
+	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
 	Document: function(data){
 		if(data.metadata){
 			var dotSplit = data.metadata.filename.split('.');
