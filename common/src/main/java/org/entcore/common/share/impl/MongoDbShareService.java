@@ -240,7 +240,9 @@ public class MongoDbShareService extends GenericShareService {
 								for (String action: actions) {
 									s.removeField(action);
 								}
-								shared.add(s);
+								if (s.size() > 1) {
+									shared.add(s);
+								}
 							}
 						} else {
 							shared.add(s);
