@@ -35,6 +35,7 @@ import java.io.IOException;
 public class UserUtils {
 
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
+	private static final String DIRECTORY = "directory";
 	private static final String SESSION_ADDRESS = "wse.session";
 	private static final JsonArray usersTypes = new JsonArray().addString("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
@@ -218,7 +219,7 @@ public class UserUtils {
 				.putString("userId", groupId)
 				.putBoolean("itself", itSelf)
 				.putString("excludeUserId", userId);
-		eb.send(COMMUNICATION_USERS, m, new Handler<Message<JsonArray>>() {
+		eb.send(DIRECTORY, m, new Handler<Message<JsonArray>>() {
 			@Override
 			public void handle(Message<JsonArray> res) {
 				handler.handle(res.body());

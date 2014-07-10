@@ -29,8 +29,6 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.directory.profils.DefaultProfils;
-import org.entcore.directory.profils.Profils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
@@ -52,13 +50,11 @@ import java.util.UUID;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
-
 public class DirectoryController extends BaseController {
 
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
-	private Profils p;
 	private SchoolService schoolService;
 	private ClassService classService;
 	private UserService userService;
@@ -69,7 +65,6 @@ public class DirectoryController extends BaseController {
 		this.neo = new Neo(eb,log);
 		this.config = container.config();
 		this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
-		this.p = new DefaultProfils(neo);
 	}
 
 	@Get("/admin")
@@ -395,19 +390,14 @@ public class DirectoryController extends BaseController {
 
 	@BusAddress("directory")
 	public void directoryHandler(final Message<JsonObject> message) {
-		String action = message.body().getString("action");
+		String action = message.body().getString("action", "");
 		switch (action) {
-		case "groups":
-			Object[] filterTypes = (message.body().getArray("types") != null) ?
-					message.body().getArray("types").toArray() : null;
-			p.listGroupsProfils(filterTypes, message.body().getString("schoolId"),
-					new Handler<JsonObject>() {
-				@Override
-				public void handle(JsonObject res) {
-					message.reply(res);
-				}
-			});
-			break;
+			case "usersInProfilGroup":
+				String userId = message.body().getString("userId");
+				boolean itSelf2 = message.body().getBoolean("itself", false);
+				String excludeUserId = message.body().getString("excludeUserId");
+				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.putString("status", "error")
@@ -426,4 +416,22 @@ public class DirectoryController extends BaseController {
 	public void setUserService(UserService userService) {
 		this.userService = userService;
 	}
+
+	private Handler<Either<String, JsonArray>> responseHandler(final Message<JsonObject> message) {
+		return new Handler<Either<String, JsonArray>>() {
+
+			@Override
+			public void handle(Either<String, JsonArray> res) {
+				JsonArray j;
+				if (res.isRight()) {
+					j = res.right().getValue();
+				} else {
+					log.warn(res.left().getValue());
+					j = new JsonArray();
+				}
+				message.reply(j);
+			}
+		};
+	}
+
 }
