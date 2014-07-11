@@ -4,6 +4,8 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import bootstrap._
 
+import scala.concurrent.duration._
+
 object ArchiveScenario {
 
   val scn =
@@ -13,6 +15,7 @@ object ArchiveScenario {
     .exec(http("Get archive")
     .get("/archive/export/${exportId}")
     .check(status.is(200)))
+    .pause(100 milliseconds)
     .exec(http("Try get anew")
     .get("/archive/export/${exportId}")
     .check(status.is(404)))
