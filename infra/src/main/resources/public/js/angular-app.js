@@ -2169,6 +2169,10 @@ function Share($rootScope, $scope, ui, _, lang){
 				return action.name.indexOf(right) !== -1
 			});
 
+			if(!action){
+				return;
+			}
+
 			if(!actions[action.displayName]){
 				actions[action.displayName] = true;
 			}
@@ -2370,7 +2374,7 @@ function Share($rootScope, $scope, ui, _, lang){
 			setPath = 'remove';
 			_.filter($scope.actions, function(item){
 				return _.find(item.requires, function(dependency){
-					return action.displayName.indexOf(dependency) !== -1;
+					return action.displayName.split('.')[1].indexOf(dependency) !== -1;
 				}) !== undefined
 			})
 				.forEach(function(item){
@@ -2381,7 +2385,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		else{
 			action.requires.forEach(function(required){
 				var action = _.find($scope.actions, function(action){
-					return action.displayName.indexOf(required) !== -1;
+					return action.displayName.split('.')[1].indexOf(required) !== -1;
 				});
 				element.actions[action.displayName] = true;
 				data.actions = data.actions.concat(actionToRights(element, action));
@@ -2466,7 +2470,7 @@ function Widgets($scope, model, lang, date){
 }
 
 var workspace = {
-	thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
+	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
 	Document: function(data){
 		if(data.metadata){
 			var dotSplit = data.metadata.filename.split('.');

@@ -2496,6 +2496,16 @@ em.high-importance {
   margin-left: -5px;
 }
 .selectable-list {
+  max-width: 960px;
+  width: 100%;
+  position: relative;
+  clear: both;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  max-width: 1200px;
+  max-width: 100%;
   padding: 0;
 }
 .selectable-list li {
@@ -4585,6 +4595,17 @@ table thead tr {
   border-radius: 0;
 }
 .side-tabs-content {
+  border-color: #ff0b75;
+}
+.toggle-buttons button:hover {
+  color: #ff0b75;
+}
+.lightbox-view .tabs header.selected {
+  background: #444;
+  border-color: #ff0b75;
+  color: #ff0b75;
+}
+.lightbox-view .tabs section {
   border-color: #ff0b75;
 }
 header.navbar {
