@@ -72,6 +72,7 @@ object DirectoryScenario {
     .exec{session =>
       val uIds = session("createdUserIds").as[Map[String, String]]
       session.set("teacherId", uIds.get("Teacher").get).set("studentId", uIds.get("Student").get)
+        .set("now", System.currentTimeMillis())
     }
     .exec(http("Teacher details")
       .get("""/directory/api/details?id=${teacherId}""")
@@ -83,5 +84,82 @@ object DirectoryScenario {
       .check(status.is(200), jsonPath("status").is("ok"),
         jsonPath("$.result.0.login").find.saveAs("studentLogin"),
         jsonPath("$.result.0.code").find.saveAs("studentCode")))
+
+    // create function
+    .exec(http("Create function")
+      .post("""/directory/function/Teacher""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"externalId": "ADMIN_LOCAL_${now}", "name": "AdminLocal"}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("function-id")))
+
+    .exec(http("Create function")
+      .post("""/directory/function/Teacher""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"externalId": "CLASS_ADMIN_${now}", "name": "Class Admin"}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("function-id2")))
+
+    .exec(http("Create function")
+      .post("""/directory/function/Teacher""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"externalId": "DELETE_${now}", "name": "To delete"}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("function-delete")))
+
+    // create function group
+    .exec(http("Create function group")
+      .post("""/directory/functiongroup""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionsCodes": ["CLASS_ADMIN_${now}"], "classes": ["${classId}"]}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id")))
+
+    .exec(http("Create function group")
+      .post("""/directory/functiongroup""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionsCodes": ["DELETE_${now}"], "classes": ["${schoolId}"]}"""))
+      .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id-delete")))
+
+    // add user to group
+    .exec(http("add user to group")
+      .post("""/directory/user/group/${teacherId}/${function-group-id}""")
+      .header("Content-Length", "0")
+      .check(status.is(200)))
+
+    .exec(http("add user to group")
+      .post("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
+      .header("Content-Length", "0")
+      .check(status.is(200)))
+
+    // add user function
+    .exec(http("User add function ")
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "DELETE_${now}", "classes": ["${classId}"]}"""))
+      .check(status.is(200)))
+
+    .exec(http("User add function ")
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "structures": ["${schoolId}"]}"""))
+      .check(status.is(200)))
+
+    // remove user from group
+//    .exec(http("Remove user from group")
+//      .delete("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
+//      .header("Content-Length", "0")
+//      .check(status.is(200)))
+//
+//    // remove user function
+//    .exec(http("Remove user function")
+//      .delete("""/directory/user/function/${teacherId}/DELETE_${now}""")
+//      .check(status.is(200)))
+//
+//    // Delete function group
+//    .exec(http("Delete function group")
+//      .delete("""/directory/functiongroup/${function-group-id-delete}""")
+//      .check(status.is(204)))
+
+    // Delete function
+//    .exec(http("Delete function")
+//      .delete("""/directory/function/DELETE_${now}""")
+//      .check(status.is(204)))
 
 }

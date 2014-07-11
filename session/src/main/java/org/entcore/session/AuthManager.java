@@ -289,12 +289,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"WITH app, a, n, gp " +
 				"OPTIONAL MATCH n-[:IN]->(gpe:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->(gpc:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-				"OPTIONAL MATCH n-[:IN]->(fg:FunctionGroup)-[:HAS_FUNCTION]->(f:Function) " +
+				"OPTIONAL MATCH n-[:IN*0..1]->()-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH gpe-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, " +
-				"n.displayName as username, p.name as type, COLLECT(distinct f.externalId) as functionCodes, " +
+				"n.displayName as username, p.name as type, " +
+				"COLLECT(distinct [f.externalId, rf.structures, rf.classes]) as functions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
 				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
@@ -307,6 +308,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if ("ok".equals(message.body().getString("status")) && result != null && result.size() > 0) {
 					JsonObject j = result.get(0);
 					j.putString("userId", userId);
+					JsonObject functions = new JsonObject();
 					JsonArray actions = new JsonArray();
 					JsonArray apps = new JsonArray();
 					for (Object o : j.getArray("authorizedActions", new JsonArray())) {
@@ -328,6 +330,19 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("displayName", (String) a.get(4))
 						);
 					}
+					for (Object o : j.getArray("functions", new JsonArray())) {
+						if (!(o instanceof JsonArray)) continue;
+						JsonArray a = (JsonArray) o;
+						String code = a.get(0);
+						if (code != null) {
+							functions.putObject(code, new JsonObject()
+									.putString("code", code)
+									.putArray("structures", (JsonArray) a.get(1))
+									.putArray("classes", (JsonArray) a.get(2))
+							);
+						}
+					}
+					j.putObject("functions", functions);
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);
 					j.putObject("cache", new JsonObject());

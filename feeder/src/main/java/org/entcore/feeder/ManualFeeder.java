@@ -22,6 +22,7 @@ package org.entcore.feeder;
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.feeder.be1d.Be1dFeeder;
+import org.entcore.feeder.dictionary.structures.Profile;
 import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
@@ -412,20 +413,11 @@ public class ManualFeeder extends BusModBase {
 	public void deleteUser(final Message<JsonObject> message) {
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
-		TransactionHelper tx;
-		try {
-			tx = TransactionManager.getInstance().begin();
-		} catch (TransactionException e) {
-			logger.error(e.getMessage(), e);
-			sendError(message, e.getMessage());
-			return;
-		}
-		User.backupRelationship(userId, tx);
-		User.preDelete(userId, tx);
-		tx.commit(new Handler<Message<JsonObject>>() {
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
-			public void handle(Message<JsonObject> event) {
-				message.reply(event.body());
+			public void apply(TransactionHelper tx) {
+				User.backupRelationship(userId, tx);
+				User.preDelete(userId, tx);
 			}
 		});
 	}
@@ -512,11 +504,11 @@ public class ManualFeeder extends BusModBase {
 					if (errors.size() == 0) {
 						neo4j.executeTransaction(statementsBuilder.build(), null, true,
 								new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								message.reply(res.body());
-							}
-						});
+									@Override
+									public void handle(Message<JsonObject> res) {
+										message.reply(res.body());
+									}
+								});
 					}
 				} else {
 					sendError(message, "invalid.class.id");
@@ -588,12 +580,12 @@ public class ManualFeeder extends BusModBase {
 							}
 							JsonArray linkStudents = new JsonArray();
 							for (i = 13; i < values.length; i += 4) {
-								String mapping = structureExternalId+values[i].trim()+
-										values[i+1].trim()+values[i+2].trim()+values[i+3].trim();
+								String mapping = structureExternalId + values[i].trim() +
+										values[i + 1].trim() + values[i + 2].trim() + values[i + 3].trim();
 								if (mapping.trim().isEmpty()) continue;
 								try {
 									linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-								} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+								} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 									logger.error(e.getMessage(), e);
 									errors.add(e.getMessage());
 									sendError(message, e.getMessage());
@@ -615,11 +607,11 @@ public class ManualFeeder extends BusModBase {
 					if (errors.size() == 0) {
 						neo4j.executeTransaction(statementsBuilder.build(), null, true,
 								new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								message.reply(res.body());
-							}
-						});
+									@Override
+									public void handle(Message<JsonObject> res) {
+										message.reply(res.body());
+									}
+								});
 					}
 				} else {
 					sendError(message, "invalid.class.id");
@@ -649,6 +641,138 @@ public class ManualFeeder extends BusModBase {
 		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
 			logger.error(e.getMessage(), e);
 		}
+	}
+
+	public void createFunction(final Message<JsonObject> message) {
+		final JsonObject function = getMandatoryObject("data", message);
+		if (function == null) return;
+		final String profile = message.body().getString("profile", "");
+		if (!profiles.containsKey(profile)) {
+			sendError(message, "Invalid profile : " + profile);
+			return;
+		}
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Profile.createFunction(profile, null, function, tx);
+			}
+		});
+	}
+
+	private TransactionHelper getTransaction(Message<JsonObject> message) {
+		TransactionHelper tx = null;
+		try {
+			tx = TransactionManager.getInstance().begin();
+		} catch (TransactionException e) {
+			logger.error(e.getMessage(), e);
+			sendError(message, e.getMessage());
+		}
+		return tx;
+	}
+
+	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f) {
+		TransactionHelper tx;
+		try {
+			tx = TransactionManager.getInstance().begin();
+			f.apply(tx);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					message.reply(event.body());
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error(e.getMessage(), e);
+			sendError(message, e.getMessage());
+		}
+	}
+
+	public void deleteFunction(final Message<JsonObject> message) {
+		final String functionCode = getMandatoryString("functionCode", message);
+		if (functionCode == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Profile.deleteFunction(functionCode, tx);
+			}
+		});
+	}
+
+	public void createFunctionGroup(Message<JsonObject> message) {
+		final JsonArray functions = message.body().getArray("functions");
+		if (functions == null || functions.size() == 0) {
+			sendError(message, "missing.functions");
+			return;
+		}
+		final JsonArray structures = message.body().getArray("structures");
+		final JsonArray classes = message.body().getArray("classes");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Profile.createFunctionGroup(functions, structures, classes, tx);
+			}
+		});
+	}
+
+	public void deleteFunctionGroup(Message<JsonObject> message) {
+		final String groupId = getMandatoryString("groupId", message);
+		if (groupId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Profile.deleteFunctionGroup(groupId, tx);
+			}
+		});
+	}
+
+	public void addUserFunction(Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String function = message.body().getString("function");
+		if (userId == null || function == null) return;
+		final JsonArray structures = message.body().getArray("structures");
+		final JsonArray classes = message.body().getArray("classes");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.addFunction(userId, function, structures, classes, tx);
+			}
+		});
+	}
+
+	public void removeUserFunction(Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String function = message.body().getString("function");
+		if (userId == null || function == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.removeFunction(userId, function, tx);
+			}
+		});
+	}
+
+	public void addUserGroup(Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String groupId = message.body().getString("groupId");
+		if (userId == null || groupId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.addGroup(userId, groupId, tx);
+			}
+		});
+	}
+
+	public void removeUserGroup(Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String groupId = message.body().getString("groupId");
+		if (userId == null || groupId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.removeGroup(userId, groupId, tx);
+			}
+		});
 	}
 
 }

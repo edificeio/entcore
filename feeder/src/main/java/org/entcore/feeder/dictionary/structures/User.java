@@ -220,4 +220,53 @@ public class User {
 		transactionHelper.add(query, params);
 	}
 
+	public static void addFunction(String userId, String functionCode, JsonArray structures, JsonArray classes,
+			TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User { id : {userId}}), (f:Function {externalId : {functionCode}}) " +
+				"CREATE UNIQUE u-[:HAS_FUNCTION {props}]->f ";
+		JsonObject fg = new JsonObject();
+		if (structures != null) {
+			fg.putArray("structures", structures);
+		}
+		if (classes != null) {
+			fg.putArray("classes", classes);
+		}
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putString("functionCode", functionCode)
+				.putObject("props", fg);
+		transactionHelper.add(query, params);
+	}
+
+	public static void removeFunction(String userId, String functionCode, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f:Function {externalId : {functionCode}}) " +
+				"DELETE r ";
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putString("functionCode", functionCode);
+		transactionHelper.add(query, params);
+	}
+
+	public static void addGroup(String userId, String groupId, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User { id : {userId}}), (f:Group {id : {groupId}}) " +
+				"CREATE UNIQUE u-[:IN]->f";
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putString("groupId", groupId);
+		transactionHelper.add(query, params);
+	}
+
+	public static void removeGroup(String userId, String groupId, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User { id : {userId}})-[r:IN]->(f:Group {id : {groupId}}) " +
+				"DELETE r";
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putString("groupId", groupId);
+		transactionHelper.add(query, params);
+	}
+
 }

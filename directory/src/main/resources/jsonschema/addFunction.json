@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "functionCode": {
+      "type": "string"
+    },
+    "structures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "functionCode"
+  ]
+}

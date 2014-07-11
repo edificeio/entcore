@@ -45,4 +45,13 @@ public interface UserService {
 
 	void delete(String id, Handler<Either<String, JsonObject>> result);
 
+	void addFunction(String id, String functionCode, JsonArray structuresIds, JsonArray classesIds,
+			Handler<Either<String, JsonObject>> result);
+
+	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);
+
+	void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
+
+	void removeGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
+
 }

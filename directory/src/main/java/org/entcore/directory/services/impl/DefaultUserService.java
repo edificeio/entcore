@@ -200,4 +200,43 @@ public class DefaultUserService implements UserService {
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
+	@Override
+	public void addFunction(String id, String functionCode, JsonArray structuresIds, JsonArray classesIds,
+			Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-user-function")
+				.putString("userId", id)
+				.putString("function", functionCode)
+				.putArray("structures", structuresIds)
+				.putArray("classes", classesIds);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
+	public void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-user-function")
+				.putString("userId", id)
+				.putString("function", functionCode);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
+	public void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-user-group")
+				.putString("userId", id)
+				.putString("groupId", groupId);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
+	public void removeGroup(String id, String groupId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-user-group")
+				.putString("userId", id)
+				.putString("groupId", groupId);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
 }

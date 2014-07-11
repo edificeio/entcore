@@ -238,4 +238,37 @@ public class UserController extends Controller {
 		userService.list(structureId, classId, types, handler);
 	}
 
+	@SecuredAction("user.add.function")
+	public void addFunction(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		bodyToJson(request, pathPrefix + "addFunction", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				userService.addFunction(userId, event.getString("functionCode"),
+						event.getArray("structures"), event.getArray("classes"), defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@SecuredAction("user.remove.function")
+	public void removeFunction(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		final String function = request.params().get("function");
+		userService.removeFunction(userId, function, defaultResponseHandler(request));
+	}
+
+	@SecuredAction("user.add.group")
+	public void addGroup(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		final String groupId = request.params().get("groupId");
+		userService.addGroup(userId, groupId, defaultResponseHandler(request));
+	}
+
+	@SecuredAction("user.remove.group")
+	public void removeGroup(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		final String groupId = request.params().get("groupId");
+		userService.removeGroup(userId, groupId, defaultResponseHandler(request));
+	}
+
 }

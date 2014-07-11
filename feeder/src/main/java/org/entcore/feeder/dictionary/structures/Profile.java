@@ -89,18 +89,66 @@ public class Profile {
 
 	public void createFunctionIfAbsent(String functionExternalId, String name) {
 		if (functions.add(functionExternalId)) {
-			String query =
-					"MATCH (p:Profile { externalId : {profileExternalId}}) " +
-					"CREATE p<-[:COMPOSE]-(f:Function {props}) ";
-			JsonObject params = new JsonObject()
-					.putString("profileExternalId", externalId)
-					.putObject("props", new JsonObject()
-							.putString("externalId", functionExternalId)
-							.putString("id", UUID.randomUUID().toString())
-							.putString("name", name)
-					);
-			getTransaction().add(query, params);
+			JsonObject function = new JsonObject()
+					.putString("externalId", functionExternalId)
+					.putString("id", UUID.randomUUID().toString())
+					.putString("name", name);
+			createFunction(null, externalId, function, getTransaction());
 		}
+	}
+
+	public static void createFunction(String profileName, String profileExternalId, JsonObject function,
+			TransactionHelper transaction) {
+		JsonObject params = new JsonObject()
+				.putObject("props", function.putString("id", UUID.randomUUID().toString()));
+		String query;
+		if (profileName != null && !profileName.trim().isEmpty()) {
+			query = "MATCH (p:Profile { name : {profileName}}) ";
+			params.putString("profileName", profileName);
+		} else {
+			query = "MATCH (p:Profile { externalId : {profileExternalId}}) ";
+			params.putString("profileExternalId", profileExternalId);
+		}
+		query += "CREATE p<-[:COMPOSE]-(f:Function {props}) RETURN f.id as id ";
+		transaction.add(query, params);
+	}
+
+	public static void deleteFunction(String functionExternalId, TransactionHelper transaction) {
+		String query =
+				"MATCH (f:Function { externalId : {externalId}}) " +
+				"OPTIONAL MATCH f-[r]-() " +
+				"DELETE r,f ";
+		JsonObject params = new JsonObject().putString("externalId", functionExternalId);
+		transaction.add(query, params);
+	}
+	public static void createFunctionGroup(JsonArray functions, JsonArray structures, JsonArray classes,
+			TransactionHelper transaction) {
+		JsonObject fg = new JsonObject();
+		if (structures != null) {
+			fg.putArray("structures", structures);
+		}
+		if (classes != null) {
+			fg.putArray("classes", classes);
+		}
+		JsonObject params = new JsonObject()
+				.putArray("functions", functions)
+				.putObject("props2", fg.copy())
+				.putObject("props", fg.putString("id", UUID.randomUUID().toString()));
+		String query =
+				"MATCH (f:Function) " +
+				"WHERE f.externalId IN {functions} " +
+				"CREATE (fg:Group:FunctionGroup {props})-[:HAS_FUNCTION {props2}]->f " +
+				"RETURN fg.id as id ";
+		transaction.add(query, params);
+	}
+
+	public static void deleteFunctionGroup(String functionGroupId, TransactionHelper transaction) {
+		String query =
+				"MATCH (f:FunctionGroup { id : {id}}) " +
+				"OPTIONAL MATCH f-[r]-() " +
+				"DELETE r,f ";
+		JsonObject params = new JsonObject().putString("id", functionGroupId);
+		transaction.add(query, params);
 	}
 
 }

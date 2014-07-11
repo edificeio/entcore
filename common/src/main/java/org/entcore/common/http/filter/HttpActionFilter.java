@@ -132,7 +132,7 @@ public class HttpActionFilter implements Filter {
 				}
 			}
 		}
-		if (session.getArray("functionCodes", new JsonArray()).contains("SUPER_ADMIN")) {
+		if (session.getObject("functions", new JsonObject()).containsField("SUPER_ADMIN")) {
 			handler.handle(true);
 			return;
 		}

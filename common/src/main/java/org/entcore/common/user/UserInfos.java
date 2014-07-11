@@ -100,6 +100,37 @@ public class UserInfos {
 
 	}
 
+	public static class Function {
+		private String code;
+		private List<String> structures;
+
+		public List<String> getClasses() {
+			return classes;
+		}
+
+		public void setClasses(List<String> classes) {
+			this.classes = classes;
+		}
+
+		public List<String> getStructures() {
+			return structures;
+		}
+
+		public void setStructures(List<String> structures) {
+			this.structures = structures;
+		}
+
+		private List<String> classes;
+
+		public String getCode() {
+			return code;
+		}
+
+		public void setCode(String code) {
+			this.code = code;
+		}
+	}
+
 	private String userId;
 	private String firstName;
 	private String lastName;
@@ -114,8 +145,17 @@ public class UserInfos {
 	private List<Application> apps;
 	private List<String> profilGroupsIds;
 	private List<String> classes;
-	private List<String> functionCodes;
 	private Map<String, Object> cache;
+
+	public Map<String, Function> getFunctions() {
+		return functions;
+	}
+
+	public void setFunctions(Map<String, Function> functions) {
+		this.functions = functions;
+	}
+
+	private Map<String, Function> functions;
 
 	public String getUserId() {
 		return userId;
@@ -227,14 +267,6 @@ public class UserInfos {
 
 	public void setClasses(List<String> classes) {
 		this.classes = classes;
-	}
-
-	public List<String> getFunctionCodes() {
-		return functionCodes;
-	}
-
-	public void setFunctionCodes(List<String> functionCodes) {
-		this.functionCodes = functionCodes;
 	}
 
 	public Map<String, Object> getCache() {

@@ -292,10 +292,7 @@ public class AppRegistryService extends Controller {
 
 	private void listStructures(UserInfos user, final Handler<JsonArray> handler) {
 		if (user != null) {
-			JsonArray functions = null;
-			if (user.getFunctionCodes() != null) {
-				functions = new JsonArray(user.getFunctionCodes().toArray());
-			}
+			JsonArray functions = new JsonArray().add("SUPER_ADMIN");
 			eb.send("wse.communication.schools", new JsonObject()
 			.putString("userId", user.getUserId())
 			.putString("userType", user.getType())

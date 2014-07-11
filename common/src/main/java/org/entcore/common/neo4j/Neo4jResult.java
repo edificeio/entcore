@@ -101,6 +101,24 @@ public class Neo4jResult {
 		}
 	}
 
+	private static Either<String, JsonObject> validUniqueResult(int idx, Message<JsonObject> event) {
+		Either<String, JsonArray> r = validResults(event);
+		if (r.isRight()) {
+			JsonArray results = r.right().getValue();
+			if (results == null || results.size() == 0) {
+				return new Either.Right<>(new JsonObject());
+			} else {
+				results = results.get(idx);
+				if (results.size() == 1 && (results.get(0) instanceof JsonObject)) {
+					return new Either.Right<>((JsonObject) results.get(0));
+				}
+			}
+			return new Either.Left<>("non.unique.result");
+		} else {
+			return new Either.Left<>(r.left().getValue());
+		}
+	}
+
 	public static Handler<Message<JsonObject>> fullNodeMergeHandler(final String nodeAttr,
 			final Handler<Either<String, JsonObject>> handler, final String... otherNodes) {
 		return new Handler<Message<JsonObject>>() {
@@ -117,6 +135,16 @@ public class Neo4jResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle(validUniqueResult(event));
+			}
+		};
+	}
+
+	public static Handler<Message<JsonObject>> validUniqueResultHandler(final int idx,
+			final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validUniqueResult(idx, event));
 			}
 		};
 	}

@@ -21,6 +21,7 @@ package org.entcore.directory;
 
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
+import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.RepositoryEvents;
@@ -50,6 +51,11 @@ public class Directory extends Server {
 		super.start();
 		Neo4j.getInstance().init(getEventBus(vertx),
 				config.getString("neo4j-address", "wse.neo4j.persistor"));
+		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
+		validator.setAddress("json.schema.validator");
+		validator.setEventBus(getEventBus(vertx));
+		validator.loadJsonSchema(getPathPrefix(config), vertx);
+
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
@@ -62,6 +68,7 @@ public class Directory extends Server {
 		StructureController structureController = new StructureController(vertx, container, rm, securedActions);
 		ClassController classController = new ClassController(vertx, container, rm, securedActions);
 		UserController userController = new UserController(vertx, container, rm, securedActions);
+		ProfileController profileController = new ProfileController(vertx, container, rm, securedActions);
 
 		vertx.eventBus().registerHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents()));
@@ -126,7 +133,17 @@ public class Directory extends Server {
 				.put("/userbook/:userId", "updateUserBook")
 				.put("/avatar/:userId", "updateAvatar")
 				.get("/list/isolated", "listIsolated")
-				.get("/export/users", "export");
+				.get("/export/users", "export")
+				.post("/user/function/:userId", "addFunction")
+				.delete("/user/function/:userId/:function", "removeFunction")
+				.post("/user/group/:userId/:groupId", "addGroup")
+				.delete("/user/group/:userId/:groupId", "removeGroup");
+
+		profileController
+				.post("/function/:profile", "createFunction")
+				.delete("/function/:function", "deleteFunction")
+				.post("/functiongroup", "createFunctionGroup")
+				.delete("/functiongroup/:groupId", "deleteFunctionGroup");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
@@ -149,6 +166,7 @@ public class Directory extends Server {
 		securedUriBinding.add(structureController.securedUriBinding());
 		securedUriBinding.add(classController.securedUriBinding());
 		securedUriBinding.add(userController.securedUriBinding());
+		securedUriBinding.add(profileController.securedUriBinding());
 		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
 				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}

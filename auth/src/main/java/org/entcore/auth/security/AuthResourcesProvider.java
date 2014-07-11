@@ -63,7 +63,7 @@ public class AuthResourcesProvider implements ResourcesProvider {
 	private void isClassTeacher(final HttpServerRequest request, UserInfos user,
 			final Handler<Boolean> handler) {
 		request.pause();
-		if (user.getFunctionCodes() != null && user.getFunctionCodes().contains("SUPER_ADMIN")) {
+		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
 			handler.handle(true);
 			return;
 		}
@@ -98,7 +98,7 @@ public class AuthResourcesProvider implements ResourcesProvider {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				if (user.getFunctionCodes() != null && user.getFunctionCodes().contains("SUPER_ADMIN")) {
+				if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
 					handler.handle(true);
 					return;
 				}

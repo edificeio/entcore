@@ -65,10 +65,7 @@ public class CommunicationController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					JsonArray functions = null;
-					if (user.getFunctionCodes() != null) {
-						functions = new JsonArray(user.getFunctionCodes().toArray());
-					}
+					JsonArray functions = new JsonArray().add("SUPER_ADMIN");
 					listVisiblesStructures(user.getUserId(), user.getType(), functions, new Handler<JsonArray>() {
 
 						@Override
@@ -261,10 +258,7 @@ public class CommunicationController extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					JsonArray functions = null;
-					if (user.getFunctionCodes() != null) {
-						functions = new JsonArray(user.getFunctionCodes().toArray());
-					}
+					JsonArray functions = new JsonArray().add("SUPER_ADMIN");
 					listVisiblesStructures(user.getUserId(), user.getType(), functions, new Handler<JsonArray>() {
 
 						@Override
