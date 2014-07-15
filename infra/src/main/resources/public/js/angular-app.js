@@ -1169,7 +1169,7 @@ module.directive('autocomplete', function($compile){
 				scope.match = _.filter(scope.options(), function(option){
 					var words = newVal.split(' ');
 					return _.find(words, function(word){
-						var formattedOption = lang.removeAccents(option).toLowerCase();
+						var formattedOption = lang.removeAccents(option.toString()).toLowerCase();
 						var formattedWord = lang.removeAccents(word).toLowerCase();
 						return formattedOption.indexOf(formattedWord) === -1
 					}) === undefined;
