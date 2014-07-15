@@ -210,9 +210,9 @@ public class AppRegistryController extends BaseController {
 	@Put("/application/conf/:id")
 	@SecuredAction("app-registry.application.conf")
 	public void applicationConf(final HttpServerRequest request) {
-		bodyToJson(request, new Handler<JsonObject>() {
+		bodyToJson(request, pathPrefix + "updateApplication", new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {  // TODO validate json
+			public void handle(JsonObject body) {
 				String applicationId = request.params().get("id");
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					appRegistryService.updateApplication(applicationId, body, notEmptyResponseHandler(request));
@@ -237,9 +237,9 @@ public class AppRegistryController extends BaseController {
 	@Post("/application/external")
 	@SecuredAction("app-registry.create.external.app")
 	public void createExternalApp(final HttpServerRequest request) {
-		bodyToJson(request, new Handler<JsonObject>() {
+		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {  // TODO validate json
+			public void handle(JsonObject body) {
 				appRegistryService.createApplication(body, null, notEmptyResponseHandler(request, 201, 409));
 			}
 		});
