@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Server;
 import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.common.http.filter.HttpActionFilter;
+import org.entcore.common.http.filter.ResourceProviderFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.RepositoryEvents;
@@ -35,6 +36,9 @@ public abstract class BaseServer extends Server {
 
 	@Override
 	public void start() {
+		if (resourceProvider == null) {
+			setResourceProvider(new ResourceProviderFilter());
+		}
 		super.start();
 		Neo4j.getInstance().init(getEventBus(vertx),
 				config.getString("neo4j-address", "wse.neo4j.persistor"));
@@ -55,6 +59,13 @@ public abstract class BaseServer extends Server {
 
 	protected BaseServer setRepositoryEvents(RepositoryEvents repositoryEvents) {
 		repositoryHandler.setRepositoryEvents(repositoryEvents);
+		return this;
+	}
+
+	protected BaseServer setDefaultResourceFilter(ResourcesProvider resourceProvider) {
+		if (this.resourceProvider instanceof ResourceProviderFilter) {
+			((ResourceProviderFilter) this.resourceProvider).setDefault(resourceProvider);
+		}
 		return this;
 	}
 

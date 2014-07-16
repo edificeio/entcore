@@ -87,9 +87,10 @@ public class MongoAppFilter extends BaseResourceProvider {
 		}
 	}
 
-	protected void executeCountQuery(final HttpServerRequest request, String collection,
+	public static void executeCountQuery(final HttpServerRequest request, String collection,
 			JsonObject query, final int expectedCountResult, final Handler<Boolean> handler) {
 		request.pause();
+		MongoDb mongo = MongoDb.getInstance();
 		mongo.count(collection, query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
