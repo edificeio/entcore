@@ -88,6 +88,9 @@ public abstract class BaseResourceProvider implements ResourcesProvider {
 					MethodType.methodType(void.class, HttpServerRequest.class, String.class,
 							UserInfos.class, Handler.class));
 			filtersMapping.put(method, mh);
+			if (log.isDebugEnabled()) {
+				log.debug("loadFilter : " + filterMethod + " for method " + method);
+			}
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error("Unable to load filter " + filterMethod);
 		}
@@ -100,6 +103,7 @@ public abstract class BaseResourceProvider implements ResourcesProvider {
 		if (mh == null) {
 			mh = filtersMapping.get(DEFAULT);
 			if (mh == null) {
+				log.warn("Missing filter for method " + binding.getServiceMethod());
 				handler.handle(false);
 				return;
 			}

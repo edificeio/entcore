@@ -43,6 +43,7 @@ public class MongoAppFilter extends BaseResourceProvider {
 	}
 
 	public MongoAppFilter(String collection, String resourceIdLabel) {
+		super();
 		this.collection = collection;
 		this.resourceIdLabel = resourceIdLabel;
 		this.mongo = MongoDb.getInstance();
