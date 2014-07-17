@@ -1338,17 +1338,18 @@ module.directive('textEditor', function($compile){
 					editor.blur();
 				});
 				editor.on('focus', function(){
-					editor.parent().parent().height(editor.height());
+					editor.parent().parent().height(editor.height() + 25);
 					editor.parent().parent().trigger('stopResize');
 					$('.' + instance.id).width(editor.width());
 					editor.parent().parent().data('lock', true);
 					editor.css({ 'cursor': 'text' });
 					$(document).on('keyup.editor', function(key){
-						editor.parent().parent().height(editor.height());
+						editor.parent().parent().height(editor.height() + 25);
 						editor.parent().parent().trigger('stopResize');
 					});
 				});
 				editor.on('blur', function(){
+					editor.parent().parent().height(editor.height());
 					editor.parent().parent().data('lock', false);
 					editor.css({ 'cursor': '' });
 					$scope.ngModel = editor.html();
@@ -1357,7 +1358,7 @@ module.directive('textEditor', function($compile){
 					if($scope.ngChange){
 						$scope.ngChange();
 					}
-				})
+				});
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						CKEDITOR.instances[instance].destroy()
@@ -1649,6 +1650,12 @@ module.directive('drawingZone', function($compile){
 	};
 });
 
+module.directive('drawingGrid', function($compile){
+	return function($scope, $element, $attributes){
+		$element.addClass('drawing-grid');
+	};
+});
+
 module.directive('resizable', function($compile){
 	return {
 		restrict: 'A',
@@ -1815,6 +1822,229 @@ module.directive('resizable', function($compile){
 						$('.main').css({'cursor': ''})
 					});
 				}
+			});
+		}
+	}
+});
+
+module.directive('gridCell', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+			w: '=',
+			h: '='
+		},
+		template: '<div ng-transclude></div>',
+		transclude: true,
+		link: function(scope, element, attributes){
+			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+			scope.$watch('w', function(newVal, oldVal){
+				element.addClass(cellSizes[newVal]);
+				if(newVal !== oldVal){
+					element.removeClass(cellSizes[oldVal]);
+				}
+			});
+		}
+	}
+})
+
+module.directive('gridResizable', function($compile){
+	return {
+		restrict: 'A',
+		link: function(scope, element, attributes){
+			$('body').css({
+				'-webkit-user-select': 'none',
+				'-moz-user-select': 'none',
+				'user-select' : 'none'
+			});
+
+			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+
+			element.addClass('grid-media');
+
+			//cursor styles to indicate resizing possibilities
+			element.on('mouseover', function(e){
+				element.on('mousemove', function(e){
+					if(element.data('resizing') || element.data('lock')){
+						return;
+					}
+					var mouse = { x: e.pageX, y: e.pageY };
+					var resizeLimits = {
+						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
+						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15
+					};
+
+					var orientations = {
+						'ns': resizeLimits.verticalBottom,
+						'ew': resizeLimits.horizontalRight,
+						'nwse': resizeLimits.verticalBottom && resizeLimits.horizontalRight
+
+					};
+
+					var cursor = '';
+					for(var orientation in orientations){
+						if(orientations[orientation]){
+							cursor = orientation;
+						}
+					}
+
+					if(cursor){
+						cursor = cursor + '-resize';
+					}
+
+					element.css({ cursor: cursor });
+					element.find('[contenteditable]').css({ cursor: cursor });
+				});
+				element.on('mouseout', function(e){
+					element.unbind('mousemove');
+				});
+			});
+
+
+			function cellIndex(element){
+				for(var i = 0; i < cellSizes.length; i++){
+					if(element.hasClass(cellSizes[i])){
+						return i;
+					}
+				}
+				return 12;
+			}
+
+			//actual resize
+			element.on('mousedown.resize', function(e){
+				if(element.data('lock') === true || element.data('resizing') === true){
+					return;
+				}
+				var mouse = { y: e.pageY, x: e.pageX };
+				var cellWidth = parseInt(element.parent().width() / 12);
+				var parent = element.parents('.drawing-grid');
+				var lastChild = parent.find('grid-cell').last();
+				var cells = element.parent().children('grid-cell');
+				var interrupt = false;
+				var parentData = {
+					pos: parent.offset(),
+					size: {
+						width: parent.width(),
+						height: parent.height()
+					}
+				};
+
+				var initial = {
+					pos: element.offset(),
+					size: {
+						width: element.width(),
+						height: element.height()
+					}
+				};
+
+				function findResizableNeighbour(cell, step){
+					var neighbour = cell.next('grid-cell');
+					if(neighbour.length < 1){
+						return;
+					}
+					if(neighbour.width() - step <= cellWidth){
+						return findResizableNeighbour(neighbour, step);
+					}
+					else{
+						return neighbour;
+					}
+				}
+
+				function parentRemainingSpace(diff){
+					var childrenSize = 0;
+					cells.each(function(index, cell){
+						childrenSize += $(cell).width();
+					});
+					return  parentData.size.width - (childrenSize + diff + 2 * cells.length);
+				}
+
+				e.preventDefault();
+
+				$(window).unbind('mousemove.drag');
+				$(window).on('mousemove.resize', function(e){
+					mouse = {
+						y: e.pageY,
+						x: e.pageX
+					};
+
+					if(element.data('resizing')){
+						return;
+					}
+
+					element.trigger('startResize');
+
+					element.data('resizing', true);
+					cells.removeClass('grid-media');
+
+					//this makes sure the cursor doesn't change when we move the mouse outside the element
+					$('.main').css({
+						'cursor': element.css('cursor')
+					});
+
+					element.unbind("click");
+
+					//animation for resizing
+					var resize = function(){
+						//current element resizing
+						var newWidth = 0; var newHeight = 0;
+						var p = element.offset();
+						var distance = mouse.x - p.left;
+						if(element.offset().left + distance > parentData.pos.left + parentData.size.width){
+							distance = (parentData.pos.left + parentData.size.width) - element.offset().left - 2;
+						}
+						newWidth = distance;
+						if (newWidth < cellWidth) {
+							newWidth = cellWidth;
+						}
+						var diff = newWidth - element.width()
+
+						//neighbour resizing
+						var remainingSpace = parentRemainingSpace(diff);
+						var neighbour = findResizableNeighbour(element, distance - element.width());
+
+						if(neighbour || remainingSpace >= 0){
+
+							if(neighbour && remainingSpace <= 0){
+								var neighbourWidth = neighbour.width() + remainingSpace;
+								if(neighbourWidth < cellWidth){
+									newWidth -= cellWidth - neighbourWidth;
+									neighbourWidth = cellWidth;
+								}
+								neighbour.width(neighbourWidth);
+							}
+							element.width(newWidth);
+						}
+
+						if(!interrupt){
+							requestAnimationFrame(resize);
+						}
+					};
+					resize();
+
+
+				});
+
+				$(window).on('mouseup.resize', function(){
+					element.trigger('stopResize');
+					interrupt = true;
+
+					cells.each(function(index, cell){
+						var cellWidth = $(cell).width();
+						var cellIndex = Math.round(cellWidth * 12 / parentData.size.width);
+						var cellScope = angular.element(cell).scope();
+						cellScope.w = cellIndex;
+						cellScope.$apply('w');
+					});
+
+					setTimeout(function(){
+						element.data('resizing', false);
+						cells.attr('style', '');
+						cells.addClass('grid-media');
+					}, 100)
+					$(window).unbind('mousemove.resize');
+					$(window).unbind('mouseup.resize');
+					$('.main').css({'cursor': ''})
+				});
 			});
 		}
 	}

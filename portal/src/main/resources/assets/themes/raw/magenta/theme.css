@@ -657,6 +657,14 @@ nav.vertical ul li input[type=search] {
   box-sizing: border-box;
   width: 100%;
 }
+nav.stamps article {
+  margin-top: 7px;
+  margin-bottom: 7px;
+  padding: 0;
+  height: 113px;
+  width: 1;
+  width: 100%;
+}
 .dominos .mood {
   position: absolute;
   top: 22px;
@@ -2495,16 +2503,6 @@ em.high-importance {
   margin-left: -5px;
 }
 .selectable-list {
-  max-width: 960px;
-  width: 100%;
-  position: relative;
-  clear: both;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  max-width: 1200px;
-  max-width: 100%;
   padding: 0;
 }
 .selectable-list li {
