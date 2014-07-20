@@ -1338,13 +1338,13 @@ module.directive('textEditor', function($compile){
 					editor.blur();
 				});
 				editor.on('focus', function(){
-					editor.parent().parent().height(editor.height() + 25);
+					editor.parent().parent().height(editor.height());
 					editor.parent().parent().trigger('stopResize');
 					$('.' + instance.id).width(editor.width());
 					editor.parent().parent().data('lock', true);
 					editor.css({ 'cursor': 'text' });
 					$(document).on('keyup.editor', function(key){
-						editor.parent().parent().height(editor.height() + 25);
+						editor.parent().parent().height(editor.height());
 						editor.parent().parent().trigger('stopResize');
 					});
 				});
@@ -1832,7 +1832,8 @@ module.directive('gridCell', function($compile){
 		restrict: 'E',
 		scope: {
 			w: '=',
-			h: '='
+			h: '=',
+			onIndexChange: '&'
 		},
 		template: '<div ng-transclude></div>',
 		transclude: true,
@@ -1900,16 +1901,6 @@ module.directive('gridResizable', function($compile){
 				});
 			});
 
-
-			function cellIndex(element){
-				for(var i = 0; i < cellSizes.length; i++){
-					if(element.hasClass(cellSizes[i])){
-						return i;
-					}
-				}
-				return 12;
-			}
-
 			//actual resize
 			element.on('mousedown.resize', function(e){
 				if(element.data('lock') === true || element.data('resizing') === true){
@@ -1918,7 +1909,6 @@ module.directive('gridResizable', function($compile){
 				var mouse = { y: e.pageY, x: e.pageX };
 				var cellWidth = parseInt(element.parent().width() / 12);
 				var parent = element.parents('.drawing-grid');
-				var lastChild = parent.find('grid-cell').last();
 				var cells = element.parent().children('grid-cell');
 				var interrupt = false;
 				var parentData = {
@@ -1926,14 +1916,6 @@ module.directive('gridResizable', function($compile){
 					size: {
 						width: parent.width(),
 						height: parent.height()
-					}
-				};
-
-				var initial = {
-					pos: element.offset(),
-					size: {
-						width: element.width(),
-						height: element.height()
 					}
 				};
 
@@ -1996,7 +1978,7 @@ module.directive('gridResizable', function($compile){
 						if (newWidth < cellWidth) {
 							newWidth = cellWidth;
 						}
-						var diff = newWidth - element.width()
+						var diff = newWidth - element.width();
 
 						//neighbour resizing
 						var remainingSpace = parentRemainingSpace(diff);
@@ -2040,11 +2022,136 @@ module.directive('gridResizable', function($compile){
 						element.data('resizing', false);
 						cells.attr('style', '');
 						cells.addClass('grid-media');
-					}, 100)
+					}, 100);
 					$(window).unbind('mousemove.resize');
 					$(window).unbind('mouseup.resize');
 					$('.main').css({'cursor': ''})
 				});
+			});
+		}
+	}
+});
+
+module.directive('gridDraggable', function($compile){
+	return {
+		restrict: 'A',
+		link: function(scope, element, attributes){
+			element.on('mousedown', function(e){
+				if(element.data('lock') === true){
+					return;
+				}
+				e.preventDefault();
+				var interrupt = false;
+				if(element.data('resizing') !== true){
+					element.trigger('startDrag');
+
+					$('body').css({
+						'-webkit-user-select': 'none',
+						'-moz-user-select': 'none',
+						'user-select' : 'none'
+					});
+					element.css({
+						'position': 'absolute'
+					});
+					var mouse = { y: e.clientY, x: e.clientX };
+					var elementDistance = {
+						y: mouse.y - element.offset().top,
+						x: mouse.x - element.offset().left
+					};
+					$(window).on('mousemove.drag', function(e){
+						element.unbind("click");
+						element.data('dragging', true);
+						mouse = {
+							y: e.clientY,
+							x: e.clientX
+						};
+					});
+
+					$('body').on('mouseup.drag', function(e){
+						element.trigger('stopDrag');
+						$('body').css({
+							'-webkit-user-select': 'initial',
+							'-moz-user-select': 'initial',
+							'user-select' : 'initial'
+						});
+						interrupt = true;
+						$('body').unbind('mouseup.drag');
+						$(window).unbind('mousemove.drag');
+
+						var elementPos = {
+							left: element.offset().left,
+							top: element.offset().top,
+							width: element.width(),
+							height: element.height()
+						};
+
+						function hitTest(cell){
+							var cellPos = {
+								left: cell.offset().left,
+								top: cell.offset().top,
+								width: cell.width(),
+								height: cell.height()
+							};
+
+							var horizontalHit = (elementPos.left < cellPos.left && elementPos.left + elementPos.width > cellPos.left) ||
+								(cellPos.left < elementPos.left && cellPos.left + cellPos.width > elementPos.left);
+							var verticalHit = (elementPos.top < cellPos.top && elementPos.top + elementPos.height > cellPos.top) ||
+								(cellPos.top < elementPos.top && cellPos.top + cellPos.height > elementPos.top);
+
+							return horizontalHit && verticalHit;
+						}
+
+						element.parent().children('grid-cell').each(function(index, cell){
+							if(hitTest($(cell))){
+								scope.index = index;
+								scope.$apply('index');
+								scope.onIndexChange();
+							}
+						});
+
+						setTimeout(function(){
+							element.data('dragging', false);
+							element.on('click', function(){
+								scope.$parent.$eval(attributes.ngClick);
+							});
+						}, 0);
+					});
+					var moveElement = function(){
+						var parent = element.parents('.drawing-grid');
+						var parentPosition = parent.offset();
+						var boundaries = {
+							left: parentPosition.left,
+							top: parentPosition.top,
+							right: parentPosition.left + parent.width() - element.width(),
+							bottom: parentPosition.top + parent.height() - element.height()
+						};
+
+						var newOffset = {
+							top: mouse.y - elementDistance.y,
+							left: mouse.x - elementDistance.x
+						};
+
+						if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
+							newOffset.left = boundaries.left;
+						}
+						if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
+							newOffset.left = boundaries.right - 2
+						}
+						if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
+							newOffset.top = boundaries.top;
+						}
+						if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
+							newOffset.top = boundaries.bottom - 2;
+						}
+
+						element.offset(newOffset);
+
+						if(!interrupt){
+							requestAnimationFrame(moveElement);
+						}
+					};
+					moveElement();
+				}
 			});
 		}
 	}
