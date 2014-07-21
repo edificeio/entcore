@@ -12,4 +12,12 @@ object Authenticate {
     .param("""password""", """password""")
     .check(status.is(302)))
 
+  def authenticateUser(login:String, password:String) =  exec(http("Authenticate user")
+    .post("""/auth/login""")
+    .param("""email""", login)
+    .param("""password""", password)
+    .check(status.is(302)))
+
+  val logout = exec(http("Logout").get("""/auth/logout""").check(status.is(302)))
+
 }

@@ -142,12 +142,12 @@ object DirectoryScenario {
       .check(status.is(200)))
 
     .exec(http("User add function ")
-    .post("""/directory/user/function/${teacherId}""")
-    .header("Content-Type", "application/json")
-    .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "structures": ["${schoolId}"]}"""))
-    .check(status.is(200)))
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "structures": ["${schoolId}"]}"""))
+      .check(status.is(200)))
 
-  // remove user from group
+    // remove user from group
 //    .exec(http("Remove user from group")
 //      .delete("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
 //      .header("Content-Length", "0")
