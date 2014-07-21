@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2014
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,7 +15,6 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
 package org.entcore.directory.services;
@@ -23,22 +23,10 @@ import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
-public interface SchoolService {
+public interface GroupService {
 
-	void create(JsonObject school, Handler<Either<String, JsonObject>> result);
-
-	void get(String id, Handler<Either<String, JsonObject>> result);
-
-	void getByClassId(String classId, Handler<Either<String, JsonObject>> result);
-
-	void listByUserId(String userId, Handler<Either<String, JsonArray>> results);
-
-	void listAdmin(UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-
-	void link(String structureId, String userId, Handler<Either<String, JsonObject>> result);
-
-	void unlink(String structureId, String userId, Handler<Either<String, JsonObject>> result);
+	void listAdmin(String structureId, UserInfos userInfos, JsonArray expectedTypes,
+			Handler<Either<String, JsonArray>> results);
 
 }

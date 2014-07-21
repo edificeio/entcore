@@ -21,6 +21,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
@@ -28,8 +29,11 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.List;
+
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultSchoolService implements SchoolService {
 
@@ -68,6 +72,31 @@ public class DefaultSchoolService implements SchoolService {
 				"MATCH (u:User { id: {id}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"RETURN DISTINCT s.id as id, s.UAI as UAI, s.name as name ";
 		neo.execute(query, new JsonObject().putString("id", userId), validResultHandler(results));
+	}
+
+	@Override
+	public void listAdmin(UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		if (userInfos == null) {
+			results.handle(new Either.Left<String, JsonArray>("invalid.user"));
+			return;
+		}
+		String condition = "";
+		JsonObject params = new JsonObject();
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) && !userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> structuresIds = f.getStructures();
+			if (structuresIds != null && !structuresIds.isEmpty()) {
+				condition = "WHERE s.id IN {structures} ";
+				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+			}
+		}
+		String query =
+				"MATCH (s:Structure) " + condition +
+				"RETURN s.id as id, s.UAI as UAI, s.name as name ";
+		neo.execute(query, params, validResultHandler(results));
 	}
 
 	@Override

@@ -357,4 +357,19 @@ public class ClassController extends Controller {
 		classService.unlink(classId, userId, notEmptyResponseHandler(request));
 	}
 
+	@SecuredAction(value = "class.list.admin", type = ActionType.RESOURCE)
+	public void listAdmin(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					final String structureId = request.params().get("structureId");
+					classService.listAdmin(structureId, user, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 }

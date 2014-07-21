@@ -69,6 +69,7 @@ public class Directory extends Server {
 		ClassController classController = new ClassController(vertx, container, rm, securedActions);
 		UserController userController = new UserController(vertx, container, rm, securedActions);
 		ProfileController profileController = new ProfileController(vertx, container, rm, securedActions);
+		GroupController groupController = new GroupController(vertx, container, rm, securedActions);
 
 		vertx.eventBus().registerHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents()));
@@ -119,11 +120,13 @@ public class Directory extends Server {
 				.get("/class/:classId/users", "findUsers")
 				.post("/csv/:userType/class/:classId", "csv")
 				.put("/class/:classId/add/:userId",  "addUser")
-				.put("/class/:classId/apply", "applyComRulesAndRegistryEvent");
+				.put("/class/:classId/apply", "applyComRulesAndRegistryEvent")
+				.get("/class/admin/list", "listAdmin");
 
 		structureController
 				.put("/structure/:structureId/link/:userId", "linkUser")
-				.delete("/structure/:structureId/unlink/:userId", "unlinkUser");
+				.delete("/structure/:structureId/unlink/:userId", "unlinkUser")
+				.get("/structure/admin/list", "listAdmin");
 
 		userController
 				.get("/user/:userId", "get")
@@ -137,13 +140,17 @@ public class Directory extends Server {
 				.post("/user/function/:userId", "addFunction")
 				.delete("/user/function/:userId/:function", "removeFunction")
 				.post("/user/group/:userId/:groupId", "addGroup")
-				.delete("/user/group/:userId/:groupId", "removeGroup");
+				.delete("/user/group/:userId/:groupId", "removeGroup")
+				.get("/user/admin/list", "listAdmin");
 
 		profileController
 				.post("/function/:profile", "createFunction")
 				.delete("/function/:function", "deleteFunction")
 				.post("/functiongroup", "createFunctionGroup")
 				.delete("/functiongroup/:groupId", "deleteFunctionGroup");
+
+		groupController
+				.get("/group/admin/list", "listAdmin");
 
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
@@ -167,6 +174,7 @@ public class Directory extends Server {
 		securedUriBinding.add(classController.securedUriBinding());
 		securedUriBinding.add(userController.securedUriBinding());
 		securedUriBinding.add(profileController.securedUriBinding());
+		securedUriBinding.add(groupController.securedUriBinding());
 		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
 				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}

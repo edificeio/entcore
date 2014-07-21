@@ -271,4 +271,22 @@ public class UserController extends Controller {
 		userService.removeGroup(userId, groupId, defaultResponseHandler(request));
 	}
 
+	@SecuredAction(value = "user.list.admin", type = ActionType.RESOURCE)
+	public void listAdmin(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					final String structureId = request.params().get("structureId");
+					final String classId = request.params().get("classId");
+					final JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
+					final String groupId = request.params().get("groupId");
+					userService.listAdmin(structureId, classId, groupId, types, user, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 }

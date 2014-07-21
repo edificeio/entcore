@@ -32,8 +32,13 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.List;
+
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
+import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
+import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultClassService implements ClassService {
 
@@ -165,6 +170,65 @@ public class DefaultClassService implements ClassService {
 				.putString("classId", classId)
 				.putString("userId", userId);
 		eb.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void listAdmin(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		if (userInfos == null) {
+			results.handle(new Either.Left<String, JsonArray>("invalid.user"));
+			return;
+		}
+		String condition = "";
+		JsonObject params = new JsonObject();
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> structuresIds = f.getStructures();
+			List<String> classesIds = f.getClasses();
+			if (structuresIds != null && !structuresIds.isEmpty() && classesIds != null && !classesIds.isEmpty()) {
+				condition = "WHERE (s.id IN {structures} OR c.id IN {classes}";
+				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+				params.putArray("classes", new JsonArray(classesIds.toArray()));
+			} else if (structuresIds != null && !structuresIds.isEmpty()) {
+				condition = "WHERE (s.id IN {structures}";
+				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+			} else if (classesIds != null && !classesIds.isEmpty()) {
+				condition = "WHERE (c.id IN {classes}";
+				params.putArray("classes", new JsonArray(classesIds.toArray()));
+			}
+		}
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> classesIds = f.getClasses();
+			if (classesIds != null && !classesIds.isEmpty()) {
+				if (condition.isEmpty()) {
+					condition = "WHERE (c.id IN {classes2}";
+				} else {
+					condition += " OR c.id IN {classes2}";
+				}
+				params.putArray("classes2", new JsonArray(classesIds.toArray()));
+			}
+		}
+
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			if (condition.isEmpty()) {
+				condition = "WHERE s.id = {structure} ";
+			} else {
+				condition += ") AND s.id = {structure} ";
+			}
+			params.putString("structure", structureId);
+		} else if (!condition.isEmpty()) {
+			condition += ") ";
+		}
+		String query =
+				"MATCH (c:Class)-[:BELONGS]->(s:Structure) " + condition +
+				"RETURN c.id as id, c.name as name ";
+		neo.execute(query, params, validResultHandler(results));
 	}
 
 	private boolean validationParamsError(Handler<Either<String, JsonObject>> result, String ... params) {

@@ -42,4 +42,6 @@ public interface ClassService {
 
 	void unlink(String classId, String userId, Handler<Either<String, JsonObject>> result);
 
+	void listAdmin(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
 }

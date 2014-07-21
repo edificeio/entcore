@@ -20,6 +20,7 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
@@ -42,6 +43,9 @@ public interface UserService {
 	void list(String structureId, String classId, JsonArray expectedProfiles, Handler<Either<String, JsonArray>> results);
 
 	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
+
+	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
+			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void delete(String id, Handler<Either<String, JsonObject>> result);
 

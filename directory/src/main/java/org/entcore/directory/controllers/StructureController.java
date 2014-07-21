@@ -19,11 +19,14 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
@@ -37,6 +40,7 @@ import org.vertx.java.platform.Container;
 
 import java.util.Map;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 public class StructureController extends Controller {
@@ -85,6 +89,20 @@ public class StructureController extends Controller {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
 		structureService.unlink(structureId, userId, notEmptyResponseHandler(request));
+	}
+
+	@SecuredAction(value = "structure.list.admin", type = ActionType.RESOURCE)
+	public void listAdmin(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					structureService.listAdmin(user, arrayResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 }

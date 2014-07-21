@@ -24,12 +24,16 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.controllers.ClassController;
+import org.entcore.directory.controllers.GroupController;
+import org.entcore.directory.controllers.StructureController;
 import org.entcore.directory.controllers.UserController;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DirectoryResourcesProvider implements ResourcesProvider {
 
@@ -56,6 +60,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "update" :
 					isClassTeacher(request, user, handler);
 					break;
+				case "listAdmin" :
+					isAdmin(user, true, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(UserController.class.getName())) {
@@ -72,11 +79,40 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "update" :
 					isUserOrTeacherOf(request, user, handler);
 					break;
+				case "listAdmin" :
+					isAdmin(user, true, handler);
+					break;
+				default: handler.handle(false);
+			}
+		} else if (serviceMethod != null && serviceMethod.startsWith(StructureController.class.getName())) {
+			String method = serviceMethod
+					.substring(StructureController.class.getName().length() + 1);
+			switch (method) {
+				case "listAdmin" :
+					isAdmin(user, false, handler);
+					break;
+				default: handler.handle(false);
+			}
+		} else if (serviceMethod != null && serviceMethod.startsWith(GroupController.class.getName())) {
+			String method = serviceMethod
+					.substring(GroupController.class.getName().length() + 1);
+			switch (method) {
+				case "listAdmin" :
+					isAdmin(user, false, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private void isAdmin(UserInfos user, boolean allowClass, Handler<Boolean> handler) {
+		handler.handle(
+				user.getFunctions().containsKey(SUPER_ADMIN) ||
+				user.getFunctions().containsKey(ADMIN_LOCAL) ||
+				(allowClass && user.getFunctions().containsKey(CLASS_ADMIN))
+		);
 	}
 
 	private void isUserOrTeacherOf(final HttpServerRequest request, UserInfos user,

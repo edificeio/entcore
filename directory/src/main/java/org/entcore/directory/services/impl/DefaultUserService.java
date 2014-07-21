@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -36,6 +37,9 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import java.util.List;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
+import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
+import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
+import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultUserService implements UserService {
 
@@ -187,6 +191,76 @@ public class DefaultUserService implements UserService {
 		}
 		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
+				"u.lastName as lastName, u.displayName as displayName " +
+				"ORDER BY type DESC, displayName ASC ";
+		neo.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void listAdmin(String structureId, String classId, String groupId,
+						  JsonArray expectedProfiles, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		JsonObject params = new JsonObject();
+		String filter = "";
+		String filterProfile = "WHERE 1=1 ";
+		if (expectedProfiles != null && expectedProfiles.size() > 0) {
+			filterProfile += "AND p.name IN {expectedProfiles} ";
+			params.putArray("expectedProfiles", expectedProfiles);
+		}
+		if (classId != null && !classId.trim().isEmpty()) {
+			filter = "(n:Class {id : {classId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
+			params.putString("classId", classId);
+		} else if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "(n:Structure {id : {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-";
+			params.putString("structureId", structureId);
+		} else if (groupId != null && !groupId.trim().isEmpty()) {
+			filter = "(n:Group {id : {groupId}})<-[:IN]-";
+			params.putString("groupId", groupId);
+		}
+		String condition = "";
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> structuresIds = f.getStructures();
+			List<String> classesIds = f.getClasses();
+			if (structuresIds != null && !structuresIds.isEmpty() && classesIds != null && !classesIds.isEmpty()) {
+				condition = "AND (s.id IN {structures} OR c.id IN {classes}";
+				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+				params.putArray("classes", new JsonArray(classesIds.toArray()));
+			} else if (structuresIds != null && !structuresIds.isEmpty()) {
+				condition = "AND (s.id IN {structures}";
+				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+			} else if (classesIds != null && !classesIds.isEmpty()) {
+				condition = "AND (c.id IN {classes}";
+				params.putArray("classes", new JsonArray(classesIds.toArray()));
+			}
+		}
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> classesIds = f.getClasses();
+			if (classesIds != null && !classesIds.isEmpty()) {
+				if (condition.isEmpty()) {
+					condition = "AND c.id IN {classes2} ";
+				} else {
+					condition += " OR c.id IN {classes2}) ";
+				}
+				params.putArray("classes2", new JsonArray(classesIds.toArray()));
+			}
+		} else if (!condition.isEmpty()) {
+			condition += ") ";
+		}
+		String query =
+				"MATCH " + filter + "(u:User) " +
+				"WITH u " +
+				"MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+				"(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->pg, u-[:IN]->pg " +
+				filterProfile + condition +
+				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
+				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName " +
 				"ORDER BY type DESC, displayName ASC ";
 		neo.execute(query, params, validResultHandler(results));
