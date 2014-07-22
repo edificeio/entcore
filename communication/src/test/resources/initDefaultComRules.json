@@ -1,0 +1,18 @@
+{
+	"Structure-Personnel" : {
+		"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student"]
+	},
+	"Structure-Teacher" : {
+		"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student"]
+	},
+	"Structure-Student" : {"users" : "OUTGOING"},
+	"Structure-Relative" : {"users" : "OUTGOING"},
+	"Class-Personnel" : {"users" : "OUTGOING"},
+	"Class-Teacher" : {"users" : "OUTGOING"},
+	"Class-Student" : {
+		"users" : "BOTH", "communiqueWith" : ["Class-Personnel", "Class-Teacher"]
+	},
+	"Class-Relative" : {
+		"users" : "BOTH", "Relative-Student" : "INCOMING", "communiqueWith" : ["Class-Personnel", "Class-Student", "Class-Teacher"]
+	}
+}

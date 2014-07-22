@@ -28,6 +28,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 import org.vertx.java.core.Handler;
@@ -212,23 +213,40 @@ public class CommunicationController extends BaseController {
 				userId, schoolId, expectedTypes, itSelf, false, true, customReturn, additionnalParams, handler);
 	}
 
+	@Put("/init/rules")
+	@SecuredAction("communication.init.default.rules")
+	public void initDefaultCommunicationRules(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
+				JsonArray structures = body.getArray("structures");
+				if (structures != null && structures.size() > 0) {
+					communicationService.initDefaultRules(structures,
+							initDefaultRules, defaultResponseHandler(request));
+				} else {
+					badRequest(request, "invalid.structures");
+				}
+			}
+		});
+	}
+
 	@Put("/rules/:structureId")
 	@SecuredAction("communication.default.rules")
 	public void defaultCommunicationRules(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
-		JsonArray defaultRules = container.config().getArray("defaultCommunicationRules");
 		if (structureId == null || structureId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
-		communicationService.applyDefaultRules(new JsonArray().add(structureId), defaultRules,
+		communicationService.applyDefaultRules(new JsonArray().add(structureId),
 				defaultResponseHandler(request));
 	}
 
 	@BusAddress("wse.communication")
 	public void communicationEventBusHandler(final Message<JsonObject> message) {
-		JsonArray defaultRules = container.config().getArray("defaultCommunicationRules");
-		Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
+		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
+		final Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
 
 			@Override
 			public void handle(Either<String, JsonObject> res) {
@@ -241,13 +259,32 @@ public class CommunicationController extends BaseController {
 			}
 		};
 		switch (message.body().getString("action", "")) {
+			case "initDefaultCommunicationRules" :
+				communicationService.initDefaultRules(message.body().getArray("schoolIds"),
+						initDefaultRules, responseHandler);
+				break;
+			case "initAndApplyDefaultCommunicationRules" :
+				communicationService.initDefaultRules(message.body().getArray("schoolIds"),
+						initDefaultRules, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							communicationService.applyDefaultRules(
+									message.body().getArray("schoolIds"), responseHandler);
+						} else {
+							message.reply(new JsonObject().putString("status", "error")
+									.putString("message", event.left().getValue()));
+						}
+					}
+				});
+				break;
 			case "setDefaultCommunicationRules" :
 				communicationService.applyDefaultRules(new JsonArray().add(
-						message.body().getString("schoolId")), defaultRules, responseHandler);
+						message.body().getString("schoolId")), responseHandler);
 				break;
 			case "setMultipleDefaultCommunicationRules" :
 				communicationService.applyDefaultRules(
-						message.body().getArray("schoolIds"), defaultRules, responseHandler);
+						message.body().getArray("schoolIds"), responseHandler);
 				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error")

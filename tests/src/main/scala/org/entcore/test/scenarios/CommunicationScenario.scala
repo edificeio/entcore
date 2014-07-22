@@ -153,12 +153,18 @@ object CommunicationScenario {
     .exec(Authenticate.logout)
     .exec(Authenticate.authenticateAdmin)
 
-    // apply default com rules
-    .exec(http("apply default com rules")
+    // Init defaut com rules
+    .exec(http("Init default com rules")
+      .put("/communication/init/rules")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{ "structures" : ["${schoolId}"] }"""))
+      .check(status.is(200)))
+
+    // Apply default com rules
+    .exec(http("Apply default com rules")
       .put("/communication/rules/${schoolId}")
       .header("Content-Length", "0")
       .check(status.is(200)))
-    .pause(5)
 
     .exec(Authenticate.logout)
 

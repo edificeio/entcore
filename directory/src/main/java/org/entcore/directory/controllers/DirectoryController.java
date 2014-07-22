@@ -128,7 +128,29 @@ public class DirectoryController extends BaseController {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject school) {
-				schoolService.create(school, notEmptyResponseHandler(request, 201));
+				schoolService.create(school, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(final Either<String, JsonObject> r) {
+						if (r.isRight()) {
+							if (r.right().getValue() != null && r.right().getValue().size() > 0) {
+								JsonObject j = new JsonObject()
+										.putString("action", "initDefaultCommunicationRules")
+										.putArray("schoolIds", new JsonArray().add(
+												r.right().getValue().getString("id")));
+								eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> message) {
+										renderJson(request, r.right().getValue(), 201);
+									}
+								});
+							} else {
+								request.response().setStatusCode(404).end();
+							}
+						} else {
+							leftToResponse(request, r.left());
+						}
+					}
+				});
 			}
 		});
 	}
@@ -156,6 +178,10 @@ public class DirectoryController extends BaseController {
 					public void handle(final Either<String, JsonObject> event) {
 						if (event.isRight()) {
 							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+								JsonObject j = new JsonObject()
+										.putString("action", "initDefaultCommunicationRules")
+										.putArray("schoolIds", new JsonArray().add(schoolId));
+								eb.send("wse.communication", j);
 								String classId = event.right().getValue().getString("id");
 								if (classId != null && !classId.trim().isEmpty() &&
 										request.params().contains("setDefaultRoles") &&

@@ -222,7 +222,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 												if ("ok".equals(message.body().getString("status")) && ids != null &&
 														ids.size() == 1) {
 													JsonObject j = new JsonObject()
-															.putString("action", "setMultipleDefaultCommunicationRules")
+															.putString("action", "initAndApplyDefaultCommunicationRules")
 															.putArray("schoolIds", ((JsonObject) ids.get(0))
 																	.getArray("ids", new JsonArray()));
 													eb.send("wse.communication", j);

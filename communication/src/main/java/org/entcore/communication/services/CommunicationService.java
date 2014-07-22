@@ -50,8 +50,10 @@ public interface CommunicationService {
 	void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction,
 			Handler<Either<String, JsonObject>> handler);
 
-	void applyDefaultRules(JsonArray structureIds, JsonArray defaultRules,
+	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
 			Handler<Either<String, JsonObject>> handler);
+
+	void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler);
 
 	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
 

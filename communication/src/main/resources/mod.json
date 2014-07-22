@@ -1,23 +1,24 @@
 {
 	"main":"org.entcore.communication.Communication",
-	"auto-redeploy": true,
 	"port": 8015,
 	"mode": "dev",
 	"address" : "wse.communication",
-	"defaultCommunicationRules" : [
-	    "(s:Structure)<-[:ADMINISTRATIVE_ATTACHMENT]-(start:User)-[:RELATED]->(end:User)",
-	    "AND startProfile.name = 'Student' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
-	    "AND startProfile.name = 'Relative' AND endProfile.name = 'Student' WITH startClassGroup as start, endClassGroup as end ",
-	    "AND startProfile.name = 'Relative' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
-	    "AND startProfile.name IN ['Teacher', 'Personnel'] AND endProfile.name = 'Student' WITH startStructureGroup as start, endStructureGroup as end ",
-	    "AND startProfile.name IN ['Teacher', 'Personnel'] AND endProfile.name = 'Relative' WITH startStructureGroup as start, endStructureGroup as end ",
-	    "AND startProfile.name = 'Personnel' AND endProfile.name = 'Teacher' WITH startStructureGroup as start, endStructureGroup as end ",
-	    "AND startProfile.name = 'Teacher' AND endProfile.name = 'Personnel' WITH startStructureGroup as start, endStructureGroup as end ",
-		"AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as start, userClass as end ",
-		"AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as end, userClass as start ",
-		"AND profile.name IN ['Teacher', 'Personnel'] WITH structureGroup as start, userStructure as end ",
-		"AND profile.name IN ['Teacher', 'Personnel'] WITH structureGroup as end, userStructure as start ",
-		"AND profile.name = 'Student' WITH structureGroup as start, userStructure as end ",
-		"AND profile.name = 'Relative' WITH structureGroup as start, userStructure as end "
-	]
+	"initDefaultCommunicationRules" : {
+		"Structure-Personnel" : {
+			"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student"]
+		},
+		"Structure-Teacher" : {
+			"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student"]
+		},
+		"Structure-Student" : {"users" : "OUTGOING"},
+		"Structure-Relative" : {"users" : "OUTGOING"},
+		"Class-Personnel" : {"users" : "OUTGOING"},
+		"Class-Teacher" : {"users" : "OUTGOING"},
+		"Class-Student" : {
+			"users" : "BOTH", "communiqueWith" : ["Class-Personnel", "Class-Teacher"]
+		},
+		"Class-Relative" : {
+			"users" : "BOTH", "Relative-Student" : "INCOMING", "communiqueWith" : ["Class-Personnel", "Class-Student", "Class-Teacher"]
+		}
+	}
 }

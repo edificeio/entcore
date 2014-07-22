@@ -34,9 +34,15 @@ import java.net.URI;
 public class JsonHttpServerRequest implements HttpServerRequest {
 
 	private JsonObject object;
+	private HttpServerResponse response;
 
 	public JsonHttpServerRequest(JsonObject object) {
 		this.object = object;
+	}
+
+	public JsonHttpServerRequest(JsonObject object, HttpServerResponse response) {
+		this.object = object;
+		this.response = response;
 	}
 
 	@Override
@@ -71,7 +77,7 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public HttpServerResponse response() {
-		return null;
+		return response;
 	}
 
 	@Override
