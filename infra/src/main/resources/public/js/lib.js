@@ -425,13 +425,35 @@ function Collection(obj){
 				return item === element;
 			});
 			if(trigger !== false){
-				this.trigger('change');
 				this.trigger('remove');
+				this.trigger('change');
 			}
 		},
 		removeAt: function(index){
 			var element = this.all[index];
 			this.remove(element);
+		},
+		insertAt: function(index, item){
+			this.all.splice(index, 0, item);
+			this.trigger('push');
+			this.trigger('change');
+		},
+		getIndex: function(item){
+			for(var i = 0; i < this.all.length; i++){
+				if(this.all[i] === item){
+					return i;
+				}
+			}
+		},
+		splice: function(){
+			this.all.splice.apply(this.all, arguments);
+			if(arguments.length > 2){
+				this.trigger('push');
+			}
+			if(arguments[1] > 0){
+				this.trigger('remove');
+			}
+			this.trigger('change');
 		},
 		selectItem: function(item){
 			item.selected = true;

@@ -20,14 +20,7 @@
 		<section ng-if="!externalLink">
 
 			<article class="row">
-				<div class="row">
-					<label class="four cell">Bulle d'information</label>
-					<input class="four cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
-				</div>
-				<div class="row">
-					<div class="four cell">&nbsp;</div>
-					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
-				</div>
+
 				<article class="row">
 					<div class="twelve cell vertical-spacing">
 						<input type="text" placeholder="Rechercher" ng-model="search.text" class="four cell" />
@@ -55,7 +48,14 @@
 						</div>
 					</div>
 				</div>
-
+				<div class="row">
+					<label class="four cell">Bulle d'information</label>
+					<input class="four cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
+				</div>
+				<div class="row">
+					<div class="four cell">&nbsp;</div>
+					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+				</div>
 			</article>
 		</section>
 	</div>

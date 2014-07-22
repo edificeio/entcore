@@ -624,6 +624,39 @@ module.directive('container', function($compile){
 	}
 });
 
+module.directive('colorSelect', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+			ngModel: '='
+		},
+		replace: true,
+		template: '' +
+			'<div class="color-picker" ng-class="{ opened: pickColor }">' +
+				'<button class="colors-opener"></button>' +
+				'<div class="colors-list">' +
+					'<button ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
+				'</div>' +
+			'</div>',
+		link: function(scope, element, attributes){
+			scope.colors = ['transparent', 'white', 'pink', 'orange', 'black', 'blue', 'green', 'purple'];
+			scope.setColor = function(color){
+				scope.ngModel = color;
+			};
+
+			element.find('.colors-opener').on('click', function(e){
+				scope.pickColor = !scope.pickColor;
+				scope.$apply('pickColor');
+				e.stopPropagation();
+				$('body').one('click', function(){
+					scope.pickColor = false;
+					scope.$apply('pickColor');
+				});
+			});
+		}
+	}
+})
+
 module.directive('imageSelect', function($compile){
 	return {
 		restrict: 'E',
@@ -631,14 +664,13 @@ module.directive('imageSelect', function($compile){
 		scope: {
 			ngModel: '=',
 			thumbnails: '&',
-			multiple: '=',
 			ngChange: '&',
 			default: '@'
 		},
 		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" ng-if="ngModel" style="cursor: pointer" />' +
 			'<img skin-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="\'img\'"></media-library>' +
+			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" file-format="\'img\'"></media-library>' +
 			'</lightbox>' +
 			'</div>',
 		link: function(scope, element, attributes){
@@ -665,6 +697,36 @@ module.directive('imageSelect', function($compile){
 				scope.ngChange();
 			};
 			element.on('click', '.pick-file', function(){
+				scope.userSelecting = true;
+				scope.$apply('userSelecting');
+			});
+		}
+	}
+});
+
+module.directive('soundSelect', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+			ngModel: '=',
+			ngChange: '&'
+		},
+		template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
+			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" file-format="\'audio\'"></media-library>' +
+			'</lightbox>' +
+			'</div>',
+		link: function(scope, element, attributes){
+			scope.selectedFile = { file: {}};
+
+			scope.updateDocument = function(){
+				scope.userSelecting = false;
+				scope.ngModel = '/workspace/document/' + scope.selectedFile.file._id;
+				scope.$apply('ngModel');
+				scope.ngChange();
+			};
+			element.on('click', function(){
 				scope.userSelecting = true;
 				scope.$apply('userSelecting');
 			});
@@ -1337,34 +1399,45 @@ module.directive('textEditor', function($compile){
 				$element.parent().on('startDrag', function(){
 					editor.blur();
 				});
-				editor.on('focus', function(){
+
+				var followResize = true;
+				function resizeParent(){
 					editor.parent().parent().height(editor.height());
 					editor.parent().parent().trigger('stopResize');
+
+					if(followResize){
+						setTimeout(resizeParent, 100);
+					}
+				}
+
+				editor.on('focus', function(){
+					followResize = true;
+
+					resizeParent();
 					$('.' + instance.id).width(editor.width());
 					editor.parent().parent().data('lock', true);
-					editor.css({ 'cursor': 'text' });
-					$(document).on('keyup.editor', function(key){
-						editor.parent().parent().height(editor.height());
-						editor.parent().parent().trigger('stopResize');
-					});
+					editor.css({ cursor: 'text' });
 				});
+
 				editor.on('blur', function(){
-					editor.parent().parent().height(editor.height());
+					followResize = false;
+					resizeParent();
 					editor.parent().parent().data('lock', false);
-					editor.css({ 'cursor': '' });
+					editor.css({ cursor: '' });
 					$scope.ngModel = editor.html();
 					$scope.$apply('ngModel');
-					$(document).unbind('keyup.editor');
 					if($scope.ngChange){
 						$scope.ngChange();
 					}
 				});
+
 				$element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
-						CKEDITOR.instances[instance].destroy()
+						if(CKEDITOR.instances[instance].element.$ === editor[0]){
+							CKEDITOR.instances[instance].destroy();
+						}
 					}
-					$('.cke').remove();
-				})
+				});
 			}
 		}
 	}
@@ -1833,9 +1906,11 @@ module.directive('gridCell', function($compile){
 		scope: {
 			w: '=',
 			h: '=',
+			index: '=',
+			className: '=',
 			onIndexChange: '&'
 		},
-		template: '<div ng-transclude></div>',
+		template: '<div class="media-wrapper"><div class="media-container" ng-class="[className]" ng-transclude></div></div>',
 		transclude: true,
 		link: function(scope, element, attributes){
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
@@ -1843,6 +1918,13 @@ module.directive('gridCell', function($compile){
 				element.addClass(cellSizes[newVal]);
 				if(newVal !== oldVal){
 					element.removeClass(cellSizes[oldVal]);
+				}
+			});
+
+			scope.$watch('h', function(newVal, oldVal){
+				element.addClass('height-' + cellSizes[newVal]);
+				if(newVal !== oldVal){
+					element.removeClass('height-' + cellSizes[oldVal]);
 				}
 			});
 		}
@@ -1860,6 +1942,7 @@ module.directive('gridResizable', function($compile){
 			});
 
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+			var resizeLimits = {};
 
 			element.addClass('grid-media');
 
@@ -1870,15 +1953,16 @@ module.directive('gridResizable', function($compile){
 						return;
 					}
 					var mouse = { x: e.pageX, y: e.pageY };
-					var resizeLimits = {
-						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
-						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15
+					resizeLimits = {
+						horizontal:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
+						vertical: element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) +
+							5 > mouse.y && mouse.y > element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) - 15
 					};
 
 					var orientations = {
-						'ns': resizeLimits.verticalBottom,
-						'ew': resizeLimits.horizontalRight,
-						'nwse': resizeLimits.verticalBottom && resizeLimits.horizontalRight
+						'ns': resizeLimits.vertical,
+						'ew': resizeLimits.horizontal,
+						'nwse': resizeLimits.vertical && resizeLimits.horizontal
 
 					};
 
@@ -1903,7 +1987,7 @@ module.directive('gridResizable', function($compile){
 
 			//actual resize
 			element.on('mousedown.resize', function(e){
-				if(element.data('lock') === true || element.data('resizing') === true){
+				if(element.data('lock') === true || element.data('resizing') === true || (!resizeLimits.horizontal && !resizeLimits.vertical)){
 					return;
 				}
 				var mouse = { y: e.pageY, x: e.pageX };
@@ -1933,11 +2017,12 @@ module.directive('gridResizable', function($compile){
 				}
 
 				function parentRemainingSpace(diff){
+					var rowWidth = element.parent().width();
 					var childrenSize = 0;
 					cells.each(function(index, cell){
 						childrenSize += $(cell).width();
 					});
-					return  parentData.size.width - (childrenSize + diff + 2 * cells.length);
+					return  rowWidth - (childrenSize + diff + 2 * cells.length);
 				}
 
 				e.preventDefault();
@@ -1965,36 +2050,53 @@ module.directive('gridResizable', function($compile){
 
 					element.unbind("click");
 
+					// the element height is converted in padding-bottom if vertical resize happens
+					// this is done in order to keep it compatible with the grid, which is based on padding
+					if(resizeLimits.vertical){
+						element.css({ 'padding-bottom': element.height() + 'px' });
+						element.height(0);
+					}
+
 					//animation for resizing
 					var resize = function(){
 						//current element resizing
 						var newWidth = 0; var newHeight = 0;
 						var p = element.offset();
-						var distance = mouse.x - p.left;
-						if(element.offset().left + distance > parentData.pos.left + parentData.size.width){
-							distance = (parentData.pos.left + parentData.size.width) - element.offset().left - 2;
-						}
-						newWidth = distance;
-						if (newWidth < cellWidth) {
-							newWidth = cellWidth;
-						}
-						var diff = newWidth - element.width();
 
-						//neighbour resizing
-						var remainingSpace = parentRemainingSpace(diff);
-						var neighbour = findResizableNeighbour(element, distance - element.width());
-
-						if(neighbour || remainingSpace >= 0){
-
-							if(neighbour && remainingSpace <= 0){
-								var neighbourWidth = neighbour.width() + remainingSpace;
-								if(neighbourWidth < cellWidth){
-									newWidth -= cellWidth - neighbourWidth;
-									neighbourWidth = cellWidth;
-								}
-								neighbour.width(neighbourWidth);
+						//horizontal resizing
+						if(resizeLimits.horizontal){
+							var distance = mouse.x - p.left;
+							if(element.offset().left + distance > parentData.pos.left + parentData.size.width){
+								distance = (parentData.pos.left + parentData.size.width) - element.offset().left - 2;
 							}
-							element.width(newWidth);
+							newWidth = distance;
+							if (newWidth < cellWidth) {
+								newWidth = cellWidth;
+							}
+							var diff = newWidth - element.width();
+
+							//neighbour resizing
+							var remainingSpace = parentRemainingSpace(diff);
+							var neighbour = findResizableNeighbour(element, distance - element.width());
+
+							if(neighbour || remainingSpace >= 0){
+								if(neighbour && remainingSpace <= 0){
+									var neighbourWidth = neighbour.width() + remainingSpace;
+									if(neighbourWidth < cellWidth){
+										newWidth -= cellWidth - neighbourWidth;
+										neighbourWidth = cellWidth;
+									}
+									neighbour.width(neighbourWidth);
+								}
+								element.width(newWidth);
+							}
+						}
+
+						//vertical resizing
+						if(resizeLimits.vertical){
+							var distance = mouse.y - p.top;
+							newHeight = distance;
+							element.css({ 'padding-bottom': newHeight });
 						}
 
 						if(!interrupt){
@@ -2002,8 +2104,6 @@ module.directive('gridResizable', function($compile){
 						}
 					};
 					resize();
-
-
 				});
 
 				$(window).on('mouseup.resize', function(){
@@ -2012,10 +2112,14 @@ module.directive('gridResizable', function($compile){
 
 					cells.each(function(index, cell){
 						var cellWidth = $(cell).width();
-						var cellIndex = Math.round(cellWidth * 12 / parentData.size.width);
+						var cellHeight = parseInt($(cell).css('padding-bottom'));
+						var cellWIndex = Math.round(cellWidth * 12 / parentData.size.width);
+						var cellHIndex = Math.round(cellHeight * 12 / parentData.size.width);
 						var cellScope = angular.element(cell).scope();
-						cellScope.w = cellIndex;
+						cellScope.w = cellWIndex;
+						cellScope.h = cellHIndex;
 						cellScope.$apply('w');
+						cellScope.$apply('h');
 					});
 
 					setTimeout(function(){
@@ -2040,118 +2144,148 @@ module.directive('gridDraggable', function($compile){
 				if(element.data('lock') === true){
 					return;
 				}
+
 				e.preventDefault();
 				var interrupt = false;
-				if(element.data('resizing') !== true){
-					element.trigger('startDrag');
+				var mouse = { y: e.clientY, x: e.clientX };
+				var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+				var parent = element.parents('.drawing-grid');
 
-					$('body').css({
-						'-webkit-user-select': 'none',
-						'-moz-user-select': 'none',
-						'user-select' : 'none'
-					});
-					element.css({
-						'position': 'absolute'
-					});
-					var mouse = { y: e.clientY, x: e.clientX };
-					var elementDistance = {
-						y: mouse.y - element.offset().top,
-						x: mouse.x - element.offset().left
-					};
-					$(window).on('mousemove.drag', function(e){
-						element.unbind("click");
-						element.data('dragging', true);
-						mouse = {
-							y: e.clientY,
-							x: e.clientX
+				function findCellSize(cell){
+					for(var i = 0; i < cellSizes.length; i++){
+						if(cell.hasClass(cellSizes[i])){
+							return i;
+						}
+					}
+				}
+
+				$(window).on('mousemove.drag', function(e){
+					if(element.data('dragging') !== true && element.data('resizing') !== true){
+						element.trigger('startDrag');
+
+						var elementDistance = {
+							y: mouse.y - element.offset().top,
+							x: mouse.x - element.offset().left
 						};
-					});
 
-					$('body').on('mouseup.drag', function(e){
-						element.trigger('stopDrag');
 						$('body').css({
-							'-webkit-user-select': 'initial',
-							'-moz-user-select': 'initial',
-							'user-select' : 'initial'
+							'-webkit-user-select': 'none',
+							'-moz-user-select': 'none',
+							'user-select' : 'none'
 						});
-						interrupt = true;
-						$('body').unbind('mouseup.drag');
-						$(window).unbind('mousemove.drag');
+						element.css({
+							'position': 'absolute'
+						});
 
+						element.unbind("click");
+						element.find('img, button, div').css({ 'pointer-events': 'none' });
+
+						moveElement(elementDistance);
+					}
+
+					element.data('dragging', true);
+					mouse = {
+						y: e.clientY,
+						x: e.clientX
+					};
+				});
+
+				$('body').on('mouseup.drag', function(e){
+					element.trigger('stopDrag');
+					$('body').css({
+						'-webkit-user-select': 'initial',
+						'-moz-user-select': 'initial',
+						'user-select' : 'initial'
+					});
+					interrupt = true;
+					$('body').unbind('mouseup.drag');
+					$(window).unbind('mousemove.drag');
+
+					if(element.data('dragging') === true){
 						var elementPos = {
-							left: element.offset().left,
-							top: element.offset().top,
+							left: element.position().left,
+							top: element.position().top,
 							width: element.width(),
 							height: element.height()
 						};
 
-						function hitTest(cell){
-							var cellPos = {
-								left: cell.offset().left,
-								top: cell.offset().top,
-								width: cell.width(),
-								height: cell.height()
-							};
+						var cellIndex = Math.round(elementPos.left * 12 / parent.width());
 
-							var horizontalHit = (elementPos.left < cellPos.left && elementPos.left + elementPos.width > cellPos.left) ||
-								(cellPos.left < elementPos.left && cellPos.left + cellPos.width > elementPos.left);
-							var verticalHit = (elementPos.top < cellPos.top && elementPos.top + elementPos.height > cellPos.top) ||
-								(cellPos.top < elementPos.top && cellPos.top + cellPos.height > elementPos.top);
+						var cellPos = 0;
+						var cells = element.parent().children('grid-cell');
+						cells.each(function(index, cell){
+							if(cell !== element[0]){
+								cellPos += findCellSize($(cell));
+								if(cellPos > cellIndex){
+									if(scope.index !== index){
+										scope.index = index;
+										scope.$apply('index');
+										scope.onIndexChange();
+									}
+									return false;
+								}
+							}
+						});
 
-							return horizontalHit && verticalHit;
-						}
-
-						element.parent().children('grid-cell').each(function(index, cell){
-							if(hitTest($(cell))){
+						if(cellPos <= cellIndex){
+							var index = cells.length;
+							if(scope.index !== index){
 								scope.index = index;
 								scope.$apply('index');
 								scope.onIndexChange();
 							}
+						}
+					}
+
+					setTimeout(function(){
+						element.data('dragging', false);
+						element.on('click', function(){
+							scope.$parent.$eval(attributes.ngClick);
 						});
-
-						setTimeout(function(){
-							element.data('dragging', false);
-							element.on('click', function(){
-								scope.$parent.$eval(attributes.ngClick);
-							});
-						}, 0);
-					});
-					var moveElement = function(){
-						var parent = element.parents('.drawing-grid');
-						var parentPosition = parent.offset();
-						var boundaries = {
-							left: parentPosition.left,
-							top: parentPosition.top,
-							right: parentPosition.left + parent.width() - element.width(),
-							bottom: parentPosition.top + parent.height() - element.height()
-						};
-
-						var newOffset = {
-							top: mouse.y - elementDistance.y,
-							left: mouse.x - elementDistance.x
-						};
-
-						if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
-							newOffset.left = boundaries.left;
-						}
-						if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
-							newOffset.left = boundaries.right - 2
-						}
-						if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
-							newOffset.top = boundaries.top;
-						}
-						if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
-							newOffset.top = boundaries.bottom - 2;
-						}
-
-						element.offset(newOffset);
-
-						if(!interrupt){
-							requestAnimationFrame(moveElement);
-						}
+						element.find('img, button, div').css({ 'pointer-events': 'all' });
+						element.css({
+							position: '',
+							left: 'auto',
+							top: 'auto'
+						});
+					}, 100);
+				});
+				var moveElement = function(elementDistance){
+					var parent = element.parents('.drawing-grid');
+					var parentPosition = parent.offset();
+					var boundaries = {
+						left: parentPosition.left,
+						top: parentPosition.top,
+						right: parentPosition.left + parent.width() - element.width(),
+						bottom: parentPosition.top + parent.height() - element.height()
 					};
-					moveElement();
-				}
+
+					var newOffset = {
+						top: mouse.y - elementDistance.y,
+						left: mouse.x - elementDistance.x
+					};
+
+					if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
+						newOffset.left = boundaries.left;
+					}
+					if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
+						newOffset.left = boundaries.right - 2
+					}
+					if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
+						newOffset.top = boundaries.top;
+					}
+					if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
+						newOffset.top = boundaries.bottom - 2;
+					}
+
+					element.offset(newOffset);
+
+					if(!interrupt){
+						requestAnimationFrame(function(){
+							moveElement(elementDistance);
+						});
+					}
+				};
 			});
 		}
 	}
