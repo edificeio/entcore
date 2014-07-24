@@ -90,6 +90,10 @@ public abstract class MongoDbControllerHelper extends BaseController {
 	}
 
 	protected void shareJson(final HttpServerRequest request) {
+		shareJson(request, true);
+	}
+
+	protected void shareJson(final HttpServerRequest request, final boolean checkIsOwner) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
 			badRequest(request);
@@ -99,17 +103,22 @@ public abstract class MongoDbControllerHelper extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					isOwner(sharedCollection, id, user, new Handler<Boolean>() {
-						@Override
-						public void handle(Boolean event) {
-							if (Boolean.TRUE.equals(event)) {
-								shareService.shareInfos(user.getUserId(), id,
-										I18n.acceptLanguage(request), defaultResponseHandler(request));
-							} else {
-								unauthorized(request);
-							}
-						}
-					});
+					if (checkIsOwner) {
+						isOwner(sharedCollection, id, user, new Handler<Boolean>() {
+							@Override
+							public void handle(Boolean event) {
+								if (Boolean.TRUE.equals(event)) {
+									shareService.shareInfos(user.getUserId(), id,
+											I18n.acceptLanguage(request), defaultResponseHandler(request));
+								} else {
+									unauthorized(request);
+								}
+						  }
+						});
+					} else {
+						shareService.shareInfos(user.getUserId(), id,
+								I18n.acceptLanguage(request), defaultResponseHandler(request));
+					}
 				} else {
 					unauthorized(request);
 				}
@@ -118,6 +127,11 @@ public abstract class MongoDbControllerHelper extends BaseController {
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate) {
+		shareJsonSubmit(request, notifyShareTemplate, true);
+	}
+
+	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate,
+			final boolean checkIsOwner) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
 			badRequest(request);
@@ -138,50 +152,62 @@ public abstract class MongoDbControllerHelper extends BaseController {
 					@Override
 					public void handle(final UserInfos user) {
 						if (user != null) {
-							isOwner(sharedCollection, id, user, new Handler<Boolean>() {
-								@Override
-								public void handle(Boolean event) {
-									if (Boolean.TRUE.equals(event)) {
-										Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
-											@Override
-											public void handle(Either<String, JsonObject> event) {
-												if (event.isRight()) {
-													JsonObject n = event.right().getValue()
-															.getObject("notify-timeline");
-													if (n != null && notifyShareTemplate != null) {
-														notifyShare(request, id, user, new JsonArray().add(n),
-																notifyShareTemplate);
-													}
-													renderJson(request, event.right().getValue());
-												} else {
-													JsonObject error = new JsonObject()
-															.putString("error", event.left().getValue());
-													renderJson(request, error, 400);
-												}
-											}
-										};
-										if (groupId != null) {
-											shareService.groupShare(user.getUserId(), groupId, id, actions, r);
-										} else if (userId != null) {
-											shareService.userShare(user.getUserId(), userId, id, actions, r);
+							if (checkIsOwner) {
+								isOwner(sharedCollection, id, user, new Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (Boolean.TRUE.equals(event)) {
+											response(user, groupId, actions, userId);
 										} else {
-											badRequest(request);
+											unauthorized(request);
 										}
-									} else {
-										unauthorized(request);
-									}
-								}
-							});
+								  }
+								});
+							} else {
+								response(user, groupId, actions, userId);
+							}
 						} else {
 							unauthorized(request);
 						}
 					}
 				});
+			}
+
+			private void response(final UserInfos user, String groupId, List<String> actions, String userId) {
+				Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							JsonObject n = event.right().getValue()
+									.getObject("notify-timeline");
+							if (n != null && notifyShareTemplate != null) {
+								notifyShare(request, id, user, new JsonArray().add(n),
+										notifyShareTemplate);
+							}
+							renderJson(request, event.right().getValue());
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("error", event.left().getValue());
+							renderJson(request, error, 400);
+						}
+					}
+				};
+				if (groupId != null) {
+					shareService.groupShare(user.getUserId(), groupId, id, actions, r);
+				} else if (userId != null) {
+					shareService.userShare(user.getUserId(), userId, id, actions, r);
+				} else {
+					badRequest(request);
+				}
 			}
 		});
 	}
 
 	protected void removeShare(final HttpServerRequest request) {
+		removeShare(request, true);
+	}
+
+	protected void removeShare(final HttpServerRequest request, final boolean checkIsOwner) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
 			badRequest(request);
@@ -199,34 +225,43 @@ public abstract class MongoDbControllerHelper extends BaseController {
 					badRequest(request);
 					return;
 				}
-				getUserInfos(eb, request, new Handler<UserInfos>() {
-					@Override
-					public void handle(final UserInfos user) {
-						if (user != null) {
-							isOwner(sharedCollection, id, user, new Handler<Boolean>() {
-								@Override
-								public void handle(Boolean event) {
-									if (Boolean.TRUE.equals(event)) {
-										if (groupId != null) {
-											shareService.removeGroupShare(groupId, id, actions,
-													defaultResponseHandler(request));
-										} else if (userId != null) {
-											shareService.removeUserShare(userId, id, actions,
-													defaultResponseHandler(request));
+				if (checkIsOwner) {
+					getUserInfos(eb, request, new Handler<UserInfos>() {
+						@Override
+						public void handle(final UserInfos user) {
+							if (user != null) {
+								isOwner(sharedCollection, id, user, new Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (Boolean.TRUE.equals(event)) {
+											response(groupId, actions, userId);
 										} else {
-											badRequest(request);
+											unauthorized(request);
 										}
-									} else {
-										unauthorized(request);
-									}
-								}
-							});
-						} else {
-							unauthorized(request);
+								  }
+								});
+							} else {
+								unauthorized(request);
+							}
 						}
-					}
-				});
+					});
+				} else {
+					response(groupId, actions, userId);
+				}
 			}
+
+			private void response(String groupId, List<String> actions, String userId) {
+				if (groupId != null) {
+					shareService.removeGroupShare(groupId, id, actions,
+							defaultResponseHandler(request));
+				} else if (userId != null) {
+					shareService.removeUserShare(userId, id, actions,
+							defaultResponseHandler(request));
+				} else {
+					badRequest(request);
+				}
+			}
+
 		});
 	}
 
