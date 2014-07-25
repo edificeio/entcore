@@ -26,6 +26,8 @@ import org.entcore.common.http.filter.HttpActionFilter;
 import org.entcore.common.http.filter.ResourceProviderFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.DB;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
 
@@ -33,6 +35,7 @@ public abstract class BaseServer extends Server {
 
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler = new RepositoryHandler();
+	private String schema;
 
 	@Override
 	public void start() {
@@ -40,10 +43,23 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start();
-		Neo4j.getInstance().init(getEventBus(vertx),
-				config.getString("neo4j-address", "wse.neo4j.persistor"));
-		MongoDb.getInstance().init(getEventBus(vertx),
-				config.getString("mongo-address", "wse.mongodb.persistor"));
+		if (config.getBoolean("neo4j", true)) {
+			Neo4j.getInstance().init(getEventBus(vertx),
+					config.getString("neo4j-address", "wse.neo4j.persistor"));
+		}
+		if (config.getBoolean("mongodb", true)) {
+			MongoDb.getInstance().init(getEventBus(vertx),
+					config.getString("mongo-address", "wse.mongodb.persistor"));
+		}
+		if (config.getBoolean("sql", false)) {
+			Sql.getInstance().init(getEventBus(vertx),
+					config.getString("sql-address", "sql.persistor"));
+			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
+			if ("dev".equals(config.getString("mode"))) {
+				DB.loadScripts(schema,
+						vertx, config.getString("init-scripts", "sql"));
+			}
+		}
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
@@ -67,6 +83,10 @@ public abstract class BaseServer extends Server {
 			((ResourceProviderFilter) this.resourceProvider).setDefault(resourceProvider);
 		}
 		return this;
+	}
+
+	public String getSchema() {
+		return schema;
 	}
 
 }

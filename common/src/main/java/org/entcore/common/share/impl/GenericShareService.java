@@ -41,6 +41,7 @@ public abstract class GenericShareService implements ShareService {
 	protected final Map<String, SecuredAction> securedActions;
 	protected final Map<String, List<String>> groupedActions;
 	protected static final I18n i18n = I18n.getInstance();
+	private JsonArray resourceActions;
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
@@ -50,6 +51,9 @@ public abstract class GenericShareService implements ShareService {
 	}
 
 	protected JsonArray getResoureActions(Map<String, SecuredAction> securedActions) {
+		if (resourceActions != null) {
+			return resourceActions;
+		}
 		JsonObject resourceActions = new JsonObject();
 		for (SecuredAction action: securedActions.values()) {
 			if (ActionType.RESOURCE.name().equals(action.getType()) && !action.getDisplayName().isEmpty()) {
@@ -65,7 +69,8 @@ public abstract class GenericShareService implements ShareService {
 				}
 			}
 		}
-		return new JsonArray(resourceActions.toMap().values().toArray());
+		this.resourceActions = new JsonArray(resourceActions.toMap().values().toArray());
+		return this.resourceActions;
 	}
 
 	protected void getShareInfos(final String userId, final JsonArray actions,

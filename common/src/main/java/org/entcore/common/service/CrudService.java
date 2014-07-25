@@ -45,4 +45,6 @@ public interface CrudService {
 
 	void list(VisibilityFilter filter, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
+	void isOwner(String id, UserInfos user, final Handler<Boolean> handler);
+
 }

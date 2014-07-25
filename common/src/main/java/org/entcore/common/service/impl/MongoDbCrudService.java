@@ -29,6 +29,7 @@ import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -164,6 +165,17 @@ public class MongoDbCrudService implements CrudService {
 		JsonObject sort = new JsonObject().putNumber("modified", -1);
 		mongo.find(collection, MongoQueryBuilder.build(query), sort,
 				defaultListProjection, validResultsHandler(handler));
+	}
+
+	public void isOwner(String id, UserInfos user, final Handler<Boolean> handler) {
+		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner.userId").is(user.getUserId());
+		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonObject res = event.body();
+				handler.handle(res != null && "ok".equals(res.getString("status")) && 1 == res.getInteger("count"));
+			}
+		});
 	}
 
 }
