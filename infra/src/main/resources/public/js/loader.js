@@ -60,7 +60,7 @@ var loader = (function(){
 		humane: 'humane.min.js',
 		underscore: 'underscore-min-1.4.4.js',
 		ckeditor: '../ckeditor/ckeditor.js'
-	}
+	};
 	var basePath = document.getElementById('context').getAttribute('src').split('/');
 	basePath.length = basePath.length - 1;
 	basePath = basePath.join('/');
@@ -120,7 +120,7 @@ var loader = (function(){
 
 	var load = function(script){
 		loadScript(script.path, script.completePath);
-	}
+	};
 
 	configurations.portal.forEach(load);
 
@@ -165,7 +165,7 @@ var routes = {
 
 function Model(data){
 	if(typeof this.updateData === 'function'){
-		this.updateData(data);
+		this.updateData(data, false);
 	}
 }
 Model.prototype.build = function(){};

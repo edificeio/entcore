@@ -1727,24 +1727,6 @@ module.directive('drawingZone', function(){
 	};
 });
 
-module.directive('drawingGrid', function(){
-	return function(scope, element, attributes){
-		element.addClass('drawing-grid');
-		element.on('click', function(e){
-			var skip = true;
-			element.parents('grid-cell').data('lock', true);
-
-			$('body').on('click.lock', function(){
-				if(skip){
-					return;
-				}
-				element.parents('grid-cell').data('lock', false);
-				$('body').unbind('click.lock')
-			});
-		});
-	};
-});
-
 module.directive('resizable', function(){
 	return {
 		restrict: 'A',
@@ -1916,6 +1898,24 @@ module.directive('resizable', function(){
 	}
 });
 
+module.directive('drawingGrid', function(){
+	return function(scope, element, attributes){
+		element.addClass('drawing-grid');
+		element.on('click', function(e){
+			var skip = true;
+			element.parents('grid-cell').data('lock', true);
+
+			$('body').on('click.lock', function(){
+				if(skip){
+					return;
+				}
+				element.parents('grid-cell').data('lock', false);
+				$('body').unbind('click.lock')
+			});
+		});
+	};
+});
+
 module.directive('gridRow', function($compile){
 	return {
 		restrict: 'E',
@@ -1982,6 +1982,7 @@ module.directive('gridResizable', function($compile){
 
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var resizeLimits = {};
+			var parent = element.parents('.drawing-grid');
 
 			element.addClass('grid-media');
 
@@ -2031,7 +2032,6 @@ module.directive('gridResizable', function($compile){
 				}
 				var mouse = { y: e.pageY, x: e.pageX };
 				var cellWidth = parseInt(element.parent().width() / 12);
-				var parent = element.parents('.drawing-grid');
 				var cells = element.parent().children('grid-cell');
 				var interrupt = false;
 				var parentData = {
@@ -2186,6 +2186,7 @@ module.directive('gridDraggable', function($compile){
 		restrict: 'A',
 		link: function(scope, element, attributes){
 			element.on('mousedown', function(e){
+				var parent = element.parents('.drawing-grid');
 				if(element.data('lock') === true){
 					return;
 				}
@@ -2194,7 +2195,6 @@ module.directive('gridDraggable', function($compile){
 				var interrupt = false;
 				var mouse = { y: e.clientY, x: e.clientX };
 				var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
-				var parent = element.parents('.drawing-grid');
 				var row = element.parent();
 				var cells = row.children('grid-cell');
 				var parentData = {
@@ -2207,19 +2207,20 @@ module.directive('gridDraggable', function($compile){
 					left: element.position().left,
 					top: element.position().top,
 					width: element.width(),
-					height: element.height()
+					height: element.height() + parseInt(element.css('padding-bottom'))
 				};
 
-				function findCellSize(cell){
-					for(var i = 0; i < cellSizes.length; i++){
-						if(cell.hasClass(cellSizes[i])){
-							return i;
-						}
-					}
+				function rowFull(row){
+					var cellsWidth = 0;
+					row.children('grid-cell').each(function(index, item){
+						cellsWidth += $(item).width();
+					});
+
+					return cellsWidth + elementPos.width > row.width();
 				}
 
 				$(window).on('mousemove.drag', function(e){
-					if(element.data('dragging') !== true && element.data('resizing') !== true){
+					if(element.data('dragging') !== true && element.data('resizing') !== true && (e.clientX !== mouse.x || e.clientY !== mouse.y)){
 						element.trigger('startDrag');
 
 						var elementDistance = {
@@ -2244,11 +2245,10 @@ module.directive('gridDraggable', function($compile){
 
 						element.unbind("click");
 						element.find('img, button, div').css({ 'pointer-events': 'none' });
+						element.data('dragging', true);
 
 						moveElement(elementDistance);
 					}
-
-					element.data('dragging', true);
 					mouse = {
 						y: e.clientY,
 						x: e.clientX
@@ -2274,10 +2274,14 @@ module.directive('gridDraggable', function($compile){
 						var row = element.parent();
 
 						parent.find('.grid-row').each(function(index, item){
-							if(elementPos.top + elementPos.height / 2 > $(item).offset().top && elementPos.top + elementPos.height / 2 < $(item).offset().top + $(item).height()){
-								scope.row = angular.element(item).scope().index;
-								scope.$apply('row');
-								scope.onRowChange();
+							if(elementPos.top + elementPos.height / 2 > $(item).offset().top && elementPos.top + elementPos.height / 2 < $(item).offset().top + $(item).prev().height()){
+								if(!rowFull($(item))){
+									setTimeout(function(){
+										scope.row = angular.element(item).scope().index;
+										scope.$apply('row');
+										scope.onRowChange();
+									}, 0);
+								}
 								row = $(item);
 								cells = row.children('grid-cell');
 								return false;
@@ -2285,25 +2289,27 @@ module.directive('gridDraggable', function($compile){
 						});
 
 						var found = false;
-						var cumulatedWidth = row.offset().left;
+						var cellI = 0;
 						cells.each(function(index, item){
 							if(item === element[0]){
 								return;
 							}
-							cumulatedWidth += $(item).width();
-							if(cumulatedWidth > element.offset().left){
-								if(scope.index !== index && row[0] === element.parent()[0]){
-									scope.index = index;
+							if(parseInt($(item).css('margin-left')) > 0){
+								if(scope.index !== cellI){
+									scope.index = cellI;
 									scope.$apply('index');
-									scope.onIndexChange();
+									if(row[0] === element.parent()[0]){
+										scope.onIndexChange();
+									}
 								}
 								found = true;
 								return false;
 							}
-						})
+							cellI ++;
+						});
 
 						if(!found){
-							var index = cells.length;
+							var index = cells.length - 1;
 							if(scope.index !== index && row[0] === element.parent()[0]){
 								scope.index = index;
 								scope.$apply('index');
@@ -2311,7 +2317,6 @@ module.directive('gridDraggable', function($compile){
 							}
 						}
 					}
-
 
 					setTimeout(function(){
 						parent.find('grid-cell').css({ 'margin-left': '0' });
@@ -2337,57 +2342,38 @@ module.directive('gridDraggable', function($compile){
 
 				var moveElement = function(elementDistance){
 					var parent = element.parents('.drawing-grid');
-					var boundaries = {
-						left: parentData.left,
-						top: parentData.top,
-						right: parentData.left + parent.width() - element.width(),
-						bottom: parentData.top + parent.height() - element.height()
-					};
-
 					var newOffset = {
 						top: mouse.y - elementDistance.y,
 						left: mouse.x - elementDistance.x
 					};
 
-					// side boundaries
-					if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
-						newOffset.left = boundaries.left;
-					}
-					if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
-						newOffset.left = boundaries.right - 2
-					}
-
-					// vertical boundaries won't lock the item, but an additionnal row will be created to fit the cell in
-
 					element.offset(newOffset);
 
 					//preview new cells order
 					var row = element.parent();
-
 					parent.find('.grid-row').each(function(index, item){
-						if(newOffset.top + elementPos.height / 2 > $(item).offset().top && newOffset.top + elementPos.height / 2 < $(item).offset().top + $(item).height()){
+						if(newOffset.top + elementPos.height / 2 > $(item).offset().top && newOffset.top + elementPos.height / 2 < $(item).offset().top + $(item).prev().height()){
 							row = $(item);
-							cells = $(item).children('grid-cell');
 							return false;
 						}
 					});
 
 					parent.find('grid-cell').css({ 'margin-left': '0' });
 
-					var cumulatedWidth = parent.offset().left;
-					cells.each(function(index, item){
-						if(item === element[0]){
-							return;
-						}
-						cumulatedWidth += $(item).width();
-						if(cumulatedWidth > newOffset.left){
-							if((cumulatedWidth + elementPos.width < row.width()) || row[0] === element.parent()[0]){
-								$(item).css({ 'margin-left': (elementPos.width - 2) + 'px' });
+					cells = row.children('grid-cell');
+					if(row[0] === element.parent()[0] || !rowFull(row)){
+						var cumulatedWidth = row.offset().left;
+						cells.each(function(index, item){
+							if(item === element[0]){
+								return;
 							}
-
-							return false;
-						}
-					})
+							cumulatedWidth += $(item).width();
+							if(cumulatedWidth - $(item).width() / 2 > newOffset.left){
+								$(item).css({ 'margin-left': (elementPos.width - 2) + 'px' });
+								return false;
+							}
+						});
+					}
 
 					if(!interrupt){
 						requestAnimationFrame(function(){

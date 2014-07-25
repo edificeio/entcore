@@ -15,10 +15,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 function User(data){
-	if(data){
-		this.updateData(data);
-	}
-
 	this.toString = function(){
 		return (this.displayName || '') + (this.name || '');
 	};
@@ -43,8 +39,6 @@ User.prototype.mapUser = function(displayNames, id){
 };
 
 function Mail(data){
-	this.updateData(data);
-
 	this.sentDate = function(){
 		return moment(parseInt(this.date)).calendar();
 	};

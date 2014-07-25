@@ -782,7 +782,7 @@ function Collection(obj){
 		}
 	};
 
-	Model.prototype.updateData = function(newData){
+	Model.prototype.updateData = function(newData, triggerEvent){
 		this.data = newData;
 		if(typeof newData !== 'object'){
 			return this;
@@ -797,7 +797,9 @@ function Collection(obj){
 			}
 		}
 
-		this.trigger('change');
+		if(triggerEvent !== false){
+			this.trigger('change');
+		}
 	};
 
 	Model.create = function(func, data){
