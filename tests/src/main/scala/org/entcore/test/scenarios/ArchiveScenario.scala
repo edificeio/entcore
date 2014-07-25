@@ -15,9 +15,9 @@ object ArchiveScenario {
     .exec(http("Get archive")
     .get("/archive/export/${exportId}")
     .check(status.is(200)))
-    .pause(100 milliseconds)
-    .exec(http("Try get anew")
-    .get("/archive/export/${exportId}")
-    .check(status.is(404)))
+//    .pause(100 milliseconds)
+//    .exec(http("Try get anew")
+//    .get("/archive/export/${exportId}")
+//    .check(status.is(404)))
 
 }
