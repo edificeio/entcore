@@ -1377,6 +1377,10 @@ module.directive('textEditor', function($compile){
 			}
 			return function($scope, $element, $attributes){
 				var editor = $element.find('[contenteditable=true]');
+				var parentElement = $element.parents('grid-cell');
+				if(parentElement.length === 0){
+					parentElement = editor.parent().parent();
+				}
 				var instance = CKEDITOR.inline(editor[0],
 					{ customConfig: '/' + infraPrefix + '/public/ckeditor/text-config.js' }
 				);
@@ -1391,7 +1395,7 @@ module.directive('textEditor', function($compile){
 				});
 
 				$element.on('click', function(){
-					if(editor.parent().parent().data('resizing') || editor.parent().parent().data('dragging')){
+					if(parentElement.data('resizing') || parentElement.data('dragging')){
 						return;
 					}
 					editor.focus();
@@ -1415,14 +1419,14 @@ module.directive('textEditor', function($compile){
 
 					resizeParent();
 					$('.' + instance.id).width(editor.width());
-					editor.parent().parent().data('lock', true);
+					parentElement.data('lock', true);
 					editor.css({ cursor: 'text' });
 				});
 
 				editor.on('blur', function(){
 					followResize = false;
 					resizeParent();
-					editor.parent().parent().data('lock', false);
+					parentElement.data('lock', false);
 					editor.css({ cursor: '' });
 					$scope.ngModel = editor.html();
 					$scope.$apply('ngModel');
@@ -1726,6 +1730,18 @@ module.directive('drawingZone', function(){
 module.directive('drawingGrid', function(){
 	return function(scope, element, attributes){
 		element.addClass('drawing-grid');
+		element.on('click', function(e){
+			var skip = true;
+			element.parents('grid-cell').data('lock', true);
+
+			$('body').on('click.lock', function(){
+				if(skip){
+					return;
+				}
+				element.parents('grid-cell').data('lock', false);
+				$('body').unbind('click.lock')
+			});
+		});
 	};
 });
 
@@ -1927,7 +1943,7 @@ module.directive('gridCell', function($compile){
 			onIndexChange: '&',
 			onRowChange: '&'
 		},
-		template: '<div class="media-wrapper"><div class="media-container" ng-class="[className]" ng-transclude></div></div>',
+		template: '<div class="media-wrapper"><div class="media-container" ng-class="className" ng-transclude></div></div>',
 		transclude: true,
 		link: function(scope, element, attributes){
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
