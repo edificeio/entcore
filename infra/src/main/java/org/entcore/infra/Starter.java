@@ -22,6 +22,7 @@ package org.entcore.infra;
 import fr.wseduc.webutils.Server;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -45,30 +46,55 @@ public class Starter extends Server {
 			super.start();
 			vertx.sharedData().getMap("server").put("signKey",
 					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
-			deployModule(config.getObject("neo4j-persistor"), false, new Handler<AsyncResult<String>>() {
+			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
-				public void handle(AsyncResult<String> event) {
-					if (event.succeeded()) {
-						loadCypherScript(); // only in dev mode with embedded neo4j
-						deployModule(config.getObject("app-registry"), false,
-								new Handler<AsyncResult<String>>() {
-							@Override
-							public void handle(AsyncResult<String> event) {
-								if (event.succeeded()) {
-									deployModules(config.getArray("external-modules", new JsonArray()), false);
-									deployModules(config.getArray("one-modules", new JsonArray()), true);
-								}
+				protected void handle() {
+					loadCypherScript(); // only in dev mode with embedded neo4j
+					deployModule(config.getObject("app-registry"), false, new Handler<AsyncResult<String>>() {
+						@Override
+						public void handle(AsyncResult<String> event) {
+							if (event.succeeded()) {
+								deployModules(config.getArray("external-modules", new JsonArray()), false);
+								deployModules(config.getArray("one-modules", new JsonArray()), true);
 							}
-						});
-					} else {
-						log.error("Error deploying neo4j-persistor", event.cause());
-					}
+						}
+					});
 				}
 			});
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
 
+	}
+
+	private void deployPreRequiredModules(JsonArray array, final VoidHandler handler) {
+		if (array == null || array.size() == 0) {
+			handler.handle(null);
+			return;
+		}
+		final AtomicInteger nb = new AtomicInteger(array.size());
+		boolean notDeploy = true;
+		for (Object o : array) {
+			if (o instanceof JsonObject) {
+				notDeploy = false;
+				deployModule((JsonObject) o, false, new Handler<AsyncResult<String>>() {
+					@Override
+					public void handle(AsyncResult<String> ar) {
+						if (ar.failed()) {
+							log.error("Error loading module.", ar.cause());
+						}
+						if (nb.decrementAndGet() == 0) {
+							handler.handle(null);
+						}
+					}
+				});
+			} else {
+				nb.decrementAndGet();
+			}
+		}
+		if (notDeploy) {
+			handler.handle(null);
+		}
 	}
 
 	private void deployModule(JsonObject module, boolean internal, Handler<AsyncResult<String>> handler) {

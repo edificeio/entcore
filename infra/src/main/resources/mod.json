@@ -15,7 +15,7 @@
 		"mode": "dev"
     }
   },
-  "neo4j-persistor": {
+  "pre-required-modules": [{
     "name": "fr.wseduc~mod-neo4j-persistor~1.3-SNAPSHOT",
     "config": {
       "worker": true,
@@ -27,7 +27,7 @@
       	"node_keys_indexable" : "externalId"
       }
     }
-  },
+  }],
   "one-modules": [
     {
       "name": "org.entcore~auth~1.8-SNAPSHOT",
