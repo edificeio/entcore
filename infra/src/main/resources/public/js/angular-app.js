@@ -1960,6 +1960,12 @@ module.directive('gridCell', function($compile){
 					element.removeClass('height-' + cellSizes[oldVal]);
 				}
 			});
+
+			scope.$watch('className', function(newVal){
+				newVal.forEach(function(cls){
+					element.addClass(cls);
+				});
+			});
 		}
 	}
 });
