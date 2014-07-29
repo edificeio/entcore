@@ -5,13 +5,13 @@
 
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
-	config.extraPlugins = 'mathjax';
+	config.extraPlugins = 'mathjax,linker';
 	config.allowedContent = true;
 	config.toolbar = [
 		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-		{ name: 'links', items: ['Link','Mathjax'] },
+		{ name: 'links', items: ['Linker','Mathjax'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] }
 	];
 

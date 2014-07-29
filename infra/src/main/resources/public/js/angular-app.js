@@ -1391,6 +1391,7 @@ module.directive('textEditor', function($compile){
 				$scope.$watch('ngModel', function(newVal){
 					if(newVal !== editor.html()){
 						editor.html($compile($scope.ngModel)($scope.$parent));
+						resizeParent();
 					}
 				});
 
