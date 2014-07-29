@@ -80,7 +80,7 @@ public class Structure {
 			return;
 		}
 		String query =
-				"MATCH (s:Structure { id : {id}}) " +
+				"MATCH (s:Structure { externalId : {externalId}}) " +
 				"WITH s " +
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
 				"SET " + Neo4j.nodeSetPropertiesFromJson("s", struct, "id", "externalId");

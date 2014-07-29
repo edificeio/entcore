@@ -237,10 +237,11 @@ public class Importer {
 			if (!firstImport) {
 				query =
 						"MERGE (u:User { externalId : {externalId}}) " +
-						"ON CREATE SET u.id = {id}, u.login = {login} " +
+						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object, "id", "externalId", "login");
+						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+								"id", "externalId", "login", "activationCode");
 				params = object;
 			} else {
 				query = "CREATE (u:User {props}) ";
@@ -329,10 +330,11 @@ public class Importer {
 				JsonObject params;
 				if (!firstImport) {
 					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
-					sb.append("ON CREATE SET u.id = {id}, u.login = {login} ");
+					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
-					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object, "id", "externalId", "login"));
+					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
+							"id", "externalId", "login", "activationCode"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");
@@ -432,10 +434,11 @@ public class Importer {
 				JsonObject params;
 				if (!firstImport) {
 					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
-					sb.append("ON CREATE SET u.id = {id}, u.login = {login} ");
+					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
-					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object, "id", "externalId", "login"));
+					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
+							"id", "externalId", "login", "activationCode"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");

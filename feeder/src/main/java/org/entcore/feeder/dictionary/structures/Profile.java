@@ -69,7 +69,7 @@ public class Profile {
 			return;
 		}
 		String query =
-				"MATCH (p:Profile { id : {id}}) " +
+				"MATCH (p:Profile { externalId : {externalId}}) " +
 				"WITH p " +
 				"WHERE p.checksum IS NULL OR p.checksum <> {checksum} " +
 				"SET " + Neo4j.nodeSetPropertiesFromJson("p", struct, "id", "externalId");
