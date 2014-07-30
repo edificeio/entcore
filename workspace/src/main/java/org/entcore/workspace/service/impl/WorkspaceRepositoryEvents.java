@@ -50,8 +50,10 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private final EventBus eb;
 	private final String gridfsAddress;
 	private final Vertx vertx;
+	private final boolean shareOldGroupsToUsers;
 
-	public WorkspaceRepositoryEvents(Vertx vertx, String gridfsAddress) {
+	public WorkspaceRepositoryEvents(Vertx vertx, String gridfsAddress, boolean shareOldGroupsToUsers) {
+		this.shareOldGroupsToUsers = shareOldGroupsToUsers;
 		this.eb = Server.getEventBus(vertx);
 		this.gridfsAddress = gridfsAddress;
 		this.vertx = vertx;
@@ -171,36 +173,38 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		for (Object o : groups) {
-			if (!(o instanceof JsonObject)) continue;
-			final JsonObject j = (JsonObject) o;
-			final JsonObject query = MongoQueryBuilder.build(
-				QueryBuilder.start("shared.groupId").is(j.getString("group")));
-			JsonArray userShare = new JsonArray();
-			for (Object u : j.getArray("users")) {
-				JsonObject share = new JsonObject()
-						.putString("userId", u.toString())
-						.putBoolean("org-entcore-workspace-service-WorkspaceService|copyDocuments", true)
-						.putBoolean("org-entcore-workspace-service-WorkspaceService|getDocument", true);
-				userShare.addObject(share);
-			}
-			JsonObject update = new JsonObject()
-					.putObject("$addToSet",
-							new JsonObject().putObject("shared",
-									new JsonObject().putArray("$each", userShare)));
-			mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true,
-					new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if (!"ok".equals(event.body().getString("status"))) {
-						log.error("Error updating documents with group " +
-								j.getString("group") + " : " + event.body().encode());
-					} else {
-						log.info("Documents with group " + j.getString("group") +
-								" updated : " + event.body().getInteger("number"));
-					}
+		if (shareOldGroupsToUsers) {
+			for (Object o : groups) {
+				if (!(o instanceof JsonObject)) continue;
+				final JsonObject j = (JsonObject) o;
+				final JsonObject query = MongoQueryBuilder.build(
+					QueryBuilder.start("shared.groupId").is(j.getString("group")));
+				JsonArray userShare = new JsonArray();
+				for (Object u : j.getArray("users")) {
+					JsonObject share = new JsonObject()
+							.putString("userId", u.toString())
+							.putBoolean("org-entcore-workspace-service-WorkspaceService|copyDocuments", true)
+							.putBoolean("org-entcore-workspace-service-WorkspaceService|getDocument", true);
+					userShare.addObject(share);
 				}
-			});
+				JsonObject update = new JsonObject()
+						.putObject("$addToSet",
+								new JsonObject().putObject("shared",
+										new JsonObject().putArray("$each", userShare)));
+				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true,
+						new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if (!"ok".equals(event.body().getString("status"))) {
+							log.error("Error updating documents with group " +
+									j.getString("group") + " : " + event.body().encode());
+						} else {
+							log.info("Documents with group " + j.getString("group") +
+									" updated : " + event.body().getInteger("number"));
+						}
+				   }
+				});
+			}
 		}
 	}
 
