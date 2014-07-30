@@ -42,6 +42,7 @@ import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 public class SqlCrudService implements CrudService {
 
 	protected final String resourceTable;
+	protected final String shareTable;
 	protected final Sql sql;
 	protected final JsonArray defaultRetrieveValues;
 	protected final JsonArray defaultListValues;
@@ -49,14 +50,18 @@ public class SqlCrudService implements CrudService {
 	protected final String table;
 
 	public SqlCrudService(String table) {
-		this(null, table, null, null);
+		this(null, table, null, null, null);
 	}
 
 	public SqlCrudService(String schema, String table) {
-		this(schema, table, null, null);
+		this(schema, table, null, null, null);
 	}
 
-	public SqlCrudService(String schema, String table,
+	public SqlCrudService(String schema, String table, String shareTable) {
+		this(schema, table, shareTable, null, null);
+	}
+
+	public SqlCrudService(String schema, String table, String shareTable,
 			JsonArray defaultRetrieveValues, JsonArray defaultListValues) {
 		this.table = table;
 		this.sql = Sql.getInstance();
@@ -65,9 +70,11 @@ public class SqlCrudService implements CrudService {
 		if (schema != null && !schema.trim().isEmpty()) {
 			this.resourceTable = schema + "." + table;
 			this.schema = schema + ".";
+			this.shareTable = this.schema+((shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares");
 		} else {
 			this.resourceTable = table;
 			this.schema = "";
+			this.shareTable = (shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares";
 		}
 	}
 
@@ -153,13 +160,13 @@ public class SqlCrudService implements CrudService {
 					break;
 				case OWNER_AND_SHARED:
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
-							" LEFT JOIN " + schema + "shares ON id = resource_id " +
+							" LEFT JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) + " OR owner = ?";
 					values = new JsonArray(groupsAndUserIds).add(user.getUserId());
 					break;
 				case SHARED:
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
-							" INNER JOIN " + schema + "shares ON id = resource_id " +
+							" INNER JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds);
 					values = new JsonArray(groupsAndUserIds);
 					break;
@@ -173,7 +180,7 @@ public class SqlCrudService implements CrudService {
 					break;
 				default:
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
-							" LEFT JOIN " + schema + "shares ON id = resource_id " +
+							" LEFT JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) +
 							" OR owner = ? OR visibility IN (?,?) ";
 					values = new JsonArray(groupsAndUserIds).add(user.getUserId())

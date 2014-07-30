@@ -28,6 +28,7 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
+import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
@@ -41,10 +42,9 @@ import java.util.List;
 
 public class ShareAndOwner implements ResourcesProvider {
 
-	private SqlConf conf = SqlConf.getInstance();
-
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding, UserInfos user, final Handler<Boolean> handler) {
+		SqlConf conf = SqlConfs.getConf(binding.getServiceMethod().substring(0, binding.getServiceMethod().indexOf('|')));
 		String id = request.params().get(conf.getResourceIdLabel());
 		if (id != null && !id.trim().isEmpty()) {
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
@@ -56,7 +56,7 @@ public class ShareAndOwner implements ResourcesProvider {
 			final Object[] groupsAndUserIds = gu.toArray();
 			String query =
 					"SELECT count(*) FROM " + conf.getSchema() + conf.getTable() +
-					" LEFT JOIN " + conf.getSchema() + "shares ON id = resource_id " +
+					" LEFT JOIN " + conf.getSchema() + conf.getShareTable() + " ON id = resource_id " +
 					"WHERE ((member_id IN " + Sql.listPrepared(groupsAndUserIds) + " AND action = ?) " +
 					"OR owner = ?) AND id = ?";
 			JsonArray values = new JsonArray(groupsAndUserIds).add(sharedMethod)

@@ -23,6 +23,7 @@ import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
+import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
@@ -33,10 +34,9 @@ import org.vertx.java.core.json.JsonObject;
 
 public class OwnerOnly implements ResourcesProvider {
 
-	private SqlConf conf = SqlConf.getInstance();
-
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding, UserInfos user, final Handler<Boolean> handler) {
+		SqlConf conf = SqlConfs.getConf(binding.getServiceMethod().substring(0, binding.getServiceMethod().indexOf('|')));
 		String id = request.params().get(conf.getResourceIdLabel());
 		if (id != null && !id.trim().isEmpty()) {
 			String query =

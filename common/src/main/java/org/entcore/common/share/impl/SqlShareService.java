@@ -37,17 +37,19 @@ public class SqlShareService extends GenericShareService {
 
 	private final Sql sql;
 	private final String schema;
+	private final String shareTable;
 
 	public SqlShareService(EventBus eb,
 			Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-		this(null, eb, securedActions, groupedActions);
+		this(null, null, eb, securedActions, groupedActions);
 	}
 
-	public SqlShareService(String schema, EventBus eb,
+	public SqlShareService(String schema, String shareTable, EventBus eb,
 			Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
 		super(eb, securedActions, groupedActions);
 		sql = Sql.getInstance();
 		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
+		this.shareTable = this.schema+((shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares");
 	}
 
 	@Override
@@ -62,7 +64,7 @@ public class SqlShareService extends GenericShareService {
 			return;
 		}
 		final JsonArray actions = getResoureActions(securedActions);
-		String query = "SELECT member_id, action FROM " + schema + "shares WHERE resource_id = ?";
+		String query = "SELECT member_id, action FROM " + shareTable + " WHERE resource_id = ?";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
@@ -150,7 +152,7 @@ public class SqlShareService extends GenericShareService {
 	private void removeShare(String resourceId, String userId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler) {
 		Object[] a = actions.toArray();
-		String query = "DELETE FROM " + schema + "shares WHERE action IN " + Sql.listPrepared(a) +
+		String query = "DELETE FROM " + shareTable + " WHERE action IN " + Sql.listPrepared(a) +
 				" AND resource_id = ? AND member_id = ?";
 		JsonArray values = new JsonArray(a).add(Sql.parseId(resourceId)).add(userId);
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(handler));
@@ -171,8 +173,8 @@ public class SqlShareService extends GenericShareService {
 					.add(shareId).add(rId).add(action);
 			a.add(ar);
 		}
-		s.insert(schema + "shares", new JsonArray().add("member_id").add("resource_id").add("action"), a);
-		sql.prepared("SELECT count(*) FROM " + schema + "shares WHERE member_id = ? AND resource_id = ?",
+		s.insert(shareTable, new JsonArray().add("member_id").add("resource_id").add("action"), a);
+		sql.prepared("SELECT count(*) FROM " + shareTable + " WHERE member_id = ? AND resource_id = ?",
 				new JsonArray().add(shareId).add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(final Message<JsonObject> message) {

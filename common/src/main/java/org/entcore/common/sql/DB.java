@@ -41,7 +41,8 @@ public class DB {
 	public static void loadScripts(final String schema, final Vertx vertx, final String path) {
 		final String s = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
 		final Sql sql = Sql.getInstance();
-		String query = "SELECT count(*) FROM information_schema.tables WHERE table_name = 'scripts'";
+		String query = "SELECT count(*) FROM information_schema.tables WHERE table_name = 'scripts'" +
+			" AND table_schema = '" + ((!s.isEmpty()) ? schema : "public") + "'";
 		sql.raw(query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {

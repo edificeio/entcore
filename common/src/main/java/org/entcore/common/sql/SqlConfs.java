@@ -19,43 +19,32 @@
 
 package org.entcore.common.sql;
 
-public class SqlConf {
+import org.entcore.common.service.GenericContext;
 
-	private String table;
-	private String schema = "";
-	private String resourceIdLabel = "id";
-	private String shareTable = "shares";
+public class SqlConfs extends GenericContext<SqlConf> {
 
-	public String getTable() {
-		return table;
+	private SqlConfs() {}
+
+	private static class SqlConfsHolder {
+		private static final SqlConfs instance = new SqlConfs();
 	}
 
-	public void setTable(String table) {
-		this.table = table;
+	public static SqlConfs getInstance() {
+		return SqlConfsHolder.instance;
 	}
 
-	public String getSchema() {
-		return schema;
+	public static SqlConf getConf(String context) {
+		return getInstance().get(context);
 	}
 
-	public void setSchema(String schema) {
-		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
+	public static SqlConf createConf(String context) {
+		return getInstance().create(context);
 	}
 
-	public String getResourceIdLabel() {
-		return resourceIdLabel;
-	}
-
-	public void setResourceIdLabel(String resourceIdLabel) {
-		this.resourceIdLabel = resourceIdLabel;
-	}
-
-	public String getShareTable() {
-		return shareTable;
-	}
-
-	public void setShareTable(String shareTable) {
-		this.shareTable = shareTable;
+	@Override
+	public SqlConf create(String context) {
+		contexts.putIfAbsent(context, new SqlConf());
+		return contexts.get(context);
 	}
 
 }

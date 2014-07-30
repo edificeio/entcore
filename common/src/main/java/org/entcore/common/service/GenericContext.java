@@ -17,45 +17,19 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.common.sql;
+package org.entcore.common.service;
 
-public class SqlConf {
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-	private String table;
-	private String schema = "";
-	private String resourceIdLabel = "id";
-	private String shareTable = "shares";
+public abstract class GenericContext<T> {
 
-	public String getTable() {
-		return table;
+	protected final ConcurrentMap<String, T> contexts = new ConcurrentHashMap<>();
+
+	public T get(String context) {
+		return contexts.get(context);
 	}
 
-	public void setTable(String table) {
-		this.table = table;
-	}
-
-	public String getSchema() {
-		return schema;
-	}
-
-	public void setSchema(String schema) {
-		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
-	}
-
-	public String getResourceIdLabel() {
-		return resourceIdLabel;
-	}
-
-	public void setResourceIdLabel(String resourceIdLabel) {
-		this.resourceIdLabel = resourceIdLabel;
-	}
-
-	public String getShareTable() {
-		return shareTable;
-	}
-
-	public void setShareTable(String shareTable) {
-		this.shareTable = shareTable;
-	}
+	public abstract T create(String context);
 
 }

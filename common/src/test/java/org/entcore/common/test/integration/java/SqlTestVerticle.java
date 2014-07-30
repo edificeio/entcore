@@ -64,7 +64,7 @@ public class SqlTestVerticle extends TestVerticle {
 					Sql.getInstance().init(eb, ADDRESS);
 					JsonArray r = new JsonArray().add("id").add("name").add("number").add("modified");
 					JsonArray rl = new JsonArray().add("id").add("name");
-					crudService = new SqlCrudService(null, "tests", r, rl);
+					crudService = new SqlCrudService(null, "tests", null, r, rl);
 					shareService = new SqlShareService(eb, null, null);
 					SqlTestVerticle.super.start();
 				} else {
