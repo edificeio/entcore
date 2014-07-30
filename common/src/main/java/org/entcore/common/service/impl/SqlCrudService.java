@@ -70,11 +70,11 @@ public class SqlCrudService implements CrudService {
 		if (schema != null && !schema.trim().isEmpty()) {
 			this.resourceTable = schema + "." + table;
 			this.schema = schema + ".";
-			this.shareTable = this.schema+((shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares");
+			this.shareTable = this.schema+((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");
 		} else {
 			this.resourceTable = table;
 			this.schema = "";
-			this.shareTable = (shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares";
+			this.shareTable = (shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares";
 		}
 	}
 

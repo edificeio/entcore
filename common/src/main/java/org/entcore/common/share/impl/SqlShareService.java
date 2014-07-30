@@ -49,7 +49,7 @@ public class SqlShareService extends GenericShareService {
 		super(eb, securedActions, groupedActions);
 		sql = Sql.getInstance();
 		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
-		this.shareTable = this.schema+((shareTable != null && shareTable.trim().isEmpty()) ? shareTable : "shares");
+		this.shareTable = this.schema+((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");
 	}
 
 	@Override
