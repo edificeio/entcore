@@ -135,7 +135,7 @@ public class User {
 				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " +
 				"WITH u, COLLECT(n.id) as ids " +
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.IN_OUTGOING = ids ";
+				"SET b.IN_OUTGOING = coalesce(b.IN_OUTGOING, []) + ids ";
 		transaction.add(query, params);
 		query =
 				"MATCH (u:User { id : {userId}})-[r:COMMUNIQUE]->(n) " +

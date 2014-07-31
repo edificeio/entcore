@@ -22,6 +22,7 @@ package org.entcore.archive.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
 import org.entcore.archive.services.ExportService;
+import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
@@ -37,6 +38,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 public class FileSystemExportService implements ExportService {
@@ -69,17 +71,23 @@ public class FileSystemExportService implements ExportService {
 						@Override
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
-								JsonArray groups = (user.getProfilGroupsIds() != null) ? new
-										JsonArray(user.getProfilGroupsIds().toArray()) : new JsonArray();
-								JsonObject j = new JsonObject()
-										.putString("action", "export")
-										.putString("exportId", exportId)
-										.putString("userId", user.getUserId())
-										.putArray("groups", groups)
-										.putString("path", exportDirectory)
-										.putString("locale", locale);
-								eb.publish("user.repository", j);
-								handler.handle(new Either.Right<String, String>(exportId));
+								final Set<String> g = (user.getProfilGroupsIds() != null) ? new
+									HashSet<>(user.getProfilGroupsIds()) : new HashSet<String>();
+								User.getOldGroups(user.getUserId(), new Handler<JsonArray>() {
+									@Override
+									public void handle(JsonArray objects) {
+										g.addAll(objects.toList());
+										JsonObject j = new JsonObject()
+												.putString("action", "export")
+												.putString("exportId", exportId)
+												.putString("userId", user.getUserId())
+												.putArray("groups", new JsonArray(g.toArray()))
+												.putString("path", exportDirectory)
+												.putString("locale", locale);
+										eb.publish("user.repository", j);
+										handler.handle(new Either.Right<String, String>(exportId));
+									}
+								});
 							} else {
 								log.error("Create export directory error.", event.cause());
 								handler.handle(new Either.Left<String, String>("export.directory.create.error"));
