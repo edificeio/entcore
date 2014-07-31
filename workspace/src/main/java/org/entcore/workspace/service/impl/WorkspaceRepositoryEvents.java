@@ -74,7 +74,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				QueryBuilder.start("owner").is(userId).get(),
 				QueryBuilder.start("shared").elemMatch(
 						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
-				).get());
+				).get()).put("file").exists(true);
 		final JsonObject keys = new JsonObject().putNumber("file", 1).putNumber("name", 1);
 		mongo.find(DocumentDao.DOCUMENTS_COLLECTION, MongoQueryBuilder.build(b), null,
 				keys, new Handler<Message<JsonObject>>() {
@@ -87,7 +87,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						.putString("status", "error");
 				final JsonArray documents = event.body().getArray("results");
 				if ("ok".equals(event.body().getString("status")) && documents != null) {
-					QueryBuilder b = QueryBuilder.start("to").is(userId);
+					QueryBuilder b = QueryBuilder.start("to").is(userId).put("file").exists(true);
 					mongo.find(RackDao.RACKS_COLLECTION, MongoQueryBuilder.build(b), null, keys,
 							new Handler<Message<JsonObject>>() {
 						@Override
