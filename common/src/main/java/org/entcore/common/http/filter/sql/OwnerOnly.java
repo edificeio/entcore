@@ -35,10 +35,12 @@ import org.vertx.java.core.json.JsonObject;
 public class OwnerOnly implements ResourcesProvider {
 
 	@Override
-	public void authorize(HttpServerRequest request, Binding binding, UserInfos user, final Handler<Boolean> handler) {
+	public void authorize(final HttpServerRequest request, Binding binding, UserInfos user,
+			final Handler<Boolean> handler) {
 		SqlConf conf = SqlConfs.getConf(binding.getServiceMethod().substring(0, binding.getServiceMethod().indexOf('|')));
 		String id = request.params().get(conf.getResourceIdLabel());
 		if (id != null && !id.trim().isEmpty()) {
+			request.pause();
 			String query =
 					"SELECT count(*) FROM " + conf.getSchema() + conf.getTable() +
 					" WHERE id = ? AND owner = ?";
@@ -46,6 +48,7 @@ public class OwnerOnly implements ResourcesProvider {
 			Sql.getInstance().prepared(query, values, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
+					request.resume();
 					Long count = SqlResult.countResult(message);
 					handler.handle(count != null && count > 0);
 				}

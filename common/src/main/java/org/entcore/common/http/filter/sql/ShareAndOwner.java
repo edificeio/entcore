@@ -19,13 +19,8 @@
 
 package org.entcore.common.http.filter.sql;
 
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
-import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.http.Binding;
-import org.entcore.common.http.filter.MongoAppFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
@@ -43,10 +38,12 @@ import java.util.List;
 public class ShareAndOwner implements ResourcesProvider {
 
 	@Override
-	public void authorize(HttpServerRequest request, Binding binding, UserInfos user, final Handler<Boolean> handler) {
+	public void authorize(final HttpServerRequest request, Binding binding, UserInfos user,
+			final Handler<Boolean> handler) {
 		SqlConf conf = SqlConfs.getConf(binding.getServiceMethod().substring(0, binding.getServiceMethod().indexOf('|')));
 		String id = request.params().get(conf.getResourceIdLabel());
 		if (id != null && !id.trim().isEmpty()) {
+			request.pause();
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 			List<String> gu = new ArrayList<>();
 			gu.add(user.getUserId());
@@ -64,6 +61,7 @@ public class ShareAndOwner implements ResourcesProvider {
 			Sql.getInstance().prepared(query, values, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
+					request.resume();
 					Long count = SqlResult.countResult(message);
 					handler.handle(count != null && count > 0);
 				}
