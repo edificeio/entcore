@@ -25,7 +25,7 @@
 		</div>
 	</div>
 	<div class="eight cell absolute right-magnet reduce-block-six">
-		<article class="fluid twelve cell reduce-block-six medium-text">
+		<article class="fluid twelve cell medium-text">
 			<div class="row">
 				<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
 				<div class="right-magnet">
@@ -68,7 +68,7 @@
 </div>
 
 <div class="row reduce-block-six">
-	<article class="twelve cell reduce-block-six actions-list" ng-include="template.containers.userActions">
+	<article class="twelve cell actions-list" ng-include="template.containers.userActions">
 
 	</article>
 </div>
@@ -77,9 +77,9 @@
 <div class="row reduce-block-six" ng-if="currentUser.relatives.length">
 	<h1
 		translate content="userBook.profile.family"
-		class="vertical-spacing horizontal-spacing"
+		class="horizontal-spacing"
 	></h1>
-	<article class="reduce-block-six row">
+	<article class="row">
 		<div class="row" ng-repeat="relative in currentUser.relatives">
 			<a ng-click="selectUser(relative)" class="reduce-block-four twelve cell">[[relative.displayName]]</a>
 		</div>
@@ -91,7 +91,7 @@
 <div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
 	<h1
 		translate key="userBook.interests"
-		class="vertical-spacing horizontal-spacing"
+		class="horizontal-spacing"
 	></h1>
 	<article>
 		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
@@ -104,9 +104,9 @@
 
 <h1
 		translate key="userBook.profile.health"
-		class="vertical-spacing horizontal-spacing"
+		class="horizontal-spacing"
 		ng-if="currentUser.health"
 		></h1>
 <div class="row reduce-block-six" ng-if="currentUser.health">
-	<article class="user-content reduce-block-six">[[currentUser.health]]</article>
+	<article class="user-content">[[currentUser.health]]</article>
 </div>

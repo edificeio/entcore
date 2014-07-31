@@ -95,31 +95,37 @@ Behaviours.register('workspace', {
 	resourceRights: function(){
 		return ['comment', 'copy', 'move', 'moveTrash']
 	},
-	search: function(searchText, callback){
-		http().get('/workspace/documents', { filter: 'owner' }).done(function(documents){
-			callback(
-				_.map(
-					_.filter(documents, function(doc) {
-						return lang.removeAccents(doc.name.toLowerCase()).indexOf(lang.removeAccents(searchText).toLowerCase()) !== -1 || doc._id === searchText;
-					}),
-					function(doc){
-						if(doc.metadata['content-type'].indexOf('image') !== -1){
-							doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
-						}
-						else{
-							doc.icon = '/img/icons/unknown-large.png';
-						}
-						return {
-							title: doc.name,
-							ownerName: doc.ownerName,
-							owner: doc.owner,
-							icon: doc.icon,
-							path: '/workspace/document/' + doc._id,
-							id: doc._id
-						};
-					}
-				)
-			);
-		})
+	loadResources: function(callback){
+		http().get('/workspace/documents').done(function(documents){
+			this.resources = _.map(documents, function(doc){
+				if(doc.metadata['content-type'].indexOf('image') !== -1){
+					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+				}
+				else{
+					doc.icon = '/img/icons/unknown-large.png';
+				}
+				return {
+					title: doc.name,
+					owner: {
+						name: doc.ownerName,
+						userId: doc.owner
+					},
+					icon: doc.icon,
+					path: '/workspace/document/' + doc._id,
+					id: doc._id
+				};
+			});
+			if(typeof callback === 'function'){
+				callback(this.resources);
+			}
+		}.bind(this));
+	},
+	create: function(file, callback){
+		file.loading = true;
+		file.file.name = file.title;
+		workspace.Document.prototype.upload(file.file, 'file-upload-' + file.title, function(){
+			file.loading = false;
+			this.loadResources(callback)
+		});
 	}
 });

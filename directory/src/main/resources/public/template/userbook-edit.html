@@ -47,7 +47,7 @@
 </div>
 <div class="clear"></div>
 <h1 translate content="userBook.interests" class="vertical-spacing"></h1>
-<article class="reduce-block-six">
+<article>
 	<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
 		<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
 		<div class="nine cell">
@@ -61,7 +61,7 @@
 <h1 class="vertical-spacing">
 	<span translate content="userBook.profile.health"></span>
 	<i class="[[account.visible.health]] right-magnet" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)"></i></h1>
-<article class="reduce-block-six">
+<article>
 	<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
 </article>
 </div>

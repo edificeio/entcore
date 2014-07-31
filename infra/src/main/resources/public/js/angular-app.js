@@ -414,7 +414,7 @@ module.directive('linker', function($compile){
 			scope.me = model.me;
 			scope.search = { text: '', application: {} };
 			scope.params = {};
-
+			scope.resource = {};
 
 			var linkNode = $('<a />');
 			var appendText = '';
@@ -449,7 +449,9 @@ module.directive('linker', function($compile){
 					});
 
 					scope.search.text = scope.params.id;
-					scope.searchApplication();
+					scope.loadApplicationResources(function(){
+						scope.searchApplication();
+					});
 				}
 				else{
 					scope.params = {};
@@ -470,6 +472,7 @@ module.directive('linker', function($compile){
 				scope.search.application = scope.apps[0];
 				if(currentApp){
 					scope.search.application = currentApp;
+					scope.loadApplicationResources(function(){});
 				}
 
 				var split = scope.search.application.address.split('/');
@@ -477,16 +480,33 @@ module.directive('linker', function($compile){
 				scope.$apply('apps');
 			});
 
-			scope.searchApplication = function(){
+			scope.loadApplicationResources = function(cb){
 				var split = scope.search.application.address.split('/');
 				var prefix = split[split.length - 1];
 				scope.params.appPrefix = prefix;
+				if(!cb){
+					cb = function(){};
+				}
+
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
-					appBehaviour.search(scope.search.text, function(res){
-						scope.search.text = '';
-						scope.resources = res;
-						scope.$apply('resources');
+					appBehaviour.loadResources(cb);
+					scope.addResource = appBehaviour.create;
+				});
+			};
+
+			scope.searchApplication = function(){
+				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
+					scope.resources = _.filter(appBehaviour.resources, function(resource) {
+						return lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.search.text).toLowerCase()) !== -1 ||
+							resource._id === scope.search.text;
 					});
+					scope.resource.title = scope.search.text;
+				});
+			};
+
+			scope.createResource = function(){
+				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
+					appBehaviour.create(scope.resource);
 				});
 			};
 
@@ -542,6 +562,9 @@ module.directive('linker', function($compile){
 					}
 				}
 
+				if(childCount === 0){
+					appendText = scope.params.link;
+				}
 
 				linkNode.appendHtml(appendText);
 				scope.editor.insertElement(linkNode);

@@ -4,59 +4,57 @@
 		<header ng-click="externalLink = true" ng-class="{ selected: externalLink }">Adresse d'un site internet</header>
 
 		<section ng-if="externalLink">
-				<div class="row">
-					<label class="four cell">Adresse du site</label>
-					<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="params.link" />
-				</div>
-				<div class="row">
-					<label class="four cell">Bulle d'information</label>
-					<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="params.tooltip" />
-				</div>
-				<div class="row">
-					<div class="four cell">&nbsp;</div>
-					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
-				</div>
+			<div class="row">
+				<label class="four cell">Adresse du site</label>
+				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="params.link" />
+			</div>
+			<div class="row">
+				<label class="four cell">Bulle d'information</label>
+				<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="params.tooltip" />
+			</div>
+			<div class="row">
+				<div class="four cell">&nbsp;</div>
+				<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+			</div>
 		</section>
-		<section ng-if="!externalLink">
-
-			<article class="row">
-
-				<article class="row">
-					<div class="twelve cell vertical-spacing">
-						<input type="text" placeholder="Rechercher" ng-model="search.text" class="four cell" />
-						<select ng-model="search.application" ng-options="app.displayName for app in apps" class="four cell"></select>
-						<input type="button" ng-click="searchApplication()" class="right-magnet" value="Rechercher" />
-					</div>
-
-				</article>
-				<div class="found-resources">
-					<div ng-if="!resources.length" class="reduce-block-six">
-						<div class="info row">
-							Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
-							à vos lecteurs.
-						</div>
-					</div>
-					<div class="icons-view">
-						<div class="element" ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
-							<div class="img container">
-								<img skin-src="[[resource.icon]]" />
-							</div>
-							<legend>
-								<a>[[resource.title]]</a>
-								<a><strong class="small-text">[[resource.ownerName]]</strong></a>
-							</legend>
-						</div>
+		<section ng-if="!externalLink" class="row">
+			<div class="row">
+				<div class="twelve cell vertical-spacing">
+					<div class="row">
+						<input type="text" placeholder="Rechercher" ng-model="search.text" class="six cell" ng-change="searchApplication()" />
+						<select ng-model="search.application" ng-options="app.displayName for app in apps" class="five right-magnet cell" ng-change="loadApplicationResources()"></select>
 					</div>
 				</div>
+			</div>
+			<article class="found-resources">
+				<div ng-if="search.text === ''" class="reduce-block-six">
+					<div class="info row">
+						Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
+						à vos lecteurs.
+					</div>
+				</div>
+				<div ng-if="resources.length === 0 && search.text !== ''">
+					<div ng-include="params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
+				</div>
+				<ul class="illustrated-list">
+					<li ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
+						<img skin-src="[[resource.icon]]" class="illustration" />
+						<span class="name">[[resource.title]]</span>
+						<em class="owner">[[resource.ownerName]]</em>
+					</li>
+				</ul>
+			</article>
+			<div class="twelve cell vertical-spacing">
 				<div class="row">
-					<label class="four cell">Bulle d'information</label>
-					<input class="four cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
+					<label class="three cell">Bulle d'information</label>
+					<input class="nine cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
 				</div>
 				<div class="row">
-					<div class="four cell">&nbsp;</div>
+					<div class="three cell">&nbsp;</div>
 					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
 				</div>
-			</article>
+			</div>
+
 		</section>
 	</div>
 
