@@ -21,6 +21,7 @@ package org.entcore.common.http;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.common.http.filter.HttpActionFilter;
 import org.entcore.common.http.filter.ResourceProviderFilter;
@@ -43,6 +44,7 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start();
+
 		if (config.getBoolean("neo4j", true)) {
 			Neo4j.getInstance().init(getEventBus(vertx),
 					config.getString("neo4j-address", "wse.neo4j.persistor"));
@@ -60,6 +62,12 @@ public abstract class BaseServer extends Server {
 						vertx, config.getString("init-scripts", "sql"));
 			}
 		}
+
+		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
+		validator.setEventBus(getEventBus(vertx));
+		validator.setAddress("json.schema.validator");
+		validator.loadJsonSchema(getPathPrefix(config), vertx);
+
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
