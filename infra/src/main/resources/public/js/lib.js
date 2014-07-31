@@ -541,6 +541,8 @@ function Collection(obj){
 		}());
 	}
 
+	Model.prototype.models = [];
+
 	Model.prototype.makeModel = function(fn, methods, namespace){
 		if(typeof fn !== 'function'){
 			throw new TypeError('Only functions can be models');
@@ -572,6 +574,7 @@ function Collection(obj){
 		}
 		// overwrites fn with custom ctr
 		namespace[(ctr.name || ctr._name)] = ctr;
+		Model.prototype.models.push(ctr);
 	};
 
 	Model.prototype.makeModels = function(constructors){

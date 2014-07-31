@@ -190,8 +190,9 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		var routes = {};
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function'){
+			if(typeof routes[$route.current.action] === 'function' && !$rootScope.initialLoadingDone){
 				routes[$route.current.action]($routeParams);
+				$rootScope.initialLoadingDone = true;
 			}
 		});
 
@@ -560,7 +561,7 @@ module.directive('linker', function($compile){
 function serializeScope(scope){
 	var result = {};
 	for(var prop in scope){
-		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && scope[prop] !== undefined){
+		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && scope[prop] !== undefined && prop !== 'callbacks'){
 			result[prop] = JSON.parse(JSON.stringify(scope[prop]));
 		}
 	}
@@ -599,7 +600,25 @@ module.directive('container', function($compile){
 		template: '<div ng-include="templateContainer"></div>',
 		link: function(scope, element, attributes){
 			scope.tpl = template;
+
+			template.watch(attributes.template, function(){
+				scope.templateContainer = template.containers[attributes.template];
+				if(attributes.template !== 'main'){
+					return;
+				}
+
+				history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
+			});
+
+			if(attributes.template){
+				scope.templateContainer = template.containers[attributes.template];
+			}
+
 			window.addEventListener('popstate', function(event){
+				if(attributes.template !== 'main'){
+					return;
+				}
+
 				if(history.state && history.state.template){
 					template.containers[history.state.template.name] = history.state.template.view;
 
@@ -608,18 +627,6 @@ module.directive('container', function($compile){
 					scope.$apply('templateContainer');
 				}
 			});
-
-			//register current state
-			history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
-
-			template.watch(attributes.template, function(){
-				history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
-				scope.templateContainer = template.containers[attributes.template];
-			});
-
-			if(attributes.template){
-				scope.templateContainer = template.containers[attributes.template];
-			}
 		}
 	}
 });
@@ -648,7 +655,7 @@ module.directive('colorSelect', function($compile){
 				scope.pickColor = !scope.pickColor;
 				scope.$apply('pickColor');
 				e.stopPropagation();
-				$('body').one('click', function(){
+				$('body, .main').one('click', function(){
 					scope.pickColor = false;
 					scope.$apply('pickColor');
 				});
@@ -2311,10 +2318,12 @@ module.directive('gridDraggable', function($compile){
 
 						if(!found){
 							var index = cells.length - 1;
-							if(scope.index !== index && row[0] === element.parent()[0]){
+							if(scope.index !== index){
 								scope.index = index;
 								scope.$apply('index');
-								scope.onIndexChange();
+								if(row[0] === element.parent()[0]){
+									scope.onIndexChange();
+								}
 							}
 						}
 					}
