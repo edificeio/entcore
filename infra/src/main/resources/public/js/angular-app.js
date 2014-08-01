@@ -451,6 +451,8 @@ module.directive('linker', function($compile){
 					scope.search.text = scope.params.id;
 					scope.loadApplicationResources(function(){
 						scope.searchApplication();
+						scope.search.text = ' ';
+						scope.$apply();
 					});
 				}
 				else{
@@ -495,6 +497,9 @@ module.directive('linker', function($compile){
 			};
 
 			scope.searchApplication = function(){
+				var split = scope.search.application.address.split('/');
+				var prefix = split[split.length - 1];
+				scope.params.appPrefix = prefix;
 				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
 					scope.resources = _.filter(appBehaviour.resources, function(resource) {
 						return lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.search.text).toLowerCase()) !== -1 ||
@@ -506,7 +511,11 @@ module.directive('linker', function($compile){
 
 			scope.createResource = function(){
 				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
-					appBehaviour.create(scope.resource);
+					appBehaviour.create(scope.resource, function(){
+						scope.searchApplication();
+						scope.search.text = scope.resource.title;
+						scope.$apply();
+					});
 				});
 			};
 
@@ -516,8 +525,8 @@ module.directive('linker', function($compile){
 
 			scope.applyResource = function(resource){
 				scope.params.link = resource.path;
-				scope.params.id = resource.id;
-			}
+				scope.params.id = resource._id;
+			};
 
 			scope.saveLink = function(){
 				if(scope.params.blank){
@@ -1398,7 +1407,8 @@ module.directive('textEditor', function($compile){
 			notify: '=',
 			ngChange: '&'
 		},
-		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>',
+		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
+			'<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -1414,6 +1424,7 @@ module.directive('textEditor', function($compile){
 				var instance = CKEDITOR.inline(editor[0],
 					{ customConfig: '/' + infraPrefix + '/public/ckeditor/text-config.js' }
 				);
+				$scope.contextEditor = instance;
 				CKEDITOR.on('instanceReady', function(ck){
 					editor.html($compile($scope.ngModel)($scope.$parent));
 				});
@@ -1425,7 +1436,7 @@ module.directive('textEditor', function($compile){
 					}
 				});
 
-				$element.on('click', function(){
+				editor.on('click', function(){
 					if(parentElement.data('resizing') || parentElement.data('dragging')){
 						return;
 					}
@@ -1464,6 +1475,11 @@ module.directive('textEditor', function($compile){
 					if($scope.ngChange){
 						$scope.ngChange();
 					}
+				});
+
+				$('body').on('click', '.cke_button__linker', function(){
+					$scope.chooseLink = true;
+					$scope.$apply('chooseLink');
 				});
 
 				$element.on('removed', function(){

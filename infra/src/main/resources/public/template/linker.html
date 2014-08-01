@@ -26,9 +26,9 @@
 					</div>
 				</div>
 			</div>
-			<article class="found-resources">
+			<article class="found-resources" ng-class="{ info: search.text === '' && resources.length === 0 }">
 				<div ng-if="search.text === ''" class="reduce-block-six">
-					<div class="info row">
+					<div class="row">
 						Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
 						à vos lecteurs.
 					</div>
@@ -39,7 +39,7 @@
 				<ul class="illustrated-list">
 					<li ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
 						<img skin-src="[[resource.icon]]" class="illustration" />
-						<span class="name">[[resource.title]]</span>
+						<a class="name">[[resource.title]]</a>
 						<em class="owner">[[resource.ownerName]]</em>
 					</li>
 				</ul>

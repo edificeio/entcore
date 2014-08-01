@@ -112,7 +112,7 @@ Behaviours.register('workspace', {
 					},
 					icon: doc.icon,
 					path: '/workspace/document/' + doc._id,
-					id: doc._id
+					_id: doc._id
 				};
 			});
 			if(typeof callback === 'function'){
@@ -122,10 +122,12 @@ Behaviours.register('workspace', {
 	},
 	create: function(file, callback){
 		file.loading = true;
-		file.file.name = file.title;
-		workspace.Document.prototype.upload(file.file, 'file-upload-' + file.title, function(){
+		var splitName = file.file[0].name.split('.');
+		var formData = new FormData();
+		formData.append('file', file.file[0], file.title + '.' + splitName[splitName.length - 1]);
+		http().postFile('/workspace/document', formData).done(function(data){
 			file.loading = false;
-			this.loadResources(callback)
-		});
+			this.loadResources(callback);
+		}.bind(this));
 	}
 });
