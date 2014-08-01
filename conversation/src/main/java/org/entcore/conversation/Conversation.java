@@ -19,7 +19,9 @@
 
 package org.entcore.conversation;
 
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
+import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.conversation.controllers.ConversationController;
@@ -62,6 +64,8 @@ public class Conversation extends Server {
 		new AppRegistryEventsHandler(vertx, new ConversationServiceManager(vertx,
 				config.getString("app-name", Conversation.class.getSimpleName())));
 
+		SecurityHandler.addFilter(new ActionFilter(conversationController.securedUriBinding(),
+				Server.getEventBus(vertx)));
 	}
 
 }
