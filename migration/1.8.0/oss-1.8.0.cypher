@@ -5,7 +5,7 @@ CREATE INDEX ON :ConversationMessage(cc);
 commit
 begin transaction
 CREATE (:DeleteGroup:ProfileGroup:Group);
-MATCH (u:User) WHERE NOT(HAS(u.zipCode)) SET u.manual = true;
+MATCH (u:User), (s:Structure { name : 'École Primaire Hamelin' }) WHERE NOT((s)<-[:DEPENDS]-()<-[:IN]-(u)) SET u.manual = true;
 
 MATCH (n:Role)
 WHERE n.name = 'archive-all-default'
