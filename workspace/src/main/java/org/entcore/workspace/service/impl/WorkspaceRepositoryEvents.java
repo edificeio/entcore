@@ -23,6 +23,7 @@ import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
@@ -73,6 +74,9 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		QueryBuilder b = new QueryBuilder().or(
 				QueryBuilder.start("owner").is(userId).get(),
 				QueryBuilder.start("shared").elemMatch(
+						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+				).get(),
+				QueryBuilder.start("old_shared").elemMatch(
 						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
 				).get()).put("file").exists(true);
 		final JsonObject keys = new JsonObject().putNumber("file", 1).putNumber("name", 1);
@@ -173,12 +177,24 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		if (shareOldGroupsToUsers) {
-			for (Object o : groups) {
-				if (!(o instanceof JsonObject)) continue;
-				final JsonObject j = (JsonObject) o;
-				final JsonObject query = MongoQueryBuilder.build(
-					QueryBuilder.start("shared.groupId").is(j.getString("group")));
+		for (Object o : groups) {
+			if (!(o instanceof JsonObject)) continue;
+			final JsonObject j = (JsonObject) o;
+			final JsonObject query = MongoQueryBuilder.build(
+				QueryBuilder.start("shared.groupId").is(j.getString("group")));
+			final Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if (!"ok".equals(event.body().getString("status"))) {
+						log.error("Error updating documents with group " +
+								j.getString("group") + " : " + event.body().encode());
+					} else {
+						log.info("Documents with group " + j.getString("group") +
+								" updated : " + event.body().getInteger("number"));
+					}
+				}
+			};
+			if (shareOldGroupsToUsers) {
 				JsonArray userShare = new JsonArray();
 				for (Object u : j.getArray("users")) {
 					JsonObject share = new JsonObject()
@@ -191,19 +207,12 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						.putObject("$addToSet",
 								new JsonObject().putObject("shared",
 										new JsonObject().putArray("$each", userShare)));
-				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true,
-						new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-						if (!"ok".equals(event.body().getString("status"))) {
-							log.error("Error updating documents with group " +
-									j.getString("group") + " : " + event.body().encode());
-						} else {
-							log.info("Documents with group " + j.getString("group") +
-									" updated : " + event.body().getInteger("number"));
-						}
-				   }
-				});
+				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, handler);
+			} else {
+				final MongoUpdateBuilder update = new MongoUpdateBuilder()
+						.pull("shared", new JsonObject().putString("groupId", j.getString("group")))
+						.addToSet("old_shared", new JsonObject().putString("groupId", j.getString("group")));
+				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update.build(), false, true, handler);
 			}
 		}
 	}
