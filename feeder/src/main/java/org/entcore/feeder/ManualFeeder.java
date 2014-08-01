@@ -375,30 +375,33 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				JsonArray res = r.body().getArray("result");
-				if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
-					String profile = ((JsonObject) res.get(0)).getString("profile");
-					Validator v = profiles.get(profile);
-					if (v == null) {
-						sendError(message, "Invalid profile : " + profile);
-						return;
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0) {
+					for (Object o : res) {
+						if (!(o instanceof JsonObject)) continue;
+						String profile = ((JsonObject) o).getString("profile");
+						Validator v = profiles.get(profile);
+						if (v == null) {
+							sendError(message, "Invalid profile : " + profile);
+							return;
+						}
+						final String error = v.modifiableValidate(user);
+						if (error != null) {
+							logger.error(error);
+							sendError(message, error);
+							return;
+						}
 					}
-					final String error = v.modifiableValidate(user);
-					if (error != null) {
-						logger.error(error);
-						sendError(message, error);
-					} else {
-						String query =
-								"MATCH (u:User { id : {userId}}) " +
-								"SET " + Neo4j.nodeSetPropertiesFromJson("u", user) +
-								"RETURN DISTINCT u.id as id ";
-						JsonObject params = user.putString("userId", userId);
-						neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> m) {
-								message.reply(m.body());
-							}
-						});
-					}
+					String query =
+							"MATCH (u:User { id : {userId}}) " +
+							"SET " + Neo4j.nodeSetPropertiesFromJson("u", user) +
+							"RETURN DISTINCT u.id as id ";
+					JsonObject params = user.putString("userId", userId);
+					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> m) {
+									message.reply(m.body());
+								}
+							});
 				} else {
 					sendError(message, "Invalid profile.");
 				}

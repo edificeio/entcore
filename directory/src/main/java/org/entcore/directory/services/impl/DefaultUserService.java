@@ -133,7 +133,7 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN DISTINCT p.name as type, u";
+				"RETURN DISTINCT COLLECT(p.name) as type, u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}
 

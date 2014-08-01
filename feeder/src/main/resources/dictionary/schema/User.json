@@ -12,6 +12,10 @@
 			"type": "string",
 			"validator":"BCrypt"
 		},
+		"displayName" : {
+			"type": "string",
+			"validator":"notEmpty"
+		},
 		"firstName" : {
 			"type": "string",
 			"validator":"notEmpty"
