@@ -16,6 +16,10 @@ subprojects {
 		}
 	}
 
+  configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+  }
+
   sourceCompatibility = 1.7
   targetCompatibility = 1.7
 
