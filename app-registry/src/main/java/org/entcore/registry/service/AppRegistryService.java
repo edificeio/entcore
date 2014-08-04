@@ -497,10 +497,12 @@ public class AppRegistryService extends Controller {
 									default: type = "Workflow"; break;
 								}
 								q.putString("query",
+									"MERGE (a:Action:" + type + "Action {name:{name}}) " +
+									"SET a.displayName = {displayName}, a.type = {type} " +
+									"WITH a " +
 									"MATCH (n:Application) " +
 									"WHERE n.name = {application} " +
-									"MERGE n-[r:PROVIDE]->(a:Action:" + type + "Action {name:{name}}) " +
-									"SET a.displayName = {displayName}, a.type = {type} " +
+									"CREATE UNIQUE n-[r:PROVIDE]->a " +
 									"RETURN a.name as name"
 								);
 								q.putObject("params", json
