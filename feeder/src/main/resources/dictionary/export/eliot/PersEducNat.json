@@ -1,0 +1,23 @@
+{
+	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"birthDate" : { "attribute" : "ENTPersonDateNaissance", "converter" : "date" },
+	"lastName" : { "attribute" : "sn" },
+	"firstName" : { "attribute" : "givenName" },
+	"surname" : { "attribute" : "ENTPersonNomPatro" },
+	"title" : { "attribute" : "personalTitle" },
+	"homePhone" : { "attribute" : "homePhone" },
+	"address" : { "attribute" : "ENTPersonAdresse" },
+	"zipCode" : { "attribute" : "ENTPersonCodePostal" },
+	"city" : { "attribute" : "ENTPersonVille" },
+	"country" : { "attribute" : "ENTPersonPays" },
+	"email" : { "attribute" : "mail" },
+	"structures" : { "attribute" : "ENTPersonStructRattach", "converter" : "head-array" },
+	"classCategories" : { "attribute" : "ENTAuxEnsCategoDiscipline" },
+	"modules" : { "attribute" : "ENTAuxEnsMEF" },
+	"subjectTaught" : { "attribute" : "ENTAuxEnsMatiereEnseignEtab" },
+	"classes" : { "attribute" : "ENTAuxEnsClasses" },
+	"groups" : { "attribute" : "ENTAuxEnsGroupes" },
+	"headTeacher" : { "attribute" : "ENTAuxEnsClassesPrincipal" },
+	"functions" : { "attribute" : "ENTPersonFonctions" },
+	"teaches" : { "attribute" : "PersEducNatPresenceDevantEleves", "converter" : "boolean-ON" }
+}

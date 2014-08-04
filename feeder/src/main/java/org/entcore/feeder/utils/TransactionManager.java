@@ -118,4 +118,24 @@ public class TransactionManager {
 		return neo4j;
 	}
 
+	public static TransactionHelper getTransaction() throws TransactionException {
+		return TransactionManager.getInstance().begin();
+	}
+
+	public static void executeTransaction(final Function<TransactionHelper, Message<JsonObject>> f) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin();
+			f.apply(tx);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					f.handle(event);
+				}
+			});
+		} catch (TransactionException e) {
+			log.error(e.getMessage(), e);
+			f.handle(new ResultMessage().error(e.getMessage()));
+		}
+	}
+
 }

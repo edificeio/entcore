@@ -267,4 +267,33 @@ public class Structure {
 		tx.add(query, params);
 	}
 
+	public static void count(TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject();
+		String query = "MATCH (s:Structure) RETURN count(distinct s) as nb";
+		transactionHelper.add(query, params);
+	}
+
+	public static void list(JsonArray attributes, Integer skip, Integer limit, TransactionHelper transactionHelper) {
+		StringBuilder query = new StringBuilder("MATCH (s:Structure) ");
+		JsonObject params = new JsonObject();
+		if (attributes != null && attributes.size() > 0) {
+			query.append("RETURN DISTINCT");
+			for (Object attribute : attributes) {
+				query.append(" s.").append(attribute).append(" as ").append(attribute).append(",");
+			}
+			query.deleteCharAt(query.length() - 1);
+			query.append(" ");
+		} else {
+			query.append("RETURN DISTINCT s ");
+		}
+		if (skip != null && limit != null) {
+			query.append("ORDER BY externalId ASC " +
+					"SKIP {skip} " +
+					"LIMIT {limit} ");
+			params.putNumber("skip", skip);
+			params.putNumber("limit", limit);
+		}
+		transactionHelper.add(query.toString(), params);
+	}
+
 }

@@ -104,6 +104,12 @@ public class DirectoryController extends Controller {
 		});
 	}
 
+	@SecuredAction("directory.export")
+	public void launchExport(HttpServerRequest request) {
+		eb.send("entcore.feeder", new JsonObject().putString("action", "export"));
+		request.response().end();
+	}
+
 	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request, null, "annuaire.html", null);

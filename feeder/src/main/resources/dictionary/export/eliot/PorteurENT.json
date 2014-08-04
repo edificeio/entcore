@@ -1,0 +1,7 @@
+{
+	"name" : { "attribute" : "eliot.nom" },
+	"shortName" : { "attribute" : "eliot.nomCourt" },
+	"email" : { "attribute" : "eliot.emailProjet" },
+	"url" : { "attribute" : "eliot.urlRetourLogout" },
+	"entUrl" : { "attribute" : "eliot.urlAccesEnt" }
+}

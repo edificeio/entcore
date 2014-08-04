@@ -26,6 +26,7 @@ import org.entcore.feeder.dictionary.structures.GraphData;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.structures.User;
+import org.entcore.feeder.export.eliot.EliotExporter;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -133,8 +134,26 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "import" : launchImport(message);
 				break;
+			case "export" : launchExport(message);
+				break;
 			default:
 				sendError(message, "invalid.action");
+		}
+	}
+
+	private void launchExport(final Message<JsonObject> message) {
+		try {
+			final long start = System.currentTimeMillis();
+			new EliotExporter("/tmp", vertx).export(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> m) {
+					logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+					logger.info(m.body().encode());
+					message.reply(m.body());
+				}
+			});
+		} catch (Exception e) {
+			sendError(message, e.getMessage(), e);
 		}
 	}
 

@@ -1,0 +1,18 @@
+{
+	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"UAI" : { "attribute" : "ENTStructureUAI" },
+	"SIRET" : { "attribute" : "ENTStructureSIREN" },
+	"name" : { "attribute" : "ENTStructureNomCourant" },
+	"type" : { "attribute" : "ENTStructureTypeStruct" },
+	"ministry" : { "attribute" : "ENTEtablissementMinistereTutelle" },
+	"contract" : { "attribute" : "ENTEtablissementContrat" },
+	"postbox" : { "attribute" : "postOfficeBox" },
+	"address" : { "attribute" : "street" },
+	"zipCode" : { "attribute" : "postalCode" },
+	"city" : { "attribute" : "l" },
+	"phone" : { "attribute" : "telephoneNumber" },
+	"fax" : { "attribute" : "facsimileTelephoneNumber" },
+	"functionalAttachment" : { "attribute" : "ENTEtablissementStructRattachFctl" },
+	"area" : { "attribute" : "ENTEtablissementBassin" },
+	"academy" : { "attribute" : "ENTServAcAcademie" }
+}

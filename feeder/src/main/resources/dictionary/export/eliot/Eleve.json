@@ -1,0 +1,22 @@
+{
+	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"birthDate" : { "attribute" : "ENTPersonDateNaissance", "converter" : "date" },
+	"lastName" : { "attribute" : "sn" },
+	"firstName" : { "attribute" : "givenName" },
+	"otherNames" : { "attribute" : "ENTPersonAutresPrenoms" },
+	"surname" : { "attribute" : "ENTPersonNomPatro" },
+	"title" : { "attribute" : "personalTitle" },
+	"structures" : { "attribute" : "ENTPersonStructRattach", "converter" : "head-array" },
+	"accommodation" : { "attribute" : "ENTEleveRegime" },
+	"module" : { "attribute" : "ENTEleveMEF" },
+	"moduleName" : { "attribute" : "ENTEleveLibelleMEF" },
+	"classes" : { "attribute" : "ENTEleveClasses" },
+	"groups" : { "attribute" : "ENTEleveGroupes" },
+	"level" : { "attribute" : "ENTEleveNivFormation" },
+	"sector" : { "attribute" : "ENTEleveFiliere" },
+	"scholarshipHolder" : { "attribute" : "ENTEleveBoursier", "converter": "boolean-ON" },
+	"transport" : { "attribute" : "ENTEleveTransport", "converter": "boolean-ON" },
+	"status" : { "attribute" : "ENTEleveStatutEleve" },
+	"fieldOfStudyLabels" : { "attribute" : "ENTEleveEnseignements" },
+	"relative" : { "converter" : "siecle" }
+}

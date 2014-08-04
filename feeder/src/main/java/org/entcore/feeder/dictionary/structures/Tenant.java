@@ -67,7 +67,7 @@ public class Tenant {
 			query.append("RETURN DISTINCT t ");
 		}
 		if (skip != null && limit != null) {
-			query.append("ORDER BY t.externalId ASC " +
+			query.append("ORDER BY externalId ASC " +
 					"SKIP {skip} " +
 					"LIMIT {limit} ");
 			params.putNumber("skip", skip);

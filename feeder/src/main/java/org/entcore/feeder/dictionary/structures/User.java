@@ -20,6 +20,7 @@
 package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.feeder.Feeder;
+import org.entcore.feeder.utils.Joiner;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
@@ -29,6 +30,8 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
+
+import java.util.Set;
 
 
 public class User {
@@ -266,6 +269,65 @@ public class User {
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("groupId", groupId);
+		transactionHelper.add(query, params);
+	}
+
+	public static void count(JsonArray profiles, TransactionHelper transactionHelper) {
+		String query;
+		JsonObject params = new JsonObject();
+		if (profiles != null && profiles.size() > 0) {
+			query = "MATCH (p:Profile)<-[:HAS_PROFILE]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WHERE p.name IN {profiles} ";
+			params.putArray("profiles", profiles);
+		} else {
+			query = "MATCH (u:User) ";
+		}
+		query += "RETURN count(distinct u) as nb";
+		transactionHelper.add(query, params);
+	}
+
+	public static void list(JsonArray profiles, JsonArray attributes, Integer skip, Integer limit,
+			TransactionHelper transactionHelper) {
+		StringBuilder query = new StringBuilder();
+		JsonObject params = new JsonObject();
+		if (profiles != null && profiles.size() > 0) {
+			query.append("MATCH (p:Profile)<-[:HAS_PROFILE]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WHERE p.name IN {profiles} ");
+			params.putArray("profiles", profiles);
+		} else {
+			query.append("MATCH (u:User) ");
+		}
+		if (attributes != null && attributes.size() > 0) {
+			query.append("RETURN DISTINCT");
+			for (Object attribute : attributes) {
+				query.append(" u.").append(attribute).append(" as ").append(attribute).append(",");
+			}
+			query.deleteCharAt(query.length() - 1);
+			query.append(" ");
+		} else {
+			query.append("RETURN DISTINCT u ");
+		}
+		if (skip != null && limit != null) {
+			query.append("ORDER BY externalId ASC " +
+					"SKIP {skip} " +
+					"LIMIT {limit} ");
+			params.putNumber("skip", skip);
+			params.putNumber("limit", limit);
+		}
+		transactionHelper.add(query.toString(), params);
+	}
+
+	public static void listByFunctions(JsonArray functions, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (f:Function)<-[rf:HAS_FUNCTION]-()<-[:IN*0..1]-u " +
+				"WHERE f.externalId IN {functions} " +
+				"WITH DISTINCT u.externalId as externalId, rf.structures as structures, f " +
+				"MATCH (s:Structure) " +
+				"WHERE s.id in structures " +
+				"WITH externalId, COLLECT(distinct s.externalId) as structs, f " +
+				"RETURN externalId, COLLECT(distinct [f.externalId, structs]) as functions ";
+		JsonObject params = new JsonObject()
+				.putArray("functions", functions);
 		transactionHelper.add(query, params);
 	}
 

@@ -79,6 +79,7 @@ public class Directory extends Server {
 		directoryController.get("/admin", "directory")
 				.post("/import", "launchImport")
 				.post("/transition", "launchTransition")
+				.post("/export", "launchExport")
 				.get("/annuaire", "annuaire")
 				.get("/schools", "schools")
 				.get("/api/ecole", "school")
