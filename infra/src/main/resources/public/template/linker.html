@@ -34,7 +34,7 @@
 					</div>
 				</div>
 				<div ng-if="resources.length === 0 && search.text !== ''">
-					<div ng-include="params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
+					<div ng-include="'/' + params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
 				</div>
 				<ul class="illustrated-list">
 					<li ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
