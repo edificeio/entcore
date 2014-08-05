@@ -344,6 +344,10 @@ function ClassAdmin(){
 				});
 				this.load(data);
 			}.bind(this));
+		},
+		removeSelection: function(){
+			this.request('delete', '/directory/user/:id');
+			Collection.prototype.removeSelection.call(this);
 		}
 	});
 

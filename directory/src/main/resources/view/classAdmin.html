@@ -83,7 +83,7 @@
 				<div class="row"></div>
 			</div>
 			<div class="row">
-				<article class="twelve cell vertical-spacing-twice">
+				<article class="twelve cell vertical-spacing-twice list-view">
 					<form ng-submit="addUser()">
 						<table class="row">
 							<thead>
@@ -191,6 +191,14 @@
 			</div>
 		</section>
 	</section>
+	<lightbox show="display.confirmRemove" on-close="display.confirmRemove = false">
+		<h2><i18n>remove</i18n></h2>
+		<p><i18n>directory.remove.confirm</i18n></p>
+		<div class="row">
+			<button class="right-magnet" ng-click="removeUsers()"><i18n>remove</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="display.confirmRemove = false" />
+		</div>
+	</lightbox>
 	<div class="row height-one"></div>
 	<section class="toggle-buttons" ng-class="{ hide: users.selection().length === 0 }">
 		<div class="toggle block-container">
@@ -204,6 +212,7 @@
 						ng-if="users.where({ blocked: true, selected: true }).length"
 						translate content="admin.unblock">
 				</button>
+				<button ng-click="display.confirmRemove = true"><i18n>remove</i18n></button>
 			</div>
 		</div>
 	</section>

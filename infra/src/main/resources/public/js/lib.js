@@ -475,7 +475,10 @@ function Collection(obj){
 		addRange: function(data, cb, notify){
 			var that = this;
 			data.forEach(function(item){
-				var newObj = Model.create(that.obj, item);
+				if(!(newObj instanceof that.obj)){
+					var newObj = Model.create(that.obj, item);
+				}
+
 				that.push(newObj, false);
 				if(typeof cb === 'function'){
 					cb(newObj);

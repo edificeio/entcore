@@ -219,7 +219,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		$scope.currentViews.lightbox = $scope.views.lightbox.share;
 	};
 
-	refreshFolders = function(){
+	var refreshFolders = function(){
 		var folder = $scope.openedFolder;
 		$scope.openedFolder = { folder: {} };
 
@@ -443,7 +443,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 		http().get(path, params).done(function(documents){
 			formatDocuments(documents, function(result){
-				$scope.openedFolder.content = result;
+				$scope.openedFolder.content = $scope.openedFolder.content.concat(result);
 				$scope.$apply();
 			});
 
@@ -459,6 +459,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if($scope.folder.children.indexOf(folder) !== -1){
 			currentTree();
 		}
+		$scope.openedFolder.content = []
 		if($scope.currentTree.filter instanceof Array){
 			for(var i = 0; i < $scope.currentTree.filter.length; i++){
 				var params = {

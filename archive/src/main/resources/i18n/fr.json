@@ -15,6 +15,10 @@
 	"export.error" : "Nous ne sommes pas en mesure de réaliser cet export actuellement. Veuillez réessayer plus tard.",
 	"get.export.path.error" : "Erreur lors de la recherche de l'export.",
 	"exportId.not.found" : "L'export demandé n'existe pas.",
-	"zip.export.error" : "Erreur durant la création de l'archive"
+	"zip.export.error" : "Erreur durant la création de l'archive",
+	"archive.title": "Export",
+	"export": "Télécharger mes données",
+	"archive.info": "Votre compte va bientôt être supprimé. Vous pouvez télécharger tous vos documents ici :",
+	"archive.waiting": "Le téléchargement va démarrer automatiquement dans peu de temps."
 
 }

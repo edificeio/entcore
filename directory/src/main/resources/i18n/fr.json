@@ -194,5 +194,6 @@
 	"directory.personnel": "Personnel",
 	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
 	"loading": "Chargement en cours...",
-	"classAdmin.select.classroom": "Classe à modifier"
+	"classAdmin.select.classroom": "Classe à modifier",
+	"directory.remove.confirm": "Si vous demandez la suppression de ces utilisateurs, ils pourront exporter leurs données, puis perdront leur accès à l'ENT. Voulez-vous vraiment les supprimer ?"
 }

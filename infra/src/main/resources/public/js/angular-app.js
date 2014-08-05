@@ -487,7 +487,10 @@ module.directive('linker', function($compile){
 				var prefix = split[split.length - 1];
 				scope.params.appPrefix = prefix;
 				if(!cb){
-					cb = function(){};
+					cb = function(){
+						scope.searchApplication();
+						scope.$apply('resources');
+					};
 				}
 
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
@@ -502,8 +505,8 @@ module.directive('linker', function($compile){
 				scope.params.appPrefix = prefix;
 				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
 					scope.resources = _.filter(appBehaviour.resources, function(resource) {
-						return lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.search.text).toLowerCase()) !== -1 ||
-							resource._id === scope.search.text;
+						return scope.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.search.text).toLowerCase()) !== -1 ||
+							resource._id === scope.search.text);
 					});
 					scope.resource.title = scope.search.text;
 				});

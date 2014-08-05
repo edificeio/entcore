@@ -18,16 +18,35 @@
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  ~
  -->
-
 <html>
-<head lang="en">
-	<meta charset="UTF-8">
-	<title>Ent-core</title>
-
+<head>
+	<title>{{#i18n}}archive.title{{/i18n}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script type="text/javascript" src="/archive/public/controller.js"></script>
 </head>
-<body>
-	<form method="POST" action="/archive/export">
-		<input type="submit" value="export">
-	</form>
+<script type="text/ng-template" id="empty"></script>
+<body >
+<portal>
+	<section class="twelve cell" ng-controller="ArchiveController">
+		<h1><i18n>archive.title</i18n></h1>
+		<div class="row">
+			<div class="twelve cell reduce-block-eight">
+				<div class="twelve cell info vertical-spacing-twice">
+					<i18n>archive.info</i18n>
+				</div>
+				<div class="row centered" ng-if="!loading">
+					<button ng-click="initiateExport()">
+						<i18n>export</i18n>
+					</button>
+				</div>
+				<div class="row centered" ng-if="loading">
+					<i18n>archive.waiting</i18n>
+				</div>
+			</div>
+
+		</div>
+	</section>
+</portal>
 </body>
 </html>

@@ -208,6 +208,7 @@ function ClassAdminController($scope, model, date, notify){
 	$scope.newUser = new User();
 	$scope.import = {};
 	$scope.me = model.me;
+	$scope.display = {};
 
 	model.network.on('classrooms-sync', function(){
 		$scope.classrooms = model.network.schools.allClassrooms();
@@ -355,6 +356,11 @@ function ClassAdminController($scope, model, date, notify){
 			notify.info('info.passwords.sent');
 			model.classAdmin.resetPasswords();
 		}
+	};
+
+	$scope.removeUsers = function(){
+		model.classAdmin.users.removeSelection();
+		$scope.display.confirmRemove = false;
 	};
 
 	$scope.uploadPhoto = function(){
