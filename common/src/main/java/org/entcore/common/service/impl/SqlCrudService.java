@@ -35,9 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.countResult;
-import static org.entcore.common.sql.SqlResult.validResultHandler;
-import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
+import static org.entcore.common.sql.SqlResult.*;
 
 public class SqlCrudService implements CrudService {
 
@@ -123,7 +121,7 @@ public class SqlCrudService implements CrudService {
 				"UPDATE " + resourceTable +
 				" SET " + sb.toString() + "modified = NOW() " +
 				"WHERE id = ? ";
-		sql.prepared(query, values.add(parseId(id)), validUniqueResultHandler(handler));
+		sql.prepared(query, values.add(parseId(id)), validRowsResultHandler(handler));
 	}
 
 	@Override
@@ -134,7 +132,7 @@ public class SqlCrudService implements CrudService {
 	@Override
 	public void delete(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		String query = "DELETE FROM " + resourceTable + " WHERE id = ?";
-		sql.prepared(query, new JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
+		sql.prepared(query, new JsonArray().add(parseId(id)), validRowsResultHandler(handler));
 	}
 
 	@Override

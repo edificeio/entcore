@@ -89,6 +89,28 @@ public class SqlResult {
 		}
 	}
 
+	public static Either<String, JsonObject> validRowsResult(Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			long rows = res.body().getLong("rows", 0l);
+			JsonObject result = new JsonObject();
+			if(rows > 0){
+				result.putNumber("rows", rows);
+			}
+			return new Either.Right<>(result);
+		} else {
+			return new Either.Left<>(res.body().getString("message", ""));
+		}
+	}
+
+	public static Handler<Message<JsonObject>> validRowsResultHandler(
+			final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validRowsResult(event));
+			}
+		};
+	}
 
 	public static Handler<Message<JsonObject>> validUniqueResultHandler(
 			final Handler<Either<String, JsonObject>> handler) {
