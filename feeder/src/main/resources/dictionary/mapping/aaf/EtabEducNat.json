@@ -1,7 +1,7 @@
 {
 	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string" },
-	"ENTStructureUAI" : { "attribute" : "oldUAI", "type" : "string" },
-	"ENTEtablissementUAI" : { "attribute" : "UAI", "type" : "string" },
+	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
+	"ENTEtablissementUAI" : { "attribute" : "oldUAI", "type" : "string" },
 	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
 	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
 	"ENTStructureTypeStruct" : { "attribute" : "type", "type" : "string" },
