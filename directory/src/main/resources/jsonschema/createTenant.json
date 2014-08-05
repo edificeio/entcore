@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "externalId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "shortName" : {
+      "type": "string"
+    },
+    "email": {
+	  "type": "string"
+	},
+	"url": {
+	  "type": "string"
+	},
+	"entUrl" : {
+	  "type": "string"
+	}
+  },
+  "required": [
+    "externalId",
+    "name"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+	"validate" : {
+		"externalId" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"name" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"shortName" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"email" : {
+			"type" : "string",
+			"validator" : "email"
+		},
+		"url" : {
+			"type" : "string",
+			"validator" : "uri"
+		},
+		"entUrl" : {
+			"type" : "string",
+			"validator" : "uri"
+		}
+	},
+	"generate" : {
+		"id" : {"generator":"uuid4", "args":[]}
+	},
+	"required" : ["id", "externalId", "name"],
+	"modifiable" : ["name", "shortName", "email", "url", "entUrl"]
+}

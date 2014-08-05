@@ -17,10 +17,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.feeder.utils;
+package org.entcore.directory.services;
 
-import org.entcore.feeder.exceptions.ValidationException;
+import fr.wseduc.webutils.Either;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
-public interface VoidFunction<F> {
-	void apply(F value) throws ValidationException;
+public interface TenantService {
+
+	void create(JsonObject tenant, Handler<Either<String, JsonObject>> handler);
+
 }

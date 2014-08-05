@@ -70,6 +70,7 @@ public class Directory extends Server {
 		UserController userController = new UserController(vertx, container, rm, securedActions);
 		ProfileController profileController = new ProfileController(vertx, container, rm, securedActions);
 		GroupController groupController = new GroupController(vertx, container, rm, securedActions);
+		TenantController tenantController = new TenantController(vertx, container, rm, securedActions);
 
 		vertx.eventBus().registerHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents()));
@@ -152,6 +153,9 @@ public class Directory extends Server {
 		groupController
 				.get("/group/admin/list", "listAdmin");
 
+		tenantController
+				.post("/tenant", "create");
+
 		try {
 			directoryController.registerMethod("directory", "directoryHandler");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
@@ -175,6 +179,7 @@ public class Directory extends Server {
 		securedUriBinding.add(userController.securedUriBinding());
 		securedUriBinding.add(profileController.securedUriBinding());
 		securedUriBinding.add(groupController.securedUriBinding());
+		securedUriBinding.add(tenantController.securedUriBinding());
 		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
 				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}

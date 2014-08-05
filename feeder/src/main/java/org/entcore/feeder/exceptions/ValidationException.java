@@ -17,10 +17,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.feeder.utils;
+package org.entcore.feeder.exceptions;
 
-import org.entcore.feeder.exceptions.ValidationException;
+public class ValidationException extends Exception {
 
-public interface VoidFunction<F> {
-	void apply(F value) throws ValidationException;
+	public ValidationException() {
+		super();
+	}
+
+	public ValidationException(String message) {
+		super(message);
+	}
+
 }

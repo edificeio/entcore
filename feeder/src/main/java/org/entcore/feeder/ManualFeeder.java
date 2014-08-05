@@ -23,8 +23,10 @@ import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.Profile;
+import org.entcore.feeder.dictionary.structures.Tenant;
 import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.exceptions.TransactionException;
+import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
@@ -681,9 +683,8 @@ public class ManualFeeder extends BusModBase {
 					message.reply(event.body());
 				}
 			});
-		} catch (TransactionException e) {
-			logger.error(e.getMessage(), e);
-			sendError(message, e.getMessage());
+		} catch (TransactionException | ValidationException e) {
+			sendError(message, e.getMessage(), e);
 		}
 	}
 
@@ -771,6 +772,17 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void apply(TransactionHelper tx) {
 				User.removeGroup(userId, groupId, tx);
+			}
+		});
+	}
+
+	public void createOrUpdateTenant(Message<JsonObject> message) {
+		final JsonObject tenant = getMandatoryObject("data", message);
+		if (tenant == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) throws ValidationException {
+				Tenant.createOrUpdate(tenant, tx);
 			}
 		});
 	}
