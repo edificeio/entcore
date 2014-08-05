@@ -57,6 +57,12 @@ public class DefaultResponseHandler {
 
 	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
 			final HttpServerRequest request, final int successCode) {
+		return notEmptyResponseHandler(request, successCode, 404);
+	}
+
+	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
+			final HttpServerRequest request, final int successCode, final int emptyCode) {
+
 		return new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
@@ -64,7 +70,7 @@ public class DefaultResponseHandler {
 					if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 						Renders.renderJson(request, event.right().getValue(), successCode);
 					} else {
-						request.response().setStatusCode(404).end();
+						request.response().setStatusCode(emptyCode).end();
 					}
 				} else {
 					JsonObject error = new JsonObject()
