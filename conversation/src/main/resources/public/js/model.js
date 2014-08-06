@@ -112,11 +112,16 @@ function Mail(data){
 		http().getJson('/conversation/message/' + this.id).done(function(data){
 			that.updateData(data);
 			that.to = _.map(that.to, function(user){
+				var n = '';
+				var foundUser = _.find(that.displayNames, function(name){
+					return name[0] === user;
+				});
+				if(foundUser){
+					n = foundUser[1];
+				}
 				return new User({
 					id: user,
-					displayName: _.find(that.displayNames, function(name){
-						return name[0] === user;
-					})[1]
+					displayName: n
 				})
 			});
 

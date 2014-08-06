@@ -5,10 +5,10 @@
 	<br /><span class="medium-importance" translate key="transfer.subject"></span><em>[[mail.subject]]</em>
 	<br /><span class="medium-importance" translate key="transfer.to"></span>
 	<em class="medium-importance" ng-repeat="receiver in mail.to">
-		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1 && receiver.displayName">,</span>
 	</em>
 	<br /><span class="medium-importance" translate key="transfer.cc"></span>
 	<em class="medium-importance" ng-repeat="receiver in mail.cc">
-		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1 && receiver.displayName">,</span>
 	</em>
 </p>

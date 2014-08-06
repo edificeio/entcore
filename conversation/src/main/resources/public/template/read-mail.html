@@ -13,7 +13,7 @@
 			<div class="row">
 				<em class="medium-importance medium-text">
 					<span translate key="to"></span>
-					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]<span ng-if="$index !== mail.to.length - 1 && receiver.displayName">,</span>
 					</a>
 					<span ng-repeat="receiverName in mail.toName">
 						[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
