@@ -96,6 +96,10 @@ function DirectoryController($scope, model, route, date, template){
 			model.network.schools.on('sync', function(){
 				$scope.schools = model.network.schools;
 				$scope.currentSchool = $scope.schools.first();
+				if($scope.currentSchool === undefined){
+					template.open('page', 'noschool');
+					return;
+				}
 				$scope.currentSchool.sync();
 
 				$scope.currentSchool.one('sync', function(){
