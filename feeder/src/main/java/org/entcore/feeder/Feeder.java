@@ -26,6 +26,7 @@ import org.entcore.feeder.dictionary.structures.GraphData;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.structures.User;
+import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
@@ -44,6 +45,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private Feed feed;
 	private ManualFeeder manual;
 	private Neo4j neo4j;
+	private Exporter exporter;
 
 	@Override
 	public void start() {
@@ -81,6 +83,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						container.config().getString("uai-separator","_"));
 				break;
 			default: throw new IllegalArgumentException("Invalid importer");
+		}
+		switch (container.config().getString("exporter", "")) {
+			case "ELIOT" :
+				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
+						container.config().getString("export-destination"), vertx);
+				break;
 		}
 
 	}
@@ -142,9 +150,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void launchExport(final Message<JsonObject> message) {
+		if (exporter == null) {
+			sendError(message, "exporter.not.found");
+			return;
+		}
 		try {
 			final long start = System.currentTimeMillis();
-			new EliotExporter("/tmp", vertx).export(new Handler<Message<JsonObject>>() {
+			exporter.export(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
