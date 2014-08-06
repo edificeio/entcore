@@ -222,7 +222,8 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)<-[:HAS_CONVERSATION]-(u:User)" +
 				"-[:IN*0..1]->(dn:Visible) " +
-				"WHERE dn.id = m.from OR dn.id IN m.to " +
+				"WHERE dn.id = m.from OR dn.id IN m.to OR " +
+				"(HAS(m.fromName) AND m.fromName <> '') OR (HAS(m.toName) AND LENGTH(m.toName) > 0) " +
 				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.toName as toName, m.fromName as fromName, " +
 				"m.subject as subject, m.date as date, r.unread as unread, " +
