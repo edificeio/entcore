@@ -327,10 +327,11 @@ function Collection(obj){
 				this.callbacks = {};
 			}
 
+			var col = this;
 			if(this.callbacks[event] instanceof Array){
 				this.callbacks[event].forEach(function(cb){
 					if(typeof cb === 'function'){
-						cb.call(this);
+						cb.call(col);
 					}
 				});
 			}

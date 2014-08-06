@@ -2698,12 +2698,13 @@ module.directive('datePicker', function($compile){
 });
 
 $(document).ready(function(){
-
-	bootstrap(function(){
-		model.build();
-		model.sync();
-		angular.bootstrap($('html'), ['app']);
-	});
+	setTimeout(function(){
+		bootstrap(function(){
+			model.build();
+			model.sync();
+			angular.bootstrap($('html'), ['app']);
+		});
+	}, 10);
 });
 
 
