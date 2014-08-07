@@ -214,7 +214,7 @@ var http = (function(){
 						that.statusCallbacks.error.call(that, e);
 					}
 					else{
-						if(!params.disableNotifications){
+						if(!params.disableNotifications && e.status !== 0){
 							humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
 						}
 					}
