@@ -3306,9 +3306,6 @@ function MediaLibrary($scope){
 		else if(model.me.workflow.workspace.documents.list){
 			$scope.listFrom('sharedDocuments')
 		}
-		else{
-			notify.error('Vous n\'avez pas accès à la bibliothèque multimédia.');
-		}
 	});
 
 	function filteredDocuments(source){
