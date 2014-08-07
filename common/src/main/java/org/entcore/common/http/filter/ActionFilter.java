@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import fr.wseduc.webutils.request.filter.Filter;
@@ -100,7 +101,8 @@ public class ActionFilter implements Filter {
 
 	@Override
 	public void deny(HttpServerRequest request) {
-		request.response().setStatusCode(401).end();
+		request.response().setStatusCode(401).setStatusMessage("Unauthorized")
+				.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
 	}
 
 	private void userIsAuthorized(HttpServerRequest request, JsonObject session,

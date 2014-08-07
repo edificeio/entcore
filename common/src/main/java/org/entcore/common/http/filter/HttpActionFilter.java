@@ -23,6 +23,7 @@ import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -92,7 +93,8 @@ public class HttpActionFilter implements Filter {
 
 	@Override
 	public void deny(HttpServerRequest request) {
-		request.response().setStatusCode(401).end();
+		request.response().setStatusCode(401).setStatusMessage("Unauthorized")
+				.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
 	}
 
 	private void userIsAuthorized(HttpServerRequest request, JsonObject session,
