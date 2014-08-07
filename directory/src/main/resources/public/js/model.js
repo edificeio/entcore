@@ -24,6 +24,10 @@ function User(data){
 	this.open = function(){
 		var that = this;
 		http().get('/userbook/api/person?id=' + this.id + '&type=' + this.type).done(function(data){
+			if(!data.result[0]){
+				this.id = undefined;
+				return;
+			}
 			data.result[0].hobbies = _.map(data.result[0].category, function(cat, i){
 				return { category: cat, value: data.result[0].values[i] };
 			});

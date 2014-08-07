@@ -74,9 +74,6 @@ function DirectoryController($scope, model, route, date, template){
 		viewUser: function(params){
 			$scope.currentUser = new User({ id: params.userId });
 			$scope.currentUser.open();
-			$scope.currentUser.on('sync', function(){
-				$scope.$apply('currentUser');
-			});
 			$scope.users = model.directory.users;
 			template.open('page', 'profile');
 			template.open('details', 'user-infos');
@@ -201,7 +198,7 @@ function DirectoryController($scope, model, route, date, template){
 
 function ClassAdminController($scope, model, date, notify){
 	model.directory.users.searchDirectory('');
-	
+
 	model.network.sync();
 	model.network.one('schools.sync', function(){
 		model.network.schools.forEach(function(school){
