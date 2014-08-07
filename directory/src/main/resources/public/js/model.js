@@ -334,8 +334,6 @@ function ClassAdmin(){
 		http().putJson('/directory/class/' + this.id, { name: this.name, level: this.level })
 	};
 
-	model.directory.users.searchDirectory('');
-
 	this.collection(User, {
 		sync: function(){
 			http().get('/directory/class/' + model.me.preferences.selectedClass + '/users', { requestName: 'loadingUsers' }).done(function(data){

@@ -200,6 +200,8 @@ function DirectoryController($scope, model, route, date, template){
 }
 
 function ClassAdminController($scope, model, date, notify){
+	model.directory.users.searchDirectory('');
+	
 	model.network.sync();
 	model.network.one('schools.sync', function(){
 		model.network.schools.forEach(function(school){
