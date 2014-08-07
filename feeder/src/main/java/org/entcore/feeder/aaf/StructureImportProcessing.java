@@ -19,7 +19,9 @@
 
 package org.entcore.feeder.aaf;
 
+import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
+import org.entcore.feeder.dictionary.structures.Profile;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -47,6 +49,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 				public void handle(Message<JsonObject> message) {
 					if ("ok".equals(message.body().getString("status"))) {
 						createOrUpdateProfiles();
+						DefaultFunctions.createOrUpdateFunctions(importer);
 						parse(handler, new FieldOfStudyImportProcessing(path, vertx));
 					} else {
 						error(message, handler);
@@ -55,6 +58,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 			});
 		} else {
 			createOrUpdateProfiles();
+			DefaultFunctions.createOrUpdateFunctions(importer);
 			parse(handler, new FieldOfStudyImportProcessing(path, vertx));
 		}
 	}
@@ -65,7 +69,6 @@ public class StructureImportProcessing extends BaseImportProcessing {
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
 		importer.createOrUpdateProfile(TEACHER_PROFILE);
 	}
-
 
 	@Override
 	public String getMappingResource() {

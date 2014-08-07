@@ -23,6 +23,8 @@ import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.feeder.Feed;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
+
+import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.utils.Hash;
@@ -107,6 +109,7 @@ public class Be1dFeeder implements Feed {
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
 		importer.createOrUpdateProfile(TEACHER_PROFILE);
+		DefaultFunctions.createOrUpdateFunctions(importer);
 		final String [] directories = vertx.fileSystem().readDirSync(path);
 		final JsonArray errors = new JsonArray();
 		final VoidHandler [] handlers = new VoidHandler[directories.length + 1];
