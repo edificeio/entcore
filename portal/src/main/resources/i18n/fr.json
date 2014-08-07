@@ -11,6 +11,8 @@
 	"e408": "Temps d'attente dépassé, veuillez réessayer",
 	"e500": "Le serveur a rencontré une erreur",
 	"e413": "Ce fichier est trop gros",
+	"e401.page": "Vous n'avez pas le droit d'accéder à ce fichier.",
+	"oops": "Oups !",
 	"share.publish.title": "Circuit de publication",
 	"share.publish.immediate": "Publication immédiate",
 	"share.publish.differed": "Billet à soumettre",

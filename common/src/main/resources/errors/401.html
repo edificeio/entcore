@@ -1,8 +1,43 @@
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Unauthorized</title>
+	<title>Erreur</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="/infra/public/js/loader.js" type="text/javascript" id="context"></script>
+	<script type="text/ng-template" id="empty"></script>
 </head>
-<body>
-Vous n'avez pas l'autorisation.
+<body ng-controller="Account">
+<div ng-if="!me.userId" class="centered container">
+	<default-styles>
+
+		<h1><a data-reload><i class="oops"></i><i18n>oops</i18n></a></h1>
+		<article>
+			<div class="row">
+				<i18n>e401.page</i18n>
+			</div>
+
+			<div class="row vertical-spacing-twice">
+				<button onclick="history.go(-1)"><i18n>back</i18n></button>
+			</div>
+		</article>
+
+	</default-styles>
+</div>
+<div ng-if="me.userId" class="centered container">
+	<portal>
+
+		<h1><a data-reload><i class="oops"></i><i18n>oops</i18n></a></h1>
+		<article>
+			<div class="row">
+				<i18n>e401.page</i18n>
+			</div>
+
+			<div class="row vertical-spacing-twice">
+				<button onclick="history.go(-1)"><i18n>back</i18n></button>
+			</div>
+		</article>
+	</portal>
+</div>
+
 </body>
 </html>
