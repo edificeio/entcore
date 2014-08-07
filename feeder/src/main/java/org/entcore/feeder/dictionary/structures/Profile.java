@@ -46,7 +46,7 @@ public class Profile {
 		if (functions != null) {
 			for (Object o : functions) {
 				if (!(o instanceof String)) continue;
-				functions.add(o);
+				this.functions.add(o.toString());
 			}
 		}
 	}
