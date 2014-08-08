@@ -239,6 +239,28 @@ public class ConversationController extends Controller {
 			d3.addArray(d2);
 		}
 		message.putArray("displayNames", d3);
+		JsonArray toName = message.getArray("toName");
+		if (toName != null) {
+			JsonArray d2 = new JsonArray();
+			message.putArray("toName", d2);
+			for (Object o : toName) {
+				if (!(o instanceof String)) {
+					continue;
+				}
+				d2.addString(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+			}
+		}
+		JsonArray ccName = message.getArray("ccName");
+		if (ccName != null) {
+			JsonArray d2 = new JsonArray();
+			message.putArray("ccName", d2);
+			for (Object o : ccName) {
+				if (!(o instanceof String)) {
+					continue;
+				}
+				d2.addString(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+			}
+		}
 	}
 
 	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
