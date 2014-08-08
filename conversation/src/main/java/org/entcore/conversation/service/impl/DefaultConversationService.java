@@ -185,12 +185,17 @@ public class DefaultConversationService implements ConversationService {
 				"(v.id IN message.to OR v.id IN message.cc) AND fOut.name = {outbox} " +
 				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
 				"DELETE r " +
-				"WITH u, message " +
+				"WITH u, message, (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
+				"coalesce(v.name, ' ') + '$' + coalesce(v.groupDisplayName, ' ')) as dNames " +
 				"MATCH u-[:HAS_CONVERSATION]->(c:Conversation {active:{true}})" +
 				"-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder {name:{inbox}}) " +
 				"CREATE UNIQUE f-[:HAS_CONVERSATION_MESSAGE { unread: {true} }]->message " +
-				"WITH COLLECT(c.userId) as sentIds, COLLECT(u) as users, message " +
-				"SET message.state = {sent} " +
+				"WITH COLLECT(c.userId) as sentIds, COLLECT(u) as users, message, " +
+				"COLLECT(distinct dNames) as displayNames " +
+				"MATCH (s:User {id : {userId}}) " +
+				"SET message.state = {sent}, " +
+				"message.displayNames = coalesce(message.displayNames, []) + displayNames + " +
+				"(s.id + '$' + coalesce(s.displayName, ' ') + '$ $ ') " +
 				"RETURN EXTRACT(u IN FIlTER(x IN users WHERE NOT(x.id IN sentIds)) | u.displayName) as undelivered,  " +
 				"EXTRACT(u IN FIlTER(x IN users WHERE x.id IN sentIds AND NOT(x.activationCode IS NULL)) " +
 				"| u.displayName) as inactive, LENGTH(sentIds) as sent, " +
@@ -215,20 +220,12 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH (c:Conversation {userId : {userId}, active : {true}})-[:HAS_CONVERSATION_FOLDER]->" +
 				"(f:ConversationFolder {name : {folder}})" +
 				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
-				"WITH m, r " +
-				"ORDER BY m.date DESC " +
-				"SKIP {skip} " +
-				"LIMIT {limit} " +
-				"MATCH m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder)" +
-				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)<-[:HAS_CONVERSATION]-(u:User)" +
-				"-[:IN*0..1]->(dn:Visible) " +
-				"WHERE dn.id = m.from OR dn.id IN m.to OR " +
-				"(HAS(m.fromName) AND m.fromName <> '') OR (HAS(m.toName) AND LENGTH(m.toName) > 0) " +
 				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.toName as toName, m.fromName as fromName, " +
-				"m.subject as subject, m.date as date, r.unread as unread, " +
-				"COLLECT(distinct [dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
-				"as displayNames ";
+				"m.subject as subject, m.date as date, r.unread as unread, m.displayNames as displayNames " +
+				"ORDER BY m.date DESC " +
+				"SKIP {skip} " +
+				"LIMIT {limit} ";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
 				.putString("folder", folder)
@@ -317,14 +314,9 @@ public class DefaultConversationService implements ConversationService {
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} " +
 				"SET r.unread = {false} " +
-				"WITH distinct m.id as id, m.to as to, m.cc as cc, m.from as from, m.state as state, " +
+				"RETURN distinct m.id as id, m.to as to, m.cc as cc, m.from as from, m.state as state, " +
 				"m.subject as subject, m.date as date, m.body as body, m.toName as toName, " +
-				"m.ccName as ccName, m.fromName as fromName " +
-				"MATCH (dn:Visible) " +
-				"WHERE dn.id = from OR dn.id IN to OR dn.id IN cc " +
-				"RETURN id, to, cc, from, state, subject, date, body, toName, ccName, fromName," +
-				"COLLECT([dn.id, dn.displayName, dn.name, dn.groupDisplayName]) " +
-				"as displayNames";
+				"m.ccName as ccName, m.fromName as fromName, m.displayNames as displayNames ";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
 				.putString("messageId", messageId)

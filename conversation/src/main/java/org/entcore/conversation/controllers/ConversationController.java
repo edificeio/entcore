@@ -221,21 +221,20 @@ public class ConversationController extends Controller {
 
 	private void translateGroupsNames(JsonObject message, HttpServerRequest request) {
 		JsonArray d3 = new JsonArray();
-		for (Object o2 : message.getArray("displayNames")) {
-			if (!(o2 instanceof JsonArray)) {
+		for (Object o2 : message.getArray("displayNames", new JsonArray())) {
+			if (!(o2 instanceof String)) {
 				continue;
 			}
-			JsonArray d = (JsonArray) o2;
-			if (d.size() != 4) {
+			String [] a = ((String) o2).split("\\$");
+			if (a.length != 4) {
 				continue;
 			}
-			JsonArray d2 = new JsonArray().add(d.get(0));
-			if (d.get(2) != null) {
-				d2.addString(UserUtils.groupDisplayName(
-						d.get(2).toString(), (String) d.get(3),
-						I18n.acceptLanguage(request)));
+			JsonArray d2 = new JsonArray().add(a[0]);
+			if (a[2] != null && !a[2].trim().isEmpty()) {
+				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
+				d2.addString(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
 			} else {
-				d2.add(d.get(1));
+				d2.add(a[1]);
 			}
 			d3.addArray(d2);
 		}
