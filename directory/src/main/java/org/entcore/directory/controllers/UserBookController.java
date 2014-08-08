@@ -410,7 +410,9 @@ public class UserBookController extends Controller {
 		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
 				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
 		String query =
-				"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WITH DISTINCT c, profile, visibles " +
+				"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
 				"WHERE profile.name = 'Student' AND visibles.birthDate=~{regex} " +
 				"RETURN distinct visibles.id as id, visibles.displayName as username, " +
 				"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
