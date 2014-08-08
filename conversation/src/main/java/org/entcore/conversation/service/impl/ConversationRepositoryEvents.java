@@ -42,13 +42,17 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		String q1 = "MATCH (m:ConversationMessage {from : {group}}) SET m.fromName = {groupName} ";
+		String q1 =
+				"MATCH (m:ConversationMessage {from : {group}}) " +
+				"SET m.fromName = {groupName}, m.from = null ";
 		String q2 =
 				"MATCH (m:ConversationMessage) WHERE {group} IN m.to " +
-				"SET m.toName = coalesce(m.toName, []) + {groupName} ";
+				"SET m.toName = coalesce(m.toName, []) + {groupName}, " +
+				"m.to = FILTER(gId IN m.to WHERE gId <> {group}) ";
 		String q3 =
 				"MATCH (m:ConversationMessage) WHERE {group} IN m.cc " +
-				"SET m.ccName = coalesce(m.ccName, []) + {groupName} ";
+				"SET m.ccName = coalesce(m.ccName, []) + {groupName}, " +
+				"m.cc = FILTER(gId IN m.cc WHERE gId <> {group})";
 		StatementsBuilder b = new StatementsBuilder();
 		for (Object o : groups) {
 			if (!(o instanceof JsonObject)) continue;
@@ -89,13 +93,17 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 				"DELETE m, pr ";
 		b.add(query);
 
-		String q1 = "MATCH (m:ConversationMessage {from : {id}}) SET m.fromName = {displayName} ";
+		String q1 =
+				"MATCH (m:ConversationMessage {from : {id}}) " +
+				"SET m.fromName = {displayName}, m.from = null ";
 		String q2 =
 				"MATCH (m:ConversationMessage) WHERE {id} IN m.to " +
-				"SET m.toName = coalesce(m.toName, []) + {displayName} ";
+				"SET m.toName = coalesce(m.toName, []) + {displayName}, " +
+				"m.to = FILTER(gId IN m.to WHERE gId <> {id})";
 		String q3 =
 				"MATCH (m:ConversationMessage) WHERE {id} IN m.cc " +
-				"SET m.ccName = coalesce(m.ccName, []) + {displayName} ";
+				"SET m.ccName = coalesce(m.ccName, []) + {displayName}, " +
+				"m.cc = FILTER(gId IN m.cc WHERE gId <> {id})";
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject params = (JsonObject) o;
