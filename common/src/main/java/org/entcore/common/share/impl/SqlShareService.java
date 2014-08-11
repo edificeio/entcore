@@ -182,12 +182,13 @@ public class SqlShareService extends GenericShareService {
 				sql.transaction(s.build(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
-						if ("ok".equals(res.body().getString("status")) && nb == 0) {
+						Either<String, JsonObject> r = SqlResult.validUniqueResult(2, res);
+						if (r.isRight() && nb == 0) {
 							JsonObject notify = new JsonObject();
 							notify.putString(membersTable.substring(0, membersTable.length() - 1) + "Id", shareId);
-							res.body().putObject("notify-timeline", notify);
+							r.right().getValue().putObject("notify-timeline", notify);
 						}
-						handler.handle(SqlResult.validUniqueResult(res));
+						handler.handle(r);
 					}
 				});
 			}

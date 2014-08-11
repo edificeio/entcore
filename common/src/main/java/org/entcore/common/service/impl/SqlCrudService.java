@@ -88,7 +88,7 @@ public class SqlCrudService implements CrudService {
 		s.prepared(userQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 		data.putString("owner", user.getUserId());
 		s.insert(resourceTable, data, "id");
-		sql.transaction(s.build(), validUniqueResultHandler(handler));
+		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
 	}
 
 	@Override

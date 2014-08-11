@@ -42,6 +42,10 @@ public class SqlResult {
 
 	public static Either<String, JsonObject> validUniqueResult(Message<JsonObject> res) {
 		Either<String, JsonArray> r = validResult(res);
+		return validUnique(r);
+	}
+
+	private static Either<String, JsonObject> validUnique(Either<String, JsonArray> r) {
 		if (r.isRight()) {
 			JsonArray results = r.right().getValue();
 			if (results == null || results.size() == 0) {
@@ -56,47 +60,103 @@ public class SqlResult {
 		}
 	}
 
-	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
+	public static Either<String, JsonObject> validUniqueResult(int idx, Message<JsonObject> res) {
+		Either<String, JsonArray> r = validResult(idx, res);
+		return validUnique(r);
+	}
+
+	public static Either<String, JsonArray> validResult(int idx, Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray f = res.body().getArray("fields");
-			JsonArray r = res.body().getArray("results");
-			if (f != null && r != null) {
-				JsonArray result = new JsonArray();
-				for (Object o : r) {
-					if (!(o instanceof JsonArray)) continue;
-					JsonArray a = (JsonArray) o;
-					JsonObject j = new JsonObject();
-					for (int i = 0; i < f.size(); i++) {
-						Object item = a.get(i);
-						if (item instanceof Boolean) {
-							j.putBoolean((String) f.get(i), (Boolean) item);
-						} else if (item instanceof Number) {
-							j.putNumber((String) f.get(i), (Number) item);
-						} else if (item != null) {
-							j.putString((String) f.get(i), item.toString());
-						} else {
-							j.putValue((String) f.get(i), null);
-						}
-					}
-					result.addObject(j);
-				}
-				return new Either.Right<>(result);
+			JsonArray a = res.body().getArray("results");
+			if (a != null && idx < a.size()) {
+				return jsonToEither(a.<JsonObject>get(idx));
 			} else {
-				return new Either.Right<>(new JsonArray());
+				return new Either.Left<>("missing.result");
 			}
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}
 	}
 
-	public static Either<String, JsonObject> validRowsResult(Message<JsonObject> res) {
+	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			long rows = res.body().getLong("rows", 0l);
+			JsonArray a = res.body().getArray("results");
+			JsonArray r = new JsonArray();
+			for (Object o : a) {
+				if (!(o instanceof JsonObject)) continue;
+				r.add(transform((JsonObject) o));
+			}
+			return new Either.Right<>(r);
+		} else {
+			return new Either.Left<>(res.body().getString("message", ""));
+		}
+	}
+
+	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
+		return jsonToEither(res.body());
+	}
+
+	private static Either<String, JsonArray> jsonToEither(JsonObject body) {
+		if ("ok".equals(body.getString("status"))) {
+			return new Either.Right<>(transform(body));
+		} else {
+			return new Either.Left<>(body.getString("message", ""));
+		}
+	}
+
+	private static JsonArray transform(JsonObject body) {
+		JsonArray f = body.getArray("fields");
+		JsonArray r = body.getArray("results");
+		JsonArray result = new JsonArray();
+		if (f != null && r != null) {
+			for (Object o : r) {
+				if (!(o instanceof JsonArray)) continue;
+				JsonArray a = (JsonArray) o;
+				JsonObject j = new JsonObject();
+				for (int i = 0; i < f.size(); i++) {
+					Object item = a.get(i);
+					if (item instanceof Boolean) {
+						j.putBoolean((String) f.get(i), (Boolean) item);
+					} else if (item instanceof Number) {
+						j.putNumber((String) f.get(i), (Number) item);
+					} else if (item != null) {
+						j.putString((String) f.get(i), item.toString());
+					} else {
+						j.putValue((String) f.get(i), null);
+					}
+				}
+				result.addObject(j);
+			}
+		}
+		return result;
+	}
+
+	public static Either<String, JsonObject> validRowsResult(Message<JsonObject> res) {
+		JsonObject body = res.body();
+		return validRows(body);
+	}
+
+	private static Either<String, JsonObject> validRows(JsonObject body) {
+		if ("ok".equals(body.getString("status"))) {
+			long rows = body.getLong("rows", 0l);
 			JsonObject result = new JsonObject();
 			if(rows > 0){
 				result.putNumber("rows", rows);
 			}
 			return new Either.Right<>(result);
+		} else {
+			return new Either.Left<>(body.getString("message", ""));
+		}
+	}
+
+	public static Either<String, JsonObject> validRowsResult(int idx, Message<JsonObject> res) {
+		if ("ok".equals(res.body().getString("status"))) {
+			JsonArray a = res.body().getArray("results");
+			if (a != null && idx < a.size()) {
+				return validRows(res.body());
+			} else {
+				return new Either.Left<>("missing.result");
+			}
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}
@@ -112,6 +172,16 @@ public class SqlResult {
 		};
 	}
 
+	public static Handler<Message<JsonObject>> validRowsResultHandler(final int idx,
+			final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validRowsResult(idx, event));
+			}
+		};
+	}
+
 	public static Handler<Message<JsonObject>> validUniqueResultHandler(
 			final Handler<Either<String, JsonObject>> handler) {
 		return new Handler<Message<JsonObject>>() {
@@ -122,12 +192,42 @@ public class SqlResult {
 		};
 	}
 
+	public static Handler<Message<JsonObject>> validUniqueResultHandler(final int idx,
+			final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validUniqueResult(idx, event));
+			}
+		};
+	}
+
+	public static Handler<Message<JsonObject>> validResultHandler(final int idx,
+			final Handler<Either<String, JsonArray>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validResult(idx, event));
+			}
+		};
+	}
+
 	public static Handler<Message<JsonObject>> validResultHandler(
 			final Handler<Either<String, JsonArray>> handler) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle(validResult(event));
+			}
+		};
+	}
+
+	public static Handler<Message<JsonObject>> validResultsHandler(
+			final Handler<Either<String, JsonArray>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				handler.handle(validResults(event));
 			}
 		};
 	}
