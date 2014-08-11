@@ -165,10 +165,10 @@ public class DefaultConversationService implements ConversationService {
 				.putBoolean("true", true);
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) { // reply
 			usersQuery =
-					"WITH COLLECT(visibles.id) as vis " +
-					"MATCH (m:ConversationMessage), (v:Visible) " +
-					"WHERE m.id = {parentMessageId} AND " +
-					"(v.id IN vis OR v.id = m.from OR v.id IN m.to OR v.id IN m.cc) " +
+					"MATCH (m:ConversationMessage { id : {parentMessageId}}) " +
+					"WITH (COLLECT(visibles.id) + m.to + m.cc + m.from) as vis " +
+					"MATCH (v:Visible) " +
+					"WHERE v.id IN vis " +
 					"WITH DISTINCT v ";
 			params.putString("parentMessageId", parentMessageId);
 		} else {
@@ -176,31 +176,30 @@ public class DefaultConversationService implements ConversationService {
 		}
 		String query =
 				usersQuery +
-				"MATCH v<-[:IN*0..1]-(u:User), " +
-				"(message:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder), " +
-				"(sender:Conversation)-[:HAS_CONVERSATION_FOLDER]->(fOut:ConversationSystemFolder) " +
-				"WHERE (v: User or v:ProfileGroup) AND u.id <> {userId} " +
+				"MATCH v<-[:IN*0..1]-(u:User), (message:ConversationMessage) " +
+				"WHERE (v: User or v:ProfileGroup) " +
 				"AND message.id = {messageId} AND message.state = {draft} AND message.from = {userId} AND " +
-				"fDraft.name = {draft} AND sender.userId = {userId} AND " +
-				"(v.id IN message.to OR v.id IN message.cc) AND fOut.name = {outbox} " +
-				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
-				"DELETE r " +
-				"WITH u, message, (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
+				"(v.id IN message.to OR v.id IN message.cc) " +
+				"WITH DISTINCT u, message, (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
 				"coalesce(v.name, ' ') + '$' + coalesce(v.groupDisplayName, ' ')) as dNames " +
 				"MATCH u-[:HAS_CONVERSATION]->(c:Conversation {active:{true}})" +
 				"-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder {name:{inbox}}) " +
 				"CREATE UNIQUE f-[:HAS_CONVERSATION_MESSAGE { unread: {true} }]->message " +
 				"WITH COLLECT(c.userId) as sentIds, COLLECT(u) as users, message, " +
 				"COLLECT(distinct dNames) as displayNames " +
-				"MATCH (s:User {id : {userId}}) " +
+				"MATCH (s:User {id : {userId}})-[:HAS_CONVERSATION]->(:Conversation)" +
+				"-[:HAS_CONVERSATION_FOLDER]->(fOut:ConversationSystemFolder {name : {outbox}}), " +
+				"message<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder {name : {draft}}) " +
 				"SET message.state = {sent}, " +
 				"message.displayNames = coalesce(message.displayNames, []) + displayNames + " +
 				"(s.id + '$' + coalesce(s.displayName, ' ') + '$ $ ') " +
+				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
+				"DELETE r " +
 				"RETURN EXTRACT(u IN FIlTER(x IN users WHERE NOT(x.id IN sentIds)) | u.displayName) as undelivered,  " +
 				"EXTRACT(u IN FIlTER(x IN users WHERE x.id IN sentIds AND NOT(x.activationCode IS NULL)) " +
 				"| u.displayName) as inactive, LENGTH(sentIds) as sent, " +
 				"sentIds, message.id as id, message.subject as subject";
-		findVisibles(eb, user.getUserId(), query, params, false, true, false, new Handler<JsonArray>() {
+		findVisibles(eb, user.getUserId(), query, params, true, true, false, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {
 				if (event != null && event.size() == 1 && (event.get(0) instanceof JsonObject)) {
@@ -386,7 +385,7 @@ public class DefaultConversationService implements ConversationService {
 							"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
 							replyUserQuery + "AND app.name = {conversation} " +
 							"RETURN DISTINCT u.id as id, u.displayName as displayName";
-					findVisibleUsers(eb, user.getUserId(), false, users, params, new Handler<JsonArray>() {
+					findVisibleUsers(eb, user.getUserId(), true, false, users, params, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibleUsers) {
 							visible.putArray("users", visibleUsers);
@@ -401,7 +400,7 @@ public class DefaultConversationService implements ConversationService {
 					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName";
-			findVisibles(eb, user.getUserId(), groups, params, false, true, false, new Handler<JsonArray>() {
+			findVisibles(eb, user.getUserId(), groups, params, true, true, false, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
 					JsonArray users = new JsonArray();
