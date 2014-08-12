@@ -193,10 +193,6 @@ public abstract class ControllerHelper extends BaseController {
 				final List<String> actions = request.formAttributes().getAll("actions");
 				final String groupId = request.formAttributes().get("groupId");
 				final String userId = request.formAttributes().get("userId");
-				if (actions == null || actions.isEmpty()) {
-					badRequest(request);
-					return;
-				}
 				if (checkIsOwner) {
 					getUserInfos(eb, request, new Handler<UserInfos>() {
 						@Override
