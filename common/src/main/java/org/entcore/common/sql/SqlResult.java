@@ -153,7 +153,7 @@ public class SqlResult {
 		if ("ok".equals(res.body().getString("status"))) {
 			JsonArray a = res.body().getArray("results");
 			if (a != null && idx < a.size()) {
-				return validRows(res.body());
+				return validRows(a.<JsonObject>get(idx));
 			} else {
 				return new Either.Left<>("missing.result");
 			}
