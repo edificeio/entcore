@@ -24,7 +24,6 @@ import static org.entcore.common.user.UserUtils.findVisibleUsers;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
@@ -56,8 +55,54 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void saveDraft(String parentMessageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		save(parentMessageId, message, user, result);
+	public void saveDraft(final String parentMessageId, final JsonObject message,
+			final UserInfos user, final Handler<Either<String, JsonObject>> result) {
+		if (displayNamesCondition(message)) {
+			addDisplayNames(message, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject object) {
+					save(parentMessageId, object, user, result);
+				}
+			});
+		} else {
+			save(parentMessageId, message, user, result);
+		}
+	}
+
+	private void addDisplayNames(final JsonObject message, final Handler<JsonObject> handler) {
+		String query =
+				"MATCH (v:Visible) " +
+				"WHERE v.id IN {ids} " +
+				"RETURN COLLECT(distinct (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
+				"coalesce(v.name, ' ') + '$' + coalesce(v.groupDisplayName, ' '))) as displayNames ";
+		Set<String> ids = new HashSet<>();
+		ids.addAll(message.getArray("to", new JsonArray()).toList());
+		ids.addAll(message.getArray("cc", new JsonArray()).toList());
+		if (message.containsField("from")) {
+			ids.add(message.getString("from"));
+		}
+		neo.execute(query, new JsonObject().putArray("ids", new JsonArray(ids.toArray())),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				JsonArray r = m.body().getArray("result");
+				if ("ok".equals(m.body().getString("status")) && r != null && r.size() == 1) {
+					JsonObject j = r.get(0);
+					JsonArray d = j.getArray("displayNames");
+					if (d != null && d.size() > 0) {
+						message.putArray("displayNames", d);
+					}
+				}
+				handler.handle(message);
+			}
+		});
+	}
+
+	private boolean displayNamesCondition(JsonObject message) {
+		return message != null && (
+				(message.containsField("from") && !message.getString("from").trim().isEmpty()) ||
+				(message.containsField("to") && message.getArray("to").size() > 0) ||
+				(message.containsField("cc") && message.getArray("cc").size() > 0));
 	}
 
 	private void save(String parentMessageId, JsonObject message, UserInfos user,
@@ -103,9 +148,18 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void updateDraft(String messageId, JsonObject message, UserInfos user,
-			Handler<Either<String, JsonObject>> result) {
-		update(messageId, message, user, result);
+	public void updateDraft(final String messageId, final JsonObject message,
+			final UserInfos user, final Handler<Either<String, JsonObject>> result) {
+		if (displayNamesCondition(message)) {
+			addDisplayNames(message, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject object) {
+					update(messageId, object, user, result);
+				}
+			});
+		} else {
+			update(messageId, message, user, result);
+		}
 	}
 
 	private void update(String messageId, JsonObject message, UserInfos user,
@@ -191,8 +245,7 @@ public class DefaultConversationService implements ConversationService {
 				"-[:HAS_CONVERSATION_FOLDER]->(fOut:ConversationSystemFolder {name : {outbox}}), " +
 				"message<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder {name : {draft}}) " +
 				"SET message.state = {sent}, " +
-				"message.displayNames = coalesce(message.displayNames, []) + displayNames + " +
-				"(s.id + '$' + coalesce(s.displayName, ' ') + '$ $ ') " +
+				"message.displayNames = displayNames + (s.id + '$' + coalesce(s.displayName, ' ') + '$ $ ') " +
 				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
 				"DELETE r " +
 				"RETURN EXTRACT(u IN FIlTER(x IN users WHERE NOT(x.id IN sentIds)) | u.displayName) as undelivered,  " +

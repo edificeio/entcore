@@ -33,11 +33,12 @@ public interface ConversationService {
 
 	enum State { DRAFT, SENT }
 
-	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state");
+	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state",
+			"displayNames");
 
 	List<String> DRAFT_REQUIRED_FIELDS = Arrays.asList("id", "from", "date", "state");
 
-	List<String> UPDATE_DRAFT_FIELDS = Arrays.asList("subject", "body", "to", "cc", "date");
+	List<String> UPDATE_DRAFT_FIELDS = Arrays.asList("subject", "body", "to", "cc", "date", "displayNames");
 
 	List<String> UPDATE_DRAFT_REQUIRED_FIELDS = Arrays.asList("date");
 
