@@ -38,4 +38,6 @@ public interface QuotaService {
 	void updateQuotaDefaultMax(String profile,  Long defaultQuota, Long maxQuota,
 			Handler<Either<String, JsonObject>> handler);
 
+	void init(String userId);
+
 }

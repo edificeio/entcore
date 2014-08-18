@@ -73,9 +73,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					JsonObject jo = new JsonObject().putString(
 							"userId", 
 							res.body().getObject("result").getObject("0").getString("id"));
-					Server.getEventBus(vertx).publish(
-							container.config().getString("address.activation", "wse.activation.hack"),
-							jo);
+					Server.getEventBus(vertx).publish("activation.ack", jo);
 					handler.handle(new Either.Right<String, String>(
 							res.body().getObject("result").getObject("0").getString("id")));
 				} else {

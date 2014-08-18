@@ -164,7 +164,7 @@ public class Directory extends Server {
 		}
 
 		try {
-			userBookController.registerMethod("wse.activation.hack", "initUserBookNode");
+			userBookController.registerMethod("activation.ack", "initUserBookNode");
 		} catch (NoSuchMethodException | IllegalAccessException e) {
 			log.error(e.getMessage(), e);
 		}

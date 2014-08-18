@@ -357,10 +357,13 @@ public class UserBookController extends Controller {
 		params.putString("avatar", userBookData.getString("default-avatar"));
 		params.putString("theme", userBookData.getString("default-theme", ""));
 		JsonArray queries = new JsonArray();
-		String query = "MATCH (n:User) "
-				+ "WHERE n.id = {userId} "
-				+ "CREATE n-[:USERBOOK]->(m:UserBook {type:'USERBOOK', picture:{avatar}, "
-				+ "motto:'', health:'', mood:'default', userid:{userId}, theme: {theme}})";
+		String query =
+				"MERGE (m:UserBook { userid : {userId}}) " +
+				"SET m.type = 'USERBOOK', m.picture = {avatar}, m.motto = '', " +
+				"m.health = '', m.mood = 'default', m.theme =  {theme} " +
+				"WITH m "+
+				"MATCH (n:User {id : {userId}}) " +
+				"CREATE UNIQUE n-[:USERBOOK]->m";
 		queries.add(Neo.toJsonObject(query, params));
 		String query2 = "MATCH (n:User)-[:USERBOOK]->m "
 				+ "WHERE n.id = {userId} "

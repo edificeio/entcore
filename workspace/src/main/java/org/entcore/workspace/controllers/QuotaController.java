@@ -27,8 +27,10 @@ import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -84,6 +86,13 @@ public class QuotaController extends Controller {
 						notEmptyResponseHandler(request));
 			}
 		});
+	}
+
+	public void initQuota(final Message<JsonObject> message){
+		String userId = message.body().getString("userId");
+		if (userId != null && !userId.trim().isEmpty()) {
+			quotaService.init(userId);
+		}
 	}
 
 }

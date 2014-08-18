@@ -154,6 +154,12 @@ public class Workspace extends Server {
 		quotaController.put("/quota", "update");
 		quotaController.put("/quota/default/:profile", "updateDefault");
 
+		try {
+			quotaController.registerMethod("activation.ack", "initQuota");
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			log.error(e.getMessage(), e);
+		}
+
 		List<Set<Binding>> securedUriBinding = new ArrayList<>();
 		securedUriBinding.add(service.securedUriBinding());
 		securedUriBinding.add(quotaController.securedUriBinding());
