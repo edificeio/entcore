@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "users": {
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "type": "string",
+        "additionalProperties": false
+      }
+    },
+    "quota": {
+      "type": "integer",
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "users",
+    "quota"
+  ]
+}

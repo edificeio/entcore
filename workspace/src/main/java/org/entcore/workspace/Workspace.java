@@ -21,13 +21,21 @@ package org.entcore.workspace;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.http.filter.ActionFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.RepositoryHandler;
+import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.vertx.java.core.Future;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class Workspace extends Server {
 
@@ -38,6 +46,14 @@ public class Workspace extends Server {
 		final MongoDb mongo = MongoDb.getInstance();
 		mongo.init(Server.getEventBus(vertx),
 				container.config().getString("mongo-address", "wse.mongodb.persistor"));
+
+		Neo4j.getInstance().init(getEventBus(vertx),
+				config.getString("neo4j-address", "wse.neo4j.persistor"));
+
+		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
+		validator.setAddress("json.schema.validator");
+		validator.setEventBus(getEventBus(vertx));
+		validator.loadJsonSchema(getPathPrefix(config), vertx);
 
 		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		vertx.eventBus().registerHandler("user.repository",
@@ -130,7 +146,19 @@ public class Workspace extends Server {
 			log.error(e.getMessage(), e);
 		}
 
-		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(),
+		QuotaController quotaController = new QuotaController(vertx, container, rm, securedActions);
+
+		quotaController.get("/quota/user/:userId", "getQuota");
+		quotaController.get("/quota/structure/:structureId", "getQuotaStructure");
+		quotaController.get("/quota/global", "getQuotaGlobal");
+		quotaController.put("/quota", "update");
+		quotaController.put("/quota/default/:profile", "updateDefault");
+
+		List<Set<Binding>> securedUriBinding = new ArrayList<>();
+		securedUriBinding.add(service.securedUriBinding());
+		securedUriBinding.add(quotaController.securedUriBinding());
+
+		SecurityHandler.addFilter(new ActionFilter(securedUriBinding,
 				Server.getEventBus(vertx), new WorkspaceResourcesProvider(mongo)));
 
 	}

@@ -19,6 +19,10 @@
 
 package org.entcore.workspace.security;
 
+import fr.wseduc.webutils.request.RequestUtils;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.workspace.controllers.QuotaController;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -32,6 +36,8 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 
+import java.util.Map;
+
 public class WorkspaceResourcesProvider implements ResourcesProvider {
 
 	private MongoDb mongo;
@@ -43,28 +49,139 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,
 			UserInfos user, Handler<Boolean> handler) {
-		String method = binding.getServiceMethod()
-				.substring(WorkspaceService.class.getName().length() + 1);
-		switch (method) {
-		case "getDocument":
-			authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
-			break;
-		case "commentDocument":
-		case "updateDocument":
-		case "moveDocument":
-		case "moveTrash":
-		case "copyDocument":
-		case "deleteDocument":
-		case "restoreTrash":
-			authorizeDocument(request, user, binding.getServiceMethod(), handler);
-			break;
-		case "moveDocuments":
-		case "copyDocuments":
-			authorizeDocuments(request, user, binding.getServiceMethod(), handler);
-			break;
-		default:
-			handler.handle(false);
+		final String serviceMethod = binding.getServiceMethod();
+		if (serviceMethod != null && serviceMethod.startsWith(WorkspaceService.class.getName())) {
+			String method = serviceMethod
+					.substring(WorkspaceService.class.getName().length() + 1);
+			switch (method) {
+			case "getDocument":
+				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
+				break;
+			case "commentDocument":
+			case "updateDocument":
+			case "moveDocument":
+			case "moveTrash":
+			case "copyDocument":
+			case "deleteDocument":
+			case "restoreTrash":
+				authorizeDocument(request, user, binding.getServiceMethod(), handler);
+				break;
+			case "moveDocuments":
+			case "copyDocuments":
+				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
+				break;
+			default:
+				handler.handle(false);
+			}
+		} else if (serviceMethod != null && serviceMethod.startsWith(QuotaController.class.getName())) {
+			String method = serviceMethod
+					.substring(QuotaController.class.getName().length() + 1);
+			switch (method) {
+				case "getQuota" :
+					isUserOrAdmin(request, user, handler);
+					break;
+				case "update" :
+					isAdminFromUsers(request, user, handler);
+					break;
+				case "getQuotaStructure" :
+					isAdmin(request, user, handler);
+					break;
+				case "updateDefault" :
+				case "getQuotaGlobal" :
+					isSuperAdmin(user, handler);
+					break;
+				default: handler.handle(false);
+			}
 		}
+	}
+
+	private void isUserOrAdmin(HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+		final String userId = request.params().get("userId");
+		if (user.getUserId().equals(userId)) {
+			handler.handle(true);
+			return;
+		}
+		final UserInfos.Function adminLocal = getFunction(user, handler);
+		if (adminLocal == null) return;
+		String query =
+				"MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User {id : {userId}}) " +
+				"WHERE s.id IN {structures} " +
+				"RETURN count(*) > 0 as exists ";
+		JsonObject params = new JsonObject()
+				.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()))
+				.putString("userId", userId);
+		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonArray res = message.body().getArray("result");
+				handler.handle(
+						"ok".equals(message.body().getString("status")) && res != null && res.size() == 1 &&
+								res.<JsonObject>get(0).getBoolean("exists", false)
+				);
+			}
+		});
+	}
+
+	private void isAdminFromUsers(HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+		final UserInfos.Function adminLocal = getFunction(user, handler);
+		if (adminLocal == null) return;
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject object) {
+				String query =
+						"MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+						"WHERE s.id IN {structures} AND u.id IN {users} " +
+						"RETURN count(distinct u) as nb ";
+				final JsonArray users = object.getArray("users", new JsonArray());
+				JsonObject params = new JsonObject()
+						.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()))
+						.putArray("users", users);
+				Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> message) {
+						JsonArray res = message.body().getArray("result");
+						handler.handle(
+								"ok".equals(message.body().getString("status")) && res != null && res.size() == 1 &&
+								res.<JsonObject>get(0).getInteger("nb", -1).equals(users.size())
+						);
+					}
+				});
+			}
+		});
+	}
+
+	private void isAdmin(HttpServerRequest request, UserInfos user, Handler<Boolean> handler) {
+		UserInfos.Function adminLocal = getFunction(user, handler);
+		if (adminLocal == null) return;
+		String structureId = request.params().get("structureId");
+		handler.handle(adminLocal.getStructures().contains(structureId));
+	}
+
+	private UserInfos.Function getFunction(UserInfos user, Handler<Boolean> handler) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			handler.handle(false);
+			return null;
+		}
+		if (functions.containsKey(DefaultFunctions.SUPER_ADMIN)) {
+			handler.handle(true);
+			return null;
+		}
+		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+		if (adminLocal == null || adminLocal.getStructures() == null) {
+			handler.handle(false);
+			return null;
+		}
+		return adminLocal;
+	}
+
+	private void isSuperAdmin(UserInfos user, Handler<Boolean> handler) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		handler.handle(functions.containsKey(DefaultFunctions.SUPER_ADMIN));
 	}
 
 	private void authorizeDocuments(HttpServerRequest request, UserInfos user,

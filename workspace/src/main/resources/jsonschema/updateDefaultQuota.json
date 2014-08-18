@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaultQuota": {
+      "type": "integer",
+      "additionalProperties": false
+    },
+    "maxQuota": {
+      "type": "integer",
+      "additionalProperties": false
+    }
+  }
+}
