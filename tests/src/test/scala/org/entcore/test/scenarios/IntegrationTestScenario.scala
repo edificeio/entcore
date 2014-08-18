@@ -26,5 +26,8 @@ object IntegrationTestScenario {
   .group("Archive Scenario") {
     ArchiveScenario.scn
   }
+  .group("Quota Scenario") {
+    QuotaScenario.scn
+  }
 
 }
