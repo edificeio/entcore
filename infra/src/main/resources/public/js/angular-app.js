@@ -231,6 +231,9 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		}
 
 		return {
+            create: function(date){
+                return (moment ? moment(date) : date)
+            },
 			format: function(date, format) {
 				if(!moment){
 					return '';
@@ -2696,6 +2699,37 @@ module.directive('datePicker', function($compile){
 		}
 	}
 });
+
+module.directive('datePickerIcon', function($compile){
+    return {
+        scope: {
+            ngModel: '=',
+            ngChange: '&'
+        },
+        replace: true,
+        restrict: 'E',
+        template: '<div> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
+        link: function($scope, $element, $attributes){
+            loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
+                var input_element   = $element.find('.hiddendatepickerform')
+                input_element.value = moment(new Date()).format('DD/MM/YYYY')
+
+                input_element.datepicker().on('changeDate', function(event){
+                    $scope.ngModel = event.date
+                    $scope.$apply('ngModel')
+                    $(this).datepicker('hide')
+                })
+
+                input_element.datepicker('hide')
+
+                $scope.openDatepicker = function(){
+                    input_element.datepicker('show')
+                }
+            })
+
+        }
+    }
+})
 
 $(document).ready(function(){
 	setTimeout(function(){
