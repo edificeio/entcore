@@ -148,6 +148,10 @@ var loader = (function(){
 		asyncLoad: function(path, callback){
 			if(!loadedScripts[path]){
 				asyncLoadScript(path, callback);
+			} else {
+				if(typeof callback === 'function'){
+					callback();
+				}
 			}
 		}
 	}
