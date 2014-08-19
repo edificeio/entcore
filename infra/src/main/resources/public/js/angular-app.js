@@ -2714,7 +2714,15 @@ module.directive('datePickerIcon', function($compile){
                 var input_element   = $element.find('.hiddendatepickerform')
                 input_element.value = moment(new Date()).format('DD/MM/YYYY')
 
-                input_element.datepicker().on('changeDate', function(event){
+                input_element.datepicker({
+                    dates: {
+                        months: moment.months(),
+                        monthsShort: moment.monthsShort(),
+                        days: moment.weekdays(),
+                        daysShort: moment.weekdaysShort(),
+                        daysMin: moment.weekdaysMin()
+                    }
+                }).on('changeDate', function(event){
                     $scope.ngModel = event.date
                     $scope.$apply('ngModel')
                     $(this).datepicker('hide')
