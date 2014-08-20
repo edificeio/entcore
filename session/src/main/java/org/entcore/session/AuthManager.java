@@ -240,6 +240,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		session.getObject("cache").putValue(key, value);
+
+		updateSessionByUserId(message, session);
 		sendOK(message);
 	}
 
@@ -263,6 +265,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		return session;
 	}
 
+	private void updateSessionByUserId(Message<JsonObject> message, JsonObject session) {
+		final String userId = message.body().getString("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "Invalid userId.");
+			return;
+		}
+
+		LoginInfo info = logins.get(userId);
+		if (info == null) {
+			sendError(message, "Invalid userId.");
+			return;
+		}
+		sessions.put(info.sessionId, session.encode());
+	}
+
 	private void doRemoveAttribute(Message<JsonObject> message) {
 		JsonObject session = getSessionByUserId(message);
 		if (session == null) {
@@ -276,6 +293,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		session.getObject("cache").removeField(key);
+		updateSessionByUserId(message, session);
 		sendOK(message);
 	}
 
