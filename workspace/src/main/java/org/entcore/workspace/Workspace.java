@@ -29,7 +29,9 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
+import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.vertx.java.core.Future;
 
@@ -55,12 +57,15 @@ public class Workspace extends Server {
 		validator.setEventBus(getEventBus(vertx));
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
 
+		final QuotaService quotaService = new DefaultQuotaService();
+
 		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		vertx.eventBus().registerHandler("user.repository",
 				new RepositoryHandler(new WorkspaceRepositoryEvents(vertx, gridfsAddress,
 						config.getBoolean("share-old-groups-to-users", false))));
 
 		WorkspaceService service = new WorkspaceService(vertx, container, rm, trace, securedActions);
+		service.setQuotaService(quotaService);
 
 		service.get("/workspace", "view");
 
@@ -147,6 +152,7 @@ public class Workspace extends Server {
 		}
 
 		QuotaController quotaController = new QuotaController(vertx, container, rm, securedActions);
+		quotaController.setQuotaService(quotaService);
 
 		quotaController.get("/quota/user/:userId", "getQuota");
 		quotaController.get("/quota/structure/:structureId", "getQuotaStructure");

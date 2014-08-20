@@ -24,13 +24,11 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.workspace.service.QuotaService;
-import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -41,12 +39,11 @@ import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyRe
 
 public class QuotaController extends Controller {
 
-	private final QuotaService quotaService;
+	private QuotaService quotaService;
 
 	public QuotaController(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super(vertx, container, rm, securedActions);
-		quotaService = new DefaultQuotaService();
 	}
 
 	@SecuredAction(value = "quota.get", type = ActionType.RESOURCE)
@@ -95,4 +92,7 @@ public class QuotaController extends Controller {
 		}
 	}
 
+	public void setQuotaService(QuotaService quotaService) {
+		this.quotaService = quotaService;
+	}
 }

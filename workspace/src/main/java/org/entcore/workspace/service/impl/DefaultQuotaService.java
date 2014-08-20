@@ -34,12 +34,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultQuotaService implements QuotaService {
 
 	private final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultQuotaService.class);
+
+	@Override
+	public void incrementStorage(String userId, Long size, final Handler<Either<String, Long>> handler) {
+		String query =
+				"MATCH (u:UserBook { userid : {userId}}) " +
+				"SET u.storage = u.storage + {size} " +
+				"RETURN u.storage as storage ";
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putNumber("size", size);
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				Either<String, JsonObject> res = validUniqueResult(message);
+				if (res.isRight()) {
+					Long storage = res.right().getValue().getLong("storage");
+					if (storage != null) {
+						handler.handle(new Either.Right<String, Long>(storage));
+					} else {
+						handler.handle(new Either.Left<String, Long>("invalid.storage.size"));
+					}
+				} else {
+					handler.handle(new Either.Left<String, Long>(res.left().getValue()));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void decrementStorage(String userId, Long size, Handler<Either<String, Long>> handler) {
+		incrementStorage(userId, -1l * size, handler);
+	}
 
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {

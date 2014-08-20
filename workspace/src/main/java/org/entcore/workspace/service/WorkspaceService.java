@@ -24,6 +24,8 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.user.UserUtils.getUserInfos;
 import static fr.wseduc.webutils.Utils.getOrElse;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import fr.wseduc.webutils.*;
+import org.entcore.common.user.LogRepositoryEvents;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -77,6 +80,7 @@ public class WorkspaceService extends Controller {
 	private final TracerHelper trace;
 	private final ShareService shareService;
 	private final FolderService folderService;
+	private QuotaService quotaService;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -94,8 +98,32 @@ public class WorkspaceService extends Controller {
 	}
 
 	@SecuredAction("workspace.view")
-	public void view(HttpServerRequest request) {
-		renderView(request);
+	public void view(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					if (user.getAttribute("storage") != null && user.getAttribute("quota") != null) {
+						renderView(request);
+						return;
+					}
+					quotaService.quotaAndUsage(user.getUserId(), new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> r) {
+							if (r.isRight()) {
+								JsonObject j = r.right().getValue();
+								for (String attr : j.getFieldNames()) {
+									UserUtils.addSessionAttribute(eb, user.getUserId(), attr, j.getLong(attr), null);
+								}
+							}
+							renderView(request);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("workspace.share.json")
@@ -409,7 +437,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void addAfterUpload(final JsonObject uploaded, JsonObject doc, String name, String application,
+	private void addAfterUpload(final JsonObject uploaded, final JsonObject doc, String name, String application,
 			final List<String> thumbs, final String mongoCollection, final Handler<Message<JsonObject>> handler) {
 		doc.putString("name", getOrElse(name, uploaded.getObject("metadata")
 				.getString("filename"), false));
@@ -420,6 +448,7 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
+					incrementStorage(doc);
 					createThumbnailIfNeeded(mongoCollection, uploaded,
 							res.body().getString("_id"), null, thumbs);
 				}
@@ -428,6 +457,82 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
+	}
+
+	private void incrementStorage(JsonObject added) {
+		updateStorage(new JsonArray().add(added), null);
+	}
+
+	private void decrementStorage(JsonObject removed) {
+		updateStorage(null, new JsonArray().add(removed));
+	}
+
+	private void incrementStorage(JsonArray added) {
+		updateStorage(added, null);
+	}
+
+	private void decrementStorage(JsonArray removed) {
+		updateStorage(null, removed);
+	}
+
+	private void updateStorage(JsonObject added, JsonObject removed) {
+		updateStorage(new JsonArray().add(added), new JsonArray().add(removed));
+	}
+
+	private void updateStorage(JsonArray addeds, JsonArray removeds) {
+		Map<String, Long> sizes = new HashMap<>();
+		if (addeds != null) {
+			for (Object o : addeds) {
+				if (!(o instanceof JsonObject)) continue;
+				JsonObject added = (JsonObject) o;
+				Long size = added.getObject("metadata", new JsonObject()).getLong("size", 0l);
+				String userId = (added.containsField("to")) ? added.getString("to") : added.getString("owner");
+				if (userId == null) {
+					log.info("UserId is null when update storage size");
+					log.info(added.encode());
+					continue;
+				}
+				Long old = sizes.get(userId);
+				if (old != null) {
+					size += old;
+				}
+				sizes.put(userId, size);
+			}
+		}
+
+		if (removeds != null) {
+			for (Object o : removeds) {
+				if (!(o instanceof JsonObject)) continue;
+				JsonObject removed = (JsonObject) o;
+				Long size = removed.getObject("metadata", new JsonObject()).getLong("size", 0l);
+				String userId = (removed.containsField("to")) ? removed.getString("to") : removed.getString("owner");
+				if (userId == null) {
+					log.info("UserId is null when update storage size");
+					log.info(removed.encode());
+					continue;
+				}
+				Long old = sizes.get(userId);
+				if (old != null) {
+					old -= size;
+				} else {
+					old = -1l * size;
+				}
+				sizes.put(userId, old);
+			}
+		}
+
+		for (final Map.Entry<String, Long> e : sizes.entrySet()) {
+			quotaService.incrementStorage(e.getKey(), e.getValue(), new Handler<Either<String, Long>>() {
+				@Override
+				public void handle(Either<String, Long> r) {
+					if (r.isRight()) {
+						UserUtils.addSessionAttribute(eb, e.getKey(), "storage", r.right().getValue(), null);
+					} else {
+						log.error(r.left().getValue());
+					}
+				}
+			});
+		}
 	}
 
 	@SecuredAction("workspace.folder.add")
@@ -474,8 +579,18 @@ public class WorkspaceService extends Controller {
 					@Override
 					public void handle(final UserInfos userInfos) {
 						if (userInfos != null) {
-							folderService.copy(id, name, path, userInfos,
-									defaultResponseHandler(request));
+							folderService.copy(id, name, path, userInfos, new Handler<Either<String, JsonArray>>() {
+								@Override
+								public void handle(Either<String, JsonArray> r) {
+									if (r.isRight()) {
+										incrementStorage(r.right().getValue());
+										renderJson(request, new JsonObject()
+												.putNumber("number", r.right().getValue().size()));
+									} else {
+										badRequest(request, r.left().getValue());
+									}
+								}
+							});
 						} else {
 							unauthorized(request);
 						}
@@ -560,7 +675,18 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(final UserInfos userInfos) {
 				if (userInfos != null) {
-					folderService.delete(id, userInfos, defaultResponseHandler(request, 204));
+					folderService.delete(id, userInfos, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								decrementStorage(r.right().getValue());
+								renderJson(request, new JsonObject()
+										.putNumber("number", r.right().getValue().size()), 204);
+							} else {
+								badRequest(request, r.left().getValue());
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
@@ -665,7 +791,7 @@ public class WorkspaceService extends Controller {
 				if ("ok".equals(old.getString("status"))) {
 					JsonObject metadata = uploaded.getObject("metadata");
 					JsonObject set = new JsonObject();
-					JsonObject doc = new JsonObject();
+					final JsonObject doc = new JsonObject();
 					doc.putString("name", getOrElse(name, metadata.getString("filename")));
 					final String now = MongoDb.formatDate(new Date());
 					doc.putString("modified", now);
@@ -685,6 +811,7 @@ public class WorkspaceService extends Controller {
 							String status = res.body().getString("status");
 							JsonObject result = old.getObject("result");
 							if ("ok".equals(status) && result != null) {
+								updateStorage(doc, old);
 								FileUtils.gridfsRemoveFile(
 										result.getString("file"), eb, gridfsAddress,
 										new Handler<JsonObject>() {
@@ -819,7 +946,7 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
-				JsonObject result = res.getObject("result");
+				final JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
 					FileUtils.gridfsRemoveFile(result.getString("file"), eb, gridfsAddress,
 							new Handler<JsonObject>() {
@@ -829,11 +956,12 @@ public class WorkspaceService extends Controller {
 							if (event != null && "ok".equals(event.getString("status"))) {
 								dao.delete(id, new Handler<JsonObject>() {
 									@Override
-									public void handle(JsonObject result) {
-										if ("ok".equals(result.getString("status"))) {
-											renderJson(request, result, 204);
+									public void handle(JsonObject result2) {
+										if ("ok".equals(result2.getString("status"))) {
+											decrementStorage(result);
+											renderJson(request, result2, 204);
 										} else {
-											renderError(request, result);
+											renderError(request, result2);
 										}
 									}
 								});
@@ -882,7 +1010,13 @@ public class WorkspaceService extends Controller {
 	private void copyFiles(final HttpServerRequest request, final String collection,
 				final String owner, final UserInfos user) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		final String folder = request.params().get("folder");
+		String folder2;
+		try {
+			folder2 = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			folder2 = request.params().get("folder");
+		}
+		final String folder = folder2;
 		if (ids != null && !ids.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
 			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}";
@@ -952,6 +1086,7 @@ public class WorkspaceService extends Controller {
 							@Override
 							public void handle(Message<JsonObject> inserted) {
 								if ("ok".equals(inserted.body().getString("status"))){
+									incrementStorage(insert);
 									renderJson(request, inserted.body());
 								} else {
 									renderError(request, inserted.body());
@@ -1009,7 +1144,13 @@ public class WorkspaceService extends Controller {
 					}
 					dest.putString("created", now);
 					dest.putString("modified", now);
-					dest.putString("folder", request.params().get("folder"));
+					String folder;
+					try {
+						folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						folder = request.params().get("folder");
+					}
+					dest.putString("folder", folder);
 					String filePath = orig.getString("file");
 					if (filePath != null) {
 						FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
@@ -1035,6 +1176,7 @@ public class WorkspaceService extends Controller {
 					@Override
 					public void handle(JsonObject res) {
 						if ("ok".equals(res.getString("status"))) {
+							incrementStorage(dest);
 							renderJson(request, res);
 						} else {
 							renderError(request, res);
@@ -1064,7 +1206,13 @@ public class WorkspaceService extends Controller {
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
 					final String hierarchical = request.params().get("hierarchical");
-					final String relativePath = request.params().get("relativePath");
+					String relativePath2;
+					try {
+						relativePath2 = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+					} catch (UnsupportedEncodingException | NullPointerException e) {
+						relativePath2 = request.params().get("folder");
+					}
+					final  String relativePath = relativePath2;
 					String filter = request.params().get("filter");
 					String query = "{ ";
 					if ("owner".equals(filter)) {
@@ -1165,7 +1313,13 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocument(final HttpServerRequest request) {
-		moveOne(request, request.params().get("folder"), documentDao, null);
+		String folder;
+		try {
+			folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			folder = request.params().get("folder");
+		}
+		moveOne(request, folder, documentDao, null);
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
@@ -1217,7 +1371,12 @@ public class WorkspaceService extends Controller {
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		String folder = request.params().get("folder");
+		String folder;
+		try {
+			folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			folder = request.params().get("folder");
+		}
 		if (ids != null && !ids.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
 			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
@@ -1312,16 +1471,21 @@ public class WorkspaceService extends Controller {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
-					String expectedFolder = request.params().get("folder");
+					String folder;
+					try {
+						folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						folder = request.params().get("folder");
+					}
 					String forApplication = getOrElse(request.params()
 							.get("application"), WorkspaceService.WORKSPACE_NAME);
 					if (request.params().get("hierarchical") != null) {
 						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
-								forApplication + "\", \"folder\" : \"" + expectedFolder + "\" }";
+								forApplication + "\", \"folder\" : \"" + folder + "\" }";
 					} else {
 						query += ", \"file\" : { \"$exists\" : true }, \"application\": \"" +
 								forApplication + "\", \"folder\" : { \"$regex\" : \"^" +
-								expectedFolder + "(_|$)\" }}";
+								folder + "(_|$)\" }}";
 					}
 					mongo.find(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
 						@Override
@@ -1539,6 +1703,10 @@ public class WorkspaceService extends Controller {
 				}
 			}
 		});
+	}
+
+	public void setQuotaService(QuotaService quotaService) {
+		this.quotaService = quotaService;
 	}
 
 }

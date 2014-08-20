@@ -33,11 +33,11 @@ public interface FolderService {
 	void move(String id, String path, UserInfos author, Handler<Either<String, JsonObject>> result);
 
 	void copy(String id, String name, String path, UserInfos author,
-				Handler<Either<String, JsonObject>> result);
+				Handler<Either<String, JsonArray>> result);
 
 	void trash(String id, UserInfos author, Handler<Either<String, JsonObject>> result);
 
-	void delete(String id, UserInfos author, Handler<Either<String, JsonObject>> result);
+	void delete(String id, UserInfos author, Handler<Either<String, JsonArray>> result);
 
 	void list(String name, UserInfos author, boolean hierarchical,
 				Handler<Either<String, JsonArray>> results);
