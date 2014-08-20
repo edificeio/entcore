@@ -1620,6 +1620,175 @@ module.directive('htmlEditor', function($compile){
 	}
 });
 
+module.directive('htmlInlineEditor', function($compile){
+    return {
+        restrict: 'E',
+        scope: {
+            ngModel: '=',
+            watchCollection: '@',
+            notify: '=',
+            ngChange: '&'
+        },
+        template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
+            '<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>'+
+            '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
+            '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
+            '</media-library></lightbox></div>',
+        compile: function($element, $attributes, $transclude){
+            CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
+            if(window.CKEDITOR === undefined){
+                loader.syncLoad('ckeditor');
+                CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
+            }
+
+            //// Link function ////
+            return function($scope, $element, $attributes){
+                $scope.selected = { files: [], link: '' };
+
+                if(!$attributes.fileUploadPath){
+                    $attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
+                }
+
+                CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
+
+                var editor = $element.find('[contenteditable=true]');
+                var parentElement = $element.parents('grid-cell');
+                if(parentElement.length === 0){
+                    parentElement = editor.parent().parent();
+                }
+                var instance = CKEDITOR.inline(editor[0]);
+                var contextEditor = instance;
+                $scope.contextEditor = instance;
+
+                editor.html($scope.ngModel);
+                CKEDITOR.on('instanceReady', function(ck){
+                    editor.html($scope.ngModel);
+                });
+                $scope.$watch('ngModel', function(newVal){
+                    if(newVal !== editor.html()){
+                        editor.html($compile($scope.ngModel)($scope.$parent));
+                        resizeParent();
+                    }
+                });
+
+                editor.on('click', function(){
+                    if(parentElement.data('resizing') || parentElement.data('dragging')){
+                        return;
+                    }
+                    editor.focus();
+                });
+                $element.parent().on('startDrag', function(){
+                    editor.blur();
+                });
+
+                var followResize = true;
+                function resizeParent(){
+                    editor.parent().parent().height(editor.height());
+                    editor.parent().parent().trigger('stopResize');
+
+                    if(followResize){
+                        setTimeout(resizeParent, 100);
+                    }
+                }
+
+                editor.on('focus', function(){
+                    followResize = true;
+
+                    resizeParent();
+                    $('.' + instance.id).width(editor.width());
+                    parentElement.data('lock', true);
+                    editor.css({ cursor: 'text' });
+                });
+
+                editor.on('blur', function(){
+                    followResize = false;
+                    resizeParent();
+                    parentElement.data('lock', false);
+                    editor.css({ cursor: '' });
+                    $scope.ngModel = editor.html();
+                    $scope.$apply('ngModel');
+                    if($scope.ngChange){
+                        $scope.ngChange();
+                    }
+                });
+
+                $scope.updateContent = function(){
+                    var content = editor.html();
+                    if(content.indexOf(';base64,') !== -1){
+                        $scope.notify.error('Une image est corrompue')
+                    }
+                    editor.find('img').each(function(index, item){
+                        if($(item).attr('src').indexOf(';base64,') !== -1){
+                            $(item).remove();
+                        }
+                    })
+
+                    $scope.ngModel = editor.html();
+                }
+
+                $scope.addContent = function(){
+                    $scope.selected.files.forEach(function(file){
+                        if(!file._id){
+                            return;
+                        }
+
+                        if($scope.format === 'img'){
+                            var image = contextEditor.document.createElement('img');
+                            image.setAttribute('src', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
+                            contextEditor.insertElement(image);
+                        }
+                        if($scope.format === 'audio'){
+                            var sound = contextEditor.document.createElement('audio');
+
+                            sound.setAttribute('src', '/workspace/document/' + file._id);
+                            sound.setAttribute('controls', 'controls');
+
+                            contextEditor.insertElement(sound);
+                        }
+
+                        $scope.updateContent();
+                    });
+                    $scope.selectFiles = false;
+                };
+
+                $element.on('removed', function(){
+                    for(var instance in CKEDITOR.instances){
+                        if(CKEDITOR.instances[instance].element.$ === editor[0]){
+                            CKEDITOR.instances[instance].destroy();
+                        }
+                    }
+                });
+
+                contextEditor.on('contentDom', function(ck){
+                    $('#cke_'+ck.editor.name).on('click', '.cke_button__linker', function(){
+                        $scope.chooseLink = true;
+                        $scope.$apply('chooseLink');
+                    });
+
+                    $('#cke_'+ck.editor.name).on('click', '.cke_button__upload', function(){
+                        var resize = editor.width();
+                        if(workspace.thumbnails.indexOf(resize) === -1){
+                            workspace.thumbnails += '&thumbnail=' + resize + 'x0';
+                        }
+                        $scope.selectFiles = true;
+                        $scope.format = 'img';
+                        $scope.$apply('selectFiles');
+                        $scope.$apply('format');
+                    });
+
+                    $('#cke_'+ck.editor.name).on('click', '.cke_button__audio', function(){
+                        $scope.selectFiles = true;
+                        $scope.format = 'audio';
+                        $scope.$apply('selectFiles');
+                        $scope.$apply('format');
+                    });
+                });
+            }
+        }
+    }
+})
+
+
 module.directive('loadingIcon', function($compile){
 	return {
 		restrict: 'E',

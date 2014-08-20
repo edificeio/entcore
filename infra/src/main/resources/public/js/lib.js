@@ -259,7 +259,7 @@ var http = (function(){
 			if(!params){
 				params = {};
 			}
-			params.data = JSON.stringify(data);
+			params.data = angular.toJson(data);
 			params.type = type.toUpperCase();
 			return this.request(url, params, requestName);
 		}
