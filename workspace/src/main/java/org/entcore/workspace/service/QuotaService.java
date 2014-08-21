@@ -27,6 +27,10 @@ import org.vertx.java.core.json.JsonObject;
 
 public interface QuotaService {
 
+	void incrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler);
+
+	void decrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler);
+
 	void incrementStorage(String userId, Long size, Handler<Either<String, Long>> handler);
 
 	void decrementStorage(String userId, Long size, Handler<Either<String, Long>> handler);

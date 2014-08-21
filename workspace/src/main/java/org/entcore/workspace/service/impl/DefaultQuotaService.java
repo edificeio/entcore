@@ -75,6 +75,26 @@ public class DefaultQuotaService implements QuotaService {
 	}
 
 	@Override
+	public void incrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler) {
+		String query =
+				"MATCH (u:UserBook { userid : {userId}}) " +
+				"SET u.storage = u.storage + {size} " +
+				"WITH u, u.alertSize as oldAlert " +
+				"SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}) " +
+				"RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
+		JsonObject params = new JsonObject()
+				.putString("userId", userId)
+				.putNumber("size", size)
+				.putNumber("threshold", threshold);
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void decrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler) {
+		incrementStorage(userId, -1l * size, threshold, handler);
+	}
+
+	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (u:UserBook { userid : {userId}}) " +
@@ -109,7 +129,7 @@ public class DefaultQuotaService implements QuotaService {
 		String query =
 				"MATCH (u:UserBook)<-[:USERBOOK]-(:User)-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE u.userid IN {users} AND u.storage < {quota} AND {quota} < coalesce(p.maxQuota, 1073741824) " +
-				"SET u.quota = {quota} " +
+				"SET u.quota = {quota}, u.alertSize = false " +
 				"RETURN u.userid as id ";
 		JsonObject params = new JsonObject()
 				.putArray("users", users)
@@ -148,7 +168,7 @@ public class DefaultQuotaService implements QuotaService {
 				"MATCH (n:User {id : {userId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WITH n, sum(CASE WHEN has(p.defaultQuota) THEN p.defaultQuota ELSE 104857600 END) as quota " +
 				"MERGE (m:UserBook { userid : {userId}}) " +
-				"SET m.quota = quota, m.storage = 0 " +
+				"SET m.quota = quota, m.storage = 0, m.alertSize = false " +
 				"WITH m, n "+
 				"CREATE UNIQUE n-[:USERBOOK]->m";
 		JsonObject params = new JsonObject().putString("userId", userId);

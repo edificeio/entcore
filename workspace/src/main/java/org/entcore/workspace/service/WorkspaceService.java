@@ -41,6 +41,7 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import org.entcore.common.http.request.ActionsUtils;
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -80,6 +81,7 @@ public class WorkspaceService extends Controller {
 	private final ShareService shareService;
 	private final FolderService folderService;
 	private QuotaService quotaService;
+	private final int threshold;
 
 	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -94,6 +96,7 @@ public class WorkspaceService extends Controller {
 		this.trace = trace;
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
+		this.threshold = container.config().getInteger("alertStorage", 80);
 	}
 
 	@SecuredAction("workspace.view")
@@ -548,17 +551,28 @@ public class WorkspaceService extends Controller {
 		}
 
 		for (final Map.Entry<String, Long> e : sizes.entrySet()) {
-			quotaService.incrementStorage(e.getKey(), e.getValue(), new Handler<Either<String, Long>>() {
+			quotaService.incrementStorage(e.getKey(), e.getValue(), threshold, new Handler<Either<String, JsonObject>>() {
 				@Override
-				public void handle(Either<String, Long> r) {
+				public void handle(Either<String, JsonObject> r) {
 					if (r.isRight()) {
-						UserUtils.addSessionAttribute(eb, e.getKey(), "storage", r.right().getValue(), null);
+						JsonObject j = r.right().getValue();
+						UserUtils.addSessionAttribute(eb, e.getKey(), "storage", j.getLong("storage"), null);
+						if (j.getBoolean("notify", false)) {
+							notifyEmptySpaceIsSmall(e.getKey());
+						}
 					} else {
 						log.error(r.left().getValue());
 					}
 				}
 			});
 		}
+	}
+
+	private void notifyEmptySpaceIsSmall(String userId) {
+		List<String> recipients = new ArrayList<>();
+		recipients.add(userId);
+		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), null, WORKSPACE_NAME,
+				WORKSPACE_NAME + "_STORAGE", recipients, null, "notify-storage.html", null);
 	}
 
 	@SecuredAction("workspace.folder.add")

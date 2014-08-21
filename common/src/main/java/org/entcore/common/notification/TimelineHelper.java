@@ -70,11 +70,15 @@ public class TimelineHelper {
 		}
 		final JsonObject event = new JsonObject()
 				.putString("action", "add")
-				.putString("resource", resource)
 				.putString("type", type)
 				.putString("event-type", eventType)
-				.putString("sender", sender.getUserId())
 				.putArray("recipients", r);
+		if (resource != null) {
+			event.putString("resource", resource);
+		}
+		if (sender != null) {
+			event.putString("sender", sender.getUserId());
+		}
 		if (subResource != null && !subResource.trim().isEmpty()) {
 			event.putString("sub-resource", subResource);
 		}
