@@ -206,7 +206,7 @@ public class DefaultFolderService implements FolderService {
 	}
 
 	@Override
-	public void copy(String id, final String n, final String path, final UserInfos owner,
+	public void copy(String id, final String n, final String path, final UserInfos owner, final long emptySize,
 			final Handler<Either<String, JsonArray>> result) {
 		if (owner == null) {
 			result.handle(new Either.Left<String, JsonArray>("workspace.invalid.user"));
@@ -235,6 +235,18 @@ public class DefaultFolderService implements FolderService {
 						public void handle(Message<JsonObject> src) {
 							final JsonArray origs = src.body().getArray("results", new JsonArray());
 							if ("ok".equals(src.body().getString("status")) && origs.size() > 0) {
+								long size = 0;
+								for (Object o: origs) {
+									if (!(o instanceof JsonObject)) continue;
+									JsonObject metadata = ((JsonObject) o).getObject("metadata");
+									if (metadata != null) {
+										size += metadata.getLong("size", 0l);
+									}
+								}
+								if (size > emptySize) {
+									result.handle(new Either.Left<String, JsonArray>("files.too.large"));
+									return;
+								}
 								final AtomicInteger number = new AtomicInteger(origs.size());
 								final JsonArray insert = new JsonArray();
 								String name = (n != null && !n.trim().isEmpty()) ? n : n1;

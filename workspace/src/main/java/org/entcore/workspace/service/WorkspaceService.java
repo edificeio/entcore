@@ -45,7 +45,6 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import fr.wseduc.webutils.*;
-import org.entcore.common.user.LogRepositoryEvents;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -357,12 +356,23 @@ public class WorkspaceService extends Controller {
 							"true".equals(protectedContent)) {
 						doc.putBoolean("protected", true);
 					}
-					add(request, DocumentDao.DOCUMENTS_COLLECTION, doc);
+					add(request, DocumentDao.DOCUMENTS_COLLECTION, doc, emptySize(userInfos));
 				} else {
 					request.response().setStatusCode(401).end();
 				}
 			}
 		});
+	}
+
+	private long emptySize(UserInfos userInfos) {
+		try {
+			long quota = Long.valueOf(userInfos.getAttribute("quota").toString());
+			long storage = Long.valueOf(userInfos.getAttribute("storage").toString());
+			return quota - storage;
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+			return 0l;
+		}
 	}
 
 	@SecuredAction("workspace.rack.document.add")
@@ -385,11 +395,10 @@ public class WorkspaceService extends Controller {
 
 							@Override
 							public void handle(Message<JsonObject> res) {
-								request.resume();
 								if ("ok".equals(res.body().getString("status")) &&
 										1 == res.body().getObject("result")
 												.getObject("0").getInteger("nb")) {
-									JsonObject doc = new JsonObject();
+									final JsonObject doc = new JsonObject();
 									doc.putString("to", to);
 									doc.putString("toName", res.body().getObject("result")
 											.getObject("0").getString("username"));
@@ -397,7 +406,22 @@ public class WorkspaceService extends Controller {
 									doc.putString("fromName", userInfos.getUsername());
 									String now = MongoDb.formatDate(new Date());
 									doc.putString("sent", now);
-									add(request, RackDao.RACKS_COLLECTION, doc);
+									quotaService.quotaAndUsage(to, new Handler<Either<String, JsonObject>>() {
+										@Override
+										public void handle(Either<String, JsonObject> r) {
+											request.resume();
+											long emptySize = 0l;
+											if (r.isRight()) {
+												JsonObject j = r.right().getValue();
+												if (j != null) {
+													long quota = j.getLong("quota", 0l);
+													long storage = j.getLong("storage", 0l);
+													emptySize = quota - storage;
+												}
+											}
+											add(request, RackDao.RACKS_COLLECTION, doc, emptySize);
+										}
+									});
 								} else {
 									badRequest(request);
 								}
@@ -414,8 +438,8 @@ public class WorkspaceService extends Controller {
 	}
 
 	private void add(final HttpServerRequest request, final String mongoCollection,
-			final JsonObject doc) {
-		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
+			final JsonObject doc, long allowedSize) {
+		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, allowedSize, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject uploaded) {
 				if ("ok".equals(uploaded.getString("status"))) {
@@ -432,6 +456,8 @@ public class WorkspaceService extends Controller {
 							}
 						}
 					});
+				} else {
+					badRequest(request, uploaded.getString("message"));
 				}
 			}
 		});
@@ -579,7 +605,8 @@ public class WorkspaceService extends Controller {
 					@Override
 					public void handle(final UserInfos userInfos) {
 						if (userInfos != null) {
-							folderService.copy(id, name, path, userInfos, new Handler<Either<String, JsonArray>>() {
+							folderService.copy(id, name, path, userInfos, emptySize(userInfos),
+									new Handler<Either<String, JsonArray>>() {
 								@Override
 								public void handle(Either<String, JsonArray> r) {
 									if (r.isRight()) {
@@ -763,22 +790,35 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
-		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
-			public void handle(final JsonObject uploaded) {
-				updateAfterUpload(request.params().get("id"), request.params().get("name"),
-						uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> res) {
-						if (res == null) {
-							request.response().setStatusCode(404).end();
-						} else if ("ok".equals(res.body().getString("status"))) {
-							renderJson(request, res.body());
-						} else {
-							renderError(request, res.body());
+			public void handle(UserInfos user) {
+				if (user != null) {
+					FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, emptySize(user), new Handler<JsonObject>() {
+						@Override
+						public void handle(final JsonObject uploaded) {
+							if ("ok".equals(uploaded.getString("status"))) {
+								updateAfterUpload(request.params().get("id"), request.params().get("name"),
+										uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> res) {
+										if (res == null) {
+											request.response().setStatusCode(404).end();
+										} else if ("ok".equals(res.body().getString("status"))) {
+											renderJson(request, res.body());
+										} else {
+											renderError(request, res.body());
+										}
+								  }
+								});
+							} else {
+								badRequest(request, uploaded.getString("message"));
+							}
 						}
-					}
-				});
+					});
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}
@@ -1032,6 +1072,18 @@ public class WorkspaceService extends Controller {
 						JsonArray origs = src.getArray("results");
 						final JsonArray insert = new JsonArray();
 						final AtomicInteger number = new AtomicInteger(origs.size());
+						long size = 0;
+						for (Object o: origs) {
+							if (!(o instanceof JsonObject)) continue;
+							JsonObject metadata = ((JsonObject) o).getObject("metadata");
+							if (metadata != null) {
+								size += metadata.getLong("size", 0l);
+							}
+						}
+						if (size > emptySize(user)) {
+							badRequest(request, "files.too.large");
+							return;
+						}
 						for (Object o: origs) {
 							JsonObject orig = (JsonObject) o;
 							final JsonObject dest = orig.copy();
@@ -1103,8 +1155,18 @@ public class WorkspaceService extends Controller {
 	}
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
-	public void copyDocument(HttpServerRequest request) {
-		copyFile(request, documentDao, null);
+	public void copyDocument(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					copyFile(request, documentDao, null, emptySize(user));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	@SecuredAction("workspace.document.copy")
@@ -1114,7 +1176,7 @@ public class WorkspaceService extends Controller {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
-					copyFile(request, rackDao, user.getUserId());
+					copyFile(request, rackDao, user.getUserId(), emptySize(user));
 				} else {
 					unauthorized(request);
 				}
@@ -1122,13 +1184,18 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
-	private void copyFile(final HttpServerRequest request, final GenericDao dao, final String owner) {
+	private void copyFile(final HttpServerRequest request, final GenericDao dao, final String owner,
+			final long emptySize) {
 		dao.findById(request.params().get("id"), owner, new Handler<JsonObject>() {
 
 			@Override
 			public void handle(JsonObject src) {
 				if ("ok".equals(src.getString("status")) && src.getObject("result") != null) {
 					JsonObject orig = src.getObject("result");
+					if (orig.getObject("metadata", new JsonObject()).getLong("size", 0l) > emptySize) {
+						badRequest(request, "file.too.large");
+						return;
+					}
 					final JsonObject dest = orig.copy();
 					String now = MongoDb.formatDate(new Date());
 					dest.removeField("_id");

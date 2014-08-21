@@ -32,7 +32,7 @@ public interface FolderService {
 
 	void move(String id, String path, UserInfos author, Handler<Either<String, JsonObject>> result);
 
-	void copy(String id, String name, String path, UserInfos author,
+	void copy(String id, String name, String path, UserInfos author, long emptySize,
 				Handler<Either<String, JsonArray>> result);
 
 	void trash(String id, UserInfos author, Handler<Either<String, JsonObject>> result);
