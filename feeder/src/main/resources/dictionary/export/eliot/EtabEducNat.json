@@ -1,5 +1,5 @@
 {
-	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"joinKey" : { "attribute" : "ENTStructureJointure", "converter" : "head-array" },
 	"UAI" : { "attribute" : "ENTStructureUAI" },
 	"SIRET" : { "attribute" : "ENTStructureSIREN" },
 	"name" : { "attribute" : "ENTStructureNomCourant" },
