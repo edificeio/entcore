@@ -19,18 +19,27 @@
 
 package org.entcore.feeder.export.eliot;
 
+import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.dictionary.structures.Tenant;
 import org.entcore.feeder.export.Exporter;
+import org.entcore.feeder.utils.Function;
 import org.entcore.feeder.utils.ResultMessage;
+import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,6 +50,8 @@ public class EliotExporter implements Exporter {
 	private final String exportBasePath;
 	private final String exportDestination;
 	private final Vertx vertx;
+	private static final DateFormat datetime = new SimpleDateFormat("yyyyMMddHHmmss");
+	private static final DateFormat date = new SimpleDateFormat("yyyyMMdd");
 
 	public EliotExporter(String exportPath, String exportDestination, Vertx vertx) {
 		this.exportBasePath = exportPath;
@@ -50,30 +61,52 @@ public class EliotExporter implements Exporter {
 
 	@Override
 	public void export(final Handler<Message<JsonObject>> handler) throws Exception {
-		final String path = exportBasePath + File.separator + System.currentTimeMillis();
-		vertx.fileSystem().mkdir(path, true, new Handler<AsyncResult<Void>>() {
+		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
-			public void handle(AsyncResult<Void> ar) {
-				if (ar.succeeded()) {
-					new EleveExportProcessing(path).start(new Handler<Message<JsonObject>>() {
+			public void apply(TransactionHelper value) {
+				Tenant.list(new JsonArray().add("name"), null, null, value);
+				Structure.list(new JsonArray().add("academy"), null, null, value);
+			}
+
+			@Override
+			public void handle(Message<JsonObject> result) {
+				JsonArray r = result.body().getArray("results");
+				if ("ok".equals(result.body().getString("status")) && r != null && r.size() == 2) {
+					final String tenant = r.<JsonArray>get(0).<JsonObject>get(0).getString("name");
+					final String academy = r.<JsonArray>get(1).<JsonObject>get(0).getString("academy");
+					final Date exportDate = new Date();
+					final String path = exportBasePath + File.separator +
+							tenant + "_Complet_" + datetime.format(exportDate) + "_Export";
+					vertx.fileSystem().mkdir(path, true, new Handler<AsyncResult<Void>>() {
 						@Override
-						public void handle(Message<JsonObject> message) {
-							if ("ok".equals(message.body().getString("status"))) {
-								if (exportDestination != null && !exportDestination.trim().isEmpty()) {
-									sendWithWebDav(path, handler);
-								} else {
-									message.body().putString("exportPath", path);
-									handler.handle(message);
-								}
+						public void handle(AsyncResult<Void> ar) {
+							if (ar.succeeded()) {
+								new EleveExportProcessing(path, date.format(exportDate), tenant + "_" + academy)
+										.start(new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> message) {
+										if ("ok".equals(message.body().getString("status"))) {
+											if (exportDestination != null && !exportDestination.trim().isEmpty()) {
+												sendWithWebDav(path, handler);
+											} else {
+												message.body().putString("exportPath", path);
+												handler.handle(message);
+											}
+										} else {
+											log.error(message.body().encode());
+											handler.handle(message);
+										}
+									}
+								});
 							} else {
-								log.error(message.body().encode());
-								handler.handle(message);
+								log.error(ar.cause().getMessage(), ar.cause());
+								handler.handle(new ResultMessage().error(ar.cause().getMessage()));
 							}
 						}
 					});
 				} else {
-					log.error(ar.cause().getMessage(), ar.cause());
-					handler.handle(new ResultMessage().error(ar.cause().getMessage()));
+					log.error(result.body().encode());
+					handler.handle(result);
 				}
 			}
 		});

@@ -37,16 +37,19 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 
 	private final JsonArray attributes;
 	private final String basePath;
+	private final String date;
 
-	public EtabEducNatExportProcessing(String path) {
-		super("dictionary/export/eliot/EtabEducNat.json", 5000, path + File.separator  + "EtabEducNat_");
+	public EtabEducNatExportProcessing(String path, String date, String stdPrefix) {
+		super("dictionary/export/eliot/EtabEducNat.json", 5000, path + File.separator +
+				stdPrefix + "_Complet_" + date + "_EtabEducNat_");
 		this.basePath = path;
 		attributes = new JsonArray(exportMapping.getFieldNames().toArray()).add("externalId");
+		this.date = date;
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new PorteurENTExportProcessing(basePath));
+		export(handler, new PorteurENTExportProcessing(basePath, date));
 	}
 
 	@Override

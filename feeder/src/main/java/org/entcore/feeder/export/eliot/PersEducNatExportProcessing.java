@@ -26,14 +26,19 @@ import org.vertx.java.core.json.JsonObject;
 
 public class PersEducNatExportProcessing extends UserExportProcessing {
 
-	public PersEducNatExportProcessing(String path) {
+	private final String date;
+	private final String stdPrefix;
+
+	public PersEducNatExportProcessing(String path, String date, String stdPrefix) {
 		super("dictionary/export/eliot/PersEducNat.json", 5000, path,
-				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat");
+				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix);
+		this.date = date;
+		this.stdPrefix = stdPrefix;
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new EtabEducNatExportProcessing(basePath));
+		export(handler, new EtabEducNatExportProcessing(basePath, date, stdPrefix));
 	}
 
 }
