@@ -1667,7 +1667,6 @@ module.directive('htmlInlineEditor', function($compile){
                 $scope.$watch('ngModel', function(newVal){
                     if(newVal !== editor.html()){
                         editor.html($compile($scope.ngModel)($scope.$parent));
-                        resizeParent();
                     }
                 });
 
@@ -1681,28 +1680,13 @@ module.directive('htmlInlineEditor', function($compile){
                     editor.blur();
                 });
 
-                var followResize = true;
-                function resizeParent(){
-                    editor.parent().parent().height(editor.height());
-                    editor.parent().parent().trigger('stopResize');
-
-                    if(followResize){
-                        setTimeout(resizeParent, 100);
-                    }
-                }
-
                 editor.on('focus', function(){
-                    followResize = true;
-
-                    resizeParent();
                     $('.' + instance.id).width(editor.width());
                     parentElement.data('lock', true);
                     editor.css({ cursor: 'text' });
                 });
 
                 editor.on('blur', function(){
-                    followResize = false;
-                    resizeParent();
                     parentElement.data('lock', false);
                     editor.css({ cursor: '' });
                     $scope.ngModel = editor.html();
