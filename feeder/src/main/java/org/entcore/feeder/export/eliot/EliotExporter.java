@@ -40,8 +40,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EliotExporter implements Exporter {
 
@@ -83,21 +81,21 @@ public class EliotExporter implements Exporter {
 							if (ar.succeeded()) {
 								new EleveExportProcessing(path, date.format(exportDate), tenant + "_" + academy)
 										.start(new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> message) {
-										if ("ok".equals(message.body().getString("status"))) {
-											if (exportDestination != null && !exportDestination.trim().isEmpty()) {
-												sendWithWebDav(path, handler);
-											} else {
-												message.body().putString("exportPath", path);
-												handler.handle(message);
+											@Override
+											public void handle(Message<JsonObject> message) {
+												if ("ok".equals(message.body().getString("status"))) {
+													if (exportDestination != null && !exportDestination.trim().isEmpty()) {
+														zipAndSend(path, handler);
+													} else {
+														message.body().putString("exportPath", path);
+														handler.handle(message);
+													}
+												} else {
+													log.error(message.body().encode());
+													handler.handle(message);
+												}
 											}
-										} else {
-											log.error(message.body().encode());
-											handler.handle(message);
-										}
-									}
-								});
+										});
 							} else {
 								log.error(ar.cause().getMessage(), ar.cause());
 								handler.handle(new ResultMessage().error(ar.cause().getMessage()));
@@ -112,43 +110,44 @@ public class EliotExporter implements Exporter {
 		});
 	}
 
-	private void sendWithWebDav(final String path, final Handler<Message<JsonObject>> handler) {
-		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
+	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {
+		final String zipPath = path + ".zip";
+		JsonObject j = new JsonObject()
+				.putString("path", path)
+				.putString("zipFile", zipPath)
+				.putBoolean("deletePath", true);
+		vertx.eventBus().send("entcore.zipper", j, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(AsyncResult<String[]> ar) {
-				if (ar.succeeded()) {
-					final String [] files = ar.result();
-					final AtomicInteger i = new AtomicInteger(files.length);
-					final AtomicBoolean error = new AtomicBoolean(false);
-					final ResultMessage resultMessage = new ResultMessage();
-					final EventBus eb = vertx.eventBus();
-					for (String file : files) {
-						JsonObject j = new JsonObject()
-								.putString("action", "put")
-								.putString("uri", exportDestination +
-										file.substring(file.lastIndexOf(File.separator) + 1))
-								.putString("file", file);
-						eb.send(WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> message) {
-								if (!"ok".equals(message.body().getString("status"))) {
-									error.set(true);
-									resultMessage.error(message.body().getString("message"));
-								}
-								if (i.decrementAndGet() == 0) {
-									if (!error.get()) {
-										vertx.fileSystem().delete(path, true, null);
-									}
-									handler.handle(resultMessage);
-								}
-							}
-						});
-					}
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					sendWithWebDav(zipPath, handler);
 				} else {
-					log.error(ar.cause().getMessage(), ar.cause());
-					handler.handle(new ResultMessage().error(ar.cause().getMessage()));
+					log.error("Error zipping export : ");
+					log.error(event.body().encode());
+					handler.handle(event);
 				}
 			}
+		});
+	}
+
+	private void sendWithWebDav(final String file, final Handler<Message<JsonObject>> handler) {
+		final EventBus eb = vertx.eventBus();
+		JsonObject j = new JsonObject()
+				.putString("action", "put")
+				.putString("uri", exportDestination +
+						file.substring(file.lastIndexOf(File.separator) + 1))
+				.putString("file", file);
+		eb.send(WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				if ("ok".equals(message.body().getString("status"))) {
+					vertx.fileSystem().delete(file, null);
+				} else {
+					log.error("Error sending export : ");
+					log.error(message.body().encode());
+				}
+				handler.handle(message);
+		  }
 		});
 	}
 
