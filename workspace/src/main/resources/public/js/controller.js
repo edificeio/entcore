@@ -341,9 +341,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			} }
 		],
 		contextualButtons: [
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } },
 			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } }
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } }
 		]
 	}, {
 		name: 'rack',
@@ -363,8 +363,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		filter: ['owner', 'protected'],
 		buttons: [],
 		contextualButtons: [
-			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } }
+			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true, allow: function(){ return true } }
 		]
 	}, {
 		name: 'shared',
