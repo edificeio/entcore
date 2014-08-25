@@ -281,7 +281,10 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(item){
 				return item === document;
 			});
-			http().delete('document/' + document._id);
+			http().delete('document/' + document._id)
+				.e401(function(){
+					http().delete('/workspace/rack/' + document._id)
+				});
 		});
 
 		$scope.selectedFolders().forEach(function(folder){
@@ -359,8 +362,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		]
 	}, {
 		name: 'trash',
-		path: ['documents/Trash', 'documents'],
-		filter: ['owner', 'protected'],
+		path: ['documents/Trash', 'documents', 'rack/documents/Trash'],
+		filter: ['owner', 'protected', ''],
 		buttons: [],
 		contextualButtons: [
 			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } },
