@@ -59,6 +59,7 @@ var tools = (function(){
 
 function Workspace($scope, date, ui, notify, _, $rootScope){
 	$rootScope.$on('share-updated', function(){
+		$scope.openedFolder.content = [];
 		$scope.openFolder($scope.openedFolder.folder);
 	});
 
