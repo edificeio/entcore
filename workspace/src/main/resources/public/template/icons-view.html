@@ -30,7 +30,7 @@
 			</legend>
 		</div>
 		<section data-ng-repeat-end></section>
-		<div ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" class="element reduce-block-six" ng-class="{ selected: document.selected }">
+		<div ng-repeat-start="document in openedFolder.content" class="element reduce-block-six" ng-class="{ selected: document.selected }">
 			<a ng-href="[[documentPath(document)]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
@@ -54,7 +54,7 @@
 		<section ng-repeat-end>
 			<section class="row reduce-block-eight" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||
 		($index === openedFolder.content.length - 1 && inInterval(selectedDocuments()[0], $index - (($index + nbFolders()) % 4), $index))) && selectedDocuments()[0].showComments">
-				<article class="twelve cell comment content-line reduce-block-eight" data-ng-repeat="comment in selectedDocuments()[0].comments">
+				<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in selectedDocuments()[0].comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 					<em>[[longDate(comment.posted)]]</em>
 					<p>[[comment.comment]]</p>

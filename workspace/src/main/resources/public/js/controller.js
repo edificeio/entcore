@@ -447,6 +447,15 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		http().get(path, params).done(function(documents){
 			formatDocuments(documents, function(result){
 				$scope.openedFolder.content = $scope.openedFolder.content.concat(result);
+				$scope.openedFolder.content.sort(function(a, b){
+					if(moment(a.created) > moment(b.created)){
+						return -1;
+					}
+					if(moment(a.created) < moment(b.created)){
+						return 1;
+					}
+					return 0;
+				});
 				$scope.$apply();
 			});
 

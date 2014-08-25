@@ -74,7 +74,7 @@
 					<td colspan="6" class="container-cell">
 
 						<section class="row reduce-block-eight" ng-if="document === selectedDocuments()[0] && document.showComments">
-							<article class="twelve cell comment content-line reduce-block-eight" data-ng-repeat="comment in document.comments">
+							<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in document.comments">
 								<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 								<em>[[longDate(comment.posted)]]</em>
 								<p>[[comment.comment]]</p>
