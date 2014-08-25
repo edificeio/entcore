@@ -31,10 +31,6 @@ public interface QuotaService {
 
 	void decrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler);
 
-	void incrementStorage(String userId, Long size, Handler<Either<String, Long>> handler);
-
-	void decrementStorage(String userId, Long size, Handler<Either<String, Long>> handler);
-
 	void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler);
 
 	void quotaAndUsageStructure(String structureId, Handler<Either<String, JsonObject>> handler);

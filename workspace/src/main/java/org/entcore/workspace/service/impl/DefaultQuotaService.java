@@ -24,7 +24,11 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.workspace.service.QuotaService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpClient;
+import org.vertx.java.core.http.HttpClientRequest;
+import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -34,59 +38,64 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultQuotaService implements QuotaService {
 
 	private final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultQuotaService.class);
+	private final HttpClient neo4jPlugin;
 
-	@Override
-	public void incrementStorage(String userId, Long size, final Handler<Either<String, Long>> handler) {
-		String query =
-				"MATCH (u:UserBook { userid : {userId}}) " +
-				"SET u.storage = u.storage + {size} " +
-				"RETURN u.storage as storage ";
-		JsonObject params = new JsonObject()
-				.putString("userId", userId)
-				.putNumber("size", size);
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> message) {
-				Either<String, JsonObject> res = validUniqueResult(message);
-				if (res.isRight()) {
-					Long storage = res.right().getValue().getLong("storage");
-					if (storage != null) {
-						handler.handle(new Either.Right<String, Long>(storage));
-					} else {
-						handler.handle(new Either.Left<String, Long>("invalid.storage.size"));
-					}
-				} else {
-					handler.handle(new Either.Left<String, Long>(res.left().getValue()));
-				}
-			}
-		});
+	public DefaultQuotaService(HttpClient neo4jPlugin) {
+		this.neo4jPlugin = neo4jPlugin;
 	}
 
 	@Override
-	public void decrementStorage(String userId, Long size, Handler<Either<String, Long>> handler) {
-		incrementStorage(userId, -1l * size, handler);
-	}
-
-	@Override
-	public void incrementStorage(String userId, Long size, int threshold, Handler<Either<String, JsonObject>> handler) {
-		String query =
-				"MATCH (u:UserBook { userid : {userId}}) " +
-				"SET u.storage = u.storage + {size} " +
-				"WITH u, u.alertSize as oldAlert " +
-				"SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}) " +
-				"RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
+	public void incrementStorage(String userId, Long size, int threshold,
+			final Handler<Either<String, JsonObject>> handler) {
 		JsonObject params = new JsonObject()
-				.putString("userId", userId)
 				.putNumber("size", size)
 				.putNumber("threshold", threshold);
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		if (neo4jPlugin == null) {
+			String query =
+					"MATCH (u:UserBook { userid : {userId}}) " +
+					"SET u.storage = u.storage + {size} " +
+					"WITH u, u.alertSize as oldAlert " +
+					"SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}) " +
+					"RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
+			params.putString("userId", userId);
+			neo4j.execute(query, params, validUniqueResultHandler(handler));
+		} else {
+			HttpClientRequest req = neo4jPlugin.put("/entcore/quota/storage/" + userId, new Handler<HttpClientResponse>() {
+				@Override
+				public void handle(final HttpClientResponse response) {
+					if (response.statusCode() == 200) {
+						response.bodyHandler(new Handler<Buffer>() {
+							@Override
+							public void handle(Buffer buffer) {
+								try {
+									handler.handle(new Either.Right<String, JsonObject>(
+											new JsonObject(buffer.toString())));
+								} catch (Exception e) {
+									log.error(e.getMessage(), e);
+									handler.handle(new Either.Left<String, JsonObject>(e.getMessage()));
+								}
+							}
+						});
+					} else {
+						response.bodyHandler(new Handler<Buffer>() {
+							@Override
+							public void handle(Buffer buffer) {
+								handler.handle(new Either.Left<String, JsonObject>(
+										response.statusMessage() + " : " + buffer.toString()));
+							}
+						});
+
+					}
+				}
+			});
+			req.end(params.encode());
+		}
 	}
 
 	@Override

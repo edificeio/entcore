@@ -34,7 +34,10 @@ import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.vertx.java.core.Future;
+import org.vertx.java.core.http.HttpClient;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +60,21 @@ public class Workspace extends Server {
 		validator.setEventBus(getEventBus(vertx));
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
 
-		final QuotaService quotaService = new DefaultQuotaService();
+		String neo4jPluginUri = container.config().getString("neo4jPluginUri");
+		HttpClient neo4jPlugin = null;
+		if (neo4jPluginUri != null && !neo4jPluginUri.trim().isEmpty()) {
+			try {
+				URI uri = new URI(neo4jPluginUri);
+				neo4jPlugin =  vertx.createHttpClient()
+						.setHost(uri.getHost())
+						.setPort(uri.getPort())
+						.setMaxPoolSize(16)
+						.setKeepAlive(false);
+			} catch (URISyntaxException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
 		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		vertx.eventBus().registerHandler("user.repository",
