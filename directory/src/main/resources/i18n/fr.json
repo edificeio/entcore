@@ -195,7 +195,7 @@
 	"directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
 	"loading": "Chargement en cours...",
 	"classAdmin.select.classroom": "Classe à modifier",
-	"noschool": "Désolé, vous n'êtes pas associé à une école ! En cas de problème, contactez votre enseignant.",
+	"noschool": "Désolé, vous n'êtes plus rattaché à la classe ou l'école. Pour en savoir plus, contactez votre enseignant ou le directeur de l'école.",
 	"oops": "Oups !",
 	"user.removed.info": "Cet utilisateur a été supprimé !",
 	"directory.remove.confirm": "Si vous demandez la suppression de ces utilisateurs, ils pourront exporter leurs données, puis perdront leur accès à l'ENT. Voulez-vous vraiment les supprimer ?"
