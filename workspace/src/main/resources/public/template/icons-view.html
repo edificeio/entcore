@@ -45,8 +45,8 @@
 			<legend>
 				<a ng-href="[[documentPath(document)]]">
 					<i ng-if="document.shared.length > 0" class="shared inline"></i>
-					[[document.name]]
 					<span class="badge" ng-if="document.comments.length > 0" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+					[[document.name]]
 				</a>
 				<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
 			</legend>
