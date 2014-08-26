@@ -102,7 +102,7 @@ public class SqlCrudService implements CrudService {
 	public void retrieve(String id, final Handler<Either<String, JsonObject>> handler) {
 		if (shared) {
 			String query = "SELECT " + expectedValues() +
-					", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+					", json_agg(row_to_json(row(member_id,action)::" + schema + "share_tuple)) as shared, " +
 					" array_to_json(array_agg(group_id)) as groups " +
 					" FROM " + resourceTable +
 					" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
@@ -159,7 +159,7 @@ public class SqlCrudService implements CrudService {
 		if (shared) {
 			String query =
 					"SELECT " + expectedListValues() +
-					", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+					", json_agg(row_to_json(row(member_id,action)::" + schema + "share_tuple)) as shared, " +
 					"array_to_json(array_agg(group_id)) as groups FROM " + resourceTable +
 					" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
 					" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
@@ -208,7 +208,7 @@ public class SqlCrudService implements CrudService {
 					break;
 				default:
 					query = "SELECT " + expectedListValues() +
-							", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+							", json_agg(row_to_json(row(member_id,action)::" + schema + "share_tuple)) as shared, " +
 							"array_to_json(array_agg(group_id)) as groups FROM " + resourceTable +
 							" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
 							" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
