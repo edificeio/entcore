@@ -65,7 +65,8 @@ public class ArchiveController extends BaseController {
 				expectedExports.add((String) o);
 			}
 		}
-		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
+		NotificationHelper notification = container.config().getBoolean("send.export.email", false) ?
+				new NotificationHelper(vertx, eb, container) : null;
 		exportService = new FileSystemExportService(vertx.fileSystem(),
 				eb, exportPath, expectedExports, notification);
 	}

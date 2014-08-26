@@ -177,7 +177,9 @@ public class FileSystemExportService implements ExportService {
 					}
 				}
 			});
-			sendExportEmail(exportId, locale, status);
+			if (notification != null) {
+				sendExportEmail(exportId, locale, status);
+			}
 			return;
 		}
 
@@ -199,7 +201,9 @@ public class FileSystemExportService implements ExportService {
 									event.body().putString("message", "zip.export.error");
 								}
 								eb.publish("export." + exportId, event.body());
-								sendExportEmail(exportId, locale, event.body().getString("status"));
+								if (notification != null) {
+									sendExportEmail(exportId, locale, event.body().getString("status"));
+								}
 							}
 						});
 					}
