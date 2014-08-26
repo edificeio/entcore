@@ -21,6 +21,7 @@ package org.entcore.common.test.integration.java;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.common.service.CrudService;
+import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.SqlShareService;
@@ -64,7 +65,7 @@ public class SqlTestVerticle extends TestVerticle {
 					Sql.getInstance().init(eb, ADDRESS);
 					JsonArray r = new JsonArray().add("id").add("name").add("number").add("modified");
 					JsonArray rl = new JsonArray().add("id").add("name");
-					crudService = new SqlCrudService(null, "tests", null, r, rl);
+					crudService = new SqlCrudService("test", "tests", null, r, rl, true);
 					shareService = new SqlShareService(eb, null, null);
 					SqlTestVerticle.super.start();
 				} else {
@@ -153,8 +154,8 @@ public class SqlTestVerticle extends TestVerticle {
 
 	@Test
 	public void testInsertReturn()  {
-		String q =  "INSERT INTO tests (name,number,owner) VALUES " +
-				"('paper',3,'ae52be49-3970-4cbf-a1fe-252fb7f48aa7') RETURNING id";
+		String q =  "INSERT INTO test.tests (name,number,owner) VALUES " +
+				"('paper',3,'a6930a8f-d5cc-4968-9208-5251210f99bd') RETURNING id";
 		Sql.getInstance().raw(q, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
@@ -163,4 +164,29 @@ public class SqlTestVerticle extends TestVerticle {
 			}
 		});
 	}
+
+	@Test
+	public void getResourceWithShare() {
+		crudService.retrieve("6", new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> r) {
+				assertTrue(r.isRight());
+				System.out.println(r.right().getValue().encodePrettily());
+				testComplete();
+			}
+		});
+	}
+
+	@Test
+	public void listResourceWithShare() {
+		crudService.list(new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> r) {
+				assertTrue(r.isRight());
+				System.out.println(r.right().getValue().encodePrettily());
+				testComplete();
+			}
+		});
+	}
+
 }

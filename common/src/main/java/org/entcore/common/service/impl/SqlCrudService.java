@@ -46,25 +46,32 @@ public class SqlCrudService implements CrudService {
 	protected final JsonArray defaultListValues;
 	protected final String schema;
 	protected final String table;
+	protected final boolean shared;
 
 	public SqlCrudService(String table) {
-		this(null, table, null, null, null);
+		this(null, table, null, null, null, false);
 	}
 
 	public SqlCrudService(String schema, String table) {
-		this(schema, table, null, null, null);
+		this(schema, table, null, null, null, false);
 	}
 
 	public SqlCrudService(String schema, String table, String shareTable) {
-		this(schema, table, shareTable, null, null);
+		this(schema, table, shareTable, null, null, false);
 	}
 
 	public SqlCrudService(String schema, String table, String shareTable,
 			JsonArray defaultRetrieveValues, JsonArray defaultListValues) {
+		this(schema, table, shareTable, defaultRetrieveValues, defaultListValues, false);
+	}
+
+	public SqlCrudService(String schema, String table, String shareTable,
+			JsonArray defaultRetrieveValues, JsonArray defaultListValues, boolean shared) {
 		this.table = table;
 		this.sql = Sql.getInstance();
 		this.defaultRetrieveValues = defaultRetrieveValues;
 		this.defaultListValues = defaultListValues;
+		this.shared = shared;
 		if (schema != null && !schema.trim().isEmpty()) {
 			this.resourceTable = schema + "." + table;
 			this.schema = schema + ".";
@@ -92,9 +99,21 @@ public class SqlCrudService implements CrudService {
 	}
 
 	@Override
-	public void retrieve(String id, Handler<Either<String, JsonObject>> handler) {
-		String query = "SELECT " + expectedValues() + " FROM " + resourceTable + " WHERE id = ?";
-		sql.prepared(query, new JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
+	public void retrieve(String id, final Handler<Either<String, JsonObject>> handler) {
+		if (shared) {
+			String query = "SELECT " + expectedValues() +
+					", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+					" array_to_json(array_agg(group_id)) as groups " +
+					" FROM " + resourceTable +
+					" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
+					" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
+					" WHERE " + resourceTable + ".id = ? " +
+					" GROUP BY " + resourceTable + ".id";
+			sql.prepared(query, new JsonArray().add(parseId(id)), parseSharedUnique(handler));
+		} else {
+			String query = "SELECT " + expectedValues() + " FROM " + resourceTable + " WHERE id = ?";
+			sql.prepared(query, new JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
+		}
 	}
 
 	@Override
@@ -137,7 +156,18 @@ public class SqlCrudService implements CrudService {
 
 	@Override
 	public void list(Handler<Either<String, JsonArray>> handler) {
-		sql.select(resourceTable, defaultListValues, validResultHandler(handler));
+		if (shared) {
+			String query =
+					"SELECT " + expectedListValues() +
+					", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+					"array_to_json(array_agg(group_id)) as groups FROM " + resourceTable +
+					" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
+					" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
+					" GROUP BY " + resourceTable + ".id";
+			sql.raw(query, parseShared(handler));
+		} else {
+			sql.select(resourceTable, defaultListValues, validResultHandler(handler));
+		}
 	}
 
 	@Override
@@ -177,10 +207,14 @@ public class SqlCrudService implements CrudService {
 					values.add(VisibilityFilter.PUBLIC.name());
 					break;
 				default:
-					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
-							" LEFT JOIN " + shareTable + " ON id = resource_id " +
+					query = "SELECT " + expectedListValues() +
+							", json_agg(row_to_json(row(member_id,action)::test.share_tuple)) as shared, " +
+							"array_to_json(array_agg(group_id)) as groups FROM " + resourceTable +
+							" LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
+							" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) +
-							" OR owner = ? OR visibility IN (?,?) ";
+							" OR owner = ? OR visibility IN (?,?) " +
+							" GROUP BY " + resourceTable + ".id";
 					values = new JsonArray(groupsAndUserIds).add(user.getUserId())
 						.add(VisibilityFilter.PROTECTED.name())
 						.add(VisibilityFilter.PUBLIC.name());
@@ -191,7 +225,9 @@ public class SqlCrudService implements CrudService {
 			values.add(VisibilityFilter.PUBLIC.name());
 		}
 		query += " ORDER BY modified DESC";
-		sql.prepared(query, values, validResultHandler(handler));
+		Handler<Message<JsonObject>> h = (VisibilityFilter.ALL.equals(filter)) ?
+				parseShared(handler) : validResultHandler(handler);
+		sql.prepared(query, values, h);
 	}
 
 	@Override
@@ -207,11 +243,13 @@ public class SqlCrudService implements CrudService {
 	}
 
 	private String expectedValues() {
-		return defaultRetrieveValues != null ? Joiner.on(", ").join(defaultRetrieveValues) : "*";
+		return defaultRetrieveValues != null ?
+				resourceTable + "." + Joiner.on(", " + resourceTable + ".").join(defaultRetrieveValues) : "*";
 	}
 
 	private String expectedListValues() {
-		return defaultListValues != null ? Joiner.on(", ").join(defaultListValues) : "*";
+		return defaultListValues != null ?
+				resourceTable + "." + Joiner.on(", " + resourceTable + ".").join(defaultListValues) : "*";
 	}
 
 }

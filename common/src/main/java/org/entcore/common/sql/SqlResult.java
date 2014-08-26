@@ -25,6 +25,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SqlResult {
 
 	public static Long countResult(Message<JsonObject> res) {
@@ -230,6 +233,73 @@ public class SqlResult {
 				handler.handle(validResults(event));
 			}
 		};
+	}
+
+	public static Handler<Message<JsonObject>> parseSharedUnique(final Handler<Either<String, JsonObject>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				Either<String, JsonObject> res = validUniqueResult(message);
+				if (res.isRight()) {
+					JsonObject j = res.right().getValue();
+					parseShared(j);
+					handler.handle(res);
+				} else {
+					handler.handle(res);
+				}
+			}
+		};
+	}
+
+	private static void parseShared(JsonObject j) {
+		Map<String, JsonObject> shared = new HashMap<>();
+		JsonArray a = new JsonArray();
+		JsonArray s = new JsonArray(j.getString("shared"));
+		JsonArray m = new JsonArray(j.getString("groups"));
+		for (Object o : s) {
+			if (o == null || !(o instanceof JsonObject)) continue;
+			JsonObject json = (JsonObject) o;
+			String member = json.getString("member_id");
+			String action = json.getString("action");
+			if (member != null && action != null) {
+				if (shared.containsKey(member)) {
+					shared.get(member).putBoolean(action, true);
+				} else {
+					JsonObject sj = new JsonObject().putBoolean(action, true);
+					if (m.contains(member)) {
+						sj.putString("groupId", member);
+					} else {
+						sj.putString("userId", member);
+					}
+					shared.put(member, sj);
+					a.add(sj);
+				}
+			}
+		}
+		j.removeField("groups");
+		j.putArray("shared", a);
+	}
+
+	public static Handler<Message<JsonObject>> parseShared(final Handler<Either<String, JsonArray>> handler) {
+		return new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				Either<String, JsonArray> res = validResult(message);
+				if (res.isRight()) {
+					JsonArray out = new JsonArray();
+					for (Object row : res.right().getValue()) {
+						if (!(row instanceof JsonObject)) continue;
+						JsonObject j = (JsonObject) row;
+						parseShared(j);
+						out.add(j);
+					}
+					handler.handle(new Either.Right<String, JsonArray>(out));
+				} else {
+					handler.handle(res);
+				}
+			}
+		};
+
 	}
 
 }
