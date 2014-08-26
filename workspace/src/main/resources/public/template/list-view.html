@@ -22,22 +22,22 @@
 			<table class="list-view">
 				<thead>
 				<tr>
-					<th scope="col">
+					<th scope="col" class="icon">
 						<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
 					</th>
-					<th scope="col"></th>
-					<th scope="col" class="five" ng-click="orderByField('name')">
+					<th scope="col" class="icon"></th>
+					<th scope="col" class="content" ng-click="orderByField('name')">
 						<span translate content="name"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
 					</th>
-					<th scope="col" class="four" ng-click="orderByField('ownerName')">
+					<th scope="col" class="user" ng-click="orderByField('ownerName')">
 						<span translate content="owner"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
 					</th>
 					<th></th>
-					<th scope="col" class="two" ng-click="orderByField('created')">
+					<th scope="col" class="date" ng-click="orderByField('created')">
 						<span translate content="modified"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
