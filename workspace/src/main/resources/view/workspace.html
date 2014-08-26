@@ -53,9 +53,16 @@
 			<section class="four cell">
 				<h1><a data-reload><i class="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
 				<nav class="vertical">
+					<h2>Dossiers</h2>
 					<div data-ng-include="'folder-content'"></div>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
+					<div class="row">
+						<h2>Espace utilisé</h2>
+						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+					</div>
 				</nav>
+
+
 			</section>
 			<section class="eight cell">
 				<nav class="contextual-buttons row">

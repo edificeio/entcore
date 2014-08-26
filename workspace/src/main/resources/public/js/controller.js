@@ -67,6 +67,39 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	$scope.users = [];
 	$scope.me = model.me;
 
+	$scope.maxQuota = 8;
+	$scope.usedQuota = 4;
+
+	$scope.quota = {
+		max: 1,
+		used: 0,
+		unit: 'Mo'
+	};
+
+	function getQuota(){
+		http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
+			//to mo
+			data.quota = data.quota / (1024 * 1024);
+			data.storage = data.storage / (1024 * 1024);
+
+			if(data.quota > 2000){
+				data.quota = Math.round((data.quota / 1024) * 10) / 10;
+				data.storage = Math.round((data.storage / 1024) * 10) / 10;
+				$scope.quota.unit = 'Go';
+			}
+			else{
+				data.quota = Math.round(data.quota);
+				data.storage = Math.round(data.storage);
+			}
+
+			$scope.quota.max = data.quota;
+			$scope.quota.used = data.storage;
+			$scope.$apply('quota');
+		});
+	}
+
+	getQuota();
+
 	var setDocumentRights = function(document){
 		document.myRights = {
 			document: {
@@ -283,6 +316,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				return item === document;
 			});
 			http().delete('document/' + document._id)
+				.done(function(){
+					getQuota();
+				})
 				.e401(function(){
 					http().delete('/workspace/rack/' + document._id)
 				});
@@ -521,6 +557,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 					else{
 						$scope.openFolder($scope.openedFolder.folder);
 					}
+
+					getQuota();
 				}).xhr;
 
 			$scope.loadingFiles.push({

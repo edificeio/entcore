@@ -2793,11 +2793,43 @@ module.directive('widgets', function($compile){
 		},
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/widgets.html',
-		link: function($scope, $element, $attributes){
+		link: function(scope, element, attributes){
 
 		}
 	}
 });
+
+module.directive('progressBar', function($compile){
+	return {
+		restrict: 'E',
+		scope: {
+			max: '=',
+			filled: '=',
+			unit: '@'
+		},
+		template: '<div class="progress-bar"><div class="filled">[[filled]] [[unit]]</div>[[max]] [[unit]]</div>',
+		link: function(scope, element, attributes){
+			function updateBar(){
+				var filledPercent = scope.filled * 100 / scope.max;
+				element.find('.filled').width(filledPercent + '%');
+				if(filledPercent < 10){
+					element.find('.filled').addClass('small');
+				}
+				else{
+					element.find('.filled').removeClass('small');
+				}
+			}
+
+			scope.$watch('filled', function(newVal){
+				updateBar();
+			});
+
+			scope.$watch('max', function(newVal){
+				updateBar();
+			});
+		}
+	}
+})
 
 module.directive('datePicker', function($compile){
 	return {
