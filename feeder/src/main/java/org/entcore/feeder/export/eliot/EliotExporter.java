@@ -112,19 +112,30 @@ public class EliotExporter implements Exporter {
 
 	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {
 		final String zipPath = path + ".zip";
-		JsonObject j = new JsonObject()
-				.putString("path", path)
-				.putString("zipFile", zipPath)
-				.putBoolean("deletePath", true);
-		vertx.eventBus().send("entcore.zipper", j, new Handler<Message<JsonObject>>() {
+		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
 			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					sendWithWebDav(zipPath, handler);
+			public void handle(AsyncResult<String[]> asyncResult) {
+				if (asyncResult.succeeded()) {
+					JsonObject j = new JsonObject()
+							.putArray("path", new JsonArray(asyncResult.result()))
+							.putString("zipFile", zipPath)
+							.putBoolean("deletePath", true);
+					vertx.eventBus().send("entcore.zipper", j, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							if ("ok".equals(event.body().getString("status"))) {
+								sendWithWebDav(zipPath, handler);
+								vertx.fileSystem().delete(path, true, null);
+							} else {
+								log.error("Error zipping export : ");
+								log.error(event.body().encode());
+								handler.handle(event);
+							}
+						}
+					});
 				} else {
-					log.error("Error zipping export : ");
-					log.error(event.body().encode());
-					handler.handle(event);
+					log.error(asyncResult.cause().getMessage(), asyncResult.cause());
+					handler.handle(new ResultMessage().error(asyncResult.cause().getMessage()));
 				}
 			}
 		});
