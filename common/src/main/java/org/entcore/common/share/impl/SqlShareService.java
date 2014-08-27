@@ -162,18 +162,20 @@ public class SqlShareService extends GenericShareService {
 			final String membersTable, final Handler<Either<String, JsonObject>> handler) {
 		final SqlStatementsBuilder s = new SqlStatementsBuilder();
 		s.raw("LOCK TABLE " + schema + membersTable + " IN SHARE ROW EXCLUSIVE MODE");
+		s.raw("LOCK TABLE " + shareTable + " IN SHARE ROW EXCLUSIVE MODE");
 		s.raw(
 				"INSERT INTO " + schema + membersTable + " (id) SELECT '" + shareId +
 				"' WHERE NOT EXISTS (SELECT * FROM " + schema + membersTable + " WHERE id='" + shareId + "');"
 		);
-		JsonArray a = new JsonArray();
 		final Object rId = Sql.parseId(resourceId);
+		final String query =
+				"INSERT INTO " + shareTable + " (member_id, resource_id, action) SELECT ?, ?, ? WHERE NOT EXISTS " +
+				"(SELECT * FROM " + shareTable + " WHERE member_id = ? AND resource_id = ? AND action = ?);";
 		for (String action : actions) {
 			JsonArray ar = new JsonArray()
-					.add(shareId).add(rId).add(action);
-			a.add(ar);
+					.add(shareId).add(rId).add(action).add(shareId).add(rId).add(action);
+			s.prepared(query, ar);
 		}
-		s.insert(shareTable, new JsonArray().add("member_id").add("resource_id").add("action"), a);
 		sql.prepared("SELECT count(*) FROM " + shareTable + " WHERE member_id = ? AND resource_id = ?",
 				new JsonArray().add(shareId).add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
