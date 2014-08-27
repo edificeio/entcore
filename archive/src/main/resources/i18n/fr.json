@@ -18,7 +18,7 @@
 	"zip.export.error" : "Erreur durant la création de l'archive",
 	"archive.title": "Export",
 	"export": "Télécharger mes données",
-	"archive.info": "Votre compte va bientôt être supprimé. Vous pouvez télécharger tous vos documents ici :",
+	"archive.info": "Vous pouvez télécharger tous vos documents en cliquant sur le lien ci-dessous :",
 	"archive.waiting": "Le téléchargement va démarrer automatiquement dans peu de temps."
 
 }
