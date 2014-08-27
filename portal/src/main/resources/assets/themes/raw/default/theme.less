@@ -61,6 +61,9 @@
 		li{
 			padding-left: 10px;
 		}
+		ul:first-child > li, div ul:first-child > li{
+			padding-left: 0;
+		}
 	}
 	.tabs{
 		margin-top: 10px;
@@ -725,7 +728,12 @@ button:hover, input[type=button]:hover, a.button:hover, input[type=submit]:hover
 nav.vertical{
 	padding-right: 50px;
 	h2{
-		display: none;
+		font-size: 18px;
+		font-family: Arial;
+		font-weight: normal;
+		font-variant: small-caps;
+		color: #999;
+		margin-top: 20px;
 	}
 	ul{
 		margin: 0;
@@ -754,8 +762,8 @@ nav.vertical{
 			}
 		}
 	}
-	article, a{
-		margin-left: 20px;
+	ul:first-child > li, div ul:first-child > li{
+		padding-left: 0;
 	}
 	a.classic-link{
 		display: block;
@@ -763,7 +771,6 @@ nav.vertical{
 		padding-left: 11px;
 		background: @bright-blue;
 		color: #fff;
-		font-size: 1.2em;
 		font-family: Lato;
 		font-weight: 300;
 		width: 100%;
@@ -1303,4 +1310,13 @@ select{
 
 .humane-original-success{
 	background: @green;
+}
+
+.progress-bar{
+	.filled{
+		background: @bright-blue;
+	}
+	.filled.small{
+		color: @bright-blue;
+	}
 }
