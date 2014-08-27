@@ -6,7 +6,7 @@
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
 	config.allowedContent = true;
-	config.extraPlugins = 'upload,audio,video,linker,mathjax';
+	config.extraPlugins = 'upload,audio,videoembed,linker,mathjax';
 	config.toolbar = [
 		{ name: 'document', items: ['Templates' ] },
 		{ name: 'clipboard', items: [ 'Undo', 'Redo' ] },

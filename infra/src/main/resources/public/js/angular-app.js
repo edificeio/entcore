@@ -1516,7 +1516,16 @@ module.directive('htmlEditor', function($compile){
 			'<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<lightbox show="selectFiles" on-close="selectFiles = false;">' +
 			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
-			'</media-library></lightbox></div>',
+			'</media-library></lightbox>' +
+            '<lightbox show="inputVideo" on-close="inputVideo = false">' +
+                '<p>' +
+                    'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
+                    '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
+                '</p>' +
+                '<input type="test" ng-model="videoText" style=" border:  2px solid orange; width: 95%; margin: 15px;"/>' +
+                '<div style="text-align: center"><button ng-click="addVideoLink(videoText)">Valider</button></div>' +
+            '</lightbox>' +
+            '</div>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -1566,6 +1575,17 @@ module.directive('htmlEditor', function($compile){
 					scope.chooseLink = true;
 					scope.$apply('chooseLink');
 				});
+
+                $('body').on('click', '.cke_button__video', function(){
+                    scope.inputVideo = true;
+                    scope.$apply('inputVideo');
+                });
+
+                scope.addVideoLink = function(htmlText){
+                    //TODO : Escape dangerous html
+                    contextEditor.insertHtml(htmlText)
+                    scope.inputVideo = false
+                }
 
 				scope.updateContent = function(){
 					var content = editor.html();
@@ -1630,10 +1650,19 @@ module.directive('htmlInlineEditor', function($compile){
             ngChange: '&'
         },
         template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
-            '<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>'+
+            '<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
             '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
             '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
-            '</media-library></lightbox></div>',
+            '</media-library></lightbox>' +
+            '<lightbox show="inputVideo" on-close="inputVideo = false">' +
+                '<p>' +
+                    'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
+                    '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
+                '</p>' +
+                '<input type="test" ng-model="videoText" style=" border:  2px solid orange; width: 95%; margin: 15px;"/>' +
+                '<div style="text-align: center"><button ng-click="addVideoLink(videoText)">Valider</button></div>' +
+            '</lightbox>' +
+            '</div>',
         compile: function($element, $attributes, $transclude){
             CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
             if(window.CKEDITOR === undefined){
@@ -1735,6 +1764,12 @@ module.directive('htmlInlineEditor', function($compile){
                     $scope.selectFiles = false;
                 };
 
+                $scope.addVideoLink = function(htmlText){
+                    //TODO : Escape dangerous html
+                    instance.insertHtml(htmlText)
+                    $scope.inputVideo = false
+                }
+
                 $element.on('removed', function(){
                     for(var instance in CKEDITOR.instances){
                         if(CKEDITOR.instances[instance].element.$ === editor[0]){
@@ -1766,6 +1801,12 @@ module.directive('htmlInlineEditor', function($compile){
                         $scope.$apply('selectFiles');
                         $scope.$apply('format');
                     });
+
+                    $('#cke_'+ck.editor.name).on('click', '.cke_button__video', function(){
+                        $scope.inputVideo = true;
+                        $scope.$apply('inputVideo');
+                    });
+
                 });
             }
         }
