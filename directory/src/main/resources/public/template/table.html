@@ -18,8 +18,10 @@
  ~
  -->
 
-<article class="row">
-	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
+<article class="list-view">
+	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length">
+		<i18n>noresult</i18n>
+	</div>
 	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
 	<table class="twelve" ng-if="!users.loading">
 		<thead>
