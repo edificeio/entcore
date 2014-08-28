@@ -595,6 +595,15 @@ module.directive('linker', function($compile){
 	}
 });
 
+module.directive('calendar', function($compile){
+	return {
+		restrict: 'E',
+		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
+		link: function(scope, element, attributes){
+			scope.days = calendar.days;
+		}
+	}
+})
 
 function serializeScope(scope){
 	var result = {};

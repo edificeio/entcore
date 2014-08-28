@@ -1288,3 +1288,19 @@ function bootstrap(func){
 
 	Behaviours.applicationsBehaviours = {};
 }
+
+var calendar = {
+	TimeSlot: function(){
+
+	},
+	ScheduleItem: function(){
+
+	},
+	startOfDay: 7,
+	endOfDay: 20,
+	days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+}
+
+function Schedule(){
+	model.makeModels(calendar);
+}

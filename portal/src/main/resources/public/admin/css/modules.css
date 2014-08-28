@@ -5615,6 +5615,65 @@ table thead tr {
 .progress-bar .filled.small {
   color: #ff0b75;
 }
+ul.angle-list {
+  list-style-type: none;
+}
+ul.angle-list > li {
+  font-family: Lato;
+  font-size: 20px;
+  border-bottom: 1px solid #ff0b75;
+  border-left: 3px solid #ff0b75;
+  padding-left: 5px;
+  color: black;
+  margin-bottom: 10px;
+  padding-top: 5px;
+}
+div.leaf-menu {
+  display: inline-block;
+  margin-right: 10px;
+  border-top-right-radius: 15px;
+  border-bottom-left-radius: 15px;
+  padding: 10px;
+  font-family: Lato;
+  font-size: 20px;
+}
+div.angle-container {
+  background: #444;
+  font-size: 16px;
+  color: white;
+  font-family: Lato;
+  padding: 10;
+  border-left: 5px solid #ff0b75;
+  border-bottom: 5px solid #ff0b75;
+}
+input[type=text].angle-container-header {
+  color: #333;
+  font-weight: 300;
+  font-family: Lato;
+  margin-top: 10px;
+  margin-bottom: 0;
+  line-height: 30px;
+  background: transparent;
+  font-size: 24px;
+  height: 40px;
+  border-left: 5px solid #ff0b75;
+  border-bottom: 2px solid #ff0b75;
+  border-radius: 0;
+}
+div.angle-container-header {
+  color: #333;
+  font-weight: 300;
+  font-family: Lato;
+  margin-top: 10px;
+  margin-bottom: 0;
+  line-height: 30px;
+  background: transparent;
+  font-size: 24px;
+  height: 40px;
+  border-left: 5px solid #ff0b75;
+  border-bottom: 2px solid #ff0b75;
+  border-radius: 0;
+}
 header.navbar {
   background: #444;
   position: absolute;
