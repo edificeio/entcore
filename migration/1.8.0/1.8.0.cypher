@@ -1,4 +1,5 @@
 begin transaction
+CREATE CONSTRAINT ON (u:UserBook) ASSERT u.userid IS UNIQUE;
 CREATE INDEX ON :ConversationMessage(from);
 CREATE INDEX ON :ConversationMessage(to);
 CREATE INDEX ON :ConversationMessage(cc);
