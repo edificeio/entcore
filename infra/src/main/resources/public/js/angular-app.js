@@ -1649,7 +1649,7 @@ module.directive('htmlInlineEditor', function($compile){
             notify: '=',
             ngChange: '&'
         },
-        template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
+        template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%; min-height: 24px" class="contextual-editor"></div>' +
             '<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
             '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
             '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
