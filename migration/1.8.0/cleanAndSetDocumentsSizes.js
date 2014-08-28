@@ -1,6 +1,11 @@
 var usedFiles = [];
-db.documents.find({"file" : { "$exists" : true}}, { "file" : 1}).forEach(function(doc) {
+db.documents.find({"file" : { "$exists" : true}}, { "file" : 1, "thumbnails" : 1 }).forEach(function(doc) {
   usedFiles.push(doc.file);
+  for (var index in doc.thumbnails) {
+    if (doc.thumbnails.hasOwnProperty(index)) {
+      usedFiles.push(doc.thumbnails[index]);
+    }
+  }
 });
 db.racks.find({"file" : { "$exists" : true}}, { "file" : 1}).forEach(function(doc) {
   usedFiles.push(doc.file);
