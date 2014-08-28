@@ -46,24 +46,24 @@ public class QuotaController extends Controller {
 		super(vertx, container, rm, securedActions);
 	}
 
-	@SecuredAction(value = "quota.get", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuota(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		quotaService.quotaAndUsage(userId, notEmptyResponseHandler(request));
 	}
 
-	@SecuredAction(value = "quota.structure", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuotaStructure(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		quotaService.quotaAndUsageStructure(structureId, notEmptyResponseHandler(request));
 	}
 
-	@SecuredAction(value = "quota.global", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuotaGlobal(final HttpServerRequest request) {
 		quotaService.quotaAndUsageGlobal(notEmptyResponseHandler(request));
 	}
 
-	@SecuredAction(value = "quota.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateQuota", new Handler<JsonObject>() {
 			@Override
@@ -73,7 +73,7 @@ public class QuotaController extends Controller {
 		});
 	}
 
-	@SecuredAction(value = "quota.default", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void updateDefault(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateDefaultQuota", new Handler<JsonObject>() {
 			@Override
