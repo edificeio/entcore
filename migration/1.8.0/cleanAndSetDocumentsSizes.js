@@ -6,6 +6,7 @@ db.racks.find({"file" : { "$exists" : true}}, { "file" : 1}).forEach(function(do
   usedFiles.push(doc.file);
 });
 
+db.fs.chunks.remove({ "files_id" : { "$not" : { "$in" : usedFiles }}});
 db.fs.files.remove({ "_id" : { "$not" : { "$in" : usedFiles }}});
 
 db.documents.find({"file" : { "$exists" : true}, "metadata.size" : 0 }, { "file" : 1}).forEach(function(doc) {
