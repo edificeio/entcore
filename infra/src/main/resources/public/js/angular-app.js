@@ -325,16 +325,16 @@ module.directive('lightbox', function($compile){
 			show: '=',
 			onClose: '&'
 		},
-		template: '<div>\
-					<section class="lightbox-background"></section>\
-					<section class="lightbox-view">\
-						<div class="twelve cell reduce-block-eight" ng-transclude></div>\
-						<div class="close-lightbox">\
-						<i class="close-2x"></i>\
-						</div>\
-						<div class="clear"></div>\
-					</section>\
-				</div>',
+		template: '<div>'+
+					'<section class="lightbox-background"></section>'+
+					'<section class="lightbox-view">'+
+						'<div class="twelve cell reduce-block-eight" ng-transclude></div>'+
+						'<div class="close-lightbox">'+
+						'<i class="close-2x"></i>'+
+						'</div>'+
+						'<div class="clear"></div>'+
+					'</section>'+
+				'</div>',
 		link: function(scope, element, attributes){
 			element.find('.lightbox-background, i').on('click', function(){
 				element.find('.lightbox-view').fadeOut();
@@ -1402,7 +1402,7 @@ function createCKEditorInstance(editor, $scope, $compile){
 	});
 
 	return ckeEditorFixedPositionning;
-};
+}
 
 module.directive('textEditor', function($compile){
 	return {
@@ -1645,7 +1645,6 @@ module.directive('htmlInlineEditor', function($compile){
         restrict: 'E',
         scope: {
             ngModel: '=',
-            watchCollection: '@',
             notify: '=',
             ngChange: '&'
         },
@@ -1689,9 +1688,9 @@ module.directive('htmlInlineEditor', function($compile){
                 var contextEditor = instance;
                 $scope.contextEditor = instance;
 
-                editor.html($scope.ngModel);
+                //editor.html($scope.ngModel);
                 CKEDITOR.on('instanceReady', function(ck){
-                    editor.html($scope.ngModel);
+                    editor.html($compile($scope.ngModel)($scope.$parent));
                 });
                 $scope.$watch('ngModel', function(newVal){
                     if(newVal !== editor.html()){
@@ -1746,8 +1745,8 @@ module.directive('htmlInlineEditor', function($compile){
                         }
 
                         if($scope.format === 'img'){
-                            var image = contextEditor.document.createElement('img');
-                            image.setAttribute('src', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
+                            var src = 'src = "/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0"';
+							var image = contextEditor.document.createElement($compile('<img '+src+' resizable-element></img>')($scope)[0]);
                             contextEditor.insertElement(image);
                         }
                         if($scope.format === 'audio'){
@@ -1973,6 +1972,142 @@ module.directive('drawingZone', function(){
 		$element.addClass('drawing-zone');
 	};
 });
+
+module.directive('resizableElement', function(){
+    return{
+        restrict: 'A',
+        link: function($scope, $element, $attributes){
+
+            if($scope.disableResizableElement === true)
+                return;
+
+            //Disable drag'n'drop
+            $element.on('dragstart', function(){
+                return false;
+            })
+
+            //True if the left mouse button is pressed
+            var clicked = false
+
+            //Get mouse position on screen
+            var mousePos = function(event){
+                return {
+                    x: event.pageX,
+                    y: event.pageY
+                }
+            }
+
+            //Get html element borders positions on screen
+            var getElementBorders = function(){
+                return {
+                    right   : $element.offset().left + $element.width(),
+                    left    : $element.offset().left,
+                    top     : $element.offset().top,
+                    bottom  : $element.offset().top + $element.height()
+                }
+            }
+
+            //Acceptable delta
+            var DELTA_BORDER = 5
+            //Tests if the mouse is moving over a border
+            var getMouseBorders = function(event){
+                var borders = getElementBorders()
+                var pos     = mousePos(event)
+
+                return {
+                    left    : borders.left + DELTA_BORDER > pos.x && borders.left - DELTA_BORDER < pos.x,
+                    right   : borders.right + DELTA_BORDER > pos.x && borders.right - DELTA_BORDER < pos.x,
+                    top     : borders.top + DELTA_BORDER > pos.y && borders.top - DELTA_BORDER < pos.y,
+                    bottom  : borders.bottom + DELTA_BORDER > pos.y && borders.bottom - DELTA_BORDER < pos.y
+                }
+
+            }
+
+            //Icon change
+            var changeIcon = function(e){
+                var resizeLimits = getMouseBorders(e)
+
+                var orientations = {
+                    'ns': resizeLimits.top || resizeLimits.bottom,
+                    'ew': resizeLimits.left || resizeLimits.right,
+                    'nwse': (resizeLimits.bottom && resizeLimits.right) || (resizeLimits.top && resizeLimits.left),
+                    'nesw': (resizeLimits.bottom && resizeLimits.left) || (resizeLimits.top && resizeLimits.right)
+
+                }
+
+                var cursor = ''
+                for(var orientation in orientations){
+                    if(orientations[orientation]){
+                        cursor = orientation;
+                    }
+                }
+
+                if(cursor){
+                    cursor = cursor + '-resize'
+                } else
+                    cursor = 'auto'
+
+                $element.css({ cursor: cursor })
+            }
+
+            //Element size backup
+            var oldElement = {
+                width : $element.width(),
+                height : $element.height(),
+                offset: $element.offset()
+            }
+
+            //Resize function
+            var resizeElement = function(e){
+                var pos = mousePos(e)
+
+                if(clickBorder.bottom){
+                    $element.height(pos.y - oldElement.offset.top)
+                } else if(clickBorder.top){
+                    $element.height(oldElement.height + (oldElement.offset.top - pos.y))
+                }
+
+                if(clickBorder.left){
+                    $element.width(oldElement.width + (oldElement.offset.left - pos.x))
+                } else if(clickBorder.right){
+                    $element.width(pos.x - oldElement.offset.left)
+                }
+            }
+
+            $element.on('mouseover', function(e){
+                $element.on('mousemove', function(e){
+                    if(!clicked)
+                        changeIcon(e)
+                })
+
+                $element.on('mouseout', function(e){
+                    $element.unbind('mousemove')
+                    if(!clicked)
+                        $element.css({ cursor: 'auto' })
+                })
+            })
+
+            $element.on('mousedown', function(e){
+                clicked = true
+                oldElement = {
+                    width : $element.width(),
+                    height : $element.height(),
+                    offset: $element.offset()
+                }
+                clickBorder = getMouseBorders(e)
+                $(window).on('mousemove.resize.element', function(e){
+                    resizeElement(e)
+                })
+            })
+            $(window).on('mouseup', function(e){
+                clicked = false
+                $element.css({ cursor: 'auto' })
+                $(window).unbind('mousemove.resize.element')
+            })
+
+        }
+    }
+})
 
 module.directive('resizable', function(){
 	return {
