@@ -2873,6 +2873,9 @@ module.directive('draggable', function($compile){
 						x: mouse.x - $element.offset().left
 					};
 					$(window).on('mousemove.drag', function(e){
+						if(e.clientX === mouse.x || e.clientY === mouse.y){
+							return;
+						}
 						$element.unbind("click");
 						$element.data('dragging', true)
 						mouse = {
