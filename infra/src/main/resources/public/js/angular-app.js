@@ -1514,7 +1514,7 @@ module.directive('htmlEditor', function($compile){
                     '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
                 '</p>' +
                 '<input type="test" ng-model="videoText" style=" border:  2px solid orange; width: 95%; margin: 15px;"/>' +
-                '<div style="text-align: center"><button ng-click="addVideoLink(videoText)">Valider</button></div>' +
+                '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
             '</lightbox>' +
             '</div>',
 		compile: function($element, $attributes, $transclude){
