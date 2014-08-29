@@ -19,12 +19,12 @@
 
 package org.entcore.directory;
 
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
 import fr.wseduc.webutils.Server;
@@ -36,7 +36,6 @@ import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.services.impl.UserbookRepositoryEvents;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +58,7 @@ public class Directory extends Server {
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				Renders.redirectPermanent(request, "/directory/i18n");
+				Renders.renderJson(request, I18n.getInstance().load(request.headers().get("Accept-Language")));
 			}
 		});
 
