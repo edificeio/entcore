@@ -33,7 +33,7 @@ routes.define(function($routeProvider){
 		})
 });
 
-function DirectoryController($scope, model, route, date, template){
+function DirectoryController($scope, route, date, template){
 	$scope.template = template;
 	template.open('userActions', 'user-actions');
 	$scope.users = [];
@@ -196,7 +196,7 @@ function DirectoryController($scope, model, route, date, template){
 	};
 }
 
-function ClassAdminController($scope, model, date, notify){
+function ClassAdminController($scope, date, notify){
 	model.directory.users.searchDirectory('');
 
 	model.network.sync();
