@@ -1064,7 +1064,7 @@ module.directive('portal', function($compile){
 		transclude: true,
 		templateUrl: skin.portalTemplate,
 		compile: function(element, attributes, transclude){
-			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
+			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
 		}
 	}
@@ -1388,15 +1388,6 @@ function createCKEditorInstance(editor, $scope, $compile){
 	});
 
 	editor.on('blur', function(e) {
-		var content = editor.html();
-		if(content.indexOf(';base64,') !== -1){
-			$scope.notify.error('Une image est corrompue')
-		}
-		editor.find('img').each(function(index, item){
-			if($(item).attr('src').indexOf(';base64,') !== -1){
-				$(item).remove();
-			}
-		})
 		$scope.ngModel = editor.html();
 		$scope.$apply();
 	});
