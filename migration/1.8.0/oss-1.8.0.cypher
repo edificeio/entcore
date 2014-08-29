@@ -1,11 +1,12 @@
 begin transaction
+CREATE CONSTRAINT ON (u:UserBook) ASSERT u.userid IS UNIQUE;
 CREATE INDEX ON :ConversationMessage(from);
 CREATE INDEX ON :ConversationMessage(to);
 CREATE INDEX ON :ConversationMessage(cc);
 commit
 begin transaction
 CREATE (:DeleteGroup:ProfileGroup:Group);
-MATCH (u:User), (s:Structure { name : 'École Primaire Hamelin' }) WHERE NOT((s)<-[:DEPENDS]-()<-[:IN]-(u)) SET u.manual = true;
+MATCH (u:User) SET u.manual = true;
 
 MATCH (n:Role)
 WHERE n.name = 'archive-all-default'
