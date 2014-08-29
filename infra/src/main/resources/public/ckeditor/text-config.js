@@ -11,7 +11,7 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-		{ name: 'links', items: ['Linker','Mathjax'] },
+		{ name: 'links', items: ['Linker'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] }
 	];
 
