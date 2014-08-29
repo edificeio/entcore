@@ -1509,11 +1509,11 @@ module.directive('htmlEditor', function($compile){
 			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
 			'</media-library></lightbox>' +
             '<lightbox show="inputVideo" on-close="inputVideo = false">' +
-                '<p>' +
+                '<p style="padding-bottom: 10px;">' +
                     'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
                     '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
                 '</p>' +
-                '<input type="test" ng-model="videoText" style=" border:  2px solid orange; width: 95%; margin: 15px;"/>' +
+                '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
                 '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
             '</lightbox>' +
             '</div>',
@@ -1645,12 +1645,12 @@ module.directive('htmlInlineEditor', function($compile){
             '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
             '</media-library></lightbox>' +
             '<lightbox show="inputVideo" on-close="inputVideo = false">' +
-                '<p>' +
+                '<p style="padding-bottom: 10px;">' +
                     'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
                     '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
                 '</p>' +
-                '<input type="test" ng-model="videoText" style=" border:  2px solid orange; width: 95%; margin: 15px;"/>' +
-                '<div style="text-align: center"><button ng-click="addVideoLink(videoText)">Valider</button></div>' +
+                '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
+                '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
             '</lightbox>' +
             '</div>',
         compile: function($element, $attributes, $transclude){
