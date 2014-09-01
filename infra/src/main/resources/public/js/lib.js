@@ -1165,9 +1165,13 @@ function bootstrap(func){
 			return _.find(model.me.authorizedActions, function(workflowRight){
 				return workflowRight.name === workflow;
 			}) !== undefined || workflow === undefined;
-		}
+		};
 
 		model.me.hasRight = function(resource, right){
+			if(right === 'owner'){
+				return resource.owner.userId === model.me.userId;
+			}
+
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
 				return model.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
 					|| sharedRight.userId === model.me.userId;
@@ -1206,6 +1210,21 @@ function bootstrap(func){
 			},
 			findBehaviours: function(serviceName, resource){
 				if(this.applicationsBehaviours[serviceName]){
+					if(!resource.myRights){
+						resource.myRights = {};
+					}
+
+					if(typeof this.applicationsBehaviours[serviceName].resource !== 'function'){
+						var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
+
+						this.applicationsBehaviours[serviceName].resource = function(){
+							for(var behaviour in resourceRights){
+								if(model.me.hasRight(resource, resourceRights[behaviour]) || model.me.userId === resource.owner.userId){
+									resource.myRights[behaviour] = resourceRights[behaviour];
+								}
+							}
+						}
+					}
 					return this.applicationsBehaviours[serviceName].resource(resource);
 				}
 
@@ -1228,6 +1247,9 @@ function bootstrap(func){
 					}
 					else{
 						if(typeof this.applicationsBehaviours[serviceName].rights === 'object' && this.applicationsBehaviours[serviceName].rights.workflow){
+							if(!this.applicationsBehaviours[serviceName].dependencies){
+								this.applicationsBehaviours[serviceName].dependencies = {};
+							}
 							return this.workflowsFrom(this.applicationsBehaviours[serviceName].rights.workflow, this.applicationsBehaviours[serviceName].dependencies.workflow)
 						}
 					}
