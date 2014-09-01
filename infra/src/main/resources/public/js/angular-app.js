@@ -597,10 +597,19 @@ module.directive('linker', function($compile){
 
 module.directive('calendar', function($compile){
 	return {
+		scope: {
+			editTemplate: '@',
+			createTemplate: '@',
+			displayTemplate: '@',
+			items: '='
+		},
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
-		link: function(scope, element, attributes){
-			scope.days = calendar.days;
+		compile: function(){
+			calendar.init();
+			return function(scope, element, attributes){
+				scope.calendar = model.calendar;
+			};
 		}
 	}
 })

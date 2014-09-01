@@ -302,7 +302,7 @@ function Collection(obj){
 (function(){
 	function pluralizeName(obj){
 		var name = (obj.name || obj._name);
-		if(name[name.length - 1] === 'y'){
+		if(name[name.length - 1] === 'y' && name !== 'Day'){
 			return name[0].toLowerCase() + name.substr(1, name.length - 2) + 'ies';
 		}
 		return name[0].toLowerCase() + name.substr(1) + 's';
@@ -1290,17 +1290,30 @@ function bootstrap(func){
 }
 
 var calendar = {
-	TimeSlot: function(){
-
+	TimeSlot: function(data){
 	},
 	ScheduleItem: function(){
 
 	},
+	Day: function(data){
+		this.collection(calendar.TimeSlot);
+		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
+			this.timeSlots.push(new calendar.TimeSlot({ start: i, end: i+1 }))
+		}
+	},
+	Calendar: function(){
+		this.collection(calendar.Day);
+		this.days.load([{ name: 'monday'}, { name: 'tuesday' }, { name: 'wednesday' }, { name: 'thursday' },
+			{ name: 'friday' }, { name: 'saturday' }, { name: 'sunday' }]);
+		this.collection(calendar.TimeSlot);
+		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
+			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
+		}
+	},
 	startOfDay: 7,
 	endOfDay: 20,
-	days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-}
-
-function Schedule(){
-	model.makeModels(calendar);
-}
+	init: function(){
+		model.makeModels(calendar);
+		model.calendar = new calendar.Calendar();
+	}
+};

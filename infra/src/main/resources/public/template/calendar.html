@@ -1,12 +1,13 @@
-<div class="calendar">
-	<div ng-repeat="timeslot in timeslots">
-
-	</div>
-	<div ng-repeat="day in days">
-		<div ng-repeat="timeslot in timeslots">
-
+<div class="schedule">
+	<legend class="timeslots">
+		<div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot">
+			[[timeslot.beginning]]h00 - [[timeslot.end]]h00
 		</div>
-		<div ng-repeat="scheduleItem in scheduleItems">
+	</legend>
+	<div ng-repeat="day in calendar.days.all" class="day">
+		<legend>[[day.name]]</legend>
+		<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
+		<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item">
 
 		</div>
 	</div>

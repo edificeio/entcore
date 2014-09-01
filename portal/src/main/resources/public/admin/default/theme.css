@@ -970,7 +970,7 @@ p i {
   margin-top: 10px !important;
   margin-bottom: 10px !important;
 }
-.calendar {
+.calendar.widget {
   height: 160px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -985,10 +985,10 @@ p i {
   margin-bottom: 15px;
   padding-right: 1px;
 }
-.calendar img {
+.calendar.widget img {
   max-width: 100%;
 }
-.calendar .content {
+.calendar.widget .content {
   margin-top: 55px;
   width: 1;
   width: 100%;
@@ -1013,10 +1013,10 @@ p i {
   border-bottom-right-radius: 10px;
   overflow: hidden;
 }
-.calendar .content img {
+.calendar.widget .content img {
   max-width: 100%;
 }
-.calendar .content {
+.calendar.widget .content {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -1024,13 +1024,13 @@ p i {
   left: 0;
   height: 104px;
 }
-.calendar .day {
+.calendar.widget .day {
   width: 14.2%;
   height: 17px;
   text-align: center;
   padding-top: 2px;
 }
-.calendar .current-month-header {
+.calendar.widget .current-month-header {
   position: absolute;
   width: 100%;
   text-align: center;
@@ -4135,49 +4135,49 @@ nav.vertical.stamps article.selected a {
   float: left;
   vertical-align: middle;
 }
-.calendar {
+.widget.calendar {
   padding-bottom: 35% !important;
   border: 1px solid #ccc;
   border-bottom: 0;
   background: #fff;
 }
-.calendar .current-month-header {
+.widget.calendar .current-month-header {
   top: 0;
 }
-.calendar .content {
+.widget.calendar .content {
   border-radius: 0px;
   border: 1px solid #ccc;
   border-top: 0;
   background: #fff;
   margin-top: 18%;
 }
-.calendar .content .day {
+.widget.calendar .content .day {
   font-size: 10px;
   height: 21px;
 }
-.calendar .content .previous-month,
-.calendar .content .next-month {
+.widget.calendar .content .previous-month,
+.widget.calendar .content .next-month {
   color: #aaa;
 }
-.calendar .content .day.today {
+.widget.calendar .content .day.today {
   color: #fff;
   background: #000;
 }
-.calendar .current-day h1 {
+.widget.calendar .current-day h1 {
   font-size: 14px;
   text-align: center;
   font-weight: normal;
   margin-bottom: -10px;
   margin-top: 5px;
 }
-.calendar .current-day h2 {
+.widget.calendar .current-day h2 {
   font-size: 40px;
   margin: 0;
   margin-top: 5px;
   text-align: center;
   font-weight: normal;
 }
-.calendar .current-day h3 {
+.widget.calendar .current-day h3 {
   font-weight: 100;
   font-size: 14px;
   text-align: center;
@@ -4710,17 +4710,17 @@ thead th {
 header {
   background: transparent;
 }
-.calendar {
+.widget.calendar {
   width: 254px;
 }
-.calendar .content {
+.widget.calendar .content {
   margin-left: -1px;
   box-sizing: content-box;
 }
-.calendar .content .day.today {
+.widget.calendar .content .day.today {
   background: #008bb8;
 }
-.calendar .content h2 {
+.widget.calendar .content h2 {
   color: #008bb8;
 }
 .last-mails-widget,
@@ -5278,10 +5278,57 @@ select {
   border-radius: 0;
   padding: 8px;
 }
+<<<<<<< HEAD
 .square-menu button {
   background: #444;
   border-radius: 0;
   color: #aaa;
+=======
+.schedule {
+  width: 100%;
+  display: table;
+  padding-left: 100px;
+  box-sizing: border-box;
+}
+.schedule legend.timeslots {
+  width: 100px;
+  background: #444;
+  color: #aaa;
+  position: absolute;
+  top: 40px;
+  left: 0;
+}
+.schedule .timeslot {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+}
+.schedule .day {
+  display: table-cell;
+  width: 14.28571429%;
+}
+.schedule .day legend {
+  width: 100%;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  color: #aaa;
+  background: #444;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.schedule .day .timeslot {
+  background: #fdfdfd;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  width: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+>>>>>>> [infra] basic calendar display
 }
 .square-menu i.text {
   height: 30px;
@@ -5298,7 +5345,10 @@ select {
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
+<<<<<<< HEAD
   border: none;
+=======
+>>>>>>> [infra] basic calendar display
 }
 .square-menu i.image,
 .square-menu input[type=button].image {
@@ -5316,7 +5366,10 @@ select {
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
+<<<<<<< HEAD
   border: none;
+=======
+>>>>>>> [infra] basic calendar display
 }
 .square-menu i.sound,
 .square-menu input[type=button].sound {
@@ -5334,7 +5387,10 @@ select {
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
+<<<<<<< HEAD
   border: none;
+=======
+>>>>>>> [infra] basic calendar display
 }
 .square-menu i.video {
   height: 30px;
@@ -5351,7 +5407,10 @@ select {
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
+<<<<<<< HEAD
   border: none;
+=======
+>>>>>>> [infra] basic calendar display
 }
 .square-menu i.grid {
   height: 30px;
@@ -5367,6 +5426,7 @@ select {
   float: left;
   vertical-align: middle;
   background-size: 60% auto;
+<<<<<<< HEAD
   background-color: transparent
 			border: none;
 }
@@ -5472,6 +5532,9 @@ select {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+=======
+  background-color: transparent;
+>>>>>>> [infra] basic calendar display
 }
 a {
   color: #ff0b75;

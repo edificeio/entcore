@@ -365,7 +365,7 @@ nav.vertical.stamps{
 	}
 }
 
-.calendar{
+.widget.calendar{
 	padding-bottom: 35% !important;
 	border: 1px solid #ccc;
 	border-bottom: 0;
@@ -925,7 +925,7 @@ table{
 		background: transparent;
 	}
 
-	.calendar{
+	.widget.calendar{
 		width: 254px;
 		.content{
 			margin-left: -1px;
@@ -1347,6 +1347,7 @@ table{
 		}
 	}
 
+<<<<<<< HEAD
 	.square-menu{
 		button{
 			background: #444;
@@ -1456,8 +1457,76 @@ table{
 	background: @bright-blue;
 	.run-transition(background);
 }
-.media-container.black{
+.media-container.black {
 	background: #444;
 	color: #aaa;
 	.run-transition(background);
+}
+
+.schedule{
+	width: 100%;
+	display: table;
+	padding-left: 100px;
+	box-sizing: border-box;
+	legend.timeslots{
+		width: 100px;
+		background: #444;
+		color: #aaa;
+		position: absolute;
+		top: 40px;
+		left: 0;
+	}
+	.timeslot{
+		height: 40px;
+		line-height: 40px;
+		text-align: center;
+	}
+	.day{
+		display: table-cell;
+		width: 100% / 7;
+		legend{
+			width: 100%;
+			text-align: center;
+			height: 40px;
+			line-height: 40px;
+			color: #aaa;
+			background: #444;
+			.border-box;
+		}
+		.timeslot{
+			background: #fdfdfd;
+			border-bottom: 1px solid #eee;
+			border-right: 1px solid #eee;
+			width: 100%;
+			.border-box;
+		}
+	}
+}
+
+.square-menu {
+	i.text {
+		.icon(text-icon, 30px);
+		background-size: 60% auto;
+		background-color: transparent;
+	}
+	i.image, input[type=button].image {
+		.icon(picture-icon, 30px);
+		background-size: 60% auto;
+		background-color: transparent;
+	}
+	i.sound, input[type=button].sound {
+		.icon(music-icon, 30px);
+		background-size: 60% auto;
+		background-color: transparent;
+	}
+	i.video {
+		.icon(video-icon, 30px);
+		background-size: 60% auto;
+		background-color: transparent;
+	}
+	i.grid {
+		.icon(glyphicons_155_show_big_thumbnails, 30px);
+		background-size: 60% auto;
+		background-color: transparent
+	}
 }
