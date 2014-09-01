@@ -4084,13 +4084,13 @@ nav.vertical.stamps article.selected a {
   margin: 7px;
 }
 .green {
-  background: #60cd12;
+  background: #00cb4c;
 }
 .orange {
-  background: #fd841c;
+  background: #ffb400;
 }
 .purple {
-  background: #a04ac5;
+  background: #554dc2;
 }
 .cyan {
   background: #00a3d8;
@@ -4877,7 +4877,7 @@ textarea {
   -ms-border-radius: 0px;
   -o-border-radius: 0px;
   border-radius: 0px;
-  border-left: 10px solid #60cd12;
+  border-left: 10px solid #00cb4c;
 }
 .lightbox-window {
   border: 5px solid #555;
@@ -5242,7 +5242,7 @@ select {
   border-color: #008bb8;
 }
 .humane-original-success {
-  background: #60cd12;
+  background: #00cb4c;
 }
 .progress-bar .filled {
   background: #008bb8;
@@ -5263,6 +5263,88 @@ select {
   border-right: 7px solid #008bb8;
   border-radius: 0;
   padding: 8px;
+}
+.square-menu i.text {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/text-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+}
+.square-menu i.image,
+.square-menu input[type=button].image {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/picture-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+}
+.square-menu i.sound,
+.square-menu input[type=button].sound {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/music-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+}
+.square-menu i.video {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/video-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+}
+.square-menu i.grid {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/glyphicons_155_show_big_thumbnails.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
 }
 a {
   color: #ff0b75;

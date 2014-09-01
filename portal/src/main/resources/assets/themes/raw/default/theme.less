@@ -7,11 +7,11 @@
 @bright-blue: #008BB8;
 
 //legend colors
-@green: #60CD12;
-@purple: #a04ac5;
+@green: #00CB4c;
+@purple: #554dc2;
 @pink: #FF0B75;
 @cyan: #00A3D8;
-@orange: #FD841C;
+@orange: #FFB400;
 
 .tabs{
 	header{
@@ -1344,5 +1344,33 @@ table{
 			border-right: 7px solid @bright-blue;
 			border-radius: 0;
 			padding: 8px;
+		}
+	}
+
+	.square-menu{
+		i.text{
+			.icon(text-icon, 30px);
+			background-size: 60% auto;
+			background-color: transparent;
+		}
+		i.image, input[type=button].image{
+			.icon(picture-icon, 30px);
+			background-size: 60% auto;
+			background-color: transparent;
+		}
+		i.sound, input[type=button].sound{
+			.icon(music-icon, 30px);
+			background-size: 60% auto;
+			background-color: transparent;
+		}
+		i.video{
+			.icon(video-icon, 30px);
+			background-size: 60% auto;
+			background-color: transparent;
+		}
+		i.grid{
+			.icon(glyphicons_155_show_big_thumbnails, 30px);
+			background-size: 60% auto;
+			background-color: transparent
 		}
 	}
