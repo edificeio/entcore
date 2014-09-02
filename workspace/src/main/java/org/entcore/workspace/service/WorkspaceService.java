@@ -1099,11 +1099,11 @@ public class WorkspaceService extends Controller {
 	private void copyFiles(final HttpServerRequest request, final String collection,
 				final String owner, final UserInfos user) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		String folder2;
+		String folder2 = getOrElse(request.params().get("folder"), "");
 		try {
-			folder2 = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+			folder2 = URLDecoder.decode(folder2, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			folder2 = request.params().get("folder");
+			log.warn(e.getMessage(), e);
 		}
 		final String folder = folder2;
 		if (ids != null && !ids.trim().isEmpty()) {
@@ -1275,11 +1275,11 @@ public class WorkspaceService extends Controller {
 					}
 					dest.putString("created", now);
 					dest.putString("modified", now);
-					String folder;
+					String folder = getOrElse(request.params().get("folder"), "");
 					try {
-						folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+						folder = URLDecoder.decode(folder, "UTF-8");
 					} catch (UnsupportedEncodingException e) {
-						folder = request.params().get("folder");
+						log.warn(e.getMessage(), e);
 					}
 					dest.putString("folder", folder);
 					String filePath = orig.getString("file");
@@ -1444,11 +1444,11 @@ public class WorkspaceService extends Controller {
 
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocument(final HttpServerRequest request) {
-		String folder;
+		String folder = getOrElse(request.params().get("folder"), "");
 		try {
-			folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+			folder = URLDecoder.decode(folder, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			folder = request.params().get("folder");
+			log.warn(e.getMessage(), e);
 		}
 		moveOne(request, folder, documentDao, null);
 	}
@@ -1502,11 +1502,11 @@ public class WorkspaceService extends Controller {
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		String folder;
+		String folder = getOrElse(request.params().get("folder"), "");
 		try {
-			folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+			folder = URLDecoder.decode(folder, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			folder = request.params().get("folder");
+			log.warn(e.getMessage(), e);
 		}
 		if (ids != null && !ids.trim().isEmpty()) {
 			JsonArray idsArray = new JsonArray(ids.split(","));
@@ -1602,11 +1602,11 @@ public class WorkspaceService extends Controller {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";
 					}
-					String folder;
+					String folder = getOrElse(request.params().get("folder"), "");
 					try {
-						folder = URLDecoder.decode(request.params().get("folder"), "UTF-8");
+						folder = URLDecoder.decode(folder, "UTF-8");
 					} catch (UnsupportedEncodingException e) {
-						folder = request.params().get("folder");
+						log.warn(e.getMessage(), e);
 					}
 					String forApplication = getOrElse(request.params()
 							.get("application"), WorkspaceService.WORKSPACE_NAME);
