@@ -675,7 +675,13 @@ public class WorkspaceService extends Controller {
 			@Override
 			protected void handle() {
 				final String id = request.params().get("id");
-				final String path = request.formAttributes().get("path");
+				String p;
+				try {
+					p = request.formAttributes().get("path");
+				} catch (IllegalStateException e) {
+					p = "";
+				}
+				final String path = p;
 				if (id == null || id.trim().isEmpty()) {
 					badRequest(request);
 					return;
