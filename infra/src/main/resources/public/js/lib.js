@@ -302,7 +302,7 @@ function Collection(obj){
 (function(){
 	function pluralizeName(obj){
 		var name = (obj.name || obj._name);
-		if(name[name.length - 1] === 'y'){
+		if(name[name.length - 1] === 'y' && name[name.length - 2] !== 'a' && name[name.length - 2] !== 'e'){
 			return name[0].toLowerCase() + name.substr(1, name.length - 2) + 'ies';
 		}
 		return name[0].toLowerCase() + name.substr(1) + 's';
@@ -1335,7 +1335,19 @@ calendar.Calendar.prototype.addScheduleItems = function(items){
 			endDay = 6;
 		}
 		for(var i = startDay; i <= endDay; i++){
-			schedule.days.all[i].scheduleItems.push(item)
+			schedule.days.all[i].scheduleItems.push(item);
+			if(i === startDay){
+				item.startTime = item.beginning.hour();
+			}
+			else{
+				item.startTime = 7;
+			}
+			if(i === endDay){
+				item.endTime = item.end.hour();
+			}
+			else{
+				item.endTime = 20;
+			}
 		}
 	});
 };

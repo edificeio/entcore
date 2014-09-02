@@ -12,7 +12,8 @@
 			</div>
 
 			<div class="schedule-items">
-				<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item">
+				<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item" ng-style="{ top: ((scheduleItem.startTime - 7) * 40) + 'px',
+				height: ((scheduleItem.endTime - scheduleItem.startTime) * 40) + 'px' }">
 					<container template="schedule-display-template"></container>
 				</div>
 			</div>

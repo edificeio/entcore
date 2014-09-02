@@ -4105,15 +4105,19 @@ nav.vertical.stamps article.selected a {
 }
 .purple {
   background: #554dc2;
+  color: #fff;
 }
 .cyan {
   background: #00a3d8;
+  color: #fff;
 }
 .pink {
   background: #ff0b75;
+  color: #fff;
 }
 .grey {
-  background: #555;
+  background: #444;
+  color: #aaa;
 }
 .actions-list {
   background: #444;
@@ -5606,6 +5610,7 @@ select {
 .schedule .schedule-items {
   position: absolute;
   left: 0;
+  top: 40px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -5615,6 +5620,14 @@ select {
   white-space: nowrap;
   text-overflow: ellipsis;
   position: absolute;
+  border: 1px solid transparent;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 a {
   color: #ff0b75;
