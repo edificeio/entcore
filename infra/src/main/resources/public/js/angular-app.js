@@ -3051,6 +3051,17 @@ module.directive('datePicker', function($compile){
 				$element.datepicker('show');
 			});
 
+			$element.on('change', function(){
+				var date = $element.val().split('/');
+				var temp = date[0];
+				date[0] = date[1];
+				date[1] = temp;
+				date = date.join('/');
+				$scope.ngModel = new Date(date);
+				$scope.$apply('ngModel');
+				$scope.$parent.$eval($scope.ngChange);
+				$scope.$parent.$apply();
+			});
 		}
 	}
 });
