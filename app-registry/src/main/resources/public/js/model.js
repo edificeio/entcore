@@ -45,19 +45,22 @@ Application.prototype.open = function(){
 	}
 
 	http().get('/appregistry/application/conf/' + this.id).done(function(data){
-		data.result[0].target = data.result[0].target || '';
-		if(data.result[0].address && data.result[0].address.indexOf('/adapter#') !== -1){
-			data.result[0].target = 'adapter';
-			data.result[0].address = data.result[0].address.split('/adapter#')[1];
-		}
+		if(!data)
+			return;
 
-		this.updateData(data.result[0]);
+		data.target = data.target || '';
+		if(data.address && data.address.indexOf('/adapter#') !== -1){
+			data.target = 'adapter';
+			data.address = data.address.split('/adapter#')[1];
+		}
+		this.updateData(data);
+
 	}.bind(this));
 };
 
 Application.prototype.createApplication = function(){
-	http().post('/appregistry/application/external', {
-		grantType: this.grantType,
+	http().postJson('/appregistry/application/external', {
+		grantType: this.grantType || '',
 		displayName: this.displayName,
 		secret: this.secret || '',
 		address: this.address,
@@ -68,25 +71,24 @@ Application.prototype.createApplication = function(){
 	})
 	.done(function(){
 		model.applications.sync();
-		notify.success('Application créée');
+		notify.info(lang.translate('appregistry.notify.createApp'));
 	});
 };
 
 Application.prototype.saveChanges = function(){
-	http().post('/appregistry/application/conf', {
-		applicationId: this.id,
-		grantType: this.grantType,
+	http().putJson('/appregistry/application/conf/'+this.id, {
+		grantType: this.grantType || '',
 		displayName: this.displayName,
-		secret: this.secret,
+		secret: this.secret || '',
 		address: this.address,
-		icon: this.icon,
-		target: this.target,
-		scope: this.scope,
+		icon: this.icon || '',
+		target: this.target || '',
+		scope: this.scope || '',
 		name: this.name
 	})
 	.done(function(){
 		model.applications.sync();
-		notify.info('Modifications enregistrées');
+		notify.info(lang.translate('appregistry.notify.modified'));
 	});
 };
 
@@ -102,6 +104,13 @@ Application.prototype.save = function(){
 		this.createApplication();
 	}
 };
+
+Application.prototype.delete = function(){
+	http().delete('/appregistry/application/conf/'+this.id).done(function(){
+		model.applications.sync();
+		notify.info(lang.translate('appregistry.notify.deleteApp'));
+	})
+}
 
 function Role(data){
 	this.switch = function(action){
@@ -125,36 +134,91 @@ function Role(data){
 	if(data){
 		this.actions.load(data.actions);
 	}
+
+	this.crossSwitch = function(approle){
+		role = this
+		var index = role.appRoles.indexOf(approle)
+		if(index >= 0)
+			role.appRoles.splice(index, 1)
+		else
+			role.appRoles.push(approle)
+	}
+
+	this.crossRoleContains = function(approle){
+		var role = this
+		return approle.actions.every(function(action){
+			return role.actions.find(function(item){ return item.name === action.name && item.type === action.type && item.displayName === action.displayName})
+		})
+	}
 }
 
-Role.prototype.createRole = function(){
-	http().post('/appregistry/role', { role: this.name, actions:
+Role.prototype.createRole = function(hook){
+	http().postJson('/appregistry/role', { role: this.name, actions:
 		_.map(this.actions.all, function(action){
 			return action.name;
-		}).join(',')
-	})
-		.done(function(){
-			model.roles.sync();
-		});
-};
+		})
+	}).done(function(){
+		typeof hook === "function" ? hook() : null
+	});
+}
 
-Role.prototype.save = function(){
+Role.prototype.updateRole = function(hook){
+	http().putJson('/appregistry/role/' + this.id, {
+		role: this.name,
+		actions: _.map(this.actions.all, function(action){
+			return action.name;
+		})
+	}).done(function(){
+		typeof hook === "function" ? hook() : null
+	})
+}
+
+Role.prototype.delete = function(hook){
+	http().delete('/appregistry/role/' + this.id).done(function(){
+		typeof hook === "function" ? hook() : null
+	})
+}
+
+Role.prototype.save = function(hook){
 	if(!this.id){
-		this.createRole();
+		this.createRole(hook)
+	} else
+		this.updateRole(hook)
+}
+
+Role.prototype.saveCross = function(hook){
+	//Aggregate app-roles actions before saving
+	var role = this
+	role.actions.all = []
+	_.forEach(role.appRoles, function(approle){
+		approle.actions.forEach(function(action){
+			if(role.actions.indexOf(action) < 0)
+				role.actions.push(action)
+		})
+	})
+	if(!this.id){
+		this.createRole(hook)
+	} else {
+		this.updateRole(hook)
 	}
-};
+}
 
 function Group(){
-
+	this.link = function(){
+		http().postJson('/appregistry/authorize/group', {
+			groupId: this.id,
+			roleIds: this.roles
+		})
+	}
 }
 
 function School(){
 	this.collection(Group, {
-		sync: function(){
-			http().get('/appregistry/groups/roles', { schoolId: this.id }).done(function(groups){
-				this.load(_.map(groups, function(group){
-					return group;
-				}));
+		sync: function(hook){
+			http().get('/appregistry/groups/roles', { structureId: this.model.id }).done(function(groups){
+				this.load(groups)
+				if(typeof hook === 'function')
+					hook()
 			}.bind(this));
 		}
 	});
@@ -166,17 +230,15 @@ model.build = function(){
 	this.collection(Application, {
 		sync: function(){
 			http().get('/appregistry/applications/actions?actionType=WORKFLOW').done(function(data){
-				this.load(_.map(data.result, function(app){
-					return app;
-				}));
+				this.load(data)
 			}.bind(this))
 		}
 	});
 
 	this.collection(Role, {
-		sync: function(){
+		sync: function(hook){
 			http().get('/appregistry/roles/actions').done(function(data){
-				this.load(_.map(data.result, function(role){
+				this.load(_.map(data, function(role){
 					return {
 						id: role.id,
 						name: role.name,
@@ -188,7 +250,9 @@ model.build = function(){
 							};
 						})
 					};
-				}));
+				}))
+				if(typeof hook === "function")
+					hook()
 			}.bind(this));
 		},
 		applicationRoles: function(application){
@@ -197,15 +261,30 @@ model.build = function(){
 					return application.actions.findWhere({ name: action.name }) !== undefined;
 				}) !== undefined;
 			});
+		},
+		applicationRolesExclusive: function(application){
+			return this.filter(function(role){
+        		return role.actions.every(function(action){
+            		return application.actions.findWhere({name: action.name})
+        		})
+    		})
+		},
+		crossAppRoles: function(applications){
+			return this.filter(function(role){
+   				return applications.every(function(app){
+      				return !role.actions.every(function(action){
+          				return app.actions.findWhere({name: action.name})
+      				})
+   				})
+			})
 		}
 	});
 
 	this.collection(School, {
 		sync: function(){
-			http().get('/directory/api/ecole').done(function(data){
-				this.load(_.map(data.result, function(school){
-					return school;
-				}));
+			http().get('/directory/structure/admin/list').done(function(data){
+				this.load(data)
+				//this.forEach(function(school){ school.sync() })
 			}.bind(this));
 		}
 	});

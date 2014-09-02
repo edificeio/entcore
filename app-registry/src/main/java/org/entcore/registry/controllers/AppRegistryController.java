@@ -49,20 +49,14 @@ public class AppRegistryController extends BaseController {
 
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 
-	@Get("/admin")
-	@SecuredAction("app-registry.view")
-	public void view(final HttpServerRequest request) {
-		renderView(request);
-	}
-
-	@Get("/static-admin")
-	@SecuredAction("app-registry.staticAdmin")
+	@Get("/admin-console")
+	@SecuredAction("app-registry.adminConsole")
 	public void staticAdmin(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/app-preview")
-	@SecuredAction("app-registry.staticAdmin")
+	@SecuredAction("app-registry.adminConsole")
 	public void appPreview(final HttpServerRequest request) {
 		renderView(request);
 	}

@@ -1,0 +1,279 @@
+<html>
+    <head>
+        <title>{{#i18n}}app.registry.title{{/i18n}}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+        <script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
+    </head>
+</html>
+<body>
+    <admin-portal>
+        <article ng-controller="AppRegistry" class="twelve cell list-view">
+
+	        <div class="eleven leaf-menu-container">
+    		    <div class="leaf-menu" ng-class="{ selected: selected === 0 }">
+                    <a ng-click="selected=0">[[lang.translate("appregistry.appParam")]]</a>
+                </div>
+    		    <div class="leaf-menu" ng-class="{ selected: selected === 1 }">
+                    <a ng-click="selected=1; role = undefined">[[lang.translate("appregistry.appRoles")]]</a>
+                </div>
+    		    <div class="leaf-menu" ng-class="{ selected: selected === 2 }">
+                    <a ng-click="selected=2; crossRoles = flagCrossRoles(); newRole('Role')">[[lang.translate("appregistry.crossRoles")]]</a>
+                </div>
+                <div class="leaf-menu" ng-class="{ selected: selected === 3 }">
+                    <a ng-click="selected=3; crossRoles = flagCrossRoles(); school = schools.all[0]">[[lang.translate("appregistry.roleAttribution")]]</a>
+                </div>
+            </div>
+
+            <!--
+                ||||||||||||||||||||
+                |||  APP CONFIG  |||
+                ||||||||||||||||||||
+            -->
+            <div ng-if="selected === 0" class="twelve"/>
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 750px; overflow-y: scroll;">
+                        <li ng-class="{ selected: !application.id }" ng-click="newApplication()">
+                            <strong>[[lang.translate("appregistry.createApp")]]</strong>
+                        </li>
+                        <li ng-repeat="application in applications.all | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+                            [[application.name]]
+                        </li>
+                    </ul>
+                </nav>
+                <article class="side-tabs-content nine cell" ng-if="application">
+                    <h1 class="nine cell">[[application.name]]</h1>
+
+                    <div class="row preview">
+                        <a ng-click="refreshPreview()"><h2>[[lang.translate("appregistry.preview")]]</h2></a>
+                        <iframe id="previewFrame" ng-src="[[previewPath(application)]]" style="border: 2px dashed darkgray"></iframe>
+                    </div>
+
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
+                        <input type="text" ng-model="application.name" class="four cell" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
+                        <input type="text" ng-model="application.displayName" complete-change="updatePath()" class="four cell" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
+                        <input type="text" ng-model="application.icon" complete-change="updatePath()" class="four cell" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
+                        <input type="text" ng-model="application.address" complete-change="updatePath()" class="four cell" />
+                    </div>
+
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
+                        <select ng-model="application.target" ng-change="updatePath()" class="four cell">
+                            <option value="">[[lang.translate("appregistry.portal")]]</option>
+                            <option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
+                            <option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
+                        </select>
+                    </div>
+                    <div class="row" ng-if="application.external">
+                        <input type="checkbox" ng-model="application.transferSession" ng-change="setUserinfoScope()" />
+                        <label class="three cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
+                    </div>
+                    <div class="row" ng-if="display.advanced">
+                        <hr style="width: 96%; border: inset; border-width: 1px;">
+                        <div class="row">
+                            <label class="four cell">[[lang.translate("appregistry.scope")]]</label>
+                            <input class="four cell" type="text" ng-model="application.scope" />
+                        </div>
+                        <div class="row" ng-if="application.external">
+                            <label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
+                            <input type="text" ng-model="application.secret" class="four cell" />
+                        </div>
+                        <div class="row">
+                            <label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
+                            <select class="four cell">
+                                <option>[[lang.translate("appregistry.code")]]</option>
+                                <option>[[lang.translate("appregistry.clientId")]]</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr style="width: 96%; border: inset; border-width: 1px;">
+                    <div class="row">
+                        <input type="button" class="left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.advancedParams')"/>
+                        <input type="button" class="left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.simpleMode')"/>
+                        <input type="button" class="right-magnet" ng-click="application.save()" ng-value="lang.translate('appregistry.save')" />
+                        <input type="button" class="right-magnet" ng-click="deleteApplication()" ng-if="application.id" ng-value="lang.translate('appregistry.delete')" style="margin-right: 10px"/>
+                    </div>
+                </article>
+            </div>
+
+            <!--
+                ||||||||||||||||||||
+                ||| ROLES BY APP |||
+                ||||||||||||||||||||
+            -->
+            <div ng-if="selected === 1" class="twelve"/>
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 750px; overflow-y: scroll;">
+                        <li ng-repeat="application in applications.all | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+                            [[application.name]]
+                        </li>
+                    </ul>
+                </nav>
+                <article class="side-tabs-content nine cell" ng-if="application.id">
+                    <div class="row"><h1 class="nine cell">[[application.name]]</h1></div>
+                    <hr style="width: 96%; border: inset; border-width: 1px;">
+                    <div class="row">
+                        <div class="row" ng-if="!role" style="margin-bottom: 15px">
+                            <div class="four cell">&nbsp</div>
+                            <button class="four" ng-click="newRole();">[[lang.translate("appregistry.createRole")]]</button>
+                        </div>
+                        <article ng-if="role" style="margin-bottom: 0">
+                            <input type="text" ng-model="role.name" class="row angle-container-header" placeholder="[[lang.translate('appregistry.newRoleName')]]"/>
+                            <div class="row angle-container">
+                                <button ng-click="selectAllActions()"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
+                                <button ng-click="deselectAllActions()" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
+                                <button class="three right-magnet" ng-click="createRole(application.name);">[[lang.translate("appregistry.save")]]</button>
+                                <button class="three right-magnet" ng-click="hideRoleCreationPanel()" style="margin-right: 10px">[[lang.translate("appregistry.hidePanel")]]</button>
+                            </div>
+                            <h3>[[lang.translate("appregistry.authorizations")]]</h3>
+                            <ul class="selectable-list">
+                                <li ng-repeat="action in application.actions.all | orderBy: 'name'" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+                                    [[lang.translate(action.displayName)]]
+                                </li>
+                            </ul>
+                        </article>
+                    </div>
+                    <hr style="width: 96%; border: inset; border-width: 1px; margin-top: 0">
+                    <div class="row">
+                        <article ng-repeat="role in roles.applicationRolesExclusive(application)">
+                            <input type="text" ng-model="role.name" class="row angle-container-header">
+                            <div class="twelve cell toggle">
+                            <div class="row angle-container">
+                                <button ng-click="selectAllActions(role)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
+                                <button ng-click="deselectAllActions(role)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
+                                <button class="two right-magnet" ng-click="role.save()">[[lang.translate("appregistry.save")]]</button>
+                                <button class="two right-magnet" ng-click="deleteRole(role)" style="margin-right: 10px;">[[lang.translate("appregistry.delete")]]</button>
+                            </div>
+                                <div class="row content">
+                                    <ul class="selectable-list">
+                                        <li ng-repeat="action in application.actions.all | orderBy: 'name'" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+                                            [[lang.translate(action.displayName)]]
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </article>
+            </div>
+
+            <!--
+                |||||||||||||||||||||
+                |||  CROSS ROLES  |||
+                |||||||||||||||||||||
+            -->
+            <div ng-if="selected === 2" class="twelve"/>
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 750px; overflow-y: scroll;">
+                        <li ng-click="newRole('Role')" ng-class="{ selected: !$parent.role.id }">
+                            <strong>[[lang.translate("appregistry.createRole")]]</strong>
+                        </li>
+                        <li ng-repeat="role in $parent.crossRoles | orderBy: 'name'" ng-click="viewRole(role)" ng-class="{ selected: $parent.role === role }">
+                            [[role.name]]
+                        </li>
+                    </ul>
+                </nav>
+                <article class="side-tabs-content nine cell" ng-if="role">
+                    <div class="row"><h1 class="nine cell">[[role.name]]</h1></div>
+
+                    <div class="row">
+                        <label class="three comment"><span>[[lang.translate("appregistry.roleName")]]</span></label>
+                        <input class="four" type="text" ng-model="role.name" style="height: 36px; border-radius: initial; border: 1px dotted black; margin: 0;"/>
+                        <button class="right-magnet three" ng-if="!role.id" ng-click="saveCrossRole(role)">[[lang.translate("appregistry.create")]]</button>
+                        <button class="right-magnet" ng-if="role.id" ng-click="saveCrossRole(role)">[[lang.translate("appregistry.save")]]</button>
+                        <button class="right-magnet" ng-click="deleteRole(role)" ng-if="role.id" style="margin-right: 10px">[[lang.translate("appregistry.delete")]]</button>
+                    </div>
+
+                    <div class="row">
+                        <ul class="angle-list">
+                            <li ng-repeat="application in applications.all | orderBy: 'name'">
+                                [[application.name]]
+                                <ul class="selectable-list" style="font-size: 14px; margin-top: 10px;">
+                                    <li ng-repeat="approle in $parent.$parent.appRoles = roles.applicationRolesExclusive(application) | orderBy: 'name'" ng-click="role.crossSwitch(approle)" ng-class="{ selected: crossRoleContains(approle) }">
+                                        [[approle.name]]
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                </article>
+            </div>
+
+            <!--
+                ||||||||||||||||||||||||||
+                |||  ROLE ATTRIBUTION  |||
+                ||||||||||||||||||||||||||
+            -->
+            <div ng-if="selected === 3" class="twelve"/>
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 650px; overflow-y: scroll;">
+                        <li ng-repeat="school in schools.all | orderBy: 'name'" ng-click="school.sync($apply); $parent.school = school" ng-class="{ selected: $parent.school === school }">
+                            [[school.name]]
+                        </li>
+                    </ul>
+                </nav>
+                <article class="side-tabs-content nine cell" ng-if="school">
+                    <div class="row"><h1 class="nine cell">[[school.name]]</h1></div>
+
+                    <nav class="vertical cell search-container" style="width: 32%">
+                        <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterGroups"/>
+                        <ul bottom-scroll-action="incrementGroupsLimit()" style="height:640px">
+                            <li ng-repeat="group in school.groups.all | filter: filterGroups | orderBy: 'name' | limitTo: groupsLimit" ng-click="$parent.group = group">
+                                <a ng-class="{ selected: $parent.group === group }" style="border: 0;">[[group.name]]</a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <div class="right-magnet" ng-if="group" style="width: 66%;">
+                        <ul class="selectable-list" style="height: 555px; margin-top: 0">
+                            <h3 style="padding-bottom: 5px; text-align: center; border-bottom: 2px solid #444; font-style: inherit; margin-bottom: 0; margin-top: 7px">
+                                [[group.name]]
+                            </h3>
+                            <div style="margin-bottom: 10px; border-bottom: 2px solid #ff0b75; text-align: center;">
+                                <div class="leaf-menu" ng-class="{ selected: roleMode === 0 }"><a ng-click="roleMode=0">[[lang.translate("appregistry.crossRoles")]]</a></div>
+                                <div class="leaf-menu" ng-class="{ selected: roleMode === 1 }"><a ng-click="roleMode=1">[[lang.translate("appregistry.appRoles")]]</a></div>
+                            </div>
+                            <div ng-if="roleMode === 0" style="height:100%; overflow-y: scroll; padding: 10">
+                                <li ng-repeat="crossrole in $parent.crossRoles | orderBy: 'name'"
+                                    ng-click="switchGroupRole($parent.group, crossrole)"
+                                    ng-class="{ selected: groupContains($parent.group, crossrole) }">
+                                    [[crossrole.name]]
+                                </li>
+                            </div>
+                            <div ng-if="roleMode === 1" style="height:100%; overflow-y: scroll; padding: 10">
+                                <div style="text-align:center; background: #444; padding: 5; border-radius: 30px; border: 2px solid crimson; z-index: 10; width: 100px; margin-left: auto">
+                                    <button ng-click="selectAllGroupRoles(group)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll" style="margin-left: 10;width: 30px; height: 25px;"></button>
+                                    <button ng-click="deselectAllGroupRoles(group)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll" style=" width: 30px; height: 25px;"></button>
+                                </div>
+                                <div ng-repeat="application in applications.all | orderBy: 'name'" style="font-family: Lato;">
+                                    <span style="text-decoration: underline;">[[application.name]]</span>
+                                    <div style="font-size: 14px; margin-top: 10px;">
+                                        <li ng-repeat="appRole in roles.applicationRolesExclusive(application) | orderBy: 'name'"
+                                            ng-click="switchGroupRole($parent.$parent.group, appRole)"
+                                            ng-class="{ selected: groupContains($parent.$parent.group, appRole) }">
+                                            [[appRole.name]]
+                                        </li>
+                                    </div>
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+
+                </article>
+            </div>
+
+        </article>
+    </admin-portal>
+</body>
