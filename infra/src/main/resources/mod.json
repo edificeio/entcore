@@ -6,7 +6,7 @@
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "app-registry": {
-    "name": "org.entcore~app-registry~1.8-SNAPSHOT",
+    "name": "org.entcore~app-registry~1.8.0",
     "config": {
 		"main":"org.entcore.registry.AppRegistry",
 		"auto-redeploy": false,
@@ -16,7 +16,7 @@
     }
   },
   "pre-required-modules": [{
-    "name": "fr.wseduc~mod-neo4j-persistor~1.3-SNAPSHOT",
+    "name": "fr.wseduc~mod-neo4j-persistor~1.3.0",
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",
@@ -28,7 +28,7 @@
       }
     }
   },{
-	"name": "com.campudus~json-schema-validator~1.1.0-SNAPSHOT",
+	"name": "com.campudus~json-schema-validator~1.1.0",
 	"config": {
 	  "address": "json.schema.validator",
 	  "schemas": []
@@ -36,7 +36,7 @@
   }],
   "one-modules": [
     {
-      "name": "org.entcore~auth~1.8-SNAPSHOT",
+      "name": "org.entcore~auth~1.8.0",
       "config": {
         "authenticationServer": {
           "loginURL": "http://localhost:8090/auth/login",
@@ -48,16 +48,16 @@
       }
     },
     {
-      "name": "org.entcore~directory~1.8-SNAPSHOT",
+      "name": "org.entcore~directory~1.8.0",
       "config": {
         "host": "http://localhost:8090"
       }
     },
     {
-      "name": "org.entcore~history~1.8-SNAPSHOT"
+      "name": "org.entcore~history~1.8.0"
     },
     {
-      "name": "org.entcore~workspace~1.8-SNAPSHOT",
+      "name": "org.entcore~workspace~1.8.0",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -66,13 +66,13 @@
       }
     },
     {
-      "name": "org.entcore~session~1.8-SNAPSHOT"
+      "name": "org.entcore~session~1.8.0"
     },
     {
-      "name": "org.entcore~communication~1.8-SNAPSHOT"
+      "name": "org.entcore~communication~1.8.0"
     },
     {
-      "name": "org.entcore~portal~1.8-SNAPSHOT",
+      "name": "org.entcore~portal~1.8.0",
       "config": {
         "urls": {
           "timeline": "http://localhost:8090/timeline",
@@ -105,7 +105,7 @@
       }
     },
     {
-      "name": "org.entcore~conversation~1.8-SNAPSHOT",
+      "name": "org.entcore~conversation~1.8.0",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -113,12 +113,12 @@
       }
     },
 	{
-	  "name": "org.entcore~feeder~1.8-SNAPSHOT",
+	  "name": "org.entcore~feeder~1.8.0",
 	  "config": {
 	  }
     },
     {
-	  "name": "org.entcore~archive~1.8-SNAPSHOT",
+	  "name": "org.entcore~archive~1.8.0",
 	  "config": {
 	  }
     }
@@ -135,7 +135,7 @@
       }
     },
     {
-      "name": "com.wse~gridfs-persistor~1.1-SNAPSHOT",
+      "name": "com.wse~gridfs-persistor~1.1.0",
       "config": {
         "address": "wse.gridfs.persistor",
         "host": "localhost",
@@ -225,7 +225,7 @@
       }
     },
     {
-      "name": "fr.wseduc~mod-zip~1.0-SNAPSHOT",
+      "name": "fr.wseduc~mod-zip~1.0.0",
       "config": {
         "address": "entcore.zipper"
       }
