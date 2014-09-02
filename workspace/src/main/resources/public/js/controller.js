@@ -59,7 +59,6 @@ var tools = (function(){
 
 function Workspace($scope, date, ui, notify, _, $rootScope){
 	$rootScope.$on('share-updated', function(){
-		$scope.openedFolder.content = [];
 		$scope.openFolder($scope.openedFolder.folder);
 	});
 
@@ -471,7 +470,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.openedFolder = {};
 
-	$scope.loadFolderContent = function(path, folder, params){
+	$scope.loadFolderContent = function(path, folder, params, clear){
 		if($scope.currentTree.hierarchical){
 			params.hierarchical = true;
 		}
@@ -482,6 +481,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		}
 
 		http().get(path, params).done(function(documents){
+			if(clear){
+				$scope.openedFolder.content = [];
+			}
 			formatDocuments(documents, function(result){
 				$scope.openedFolder.content = $scope.openedFolder.content.concat(result);
 				$scope.openedFolder.content.sort(function(a, b){
@@ -521,7 +523,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			var params = {
 				filter: $scope.currentTree.filter
 			};
-			$scope.loadFolderContent($scope.currentTree.path, folder, params);
+			$scope.loadFolderContent($scope.currentTree.path, folder, params, true);
 		}
 	};
 
