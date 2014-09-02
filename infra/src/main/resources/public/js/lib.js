@@ -302,7 +302,7 @@ function Collection(obj){
 (function(){
 	function pluralizeName(obj){
 		var name = (obj.name || obj._name);
-		if(name[name.length - 1] === 'y' && name !== 'Day'){
+		if(name[name.length - 1] === 'y'){
 			return name[0].toLowerCase() + name.substr(1, name.length - 2) + 'ies';
 		}
 		return name[0].toLowerCase() + name.substr(1) + 's';
@@ -1296,6 +1296,7 @@ var calendar = {
 
 	},
 	Day: function(data){
+		this.collection(calendar.ScheduleItem);
 		this.collection(calendar.TimeSlot);
 		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
 			this.timeSlots.push(new calendar.TimeSlot({ start: i, end: i+1 }))
@@ -1313,7 +1314,28 @@ var calendar = {
 	startOfDay: 7,
 	endOfDay: 20,
 	init: function(){
+		this.week = moment().week();
 		model.makeModels(calendar);
 		model.calendar = new calendar.Calendar();
 	}
+};
+
+calendar.Calendar.prototype.addScheduleItems = function(items){
+	var schedule = this;
+	items.forEach(function(item){
+		if(item.beginning.week() !== calendar.week || item.end.week() !== calendar.week){
+			return;
+		}
+		var startDay = item.beginning.day() - 1;
+		if(startDay < 0){
+			startDay = 6
+		}
+		var endDay = item.end.day() - 1;
+		if(endDay < 0){
+			endDay = 6;
+		}
+		for(var i = startDay; i <= endDay; i++){
+			schedule.days.all[i].scheduleItems.push(item)
+		}
+	});
 };

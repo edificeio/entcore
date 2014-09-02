@@ -595,6 +595,7 @@ module.directive('linker', function($compile){
 	}
 });
 
+
 module.directive('calendar', function($compile){
 	return {
 		scope: {
@@ -608,6 +609,12 @@ module.directive('calendar', function($compile){
 		compile: function(){
 			calendar.init();
 			return function(scope, element, attributes){
+				template.open('schedule-display-template', scope.displayTemplate);
+				model.calendar.addScheduleItems(scope.items.map(function(item){
+					item.beginning = item.startMoment;
+					item.end = item.endMoment;
+					return item;
+				}));
 				scope.calendar = model.calendar;
 			};
 		}

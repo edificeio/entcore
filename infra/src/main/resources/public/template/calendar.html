@@ -4,11 +4,26 @@
 			[[timeslot.beginning]]h00 - [[timeslot.end]]h00
 		</div>
 	</legend>
-	<div ng-repeat="day in calendar.days.all" class="day">
-		<legend>[[day.name]]</legend>
-		<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
-		<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item">
+	<div class="days">
+		<div ng-repeat="day in calendar.days.all" class="day">
+			<legend>[[day.name]]</legend>
+			<div class="timeslots">
+				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
+			</div>
 
+			<div class="schedule-items">
+				<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item">
+					<container template="schedule-display-template"></container>
+				</div>
+			</div>
 		</div>
 	</div>
+
+
+	<lightbox>
+		<container template="schedule-edit-template"></container>
+	</lightbox>
+	<lightbox>
+		<container template="schedule-create-template"></container>
+	</lightbox>
 </div>

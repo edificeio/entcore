@@ -365,7 +365,7 @@ nav.vertical.stamps{
 	}
 }
 
-.widget.calendar{
+.calendar{
 	padding-bottom: 35% !important;
 	border: 1px solid #ccc;
 	border-bottom: 0;
@@ -925,7 +925,7 @@ table{
 		background: transparent;
 	}
 
-	.widget.calendar{
+	.calendar{
 		width: 254px;
 		.content{
 			margin-left: -1px;
@@ -1347,7 +1347,6 @@ table{
 		}
 	}
 
-<<<<<<< HEAD
 	.square-menu{
 		button{
 			background: #444;
@@ -1457,50 +1456,10 @@ table{
 	background: @bright-blue;
 	.run-transition(background);
 }
-.media-container.black {
+.media-container.black{
 	background: #444;
 	color: #aaa;
 	.run-transition(background);
-}
-
-.schedule{
-	width: 100%;
-	display: table;
-	padding-left: 100px;
-	box-sizing: border-box;
-	legend.timeslots{
-		width: 100px;
-		background: #444;
-		color: #aaa;
-		position: absolute;
-		top: 40px;
-		left: 0;
-	}
-	.timeslot{
-		height: 40px;
-		line-height: 40px;
-		text-align: center;
-	}
-	.day{
-		display: table-cell;
-		width: 100% / 7;
-		legend{
-			width: 100%;
-			text-align: center;
-			height: 40px;
-			line-height: 40px;
-			color: #aaa;
-			background: #444;
-			.border-box;
-		}
-		.timeslot{
-			background: #fdfdfd;
-			border-bottom: 1px solid #eee;
-			border-right: 1px solid #eee;
-			width: 100%;
-			.border-box;
-		}
-	}
 }
 
 .square-menu {
@@ -1528,5 +1487,63 @@ table{
 		.icon(glyphicons_155_show_big_thumbnails, 30px);
 		background-size: 60% auto;
 		background-color: transparent
+	}
+}
+
+.schedule{
+	width: 100%;
+
+	padding-left: 115px;
+	box-sizing: border-box;
+	legend.timeslots{
+		width: 115px;
+		background: #444;
+		color: #aaa;
+		position: absolute;
+		top: 40px;
+		left: 0;
+	}
+	.timeslot{
+		height: 40px;
+		line-height: 40px;
+		text-align: center;
+	}
+	.days{
+		width: 100%;
+		.day{
+			float: left;
+			width: 100% / 7;
+			position: relative;
+			legend{
+				width: 100%;
+				text-align: center;
+				height: 40px;
+				line-height: 40px;
+				color: #aaa;
+				background: #444;
+				.border-box;
+			}
+			.timeslot{
+				background: #fdfdfd;
+				border-bottom: 1px solid #eee;
+				border-right: 1px solid #eee;
+				width: 100%;
+				.border-box;
+			}
+		}
+	}
+
+	.schedule-items{
+		position: absolute;
+		left: 0;
+		width: 100%;
+		box-sizing: border-box;
+		.schedule-item{
+			width: 100%;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			position: absolute;
+		}
 	}
 }
