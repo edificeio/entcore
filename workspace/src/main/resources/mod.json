@@ -8,6 +8,7 @@
 	"app-name" : "Espace documentaire",
 	"app-address" : "http://localhost:8011/workspace/workspace",
 	"app-icon" : "workspace-large",
+	"app-displayName" : "workspace",
 	"mongo-address" : "wse.mongodb.persistor",
 	"gridfs-address" : "wse.gridfs.persistor"
 }

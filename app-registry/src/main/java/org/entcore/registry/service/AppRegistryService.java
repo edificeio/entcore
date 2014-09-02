@@ -476,7 +476,7 @@ public class AppRegistryService extends Controller {
 				"address:'" + app.getString("address", "") + "', " +
 				"icon:'" + app.getString("icon", "") + "', " +
 				"name:'" + application + "', " +
-				"displayName:'" + application +
+				"displayName:'" + app.getString("displayName", application) +
 				"'}) " +
 				"RETURN m.id as id",
 				new Handler<Message<JsonObject>>() {
