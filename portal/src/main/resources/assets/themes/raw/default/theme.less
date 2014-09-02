@@ -1348,29 +1348,116 @@ table{
 	}
 
 	.square-menu{
+		button{
+			background: #444;
+			border-radius: 0;
+			color: #aaa;
+		}
 		i.text{
 			.icon(text-icon, 30px);
 			background-size: 60% auto;
 			background-color: transparent;
+			border: none;
 		}
 		i.image, input[type=button].image{
 			.icon(picture-icon, 30px);
 			background-size: 60% auto;
 			background-color: transparent;
+			border: none;
 		}
 		i.sound, input[type=button].sound{
 			.icon(music-icon, 30px);
 			background-size: 60% auto;
 			background-color: transparent;
+			border: none;
 		}
 		i.video{
 			.icon(video-icon, 30px);
 			background-size: 60% auto;
 			background-color: transparent;
+			border: none;
 		}
 		i.grid{
 			.icon(glyphicons_155_show_big_thumbnails, 30px);
 			background-size: 60% auto;
 			background-color: transparent
+			border: none;
 		}
 	}
+
+	.grid-media{
+		outline: 1px solid @bright-blue;
+	}
+
+	.editor.drawing-grid{
+		.grid-add-row{
+			background: #444;
+			border-radius: 0;
+		}
+	}
+
+.color-picker {
+	right: 42px;
+	button.colors-opener {
+		.icon(glyphicons_234_brush, 15px);
+		margin: 0;
+		padding: 0;
+		border: none;
+		position: absolute;
+		right: -20px;
+		top: 1px;
+	}
+	button.pink{
+		background: @pink;
+	}
+	button.purple{
+		background: @purple;
+	}
+	button.orange{
+		background: @orange;
+	}
+	button.white{
+		background: #fff;
+		border: 1px solid #ccc;
+	}
+	button.green{
+		background: @green;
+	}
+	button.blue{
+		background: @bright-blue;
+	}
+	button.black{
+		background: #444;
+	}
+}
+
+.media-container.pink{
+	background: @pink;
+	.run-transition(background);
+}
+.media-container.purple{
+	background: @purple;
+	.run-transition(background);
+}
+.media-container.orange{
+	background: @orange;
+	.run-transition(background);
+}
+.media-container.white{
+	background: #fff;
+	color: #000;
+	.run-transition(background);
+}
+.media-container.green{
+	background: @green;
+	.run-transition(background);
+}
+.media-container.blue{
+	background: @bright-blue;
+	.run-transition(background);
+}
+.media-container.black{
+	background: #444;
+	color: #aaa;
+	.run-transition(background);
+}
