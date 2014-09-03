@@ -1335,7 +1335,6 @@ calendar.Calendar.prototype.addScheduleItems = function(items){
 			endDay = 6;
 		}
 		for(var i = startDay; i <= endDay; i++){
-			schedule.days.all[i].scheduleItems.push(item);
 			if(i === startDay){
 				item.startTime = item.beginning.hour();
 			}
@@ -1348,6 +1347,8 @@ calendar.Calendar.prototype.addScheduleItems = function(items){
 			else{
 				item.endTime = 20;
 			}
+
+			schedule.days.all[i].scheduleItems.push(item);
 		}
 	});
 };
