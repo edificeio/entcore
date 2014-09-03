@@ -9,8 +9,8 @@
 //legend colors
 @green: #00CB4c;
 @purple: #554dc2;
-@pink: #FF0B75;
-@cyan: #00A3D8;
+@pink: #d52a72;
+@cyan: #008BB8;
 @orange: #FFB400;
 
 .tabs{
@@ -64,6 +64,10 @@
 		ul:first-child > li, div ul:first-child > li{
 			padding-left: 0;
 		}
+	}
+	.info{
+		background: #505050;
+		color: #999;
 	}
 	.tabs{
 		margin-top: 10px;
@@ -1237,6 +1241,7 @@ table{
 				border: 0;
 				background: #333;
 				.content{
+					color: #aaa;
 					h3{
 						font-weight: normal;
 						color: @bright-blue;
@@ -1256,6 +1261,7 @@ table{
 			h2{
 				border: 1px solid #555;
 				border-bottom: 0;
+				color: @bright-blue
 
 			}
 			.toggle{
@@ -1558,5 +1564,31 @@ table{
 				height: 100%
 			}
 		}
+	}
+}
+
+.share{
+	h3{
+		padding: 10px;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	.autocomplete > em{
+		border: none;
+		border-left: 8px solid #008bb8;
+		background: #393939;
+	}
+	.autocomplete > em:hover{
+		background: #333;
+	}
+	tr{
+		background: #008bb8;
+		border-color: transparent;
+		border-width: 1px;
+		color: #fff;
+	}
+	input[type=text]{
+		width: 100%;
+		box-sizing: border-box;
 	}
 }
