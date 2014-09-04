@@ -531,6 +531,9 @@ function Collection(obj){
 		},
 		last: function(){
 			return this.all[this.all.length - 1];
+		},
+		removeAll: function(){
+			this.all = [];
 		}
 	};
 
@@ -901,6 +904,19 @@ function Collection(obj){
 	Model.prototype.behaviours = function(serviceName){
 		return Behaviours.findBehaviours(serviceName, this);
 	};
+
+	Model.prototype.inherits = function(targetFunction, prototypeFunction){
+		var targetProps = {};
+		for(var property in targetFunction.prototype){
+			if(targetFunction.prototype.hasOwnProperty(property)){
+				targetProps[property] = targetFunction.prototype[property];
+			}
+		}
+		targetFunction.prototype = new prototypeFunction();
+		for(var property in targetProps){
+			targetFunction.prototype[property] = targetProps[property];
+		}
+	}
 }());
 
 var skin = (function(){
@@ -1140,7 +1156,113 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 
 var Behaviours = {};
 
+var calendar = {
+	getHours: function(scheduleItem, day){
+		var startTime = 7;
+		var endTime = 20;
+
+		if(scheduleItem.beginning.dayOfYear() === day.index){
+			startTime = scheduleItem.beginning.hours();
+		}
+
+		if(scheduleItem.end.dayOfYear() === day.index){
+			endTime = scheduleItem.end.hours();
+		}
+
+		return {
+			startTime: startTime,
+			endTime: endTime
+		}
+	},
+	TimeSlot: function(data){
+	},
+	ScheduleItem: function(){
+
+	},
+	Day: function(data){
+		var day = this;
+		this.collection(calendar.ScheduleItem, {
+			scheduleItemWidth: function(scheduleItem){
+				var nbConcurrentItems = 1;
+				var scheduleItemTime = calendar.getHours(scheduleItem, day);
+
+				for(var i = scheduleItemTime.startTime; i < scheduleItemTime.endTime; i++){
+					var nbScheduleItems = this.filter(function(item){
+						var itemHours = calendar.getHours(item, day);
+						return itemHours.startTime <= i && itemHours.endTime > i;
+					}).length;
+					if(nbConcurrentItems < nbScheduleItems){
+						nbConcurrentItems = nbScheduleItems;
+					}
+				}
+
+				return Math.floor(12 / nbConcurrentItems);
+			}
+		});
+		this.collection(calendar.TimeSlot);
+		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
+			this.timeSlots.push(new calendar.TimeSlot({ start: i, end: i+1 }))
+		}
+	},
+	Calendar: function(){
+		this.collection(calendar.Day);
+		function dayOfYear(dayOfWeek){
+			var week = calendar.week;
+			if(dayOfWeek === 0){
+				week ++;
+			}
+			return moment().week(week).day(dayOfWeek).dayOfYear();
+		}
+
+		this.days.load([{ name: 'monday', index:  dayOfYear(1)},
+			{ name: 'tuesday', index: dayOfYear(2) },
+			{ name: 'wednesday', index: dayOfYear(3) },
+			{ name: 'thursday', index: dayOfYear(4) },
+			{ name: 'friday', index: dayOfYear(5) },
+			{ name: 'saturday', index: dayOfYear(6) },
+			{ name: 'sunday', index: dayOfYear(0) }]);
+
+		this.collection(calendar.TimeSlot);
+		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
+			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
+		}
+	},
+	startOfDay: 7,
+	endOfDay: 20,
+	init: function(){
+		this.week = moment().week();
+		model.makeModels(calendar);
+		model.calendar = new calendar.Calendar();
+	}
+};
+
+calendar.Calendar.prototype.addScheduleItems = function(items){
+	var schedule = this;
+	items.forEach(function(item){
+		if(item.beginning.dayOfYear() > model.calendar.days.last().index || item.end.dayOfYear() < model.calendar.days.first().index){
+			return;
+		}
+
+		var startDay = item.beginning.dayOfYear();
+		var endDay = item.end.dayOfYear();
+
+		for(var i = startDay; i <= endDay; i++){
+			var day = schedule.days.findWhere({index: i});
+			if(day){
+				day.scheduleItems.push(item);
+			}
+		}
+	});
+};
+
+calendar.Calendar.prototype.clearScheduleItems = function(){
+	this.days.forEach(function(day){
+		day.scheduleItems.removeAll();
+	});
+}
+
 function bootstrap(func){
+	calendar.init();
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		if(typeof data !== 'object'){
 			skin.loadDisconnected();
@@ -1194,7 +1316,7 @@ function bootstrap(func){
 			}
 		};
 
-		model.me.workflow.load(['workspace']);
+		model.me.workflow.load(['workspace', appPrefix]);
 		model.trigger('me.change');
 		func();
 	})
@@ -1288,67 +1410,3 @@ function bootstrap(func){
 
 	Behaviours.applicationsBehaviours = {};
 }
-
-var calendar = {
-	TimeSlot: function(data){
-	},
-	ScheduleItem: function(){
-
-	},
-	Day: function(data){
-		this.collection(calendar.ScheduleItem);
-		this.collection(calendar.TimeSlot);
-		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
-			this.timeSlots.push(new calendar.TimeSlot({ start: i, end: i+1 }))
-		}
-	},
-	Calendar: function(){
-		this.collection(calendar.Day);
-		this.days.load([{ name: 'monday'}, { name: 'tuesday' }, { name: 'wednesday' }, { name: 'thursday' },
-			{ name: 'friday' }, { name: 'saturday' }, { name: 'sunday' }]);
-		this.collection(calendar.TimeSlot);
-		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
-			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
-		}
-	},
-	startOfDay: 7,
-	endOfDay: 20,
-	init: function(){
-		this.week = moment().week();
-		model.makeModels(calendar);
-		model.calendar = new calendar.Calendar();
-	}
-};
-
-calendar.Calendar.prototype.addScheduleItems = function(items){
-	var schedule = this;
-	items.forEach(function(item){
-		if(item.beginning.week() !== calendar.week || item.end.week() !== calendar.week){
-			return;
-		}
-		var startDay = item.beginning.day() - 1;
-		if(startDay < 0){
-			startDay = 6
-		}
-		var endDay = item.end.day() - 1;
-		if(endDay < 0){
-			endDay = 6;
-		}
-		for(var i = startDay; i <= endDay; i++){
-			if(i === startDay){
-				item.startTime = item.beginning.hour();
-			}
-			else{
-				item.startTime = 7;
-			}
-			if(i === endDay){
-				item.endTime = item.end.hour();
-			}
-			else{
-				item.endTime = 20;
-			}
-
-			schedule.days.all[i].scheduleItems.push(item);
-		}
-	});
-};

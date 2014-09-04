@@ -8,23 +8,22 @@
 		<div ng-repeat="day in calendar.days.all" class="day">
 			<legend>[[day.name]]</legend>
 			<div class="timeslots">
-				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
+				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="display.createItem = true;"></div>
 			</div>
 
 			<div class="schedule-items">
-				<div ng-repeat="scheduleItem in day.scheduleItems.all" class="schedule-item" ng-style="{ top: ((scheduleItem.startTime - 7) * 40) + 'px',
-				height: ((scheduleItem.endTime - scheduleItem.startTime) * 40) + 'px' }">
-					<container template="schedule-display-template"></container>
+				<div ng-repeat="scheduleItem in day.scheduleItems.all">
+					<schedule-item item="scheduleItem" day="day"></schedule-item>
 				</div>
 			</div>
 		</div>
 	</div>
 
 
-	<lightbox>
+	<lightbox show="display.editItem" on-close="display.editItem = false;">
 		<container template="schedule-edit-template"></container>
 	</lightbox>
-	<lightbox>
+	<lightbox show="display.createItem" on-close="display.createItem = false;">
 		<container template="schedule-create-template"></container>
 	</lightbox>
 </div>

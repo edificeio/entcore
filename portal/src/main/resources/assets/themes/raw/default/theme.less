@@ -342,25 +342,45 @@ nav.vertical.stamps{
 
 .green{
 	background: @green;
+	color: #fff;
+	a{
+		color: #fff;
+	}
 }
 .orange{
 	background: @orange;
+	color: #fff;
+	a{
+		color: #fff;
+	}
 }
 .purple{
 	background: @purple;
 	color: #fff;
+	a{
+		color: #fff;
+	}
 }
 .cyan{
 	background: @cyan;
 	color: #fff;
+	a{
+		color: #fff;
+	}
 }
 .pink{
 	background: @pink;
 	color: #fff;
+	a{
+		color: #fff;
+	}
 }
 .grey{
 	background: #444;
 	color: #aaa;
+	a{
+		color: #fff;
+	}
 }
 
 .actions-list{
@@ -773,6 +793,53 @@ nav.vertical{
 	}
 	ul:first-child > li, div ul:first-child > li{
 		padding-left: 0;
+	}
+	ul.green{
+		background: none;
+		li a, li a.green{
+			border-color: @green;
+			background: none;
+		}
+		li a.selected{
+			background: #444;
+		}
+	}
+	ul.orange{
+		background: none;
+		li a, li a.orange{
+			border-color: @orange;
+			background: none;
+		}
+		li a.selected{
+			background: #444;
+		}
+	}
+	ul.pink{
+		background: none;
+		li a, li a.pink{
+			border-color: @pink;
+			background: none;
+		}
+		li a.selected{
+			background: #444;
+		}
+	}
+	ul.cyan{
+		background: none;
+		li a, li a.cyan{
+			border-color: @cyan;
+			background: none;
+		}
+		li a.selected{
+			background: #444;
+		}
+	}
+	ul.purple{
+		background: none;
+		li a, li a.purple{
+			border-color: @purple;
+			background: none;
+		}
 	}
 	a.classic-link{
 		display: block;
@@ -1548,7 +1615,7 @@ table{
 		left: 0;
 		top: 40px;
 		width: 100%;
-		box-sizing: border-box;
+		.border-box;
 		.schedule-item{
 			width: 100%;
 			overflow: hidden;
@@ -1556,13 +1623,34 @@ table{
 			text-overflow: ellipsis;
 			position: absolute;
 			border: 1px solid transparent;
+			border-radius: 5px;
+			.border-box;
 			.schedule-item-content{
 				position: absolute;
 				top: 0;
 				left: 0;
 				width: 100%;
-				height: 100%
+				height: 100%;
+				font-size: 10px;
+				text-align: center;
+				padding: 1px;
+				color: #fff;
 			}
+		}
+		.schedule-item.one{
+			.one;
+		}
+		.schedule-item.two{
+			.two;
+		}
+		.schedule-item.three{
+			.three;
+		}
+		.schedule-item.four{
+			.four;
+		}
+		.schedule-item.six{
+			.six;
 		}
 	}
 }

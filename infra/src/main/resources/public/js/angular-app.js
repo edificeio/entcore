@@ -606,10 +606,15 @@ module.directive('calendar', function($compile){
 		},
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
+		controller: function($scope){},
 		compile: function(){
-			calendar.init();
 			return function(scope, element, attributes){
+				scope.display = {
+					editItem: false,
+					createItem: false
+				}
 				template.open('schedule-display-template', scope.displayTemplate);
+				model.calendar.clearScheduleItems();
 				model.calendar.addScheduleItems(scope.items.map(function(item){
 					item.beginning = item.startMoment;
 					item.end = item.endMoment;
@@ -617,6 +622,56 @@ module.directive('calendar', function($compile){
 				}));
 				scope.calendar = model.calendar;
 			};
+		}
+	}
+});
+
+module.directive('scheduleItem', function($compile){
+	return {
+		restrict: 'E',
+		require: '^calendar',
+		scope: {
+			item: '=',
+			day: '='
+		},
+		template: '<div class="schedule-item" ng-click="display.editItem = true;">' +
+			'<container template="schedule-display-template"></container>' +
+			'</div>',
+		link: function(scope, element, attributes){
+			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+			var scheduleItemEl = element.children('.schedule-item');
+			scope.$watch('item', function(newVal){
+				var cellWidth = element.parent().width() / 12;
+				var startDay = scope.item.beginning.dayOfYear();
+				var endDay = scope.item.end.dayOfYear();
+				var hours = calendar.getHours(scope.item, scope.day);
+
+				var itemWidth = scope.day.scheduleItems.scheduleItemWidth(scope.item);
+				element.children('.schedule-item').addClass(cssClasses[itemWidth]);
+				var calendarGutter = 0;
+				var collision = true;
+				while(collision){
+					collision = false;
+					scope.day.scheduleItems.forEach(function(scheduleItem){
+						if(scheduleItem === scope.item){
+							return;
+						}
+						if(scheduleItem.beginning.unix() >= scope.item.beginning.unix() && scheduleItem.end.unix() < scope.item.end.unix()
+							|| scheduleItem.beginning.unix() <= scope.item.beginning.unix() && scheduleItem.end.unix() > scope.item.end.unix()){
+							if(scheduleItem.calendarGutter === calendarGutter){
+								calendarGutter ++;
+								collision = true;
+							}
+						}
+					});
+				}
+				scope.item.calendarGutter = calendarGutter;
+				scheduleItemEl.height(((hours.endTime - hours.startTime) * 40) + 'px');
+				scheduleItemEl.css({
+					top: ((hours.startTime - 7) * 40) + 'px',
+					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
+				});
+			});
 		}
 	}
 })
@@ -1990,139 +2045,139 @@ module.directive('drawingZone', function(){
 });
 
 module.directive('resizableElement', function(){
-    return{
-        restrict: 'A',
-        link: function($scope, $element, $attributes){
+	return{
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
 
-            if($scope.disableResizableElement === true)
-                return;
+			if($scope.disableResizableElement === true)
+				return;
 
-            //Disable drag'n'drop
-            $element.on('dragstart', function(){
-                return false;
-            })
+			//Disable drag'n'drop
+			$element.on('dragstart', function(){
+				return false;
+			})
 
-            //True if the left mouse button is pressed
-            var clicked = false
+			//True if the left mouse button is pressed
+			var clicked = false
 
-            //Get mouse position on screen
-            var mousePos = function(event){
-                return {
-                    x: event.pageX,
-                    y: event.pageY
-                }
-            }
+			//Get mouse position on screen
+			var mousePos = function(event){
+				return {
+					x: event.pageX,
+					y: event.pageY
+				}
+			}
 
-            //Get html element borders positions on screen
-            var getElementBorders = function(){
-                return {
-                    right   : $element.offset().left + $element.width(),
-                    left    : $element.offset().left,
-                    top     : $element.offset().top,
-                    bottom  : $element.offset().top + $element.height()
-                }
-            }
+			//Get html element borders positions on screen
+			var getElementBorders = function(){
+				return {
+					right   : $element.offset().left + $element.width(),
+					left    : $element.offset().left,
+					top     : $element.offset().top,
+					bottom  : $element.offset().top + $element.height()
+				}
+			}
 
-            //Acceptable delta
-            var DELTA_BORDER = 5
-            //Tests if the mouse is moving over a border
-            var getMouseBorders = function(event){
-                var borders = getElementBorders()
-                var pos     = mousePos(event)
+			//Acceptable delta
+			var DELTA_BORDER = 5
+			//Tests if the mouse is moving over a border
+			var getMouseBorders = function(event){
+				var borders = getElementBorders()
+				var pos     = mousePos(event)
 
-                return {
-                    left    : borders.left + DELTA_BORDER > pos.x && borders.left - DELTA_BORDER < pos.x,
-                    right   : borders.right + DELTA_BORDER > pos.x && borders.right - DELTA_BORDER < pos.x,
-                    top     : borders.top + DELTA_BORDER > pos.y && borders.top - DELTA_BORDER < pos.y,
-                    bottom  : borders.bottom + DELTA_BORDER > pos.y && borders.bottom - DELTA_BORDER < pos.y
-                }
+				return {
+					left    : borders.left + DELTA_BORDER > pos.x && borders.left - DELTA_BORDER < pos.x,
+					right   : borders.right + DELTA_BORDER > pos.x && borders.right - DELTA_BORDER < pos.x,
+					top     : borders.top + DELTA_BORDER > pos.y && borders.top - DELTA_BORDER < pos.y,
+					bottom  : borders.bottom + DELTA_BORDER > pos.y && borders.bottom - DELTA_BORDER < pos.y
+				}
 
-            }
+			}
 
-            //Icon change
-            var changeIcon = function(e){
-                var resizeLimits = getMouseBorders(e)
+			//Icon change
+			var changeIcon = function(e){
+				var resizeLimits = getMouseBorders(e)
 
-                var orientations = {
-                    'ns': resizeLimits.top || resizeLimits.bottom,
-                    'ew': resizeLimits.left || resizeLimits.right,
-                    'nwse': (resizeLimits.bottom && resizeLimits.right) || (resizeLimits.top && resizeLimits.left),
-                    'nesw': (resizeLimits.bottom && resizeLimits.left) || (resizeLimits.top && resizeLimits.right)
+				var orientations = {
+					'ns': resizeLimits.top || resizeLimits.bottom,
+					'ew': resizeLimits.left || resizeLimits.right,
+					'nwse': (resizeLimits.bottom && resizeLimits.right) || (resizeLimits.top && resizeLimits.left),
+					'nesw': (resizeLimits.bottom && resizeLimits.left) || (resizeLimits.top && resizeLimits.right)
 
-                }
+				}
 
-                var cursor = ''
-                for(var orientation in orientations){
-                    if(orientations[orientation]){
-                        cursor = orientation;
-                    }
-                }
+				var cursor = ''
+				for(var orientation in orientations){
+					if(orientations[orientation]){
+						cursor = orientation;
+					}
+				}
 
-                if(cursor){
-                    cursor = cursor + '-resize'
-                } else
-                    cursor = 'auto'
+				if(cursor){
+					cursor = cursor + '-resize'
+				} else
+					cursor = 'auto'
 
-                $element.css({ cursor: cursor })
-            }
+				$element.css({ cursor: cursor })
+			}
 
-            //Element size backup
-            var oldElement = {
-                width : $element.width(),
-                height : $element.height(),
-                offset: $element.offset()
-            }
+			//Element size backup
+			var oldElement = {
+				width : $element.width(),
+				height : $element.height(),
+				offset: $element.offset()
+			}
 
-            //Resize function
-            var resizeElement = function(e){
-                var pos = mousePos(e)
+			//Resize function
+			var resizeElement = function(e){
+				var pos = mousePos(e)
 
-                if(clickBorder.bottom){
-                    $element.height(pos.y - oldElement.offset.top)
-                } else if(clickBorder.top){
-                    $element.height(oldElement.height + (oldElement.offset.top - pos.y))
-                }
+				if(clickBorder.bottom){
+					$element.height(pos.y - oldElement.offset.top)
+				} else if(clickBorder.top){
+					$element.height(oldElement.height + (oldElement.offset.top - pos.y))
+				}
 
-                if(clickBorder.left){
-                    $element.width(oldElement.width + (oldElement.offset.left - pos.x))
-                } else if(clickBorder.right){
-                    $element.width(pos.x - oldElement.offset.left)
-                }
-            }
+				if(clickBorder.left){
+					$element.width(oldElement.width + (oldElement.offset.left - pos.x))
+				} else if(clickBorder.right){
+					$element.width(pos.x - oldElement.offset.left)
+				}
+			}
 
-            $element.on('mouseover', function(e){
-                $element.on('mousemove', function(e){
-                    if(!clicked)
-                        changeIcon(e)
-                })
+			$element.on('mouseover', function(e){
+				$element.on('mousemove', function(e){
+					if(!clicked)
+						changeIcon(e)
+				})
 
-                $element.on('mouseout', function(e){
-                    $element.unbind('mousemove')
-                    if(!clicked)
-                        $element.css({ cursor: 'auto' })
-                })
-            })
+				$element.on('mouseout', function(e){
+					$element.unbind('mousemove')
+					if(!clicked)
+						$element.css({ cursor: 'auto' })
+				})
+			})
 
-            $element.on('mousedown', function(e){
-                clicked = true
-                oldElement = {
-                    width : $element.width(),
-                    height : $element.height(),
-                    offset: $element.offset()
-                }
-                clickBorder = getMouseBorders(e)
-                $(window).on('mousemove.resize.element', function(e){
-                    resizeElement(e)
-                })
-            })
-            $(window).on('mouseup', function(e){
-                clicked = false
-                $element.css({ cursor: 'auto' })
-                $(window).unbind('mousemove.resize.element')
-            })
+			$element.on('mousedown', function(e){
+				clicked = true
+				oldElement = {
+					width : $element.width(),
+					height : $element.height(),
+					offset: $element.offset()
+				}
+				clickBorder = getMouseBorders(e)
+				$(window).on('mousemove.resize.element', function(e){
+					resizeElement(e)
+				})
+			})
+			$(window).on('mouseup', function(e){
+				clicked = false
+				$element.css({ cursor: 'auto' })
+				$(window).unbind('mousemove.resize.element')
+			})
 
-        }
-    }
+		}
+	}
 })
 
 module.directive('resizable', function(){
@@ -3092,42 +3147,42 @@ module.directive('datePicker', function($compile){
 });
 
 module.directive('datePickerIcon', function($compile){
-    return {
-        scope: {
-            ngModel: '=',
-            ngChange: '&'
-        },
-        replace: true,
-        restrict: 'E',
-        template: '<div> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
-        link: function($scope, $element, $attributes){
-            loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
-                var input_element   = $element.find('.hiddendatepickerform')
-                input_element.value = moment(new Date()).format('DD/MM/YYYY')
+	return {
+		scope: {
+			ngModel: '=',
+			ngChange: '&'
+		},
+		replace: true,
+		restrict: 'E',
+		template: '<div> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
+		link: function($scope, $element, $attributes){
+			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
+				var input_element   = $element.find('.hiddendatepickerform')
+				input_element.value = moment(new Date()).format('DD/MM/YYYY')
 
-                input_element.datepicker({
-                    dates: {
-                        months: moment.months(),
-                        monthsShort: moment.monthsShort(),
-                        days: moment.weekdays(),
-                        daysShort: moment.weekdaysShort(),
-                        daysMin: moment.weekdaysMin()
-                    }
-                }).on('changeDate', function(event){
-                    $scope.ngModel = event.date
-                    $scope.$apply('ngModel')
-                    $(this).datepicker('hide')
-                })
+				input_element.datepicker({
+					dates: {
+						months: moment.months(),
+						monthsShort: moment.monthsShort(),
+						days: moment.weekdays(),
+						daysShort: moment.weekdaysShort(),
+						daysMin: moment.weekdaysMin()
+					}
+				}).on('changeDate', function(event){
+					$scope.ngModel = event.date
+					$scope.$apply('ngModel')
+					$(this).datepicker('hide')
+				})
 
-                input_element.datepicker('hide')
+				input_element.datepicker('hide')
 
-                $scope.openDatepicker = function(){
-                    input_element.datepicker('show')
-                }
-            })
+				$scope.openDatepicker = function(){
+					input_element.datepicker('show')
+				}
+			})
 
-        }
-    }
+		}
+	}
 })
 
 $(document).ready(function(){
