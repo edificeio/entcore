@@ -99,11 +99,16 @@ public abstract class ControllerHelper extends BaseController {
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate) {
-		shareJsonSubmit(request, notifyShareTemplate, true);
+		shareJsonSubmit(request, notifyShareTemplate, true, null, null);
 	}
 
 	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate,
 			final boolean checkIsOwner) {
+		shareJsonSubmit(request, notifyShareTemplate, checkIsOwner, null, null);
+	}
+
+	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate,
+			final boolean checkIsOwner, final JsonObject params, final String resourceNameAttribute) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
 			badRequest(request);
@@ -154,7 +159,7 @@ public abstract class ControllerHelper extends BaseController {
 									.getObject("notify-timeline");
 							if (n != null && notifyShareTemplate != null) {
 								notifyShare(request, id, user, new JsonArray().add(n),
-										notifyShareTemplate);
+										notifyShareTemplate, params, resourceNameAttribute);
 							}
 							renderJson(request, event.right().getValue());
 						} else {
@@ -234,7 +239,8 @@ public abstract class ControllerHelper extends BaseController {
 	}
 
 	private void notifyShare(final HttpServerRequest request, final String resource,
-			final UserInfos user, JsonArray sharedArray, final String notifyShareTemplate) {
+			final UserInfos user, JsonArray sharedArray, final String notifyShareTemplate,
+			final JsonObject params, final String resourceNameAttribute) {
 		final List<String> recipients = new ArrayList<>();
 		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
 		for (Object j : sharedArray) {
@@ -259,7 +265,8 @@ public abstract class ControllerHelper extends BaseController {
 								}
 							}
 							if (remaining.decrementAndGet() < 1) {
-								sendNotify(request, resource, user, recipients, notifyShareTemplate);
+								sendNotify(request, resource, user, recipients, notifyShareTemplate,
+										params, resourceNameAttribute);
 							}
 						}
 					});
@@ -267,23 +274,29 @@ public abstract class ControllerHelper extends BaseController {
 			}
 		}
 		if (remaining.get() < 1) {
-			sendNotify(request, resource, user, recipients, notifyShareTemplate);
+			sendNotify(request, resource, user, recipients, notifyShareTemplate, params, resourceNameAttribute);
 		}
 	}
 
 	private void sendNotify(final HttpServerRequest request, final String resource,
-			final UserInfos user, final List<String> recipients, final String notifyShareTemplate) {
-		final JsonObject params = new JsonObject()
+			final UserInfos user, final List<String> recipients, final String notifyShareTemplate,
+			JsonObject p, final String resourceNameAttribute) {
+		if (p == null) {
+			p = new JsonObject()
 				.putString("uri", container.config().getString("userbook-host") +
 						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("username", user.getUsername())
 				.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
 						pathPrefix + "/document/" + resource);
+		}
+		final JsonObject params = p;
 		crudService.retrieve(resource, new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
-					params.putString("resourceName", r.right().getValue().getString("name", ""));
+					String attr = (resourceNameAttribute != null && !resourceNameAttribute.trim().isEmpty()) ?
+							resourceNameAttribute : "name";
+					params.putString("resourceName", r.right().getValue().getString(attr, ""));
 					notification.notifyTimeline(request, user, timelineEventType, timelineEventType + "_SHARE",
 							recipients, resource, notifyShareTemplate, params);
 				} else {
