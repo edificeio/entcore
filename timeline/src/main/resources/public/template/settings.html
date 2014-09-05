@@ -1,0 +1,23 @@
+<div ng-controller="Personalization">
+	<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
+		<div class="toggle cell">
+			<h1 translate content="panel.title"></h1>
+			<div class="row">
+				<div class="twelve cell">
+					<h2 translate content="panel.themes"></h2>
+					<div class="twelve cell">
+						<div class="six cell reduce-block-four" ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)" class="element">
+							<div class="twelve cell photo-preview">
+								<img ng-src="[[skin.skinPath]]thumbnail.png" />
+							</div>
+							<em ng-click="saveTheme(skin, $event)" class="medium-importance centered twelve cell">[[lang.translate(skin.displayName)]]</em>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<ul class="icons-tabs">
+		<li ng-click="togglePanel($event)" ng-class="{ active: showPanel }"><i class="tools"></i></li>
+	</ul>
+</div>

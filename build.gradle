@@ -159,6 +159,13 @@ project(':archive') {
   }
 }
 
+project(':timeline') {
+  dependencies {
+    provided "fr.wseduc:processor:$processorVersion"
+    compile project(':common')
+  }
+}
+
 project(':tests') {
   apply plugin: 'scala'
 

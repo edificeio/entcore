@@ -121,6 +121,11 @@
 	  "name": "org.entcore~archive~1.9-SNAPSHOT",
 	  "config": {
 	  }
+    },
+    {
+      "main":"org.entcore.timeline.Timeline",
+      "config": {
+      }
     }
   ],
   "external-modules": [
@@ -201,6 +206,10 @@
             "location": "/communication",
             "proxy_pass": "http://localhost:8015"
           },
+		  {
+		    "location": "/timeline",
+		    "proxy_pass": "http://localhost:8016"
+		  },
           {
             "location": "/userbook",
             "proxy_pass": "http://localhost:8003"

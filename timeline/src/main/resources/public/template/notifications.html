@@ -1,0 +1,39 @@
+<h1><a data-reload><i class="notification"></i><span translate content="timeline.title"></span></a></h1>
+<div data-ng-controller="Timeline" class="twelve cell">
+	<div class="row line filters">
+		<ul>
+			<li class="legend" translate content="filters.title" style="text-align: center"></li>
+			<li>
+				<label class="checkbox small-text">
+					<input type="checkbox" ng-model="notificationTypes.noFilter" ng-change="removeFilter()" />
+					<span translate content="filters.all"></span>
+				</label>
+			</li>
+			<li ng-repeat="type in notificationTypes.all">
+				<label class="checkbox small-text">
+					<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+					<span translate content="[[type.data.toLowerCase()]]"></span>
+				</label>
+			</li>
+		</ul>
+	</div>
+	<div data-ng-repeat="notification in notifications.all" class="row notification">
+		<i class="[[notification['event-type'].split('_')[0].toLowerCase()]] type"></i>
+		<article ng-class="{ 'unread': isUnRead(notification) }">
+				<div class="cell">
+					<div class="row">
+						<div class="avatar">
+							<img class="system-avatar" ng-if="!notification.sender" />
+							<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+						</div>
+						<div class="cell horizontal-spacing">
+							<p class="inline" bind-html="notification.message"></p>
+						</div>
+					</div>
+				</div>
+				<div class="cell right-magnet">
+					<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
+				</div>
+		</article>
+	</div>
+</div>
