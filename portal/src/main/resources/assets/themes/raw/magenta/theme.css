@@ -2120,6 +2120,11 @@ span.no-style {
   width: 93%;
   margin-right: 35px;
   min-width: 250px;
+  position: relative;
+  top: 0%;
+  left: 0%;
+  margin-left: 0;
+  margin-top: 0;
 }
 .drawing-zone article.media img,
 .drawing-zone article.media div {
@@ -2430,6 +2435,7 @@ em.high-importance {
   position: relative;
   height: 165px;
   overflow-y: auto;
+  clear: both;
   -o-transition: height 250ms ease;
   -moz-transition: height 250ms ease;
   -webkit-transition: height 250ms ease;
@@ -3276,6 +3282,7 @@ a.cke_smile img {
 }
 .color-picker button.transparent {
   border: 1px solid #ccc;
+  background: url('../img/icons/transparent_color.png');
 }
 .color-picker .colors-list {
   overflow: hidden;
