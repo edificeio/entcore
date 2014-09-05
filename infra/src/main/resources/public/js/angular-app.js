@@ -656,8 +656,8 @@ module.directive('scheduleItem', function($compile){
 						if(scheduleItem === scope.item){
 							return;
 						}
-						if(scheduleItem.beginning.unix() >= scope.item.beginning.unix() && scheduleItem.end.unix() < scope.item.end.unix()
-							|| scheduleItem.beginning.unix() <= scope.item.beginning.unix() && scheduleItem.end.unix() > scope.item.end.unix()){
+						if(scheduleItem.beginning.unix() >= scope.item.beginning.unix() && scheduleItem.beginning.unix() < scope.item.end.unix()
+							|| scheduleItem.end.unix() >= scope.item.beginning.unix() && scheduleItem.end.unix() < scope.item.end.unix()){
 							if(scheduleItem.calendarGutter === calendarGutter){
 								calendarGutter ++;
 								collision = true;

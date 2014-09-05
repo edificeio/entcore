@@ -1364,6 +1364,9 @@ function bootstrap(func){
 			},
 			findWorkflow: function(serviceName){
 				var returnWorkflows = function(){
+					if(!this.applicationsBehaviours[serviceName]){
+						return {};
+					}
 					if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){
 						return this.applicationsBehaviours[serviceName].workflow();
 					}
