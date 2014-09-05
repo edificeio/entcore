@@ -407,18 +407,17 @@ module.directive('mediaLibrary', function($compile){
 module.directive('linker', function($compile){
 	return {
 		restrict: 'E',
-		scope: {
-			chooseLink: '=ngShow',
-			editor: '=',
-			onChange: '&'
-		},
 		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
+		controller: function($scope){
+			$scope.me = model.me;
+			$scope.search = { text: '', application: {} };
+			$scope.params = {};
+			$scope.resource = {};
+		},
 		link: function(scope, element, attributes){
-			scope.me = model.me;
-			scope.search = { text: '', application: {} };
-			scope.params = {};
-			scope.resource = {};
-
+			scope.editor = scope.$eval(attributes.editor);
+			scope.chooseLink = scope.$eval(attributes.chooseLink);
+			scope.onChange = scope.$eval(attributes.onChange);
 			var linkNode = $('<a />');
 			var appendText = '';
 			scope.$watch('chooseLink', function(newVal){
@@ -595,6 +594,7 @@ module.directive('linker', function($compile){
 		}
 	}
 });
+
 
 function serializeScope(scope){
 	var result = {};
