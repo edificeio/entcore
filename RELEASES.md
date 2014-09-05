@@ -1,6 +1,77 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.8.0 (03/09/2014)
+
+## Archive
+
+Archive est un nouveau module qui permet aux utilisateurs d'exporter leurs données. Ces dernières sont contenues dans un zip regroupant les ressources pour lesquelles l'utilisateur est propriétaire ainsi que ses ressources partagées.
+
+## Conversation
+
+* Pouvoir envoyer des messages à soi-même
+* Optimisation des requêtes
+* Ajout des images et des videos dans un message
+* Modification des messages envoyés aux groupes lors de la transition
+* Suppression de la boite lors de la suppression du propriétaire
+
+## Directory
+
+* Export des comptes
+
+
+## Feeder
+
+* Exporteur pour Eliot
+* Ajout d'une notion de porteur
+* Gestion des admins locaux
+* Suppression manuelle d'utilisateurs
+* Transition d'année scolaire
+* Gestion des utilisateurs en attente de suppression
+
+## Workspace
+
+* Comptage des commentaires dans la vue icônes
+* Gestion des quotas
+* Modification des partages lors de la transition
+* Suppression des documents lors de la suppression du propriétaire
+* Aggregation des documents lors de l'export
+
+## Framework
+
+* Nouveaux composants CSS : menu en fleur et accordéons
+* Directive : barre de progression
+* Ajout d'un validateur jsonschema
+* [Infra] Pourvoir charger des modules externes avant le chargement des modules ent-core
+* [Infra] Ajout d'une directive grid cells
+* Support de formules latex dans ckeditor
+* Application automatique du scope dans AngularJs
+* Ajout d'un composant Linker pour lier créer des liens vers des ressource de l'ENT.
+* [Common] Chargement de filtres resource via un service loader avec fichier META-INF généré par annotation
+* [Common] Framework sql pour simplier la création d'application avec postgresql
+** Crud
+** Gestion des partage
+** Filtres de sécurité par défaut pour les ressources
+* [Common] Framework mongodb pour simplier la création d'application avec mongodb
+** Crud
+** Gestion des partage
+** Filtres de sécurité par défaut pour les ressources
+
+## Évolutions techniques
+
+* Nouveau plugin video pour ckeditor
+* Ajout de la licence AGPL v3
+* [Infra] Passage à neo4j version 2.1.2
+* [Infra] Passage à vert.x version 2.1.2
+* [Infra] Passage à web-utils version 1.7.0
+
+## Anomalies corrigées
+
+* [Feeder] éviter la duplication des relations lors de l'import dans certains cas
+* [Infra] correction du chargement automatique des scripts neo4j au démarrage avec le mode embarqué
+* [App-registry] mettre à jour les actions au démarrage
+* [Workspace] déplacement d'un dossier à la racine
+
 # v1.7.0 (04/06/2014)
 
 ## Annuaire
