@@ -600,7 +600,7 @@ module.directive('calendar', function($compile){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
 		controller: function($scope, $timeout){
-			$timeout(function(){
+			var refreshCalendar = function(){
 				model.calendar.clearScheduleItems();
 				model.calendar.addScheduleItems($scope.items.map(function(item){
 					item.beginning = item.startMoment;
@@ -620,7 +620,18 @@ module.directive('calendar', function($compile){
 
 				$scope.createItem = function(){
 
-				}
+				};
+			}
+			$timeout(function(){
+				refreshCalendar();
+				$scope.items.on('sync', function(){
+					refreshCalendar();
+					$scope.$apply();
+				});
+				$scope.items.on('change', function(){
+					refreshCalendar();
+					$scope.$apply();
+				});
 			}, 0);
 		},
 		link: function(scope, element, attributes){

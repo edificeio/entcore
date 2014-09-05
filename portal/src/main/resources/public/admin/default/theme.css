@@ -2436,6 +2436,7 @@ em.high-importance {
   position: relative;
   height: 165px;
   overflow-y: auto;
+  clear: both;
   -o-transition: height 250ms ease;
   -moz-transition: height 250ms ease;
   -webkit-transition: height 250ms ease;
