@@ -2435,7 +2435,6 @@ em.high-importance {
   position: relative;
   height: 165px;
   overflow-y: auto;
-  clear: both;
   -o-transition: height 250ms ease;
   -moz-transition: height 250ms ease;
   -webkit-transition: height 250ms ease;
@@ -3282,6 +3281,7 @@ a.cke_smile img {
 }
 .color-picker button.transparent {
   border: 1px solid #ccc;
+  background: url('../img/icons/transparent_color.png');
 }
 .color-picker .colors-list {
   overflow: hidden;
@@ -3306,6 +3306,12 @@ a.cke_smile img {
   margin: 5px;
   height: 30px;
   float: right;
+}
+.color-picker.opened {
+  width: 225px;
+}
+.color-picker.opened .colors-list {
+  height: 72px;
 }
 html,
 body {

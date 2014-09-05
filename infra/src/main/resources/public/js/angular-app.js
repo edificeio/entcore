@@ -595,33 +595,39 @@ module.directive('linker', function($compile){
 	}
 });
 
-
 module.directive('calendar', function($compile){
 	return {
-		scope: {
-			editTemplate: '@',
-			createTemplate: '@',
-			displayTemplate: '@',
-			items: '='
-		},
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
-		controller: function($scope){},
-		compile: function(){
-			return function(scope, element, attributes){
-				scope.display = {
-					editItem: false,
-					createItem: false
-				}
-				template.open('schedule-display-template', scope.displayTemplate);
+		controller: function($scope, $timeout){
+			$timeout(function(){
 				model.calendar.clearScheduleItems();
-				model.calendar.addScheduleItems(scope.items.map(function(item){
+				model.calendar.addScheduleItems($scope.items.map(function(item){
 					item.beginning = item.startMoment;
 					item.end = item.endMoment;
 					return item;
 				}));
-				scope.calendar = model.calendar;
-			};
+				$scope.calendar = model.calendar;
+				$scope.display = {
+					editItem: false,
+					createItem: false
+				};
+
+				$scope.editItem = function(item){
+					$scope.calendarEditItem = item;
+					$scope.display.editItem = true;
+				};
+
+				$scope.createItem = function(){
+
+				}
+			}, 0);
+		},
+		link: function(scope, element, attributes){
+			template.open('schedule-display-template', attributes.displayTemplate);
+			template.open('schedule-create-template', attributes.createTemplate);
+
+			scope.items = scope.$eval(attributes.items);
 		}
 	}
 });
@@ -634,9 +640,12 @@ module.directive('scheduleItem', function($compile){
 			item: '=',
 			day: '='
 		},
-		template: '<div class="schedule-item" ng-click="display.editItem = true;">' +
+		template: '<div class="schedule-item">' +
 			'<container template="schedule-display-template"></container>' +
 			'</div>',
+		controller: function($scope){
+
+		},
 		link: function(scope, element, attributes){
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
