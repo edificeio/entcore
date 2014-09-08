@@ -648,7 +648,7 @@ module.directive('scheduleItem', function($compile){
 			item: '=',
 			day: '='
 		},
-		template: '<div class="schedule-item">' +
+		template: '<div class="schedule-item" resizable horizontal-lock>' +
 			'<container template="schedule-display-template"></container>' +
 			'</div>',
 		controller: function($scope){
@@ -657,6 +657,35 @@ module.directive('scheduleItem', function($compile){
 		link: function(scope, element, attributes){
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
+
+			getTimeFromBoundaries = function(){
+				var startTime = moment().utc();
+				startTime.week(model.calendar.week);
+				startTime.day(scope.item.beginning.day());
+				startTime.hour(Math.floor(scheduleItemEl.position().top / calendar.dayHeight) + calendar.startOfDay);
+				startTime.minute((scheduleItemEl.position().top % calendar.dayHeight) * 60 / calendar.dayHeight);
+
+				var endTime = moment().utc();
+				endTime.week(model.calendar.week);
+				endTime.day(scope.item.beginning.day());
+				endTime.hour(Math.floor((scheduleItemEl.position().top + scheduleItemEl.height()) / calendar.dayHeight) + calendar.startOfDay);
+				endTime.minute(((scheduleItemEl.position().top + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
+
+				return {
+					startTime: startTime,
+					endTime: endTime
+				}
+			};
+
+			element.children('.schedule-item').on('stopResize', function(){
+				var newTime = getTimeFromBoundaries();
+				scope.item.beginning = newTime.startTime;
+				scope.item.end = newTime.endTime;
+				if(typeof scope.item.save === 'function'){
+					scope.item.save();
+				}
+			});
+
 			function placeItem(){
 				var cellWidth = element.parent().width() / 12;
 				var startDay = scope.item.beginning.dayOfYear();
@@ -664,8 +693,8 @@ module.directive('scheduleItem', function($compile){
 				var hours = calendar.getHours(scope.item, scope.day);
 
 				var itemWidth = scope.day.scheduleItems.scheduleItemWidth(scope.item);
-				element.children('.schedule-item').removeClass('twelve six four three two');
-				element.children('.schedule-item').addClass(cssClasses[itemWidth]);
+				scheduleItemEl.removeClass('twelve six four three two');
+				scheduleItemEl.addClass(cssClasses[itemWidth]);
 				var calendarGutter = 0;
 				var collision = true;
 				while(collision){
@@ -684,9 +713,11 @@ module.directive('scheduleItem', function($compile){
 					});
 				}
 				scope.item.calendarGutter = calendarGutter;
-				scheduleItemEl.height(((hours.endTime - hours.startTime) * 40) + 'px');
+				var beginningMinutesHeight = scope.item.beginning.minutes() * 60 / calendar.dayHeight;
+				var endMinutesHeight = scope.item.end.minutes() * 60 / calendar.dayHeight;
+				scheduleItemEl.height(((hours.endTime - hours.startTime) * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
 				scheduleItemEl.css({
-					top: ((hours.startTime - 7) * 40) + 'px',
+					top: ((hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight) + 'px',
 					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
 				});
 			}
@@ -2196,7 +2227,7 @@ module.directive('resizableElement', function(){
 module.directive('resizable', function(){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
+		link: function(scope, element, attributes){
 			$('body').css({
 				'-webkit-user-select': 'none',
 				'-moz-user-select': 'none',
@@ -2204,17 +2235,17 @@ module.directive('resizable', function(){
 			});
 
 			//cursor styles to indicate resizing possibilities
-			$element.on('mouseover', function(e){
-				$element.on('mousemove', function(e){
-					if($element.data('resizing') || $element.data('lock')){
+			element.on('mouseover', function(e){
+				element.on('mousemove', function(e){
+					if(element.data('resizing') || element.data('lock')){
 						return;
 					}
 					var mouse = { x: e.pageX, y: e.pageY };
 					var resizeLimits = {
-						horizontalRight:  $element.offset().left + $element.width() + 5 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15,
-						horizontalLeft: $element.offset().left + 5 > mouse.x && mouse.x > $element.offset().left - 15,
-						verticalTop: $element.offset().top + 5 > mouse.y && mouse.y > $element.offset().top - 15,
-						verticalBottom: $element.offset().top + $element.height() + 5 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
+						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-lock') === undefined,
+						horizontalLeft: element.offset().left + 5 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-lock') === undefined,
+						verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-lock') === undefined,
+						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-lock') === undefined
 					};
 
 					var orientations = {
@@ -2236,38 +2267,38 @@ module.directive('resizable', function(){
 					if(cursor){
 						cursor = cursor + '-resize';
 					}
-					$element.css({ cursor: cursor });
-					$element.find('[contenteditable]').css({ cursor: cursor });
+					element.css({ cursor: cursor });
+					element.find('[contenteditable]').css({ cursor: cursor });
 				});
-				$element.on('mouseout', function(e){
-					$element.unbind('mousemove');
+				element.on('mouseout', function(e){
+					element.unbind('mousemove');
 				});
 			});
 
 			//actual resize
-			$element.on('mousedown.resize', function(e){
-				if($element.data('lock') === true || $element.data('resizing') === true){
+			element.on('mousedown.resize', function(e){
+				if(element.data('lock') === true || element.data('resizing') === true){
 					return;
 				}
-				$element.trigger('startResize');
+				element.trigger('startResize');
 				e.preventDefault();
 				var interrupt = false;
 				var mouse = { y: e.pageY, x: e.pageX };
 				var resizeLimits = {
-					horizontalRight:  $element.offset().left + $element.width() + 15 > mouse.x && mouse.x > $element.offset().left + $element.width() - 15,
-					horizontalLeft: $element.offset().left + 15 > mouse.x && mouse.x > $element.offset().left - 15,
-					verticalTop: $element.offset().top + 15 > mouse.y && mouse.y > $element.offset().top - 15,
-					verticalBottom: $element.offset().top + $element.height() + 15 > mouse.y && mouse.y > $element.offset().top + $element.height() - 15
+					horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-lock') === undefined,
+					horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-lock') === undefined,
+					verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-lock') === undefined,
+					verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-lock') === undefined
 				};
 
 				var initial = {
-					pos: $element.offset(),
+					pos: element.offset(),
 					size: {
-						width: $element.width(),
-						height: $element.height()
+						width: element.width(),
+						height: element.height()
 					}
 				};
-				var parent = $element.parents('.drawing-zone');
+				var parent = element.parents('.drawing-zone');
 				var parentData = {
 					pos: parent.offset(),
 					size: {
@@ -2277,13 +2308,13 @@ module.directive('resizable', function(){
 				};
 
 				if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight ||resizeLimits.verticalTop || resizeLimits.verticalBottom){
-					$element.data('resizing', true);
+					element.data('resizing', true);
 					$('.main').css({
-						'cursor': $element.css('cursor')
+						'cursor': element.css('cursor')
 					});
 					$(window).unbind('mousemove.drag');
 					$(window).on('mousemove.resize', function(e){
-						$element.unbind("click");
+						element.unbind("click");
 						mouse = {
 							y: e.pageY,
 							x: e.pageX
@@ -2294,13 +2325,13 @@ module.directive('resizable', function(){
 					var resize = function(){
 						var newWidth = 0; var newHeight = 0;
 						if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight){
-							var p = $element.offset();
+							var p = element.offset();
 							if(resizeLimits.horizontalLeft){
 								var distance = initial.pos.left - mouse.x;
 								if(initial.pos.left - distance < parentData.pos.left){
 									distance = initial.pos.left - parentData.pos.left;
 								}
-								$element.offset({
+								element.offset({
 									left: initial.pos.left - distance,
 									top: p.top
 								});
@@ -2308,23 +2339,23 @@ module.directive('resizable', function(){
 							}
 							else{
 								var distance = mouse.x - p.left;
-								if($element.offset().left + distance > parentData.pos.left + parentData.size.width){
-									distance = (parentData.pos.left + parentData.size.width) - $element.offset().left - 2;
+								if(element.offset().left + distance > parentData.pos.left + parentData.size.width){
+									distance = (parentData.pos.left + parentData.size.width) - element.offset().left - 2;
 								}
 								newWidth = distance;
 							}
 							if(newWidth > 0){
-								$element.width(newWidth);
+								element.width(newWidth);
 							}
 						}
 						if(resizeLimits.verticalTop || resizeLimits.verticalBottom){
-							var p = $element.offset();
+							var p = element.offset();
 							if(resizeLimits.verticalTop){
 								var distance = initial.pos.top - mouse.y;
 								if(initial.pos.top - distance < parentData.pos.top){
 									distance = initial.pos.top - parentData.pos.top;
 								}
-								$element.offset({
+								element.offset({
 									left: p.left,
 									top: initial.pos.top - distance
 								});
@@ -2332,16 +2363,16 @@ module.directive('resizable', function(){
 							}
 							else{
 								var distance = mouse.y - p.top;
-								if($element.offset().top + distance > parentData.pos.top + parent.height()){
-									distance = (parentData.pos.top + parentData.size.height) - $element.offset().top - 2;
+								if(element.offset().top + distance > parentData.pos.top + parent.height()){
+									distance = (parentData.pos.top + parentData.size.height) - element.offset().top - 2;
 								}
 								newHeight = distance;
 							}
 							if(newHeight > 0){
-								$element.height(newHeight);
+								element.height(newHeight);
 							}
 						}
-						$element.trigger('resizing');
+						element.trigger('resizing');
 						if(!interrupt){
 							requestAnimationFrame(resize);
 						}
@@ -2349,11 +2380,11 @@ module.directive('resizable', function(){
 					resize();
 
 					$(window).on('mouseup.resize', function(){
-						$element.trigger('stopResize');
+						element.trigger('stopResize');
 						interrupt = true;
 						setTimeout(function(){
-							$element.data('resizing', false);
-						}, 0)
+							element.data('resizing', false);
+						}, 0);
 						$(window).unbind('mousemove.resize');
 						$('body').unbind('mouseup.resize');
 						$('.main').css({'cursor': ''})

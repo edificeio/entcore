@@ -5649,15 +5649,17 @@ select {
 }
 .schedule {
   width: 100%;
+  height: auto;
   padding-left: 115px;
   box-sizing: border-box;
+  margin-top: 40px;
+  overflow: visible;
 }
 .schedule legend.timeslots {
   width: 115px;
   background: #444;
   color: #aaa;
   position: absolute;
-  top: 40px;
   left: 0;
 }
 .schedule .timeslot {
@@ -5684,8 +5686,13 @@ select {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+  position: absolute;
+  top: -40px;
 }
-.schedule .days .day .timeslot {
+.schedule .days .day .timeslots {
+  height: auto;
+}
+.schedule .days .day .timeslots .timeslot {
   background: #fdfdfd;
   border-bottom: 1px solid #eee;
   border-right: 1px solid #eee;
@@ -5698,7 +5705,7 @@ select {
 .schedule .schedule-items {
   position: absolute;
   left: 0;
-  top: 40px;
+  top: 0px;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;

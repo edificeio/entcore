@@ -1229,6 +1229,7 @@ var calendar = {
 	},
 	startOfDay: 7,
 	endOfDay: 20,
+	dayHeight: 40,
 	init: function(){
 		this.week = moment().week();
 		model.makeModels(calendar);

@@ -1569,15 +1569,16 @@ table{
 
 .schedule{
 	width: 100%;
-
+	height: auto;
 	padding-left: 115px;
 	box-sizing: border-box;
+	margin-top: 40px;
+	overflow: visible;
 	legend.timeslots{
 		width: 115px;
 		background: #444;
 		color: #aaa;
 		position: absolute;
-		top: 40px;
 		left: 0;
 	}
 	.timeslot{
@@ -1599,21 +1600,27 @@ table{
 				color: #aaa;
 				background: #444;
 				.border-box;
+				position: absolute;
+				top: -40px;
 			}
-			.timeslot{
-				background: #fdfdfd;
-				border-bottom: 1px solid #eee;
-				border-right: 1px solid #eee;
-				width: 100%;
-				.border-box;
+			.timeslots{
+				height: auto;
+				.timeslot{
+					background: #fdfdfd;
+					border-bottom: 1px solid #eee;
+					border-right: 1px solid #eee;
+					width: 100%;
+					.border-box;
+				}
 			}
+
 		}
 	}
 
 	.schedule-items{
 		position: absolute;
 		left: 0;
-		top: 40px;
+		top: 0px;
 		width: 100%;
 		.border-box;
 		.schedule-item{

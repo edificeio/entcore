@@ -1,4 +1,4 @@
-<div class="schedule">
+<div class="schedule" drawing-zone>
 	<legend class="timeslots">
 		<div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot">
 			[[timeslot.beginning]]h00 - [[timeslot.end]]h00
@@ -18,7 +18,7 @@
 			</div>
 		</div>
 	</div>
-
+	<div class="row"></div>
 
 	<lightbox show="display.editItem" on-close="display.editItem = false;">
 		<container template="schedule-edit-template"></container>
