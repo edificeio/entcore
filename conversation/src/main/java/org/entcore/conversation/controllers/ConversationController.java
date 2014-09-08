@@ -20,8 +20,13 @@
 package org.entcore.conversation.controllers;
 
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
@@ -29,7 +34,6 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.DefaultConversationService;
-import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
@@ -41,36 +45,37 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.json.impl.Json;
 import org.vertx.java.platform.Container;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
-public class ConversationController extends Controller {
+public class ConversationController extends BaseController {
 
-	private final ConversationService conversationService;
-	private final TimelineHelper notification;
+	private ConversationService conversationService;
+	private TimelineHelper notification;
 
-	public ConversationController(Vertx vertx, Container container, RouteMatcher rm,
+	@Override
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
+		super.init(vertx, container, rm, securedActions);
 		this.conversationService = new DefaultConversationService(vertx,
 				container.config().getString("app-name", Conversation.class.getSimpleName()));
 		notification = new TimelineHelper(vertx, eb, container);
 	}
 
+	@Get("conversation")
 	@SecuredAction("conversation.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Post("draft")
 	@SecuredAction("conversation.create.draft")
 	public void createDraft(final HttpServerRequest request) {
 		getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -91,6 +96,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Put("draft/:id")
 	@SecuredAction(value = "conversation.create.draft", type = ActionType.AUTHENTICATED)
 	public void updateDraft(final HttpServerRequest request) {
 		final String messageId = request.params().get("id");
@@ -116,6 +122,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Post("send")
 	@SecuredAction("conversation.send")
 	public void send(final HttpServerRequest request) {
 		final String messageId = request.params().get("id");
@@ -178,6 +185,7 @@ public class ConversationController extends Controller {
 				recipients, id, "notification/notify-send-message.html", params);
 	}
 
+	@Get("list/:folder")
 	@SecuredAction(value = "conversation.list", type = ActionType.AUTHENTICATED)
 	public void list(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
@@ -263,6 +271,7 @@ public class ConversationController extends Controller {
 		}
 	}
 
+	@Get("count/:folder")
 	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
 	public void count(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
@@ -287,6 +296,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Get("visible")
 	@SecuredAction(value = "conversation.visible", type = ActionType.AUTHENTICATED)
 	public void visible(final HttpServerRequest request) {
 		getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -303,6 +313,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Get("message/:id")
 	@SecuredAction(value = "conversation.get", type = ActionType.AUTHENTICATED)
 	public void getMessage(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -334,6 +345,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Put("trash")
 	@SecuredAction(value = "conversation.trash", type = ActionType.AUTHENTICATED)
 	public void trash(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
@@ -353,6 +365,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Put("restore")
 	@SecuredAction(value = "conversation.restore", type = ActionType.AUTHENTICATED)
 	public void restore(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
@@ -372,6 +385,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@Delete("delete")
 	@SecuredAction(value = "conversation.delete", type = ActionType.AUTHENTICATED)
 	public void delete(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
@@ -391,6 +405,7 @@ public class ConversationController extends Controller {
 		});
 	}
 
+	@BusAddress("org.entcore.conversation")
 	public void conversationEventBusHandler(Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
 			case "send" : send(message);
