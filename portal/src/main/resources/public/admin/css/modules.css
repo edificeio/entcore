@@ -5917,7 +5917,6 @@ table thead tr {
 .progress-bar .filled.small {
   color: #ff0b75;
 }
-<<<<<<< HEAD
 ul.angle-list {
   list-style-type: none;
 }
@@ -5976,10 +5975,9 @@ div.angle-container-header {
   border-left: 5px solid #ff0b75;
   border-bottom: 2px solid #ff0b75;
   border-radius: 0;
-=======
+}
 .accordions .accordion.opened h2 {
   color: #ff0b75;
->>>>>>> [portal] raw update
 }
 header.navbar {
   background: #444;
