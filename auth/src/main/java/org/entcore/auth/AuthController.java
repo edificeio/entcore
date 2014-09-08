@@ -30,11 +30,19 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import fr.wseduc.bus.BusAddress;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.*;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.logging.Tracer;
+import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
 import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.async.Handler;
@@ -68,44 +76,41 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
-import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
 
-public class AuthController extends Controller {
+public class AuthController extends BaseController {
 
-	private final DataHandlerFactory oauthDataFactory;
-	private final Token token;
-	private final ProtectedResource protectedResource;
-	private final UserAuthAccount userAuthAccount;
-	private final TracerHelper trace;
+	private DataHandlerFactory oauthDataFactory;
+	private Token token;
+	private ProtectedResource protectedResource;
+	private UserAuthAccount userAuthAccount;
+	private static final Tracer trace = TracerFactory.getTracer("auth");
 	private static final String USERINFO_SCOPE = "userinfo";
 
-	public AuthController(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
+	@Override
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		Neo neo = new Neo(eb, log);
-		this.trace = trace;
-		MongoDb mongo = MongoDb.getInstance();
-		mongo.init(eb, container.config().getString("mongo.address", "wse.mongodb.persistor"));
-		this.oauthDataFactory = new OAuthDataHandlerFactory(neo, mongo);
+		super.init(vertx, container, rm, securedActions);
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance());
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
-		this.token = new Token();
-		this.token.setDataHandlerFactory(oauthDataFactory);
-		this.token.setGrantHandlerProvider(grantHandlerProvider);
-		this.token.setClientCredentialFetcher(clientCredentialFetcher);
+		token = new Token();
+		token.setDataHandlerFactory(oauthDataFactory);
+		token.setGrantHandlerProvider(grantHandlerProvider);
+		token.setClientCredentialFetcher(clientCredentialFetcher);
 		AccessTokenFetcherProvider accessTokenFetcherProvider =
 				new DefaultAccessTokenFetcherProvider();
-		this.protectedResource = new ProtectedResource();
-		this.protectedResource.setDataHandlerFactory(oauthDataFactory);
-		this.protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		this.userAuthAccount = new DefaultUserAuthAccount(vertx, container);
+		protectedResource = new ProtectedResource();
+		protectedResource.setDataHandlerFactory(oauthDataFactory);
+		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
+		userAuthAccount = new DefaultUserAuthAccount(vertx, container);
 	}
 
+	@Get("/oauth2/auth")
 	public void authorize(final HttpServerRequest request) {
 		final String responseType = request.params().get("response_type");
 		final String clientId = request.params().get("client_id");
@@ -156,6 +161,7 @@ public class AuthController extends Controller {
 		}
 	}
 
+	@Post("/oauth2/token")
 	public void token(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -190,6 +196,7 @@ public class AuthController extends Controller {
 		renderJson(request, context);
 	}
 
+	@Get("/context")
 	public void context(final HttpServerRequest request) {
 		JsonObject context = new JsonObject();
 		context.putString("callBack", container.config().getObject("authenticationServer").getString("loginCallback"));
@@ -213,10 +220,12 @@ public class AuthController extends Controller {
 		renderView(request, context, "login.html", null);
 	}
 
+	@Get("/login")
 	public void login(HttpServerRequest request) {
 		viewLogin(request, null, request.params().get("callBack"));
 	}
 
+	@Post("/login")
 	public void loginSubmit(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -276,6 +285,7 @@ public class AuthController extends Controller {
 				});
 	}
 
+	@Get("/logout")
 	public void logout(final HttpServerRequest request) {
 		String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		String c = request.params().get("callback");
@@ -309,6 +319,7 @@ public class AuthController extends Controller {
 		}
 	}
 
+	@Get("/oauth2/userinfo")
 	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
 	public void userInfo(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new org.vertx.java.core.Handler<JsonObject>() {
@@ -333,6 +344,7 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@BusAddress("wse.oauth")
 	public void oauthResourceServer(final Message<JsonObject> message) {
 		if (message.body() == null) {
 			message.reply(new JsonObject());
@@ -363,6 +375,7 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@Get("/activation")
 	public void activeAccount(HttpServerRequest request) {
 		JsonObject json = new JsonObject();
 		if (request.params().contains("activationCode")) {
@@ -377,6 +390,7 @@ public class AuthController extends Controller {
 		renderView(request, json);
 	}
 
+	@Post("/activation")
 	public void activeAccountSubmit(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -448,10 +462,12 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@Get("/forgot")
 	public void forgotPassword(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Post("/forgot")
 	public void forgotPasswordSubmit(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -492,6 +508,7 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@Post("/sendResetPassword")
 	@SecuredAction( value = "auth.send.reset.password", type = ActionType.RESOURCE)
 	public void sendResetPassword(final HttpServerRequest request) {
 		String login = request.formAttributes().get("login");
@@ -512,6 +529,7 @@ public class AuthController extends Controller {
 				});
 	}
 
+	@Put("/block/:userId")
 	@SecuredAction( value = "auth.block.user", type = ActionType.RESOURCE)
 	public void blockUser(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
@@ -533,10 +551,12 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@Get("/reset/:resetCode")
 	public void resetPassword(final HttpServerRequest request) {
 		resetPasswordView(request, null);
 	}
 
+	@Post("/reset")
 	private void resetPasswordView(final HttpServerRequest request, final JsonObject p) {
 		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 			@Override
@@ -632,6 +652,7 @@ public class AuthController extends Controller {
 		});
 	}
 
+	@Get("/cgu")
 	public void cgu(final HttpServerRequest request) {
 		renderView(request);
 	}

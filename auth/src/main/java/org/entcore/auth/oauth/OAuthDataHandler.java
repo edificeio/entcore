@@ -29,23 +29,23 @@ import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 
+import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.security.BCrypt;
 
 public class OAuthDataHandler extends DataHandler {
-	private final Neo neo;
+	private final Neo4j neo;
 	private final MongoDb mongo;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
 
-	public OAuthDataHandler(Request request, Neo neo, MongoDb mongo) {
+	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
@@ -89,14 +89,14 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN n.id as userId, n.password as password";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
-			neo.send(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonObject result = res.body().getObject("result");
+					JsonArray result = res.body().getArray("result");
 					if ("ok".equals(res.body().getString("status")) &&
 							result != null && result.size() == 1) {
-						JsonObject r = result.getObject("0");
+						JsonObject r = result.get(0);
 						if (r != null && BCrypt.checkpw(password, r.getString("password"))) {
 							handler.handle(r.getString("userId"));
 						} else {

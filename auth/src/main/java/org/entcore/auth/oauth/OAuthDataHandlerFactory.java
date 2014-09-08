@@ -24,13 +24,14 @@ import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 
 public class OAuthDataHandlerFactory implements DataHandlerFactory {
 
-	private final Neo neo;
+	private final Neo4j neo;
 	private final MongoDb mongo;
 
-	public OAuthDataHandlerFactory(Neo neo, MongoDb mongo) {
+	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo) {
 		this.neo = neo;
 		this.mongo = mongo;
 	}
