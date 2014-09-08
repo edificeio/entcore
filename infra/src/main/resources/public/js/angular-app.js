@@ -605,11 +605,11 @@ module.directive('calendar', function($compile){
 		controller: function($scope, $timeout){
 			var refreshCalendar = function(){
 				model.calendar.clearScheduleItems();
-				model.calendar.addScheduleItems($scope.items.map(function(item){
+				model.calendar.addScheduleItems(_.where($scope.items.map(function(item){
 					item.beginning = item.startMoment;
 					item.end = item.endMoment;
 					return item;
-				}));
+				}), { is_periodic: false }));
 				$scope.calendar = model.calendar;
 				$scope.display = {
 					editItem: false,
