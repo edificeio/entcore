@@ -409,20 +409,23 @@ module.directive('linker', function($compile){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
 		controller: function($scope){
-			$scope.me = model.me;
-			$scope.search = { text: '', application: {} };
-			$scope.params = {};
-			$scope.resource = {};
+			$scope.linker = {
+				me: model.me,
+				search: { text: '', application: {} },
+				params: {},
+				resource: {}
+			};
 		},
 		link: function(scope, element, attributes){
-			scope.editor = scope.$eval(attributes.editor);
-			scope.chooseLink = scope.$eval(attributes.chooseLink);
-			scope.onChange = scope.$eval(attributes.onChange);
+			scope.linker.editor = scope.$eval(attributes.editor);
+			scope.linker.onChange = function(){
+				scope.$eval(attributes.onChange);
+			};
 			var linkNode = $('<a />');
 			var appendText = '';
 			scope.$watch('chooseLink', function(newVal){
 				if(newVal){
-					var contextEditor = scope.editor;
+					var contextEditor = scope.linker.editor;
 					var bookmarks = contextEditor.getSelection().createBookmarks(),
 						range = contextEditor.getSelection().getRanges()[0],
 						fragment = range.clone().cloneContents();
@@ -430,7 +433,7 @@ module.directive('linker', function($compile){
 
 					var node = $(range.startContainer.getParent().$);
 					if(node[0].nodeName !== 'A'){
-						node = $(range.startContainer.$)
+						node = $(range.startContainer.$);
 						if(node[0].nodeName !== 'A'){
 							scope.newNode = true;
 							return;
@@ -438,128 +441,128 @@ module.directive('linker', function($compile){
 
 					}
 
-					scope.params.link = node.attr('href');
-					scope.externalLink = !node.attr('data-id');
-					scope.params.appPrefix = node.attr('data-app-prefix');
-					scope.params.id = node.attr('data-id');
-					scope.params.blank = node.attr('target') === '_blank';
-					scope.params.target = node.attr('target');
-					scope.params.tooltip = node.attr('tooltip');
+					scope.linker.params.link = node.attr('href');
+					scope.linker.externalLink = !node.attr('data-id');
+					scope.linker.params.appPrefix = node.attr('data-app-prefix');
+					scope.linker.params.id = node.attr('data-id');
+					scope.linker.params.blank = node.attr('target') === '_blank';
+					scope.linker.params.target = node.attr('target');
+					scope.linker.params.tooltip = node.attr('tooltip');
 
-					scope.search.application = _.find(scope.apps, function(app){
+					scope.linker.search.application = _.find(scope.linker.apps, function(app){
 						return app.address.indexOf(node.attr('data-app-prefix')) !== -1;
 					});
 
-					scope.search.text = scope.params.id;
-					scope.loadApplicationResources(function(){
-						scope.searchApplication();
-						scope.search.text = ' ';
-						scope.$apply();
+					scope.linker.search.text = scope.params.id;
+					scope.linker.loadApplicationResources(function(){
+						scope.linker.searchApplication();
+						scope.linker.search.text = ' ';
+						scope.linker.$apply();
 					});
 				}
 				else{
-					scope.params = {};
-					scope.search.text = '';
+					scope.linker.params = {};
+					scope.linker.search.text = '';
 				}
 			});
 
 			http().get('/resources-applications').done(function(apps){
-				scope.apps = _.filter(model.me.apps, function(app){
+				scope.linker.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
 						return app.address.indexOf(match) !== -1
 					});
 				});
-				var currentApp = _.find(scope.apps, function(app){
+				var currentApp = _.find(scope.linker.apps, function(app){
 					return app.address.indexOf(appPrefix) !== -1;
 				});
 
-				scope.search.application = scope.apps[0];
+				scope.linker.search.application = scope.linker.apps[0];
 				if(currentApp){
-					scope.search.application = currentApp;
-					scope.loadApplicationResources(function(){});
+					scope.linker.search.application = currentApp;
+					scope.linker.loadApplicationResources(function(){});
 				}
 
-				var split = scope.search.application.address.split('/');
-				scope.params.appPrefix = split[split.length - 1];
-				scope.$apply('apps');
+				var split = scope.linker.search.application.address.split('/');
+				scope.linker.params.appPrefix = split[split.length - 1];
+				scope.$apply('linker');
 			});
 
-			scope.loadApplicationResources = function(cb){
-				var split = scope.search.application.address.split('/');
+			scope.linker.loadApplicationResources = function(cb){
+				var split = scope.linker.search.application.address.split('/');
 				var prefix = split[split.length - 1];
-				scope.params.appPrefix = prefix;
+				scope.linker.params.appPrefix = prefix;
 				if(!cb){
 					cb = function(){
-						scope.searchApplication();
-						scope.$apply('resources');
+						scope.linker.searchApplication();
+						scope.$apply('linker');
 					};
 				}
 
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
 					appBehaviour.loadResources(cb);
-					scope.addResource = appBehaviour.create;
+					scope.linker.addResource = appBehaviour.create;
 				});
 			};
 
-			scope.searchApplication = function(){
-				var split = scope.search.application.address.split('/');
+			scope.linker.searchApplication = function(){
+				var split = scope.linker.search.application.address.split('/');
 				var prefix = split[split.length - 1];
-				scope.params.appPrefix = prefix;
-				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
-					scope.resources = _.filter(appBehaviour.resources, function(resource) {
-						return scope.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.search.text).toLowerCase()) !== -1 ||
-							resource._id === scope.search.text);
+				scope.linker.params.appPrefix = prefix;
+				Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
+					scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
+						return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
+							resource._id === scope.linker.search.text);
 					});
-					scope.resource.title = scope.search.text;
+					scope.linker.resource.title = scope.linker.search.text;
 				});
 			};
 
-			scope.createResource = function(){
-				Behaviours.loadBehaviours(scope.params.appPrefix, function(appBehaviour){
-					appBehaviour.create(scope.resource, function(){
-						scope.searchApplication();
-						scope.search.text = scope.resource.title;
-						scope.$apply();
+			scope.linker.createResource = function(){
+				Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
+					appBehaviour.create(scope.linker.resource, function(){
+						scope.linker.searchApplication();
+						scope.linker.search.text = scope.resource.title;
+						scope.linker.$apply();
 					});
 				});
 			};
 
-			scope.applyLink = function(link){
-				scope.params.link = link;
+			scope.linker.applyLink = function(link){
+				scope.linker.params.link = link;
 			};
 
-			scope.applyResource = function(resource){
-				scope.params.link = resource.path;
-				scope.params.id = resource._id;
+			scope.linker.applyResource = function(resource){
+				scope.linker.params.link = resource.path;
+				scope.linker.params.id = resource._id;
 			};
 
-			scope.saveLink = function(){
-				if(scope.params.blank){
-					scope.params.target = '_blank';
+			scope.linker.saveLink = function(){
+				if(scope.linker.params.blank){
+					scope.linker.params.target = '_blank';
 				}
 
-				var contextEditor = scope.editor;
+				var contextEditor = scope.linker.editor;
 				var bookmarks = contextEditor.getSelection().createBookmarks(),
 					range = contextEditor.getSelection().getRanges()[0],
 					fragment = range.clone().cloneContents();
 				contextEditor.getSelection().selectBookmarks(bookmarks);
 
-				var linkNode = scope.editor.document.createElement('a');
-				if(scope.params.link){
-					linkNode.setAttribute('href', scope.params.link);
+				var linkNode = scope.linker.editor.document.createElement('a');
+				if(scope.linker.params.link){
+					linkNode.setAttribute('href', scope.linker.params.link);
 
-					if(scope.params.appPrefix){
-						linkNode.setAttribute('data-app-prefix', scope.params.appPrefix);
+					if(scope.linker.params.appPrefix){
+						linkNode.setAttribute('data-app-prefix', scope.linker.params.appPrefix);
 					}
-					if(scope.params.id){
-						linkNode.setAttribute('data-id', scope.params.id);
+					if(scope.linker.params.id){
+						linkNode.setAttribute('data-id', scope.linker.params.id);
 					}
-					if(scope.params.blank){
-						scope.params.target = '_blank';
-						linkNode.setAttribute('target', scope.params.target);
+					if(scope.linker.params.blank){
+						scope.linker.params.target = '_blank';
+						linkNode.setAttribute('target', scope.linker.params.target);
 					}
-					if(scope.params.tooltip){
-						linkNode.setAttribute('tooltip', scope.params.tooltip);
+					if(scope.linker.params.tooltip){
+						linkNode.setAttribute('tooltip', scope.linker.params.tooltip);
 					}
 				}
 
@@ -577,20 +580,20 @@ module.directive('linker', function($compile){
 				}
 
 				if(childCount === 0){
-					appendText = scope.params.link;
+					appendText = scope.linker.params.link;
 				}
 
 				linkNode.appendHtml(appendText);
-				scope.editor.insertElement(linkNode);
+				scope.linker.editor.insertElement(linkNode);
 
 				scope.chooseLink = false;
-				scope.onChange();
-				scope.$apply();
-			}
+				scope.linker.onChange();
+				scope.linker.$apply();
+			};
 
-			scope.cancel = function(){
+			scope.linker.cancel = function(){
 				scope.chooseLink = false;
-			}
+			};
 		}
 	}
 });
@@ -1505,7 +1508,7 @@ module.directive('textEditor', function($compile){
 			ngChange: '&'
 		},
 		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
-			'<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>',
+			'<linker editor="contextEditor" on-change="updateContent()"></linker>',
 		compile: function($element, $attributes, $transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -1596,10 +1599,9 @@ module.directive('htmlEditor', function($compile){
 		restrict: 'E',
 		transclude: true,
 		replace: true,
-		scope: {
-			ngModel: '=',
-			notify: '=',
-			watchCollections: '@'
+		controller: function($scope){
+			$scope.ngModel = null;
+			$scope.notify = null;
 		},
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
@@ -1617,7 +1619,7 @@ module.directive('htmlEditor', function($compile){
                 '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
             '</lightbox>' +
             '</div>',
-		compile: function($element, $attributes, $transclude){
+		compile: function(element, attributes, transclude){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
@@ -1625,6 +1627,9 @@ module.directive('htmlEditor', function($compile){
 
 			}
 			return function(scope, element, attributes){
+				scope.ngModel = scope.$eval(attributes.ngModel);
+				scope.notify = scope.$eval(attributes.notify);
+
 				scope.selected = { files: [], link: '' };
 
 				if(!attributes.fileUploadPath){
@@ -1679,16 +1684,6 @@ module.directive('htmlEditor', function($compile){
                 }
 
 				scope.updateContent = function(){
-					var content = editor.html();
-					if(content.indexOf(';base64,') !== -1){
-						scope.notify.error('Une image est corrompue')
-					}
-					editor.find('img').each(function(index, item){
-						if($(item).attr('src').indexOf(';base64,') !== -1){
-							$(item).remove();
-						}
-					})
-
 					scope.ngModel = editor.html();
 				}
 
@@ -1717,11 +1712,11 @@ module.directive('htmlEditor', function($compile){
 					scope.selectFiles = false;
 				};
 
-				if(!scope.watchCollections){
+				if(!attributes.watchCollections){
 					return;
 				}
 
-				scope.$eval(scope.watchCollections).forEach(function(col){
+				scope.$eval(attributes.watchCollections).forEach(function(col){
 					scope.$parent.$watchCollection(col, function(){
 						ckeEditorFixedPositionning();
 					});

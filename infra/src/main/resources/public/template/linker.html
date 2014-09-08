@@ -1,43 +1,43 @@
-<lightbox show="chooseLink" on-close="chooseLink = false;">
+<lightbox show="chooseLink" on-close="linker.chooseLink = false;">
 	<div class="tabs linker">
-		<header ng-click="externalLink = false" ng-class="{ selected: !externalLink }">Rechercher dans l'ENT</header>
-		<header ng-click="externalLink = true" ng-class="{ selected: externalLink }">Adresse d'un site internet</header>
+		<header ng-click="linker.externalLink = false" ng-class="{ selected: !linker.externalLink }">Rechercher dans l'ENT</header>
+		<header ng-click="linker.externalLink = true" ng-class="{ selected: linker.externalLink }">Adresse d'un site internet</header>
 
-		<section ng-if="externalLink">
+		<section ng-if="linker.externalLink">
 			<div class="row">
 				<label class="four cell">Adresse du site</label>
-				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="params.link" />
+				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="linker.params.link" />
 			</div>
 			<div class="row">
 				<label class="four cell">Bulle d'information</label>
-				<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="params.tooltip" />
+				<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="linker.params.tooltip" />
 			</div>
 			<div class="row">
 				<div class="four cell">&nbsp;</div>
-				<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+				<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
 			</div>
 		</section>
-		<section ng-if="!externalLink" class="row">
+		<section ng-if="!linker.externalLink" class="row">
 			<div class="row">
 				<div class="twelve cell vertical-spacing">
 					<div class="row">
-						<input type="text" placeholder="Rechercher" ng-model="search.text" class="six cell" ng-change="searchApplication()" />
-						<select ng-model="search.application" ng-options="app.name for app in apps" class="five right-magnet cell" ng-change="loadApplicationResources()"></select>
+						<input type="text" placeholder="Rechercher" ng-model="linker.search.text" class="six cell" ng-change="linker.searchApplication()" />
+						<select ng-model="linker.search.application" ng-options="app.name for app in linker.apps" class="five right-magnet cell" ng-change="linker.loadApplicationResources()"></select>
 					</div>
 				</div>
 			</div>
-			<article class="found-resources" ng-class="{ info: search.text === '' }">
-				<div ng-if="search.text === ''" class="reduce-block-six">
+			<article class="found-resources" ng-class="{ info: linker.search.text === '' }">
+				<div ng-if="linker.search.text === ''" class="reduce-block-six">
 					<div class="row">
 						Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
 						à vos lecteurs.
 					</div>
 				</div>
-				<div ng-if="resources.length === 0 && search.text !== ''">
-					<div ng-include="'/' + params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
+				<div ng-if="linker.resources.length === 0 && linker.search.text !== ''">
+					<div ng-include="'/' + linker.params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
 				</div>
 				<ul class="illustrated-list">
-					<li ng-repeat="resource in resources" ng-click="applyResource(resource)" ng-class="{ selected: resource.path === params.link }">
+					<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
 						<img skin-src="[[resource.icon]]" class="illustration" />
 						<a class="name">[[resource.title]]</a>
 						<em class="owner">[[resource.ownerName]]</em>
@@ -47,11 +47,11 @@
 			<div class="twelve cell vertical-spacing">
 				<div class="row">
 					<label class="three cell">Bulle d'information</label>
-					<input class="nine cell" type="text" ng-model="params.tooltip" placeholder="Bulle d'aide" />
+					<input class="nine cell" type="text" ng-model="linker.params.tooltip" placeholder="Bulle d'aide" />
 				</div>
 				<div class="row">
 					<div class="three cell">&nbsp;</div>
-					<input type="checkbox" ng-model="params.blank" />Ouvrir le lien dans un nouvel onglet
+					<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
 				</div>
 			</div>
 
@@ -60,8 +60,8 @@
 
 	<div class="row">
 		<div class="twelve cell reduce-block-four">
-			<input type="button" value="Créer un lien" ng-click="saveLink()" ng-disabled="!params.link" class="right-magnet" />
-			<input type="button" class="cancel right-magnet" value="Annuler" ng-click="cancel()" />
+			<input type="button" value="Créer un lien" ng-click="linker.saveLink()" ng-disabled="!linker.params.link" class="right-magnet" />
+			<input type="button" class="cancel right-magnet" value="Annuler" ng-click="linker.cancel()" />
 		</div>
 	</div>
 </lightbox>

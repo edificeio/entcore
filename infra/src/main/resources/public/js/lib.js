@@ -1350,12 +1350,20 @@ function bootstrap(func){
 					return this.applicationsBehaviours[serviceName].resource(resource);
 				}
 
-				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
-				return this.applicationsBehaviours[serviceName].resource(resource);
+				if(serviceName !== '.'){
+					loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+					return this.applicationsBehaviours[serviceName].resource(resource);
+				}
+
+				return {}
 			},
 			loadBehaviours: function(serviceName, callback){
 				if(this.applicationsBehaviours[serviceName]){
 					callback(this.applicationsBehaviours[serviceName]);
+				}
+
+				if(serviceName === '.') {
+					return;
 				}
 
 				loader.asyncLoad('/' + serviceName + '/public/js/behaviours.js', function(){
