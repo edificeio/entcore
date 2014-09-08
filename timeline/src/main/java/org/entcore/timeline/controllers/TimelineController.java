@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.webutils.http.BaseController;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -22,23 +25,25 @@ import fr.wseduc.security.SecuredAction;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 
-public class TimelineController extends Controller {
+public class TimelineController extends BaseController {
 
 	private TimelineEventStore store;
-	private final ConcurrentMap<String, String> eventsI18n;
+	private ConcurrentMap<String, String> eventsI18n;
 
-	public TimelineController(Vertx vertx, Container container,
+	public void init(Vertx vertx, Container container,
 			RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
+		super.init(vertx, container, rm, securedActions);
 		store = new DefaultTimelineEventStore(vertx, container);
 		eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
 	}
 
+	@Get("/timeline")
 	@SecuredAction("timeline.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/i18nNotifications")
 	@SecuredAction("timeline.i18n")
 	public void i18n(HttpServerRequest request) {
 		String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
@@ -48,12 +53,14 @@ public class TimelineController extends Controller {
 		}
 		renderJson(request, new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}"));
 	}
-	
+
+	@Get("/calendar")
 	@SecuredAction("timeline.calendar")
 	public void calendar(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/lastNotifications")
 	@SecuredAction("timeline.events")
 	public void lastEvents(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -85,6 +92,7 @@ public class TimelineController extends Controller {
 		});
 	}
 
+	@Get("/types")
 	@SecuredAction(value = "timeline.auth", type = ActionType.AUTHENTICATED)
 	public void listTypes(final HttpServerRequest request) {
 		store.listTypes(new Handler<JsonArray>() {
@@ -96,6 +104,7 @@ public class TimelineController extends Controller {
 		});
 	}
 
+	@BusAddress("wse.timeline")
 	public void busApi(final Message<JsonObject> message) {
 		if (message == null) {
 			return;
