@@ -40,11 +40,7 @@ import java.util.Map;
 
 public class WorkspaceResourcesProvider implements ResourcesProvider {
 
-	private MongoDb mongo;
-
-	public WorkspaceResourcesProvider(MongoDb mongo) {
-		this.mongo = mongo;
-	}
+	private MongoDb mongo = MongoDb.getInstance();
 
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,

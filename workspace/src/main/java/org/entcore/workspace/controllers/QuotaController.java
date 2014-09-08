@@ -19,9 +19,13 @@
 
 package org.entcore.workspace.controllers;
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.workspace.service.QuotaService;
 import org.vertx.java.core.Handler;
@@ -37,32 +41,31 @@ import java.util.Map;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-public class QuotaController extends Controller {
+public class QuotaController extends BaseController {
 
 	private QuotaService quotaService;
 
-	public QuotaController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-	}
-
+	@Get("/quota/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuota(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		quotaService.quotaAndUsage(userId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/quota/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuotaStructure(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		quotaService.quotaAndUsageStructure(structureId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/quota/global")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuotaGlobal(final HttpServerRequest request) {
 		quotaService.quotaAndUsageGlobal(notEmptyResponseHandler(request));
 	}
 
+	@Put("/quota")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateQuota", new Handler<JsonObject>() {
@@ -73,6 +76,7 @@ public class QuotaController extends Controller {
 		});
 	}
 
+	@Put("/quota/default/:profile")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void updateDefault(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateDefaultQuota", new Handler<JsonObject>() {
@@ -85,6 +89,7 @@ public class QuotaController extends Controller {
 		});
 	}
 
+	@BusAddress("activation.ack")
 	public void initQuota(final Message<JsonObject> message){
 		String userId = message.body().getString("userId");
 		if (userId != null && !userId.trim().isEmpty()) {

@@ -38,10 +38,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.bus.BusAddress;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -57,7 +64,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.http.ETag;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
@@ -67,38 +73,38 @@ import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.GenericDao;
 import org.entcore.workspace.dao.RackDao;
 
-public class WorkspaceService extends Controller {
+public class WorkspaceService extends BaseController {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
-	private final String gridfsAddress;
-	private final String imageResizerAddress;
-	private final MongoDb mongo;
-	private final DocumentDao documentDao;
-	private final RackDao rackDao;
-	private final Neo neo;
-	private final TimelineHelper notification;
-	private final TracerHelper trace;
-	private final ShareService shareService;
-	private final FolderService folderService;
+	private String gridfsAddress;
+	private String imageResizerAddress;
+	private MongoDb mongo;
+	private DocumentDao documentDao;
+	private RackDao rackDao;
+	private TimelineHelper notification;
+	private ShareService shareService;
+	private FolderService folderService;
 	private QuotaService quotaService;
-	private final int threshold;
+	private int threshold;
 
-	public WorkspaceService(Vertx vertx, Container container, RouteMatcher rm, TracerHelper trace,
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
+		super.init(vertx, container, rm, securedActions);
 		mongo = MongoDb.getInstance();
 		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);
 		rackDao = new RackDao(mongo);
-		neo = new Neo(eb, log);
 		notification = new TimelineHelper(vertx, eb, container);
-		this.trace = trace;
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
 		this.threshold = container.config().getInteger("alertStorage", 80);
+		post("/rack/documents/copy/:ids", "copyRackDocuments");
+		post("/documents/copy/:ids", "copyDocuments");
+		put("/documents/move/:ids", "moveDocuments");
 	}
 
+	@Get("/workspace")
 	@SecuredAction("workspace.view")
 	public void view(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -128,6 +134,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/share/json/:id")
 	@SecuredAction("workspace.share.json")
 	public void shareJson(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -157,6 +164,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/share/json/:id")
 	@SecuredAction("workspace.share.json")
 	public void shareJsonSubmit(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -221,6 +229,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/share/remove/:id")
 	@SecuredAction("workspace.share.json")
 	public void removeShare(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -340,6 +349,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Post("/document")
 	@SecuredAction("workspace.document.add")
 	public void addDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -399,6 +409,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
+	@Post("/rack/:to")
 	@SecuredAction("workspace.rack.document.add")
 	public void addRackDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -415,13 +426,14 @@ public class WorkspaceService extends Controller {
 						Map<String, Object> params = new HashMap<>();
 						params.put("id", to);
 						request.pause();
-						neo.send(query, params, new Handler<Message<JsonObject>>() {
+						Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 
 							@Override
 							public void handle(Message<JsonObject> res) {
+								JsonArray result = res.body().getArray("result");
 								if ("ok".equals(res.body().getString("status")) &&
-										1 == res.body().getObject("result")
-												.getObject("0").getInteger("nb")) {
+										1 == result.size() &&
+										1 == result.<JsonObject>get(0).getInteger("nb")) {
 									final JsonObject doc = new JsonObject();
 									doc.putString("to", to);
 									doc.putString("toName", res.body().getObject("result")
@@ -596,6 +608,7 @@ public class WorkspaceService extends Controller {
 				WORKSPACE_NAME + "_STORAGE", recipients, null, "notify-storage.html", null);
 	}
 
+	@Post("/folder")
 	@SecuredAction("workspace.folder.add")
 	public void addFolder(final HttpServerRequest request) {
 		request.expectMultiPart(true);
@@ -623,6 +636,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/folder/copy/:id")
 	@SecuredAction(value = "workspace.folder.copy", type = ActionType.AUTHENTICATED)
 	public void copyFolder(final HttpServerRequest request) {
 		request.expectMultiPart(true);
@@ -668,6 +682,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/folder/move/:id")
 	@SecuredAction(value = "workspace.folder.move", type = ActionType.AUTHENTICATED)
 	public void moveFolder(final HttpServerRequest request) {
 		request.expectMultiPart(true);
@@ -700,6 +715,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/folder/trash/:id")
 	@SecuredAction(value = "workspace.folder.trash", type = ActionType.AUTHENTICATED)
 	public void moveTrashFolder(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -719,6 +735,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/folder/restore/:id")
 	@SecuredAction(value = "workspace.folder.trash", type = ActionType.AUTHENTICATED)
 	public void restoreFolder(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -738,6 +755,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Delete("/folder/:id")
 	@SecuredAction(value = "workspace.folder.delete", type = ActionType.AUTHENTICATED)
 	public void deleteFolder(final HttpServerRequest request) {
 		final String id = request.params().get("id");
@@ -768,6 +786,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/folders/list")
 	@SecuredAction(value = "workspace.folders.list", type = ActionType.AUTHENTICATED)
 	public void folders(final HttpServerRequest request) {
 		final String path = request.params().get("path");
@@ -835,6 +854,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
+	@Put("document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -934,11 +954,13 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/document/:id")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
 		getFile(request, documentDao, null);
 	}
 
+	@Get("/rack/:id")
 	@SecuredAction("workspace.rack.document.get")
 	public void getRackDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1015,11 +1037,13 @@ public class WorkspaceService extends Controller {
 		);
 	}
 
+	@Delete("/document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void deleteDocument(HttpServerRequest request) {
 		deleteFile(request, documentDao, null);
 	}
 
+	@Delete("/rack/:id")
 	@SecuredAction("workspace.rack.document.delete")
 	public void deleteRackDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1072,6 +1096,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Post("/documents/copy/:ids/:folder")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void copyDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1087,6 +1112,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Post("/rack/documents/copy/:ids/:folder")
 	@SecuredAction("workspace.rack.documents.copy")
 	public void copyRackDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1214,6 +1240,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
+	@Post("/document/copy/:id/:folder")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void copyDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1234,6 +1261,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Post("/rack/document/copy/:id/:folder")
 	@SecuredAction("workspace.document.copy")
 	public void copyRackDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1335,6 +1363,7 @@ public class WorkspaceService extends Controller {
 		return "{ \"$or\" : [{ \"userId\": \"" + user.getUserId() + "\" }" + sb.toString() + "]}";
 	}
 
+	@Get("/folders")
 	@SecuredAction("workspace.document.list.folders")
 	public void listFolders(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1407,6 +1436,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Post("/document/:id/comment")
 	@SecuredAction(value = "workspace.comment", type = ActionType.RESOURCE)
 	public void commentDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1448,6 +1478,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/document/move/:id/:folder")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocument(final HttpServerRequest request) {
 		String folder = getOrElse(request.params().get("folder"), "");
@@ -1459,11 +1490,13 @@ public class WorkspaceService extends Controller {
 		moveOne(request, folder, documentDao, null);
 	}
 
+	@Put("/document/trash/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveTrash(final HttpServerRequest request) {
 		moveOne(request, "Trash", documentDao, null);
 	}
 
+	@Put("/rack/trash/:id")
 	@SecuredAction("workspace.rack.document.move.trash")
 	public void moveTrashRack(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1505,6 +1538,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/documents/move/:ids/:folder")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
 		String ids = request.params().get("ids"); // TODO refactor with json in request body
@@ -1542,6 +1576,7 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
+	@Get("/documents")
 	@SecuredAction("workspace.documents.list")
 	public void listDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1591,6 +1626,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/documents/:folder")
 	@SecuredAction("workspace.documents.list.by.folder")
 	public void listDocumentsByFolder(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1643,6 +1679,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/rack/documents")
 	@SecuredAction("workspace.rack.list.documents")
 	public void listRackDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1673,6 +1710,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/rack/documents/Trash")
 	@SecuredAction("workspace.rack.list.trash.documents")
 	public void listRackTrashDocuments(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1701,6 +1739,7 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Get("/users/available-rack")
 	@SecuredAction("workspace.rack.available.users")
 	public void rackAvailableUsers(final HttpServerRequest request) {
 		String customReturn =
@@ -1720,11 +1759,13 @@ public class WorkspaceService extends Controller {
 		});
 	}
 
+	@Put("/restore/document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void restoreTrash(HttpServerRequest request) {
 		restore(request, documentDao, null);
 	}
 
+	@Put("/restore/rack/:id")
 	@SecuredAction("workspace.rack.restore")
 	public void restoreTrashRack(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -1775,11 +1816,13 @@ public class WorkspaceService extends Controller {
 		}
 	}
 
+	@Get("/workspace/availables-workflow-actions")
 	@SecuredAction(value = "workspace.habilitation", type = ActionType.AUTHENTICATED)
 	public void getActionsInfos(final HttpServerRequest request) {
 		ActionsUtils.findWorkflowSecureActions(eb, request, this);
 	}
 
+	@BusAddress("org.entcore.workspace")
 	public void workspaceEventBusHandler(final Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
 			case "addDocument" : addDocument(message);
