@@ -605,7 +605,7 @@ module.directive('calendar', function($compile){
 		controller: function($scope, $timeout){
 			var refreshCalendar = function(){
 				model.calendar.clearScheduleItems();
-				model.calendar.addScheduleItems(_.where($scope.items.map(function(item){
+				model.calendar.addScheduleItems(_.where(_.map($scope.items, function(item){
 					item.beginning = item.startMoment;
 					item.end = item.endMoment;
 					return item;
@@ -624,17 +624,10 @@ module.directive('calendar', function($compile){
 				$scope.createItem = function(){
 
 				};
-			}
+			};
 			$timeout(function(){
 				refreshCalendar();
-				$scope.items.on('sync', function(){
-					refreshCalendar();
-					$scope.$apply();
-				});
-				$scope.items.on('change', function(){
-					refreshCalendar();
-					$scope.$apply();
-				});
+				$scope.$watchCollection('items', refreshCalendar);
 			}, 0);
 		},
 		link: function(scope, element, attributes){
@@ -642,6 +635,7 @@ module.directive('calendar', function($compile){
 			template.open('schedule-create-template', attributes.createTemplate);
 
 			scope.items = scope.$eval(attributes.items);
+			scope.$watch(function(){ return scope.$eval(attributes.items) }, function(newVal){ scope.items = newVal });
 		}
 	}
 });
@@ -663,13 +657,14 @@ module.directive('scheduleItem', function($compile){
 		link: function(scope, element, attributes){
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
-			scope.$watch('item', function(newVal){
+			function placeItem(){
 				var cellWidth = element.parent().width() / 12;
 				var startDay = scope.item.beginning.dayOfYear();
 				var endDay = scope.item.end.dayOfYear();
 				var hours = calendar.getHours(scope.item, scope.day);
 
 				var itemWidth = scope.day.scheduleItems.scheduleItemWidth(scope.item);
+				element.children('.schedule-item').removeClass('twelve six four three two');
 				element.children('.schedule-item').addClass(cssClasses[itemWidth]);
 				var calendarGutter = 0;
 				var collision = true;
@@ -694,10 +689,13 @@ module.directive('scheduleItem', function($compile){
 					top: ((hours.startTime - 7) * 40) + 'px',
 					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
 				});
-			});
+			}
+
+			scope.$parent.$watchCollection('items', placeItem);
+			scope.$watch('item', placeItem);
 		}
 	}
-})
+});
 
 function serializeScope(scope){
 	var result = {};
