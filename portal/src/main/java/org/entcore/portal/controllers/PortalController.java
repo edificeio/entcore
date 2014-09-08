@@ -17,14 +17,14 @@
  *
  */
 
-package org.entcore.portal.service;
+package org.entcore.portal.controllers;
 
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import org.entcore.common.neo4j.Neo;
-import fr.wseduc.webutils.Controller;
-import fr.wseduc.webutils.I18n;
+import fr.wseduc.rs.Get;
+import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.portal.utils.ThemeUtils;
@@ -52,23 +52,21 @@ import org.vertx.java.platform.Container;
 
 import static org.entcore.common.user.SessionAttributes.*;
 
-public class PortalService extends Controller {
+public class PortalController extends BaseController {
 
-	private final ConcurrentMap<String, String> staticRessources;
-	private final boolean dev;
-	private final Neo neo;
+	private ConcurrentMap<String, String> staticRessources;
+	private boolean dev;
 	private List<String> themes;
-	private final String themesPrefix;
-	private final Container container;
-	private final String assetsPath;
+	private String themesPrefix;
+	private String assetsPath;
 
-	public PortalService(Vertx vertx, Container container, RouteMatcher rm,
+	@Override
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		this.container = container;
+		super.init(vertx, container, rm, securedActions);
+		getWithRegEx("/assets/.+", "assets");
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
-		this.neo = new Neo(eb, log);
 		assetsPath = container.config().getString("assets-path", ".");
 		themesPrefix = "/assets/themes/" + container.config().getString("skin");
 		ThemeUtils.availableThemes(vertx, assetsPath + themesPrefix, false, new Handler<List<String>>() {
@@ -95,11 +93,13 @@ public class PortalService extends Controller {
 		});
 	}
 
+	@Get("/welcome")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void welcome(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void portal(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -115,6 +115,7 @@ public class PortalService extends Controller {
 		});
 	}
 
+	@Get("/applications-list")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void applicationsList(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
@@ -140,6 +141,7 @@ public class PortalService extends Controller {
 		});
 	}
 
+	@Get("/adapter")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
@@ -182,6 +184,7 @@ public class PortalService extends Controller {
 		}
 	}
 
+	@Get("/theme")
 	@SecuredAction(value = "portal", type = ActionType.AUTHENTICATED)
 	public void getTheme(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -203,12 +206,13 @@ public class PortalService extends Controller {
 							"RETURN u.theme as theme";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
-					neo.send(query, params, new Handler<Message<JsonObject>>() {
+					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
-								String userTheme = event.body().getObject("result", new JsonObject())
-										.getObject("0", new JsonObject()).getString("theme");
+								JsonArray result = event.body().getArray("result");
+								String userTheme = (result != null && result.size() == 1) ?
+										result.<JsonObject>get(0).getString("theme") : null;
 								if (userTheme != null && themes.contains(userTheme)) {
 									theme.putString("skin", themesPrefix + "/" + userTheme + "/");
 								} else {
@@ -228,10 +232,12 @@ public class PortalService extends Controller {
 		});
 	}
 
+	@Get("/skin")
 	public void getSkin(final HttpServerRequest request) {
 		renderJson(request, new JsonObject().putString("skin", container.config().getString("skin")));
 	}
 
+	@Get("/locale")
 	public void locale(HttpServerRequest request) {
 		String lang = request.headers().get("Accept-Language");
 		if (lang == null) {
@@ -242,26 +248,31 @@ public class PortalService extends Controller {
 				Locale.forLanguageTag(langs[0].split("-")[0]).toString()));
 	}
 
+	@Get("/admin-urls")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void adminURLS(HttpServerRequest request){
 		renderJson(request, container.config().getArray("admin-urls", new JsonArray()));
 	}
 
+	@Get("/resources-applications")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void resourcesApplications(HttpServerRequest request){
 		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
 	}
 
+	@Get("/widgets")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void widgets(HttpServerRequest request){
 		renderJson(request, container.config().getArray("widgets", new JsonArray()));
 	}
 
+	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
 		renderJson(request, container.config().getArray("themes", new JsonArray()));
 	}
 
+	@Get("/admin")
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
 		redirectPermanent(request, "/directory/admin");

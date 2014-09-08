@@ -19,34 +19,15 @@
 
 package org.entcore.portal;
 
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
-import org.entcore.common.http.filter.ActionFilter;
-import org.entcore.portal.service.PortalService;
+import org.entcore.common.http.BaseServer;
+import org.entcore.portal.controllers.PortalController;
 
-public class Portal extends Server {
+public class Portal extends BaseServer {
 
 	@Override
 	public void start() {
 		super.start();
-
-		PortalService service = new PortalService(vertx, container, rm, securedActions);
-
-		service.get("/", "portal")
-				.get("/welcome", "welcome")
-				.get("/applications-list", "applicationsList")
-				.get("/adapter", "adapter")
-				.get("/theme", "getTheme")
-				.get("/skin", "getSkin")
-				.get("/locale", "locale")
-				.get("/admin", "admin")
-				.get("/admin-urls", "adminURLS")
-				.get("/resources-applications", "resourcesApplications")
-				.get("/widgets", "widgets")
-				.get("/themes", "themes")
-				.getWithRegEx("/assets/.+", "assets");
-
-		SecurityHandler.addFilter(new ActionFilter(service.securedUriBinding(), getEventBus(vertx)));
+		addController(new PortalController());
 	}
 
 }
