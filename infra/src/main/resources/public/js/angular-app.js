@@ -605,11 +605,12 @@ module.directive('calendar', function($compile){
 		controller: function($scope, $timeout){
 			var refreshCalendar = function(){
 				model.calendar.clearScheduleItems();
-				model.calendar.addScheduleItems(_.where(_.map($scope.items, function(item){
+				$scope.items = _.where(_.map($scope.items, function(item){
 					item.beginning = item.startMoment;
 					item.end = item.endMoment;
 					return item;
-				}), { is_periodic: false }));
+				}), { is_periodic: false });
+				model.calendar.addScheduleItems($scope.items);
 				$scope.calendar = model.calendar;
 				$scope.display = {
 					editItem: false,
@@ -648,7 +649,7 @@ module.directive('scheduleItem', function($compile){
 			item: '=',
 			day: '='
 		},
-		template: '<div class="schedule-item" resizable horizontal-lock>' +
+		template: '<div class="schedule-item" resizable horizontal-resize-lock draggable>' +
 			'<container template="schedule-display-template"></container>' +
 			'</div>',
 		controller: function($scope){
@@ -658,18 +659,33 @@ module.directive('scheduleItem', function($compile){
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
 
-			getTimeFromBoundaries = function(){
+			var getTimeFromBoundaries = function(){
 				var startTime = moment().utc();
-				startTime.week(model.calendar.week);
-				startTime.day(scope.item.beginning.day());
 				startTime.hour(Math.floor(scheduleItemEl.position().top / calendar.dayHeight) + calendar.startOfDay);
 				startTime.minute((scheduleItemEl.position().top % calendar.dayHeight) * 60 / calendar.dayHeight);
 
 				var endTime = moment().utc();
-				endTime.week(model.calendar.week);
-				endTime.day(scope.item.beginning.day());
 				endTime.hour(Math.floor((scheduleItemEl.position().top + scheduleItemEl.height()) / calendar.dayHeight) + calendar.startOfDay);
 				endTime.minute(((scheduleItemEl.position().top + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
+
+				var days = element.parents('.schedule').find('.day');
+				var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
+				var dayWidth = days.first().width();
+				days.each(function(index, item){
+					var itemLeft = $(item).offset().left;
+					if(itemLeft < center && itemLeft + dayWidth > center){
+						var day = index + 1;
+						var week = model.calendar.week;
+						if(day === 7){
+							day = 0;
+							week ++;
+						}
+						endTime.day(day);
+						startTime.day(day);
+						endTime.week(week);
+						startTime.week(week);
+					}
+				});
 
 				return {
 					startTime: startTime,
@@ -683,6 +699,19 @@ module.directive('scheduleItem', function($compile){
 				scope.item.end = newTime.endTime;
 				if(typeof scope.item.save === 'function'){
 					scope.item.save();
+					model.calendar.clearScheduleItems();
+					model.calendar.addScheduleItems(scope.$parent.items);
+				}
+			});
+
+			element.children('.schedule-item').on('stopDrag', function(){
+				var newTime = getTimeFromBoundaries();
+				scope.item.beginning = newTime.startTime;
+				scope.item.end = newTime.endTime;
+				if(typeof scope.item.save === 'function'){
+					scope.item.save();
+					model.calendar.clearScheduleItems();
+					model.calendar.addScheduleItems(scope.$parent.items);
 				}
 			});
 
@@ -2241,10 +2270,10 @@ module.directive('resizable', function(){
 					}
 					var mouse = { x: e.pageX, y: e.pageY };
 					var resizeLimits = {
-						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-lock') === undefined,
-						horizontalLeft: element.offset().left + 5 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-lock') === undefined,
-						verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-lock') === undefined,
-						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-lock') === undefined
+						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
+						horizontalLeft: element.offset().left + 5 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-resize-lock') === undefined,
+						verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
+						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-resize-lock') === undefined
 					};
 
 					var orientations = {
@@ -2284,10 +2313,10 @@ module.directive('resizable', function(){
 				var interrupt = false;
 				var mouse = { y: e.pageY, x: e.pageX };
 				var resizeLimits = {
-					horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-lock') === undefined,
-					horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-lock') === undefined,
-					verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-lock') === undefined,
-					verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-lock') === undefined
+					horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
+					horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-resize-lock') === undefined,
+					verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
+					verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-resize-lock') === undefined
 				};
 
 				var initial = {
@@ -2716,7 +2745,7 @@ module.directive('gridDraggable', function($compile){
 				}
 
 				$(window).on('mousemove.drag', function(e){
-					if(element.data('dragging') !== true && element.data('resizing') !== true && (e.clientX !== mouse.x || e.clientY !== mouse.y)){
+					if(element.data('dragging') !== true && element.data('resizing') !== true && (e.clientX !== mouse.x && e.clientY !== mouse.y)){
 						element.trigger('startDrag');
 
 						var elementDistance = {
@@ -2972,35 +3001,35 @@ module.directive('placedBlock', function($compile){
 module.directive('draggable', function($compile){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
-			$element.on('mousedown', function(e){
-				if($element.data('lock') === true){
+		link: function(scope, element, attributes){
+			element.on('mousedown', function(e){
+				if(element.data('lock') === true){
 					return;
 				}
 				e.preventDefault();
 				var interrupt = false;
-				if($element.data('resizing') !== true){
-					$element.trigger('startDrag');
+				if(element.data('resizing') !== true){
+					element.trigger('startDrag');
 
 					$('body').css({
 						'-webkit-user-select': 'none',
 						'-moz-user-select': 'none',
 						'user-select' : 'none'
 					});
-					$element.css({
+					element.css({
 						'position': 'absolute'
 					});
 					var mouse = { y: e.clientY, x: e.clientX };
 					var elementDistance = {
-						y: mouse.y - $element.offset().top,
-						x: mouse.x - $element.offset().left
+						y: mouse.y - element.offset().top,
+						x: mouse.x - element.offset().left
 					};
 					$(window).on('mousemove.drag', function(e){
-						if(e.clientX === mouse.x || e.clientY === mouse.y){
+						if(e.clientX === mouse.x && e.clientY === mouse.y){
 							return;
 						}
-						$element.unbind("click");
-						$element.data('dragging', true)
+						element.unbind("click");
+						element.data('dragging', true);
 						mouse = {
 							y: e.clientY,
 							x: e.clientX
@@ -3008,7 +3037,7 @@ module.directive('draggable', function($compile){
 					});
 
 					$('body').on('mouseup.drag', function(e){
-						$element.trigger('stopDrag');
+						element.trigger('stopDrag');
 						$('body').css({
 							'-webkit-user-select': 'initial',
 							'-moz-user-select': 'initial',
@@ -3018,41 +3047,41 @@ module.directive('draggable', function($compile){
 						$('body').unbind('mouseup.drag');
 						$(window).unbind('mousemove.drag');
 						setTimeout(function(){
-							$element.data('dragging', false);
-							$element.on('click', function(){
-								$scope.$parent.$eval($attributes.ngClick);
+							element.data('dragging', false);
+							element.on('click', function(){
+								scope.$parent.$eval(attributes.ngClick);
 							});
 						}, 0);
 					});
 					var moveElement = function(){
-						var parent = $('article').parents('.drawing-zone');
+						var parent = element.parents('.drawing-zone');
 						var parentPosition = parent.offset();
 						var boundaries = {
 							left: parentPosition.left,
 							top: parentPosition.top,
-							right: parentPosition.left + parent.width() - $element.width(),
-							bottom: parentPosition.top + parent.height() - $element.height()
-						}
+							right: parentPosition.left + parent.width() - element.width(),
+							bottom: parentPosition.top + parent.height() - element.height()
+						};
 
 						var newOffset = {
 							top: mouse.y - elementDistance.y,
 							left: mouse.x - elementDistance.x
 						};
 
-						if(mouse.x < boundaries.left + elementDistance.x && $element.width() < parent.width()){
+						if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
 							newOffset.left = boundaries.left;
 						}
-						if(mouse.x > boundaries.right + elementDistance.x && $element.width() < parent.width()){
+						if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
 							newOffset.left = boundaries.right - 2
 						}
-						if(mouse.y < boundaries.top + elementDistance.y && $element.height() < parent.height()){
+						if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
 							newOffset.top = boundaries.top;
 						}
-						if(mouse.y > boundaries.bottom + elementDistance.y && $element.height() < parent.height()){
+						if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
 							newOffset.top = boundaries.bottom - 2;
 						}
 
-						$element.offset(newOffset);
+						element.offset(newOffset);
 
 						if(!interrupt){
 							requestAnimationFrame(moveElement);

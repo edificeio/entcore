@@ -1085,12 +1085,17 @@ table{
 		margin-left: 0;
 		background: #444;
 		button{
-			background: none;
+			background: #333;
+			padding: 7px;
 			border: none;
 			font-size: 1.3em;
 		}
 		button:hover{
 			color: @light-blue;
+			background: #555;
+		}
+		behaviour{
+			.cell;
 		}
 	}
 
@@ -1632,16 +1637,20 @@ select{
 			border: 1px solid transparent;
 			border-radius: 5px;
 			.border-box;
+			z-index: 500;
 			.schedule-item-content{
 				position: absolute;
 				top: 0;
 				left: 0;
 				width: 100%;
 				height: 100%;
-				font-size: 10px;
+				font-size: 12px;
 				text-align: center;
 				padding: 1px;
 				color: #fff;
+				font-family: Lato;
+				line-height: 17px;
+				padding-top: 15px;
 			}
 		}
 		.schedule-item.one{
@@ -1688,8 +1697,8 @@ select{
 	}
 }
 
-.drop-down-filters{
-	p:first-child{
+.drop-down-filters {
+	p:first-child {
 		border-right: 8px solid @bright-blue;
 		font-size: 16px;
 		color: @bright-blue;
@@ -1697,15 +1706,15 @@ select{
 		background: #ddd;
 		.run-transition(background);
 	}
-	p:first-child:hover{
+	p:first-child:hover {
 		background: #fdfdfd;
 	}
-	.wrapper{
+	.wrapper {
 		background: #444;
 		box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
 		width: 100%;
-		ul{
-			li{
+		ul {
+			li {
 				color: #aaa;
 			}
 		}
