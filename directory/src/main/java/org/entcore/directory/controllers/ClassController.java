@@ -19,70 +19,54 @@
 
 package org.entcore.directory.controllers;
 
-import fr.wseduc.webutils.Controller;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.NotificationHelper;
-import fr.wseduc.webutils.Server;
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.neo4j.Neo;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.impl.DefaultClassService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
-import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
-public class ClassController extends Controller {
+public class ClassController extends BaseController {
 
-	private final ClassService classService;
-	private final UserService userService;
-	private final SchoolService schoolService;
-	private final ConversationNotification conversationNotification;
+	private ClassService classService;
+	private UserService userService;
+	private SchoolService schoolService;
+	private ConversationNotification conversationNotification;
 	private static final List<String> csvMimeTypes = Arrays.asList("text/comma-separated-values", "text/csv",
 			"application/csv", "application/excel", "application/vnd.ms-excel", "application/vnd.msexcel",
 			"text/anytext", "text/plain");
 
-	public ClassController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		Neo neo = new Neo(eb,log);
-		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
-		this.classService = new DefaultClassService(neo, eb);
-		this.userService = new DefaultUserService(neo, notification, eb);
-		schoolService = new DefaultSchoolService(neo, eb);
-		this.conversationNotification = new ConversationNotification(vertx, eb, container);
-	}
-
+	@Get("/class/:classId")
 	@SecuredAction(value = "class.get", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String classId = request.params().get("classId");
 		classService.get(classId, notEmptyResponseHandler(request));
 	}
 
+	@Put("/class/:classId")
 	@SecuredAction(value = "class.update", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -94,6 +78,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Post("/class/:classId/user")
 	@SecuredAction(value = "class.user.create", type = ActionType.RESOURCE)
 	public void createUser(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -132,6 +117,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Get("/class/:classId/users")
 	@SecuredAction(value = "class.user.find", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
@@ -177,6 +163,7 @@ public class ClassController extends Controller {
 		classService.findUsers(classId, types, handler);
 	}
 
+	@Post("/csv/:userType/class/:classId")
 	@SecuredAction(value = "class.csv", type = ActionType.RESOURCE)
 	public void csv(final HttpServerRequest request) {
 		request.expectMultiPart(true);
@@ -242,6 +229,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Put("/class/:classId/add/:userId")
 	@SecuredAction(value = "class.add.user", type = ActionType.RESOURCE)
 	public void addUser(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -274,6 +262,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Put("/class/:classId/apply")
 	@SecuredAction(value = "class.apply.rules", type = ActionType.RESOURCE)
 	public void applyComRulesAndRegistryEvent(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -329,6 +318,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Put("/class/:classId/link/:userId")
 	@SecuredAction("class.link.user")
 	public void linkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -350,6 +340,7 @@ public class ClassController extends Controller {
 		});
 	}
 
+	@Delete("/class/:classId/unlink/:userId")
 	@SecuredAction("class.unlink.user")
 	public void unlinkUser(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
@@ -357,6 +348,7 @@ public class ClassController extends Controller {
 		classService.unlink(classId, userId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/class/admin/list")
 	@SecuredAction(value = "class.list.admin", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -370,6 +362,22 @@ public class ClassController extends Controller {
 				}
 			}
 		});
+	}
+
+	public void setClassService(ClassService classService) {
+		this.classService = classService;
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
+
+	public void setSchoolService(SchoolService schoolService) {
+		this.schoolService = schoolService;
+	}
+
+	public void setConversationNotification(ConversationNotification conversationNotification) {
+		this.conversationNotification = conversationNotification;
 	}
 
 }

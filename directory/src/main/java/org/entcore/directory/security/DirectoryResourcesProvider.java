@@ -21,7 +21,7 @@ package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.controllers.ClassController;
 import org.entcore.directory.controllers.GroupController;
@@ -37,11 +37,7 @@ import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DirectoryResourcesProvider implements ResourcesProvider {
 
-	private final Neo neo;
-
-	public DirectoryResourcesProvider(Neo neo) {
-		this.neo = neo;
-	}
+	private final Neo4j neo = Neo4j.getInstance();
 
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,

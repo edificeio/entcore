@@ -19,8 +19,11 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.directory.services.ProfileService;
 import org.entcore.directory.services.impl.DefaultProfileService;
 import org.vertx.java.core.Handler;
@@ -36,16 +39,11 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-public class ProfileController extends Controller {
+public class ProfileController extends BaseController {
 
-	private final ProfileService profileService;
+	private ProfileService profileService;
 
-	public ProfileController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		profileService = new DefaultProfileService(eb);
-	}
-
+	@Post("/function/:profile")
 	@SecuredAction("profile.create.function")
 	public void createFunction(final HttpServerRequest request) {
 		final String profile = request.params().get("profile");
@@ -57,12 +55,14 @@ public class ProfileController extends Controller {
 		});
 	}
 
+	@Delete("/function/:function")
 	@SecuredAction("profile.delete.function")
 	public void deleteFunction(final HttpServerRequest request) {
 		final String function = request.params().get("function");
 		profileService.deleteFunction(function, defaultResponseHandler(request, 204));
 	}
 
+	@Post("/functiongroup")
 	@SecuredAction("profile.create.function.group")
 	public void createFunctionGroup(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createFunctionGroup", new Handler<JsonObject>() {
@@ -74,10 +74,15 @@ public class ProfileController extends Controller {
 		});
 	}
 
+	@Delete("/functiongroup/:groupId")
 	@SecuredAction("profile.delete.function.group")
 	public void deleteFunctionGroup(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		profileService.deleteFunctionGroup(groupId, defaultResponseHandler(request, 204));
+	}
+
+	public void setProfileService(ProfileService profileService) {
+		this.profileService = profileService;
 	}
 
 }

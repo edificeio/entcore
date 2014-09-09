@@ -19,8 +19,10 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.directory.services.TenantService;
 import org.entcore.directory.services.impl.DefaultTenantService;
 import org.vertx.java.core.Handler;
@@ -35,16 +37,11 @@ import java.util.Map;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-public class TenantController extends Controller {
+public class TenantController extends BaseController {
 
-	private final TenantService tenantService;
+	private TenantService tenantService;
 
-	public TenantController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		tenantService = new DefaultTenantService(eb);
-	}
-
+	@Post("/tenant")
 	@SecuredAction("tenant.create")
 	public void create(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createTenant", new Handler<JsonObject>() {
@@ -53,6 +50,10 @@ public class TenantController extends Controller {
 				tenantService.create(event, notEmptyResponseHandler(request, 201));
 			}
 		});
+	}
+
+	public void setTenantService(TenantService tenantService) {
+		this.tenantService = tenantService;
 	}
 
 }

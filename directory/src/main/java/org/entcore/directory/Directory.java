@@ -20,40 +20,37 @@
 package org.entcore.directory;
 
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
-import fr.wseduc.webutils.validation.JsonSchemaValidator;
-import org.entcore.common.neo4j.Neo;
-import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.ConversationNotification;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.http.Renders;
-import org.entcore.common.http.filter.ActionFilter;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
 import org.entcore.directory.security.DirectoryResourcesProvider;
-import org.entcore.directory.services.impl.UserbookRepositoryEvents;
+import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.UserBookService;
+import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.impl.*;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-public class Directory extends Server {
+public class Directory extends BaseServer {
 
 	public static final String FEEDER = "entcore.feeder";
 
 	@Override
 	public void start() {
+		final EventBus eb = getEventBus(vertx);
+		clearFilters();
+		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
+		setResourceProvider(new DirectoryResourcesProvider());
 		super.start();
-		Neo4j.getInstance().init(getEventBus(vertx),
-				config.getString("neo4j-address", "wse.neo4j.persistor"));
-		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
-		validator.setAddress("json.schema.validator");
-		validator.setEventBus(getEventBus(vertx));
-		validator.loadJsonSchema(getPathPrefix(config), vertx);
 
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override
@@ -62,125 +59,54 @@ public class Directory extends Server {
 			}
 		});
 
-		DirectoryController directoryController = new DirectoryController(vertx, container, rm, securedActions, config);
-		UserBookController userBookController = new UserBookController(vertx, container, rm, securedActions, config);
-		StructureController structureController = new StructureController(vertx, container, rm, securedActions);
-		ClassController classController = new ClassController(vertx, container, rm, securedActions);
-		UserController userController = new UserController(vertx, container, rm, securedActions);
-		ProfileController profileController = new ProfileController(vertx, container, rm, securedActions);
-		GroupController groupController = new GroupController(vertx, container, rm, securedActions);
-		TenantController tenantController = new TenantController(vertx, container, rm, securedActions);
+		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
+		UserService userService = new DefaultUserService(notification, eb);
+		UserBookService userBookService = new DefaultUserBookService();
+		TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
+		ClassService classService = new DefaultClassService(eb);
+		SchoolService schoolService = new DefaultSchoolService(eb);
+		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, container);
+
+		DirectoryController directoryController = new DirectoryController();
+		directoryController.setClassService(classService);
+		directoryController.setSchoolService(schoolService);
+		directoryController.setUserService(userService);
+		addController(directoryController);
+		directoryController.createSuperAdmin();
+
+		UserBookController userBookController = new UserBookController();
+		userBookController.setSchoolService(schoolService);
+		addController(userBookController);
+
+		StructureController structureController = new StructureController();
+		structureController.setStructureService(schoolService);
+		addController(structureController);
+
+		ClassController classController = new ClassController();
+		classController.setClassService(classService);
+		classController.setConversationNotification(conversationNotification);
+		classController.setSchoolService(schoolService);
+		classController.setUserService(userService);
+		addController(classController);
+
+		UserController userController = new UserController();
+		userController.setNotification(timeline);
+		userController.setUserBookService(userBookService);
+		userController.setUserService(userService);
+		addController(userController);
+
+		ProfileController profileController = new ProfileController();
+		profileController.setProfileService(new DefaultProfileService(eb));
+		addController(profileController);
+
+		addController(new GroupController());
+
+		TenantController tenantController = new TenantController();
+		tenantController.setTenantService(new DefaultTenantService(eb));
+		addController(tenantController);
 
 		vertx.eventBus().registerHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents()));
-
-		directoryController.createSuperAdmin();
-		directoryController.get("/admin", "directory")
-				.post("/import", "launchImport")
-				.post("/transition", "launchTransition")
-				.post("/export", "launchExport")
-				.get("/annuaire", "annuaire")
-				.get("/schools", "schools")
-				.get("/api/ecole", "school")
-				.get("/api/classes", "classes")
-				.get("/api/personnes", "people")
-				.get("/api/details", "details")
-				.post("/api/user", "createUser")
-				.get("/api/export", "export")
-				.post("/school", "createSchool")
-				.get("/school/:id", "getSchool")
-				.post("/class/:schoolId", "createClass")
-				.get("/users", "users");
-
-		userBookController.get("/mon-compte", "monCompte")
-				.get("/annuaire", "annuaire")
-				.get("/classAdmin", "classAdmin")
-				.get("/birthday", "birthday")
-				.get("/mood", "mood")
-				.get("/user-preferences", "userPreferences")
-				.get("/api/search","search")
-				.get("/api/person", "person")
-				.get("/structures", "showStructures")
-				.get("/structure/:structId", "showStructure")
-				.get("/api/class", "myClass")
-				.get("/api/edit-userbook-info", "editUserBookInfo")
-				.get("/api/set-visibility", "setVisibility")
-				.get("/api/edit-user-info-visibility", "editUserInfoVisibility")
-				.get("/avatar/:id", "getAvatar")
-				.get("/person/birthday", "personBirthday")
-				.get("/preference/:application", "getPreference")
-				.put("/preference/:application", "updatePreference")
-				.getWithRegEx(".*", "proxyDocument");
-
-		classController
-				.get("/class/:classId", "get")
-				.put("/class/:classId", "update")
-				.post("/class/:classId/user", "createUser")
-				.put("/class/:classId/link/:userId", "linkUser")
-				.delete("/class/:classId/unlink/:userId", "unlinkUser")
-				.get("/class/:classId/users", "findUsers")
-				.post("/csv/:userType/class/:classId", "csv")
-				.put("/class/:classId/add/:userId",  "addUser")
-				.put("/class/:classId/apply", "applyComRulesAndRegistryEvent")
-				.get("/class/admin/list", "listAdmin");
-
-		structureController
-				.put("/structure/:structureId/link/:userId", "linkUser")
-				.delete("/structure/:structureId/unlink/:userId", "unlinkUser")
-				.get("/structure/admin/list", "listAdmin");
-
-		userController
-				.get("/user/:userId", "get")
-				.put("/user/:userId", "update")
-				.delete("/user/:userId", "delete")
-				.get("/userbook/:userId", "getUserBook")
-				.put("/userbook/:userId", "updateUserBook")
-				.put("/avatar/:userId", "updateAvatar")
-				.get("/list/isolated", "listIsolated")
-				.get("/export/users", "export")
-				.post("/user/function/:userId", "addFunction")
-				.delete("/user/function/:userId/:function", "removeFunction")
-				.post("/user/group/:userId/:groupId", "addGroup")
-				.delete("/user/group/:userId/:groupId", "removeGroup")
-				.get("/user/admin/list", "listAdmin");
-
-		profileController
-				.post("/function/:profile", "createFunction")
-				.delete("/function/:function", "deleteFunction")
-				.post("/functiongroup", "createFunctionGroup")
-				.delete("/functiongroup/:groupId", "deleteFunctionGroup");
-
-		groupController
-				.get("/group/admin/list", "listAdmin");
-
-		tenantController
-				.post("/tenant", "create");
-
-		try {
-			directoryController.registerMethod("directory", "directoryHandler");
-		} catch (NoSuchMethodException | IllegalAccessException e) {
-			log.error(e.getMessage(), e);
-		}
-
-		try {
-			userBookController.registerMethod("activation.ack", "initUserBookNode");
-		} catch (NoSuchMethodException | IllegalAccessException e) {
-			log.error(e.getMessage(), e);
-		}
-
-		SecurityHandler.clearFilters();
-		SecurityHandler.addFilter(
-				new UserAuthFilter(new DefaultOAuthResourceProvider(Server.getEventBus(vertx))));
-		List<Set<Binding>> securedUriBinding = new ArrayList<>();
-		securedUriBinding.add(directoryController.securedUriBinding());
-		securedUriBinding.add(userBookController.securedUriBinding());
-		securedUriBinding.add(structureController.securedUriBinding());
-		securedUriBinding.add(classController.securedUriBinding());
-		securedUriBinding.add(userController.securedUriBinding());
-		securedUriBinding.add(profileController.securedUriBinding());
-		securedUriBinding.add(groupController.securedUriBinding());
-		securedUriBinding.add(tenantController.securedUriBinding());
-		SecurityHandler.addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx),
-				new DirectoryResourcesProvider(new Neo(Server.getEventBus(vertx), container.logger())), true));
 	}
+
 }

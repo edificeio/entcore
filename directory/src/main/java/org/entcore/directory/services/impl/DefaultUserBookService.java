@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.directory.services.UserBookService;
 import org.vertx.java.core.Handler;
@@ -36,11 +37,7 @@ import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultUserBookService implements UserBookService {
 
-	private final Neo neo;
-
-	public DefaultUserBookService(Neo neo) {
-		this.neo = neo;
-	}
+	private final Neo4j neo = Neo4j.getInstance();
 
 	@Override
 	public void update(String userId, JsonObject userBook, final Handler<Either<String, JsonObject>> result) {

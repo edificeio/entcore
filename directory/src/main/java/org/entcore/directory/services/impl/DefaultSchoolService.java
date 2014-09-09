@@ -20,7 +20,7 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
@@ -33,15 +33,15 @@ import java.util.List;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
-import static org.entcore.common.user.DefaultFunctions.*;
+import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
+import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultSchoolService implements SchoolService {
 
-	private final Neo neo;
+	private final Neo4j neo = Neo4j.getInstance();
 	private final EventBus eventBus;
 
-	public DefaultSchoolService(Neo neo, EventBus eventBus) {
-		this.neo = neo;
+	public DefaultSchoolService(EventBus eventBus) {
 		this.eventBus = eventBus;
 	}
 

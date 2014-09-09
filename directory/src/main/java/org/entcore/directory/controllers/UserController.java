@@ -19,11 +19,16 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.notification.TimelineHelper;
@@ -51,26 +56,14 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.SessionAttributes.*;
 
 
-public class UserController extends Controller {
+public class UserController extends BaseController {
 
 	private static final String NOTIFICATION_TYPE = "USERBOOK";
-	private final UserService userService;
-	private final UserBookService userBookService;
-	private final TimelineHelper notification;
-	private final WorkspaceHelper workspaceHelper;
+	private UserService userService;
+	private UserBookService userBookService;
+	private TimelineHelper notification;
 
-	public UserController(Vertx vertx, Container container, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		Neo neo = new Neo(eb,log);
-		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
-		this.userService = new DefaultUserService(neo, notification, eb);
-		this.userBookService = new DefaultUserBookService(neo);
-		this.notification = new TimelineHelper(vertx, eb, container);
-		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
-		this.workspaceHelper = new WorkspaceHelper(gridfsAddress, eb);
-	}
-
+	@Put("/user/:userId")
 	@SecuredAction(value = "user.update", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -83,6 +76,7 @@ public class UserController extends Controller {
 		});
 	}
 
+	@Put("/userbook/:userId")
 	@SecuredAction(value = "user.update.userbook", type = ActionType.RESOURCE)
 	public void updateUserBook(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -114,18 +108,21 @@ public class UserController extends Controller {
 		});
 	}
 
+	@Get("/user/:userId")
 	@SecuredAction(value = "user.get", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userService.get(userId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/userbook/:userId")
 	@SecuredAction(value = "user.get.userbook", type = ActionType.RESOURCE)
 	public void getUserBook(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userBookService.get(userId, notEmptyResponseHandler(request));
 	}
 
+	@Put("/avatar/:userId")
 	@SecuredAction(value = "user.update.avatar", type = ActionType.RESOURCE)
 	public void updateAvatar(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -189,6 +186,7 @@ public class UserController extends Controller {
 		});
 	}
 
+	@Get("/list/isolated")
 	@SecuredAction("user.list.isolated")
 	public void listIsolated(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
@@ -196,12 +194,14 @@ public class UserController extends Controller {
 		userService.listIsolated(structureId, expectedProfile, arrayResponseHandler(request));
 	}
 
+	@Delete("/user/:userId")
 	@SecuredAction(value = "user.delete", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userService.delete(userId, defaultResponseHandler(request));
 	}
 
+	@Get("/export/users")
 	@SecuredAction("user.export")
 	public void export(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
@@ -238,6 +238,7 @@ public class UserController extends Controller {
 		userService.list(structureId, classId, types, handler);
 	}
 
+	@Post("/user/function/:userId")
 	@SecuredAction("user.add.function")
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -250,6 +251,7 @@ public class UserController extends Controller {
 		});
 	}
 
+	@Delete("/user/function/:userId/:function")
 	@SecuredAction("user.remove.function")
 	public void removeFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -257,6 +259,7 @@ public class UserController extends Controller {
 		userService.removeFunction(userId, function, defaultResponseHandler(request));
 	}
 
+	@Post("/user/group/:userId/:groupId")
 	@SecuredAction("user.add.group")
 	public void addGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -264,6 +267,7 @@ public class UserController extends Controller {
 		userService.addGroup(userId, groupId, defaultResponseHandler(request));
 	}
 
+	@Delete("/user/group/:userId/:groupId")
 	@SecuredAction("user.remove.group")
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -271,6 +275,7 @@ public class UserController extends Controller {
 		userService.removeGroup(userId, groupId, defaultResponseHandler(request));
 	}
 
+	@Get("/user/admin/list")
 	@SecuredAction(value = "user.list.admin", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -287,6 +292,18 @@ public class UserController extends Controller {
 				}
 			}
 		});
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
+
+	public void setUserBookService(UserBookService userBookService) {
+		this.userBookService = userBookService;
+	}
+
+	public void setNotification(TimelineHelper notification) {
+		this.notification = notification;
 	}
 
 }

@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.UserService;
@@ -43,13 +44,12 @@ import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultUserService implements UserService {
 
-	private final Neo neo;
+	private final Neo4j neo = Neo4j.getInstance();
 	private final NotificationHelper notification;
 	private final EventBus eb;
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
 
-	public DefaultUserService(Neo neo, NotificationHelper notification, EventBus eb) {
-		this.neo = neo;
+	public DefaultUserService(NotificationHelper notification, EventBus eb) {
 		this.notification = notification;
 		this.eb = eb;
 	}

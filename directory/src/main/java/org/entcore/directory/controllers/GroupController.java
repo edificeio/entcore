@@ -19,34 +19,26 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
-import fr.wseduc.webutils.Controller;
-import fr.wseduc.webutils.security.SecuredAction;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.platform.Container;
-
-import java.util.Map;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
-public class GroupController extends Controller {
+public class GroupController extends BaseController {
 
-	private final GroupService groupService;
+	private final GroupService groupService = new DefaultGroupService();
 
-	public GroupController(Vertx vertx, Container container, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		groupService = new DefaultGroupService();
-	}
-
-	@fr.wseduc.security.SecuredAction(value = "group.list.admin", type = ActionType.RESOURCE)
+	@Get("/group/admin/list")
+	@SecuredAction(value = "group.list.admin", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

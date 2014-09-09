@@ -22,11 +22,14 @@ package org.entcore.directory.controllers;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -38,7 +41,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import fr.wseduc.webutils.Controller;
 import org.entcore.common.neo4j.Neo;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.HttpClientUtils;
@@ -51,7 +53,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.leftToResp
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.user.SessionAttributes.*;
 
-public class UserBookController extends Controller {
+public class UserBookController extends BaseController {
 
 	private Neo neo;
 	private JsonObject config;
@@ -59,46 +61,52 @@ public class UserBookController extends Controller {
 	private HttpClient client;
 	private SchoolService schoolService;
 
-	public UserBookController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions, JsonObject config) {
-			super(vertx, container, rm, securedActions);
-			pathPrefix = "/userbook";
-			this.neo = new Neo(Server.getEventBus(vertx),log);
-			this.config = config;
-			userBookData= config.getObject("user-book-data");
-			schoolService = new DefaultSchoolService(neo, eb);
-			client = vertx.createHttpClient()
-							.setHost(config.getString("workspace-url"))
-							.setPort(config.getInteger("workspace-port"))
-							.setMaxPoolSize(16)
-							.setKeepAlive(false);
-		}
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		pathPrefix = "/userbook";
+		super.init(vertx, container, rm, securedActions);
+		this.neo = new Neo(Server.getEventBus(vertx),log);
+		this.config = container.config();
+		userBookData= config.getObject("user-book-data");
+		client = vertx.createHttpClient()
+						.setHost(config.getString("workspace-url"))
+						.setPort(config.getInteger("workspace-port"))
+						.setMaxPoolSize(16)
+						.setKeepAlive(false);
+		getWithRegEx(".*", "proxyDocument");
+	}
 
+	@Get("/mon-compte")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void monCompte(HttpServerRequest request) {
 		renderView(request);
 	}
-	
+
+	@Get("/birthday")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void birthday(HttpServerRequest request) {
 		renderView(request);
 	}
-	
+
+	@Get("/mood")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void mood(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/annuaire")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request);
 	}
-	
+
+	@Get("/classAdmin")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void classAdmin(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/api/search")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {
 		String name = request.params().get("name");
@@ -123,6 +131,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/api/person")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void person(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
@@ -211,6 +220,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/structures")
 	@SecuredAction(value = "userbook.my.structures", type = ActionType.AUTHENTICATED)
 	public void showStructures(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -226,6 +236,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/structure/:structId")
 	@SecuredAction(value = "userbook.structure.classes.personnel", type = ActionType.AUTHENTICATED)
 	public void showStructure(final HttpServerRequest request) {
 		String structureId = request.params().get("structId");
@@ -259,6 +270,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/api/class")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
 		String classId = request.params().get("id");
@@ -287,6 +299,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/api/edit-userbook-info")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void editUserBookInfo(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
@@ -320,6 +333,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/api/set-visibility")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void setVisibility(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
@@ -351,6 +365,7 @@ public class UserBookController extends Controller {
 				config.getString("workspace-prefix"), defaultContent);
 	}
 
+	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
 		JsonObject params = new JsonObject();
 		params.putString("userId", message.body().getString("userId"));
@@ -377,6 +392,7 @@ public class UserBookController extends Controller {
 		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
 	}
 
+	@Get("/avatar/:id")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
 		String id = request.params().get("id");
@@ -406,6 +422,7 @@ public class UserBookController extends Controller {
 		}
 	}
 
+	@Get("/person/birthday")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void personBirthday(final HttpServerRequest request) {
 		Calendar c = Calendar.getInstance();
@@ -429,6 +446,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/api/edit-user-info-visibility")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void editUserInfoVisibility(final HttpServerRequest request) {
 		final List<String> infos = Arrays.asList("email", "mail", "phone", "birthdate", "health");
@@ -465,6 +483,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/user-preferences")
 	@SecuredAction(value = "userbook.preferences", type = ActionType.AUTHENTICATED)
 	public void userPreferences(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -485,6 +504,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Get("/preference/:application")
 	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
 	public void getPreference(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb,request,new Handler<UserInfos>() {
@@ -514,6 +534,7 @@ public class UserBookController extends Controller {
 		});
 	}
 
+	@Put("/preference/:application")
 	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
 	public void updatePreference(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>(){
@@ -551,4 +572,7 @@ public class UserBookController extends Controller {
 	}
 
 
+	public void setSchoolService(SchoolService schoolService) {
+		this.schoolService = schoolService;
+	}
 }

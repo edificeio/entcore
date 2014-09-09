@@ -19,22 +19,21 @@
 
 package org.entcore.directory.controllers;
 
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-
-import java.util.*;
-
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.neo4j.Neo;
+import org.entcore.directory.profils.DefaultProfils;
+import org.entcore.directory.profils.Profils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.impl.DefaultClassService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
-import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -45,49 +44,48 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import fr.wseduc.webutils.collections.Joiner;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import org.entcore.directory.profils.DefaultProfils;
-import org.entcore.directory.profils.Profils;
-import fr.wseduc.webutils.Controller;
-import org.entcore.common.neo4j.Neo;
-import fr.wseduc.webutils.security.BCrypt;
-import fr.wseduc.security.SecuredAction;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 
-public class DirectoryController extends Controller {
+public class DirectoryController extends BaseController {
 
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
 	private Profils p;
-	private final SchoolService schoolService;
-	private final ClassService classService;
-	private final UserService userService;
+	private SchoolService schoolService;
+	private ClassService classService;
+	private UserService userService;
 
-	public DirectoryController(Vertx vertx, Container container,
-		RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions, JsonObject config) {
-			super(vertx, container, rm, securedActions);
-			this.neo = new Neo(eb,log);
-			this.config = config;
-			this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
-			this.p = new DefaultProfils(neo);
-			this.schoolService = new DefaultSchoolService(neo, eb);
-			this.classService = new DefaultClassService(neo, eb);
-			this.userService = new DefaultUserService(neo, null, eb);
-		}
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, container, rm, securedActions);
+		this.neo = new Neo(eb,log);
+		this.config = container.config();
+		this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
+		this.p = new DefaultProfils(neo);
+	}
 
+	@Get("/admin")
 	@SecuredAction("directory.view")
 	public void directory(HttpServerRequest request) {
 		renderView(request, new JsonObject());
 	}
 
+	@Post("/import")
 	@SecuredAction("directory.import")
 	public void launchImport(HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().putString("action", "import"));
 		request.response().end();
 	}
 
+	@Post("/transition")
 	@SecuredAction("directory.transition")
 	public void launchTransition(final HttpServerRequest request) {
 		JsonObject t = new JsonObject().putString("action", "transition");
@@ -104,27 +102,32 @@ public class DirectoryController extends Controller {
 		});
 	}
 
+	@Post("/export")
 	@SecuredAction("directory.export")
 	public void launchExport(HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().putString("action", "export"));
 		request.response().end();
 	}
 
+	@Get("/annuaire")
 	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request, null, "annuaire.html", null);
 	}
 
+	@Get("/schools")
 	@SecuredAction(value = "directory.schools", type = ActionType.AUTHENTICATED)
 	public void schools(HttpServerRequest request) {
 		renderView(request);
 	}
 
+	@Get("/api/ecole")
 	@SecuredAction("directory.authent")
 	public void school(HttpServerRequest request) {
 		neo.send("MATCH (n:Structure) RETURN distinct n.name as name, n.id as id", request.response());
 	}
 
+	@Post("/school")
 	@SecuredAction("directory.school.create")
 	public void createSchool(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -135,12 +138,14 @@ public class DirectoryController extends Controller {
 		});
 	}
 
+	@Get("/school/:id")
 	@SecuredAction("directory.school.get")
 	public void getSchool(final HttpServerRequest request) {
 		String schoolId = request.params().get("id");
 		schoolService.get(schoolId, notEmptyResponseHandler(request));
 	}
 
+	@Post("/class/:schoolId")
 	@SecuredAction("directory.class.create")
 	public void createClass(final HttpServerRequest request) {
 		final String schoolId = request.params().get("schoolId");
@@ -184,6 +189,7 @@ public class DirectoryController extends Controller {
 		});
 	}
 
+	@Get("/api/classes")
 	@SecuredAction("directory.classes")
 	public void classes(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<>();
@@ -194,6 +200,7 @@ public class DirectoryController extends Controller {
 				params, request.response());
 	}
 
+	@Get("/api/personnes")
 	@SecuredAction("directory.authent")
 	public void people(HttpServerRequest request) {
 		List<String> expectedTypes = request.params().getAll("type");
@@ -213,6 +220,7 @@ public class DirectoryController extends Controller {
 				+ "ORDER BY type DESC ", params.toMap(), request.response());
 	}
 
+	@Get("/users")
 	@SecuredAction("directory.list.users")
 	public void users(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
@@ -221,6 +229,7 @@ public class DirectoryController extends Controller {
 		userService.list(structureId, classId, new JsonArray(profiles.toArray()), arrayResponseHandler(request));
 	}
 
+	@Get("/api/details")
 	@SecuredAction("directory.authent")
 	public void details(HttpServerRequest request) {
 		Map<String, Object> params = new HashMap<>();
@@ -231,6 +240,7 @@ public class DirectoryController extends Controller {
 				, params, request.response());
 	}
 
+	@Post("/api/user")
 	@SecuredAction("directory.create.user")
 	public void createUser(final HttpServerRequest request) {
 		request.expectMultiPart(true);
@@ -311,6 +321,7 @@ public class DirectoryController extends Controller {
 		});
 	}
 
+	@Get("/api/export")
 	@SecuredAction("directory.export")
 	public void export(final HttpServerRequest request) {
 		String neoRequest = "";
@@ -381,6 +392,7 @@ public class DirectoryController extends Controller {
 			"(f:Function { externalId : 'SUPER_ADMIN', name : 'SuperAdmin' })");
 	}
 
+	@BusAddress("directory")
 	public void directoryHandler(final Message<JsonObject> message) {
 		String action = message.body().getString("action");
 		switch (action) {
@@ -402,4 +414,15 @@ public class DirectoryController extends Controller {
 		}
 	}
 
+	public void setSchoolService(SchoolService schoolService) {
+		this.schoolService = schoolService;
+	}
+
+	public void setClassService(ClassService classService) {
+		this.classService = classService;
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
 }

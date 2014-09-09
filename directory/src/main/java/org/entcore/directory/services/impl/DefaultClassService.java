@@ -20,12 +20,11 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -42,11 +41,10 @@ import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultClassService implements ClassService {
 
-	private final Neo neo;
+	private final Neo4j neo = Neo4j.getInstance();
 	private final EventBus eb;
 
-	public DefaultClassService(Neo neo, EventBus eb) {
-		this.neo = neo;
+	public DefaultClassService(EventBus eb) {
 		this.eb = eb;
 	}
 

@@ -19,41 +19,31 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
-
-import java.util.Map;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-public class StructureController extends Controller {
+public class StructureController extends BaseController {
 
-	private final SchoolService structureService;
+	private SchoolService structureService;
 
-	public StructureController(Vertx vertx, Container container, RouteMatcher rm,
-						   Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super(vertx, container, rm, securedActions);
-		Neo neo = new Neo(eb,log);
-		structureService = new DefaultSchoolService(neo, eb);
-	}
-
+	@Put("/structure/:structureId/link/:userId")
 	@SecuredAction("structure.link.user")
 	public void linkUser(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
@@ -84,6 +74,7 @@ public class StructureController extends Controller {
 		});
 	}
 
+	@Delete("/structure/:structureId/unlink/:userId")
 	@SecuredAction("structure.unlink.user")
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -91,6 +82,7 @@ public class StructureController extends Controller {
 		structureService.unlink(structureId, userId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/structure/admin/list")
 	@SecuredAction(value = "structure.list.admin", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -105,5 +97,8 @@ public class StructureController extends Controller {
 		});
 	}
 
+	public void setStructureService(SchoolService structureService) {
+		this.structureService = structureService;
+	}
 }
 
