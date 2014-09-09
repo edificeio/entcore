@@ -54,9 +54,6 @@
       }
     },
     {
-      "name": "org.entcore~history~1.9-SNAPSHOT"
-    },
-    {
       "name": "org.entcore~workspace~1.9-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090",
@@ -83,7 +80,6 @@
         },
 		"admin-urls": [
 			{"name": "directory", "url": "http://localhost:8090/directory"},
-			{"name": "history", "url": "http://localhost:8090/history"},
 			{"name": "appRegistry", "url": "http://localhost:8090/appregistry"},
 			{"name": "communication", "url": "http://localhost:8090/communication"}
 		],
@@ -187,10 +183,6 @@
             "proxy_pass": "http://localhost:8003"
           },
           {
-            "location": "/history",
-            "proxy_pass": "http://localhost:8006"
-          },
-          {
             "location": "/auth",
             "proxy_pass": "http://localhost:8009"
           },
@@ -223,14 +215,6 @@
             "proxy_pass": "http://localhost:8024"
           }
         ]
-      }
-    },
-    {
-      "name": "com.wse.tracer~tracer~1.0.0",
-      "config": {
-        "logger-name": "one.tracer",
-        "log-path": "/opt/one/history/",
-        "address": "log.address"
       }
     },
     {

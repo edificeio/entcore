@@ -104,14 +104,6 @@ project(':directory') {
   }
 }
 
-project(':history') {
-  dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
-    compile project(':common')
-    compile "fr.wseduc:web-utils:$webUtilsVersion"
-  }
-}
-
 project(':infra') {
   dependencies {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
