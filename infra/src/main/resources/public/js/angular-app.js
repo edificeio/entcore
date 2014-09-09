@@ -713,8 +713,8 @@ module.directive('scheduleItem', function($compile){
 					});
 				}
 				scope.item.calendarGutter = calendarGutter;
-				var beginningMinutesHeight = scope.item.beginning.minutes() * 60 / calendar.dayHeight;
-				var endMinutesHeight = scope.item.end.minutes() * 60 / calendar.dayHeight;
+				var beginningMinutesHeight = scope.item.beginning.minutes() * calendar.dayHeight / 60;
+				var endMinutesHeight = scope.item.end.minutes() * calendar.dayHeight / 60;
 				scheduleItemEl.height(((hours.endTime - hours.startTime) * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
 				scheduleItemEl.css({
 					top: ((hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight) + 'px',
