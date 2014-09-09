@@ -1204,10 +1204,12 @@ var calendar = {
 			this.timeSlots.push(new calendar.TimeSlot({ start: i, end: i+1 }))
 		}
 	},
-	Calendar: function(){
+	Calendar: function(data){
+		this.week = data.week;
 		this.collection(calendar.Day);
+		this.dayForWeek = new Date();
 		function dayOfYear(dayOfWeek){
-			var week = calendar.week;
+			var week = data.week;
 			if(dayOfWeek === 0){
 				week ++;
 			}
@@ -1231,9 +1233,8 @@ var calendar = {
 	endOfDay: 20,
 	dayHeight: 40,
 	init: function(){
-		this.week = moment().week();
 		model.makeModels(calendar);
-		model.calendar = new calendar.Calendar();
+		model.calendar = new calendar.Calendar({ week: moment().week() });
 	}
 };
 

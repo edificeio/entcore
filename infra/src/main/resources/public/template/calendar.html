@@ -1,3 +1,6 @@
+<div class="week-switcher">
+	<date-picker-icon ng-model="calendar.dayForWeek" ng-change="updateCalendarWeek()"></date-picker-icon>
+</div>
 <div class="schedule" drawing-zone>
 	<legend class="timeslots">
 		<div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot">

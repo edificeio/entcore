@@ -393,7 +393,7 @@ nav.vertical.stamps{
 	}
 }
 
-.calendar{
+.calendar.widget{
 	padding-bottom: 35% !important;
 	border: 1px solid #ccc;
 	border-bottom: 0;
@@ -1575,7 +1575,8 @@ select{
 .schedule{
 	width: 100%;
 	height: auto;
-	padding-left: 115px;
+	margin-left: 115px;
+	padding-right: 115px;
 	box-sizing: border-box;
 	margin-top: 40px;
 	overflow: visible;
@@ -1584,7 +1585,7 @@ select{
 		background: #444;
 		color: #aaa;
 		position: absolute;
-		left: 0;
+		left: -115px;
 	}
 	.timeslot{
 		height: 40px;
@@ -1651,6 +1652,33 @@ select{
 				font-family: Lato;
 				line-height: 17px;
 				padding-top: 15px;
+				.pending-status::before{
+					content: "?";
+					height: 20px;
+					width: 20px;
+					display: block;
+					color: #000;
+					font-size: 21px;
+					font-family: Arial;
+					font-weight: 900;
+					position: absolute;
+					bottom: 22px;
+					right: 6px;
+				}
+				.validated-status{
+					.icon(glyphicons_206_ok_2, 20px);
+					position: absolute;
+					bottom: 24px;
+					right: 5px;
+					background-size: 100% auto;
+				}
+				.refused-status{
+					.icon(glyphicons_207_remove_2, 16px);
+					position: absolute;
+					bottom: 24px;
+					right: 5px;
+					background-size: 100% auto;
+				}
 			}
 		}
 		.schedule-item.one{
@@ -1719,4 +1747,24 @@ select{
 			}
 		}
 	}
+}
+
+.date-picker-icon{
+	a{
+		i.calendar{
+			.icon(glyphicons_119_table, 25px);
+			opacity: 0.7;
+			.run-transition(opacity);
+		}
+		i.calendar:hover{
+			opacity: 1;
+		}
+	}
+}
+
+.week-switcher{
+	position: absolute;
+	z-index: 30;
+	top: -35px;
+	left: 44px;
 }

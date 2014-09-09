@@ -625,6 +625,11 @@ module.directive('calendar', function($compile){
 				$scope.createItem = function(){
 
 				};
+
+				$scope.updateCalendarWeek = function(){
+					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week() })
+					refreshCalendar();
+				};
 			};
 			$timeout(function(){
 				refreshCalendar();
@@ -658,6 +663,13 @@ module.directive('scheduleItem', function($compile){
 		link: function(scope, element, attributes){
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
+			if(scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear()){
+				scheduleItemEl.removeAttr('resizable');
+				scheduleItemEl.removeAttr('draggable');
+				scheduleItemEl.unbind('mouseover');
+				scheduleItemEl.unbind('click');
+				scheduleItemEl.data('lock', true)
+			}
 
 			var getTimeFromBoundaries = function(){
 				var startTime = moment().utc();
@@ -676,14 +688,16 @@ module.directive('scheduleItem', function($compile){
 					if(itemLeft < center && itemLeft + dayWidth > center){
 						var day = index + 1;
 						var week = model.calendar.week;
+						endTime.week(week);
+						startTime.week(week);
 						if(day === 7){
 							day = 0;
-							week ++;
+							endTime.week(week + 1);
+							startTime.week(week + 1);
 						}
 						endTime.day(day);
 						startTime.day(day);
-						endTime.week(week);
-						startTime.week(week);
+
 					}
 				});
 
@@ -693,7 +707,7 @@ module.directive('scheduleItem', function($compile){
 				}
 			};
 
-			element.children('.schedule-item').on('stopResize', function(){
+			scheduleItemEl.on('stopResize', function(){
 				var newTime = getTimeFromBoundaries();
 				scope.item.beginning = newTime.startTime;
 				scope.item.end = newTime.endTime;
@@ -704,7 +718,7 @@ module.directive('scheduleItem', function($compile){
 				}
 			});
 
-			element.children('.schedule-item').on('stopDrag', function(){
+			scheduleItemEl.on('stopDrag', function(){
 				var newTime = getTimeFromBoundaries();
 				scope.item.beginning = newTime.startTime;
 				scope.item.end = newTime.endTime;
@@ -3226,7 +3240,7 @@ module.directive('datePickerIcon', function($compile){
 		},
 		replace: true,
 		restrict: 'E',
-		template: '<div> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
+		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
 		link: function($scope, $element, $attributes){
 			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
 				var input_element   = $element.find('.hiddendatepickerform')
@@ -3240,11 +3254,15 @@ module.directive('datePickerIcon', function($compile){
 						daysShort: moment.weekdaysShort(),
 						daysMin: moment.weekdaysMin()
 					}
-				}).on('changeDate', function(event){
+				})
+				.on('changeDate', function(event){
 					$scope.ngModel = event.date
 					$scope.$apply('ngModel')
-					$(this).datepicker('hide')
-				})
+					$(this).datepicker('hide');
+					if(typeof $scope.ngChange === 'function'){
+						$scope.ngChange();
+					}
+				});
 
 				input_element.datepicker('hide')
 

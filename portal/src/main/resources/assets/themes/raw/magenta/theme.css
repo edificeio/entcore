@@ -969,7 +969,7 @@ p i {
   margin-top: 10px !important;
   margin-bottom: 10px !important;
 }
-.calendar {
+.calendar.widget {
   height: 160px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -984,10 +984,10 @@ p i {
   margin-bottom: 15px;
   padding-right: 1px;
 }
-.calendar img {
+.calendar.widget img {
   max-width: 100%;
 }
-.calendar .content {
+.calendar.widget .content {
   margin-top: 55px;
   width: 1;
   width: 100%;
@@ -1012,10 +1012,10 @@ p i {
   border-bottom-right-radius: 10px;
   overflow: hidden;
 }
-.calendar .content img {
+.calendar.widget .content img {
   max-width: 100%;
 }
-.calendar .content {
+.calendar.widget .content {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -1023,13 +1023,13 @@ p i {
   left: 0;
   height: 104px;
 }
-.calendar .day {
+.calendar.widget .day {
   width: 14.2%;
   height: 17px;
   text-align: center;
   padding-top: 2px;
 }
-.calendar .current-month-header {
+.calendar.widget .current-month-header {
   position: absolute;
   width: 100%;
   text-align: center;
@@ -4336,49 +4336,49 @@ nav.vertical.stamps article.selected a {
   float: left;
   vertical-align: middle;
 }
-.calendar {
+.calendar.widget {
   padding-bottom: 35% !important;
   border: 1px solid #ccc;
   border-bottom: 0;
   background: #fff;
 }
-.calendar .current-month-header {
+.calendar.widget .current-month-header {
   top: 0;
 }
-.calendar .content {
+.calendar.widget .content {
   border-radius: 0px;
   border: 1px solid #ccc;
   border-top: 0;
   background: #fff;
   margin-top: 18%;
 }
-.calendar .content .day {
+.calendar.widget .content .day {
   font-size: 10px;
   height: 21px;
 }
-.calendar .content .previous-month,
-.calendar .content .next-month {
+.calendar.widget .content .previous-month,
+.calendar.widget .content .next-month {
   color: #aaa;
 }
-.calendar .content .day.today {
+.calendar.widget .content .day.today {
   color: #fff;
   background: #000;
 }
-.calendar .current-day h1 {
+.calendar.widget .current-day h1 {
   font-size: 14px;
   text-align: center;
   font-weight: normal;
   margin-bottom: -10px;
   margin-top: 5px;
 }
-.calendar .current-day h2 {
+.calendar.widget .current-day h2 {
   font-size: 40px;
   margin: 0;
   margin-top: 5px;
   text-align: center;
   font-weight: normal;
 }
-.calendar .current-day h3 {
+.calendar.widget .current-day h3 {
   font-weight: 100;
   font-size: 14px;
   text-align: center;
@@ -5833,7 +5833,8 @@ select {
 .schedule {
   width: 100%;
   height: auto;
-  padding-left: 115px;
+  margin-left: 115px;
+  padding-right: 115px;
   box-sizing: border-box;
   margin-top: 40px;
   overflow: visible;
@@ -5843,7 +5844,7 @@ select {
   background: #444;
   color: #aaa;
   position: absolute;
-  left: 0;
+  left: -115px;
 }
 .schedule .timeslot {
   height: 40px;
@@ -5923,6 +5924,55 @@ select {
   line-height: 17px;
   padding-top: 15px;
 }
+.schedule .schedule-items .schedule-item .schedule-item-content .pending-status::before {
+  content: "?";
+  height: 20px;
+  width: 20px;
+  display: block;
+  color: #000;
+  font-size: 21px;
+  font-family: Arial;
+  font-weight: 900;
+  position: absolute;
+  bottom: 22px;
+  right: 6px;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .validated-status {
+  height: 20px;
+  width: 20px;
+  background-image: url("../img/icons/glyphicons_206_ok_2.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  position: absolute;
+  bottom: 24px;
+  right: 5px;
+  background-size: 100% auto;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .refused-status {
+  height: 16px;
+  width: 16px;
+  background-image: url("../img/icons/glyphicons_207_remove_2.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  position: absolute;
+  bottom: 24px;
+  right: 5px;
+  background-size: 100% auto;
+}
 .schedule .schedule-items .schedule-item.one {
   width: 1;
   width: 8.33333333%;
@@ -5987,6 +6037,34 @@ select {
 }
 .drop-down-filters .wrapper ul li {
   color: #aaa;
+}
+.date-picker-icon a i.calendar {
+  height: 25px;
+  width: 25px;
+  background-image: url("../img/icons/glyphicons_119_table.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  opacity: 0.7;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.date-picker-icon a i.calendar:hover {
+  opacity: 1;
+}
+.week-switcher {
+  position: absolute;
+  z-index: 30;
+  top: -35px;
+  left: 44px;
 }
 a {
   color: #ff0b75;
