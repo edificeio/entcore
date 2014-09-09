@@ -575,6 +575,7 @@ input[type=text]{
 	border: 1px solid #ddd;
 	margin-top: 3px;
 	margin-bottom: 3px;
+	margin-left: 0;
 }
 
 .label-badge{
@@ -1340,13 +1341,12 @@ table{
 		}
 	}
 
-	select{
-		background: #494949;
-		color: #999;
-		border: 1px solid #595959;
-		height: 25px;
-		margin: 3px;
-	}
+select{
+	background: #494949;
+	color: #999;
+	border: 1px solid #595959;
+	height: 25px;
+}
 
 	.selectable-list{
 		li{
@@ -1685,5 +1685,29 @@ table{
 	input[type=text]{
 		width: 100%;
 		box-sizing: border-box;
+	}
+}
+
+.drop-down-filters{
+	p:first-child{
+		border-right: 8px solid @bright-blue;
+		font-size: 16px;
+		color: @bright-blue;
+		padding: 10px;
+		background: #ddd;
+		.run-transition(background);
+	}
+	p:first-child:hover{
+		background: #fdfdfd;
+	}
+	.wrapper{
+		background: #444;
+		box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
+		width: 100%;
+		ul{
+			li{
+				color: #aaa;
+			}
+		}
 	}
 }

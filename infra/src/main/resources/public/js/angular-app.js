@@ -1484,17 +1484,17 @@ var ckeEditorFixedPositionning = function(){
 	}
 };
 
-function createCKEditorInstance(editor, $scope, $compile){
+function createCKEditorInstance(editor, scope, $compile){
 	CKEDITOR.on('instanceReady', function(ck){
 		editor.focus();
-		$scope.ngModel = $scope.ngModel || '';
-		editor.html($compile('<div>' + $scope.ngModel + '</div>')($scope.$parent));
-		$scope.$parent.$apply();
+		scope.ngModel.assign(scope, scope.ngModel(scope) || '');
+		editor.html($compile('<div>' + scope.ngModel(scope) + '</div>')(scope));
+		scope.$apply();
 		setTimeout(function(){
 			$('input').first().focus();
 		}, 500);
 
-		if($scope.ngModel && $scope.ngModel.indexOf('<img') !== -1){
+		if(scope.ngModel(scope) && scope.ngModel(scope).indexOf('<img') !== -1){
 			$('img').on('load', ckeEditorFixedPositionning);
 		}
 		else{
@@ -1505,23 +1505,9 @@ function createCKEditorInstance(editor, $scope, $compile){
 		});
 	});
 
-	$scope.$watch('ngModel', function(newValue){
-		if(editor.html() !== newValue){
-			editor.html($compile('<div>' + newValue + '</div>')($scope.$parent));
-			//weird browser bug with audio tags
-			editor.find('audio').each(function(index, item){
-				var parent = $(item).parent();
-				$(item)
-					.attr("src", item.src)
-					.detach()
-					.appendTo(parent);
-			});
-		}
-	});
-
 	editor.on('blur', function(e) {
-		$scope.ngModel = editor.html();
-		$scope.$apply();
+		scope.ngModel.assign(scope, editor.html());
+		scope.$apply();
 	});
 
 	return ckeEditorFixedPositionning;
@@ -1621,15 +1607,14 @@ module.directive('textEditor', function($compile){
 			}
 		}
 	}
-})
+});
 
-module.directive('htmlEditor', function($compile){
+module.directive('htmlEditor', function($compile, $parse){
 	return {
 		restrict: 'E',
 		transclude: true,
 		replace: true,
 		controller: function($scope){
-			$scope.ngModel = null;
 			$scope.notify = null;
 		},
 		template: '<div class="twelve cell block-editor">' +
@@ -1656,7 +1641,7 @@ module.directive('htmlEditor', function($compile){
 
 			}
 			return function(scope, element, attributes){
-				scope.ngModel = scope.$eval(attributes.ngModel);
+				scope.ngModel = $parse(attributes.ngModel);
 				scope.notify = scope.$eval(attributes.notify);
 
 				scope.selected = { files: [], link: '' };
@@ -1671,6 +1656,20 @@ module.directive('htmlEditor', function($compile){
 				scope.contextEditor = contextEditor;
 
 				createCKEditorInstance(editor, scope, $compile);
+
+				scope.$watch(attributes.ngModel, function(newValue){
+					if(editor.html() !== newValue){
+						editor.html($compile('<div>' + newValue + '</div>')(scope));
+						//weird browser bug with audio tags
+						editor.find('audio').each(function(index, item){
+							var parent = $(item).parent();
+							$(item)
+								.attr("src", item.src)
+								.detach()
+								.appendTo(parent);
+						});
+					}
+				});
 
 				element.on('removed', function(){
 					setTimeout(function(){
@@ -1708,13 +1707,13 @@ module.directive('htmlEditor', function($compile){
 
                 scope.addVideoLink = function(htmlText){
                     //TODO : Escape dangerous html
-                    contextEditor.insertHtml(htmlText)
+                    contextEditor.insertHtml(htmlText);
                     scope.inputVideo = false
-                }
+                };
 
 				scope.updateContent = function(){
-					scope.ngModel = editor.html();
-				}
+					scope.ngModel.assign(scope, editor.html());
+				};
 
 				scope.addContent = function(){
 					scope.selected.files.forEach(function(file){
@@ -1746,7 +1745,7 @@ module.directive('htmlEditor', function($compile){
 				}
 
 				scope.$eval(attributes.watchCollections).forEach(function(col){
-					scope.$parent.$watchCollection(col, function(){
+					scope.$watchCollection(col, function(){
 						ckeEditorFixedPositionning();
 					});
 				});
