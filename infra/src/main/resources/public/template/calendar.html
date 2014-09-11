@@ -1,5 +1,6 @@
 <div class="week-switcher">
-	<date-picker-icon ng-model="calendar.dayForWeek" ng-change="updateCalendarWeek()"></date-picker-icon>
+	<date-picker-icon ng-model="calendar.dayForWeek" ng-change="updateCalendarWeek()" class="cell"></date-picker-icon>
+	<div class="cell">du [[calendar.firstDay.date()]] au [[calendar.firstDay.date() + 6]]</div>
 </div>
 <div class="schedule" drawing-zone>
 	<legend class="timeslots">
@@ -15,7 +16,7 @@
 			</div>
 
 			<div class="schedule-items">
-				<div ng-repeat="scheduleItem in day.scheduleItems.all">
+				<div ng-repeat="item in day.scheduleItems.all">
 					<schedule-item item="scheduleItem" day="day"></schedule-item>
 				</div>
 			</div>

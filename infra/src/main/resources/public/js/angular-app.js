@@ -635,6 +635,7 @@ module.directive('calendar', function($compile){
 				refreshCalendar();
 				$scope.$watchCollection('items', refreshCalendar);
 			}, 0);
+			$scope.refreshCalendar = refreshCalendar;
 		},
 		link: function(scope, element, attributes){
 			template.open('schedule-display-template', attributes.displayTemplate);
@@ -650,10 +651,6 @@ module.directive('scheduleItem', function($compile){
 	return {
 		restrict: 'E',
 		require: '^calendar',
-		scope: {
-			item: '=',
-			day: '='
-		},
 		template: '<div class="schedule-item" resizable horizontal-resize-lock draggable>' +
 			'<container template="schedule-display-template"></container>' +
 			'</div>',
@@ -715,6 +712,7 @@ module.directive('scheduleItem', function($compile){
 					scope.item.save();
 					model.calendar.clearScheduleItems();
 					model.calendar.addScheduleItems(scope.$parent.items);
+					scope.$parent.$apply('items');
 				}
 			});
 
@@ -726,6 +724,7 @@ module.directive('scheduleItem', function($compile){
 					scope.item.save();
 					model.calendar.clearScheduleItems();
 					model.calendar.addScheduleItems(scope.$parent.items);
+					scope.$parent.$apply('items');
 				}
 			});
 
@@ -2422,11 +2421,11 @@ module.directive('resizable', function(){
 					resize();
 
 					$(window).on('mouseup.resize', function(){
-						element.trigger('stopResize');
 						interrupt = true;
 						setTimeout(function(){
 							element.data('resizing', false);
-						}, 0);
+							element.trigger('stopResize');
+						}, 100);
 						$(window).unbind('mousemove.resize');
 						$('body').unbind('mouseup.resize');
 						$('.main').css({'cursor': ''})
@@ -3051,7 +3050,6 @@ module.directive('draggable', function($compile){
 					});
 
 					$('body').on('mouseup.drag', function(e){
-						element.trigger('stopDrag');
 						$('body').css({
 							'-webkit-user-select': 'initial',
 							'-moz-user-select': 'initial',
@@ -3061,11 +3059,12 @@ module.directive('draggable', function($compile){
 						$('body').unbind('mouseup.drag');
 						$(window).unbind('mousemove.drag');
 						setTimeout(function(){
+							element.trigger('stopDrag');
 							element.data('dragging', false);
 							element.on('click', function(){
 								scope.$parent.$eval(attributes.ngClick);
 							});
-						}, 0);
+						}, 100);
 					});
 					var moveElement = function(){
 						var parent = element.parents('.drawing-zone');
@@ -3273,7 +3272,47 @@ module.directive('datePickerIcon', function($compile){
 
 		}
 	}
-})
+});
+
+module.directive('filters', function(){
+	return {
+		restrict: 'E',
+		template: '<div class="row line drop-down-filters">' +
+					'<p ng-click="showFilters = !showFilters">' +
+						'<span class="small-arrow" ng-class="{ \'right-arrow\': !showFilters, \'bottom-arrow\': showFilters }"></span>' +
+					'</p>' +
+					'<div class="wrapper" ng-class="{ hide: !showFilters }">' +
+						'<ul ng-transclude>' +
+						'</ul>' +
+					'</div>' +
+				'</div>',
+		transclude: true,
+		link: function(scope, element, attributes){
+			setTimeout(function(){
+				element.find('p i').remove();
+				element.find('li').each(function(index, item){
+					var icon = $(item).find('i');
+
+					if($(item).hasClass('selected')){
+						icon.addClass('selected')
+					}
+					element.find('p:first-child').append(icon[0].outerHTML);
+				});
+			}, 100)
+			element.find('label,p').on('click', function(item){
+				element.find('p i').remove();
+				element.find('li').each(function(index, item){
+					var icon = $(item).find('i');
+
+					if($(item).hasClass('selected')){
+						icon.addClass('selected')
+					}
+					element.find('p:first-child').append(icon[0].outerHTML);
+				});
+			});
+		}
+	}
+});
 
 $(document).ready(function(){
 	setTimeout(function(){

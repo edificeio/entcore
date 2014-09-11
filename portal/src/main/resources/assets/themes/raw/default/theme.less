@@ -61,7 +61,7 @@
 		li{
 			padding-left: 10px;
 		}
-		ul:first-child > li, div ul:first-child > li{
+		ul:first-of-type > li, div ul:first-of-type > li{
 			padding-left: 0;
 		}
 	}
@@ -167,6 +167,11 @@ i.worried{
 
 i.show-icons{
 	.icon(glyphicons_156_show_thumbnails, 24px);
+	opacity: 0.5;
+}
+
+i.show-admin{
+	.icon(glyphicons_137_cogwheels, 24px);
 	opacity: 0.5;
 }
 
@@ -792,7 +797,7 @@ nav.vertical{
 			}
 		}
 	}
-	ul:first-child > li, div ul:first-child > li{
+	ul:first-of-type > li, div ul:first-of-type > li{
 		padding-left: 0;
 	}
 	ul.green{
@@ -1001,7 +1006,7 @@ table{
 		background: transparent;
 	}
 
-	.calendar{
+	.calendar.widget{
 		width: 254px;
 		.content{
 			margin-left: -1px;
@@ -1067,18 +1072,33 @@ table{
 		}
 	}
 
-	.tabs{
-		section{
-			background: #fff;
-			border-color: #ccc;
-		}
+.tabs{
+	section{
+		background: #fff;
+		border-color: #ccc;
 	}
+}
 
-	.toggle-panel{
-		h2{
-			display: none;
+filters{
+	.row;
+	z-index: 600;
+	display: block;
+	p:first-child{
+		i{
+			background-size: 100% auto;
+			margin-left: 10px;
+		}
+		i.mine{
+
 		}
 	}
+}
+
+.toggle-panel{
+	h2{
+		display: none;
+	}
+}
 
 	.toggle-buttons{
 		width: 100%;
@@ -1086,10 +1106,12 @@ table{
 		margin-left: 0;
 		background: #444;
 		button{
-			background: #333;
+			background: none;
 			padding: 7px;
 			border: none;
 			font-size: 1.3em;
+			font-weight: normal;
+			margin-right: 15px;
 		}
 		button:hover{
 			color: @light-blue;
@@ -1579,12 +1601,12 @@ select{
 	margin-left: 115px;
 	padding-right: 115px;
 	box-sizing: border-box;
-	margin-top: 40px;
+	margin-top: 75px;
 	overflow: visible;
 	legend.timeslots{
 		width: 115px;
-		background: #444;
-		color: #aaa;
+		background: #ddd;
+		color: #777;
 		position: absolute;
 		left: -115px;
 	}
@@ -1604,8 +1626,8 @@ select{
 				text-align: center;
 				height: 40px;
 				line-height: 40px;
-				color: #aaa;
-				background: #444;
+				color: #777;
+				background: #ddd;
 				.border-box;
 				position: absolute;
 				top: -40px;
@@ -1734,6 +1756,19 @@ select{
 		padding: 10px;
 		background: #ddd;
 		.run-transition(background);
+		i.mine{
+			background-size: 100% auto;
+		}
+		i{
+			height: 42px !important;
+			width: 40px !important;
+			opacity: 0.2;
+			.run-transition(opacity);
+		}
+		i.selected{
+			opacity: 1;
+		}
+
 	}
 	p:first-child:hover {
 		background: #fdfdfd;
@@ -1747,6 +1782,10 @@ select{
 				color: #aaa;
 			}
 		}
+	}
+	i.mine{
+		.icon(default, 100px);
+		background-size: 70px;
 	}
 }
 
@@ -1767,5 +1806,8 @@ select{
 	position: absolute;
 	z-index: 30;
 	top: -35px;
-	left: 44px;
+	left: -8px;
+	.date-picker-icon{
+		margin-right: 12px;
+	}
 }

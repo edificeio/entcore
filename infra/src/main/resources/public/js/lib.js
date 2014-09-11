@@ -1216,7 +1216,7 @@ var calendar = {
 			return moment().week(week).day(dayOfWeek).dayOfYear();
 		}
 
-		this.days.load([{ name: 'monday', index:  dayOfYear(1)},
+		this.days.load([{ name: 'monday', index:  dayOfYear(1) },
 			{ name: 'tuesday', index: dayOfYear(2) },
 			{ name: 'wednesday', index: dayOfYear(3) },
 			{ name: 'thursday', index: dayOfYear(4) },
@@ -1228,6 +1228,8 @@ var calendar = {
 		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
 			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
 		}
+
+		this.firstDay = moment().week(this.week).day(1);
 	},
 	startOfDay: 7,
 	endOfDay: 20,

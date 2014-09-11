@@ -3624,8 +3624,8 @@ html.print body section {
 .lightbox-view nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-view nav.vertical ul:first-child > li,
-.lightbox-view nav.vertical div ul:first-child > li {
+.lightbox-view nav.vertical ul:first-of-type > li,
+.lightbox-view nav.vertical div ul:first-of-type > li {
   padding-left: 0;
 }
 .lightbox-view .info {
@@ -3777,8 +3777,8 @@ html.app body {
 .lightbox-window nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-window nav.vertical ul:first-child > li,
-.lightbox-window nav.vertical div ul:first-child > li {
+.lightbox-window nav.vertical ul:first-of-type > li,
+.lightbox-window nav.vertical div ul:first-of-type > li {
   padding-left: 0;
 }
 .lightbox-window .info {
@@ -4019,6 +4019,21 @@ i.show-icons {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_156_show_thumbnails.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+i.show-admin {
+  height: 24px;
+  width: 24px;
+  background-image: url("../img/icons/glyphicons_137_cogwheels.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -4742,8 +4757,8 @@ nav.vertical ul li a:hover {
   background: #ddd;
   border-right: 8px solid #008bb8;
 }
-nav.vertical ul:first-child > li,
-nav.vertical div ul:first-child > li {
+nav.vertical ul:first-of-type > li,
+nav.vertical div ul:first-of-type > li {
   padding-left: 0;
 }
 nav.vertical ul.green {
@@ -4964,17 +4979,17 @@ thead th {
 header {
   background: transparent;
 }
-.calendar {
+.calendar.widget {
   width: 254px;
 }
-.calendar .content {
+.calendar.widget .content {
   margin-left: -1px;
   box-sizing: content-box;
 }
-.calendar .content .day.today {
+.calendar.widget .content .day.today {
   background: #008bb8;
 }
-.calendar .content h2 {
+.calendar.widget .content h2 {
   color: #008bb8;
 }
 .last-mails-widget,
@@ -5040,6 +5055,24 @@ header {
   background: #fff;
   border-color: #ccc;
 }
+filters {
+  max-width: 960px;
+  width: 100%;
+  position: relative;
+  clear: both;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  max-width: 1200px;
+  max-width: 100%;
+  z-index: 600;
+  display: block;
+}
+filters p:first-child i {
+  background-size: 100% auto;
+  margin-left: 10px;
+}
 .toggle-panel h2 {
   display: none;
 }
@@ -5050,10 +5083,12 @@ header {
   background: #444;
 }
 .toggle-buttons button {
-  background: #333;
+  background: none;
   padding: 7px;
   border: none;
   font-size: 1.3em;
+  font-weight: normal;
+  margin-right: 15px;
 }
 .toggle-buttons button:hover {
   color: #008cba;
@@ -5364,8 +5399,8 @@ i.folder-large {
 .lightbox-view nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-view nav.vertical ul:first-child > li,
-.lightbox-view nav.vertical div ul:first-child > li {
+.lightbox-view nav.vertical ul:first-of-type > li,
+.lightbox-view nav.vertical div ul:first-of-type > li {
   padding-left: 0;
 }
 .lightbox-view .info {
@@ -5837,13 +5872,13 @@ select {
   margin-left: 115px;
   padding-right: 115px;
   box-sizing: border-box;
-  margin-top: 40px;
+  margin-top: 75px;
   overflow: visible;
 }
 .schedule legend.timeslots {
   width: 115px;
-  background: #444;
-  color: #aaa;
+  background: #ddd;
+  color: #777;
   position: absolute;
   left: -115px;
 }
@@ -5865,8 +5900,8 @@ select {
   text-align: center;
   height: 40px;
   line-height: 40px;
-  color: #aaa;
-  background: #444;
+  color: #777;
+  background: #ddd;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -6028,6 +6063,21 @@ select {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+.drop-down-filters p:first-child i.mine {
+  background-size: 100% auto;
+}
+.drop-down-filters p:first-child i {
+  height: 42px !important;
+  width: 40px !important;
+  opacity: 0.2;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+}
+.drop-down-filters p:first-child i.selected {
+  opacity: 1;
+}
 .drop-down-filters p:first-child:hover {
   background: #fdfdfd;
 }
@@ -6038,6 +6088,21 @@ select {
 }
 .drop-down-filters .wrapper ul li {
   color: #aaa;
+}
+.drop-down-filters i.mine {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/default.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 70px;
 }
 .date-picker-icon a i.calendar {
   height: 25px;
@@ -6065,5 +6130,8 @@ select {
   position: absolute;
   z-index: 30;
   top: -35px;
-  left: 44px;
+  left: -8px;
+}
+.week-switcher .date-picker-icon {
+  margin-right: 12px;
 }
