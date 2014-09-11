@@ -5019,6 +5019,7 @@ header {
 }
 .icons-view .element {
   width: 150px;
+  padding: 6px;
 }
 .icons-view .element .container {
   padding: 10px;
