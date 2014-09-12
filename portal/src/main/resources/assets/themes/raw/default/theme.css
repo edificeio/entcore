@@ -4044,6 +4044,7 @@ i.show-admin {
   float: left;
   vertical-align: middle;
   opacity: 0.5;
+  background-size: 100% auto;
 }
 i.disconnect {
   height: 35px;

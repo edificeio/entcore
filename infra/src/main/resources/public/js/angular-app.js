@@ -642,7 +642,11 @@ module.directive('calendar', function($compile){
 			template.open('schedule-create-template', attributes.createTemplate);
 
 			scope.items = scope.$eval(attributes.items);
-			scope.$watch(function(){ return scope.$eval(attributes.items) }, function(newVal){ scope.items = newVal });
+			scope.$watch(function(){
+				return scope.$eval(attributes.items)
+			}, function(newVal){
+				scope.items = newVal;
+			});
 		}
 	}
 });
@@ -658,6 +662,7 @@ module.directive('scheduleItem', function($compile){
 
 		},
 		link: function(scope, element, attributes){
+			var parentSchedule = element.parents('.schedule');
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
 			if(scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear()){
@@ -725,10 +730,14 @@ module.directive('scheduleItem', function($compile){
 					model.calendar.clearScheduleItems();
 					model.calendar.addScheduleItems(scope.$parent.items);
 					scope.$parent.$apply('items');
+					parentSchedule.find('schedule-item').each(function(index, item){
+						var scope = angular.element(item).scope();
+						scope.placeItem()
+					});
 				}
 			});
 
-			function placeItem(){
+			var placeItem = function(){
 				var cellWidth = element.parent().width() / 12;
 				var startDay = scope.item.beginning.dayOfYear();
 				var endDay = scope.item.end.dayOfYear();
@@ -766,6 +775,7 @@ module.directive('scheduleItem', function($compile){
 
 			scope.$parent.$watchCollection('items', placeItem);
 			scope.$watch('item', placeItem);
+			scope.placeItem = placeItem;
 		}
 	}
 });
