@@ -33,6 +33,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.List;
+
 import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DirectoryResourcesProvider implements ResourcesProvider {
@@ -127,18 +129,20 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	}
 
 	private void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
-		String userId = request.params().get("userId");
-		if (userId == null || userId.trim().isEmpty() || userId.equals(user.getUserId())) {
+		List<String> userIds = request.params().getAll("userId");
+		if (userIds == null || userIds.isEmpty() || userIds.contains(user.getUserId())) {
 			handler.handle(false);
 			return;
 		}
 		String query =
 				"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class)" +
-				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id: {userId}}) " +
-				"RETURN count(*) >= 1 as exists ";
+				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User) " +
+				"WHERE u.id IN {userIds} " +
+				"RETURN count(distinct u) = {size} as exists ";
 		JsonObject params = new JsonObject()
-				.putString("userId", userId)
-				.putString("teacherId", user.getUserId());
+				.putArray("userIds", new JsonArray(userIds.toArray()))
+				.putString("teacherId", user.getUserId())
+				.putNumber("size", userIds.size());
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override

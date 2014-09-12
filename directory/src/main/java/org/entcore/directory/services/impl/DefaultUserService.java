@@ -267,10 +267,10 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void delete(String id, Handler<Either<String, JsonObject>> result) {
+	public void delete(List<String> users, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-delete-user")
-				.putString("userId", id);
+				.putArray("users", new JsonArray(users.toArray()));
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 

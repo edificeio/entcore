@@ -194,11 +194,11 @@ public class UserController extends BaseController {
 		userService.listIsolated(structureId, expectedProfile, arrayResponseHandler(request));
 	}
 
-	@Delete("/user/:userId")
+	@Delete("/user")
 	@SecuredAction(value = "user.delete", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
-		String userId = request.params().get("userId");
-		userService.delete(userId, defaultResponseHandler(request));
+		List<String> users = request.params().getAll("userId");
+		userService.delete(users, defaultResponseHandler(request));
 	}
 
 	@Get("/export/users")

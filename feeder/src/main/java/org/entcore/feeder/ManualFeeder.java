@@ -413,13 +413,18 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	public void deleteUser(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		if (userId == null) return;
+		final JsonArray users = message.body().getArray("users");
+		if (users == null || users.size() == 0) {
+			sendError(message, "Missing users.");
+			return;
+		}
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) {
-				User.backupRelationship(userId, tx);
-				User.preDelete(userId, tx);
+				for (Object o : users) {
+					User.backupRelationship(o.toString(), tx);
+					User.preDelete(o.toString(), tx);
+				}
 			}
 		});
 	}
