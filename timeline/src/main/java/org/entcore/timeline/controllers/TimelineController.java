@@ -38,13 +38,13 @@ public class TimelineController extends BaseController {
 	}
 
 	@Get("/timeline")
-	@SecuredAction("timeline.view")
+	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/i18nNotifications")
-	@SecuredAction("timeline.i18n")
+	@SecuredAction(value = "timeline.i18n", type = ActionType.AUTHENTICATED)
 	public void i18n(HttpServerRequest request) {
 		String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
 		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
@@ -55,13 +55,13 @@ public class TimelineController extends BaseController {
 	}
 
 	@Get("/calendar")
-	@SecuredAction("timeline.calendar")
+	@SecuredAction(value = "timeline.calendar", type = ActionType.AUTHENTICATED)
 	public void calendar(HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/lastNotifications")
-	@SecuredAction("timeline.events")
+	@SecuredAction(value = "timeline.events", type = ActionType.AUTHENTICATED)
 	public void lastEvents(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
