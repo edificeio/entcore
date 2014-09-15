@@ -36,6 +36,7 @@ import java.util.Set;
 public class Transition {
 
 	private static final Logger log = LoggerFactory.getLogger(Transition.class);
+	private static final String GRAPH_DATA_UPDATE = "GraphDataUpdate";
 
 	public void launch(final String structureExternalId, final Handler<Message<JsonObject>> handler) {
 		if (GraphData.isReady()) {
@@ -111,7 +112,7 @@ public class Transition {
 						}
 						s.transition(handlers[j+1]);
 					} else {
-						tx.rollback();
+						TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 						log.error("Transition error");
 						log.error(m.body().encode());
 						if (handler != null) {
@@ -133,7 +134,8 @@ public class Transition {
 					JsonArray r = m.body().getArray("result", new JsonArray());
 					groupsUsers.addAll(r.toList());
 					try {
-						tx.commit(new Handler<Message<JsonObject>>() {
+						TransactionManager.getInstance().persist(GRAPH_DATA_UPDATE, false,
+								new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if ("ok".equals(event.body().getString("status"))) {
@@ -158,7 +160,7 @@ public class Transition {
 						}
 					}
 				} else {
-					tx.rollback();
+					TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 					log.error("Transition error");
 					log.error(m.body().encode());
 					if (handler != null) {
@@ -172,7 +174,7 @@ public class Transition {
 	private TransactionHelper getTransaction(Handler<Message<JsonObject>> handler) {
 		TransactionHelper tx = null;
 		try {
-			tx = TransactionManager.getInstance().begin("GraphDataUpdate");
+			tx = TransactionManager.getInstance().begin(GRAPH_DATA_UPDATE);
 		} catch (TransactionException e) {
 			log.error(e.getMessage(), e);
 			if (handler != null) {
