@@ -3302,7 +3302,7 @@ module.directive('filters', function(){
 				element.find('p i').remove();
 				element.find('li').each(function(index, item){
 					var icon = $(item).find('i');
-
+					icon.removeClass('selected');
 					if($(item).hasClass('selected')){
 						icon.addClass('selected')
 					}

@@ -1,11 +1,21 @@
-<widgets></widgets>
-<section class="eight cell right-magnet reduce-block-six">
-	<h1>Applications</h1>
-	<nav class="vertical">
-		<ul>
-			<li ng-repeat="application in applications">
-				<a translate content="[[application.displayName]]" ng-href="[[application.address]]" target="[[application.target]]"></a>
-			</li>
-		</ul>
+<h1 translate content="portal.header.navigation.myapps"></h1>
+<div class="row">
+	<input type="search" ng-model="searchText" i18n-placeholder="search" class="three cell" autofocus />
+</div>
+<div class="row">
+	<nav class="list icons-view">
+		<div class="list icons-view apps">
+			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
+				<div class="container">
+					<a href="[[application.address]]" target="[[application.target]]">
+						<i class="[[application.icon]]"></i>
+					</a>
+				</div>
+				<legend>
+					<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]"></a>
+				</legend>
+			</div>
+		</div>
+		<div class="clear"></div>
 	</nav>
-</section>
+</div>

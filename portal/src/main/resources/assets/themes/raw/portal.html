@@ -32,6 +32,10 @@
 				<a href="/userbook/mon-compte"><img data-ng-src="[[avatar]]?thumbnail=48x48" id="my-photo" /></a>
 				<span class="welcome-message" translate key="welcome"></span>
 			</div>
+			<div class="cell">
+				<div class="theme-preview [[theme.displayName]]" ng-repeat="theme in themes" ng-click="skin.setTheme(theme)"></div>
+			</div>
+
 		</section>
 		<section class="row">
 				<a href="/apps"><div class="logo"></div></a>
