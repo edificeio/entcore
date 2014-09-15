@@ -3622,8 +3622,8 @@ html.print body section {
 .lightbox-view nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-view nav.vertical ul:first-of-type > li,
-.lightbox-view nav.vertical div ul:first-of-type > li {
+.lightbox-view nav.vertical ul:first-child > li,
+.lightbox-view nav.vertical div ul:first-child > li {
   padding-left: 0;
 }
 .lightbox-view .info {
@@ -3634,24 +3634,19 @@ html.print body section {
   margin-top: 10px;
 }
 .lightbox-view .tabs section {
-  background: #074e68;
   border-bottom: 7px solid;
   border-color: #23a9aa;
 }
 .lightbox-view .tabs header {
-  background: #393939;
   margin-left: -2px;
-  color: #777;
-  border: 1px solid #555;
   border-bottom: none;
 }
 .lightbox-view .tabs header:first-child {
   margin-left: 0px;
 }
 .lightbox-view .tabs header.selected {
-  background: #074e68;
   border-color: #23a9aa;
-  border-bottom: 1px solid #074e68;
+  border-bottom: 1px solid #fff;
   color: #23a9aa;
 }
 .lightbox-view .line {
@@ -3918,8 +3913,8 @@ i.actualites-large {
 .lightbox-window nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-window nav.vertical ul:first-of-type > li,
-.lightbox-window nav.vertical div ul:first-of-type > li {
+.lightbox-window nav.vertical ul:first-child > li,
+.lightbox-window nav.vertical div ul:first-child > li {
   padding-left: 0;
 }
 .lightbox-window .info {
@@ -3930,24 +3925,19 @@ i.actualites-large {
   margin-top: 10px;
 }
 .lightbox-window .tabs section {
-  background: #074e68;
   border-bottom: 7px solid;
   border-color: #23a9aa;
 }
 .lightbox-window .tabs header {
-  background: #393939;
   margin-left: -2px;
-  color: #777;
-  border: 1px solid #555;
   border-bottom: none;
 }
 .lightbox-window .tabs header:first-child {
   margin-left: 0px;
 }
 .lightbox-window .tabs header.selected {
-  background: #074e68;
   border-color: #23a9aa;
-  border-bottom: 1px solid #074e68;
+  border-bottom: 1px solid #fff;
   color: #23a9aa;
 }
 .select-file input[type=text] {
@@ -4246,6 +4236,9 @@ i.show-details.selected {
   opacity: 1;
 }
 i.show-list.selected {
+  opacity: 1;
+}
+i.show-admin.selected {
   opacity: 1;
 }
 i.close {
@@ -4618,6 +4611,7 @@ input[type=button].cancel {
 .icons-view.apps .element {
   width: 118px;
   padding: 0;
+  margin: 0;
 }
 .icons-view.apps .element .container {
   padding: 0;
@@ -5101,7 +5095,7 @@ table thead tr:hover {
   background: #fff;
 }
 .notification {
-  background: #D9F1F1;
+  background: #d9f1f1;
   border-left: 10px solid #23a9aa;
 }
 .notification article {
@@ -5157,6 +5151,13 @@ thead {
 thead th {
   padding: 5px;
   font-size: 14px;
+  color: #fff;
+}
+thead th a {
+  color: #fff;
+}
+thead th a.selected {
+  color: #23a9aa;
 }
 header {
   background: transparent;
@@ -5554,8 +5555,8 @@ i.folder-large {
 .lightbox-view nav.vertical li {
   padding-left: 10px;
 }
-.lightbox-view nav.vertical ul:first-of-type > li,
-.lightbox-view nav.vertical div ul:first-of-type > li {
+.lightbox-view nav.vertical ul:first-child > li,
+.lightbox-view nav.vertical div ul:first-child > li {
   padding-left: 0;
 }
 .lightbox-view .info {
@@ -5566,24 +5567,19 @@ i.folder-large {
   margin-top: 10px;
 }
 .lightbox-view .tabs section {
-  background: #074e68;
   border-bottom: 7px solid;
   border-color: #23a9aa;
 }
 .lightbox-view .tabs header {
-  background: #393939;
   margin-left: -2px;
-  color: #777;
-  border: 1px solid #555;
   border-bottom: none;
 }
 .lightbox-view .tabs header:first-child {
   margin-left: 0px;
 }
 .lightbox-view .tabs header.selected {
-  background: #074e68;
   border-color: #23a9aa;
-  border-bottom: 1px solid #074e68;
+  border-bottom: 1px solid #fff;
   color: #23a9aa;
 }
 .lightbox-view .line {

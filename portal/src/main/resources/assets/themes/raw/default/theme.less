@@ -5,6 +5,7 @@
 @bright-blue: #23A9AA;
 @black: #2A2829;
 @shiny-blue: #51CCF5;
+@blue-background: #D9F1F1;
 
 //legend colors
 @green: #B2D663;
@@ -111,7 +112,7 @@ i.actualites-large{
 		li{
 			padding-left: 10px;
 		}
-		ul:first-of-type > li, div ul:first-of-type > li{
+		ul:first-child > li, div ul:first-child > li{
 			padding-left: 0;
 		}
 	}
@@ -122,24 +123,19 @@ i.actualites-large{
 	.tabs{
 		margin-top: 10px;
 		section{
-			background: @dark-blue;
 			border-bottom: 7px solid;
 			border-color: @bright-blue;
 		}
 		header{
-			background: #393939;
 			margin-left: -2px;
-			color: #777;
-			border: 1px solid #555;
 			border-bottom: none;
 		}
 		header:first-child{
 			margin-left: 0px;
 		}
 		header.selected{
-			background: @dark-blue;
 			border-color: @bright-blue;
-			border-bottom: 1px solid @dark-blue;
+			border-bottom: 1px solid #fff;
 			color: @bright-blue;
 		}
 	}
@@ -255,6 +251,10 @@ i.show-details.selected{
 }
 
 i.show-list.selected{
+	opacity: 1;
+}
+
+i.show-admin.selected{
 	opacity: 1;
 }
 
@@ -577,6 +577,7 @@ button.cancel, input[type=button].cancel{
 	.element{
 		width: 118px;
 		padding: 0;
+		margin: 0;
 		.container{
 			padding: 0;
 		}
@@ -1037,7 +1038,7 @@ table{
 }
 
 .notification {
-	background: #D9F1F1;
+	background: @blue-background;
 	border-left: 10px solid @bright-blue;
 	article {
 		margin-top: 15px;
@@ -1089,6 +1090,13 @@ table{
 		th{
 			padding: 5px;
 			font-size: 14px;
+			color: #fff;
+			a{
+				color: #fff;
+			}
+			a.selected{
+				color: @bright-blue;
+			}
 		}
 	}
 
