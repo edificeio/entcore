@@ -210,10 +210,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		return template;
 	})
 	.factory('date', function() {
-		if(window.moment === undefined){
-			loader.syncLoad('moment');
-		}
-
 		if(currentLanguage === 'fr'){
 			moment.lang(currentLanguage, {
 				calendar : {
@@ -622,8 +618,11 @@ module.directive('calendar', function($compile){
 					$scope.display.editItem = true;
 				};
 
-				$scope.createItem = function(){
-
+				$scope.createItem = function(day, timeslot){
+					$scope.display.createItem = true;
+					$scope.newItem = {};
+					$scope.newItem.beginning = moment().utc().dayOfYear(day.index).hour(timeslot.beginning);
+					$scope.newItem.end = moment().utc().dayOfYear(day.index).hour(timeslot.end);
 				};
 
 				$scope.updateCalendarWeek = function(){
@@ -3308,12 +3307,12 @@ module.directive('filters', function(){
 					}
 					element.find('p:first-child').append(icon[0].outerHTML);
 				});
-			}, 100)
-			element.find('label,p').on('click', function(item){
+			}, 100);
+			element.find('.drop-down-filters').on('click', 'label,p', function(item){
 				element.find('p i').remove();
 				element.find('li').each(function(index, item){
 					var icon = $(item).find('i');
-
+					icon.removeClass('selected');
 					if($(item).hasClass('selected')){
 						icon.addClass('selected')
 					}

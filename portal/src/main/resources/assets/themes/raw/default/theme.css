@@ -3718,6 +3718,10 @@ i.workspace-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.blog-large {
   height: 100px;
@@ -3732,6 +3736,10 @@ i.blog-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.wiki-large {
   height: 100px;
@@ -3746,6 +3754,10 @@ i.wiki-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.forum-large {
   height: 100px;
@@ -3760,6 +3772,10 @@ i.forum-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.pages-large {
   height: 100px;
@@ -3774,6 +3790,10 @@ i.pages-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.userbook-large {
   height: 100px;
@@ -3788,6 +3808,10 @@ i.userbook-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.rbs-large {
   height: 100px;
@@ -3802,6 +3826,10 @@ i.rbs-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.conversation-large,
 i.messagerie {
@@ -3817,6 +3845,10 @@ i.messagerie {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 i.actualites-large {
   height: 100px;
@@ -3831,6 +3863,10 @@ i.actualites-large {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 .tabs header {
   font-family: Lato;
@@ -4459,7 +4495,7 @@ nav.vertical.stamps article.selected a {
 }
 .calendar.widget {
   padding-bottom: 35% !important;
-  border: 1px solid #D9F1F1;
+  border: 1px solid #23a9aa;
   border-bottom: 0;
   background: #fff;
 }
@@ -4468,7 +4504,7 @@ nav.vertical.stamps article.selected a {
 }
 .calendar.widget .content {
   border-radius: 0px;
-  border: 1px solid #D9F1F1;
+  border: 1px solid #23a9aa;
   border-top: 0;
   background: #fff;
   margin-top: 18%;
@@ -5065,8 +5101,8 @@ table thead tr:hover {
   background: #fff;
 }
 .notification {
-  background: #fdfdfd;
-  border-left: 10px solid #008bb8;
+  background: #f6f6f6;
+  border-left: 10px solid #23a9aa;
 }
 .notification article {
   margin-top: 15px;
@@ -5095,6 +5131,9 @@ table thead tr:hover {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
+  background: #23a9aa;
+  border: none;
+  color: #fff;
 }
 .notes-widget h1 {
   display: none;
@@ -5128,6 +5167,7 @@ header {
 .calendar.widget .content {
   margin-left: -1px;
   box-sizing: content-box;
+  margin-top: 55px;
 }
 .calendar.widget .content .day.today {
   background: #23a9aa;
@@ -6144,6 +6184,21 @@ select {
   width: 100%;
   box-sizing: border-box;
 }
+.drop-down-filters i.rbs {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/rbs-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
 .drop-down-filters p:first-child {
   font-size: 16px;
   padding: 10px;
@@ -6158,13 +6213,15 @@ select {
   background-size: 100% auto;
 }
 .drop-down-filters p:first-child i {
-  height: 42px !important;
+  height: 40px !important;
   width: 40px !important;
   opacity: 0.2;
   -o-transition: opacity 250ms ease;
   -moz-transition: opacity 250ms ease;
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
+  border-radius: 20px;
+  vertical-align: top;
 }
 .drop-down-filters p:first-child i.selected {
   opacity: 1;
@@ -6179,6 +6236,9 @@ select {
 }
 .drop-down-filters .wrapper ul li {
   color: #fff;
+}
+.drop-down-filters .wrapper ul li i {
+  border-radius: 50px;
 }
 .drop-down-filters i.mine {
   height: 100px;

@@ -12,6 +12,42 @@ a{
 	color: @magenta;
 }
 
+i.workspace-large{
+	.icon(workspace-large-neon, 100px);
+}
+
+i.blog-large{
+	.icon(blog-large-neon, 100px);
+}
+
+i.wiki-large{
+	.icon(wiki-neon, 100px);
+}
+
+i.forum-large{
+	.icon(forum-neon, 100px);
+}
+
+i.pages-large{
+	.icon(page-neon, 100px);
+}
+
+i.userbook-large{
+	.icon(userbook-large-neon, 100px);
+}
+
+i.rbs-large{
+	.icon(rbs-large-neon, 100px);
+}
+
+i.conversation-large, i.messagerie{
+	.icon(conversation-large-neon, 100px);
+}
+
+i.actualites-large{
+	.icon(actualites-large-neon, 100px);
+}
+
 nav.horizontal{
 	a:hover{
 		color: @magenta;
@@ -379,6 +415,24 @@ nav.vertical h2{
 	color: #444;
 }
 
+.drop-down-filters{
+	i.blog{
+		.icon(blog-large-neon, 100px);
+	}
+	i.userbook{
+		.icon(userbook-large-neon, 100px);
+	}
+	i.workspace{
+		.icon(workspace-large-neon, 100px);
+	}
+	i.conversation, i.messagerie{
+		.icon(conversation-large-neon, 100px);
+	}
+	i.rbs{
+		.icon(rbs-large-neon, 100px);
+	}
+}
+
 .drop-down-filters p:first-child{
 	background: #444;
 }
@@ -482,4 +536,35 @@ table thead tr:hover{
 			}
 		}
 	}
+}
+
+.notes-widget{
+	textarea{
+		background: @magenta;
+		color: #fff;
+	}
+}
+
+.calendar.widget{
+	.content{
+		.day.today{
+			background: @magenta;
+		}
+		h2{
+			color: @magenta;
+		}
+	}
+}
+
+.calendar.widget {
+	border: 1px solid @magenta;
+
+	.content {
+		border: 1px solid @magenta;
+		border-top: none;
+	}
+}
+
+.notification {
+	border-left: 10px solid @magenta;
 }

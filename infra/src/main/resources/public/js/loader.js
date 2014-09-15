@@ -56,7 +56,6 @@ var loader = (function(){
 	var loadedScripts = {};
 
 	var libraries = {
-		moment: 'moment+langs.js',
 		humane: 'humane.min.js',
 		underscore: 'underscore-min-1.4.4.js',
 		ckeditor: '../ckeditor/ckeditor.js'

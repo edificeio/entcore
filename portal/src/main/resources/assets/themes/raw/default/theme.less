@@ -20,38 +20,47 @@ html, body{
 
 i.workspace-large{
 	.icon(workspace-large, 100px);
+	.run-transition(background);
 }
 
 i.blog-large{
 	.icon(blog-large, 100px);
+	.run-transition(background);
 }
 
 i.wiki-large{
 	.icon(wiki, 100px);
+	.run-transition(background);
 }
 
 i.forum-large{
 	.icon(forum, 100px);
+	.run-transition(background);
 }
 
 i.pages-large{
 	.icon(page, 100px);
+	.run-transition(background);
 }
 
 i.userbook-large{
 	.icon(userbook-large, 100px);
+	.run-transition(background);
 }
 
 i.rbs-large{
 	.icon(rbs-large, 100px);
+	.run-transition(background);
 }
 
 i.conversation-large, i.messagerie{
 	.icon(conversation-large, 100px);
+	.run-transition(background);
 }
 
 i.actualites-large{
 	.icon(actualites-large, 100px);
+	.run-transition(background);
 }
 
 .tabs{
@@ -442,7 +451,7 @@ nav.vertical.stamps{
 
 .calendar.widget{
 	padding-bottom: 35% !important;
-	border: 1px solid #D9F1F1;
+	border: 1px solid @bright-blue;
 	border-bottom: 0;
 	background: #fff;
 	.current-month-header{
@@ -450,7 +459,7 @@ nav.vertical.stamps{
 	}
 	.content{
 		border-radius: 0px;
-		border: 1px solid #D9F1F1;
+		border: 1px solid @bright-blue;
 		border-top: 0;
 		background: #fff;
 		margin-top: 18%;
@@ -1028,8 +1037,8 @@ table{
 }
 
 .notification {
-	background: #fdfdfd;
-	border-left: 10px solid #008bb8;
+	background: #f6f6f6;
+	border-left: 10px solid @bright-blue;
 	article {
 		margin-top: 15px;
 		margin-left: 0px;
@@ -1051,6 +1060,9 @@ table{
 		width: 253px;
 		textarea{
 			.border-box;
+			background: @bright-blue;
+			border: none;
+			color: #fff;
 		}
 		h1{
 			display: none;
@@ -1089,6 +1101,7 @@ table{
 		.content{
 			margin-left: -1px;
 			box-sizing: content-box;
+			margin-top: 55px;
 			.day.today{
 				background: @bright-blue;
 			}
@@ -1810,6 +1823,10 @@ select{
 }
 
 .drop-down-filters {
+	i.rbs{
+		.icon(rbs-large, 100px);
+		cursor: pointer;
+	}
 	p:first-child {
 		font-size: 16px;
 		padding: 10px;
@@ -1820,10 +1837,12 @@ select{
 			background-size: 100% auto;
 		}
 		i{
-			height: 42px !important;
+			height: 40px !important;
 			width: 40px !important;
 			opacity: 0.2;
 			.run-transition(opacity);
+			border-radius: 20px;
+			vertical-align: top;
 		}
 		i.selected{
 			opacity: 1;
@@ -1840,6 +1859,9 @@ select{
 		ul {
 			li {
 				color: #fff;
+				i{
+					border-radius: 50px;
+				}
 			}
 		}
 	}
