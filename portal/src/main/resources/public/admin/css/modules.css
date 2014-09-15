@@ -4965,7 +4965,7 @@ nav.vertical ul li a:hover {
 }
 nav.vertical ul:first-child > li,
 nav.vertical div ul:first-child > li,
-nav.vertical h2 + ul {
+nav.vertical h2 + ul > li {
   padding-left: 0;
 }
 nav.vertical ul.green {
