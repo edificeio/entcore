@@ -5136,7 +5136,7 @@ table thead tr:hover {
   background: #fff;
 }
 .notification {
-  background: #f6f6f6;
+  background: #D9F1F1;
   border-left: 10px solid #23a9aa;
 }
 .notification article {
@@ -7005,6 +7005,7 @@ table thead tr:hover {
 }
 .notification {
   border-left: 10px solid #ff0b75;
+  background: #f6f6f6;
 }
 header.navbar {
   background: #444;
