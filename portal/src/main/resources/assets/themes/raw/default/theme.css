@@ -3789,6 +3789,20 @@ i.userbook-large {
   float: left;
   vertical-align: middle;
 }
+i.rbs-large {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/rbs-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i.conversation-large,
 i.messagerie {
   height: 100px;
@@ -4565,31 +4579,31 @@ input[type=button].cancel {
 .icons-view.apps {
   margin-top: 62px;
 }
-.icons-view.apps .icons-view .element {
+.icons-view.apps .element {
   width: 118px;
   padding: 0;
 }
-.icons-view.apps .icons-view .element .container {
+.icons-view.apps .element .container {
   padding: 0;
 }
-.icons-view.apps .icons-view .element legend {
+.icons-view.apps .element legend {
   background: #23a9aa;
   color: #fff;
   padding: 0;
   margin-left: 1px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
-.icons-view.apps .icons-view .element legend a {
+.icons-view.apps .element legend a {
   color: #ffffff;
 }
-.icons-view.apps .icons-view .element legend a:hover {
+.icons-view.apps .element legend a:hover {
   color: #ffffff;
 }
-.icons-view.apps .icons-view .element:hover legend {
-  background: #fff;
-  color: #23a9aa;
-}
-.icons-view.apps .icons-view .element:hover legend a {
-  color: #23a9aa;
+.icons-view.apps .element:hover legend {
+  background: #074e68;
 }
 .small-text a,
 .small-text em,
@@ -4878,8 +4892,9 @@ nav.vertical ul li a:hover {
   background: #D9F1F1;
   border-right: 8px solid #23a9aa;
 }
-nav.vertical ul:first-of-type > li,
-nav.vertical div ul:first-of-type > li {
+nav.vertical ul:first-child > li,
+nav.vertical div ul:first-child > li,
+nav.vertical h2 + ul {
   padding-left: 0;
 }
 nav.vertical ul.green {
@@ -4933,6 +4948,9 @@ nav.vertical ul.purple li a,
 nav.vertical ul.purple li a.purple {
   border-color: #a872c5;
   background: none;
+}
+nav.vertical ul.purple li a.selected {
+  background: #074e68;
 }
 nav.vertical a.classic-link {
   display: block;

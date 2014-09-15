@@ -42,6 +42,10 @@ i.userbook-large{
 	.icon(userbook-large, 100px);
 }
 
+i.rbs-large{
+	.icon(rbs-large, 100px);
+}
+
 i.conversation-large, i.messagerie{
 	.icon(conversation-large, 100px);
 }
@@ -561,17 +565,18 @@ button.cancel, input[type=button].cancel{
 
 .icons-view.apps{
 	margin-top: 62px;
-	.icons-view .element{
+	.element{
 		width: 118px;
 		padding: 0;
 		.container{
 			padding: 0;
 		}
 		legend{
-			background: #23a9aa;
+			background: @bright-blue;
 			color: #fff;
 			padding: 0;
 			margin-left: 1px;
+			.run-transition(background);
 			a{
 				color: #fff
 			}
@@ -580,13 +585,9 @@ button.cancel, input[type=button].cancel{
 			}
 		}
 	}
-	.icons-view .element:hover{
+	.element:hover{
 		legend{
-			background: #fff;
-			color: @bright-blue;
-			a{
-				color: @bright-blue
-			}
+			background: @dark-blue;
 		}
 	}
 }
@@ -867,7 +868,7 @@ nav.vertical{
 			}
 		}
 	}
-	ul:first-of-type > li, div ul:first-of-type > li{
+	ul:first-child > li, div ul:first-child > li, h2 + ul{
 		padding-left: 0;
 	}
 	ul.green{
@@ -915,6 +916,9 @@ nav.vertical{
 		li a, li a.purple{
 			border-color: @purple;
 			background: none;
+		}
+		li a.selected{
+			background: @dark-blue;
 		}
 	}
 	a.classic-link{

@@ -3824,6 +3824,20 @@ i.userbook-large {
   float: left;
   vertical-align: middle;
 }
+i.rbs-large {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/rbs-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i.conversation-large,
 i.messagerie {
   height: 100px;
@@ -4600,31 +4614,31 @@ input[type=button].cancel {
 .icons-view.apps {
   margin-top: 62px;
 }
-.icons-view.apps .icons-view .element {
+.icons-view.apps .element {
   width: 118px;
   padding: 0;
 }
-.icons-view.apps .icons-view .element .container {
+.icons-view.apps .element .container {
   padding: 0;
 }
-.icons-view.apps .icons-view .element legend {
+.icons-view.apps .element legend {
   background: #23a9aa;
   color: #fff;
   padding: 0;
   margin-left: 1px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
-.icons-view.apps .icons-view .element legend a {
+.icons-view.apps .element legend a {
   color: #ffffff;
 }
-.icons-view.apps .icons-view .element legend a:hover {
+.icons-view.apps .element legend a:hover {
   color: #ffffff;
 }
-.icons-view.apps .icons-view .element:hover legend {
-  background: #fff;
-  color: #23a9aa;
-}
-.icons-view.apps .icons-view .element:hover legend a {
-  color: #23a9aa;
+.icons-view.apps .element:hover legend {
+  background: #074e68;
 }
 .small-text a,
 .small-text em,
@@ -4913,8 +4927,9 @@ nav.vertical ul li a:hover {
   background: #D9F1F1;
   border-right: 8px solid #23a9aa;
 }
-nav.vertical ul:first-of-type > li,
-nav.vertical div ul:first-of-type > li {
+nav.vertical ul:first-child > li,
+nav.vertical div ul:first-child > li,
+nav.vertical h2 + ul {
   padding-left: 0;
 }
 nav.vertical ul.green {
@@ -4968,6 +4983,9 @@ nav.vertical ul.purple li a,
 nav.vertical ul.purple li a.purple {
   border-color: #554dc2;
   background: none;
+}
+nav.vertical ul.purple li a.selected {
+  background: #074e68;
 }
 nav.vertical a.classic-link {
   display: block;
@@ -6338,6 +6356,61 @@ nav.vertical ul li a:hover,
 nav.vertical ul li a.selected:hover {
   color: #ff0b75;
 }
+nav.vertical ul.green {
+  background: none;
+}
+nav.vertical ul.green li a,
+nav.vertical ul.green li a.green {
+  border-color: #00cb4c;
+  background: none;
+}
+nav.vertical ul.green li a.selected {
+  background: #444;
+}
+nav.vertical ul.orange {
+  background: none;
+}
+nav.vertical ul.orange li a,
+nav.vertical ul.orange li a.orange {
+  border-color: #ffb400;
+  background: none;
+}
+nav.vertical ul.orange li a.selected {
+  background: #444;
+}
+nav.vertical ul.pink {
+  background: none;
+}
+nav.vertical ul.pink li a,
+nav.vertical ul.pink li a.pink {
+  border-color: #ff0b75;
+  background: none;
+}
+nav.vertical ul.pink li a.selected {
+  background: #444;
+}
+nav.vertical ul.cyan {
+  background: none;
+}
+nav.vertical ul.cyan li a,
+nav.vertical ul.cyan li a.cyan {
+  border-color: #00a3d8;
+  background: none;
+}
+nav.vertical ul.cyan li a.selected {
+  background: #444;
+}
+nav.vertical ul.purple {
+  background: none;
+}
+nav.vertical ul.purple li a,
+nav.vertical ul.purple li a.purple {
+  border-color: #554dc2;
+  background: none;
+}
+nav.vertical ul.purple li a.selected {
+  background: #444;
+}
 nav.vertical a.classic-link {
   background: #ff0b75;
 }
@@ -6639,20 +6712,20 @@ table thead tr:hover {
 .theme-preview.default {
   background: #00a3d8;
 }
-.icons-view.apps .icons-view .element legend {
+.icons-view.apps .element legend {
   background: #444;
   color: #aaa;
 }
-.icons-view.apps .icons-view .element legend a {
+.icons-view.apps .element legend a {
   color: #aaaaaa;
 }
-.icons-view.apps .icons-view .element legend a:hover {
+.icons-view.apps .element legend a:hover {
   color: #aaaaaa;
 }
-.icons-view.apps .icons-view .element:hover legend {
+.icons-view.apps .element:hover legend {
   background: #ff0b75;
 }
-.icons-view.apps .icons-view .element:hover legend a {
+.icons-view.apps .element:hover legend a {
   color: #fff;
 }
 header.navbar {
