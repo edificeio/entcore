@@ -556,7 +556,6 @@ public class AuthController extends BaseController {
 		resetPasswordView(request, null);
 	}
 
-	@Post("/reset")
 	private void resetPasswordView(final HttpServerRequest request, final JsonObject p) {
 		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 			@Override
@@ -578,6 +577,7 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/reset")
 	public void resetPasswordSubmit(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
