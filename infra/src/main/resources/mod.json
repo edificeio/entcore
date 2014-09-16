@@ -79,9 +79,9 @@
           "logoutCallback": "http%3A%2F%2Flocalhost%3A8090"
         },
 		"admin-urls": [
-			{"name": "directory", "url": "http://localhost:8090/directory"},
-			{"name": "appRegistry", "url": "http://localhost:8090/appregistry"},
-			{"name": "communication", "url": "http://localhost:8090/communication"}
+			{"name": "directory", "url": "http://localhost:8090/directory/admin-console"},
+			{"name": "appRegistry", "url": "http://localhost:8090/appregistry/admin-console"},
+			{"name": "communication", "url": "http://localhost:8090/communication/admin-console"}
 		],
 		  "widgets": [
 			  {
