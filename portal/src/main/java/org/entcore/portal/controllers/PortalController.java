@@ -261,7 +261,7 @@ public class PortalController extends BaseController {
 	@Get("/admin")
 	@SecuredAction("admin.view")
 	public void admin(HttpServerRequest request) {
-		redirectPermanent(request, "/directory/admin");
+		redirectPermanent(request, "/directory/admin-console");
 	}
 
 }
