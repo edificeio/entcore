@@ -642,13 +642,22 @@ select{
 			.vertical-gradient(#383838, #333);
 			border: 1px solid #555;
 			color: #666;
+			border-bottom: none;
+		}
+		h2:hover{
+			background: #444;
+			color: #fff;
 		}
 		.toggle{
 			background: #333;
 			.content{
-				color: #fff;
+				color: #999;
 				h3{
 					color: @magenta;
+				}
+				input[type=text], textarea, select{
+					background: #2C2C2C;
+					border: none;
 				}
 			}
 		}
@@ -664,11 +673,41 @@ select{
 		h2{
 			border: 1px solid #555;
 			color: @magenta;
-			font-family: Arial;
+			border-bottom: none;
+			background: #333;
 
 		}
 		.toggle{
 			border: 1px solid #555;
+			border-top: none;
 		}
+	}
+}
+
+.drop-down-button{
+	label{
+		border: 1px solid @magenta;
+		color: #000;
+		.run-transition(background);
+		font-family: Lato;
+		font-weight: 300;
+	}
+
+	.options{
+		ul{
+			border: 1px solid @magenta;
+			li:hover{
+				background: @magenta;
+			}
+		}
+	}
+}
+
+.drop-down-button.hidden{
+	label{
+		background: @magenta;
+	}
+	label:hover{
+		border: 1px solid @magenta;
 	}
 }
