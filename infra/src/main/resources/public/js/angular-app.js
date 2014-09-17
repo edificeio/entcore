@@ -712,8 +712,8 @@ module.directive('scheduleItem', function($compile){
 				var newTime = getTimeFromBoundaries();
 				scope.item.beginning = newTime.startTime;
 				scope.item.end = newTime.endTime;
-				if(typeof scope.item.save === 'function'){
-					scope.item.save();
+				if(typeof scope.item.calendarUpdate === 'function'){
+					scope.item.calendarUpdate();
 					model.calendar.clearScheduleItems();
 					model.calendar.addScheduleItems(scope.$parent.items);
 					scope.$parent.$apply('items');
@@ -724,8 +724,8 @@ module.directive('scheduleItem', function($compile){
 				var newTime = getTimeFromBoundaries();
 				scope.item.beginning = newTime.startTime;
 				scope.item.end = newTime.endTime;
-				if(typeof scope.item.save === 'function'){
-					scope.item.save();
+				if(typeof scope.item.calendarUpdate === 'function'){
+					scope.item.calendarUpdate();
 					model.calendar.clearScheduleItems();
 					model.calendar.addScheduleItems(scope.$parent.items);
 					scope.$parent.$apply('items');
