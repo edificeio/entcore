@@ -212,6 +212,19 @@ i.show-admin{
 	.icon(glyphicons_137_cogwheels, 24px);
 	opacity: 0.5;
 	background-size: 100% auto;
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+i.show-calendar{
+	.icon(glyphicons_045_calendar, 24px);
+	opacity: 0.5;
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+i.show-calendar.selected{
+	opacity: 1;
 }
 
 i.disconnect{
@@ -938,6 +951,16 @@ nav.vertical{
 			background: @dark-blue;
 		}
 	}
+	ul.yellow{
+		background: none;
+		li a, li a.yellow{
+			border-color: @yellow;
+			background: none;
+		}
+		li a.selected{
+			background: @dark-blue;
+		}
+	}
 	a.classic-link{
 		display: block;
 		padding: 5px;
@@ -1210,56 +1233,64 @@ filters{
 	}
 }
 
-	.toggle-buttons{
-		width: 100%;
-		left: 0;
-		margin-left: 0;
-		background: @dark-blue;
-		height: 40px;
-		button{
-			background: none;
-			padding: 7px;
-			border: none;
-			font-size: 1.3em;
-			font-weight: normal;
-			margin-right: 15px;
-		}
-		button:hover{
-			color: @bright-blue;
-			background: #555;
-		}
-		behaviour{
-			.cell;
-		}
+.toggle-buttons{
+	width: 100%;
+	left: 0;
+	margin-left: 0;
+	background: @dark-blue;
+	height: 40px;
+	button{
+		background: none;
+		padding: 7px;
+		border: none;
+		font-size: 1.3em;
+		font-weight: normal;
+		margin-right: 15px;
 	}
-
-	.toggle-panel.hide{
-		width: 300px;
-		opacity: 0;
-		.run-transition(opacity);
+	button[disabled], button.disabled{
+		color: #888;
 	}
-
-	.filters.line{
-		right: 0;
-		background: @dark-blue;
-		color: #fff;
-		border-left: 10px solid @bright-blue;
-		height: 40px;
-		padding: 11px;
-
-		li{
-			display: block;
-			float: right;
-			font-size: 14px;
-		}
-		li:first-child{
-			display: none;
-		}
+	button:hover{
+		color: @bright-blue;
+		background: #555;
 	}
-
-	a:hover{
-		color: #000;
+	button[disabled]:hover, button.disabled:hover{
+		cursor: default;
+		background: none;
+		coor: #888;
 	}
+	behaviour{
+		.cell;
+	}
+}
+
+.toggle-panel.hide{
+	width: 300px;
+	opacity: 0;
+	.run-transition(opacity);
+}
+
+.filters.line{
+	right: 0;
+	background: @dark-blue;
+	color: #fff;
+	border-left: 10px solid @bright-blue;
+	height: 40px;
+	padding: 11px;
+
+	li{
+		display: block;
+		float: right;
+		font-size: 14px;
+	}
+	li:first-child{
+		display: none;
+	}
+}
+
+a:hover{
+	color: #000;
+}
 
 .line{
 	border: none;
@@ -1271,13 +1302,16 @@ input[type=text], input[type=search], input[type=password]{
 	padding-left: 5px;
 	font-family: Lato;
 	font-size: 14px;
+	margin-bottom: 7px;
 }
 
-	textarea{
-		padding-left: 5px;
-		font-family: Lato;
-		font-size: 14px;
-	}
+textarea{
+	padding-left: 5px;
+	font-family: Lato;
+	font-size: 14px;
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
 
 
 	.message{
@@ -1422,57 +1456,66 @@ input[type=text], input[type=search], input[type=password]{
 
 
 
-	.accordions{
-		.accordion{
-			h2{
-				font-family: Arial;
-				.vertical-gradient(#383838, #333);
-				border: 1px solid #555;
-				border-bottom: 0;
-				font-size: 20px;
+.accordions{
+	margin-top: 15px;
+	margin-bottom: 15px;
+	.accordion{
+		h2{
+			background: @bright-blue;
+			border: 1px solid #fff;
+			border-bottom: 0;
+			font-size: 20px;
+			color: #fff;
+			font-family: Lato;
+		}
+		h2:hover{
+			background: @dark-blue;
+		}
+		.toggle{
+			border: 0;
+			background: @blue-background;
+			.content{
 				color: #666;
-			}
-			.toggle{
-				border: 0;
-				background: #333;
-				.content{
-					color: #fff;
-					h3{
-						font-weight: normal;
-						color: @bright-blue;
-						font-size: 16px;
-					}
+				h3{
+					font-weight: normal;
+					color: @bright-blue;
+					font-size: 16px;
+				}
+				select, input[type=text], textarea{
+					background: #fff;
 				}
 			}
 		}
+	}
 
-		.accordion:last-child{
-			h2{
-				border-bottom: 1px solid #555;
-			}
-		}
-
-		.accordion.opened{
-			h2{
-				border: 1px solid #555;
-				border-bottom: 0;
-				color: @bright-blue
-
-			}
-			.toggle{
-				height: 350px;
-				border: 1px solid #555;
-				border-top: 0;
-				padding: 10px;
-			}
+	.accordion:last-child{
+		h2{
+			border-bottom: 1px solid #fff;
 		}
 	}
+
+	.accordion.opened{
+		h2{
+			border: 1px solid #fff;
+			border-bottom: 0;
+			color: @bright-blue;
+			background: @blue-background;
+		}
+		.toggle{
+			height: 350px;
+			border: 1px solid #fff;
+			border-top: 0;
+			padding: 10px;
+		}
+	}
+}
 
 select{
 	background: #ddd;
 	border: none;
 	height: 25px;
 	color: #444;
+	margin-bottom: 7px;
 }
 
 	.selectable-list{
@@ -1832,14 +1875,14 @@ select{
 		border: none;
 		border-left: 8px solid @bright-blue;
 		background: @blue-background;
+		color: #666;
 	}
 	.autocomplete > em:hover{
-		background: #333;
+		background: @dark-blue;
+		color: #fff;
 	}
 	tr{
-		border-color: transparent;
-		border-width: 1px;
-		color: #fff;
+		color: #444;
 	}
 	input[type=text]{
 		width: 100%;

@@ -635,3 +635,40 @@ select{
 	border: 1px solid #595959;
 	height: 25px;
 }
+
+.accordions{
+	.accordion{
+		h2{
+			.vertical-gradient(#383838, #333);
+			border: 1px solid #555;
+			color: #666;
+		}
+		.toggle{
+			background: #333;
+			.content{
+				color: #fff;
+				h3{
+					color: @magenta;
+				}
+			}
+		}
+	}
+
+	.accordion:last-child{
+		h2{
+			border-bottom: 1px solid #555;
+		}
+	}
+
+	.accordion.opened{
+		h2{
+			border: 1px solid #555;
+			color: @magenta;
+			font-family: Arial;
+
+		}
+		.toggle{
+			border: 1px solid #555;
+		}
+	}
+}

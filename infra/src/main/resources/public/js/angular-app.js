@@ -3102,7 +3102,10 @@ module.directive('draggable', function($compile){
 						$('body').unbind('mouseup.drag');
 						$(window).unbind('mousemove.drag');
 						setTimeout(function(){
-							element.trigger('stopDrag');
+							if(element.data('dragging')){
+								element.trigger('stopDrag');
+							}
+
 							element.data('dragging', false);
 							element.on('click', function(){
 								scope.$parent.$eval(attributes.ngClick);

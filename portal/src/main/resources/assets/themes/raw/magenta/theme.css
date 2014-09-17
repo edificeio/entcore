@@ -688,6 +688,9 @@ textarea {
   width: 100%;
   height: 130px;
 }
+.centered-text {
+  text-align: center;
+}
 .badge {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -4207,6 +4210,28 @@ i.show-admin {
   vertical-align: middle;
   opacity: 0.5;
   background-size: 100% auto;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+i.show-calendar {
+  height: 24px;
+  width: 24px;
+  background-image: url("../img/icons/glyphicons_045_calendar.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  opacity: 0.5;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+i.show-calendar.selected {
+  opacity: 1;
 }
 i.disconnect {
   height: 35px;
@@ -5032,6 +5057,17 @@ nav.vertical ul.purple li a.purple {
 nav.vertical ul.purple li a.selected {
   background: #1f647d;
 }
+nav.vertical ul.yellow {
+  background: none;
+}
+nav.vertical ul.yellow li a,
+nav.vertical ul.yellow li a.yellow {
+  border-color: #e9e35b;
+  background: none;
+}
+nav.vertical ul.yellow li a.selected {
+  background: #1f647d;
+}
 nav.vertical a.classic-link {
   display: block;
   padding: 5px;
@@ -5329,9 +5365,19 @@ filters p:first-child i {
   font-weight: normal;
   margin-right: 15px;
 }
+.toggle-buttons button[disabled],
+.toggle-buttons button.disabled {
+  color: #888;
+}
 .toggle-buttons button:hover {
   color: #23a9aa;
   background: #555;
+}
+.toggle-buttons button[disabled]:hover,
+.toggle-buttons button.disabled:hover {
+  cursor: default;
+  background: none;
+  coor: #888;
 }
 .toggle-buttons behaviour {
   -webkit-box-sizing: border-box;
@@ -5383,11 +5429,14 @@ input[type=password] {
   padding-left: 5px;
   font-family: Lato;
   font-size: 14px;
+  margin-bottom: 7px;
 }
 textarea {
   padding-left: 5px;
   font-family: Lato;
   font-size: 14px;
+  margin-top: 7px;
+  margin-bottom: 7px;
 }
 .message {
   background: #D9F1F1;
@@ -5707,42 +5756,50 @@ i.folder-large {
 .warning-text {
   color: #f56767;
 }
+.accordions {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
 .accordions .accordion h2 {
-  font-family: Arial;
-  background: -webkit-linear-gradient(#383838, #333333);
-  background: -moz-linear-gradient(#383838, #333333);
-  background: -o-linear-gradient(#383838, #333333);
-  background: linear-gradient(#383838, #333333);
-  -pie-background: linear-gradient(#383838, #333333);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
-  border: 1px solid #555;
+  background: #23a9aa;
+  border: 1px solid #fff;
   border-bottom: 0;
   font-size: 20px;
-  color: #666;
+  color: #fff;
+  font-family: Lato;
+}
+.accordions .accordion h2:hover {
+  background: #1f647d;
 }
 .accordions .accordion .toggle {
   border: 0;
-  background: #333;
+  background: #d9f1f1;
 }
 .accordions .accordion .toggle .content {
-  color: #fff;
+  color: #666;
 }
 .accordions .accordion .toggle .content h3 {
   font-weight: normal;
   color: #23a9aa;
   font-size: 16px;
 }
+.accordions .accordion .toggle .content select,
+.accordions .accordion .toggle .content input[type=text],
+.accordions .accordion .toggle .content textarea {
+  background: #fff;
+}
 .accordions .accordion:last-child h2 {
-  border-bottom: 1px solid #555;
+  border-bottom: 1px solid #fff;
 }
 .accordions .accordion.opened h2 {
-  border: 1px solid #555;
+  border: 1px solid #fff;
   border-bottom: 0;
   color: #23a9aa;
+  background: #d9f1f1;
 }
 .accordions .accordion.opened .toggle {
   height: 350px;
-  border: 1px solid #555;
+  border: 1px solid #fff;
   border-top: 0;
   padding: 10px;
 }
@@ -5751,6 +5808,7 @@ select {
   border: none;
   height: 25px;
   color: #444;
+  margin-bottom: 7px;
 }
 .selectable-list li {
   border: 1px solid #23a9aa;
@@ -6263,14 +6321,14 @@ select {
   border: none;
   border-left: 8px solid #23a9aa;
   background: #d9f1f1;
+  color: #666;
 }
 .share .autocomplete > em:hover {
-  background: #333;
+  background: #1f647d;
+  color: #fff;
 }
 .share tr {
-  border-color: transparent;
-  border-width: 1px;
-  color: #fff;
+  color: #444;
 }
 .share input[type=text] {
   width: 100%;
@@ -7160,4 +7218,34 @@ select {
   color: #999;
   border: 1px solid #595959;
   height: 25px;
+}
+.accordions .accordion h2 {
+  background: -webkit-linear-gradient(#383838, #333333);
+  background: -moz-linear-gradient(#383838, #333333);
+  background: -o-linear-gradient(#383838, #333333);
+  background: linear-gradient(#383838, #333333);
+  -pie-background: linear-gradient(#383838, #333333);
+  behavior: url(/assets/themes/panda/css/PIE.htc);
+  border: 1px solid #555;
+  color: #666;
+}
+.accordions .accordion .toggle {
+  background: #333;
+}
+.accordions .accordion .toggle .content {
+  color: #fff;
+}
+.accordions .accordion .toggle .content h3 {
+  color: #fd4a98;
+}
+.accordions .accordion:last-child h2 {
+  border-bottom: 1px solid #555;
+}
+.accordions .accordion.opened h2 {
+  border: 1px solid #555;
+  color: #fd4a98;
+  font-family: Arial;
+}
+.accordions .accordion.opened .toggle {
+  border: 1px solid #555;
 }
