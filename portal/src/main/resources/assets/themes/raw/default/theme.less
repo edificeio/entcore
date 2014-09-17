@@ -1,7 +1,7 @@
 @import "../../../../../../../../../css-lib/app";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
-@dark-blue: #074e68;
+@dark-blue: #1F647D;
 @bright-blue: #23A9AA;
 @black: #2A2829;
 @shiny-blue: #51CCF5;
@@ -12,8 +12,9 @@
 @purple: #A872C5;
 @pink: #DB6087;
 @cyan: #23a9aa;
-@orange: rgb(235, 195, 113);
+@orange: #F3C055;
 @blue: #628CD6;
+@yellow: rgb(233, 227, 91);
 
 html, body{
 	background: #fff;
@@ -79,6 +80,8 @@ i.actualites-large{
 }
 
 .lightbox-window{
+	padding: 10px;
+	box-shadow: 2px 2px 24px rgba(0,0,0,0.3);
 	.icons-view{
 		background: transparent;
 		.element{
@@ -98,17 +101,6 @@ i.actualites-large{
 	}
 	nav.vertical{
 		padding-right: 10px;
-		a{
-			border-color: #555;
-			color: #777;
-		}
-		a.selected{
-			background: #353535;
-		}
-		a:hover{
-			background: #555;
-			color: #999;
-		}
 		li{
 			padding-left: 10px;
 		}
@@ -323,16 +315,17 @@ nav.vertical.stamps{
 	padding: 0;
 	padding-right: 50px;
 	article{
-		background: @dark-blue;
+		background: @blue-background;
 		border-radius: 0;
 		margin-top: 10px;
 		margin-bottom: 10px;
 		line-height: 20px;
-		color: #fff;
+		color: #666;
+		.run-transition(background);
 		h3{
 			font-size: 18px;
 			border: 0;
-			color: #fff;
+			color: #666;
 			line-height: 20px;
 			font-style: normal;
 			margin: 0;
@@ -343,7 +336,7 @@ nav.vertical.stamps{
 	}
 	article:hover{
 		a{
-			color: #fff;
+			color: #444;
 		}
 		i.send-mail{
 			.icon(glyphicons_010_envelope_white, 24px);
@@ -351,7 +344,7 @@ nav.vertical.stamps{
 		}
 	}
 	article.selected{
-		background: @bright-blue;
+		background: @dark-blue;
 		color: #fff;
 		i.send-mail{
 			.icon(glyphicons_010_envelope_white, 24px);
@@ -401,6 +394,13 @@ nav.vertical.stamps{
 	color: #fff;
 	a{
 		color: #fff;
+	}
+}
+.yellow{
+	background: @yellow;
+	color: #444;
+	a{
+		color: #444;
 	}
 }
 .orange{
@@ -578,6 +578,11 @@ button.cancel, input[type=button].cancel{
 		width: 118px;
 		padding: 0;
 		margin: 0;
+		a{
+			i{
+				height: 118px;
+			}
+		}
 		.container{
 			padding: 0;
 		}
@@ -585,6 +590,9 @@ button.cancel, input[type=button].cancel{
 			background: @bright-blue;
 			color: #fff;
 			padding: 0;
+			padding-left: 5px;
+			padding-right: 5px;
+			.border-box;
 			margin-left: 1px;
 			.run-transition(background);
 			a{
@@ -658,9 +666,8 @@ textarea.inline-editing{
 }
 
 input[type=text]{
-	border: 1px solid #D9F1F1;
-	margin-top: 3px;
-	margin-bottom: 3px;
+	background: #eee;
+	border: none;
 	margin-left: 0;
 }
 
@@ -942,9 +949,13 @@ nav.vertical{
 		width: 100%;
 		.border-box;
 		.run-transition(background);
+		border-radius: 3px;
+		border: 1px solid transparent;
 	}
 	a.classic-link:hover{
-		background: @dark-blue;
+		background: #fff;
+		color: #000;
+		border: 1px solid @bright-blue;
 	}
 }
 
@@ -1061,7 +1072,7 @@ table{
 		width: 253px;
 		textarea{
 			.border-box;
-			background: @bright-blue;
+			background: @dark-blue;
 			border: none;
 			color: #fff;
 		}
@@ -1111,10 +1122,10 @@ table{
 			box-sizing: content-box;
 			margin-top: 55px;
 			.day.today{
-				background: @bright-blue;
+				background: @dark-blue;
 			}
 			h2{
-				color: @bright-blue;
+				color: @dark-blue;
 			}
 		}
 	}
@@ -1295,6 +1306,9 @@ input[type=text], input[type=search], input[type=password]{
 	}
 
 .lightbox-window{
+	h2:first-of-type{
+		margin-top: 0;
+	}
 	.border-radius(3px);
 	box-shadow: none;
 	color: #888;
@@ -1306,10 +1320,9 @@ input[type=text], input[type=search], input[type=password]{
 	}
 
 	input[type=text], input[type=search], textarea {
-		background: @bright-blue;
+		background: #eee;
 		border: none;
-		color: #fff;
-		margin-left: 1px;
+		color: #333;
 	}
 }
 
@@ -1374,21 +1387,26 @@ input[type=text], input[type=search], input[type=password]{
 		.icon(folder-large, 135px);
 	}
 
-	.datepicker{
-		padding: 0;
-		table{
+.datepicker{
+	padding: 0;
+	table{
+		thead{
 			tr{
-				background: #fff;
-				td, td:first-child, th{
-					width: 22px;
-					font-size: 12px
-				}
-				td:hover{
-					background: #D9F1F1
-				}
+				background: @dark-blue;
+			}
+		}
+		tr{
+			background: #fff;
+			td, td:first-child, th{
+				width: 22px;
+				font-size: 12px
+			}
+			td:hover{
+				background: #D9F1F1
 			}
 		}
 	}
+}
 
 	.lightbox-view{
 		.lightbox-window;
@@ -1451,10 +1469,10 @@ input[type=text], input[type=search], input[type=password]{
 	}
 
 select{
-	background: #494949;
-	color: #999;
-	border: 1px solid #595959;
+	background: #ddd;
+	border: none;
 	height: 25px;
+	color: #444;
 }
 
 	.selectable-list{
@@ -1812,14 +1830,13 @@ select{
 	}
 	.autocomplete > em{
 		border: none;
-		border-left: 8px solid #008bb8;
-		background: #393939;
+		border-left: 8px solid @bright-blue;
+		background: @blue-background;
 	}
 	.autocomplete > em:hover{
 		background: #333;
 	}
 	tr{
-		background: #008bb8;
 		border-color: transparent;
 		border-width: 1px;
 		color: #fff;
@@ -1878,7 +1895,7 @@ select{
 		background-size: 70px;
 	}
 	i:hover{
-		opacity: 1;
+		opacity: 0.7;
 	}
 }
 
@@ -1928,4 +1945,84 @@ table thead tr:hover{
 .lightbox-view thead tr {
 	background: #fff;
 	color: #000;
+}
+
+.drop-down-button{
+	position: absolute;
+	z-index: 650;
+	white-space: nowrap;
+	label{
+		cursor: pointer;
+		.border-box;
+		width: 100%;
+		padding: 4px;
+		padding-left: 10px;
+		padding-right: 10px;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+		border-top-left-radius: 3px;
+		border-top-right-radius: 3px;
+		font-size: 15px;
+		background: #fff;
+		border: 1px solid @dark-blue;
+		color: #000;
+		.run-transition(background);
+		font-family: Lato;
+		font-weight: 300;
+	}
+
+	.options{
+		ul{
+			padding: 0;
+			margin: 0;
+			background: #fff;
+			border: 1px solid @dark-blue;
+			border-top: 0;
+			position: absolute;
+			width: 100%;
+			top: 23px;
+			box-sizing: border-box;
+			li{
+				list-style-type: none;
+				.border-box;
+				padding: 5px;
+				.run-transition(background);
+				font-size: 13px;
+				text-align: center;
+				color: #444;
+			}
+			li:hover{
+				background: @dark-blue;
+				color: #fff;
+			}
+		}
+	}
+}
+
+.drop-down-button.hidden{
+	label{
+		border-radius: 3px;
+		background: @bright-blue;
+		color: #fff;
+		border: 1px solid transparent;
+	}
+	.options{
+		display: none;
+	}
+	label:hover{
+		background: #fff;
+		border: 1px solid @bright-blue;
+		color: #000;
+	}
+}
+
+.select-file, .share .select-file{
+	input[type=text]{
+		margin: 0;
+		width: 200px;
+	}
+}
+
+hr.solid{
+
 }

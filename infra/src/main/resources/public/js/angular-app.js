@@ -1501,7 +1501,41 @@ module.directive('autocomplete', function($compile){
 			dropDownContainer.attr('data-opened-drop-down', true);
 		}
 	}
-})
+});
+
+module.directive('dropDownButton', function(){
+	return {
+		restrict: 'E',
+		transclude: 'true',
+		controller: function($scope){
+		},
+		template: '<div class="drop-down-button hidden"><div ng-transclude></div></div>',
+		link: function(scope, element, attributes){
+			element.on('click', '.opener', function(){
+				if(!element.find('.drop-down-button').hasClass('hidden')){
+					element.find('.drop-down-button').addClass('hidden');
+				}
+				else{
+					element.find('.drop-down-button').removeClass('hidden');
+				}
+			});
+		}
+	}
+});
+
+module.directive('opts', function(){
+	return {
+		restrict: 'E',
+		require: '^dropDownButton',
+		transclude: true,
+		template: '<div class="options"><ul ng-transclude></ul></div>',
+		link: function(scope, element, attributes){
+			element.on('click', 'li', function(){
+				element.parents('.drop-down-button').addClass('hidden');
+			});
+		}
+	}
+});
 
 var ckeEditorFixedPositionning = function(){
 	var editableElement;

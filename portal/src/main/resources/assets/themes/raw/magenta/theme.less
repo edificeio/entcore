@@ -419,7 +419,20 @@ table{
 
 	.lightbox-window{
 		background: #444;
-		border: 5px solid #555
+		border: 5px solid #555;
+		nav.vertical{
+			a{
+				border-color: #555;
+				color: #777;
+			}
+			a.selected{
+				background: #353535;
+			}
+			a:hover{
+				background: #555;
+				color: #999;
+			}
+		}
 	}
 
 	table thead tr{
@@ -606,4 +619,19 @@ table{
 
 .lightbox-view input[type=text], .lightbox-view input[type=search], .lightbox-view textarea{
 	background: #333;
+}
+
+.share{
+	.autocomplete > em{
+		border: none;
+		border-left: 8px solid @magenta;
+		background: #393939;
+	}
+}
+
+select{
+	background: #494949;
+	color: #999;
+	border: 1px solid #595959;
+	height: 25px;
 }

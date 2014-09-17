@@ -10,7 +10,7 @@
 	</legend>
 	<div class="days">
 		<div ng-repeat="day in calendar.days.all" class="day">
-			<legend>[[day.name]]</legend>
+			<legend translate content="[[day.name]]"></legend>
 			<div class="timeslots">
 				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)"></div>
 			</div>

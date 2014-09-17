@@ -88,5 +88,12 @@
 	"library.upload.import": "Importer",
 	"widget.notes.placeholder": "Entrez ici vos notes personnelles",
 	"admin.directory": "Annuaire",
-	"admin.history": "Historique"
+	"admin.history": "Historique",
+	"monday": "lundi",
+	"tuesday": "mardi",
+	"wednesday": "mercredi",
+	"thursday": "jeudi",
+	"friday": "vendredi",
+	"saturday": "samedi",
+	"sunday": "dimanche"
 }

@@ -3582,6 +3582,8 @@ html.print body section {
   right: 0;
   display: none;
   border-radius: 5px;
+  padding: 10px;
+  box-shadow: 2px 2px 24px rgba(0, 0, 0, 0.3);
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   -ms-border-radius: 3px;
@@ -3591,7 +3593,7 @@ html.print body section {
   color: #888;
   border-radius: 0;
   background: #444;
-  border: 5px solid #555555;
+  border: 5px solid #555;
   width: 800px;
   text-align: left;
 }
@@ -3610,17 +3612,6 @@ html.print body section {
 }
 .lightbox-view nav.vertical {
   padding-right: 10px;
-}
-.lightbox-view nav.vertical a {
-  border-color: #555;
-  color: #777;
-}
-.lightbox-view nav.vertical a.selected {
-  background: #353535;
-}
-.lightbox-view nav.vertical a:hover {
-  background: #555;
-  color: #999;
 }
 .lightbox-view nav.vertical li {
   padding-left: 10px;
@@ -3652,6 +3643,9 @@ html.print body section {
   border-bottom: 1px solid #fff;
   color: #23a9aa;
 }
+.lightbox-view h2:first-of-type {
+  margin-top: 0;
+}
 .lightbox-view .line {
   border: 0;
   margin: 0;
@@ -3659,10 +3653,20 @@ html.print body section {
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
 .lightbox-view textarea {
-  background: #23a9aa;
+  background: #eee;
   border: none;
-  color: #fff;
-  margin-left: 1px;
+  color: #333;
+}
+.lightbox-view nav.vertical a {
+  border-color: #555;
+  color: #777;
+}
+.lightbox-view nav.vertical a.selected {
+  background: #353535;
+}
+.lightbox-view nav.vertical a:hover {
+  background: #555;
+  color: #999;
 }
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
@@ -3916,7 +3920,11 @@ i.actualites-large {
 .tabs header.selected {
   border-color: #D9F1F1;
   border-bottom-color: #fff;
-  color: #074e68;
+  color: #1f647d;
+}
+.lightbox-window {
+  padding: 10px;
+  box-shadow: 2px 2px 24px rgba(0, 0, 0, 0.3);
 }
 .lightbox-window .icons-view {
   background: transparent;
@@ -3933,17 +3941,6 @@ i.actualites-large {
 }
 .lightbox-window nav.vertical {
   padding-right: 10px;
-}
-.lightbox-window nav.vertical a {
-  border-color: #555;
-  color: #777;
-}
-.lightbox-window nav.vertical a.selected {
-  background: #353535;
-}
-.lightbox-window nav.vertical a:hover {
-  background: #555;
-  color: #999;
 }
 .lightbox-window nav.vertical li {
   padding-left: 10px;
@@ -4361,17 +4358,21 @@ nav.vertical.stamps {
   padding-right: 50px;
 }
 nav.vertical.stamps article {
-  background: #074e68;
+  background: #d9f1f1;
   border-radius: 0;
   margin-top: 10px;
   margin-bottom: 10px;
   line-height: 20px;
-  color: #fff;
+  color: #666;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 nav.vertical.stamps article h3 {
   font-size: 18px;
   border: 0;
-  color: #fff;
+  color: #666;
   line-height: 20px;
   font-style: normal;
   margin: 0;
@@ -4380,7 +4381,7 @@ nav.vertical.stamps article a {
   margin: 0;
 }
 nav.vertical.stamps article:hover a {
-  color: #fff;
+  color: #444;
 }
 nav.vertical.stamps article:hover i.send-mail {
   height: 24px;
@@ -4398,7 +4399,7 @@ nav.vertical.stamps article:hover i.send-mail {
   margin: 7px;
 }
 nav.vertical.stamps article.selected {
-  background: #23a9aa;
+  background: #1f647d;
   color: #fff;
 }
 nav.vertical.stamps article.selected i.send-mail {
@@ -4434,7 +4435,7 @@ nav.vertical.stamps article.selected a {
   border: 0;
 }
 .dominos .item .domino .bottom {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
 }
 .dominos .item .domino .bottom a:hover {
@@ -4466,6 +4467,13 @@ nav.vertical.stamps article.selected a {
 .green a {
   color: #fff;
 }
+.yellow {
+  background: #e9e35b;
+  color: #444;
+}
+.yellow a {
+  color: #444;
+}
 .orange {
   background: #ffb400;
   color: #fff;
@@ -4495,14 +4503,14 @@ nav.vertical.stamps article.selected a {
   color: #fff;
 }
 .grey {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
 }
 .grey a {
   color: #fff;
 }
 .actions-list {
-  background: #074e68;
+  background: #1f647d;
 }
 .actions-list a:hover {
   color: #FFF;
@@ -4606,7 +4614,7 @@ input[type=submit][disabled]:hover {
   display: block;
 }
 .navbar {
-  background: #074e68;
+  background: #1f647d;
   width: 100%;
 }
 .navbar .welcome-message {
@@ -4648,6 +4656,9 @@ input[type=button].cancel {
   padding: 0;
   margin: 0;
 }
+.icons-view.apps .element a i {
+  height: 118px;
+}
 .icons-view.apps .element .container {
   padding: 0;
 }
@@ -4655,6 +4666,12 @@ input[type=button].cancel {
   background: #23a9aa;
   color: #fff;
   padding: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
   margin-left: 1px;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -4668,7 +4685,7 @@ input[type=button].cancel {
   color: #ffffff;
 }
 .icons-view.apps .element:hover legend {
-  background: #074e68;
+  background: #1f647d;
 }
 .small-text a,
 .small-text em,
@@ -4705,12 +4722,12 @@ input[type=button].cancel {
   float: left;
 }
 .icons-select .current.editing {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   padding-left: 50px;
 }
 .icons-select .options-list {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   font-size: 14px;
   -webkit-border-bottom-left-radius: 3px;
@@ -4737,9 +4754,8 @@ textarea.inline-editing {
   width: 100%;
 }
 input[type=text] {
-  border: 1px solid #D9F1F1;
-  margin-top: 3px;
-  margin-bottom: 3px;
+  background: #eee;
+  border: none;
   margin-left: 0;
 }
 .label-badge {
@@ -4785,7 +4801,7 @@ input:-webkit-autofill {
 }
 .panel {
   width: 415px;
-  background: #074e68;
+  background: #1f647d;
   margin-left: auto;
   margin-right: auto;
   -webkit-border-radius: 5px;
@@ -4950,7 +4966,7 @@ nav.vertical ul li a {
 nav.vertical ul li a.selected {
   color: #fff;
   border-right: 8px solid #23a9aa;
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical ul li a:hover {
   color: #23a9aa;
@@ -4971,7 +4987,7 @@ nav.vertical ul.green li a.green {
   background: none;
 }
 nav.vertical ul.green li a.selected {
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical ul.orange {
   background: none;
@@ -4982,7 +4998,7 @@ nav.vertical ul.orange li a.orange {
   background: none;
 }
 nav.vertical ul.orange li a.selected {
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical ul.pink {
   background: none;
@@ -4993,7 +5009,7 @@ nav.vertical ul.pink li a.pink {
   background: none;
 }
 nav.vertical ul.pink li a.selected {
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical ul.cyan {
   background: none;
@@ -5004,7 +5020,7 @@ nav.vertical ul.cyan li a.cyan {
   background: none;
 }
 nav.vertical ul.cyan li a.selected {
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical ul.purple {
   background: none;
@@ -5015,7 +5031,7 @@ nav.vertical ul.purple li a.purple {
   background: none;
 }
 nav.vertical ul.purple li a.selected {
-  background: #074e68;
+  background: #1f647d;
 }
 nav.vertical a.classic-link {
   display: block;
@@ -5034,9 +5050,13 @@ nav.vertical a.classic-link {
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
+  border-radius: 3px;
+  border: 1px solid transparent;
 }
 nav.vertical a.classic-link:hover {
-  background: #074e68;
+  background: #fff;
+  color: #000;
+  border: 1px solid #23a9aa;
 }
 nav.horizontal {
   right: 10px;
@@ -5098,7 +5118,7 @@ table tr {
   border-left: 1px solid #23a9aa;
 }
 table tr.checked {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   border-color: #333;
 }
@@ -5116,14 +5136,14 @@ table tr:hover {
   background: #D9F1F1;
 }
 table thead tr {
-  background: #074e68;
+  background: #1f647d;
   font-family: Lato;
   font-weight: 300;
   font-size: 1.3em;
   border-top: 5px solid #23a9aa;
   border-bottom: 1px solid #23a9aa;
-  border-left: 1px solid #074e68;
-  border-right: 1px solid #074e68;
+  border-left: 1px solid #1f647d;
+  border-right: 1px solid #1f647d;
   color: #fff;
 }
 table thead tr:hover {
@@ -5138,7 +5158,7 @@ table thead tr:hover {
   margin-left: 0px;
 }
 .toggle-panel {
-  background: #074e68;
+  background: #1f647d;
   padding: 20px;
   color: #fff;
   -o-transition: opacity 250ms ease;
@@ -5160,7 +5180,7 @@ table thead tr:hover {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  background: #23a9aa;
+  background: #1f647d;
   border: none;
   color: #fff;
 }
@@ -5206,10 +5226,10 @@ header {
   margin-top: 55px;
 }
 .calendar.widget .content .day.today {
-  background: #23a9aa;
+  background: #1f647d;
 }
 .calendar.widget .content h2 {
-  color: #23a9aa;
+  color: #1f647d;
 }
 .last-mails-widget,
 .pages-widget {
@@ -5299,7 +5319,7 @@ filters p:first-child i {
   width: 100%;
   left: 0;
   margin-left: 0;
-  background: #074e68;
+  background: #1f647d;
   height: 40px;
 }
 .toggle-buttons button {
@@ -5336,7 +5356,7 @@ filters p:first-child i {
 }
 .filters.line {
   right: 0;
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   border-left: 10px solid #23a9aa;
   height: 40px;
@@ -5424,6 +5444,9 @@ textarea {
   color: #888;
   border-radius: 0;
 }
+.lightbox-window h2:first-of-type {
+  margin-top: 0;
+}
 .lightbox-window .line {
   border: 0;
   margin: 0;
@@ -5431,10 +5454,9 @@ textarea {
 .lightbox-window input[type=text],
 .lightbox-window input[type=search],
 .lightbox-window textarea {
-  background: #23a9aa;
+  background: #eee;
   border: none;
-  color: #fff;
-  margin-left: 1px;
+  color: #333;
 }
 [data-drop-down] {
   box-shadow: 3px 3px 3px #fff;
@@ -5452,7 +5474,7 @@ textarea {
   color: #008cba;
 }
 .comment {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
 }
 article.selected {
@@ -5527,6 +5549,9 @@ i.folder-large {
 .datepicker {
   padding: 0;
 }
+.datepicker table thead tr {
+  background: #1f647d;
+}
 .datepicker table tr {
   background: #fff;
 }
@@ -5551,6 +5576,8 @@ i.folder-large {
   right: 0;
   display: none;
   border-radius: 5px;
+  padding: 10px;
+  box-shadow: 2px 2px 24px rgba(0, 0, 0, 0.3);
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   -ms-border-radius: 3px;
@@ -5560,7 +5587,7 @@ i.folder-large {
   color: #888;
   border-radius: 0;
   background: #444;
-  border: 5px solid #555555;
+  border: 5px solid #555;
 }
 .lightbox-view .icons-view {
   background: transparent;
@@ -5577,17 +5604,6 @@ i.folder-large {
 }
 .lightbox-view nav.vertical {
   padding-right: 10px;
-}
-.lightbox-view nav.vertical a {
-  border-color: #555;
-  color: #777;
-}
-.lightbox-view nav.vertical a.selected {
-  background: #353535;
-}
-.lightbox-view nav.vertical a:hover {
-  background: #555;
-  color: #999;
 }
 .lightbox-view nav.vertical li {
   padding-left: 10px;
@@ -5619,6 +5635,9 @@ i.folder-large {
   border-bottom: 1px solid #fff;
   color: #23a9aa;
 }
+.lightbox-view h2:first-of-type {
+  margin-top: 0;
+}
 .lightbox-view .line {
   border: 0;
   margin: 0;
@@ -5626,10 +5645,20 @@ i.folder-large {
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
 .lightbox-view textarea {
-  background: #23a9aa;
+  background: #eee;
   border: none;
-  color: #fff;
-  margin-left: 1px;
+  color: #333;
+}
+.lightbox-view nav.vertical a {
+  border-color: #555;
+  color: #777;
+}
+.lightbox-view nav.vertical a.selected {
+  background: #353535;
+}
+.lightbox-view nav.vertical a:hover {
+  background: #555;
+  color: #999;
 }
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
@@ -5719,10 +5748,10 @@ i.folder-large {
   padding: 10px;
 }
 select {
-  background: #494949;
-  color: #999;
-  border: 1px solid #595959;
+  background: #ddd;
+  border: none;
   height: 25px;
+  color: #444;
 }
 .selectable-list li {
   border: 1px solid #23a9aa;
@@ -5733,7 +5762,7 @@ select {
 }
 .side-tabs ul li {
   color: #fff;
-  background: #074e68;
+  background: #1f647d;
   border-color: #23a9aa;
   border-right: none;
 }
@@ -5772,7 +5801,7 @@ select {
   color: #23a9aa;
 }
 .illustrated-article .illustration legend {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   margin: 0;
 }
@@ -5787,7 +5816,7 @@ select {
   padding: 8px;
 }
 .square-menu button {
-  background: #074e68;
+  background: #1f647d;
   border-radius: 0;
   color: #fff;
 }
@@ -5882,7 +5911,7 @@ select {
   outline: 1px solid #23a9aa;
 }
 .editor.drawing-grid .grid-add-row {
-  background: #074e68;
+  background: #1f647d;
   border-radius: 0;
 }
 .color-picker {
@@ -5928,7 +5957,7 @@ select {
   background: #23a9aa;
 }
 .color-picker button.black {
-  background: #074e68;
+  background: #1f647d;
 }
 .media-container.pink {
   background: #fd4a98;
@@ -5974,7 +6003,7 @@ select {
   transition: background 250ms ease;
 }
 .media-container.black {
-  background: #074e68;
+  background: #1f647d;
   color: #fff;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -6233,14 +6262,13 @@ select {
 }
 .share .autocomplete > em {
   border: none;
-  border-left: 8px solid #008bb8;
-  background: #393939;
+  border-left: 8px solid #23a9aa;
+  background: #d9f1f1;
 }
 .share .autocomplete > em:hover {
   background: #333;
 }
 .share tr {
-  background: #008bb8;
   border-color: transparent;
   border-width: 1px;
   color: #fff;
@@ -6292,10 +6320,10 @@ select {
   opacity: 1;
 }
 .drop-down-filters p:first-child:hover {
-  background: #074e68;
+  background: #1f647d;
 }
 .drop-down-filters .wrapper {
-  background: #074e68;
+  background: #1f647d;
   box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
   width: 100%;
 }
@@ -6321,7 +6349,7 @@ select {
   background-size: 70px;
 }
 .drop-down-filters i:hover {
-  opacity: 1;
+  opacity: 0.7;
 }
 .date-picker-icon a i.calendar {
   height: 25px;
@@ -6368,11 +6396,90 @@ select {
   background: #23a9aa;
 }
 table thead tr:hover {
-  background: #074e68;
+  background: #1f647d;
 }
 .lightbox-view thead tr {
   background: #fff;
   color: #000;
+}
+.drop-down-button {
+  position: absolute;
+  z-index: 650;
+  white-space: nowrap;
+}
+.drop-down-button label {
+  cursor: pointer;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  font-size: 15px;
+  background: #fff;
+  border: 1px solid #1f647d;
+  color: #000;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+  font-family: Lato;
+  font-weight: 300;
+}
+.drop-down-button .options ul {
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  border: 1px solid #1f647d;
+  border-top: 0;
+  position: absolute;
+  width: 100%;
+  top: 23px;
+  box-sizing: border-box;
+}
+.drop-down-button .options ul li {
+  list-style-type: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 5px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+  font-size: 13px;
+  text-align: center;
+  color: #444;
+}
+.drop-down-button .options ul li:hover {
+  background: #1f647d;
+  color: #fff;
+}
+.drop-down-button.hidden label {
+  border-radius: 3px;
+  background: #23a9aa;
+  color: #fff;
+  border: 1px solid transparent;
+}
+.drop-down-button.hidden .options {
+  display: none;
+}
+.drop-down-button.hidden label:hover {
+  background: #fff;
+  border: 1px solid #23a9aa;
+  color: #000;
+}
+.select-file input[type=text],
+.share .select-file input[type=text] {
+  margin: 0;
+  width: 200px;
 }
 a {
   color: #fd4a98;
@@ -6824,7 +6931,18 @@ nav.vertical.stamps article {
 }
 .lightbox-window {
   background: #444;
-  border: 5px solid #555555;
+  border: 5px solid #555;
+}
+.lightbox-window nav.vertical a {
+  border-color: #555;
+  color: #777;
+}
+.lightbox-window nav.vertical a.selected {
+  background: #353535;
+}
+.lightbox-window nav.vertical a:hover {
+  background: #555;
+  color: #999;
 }
 table thead tr {
   background: #444;
@@ -7032,6 +7150,17 @@ table thead tr:hover {
 .lightbox-view input[type=search],
 .lightbox-view textarea {
   background: #333;
+}
+.share .autocomplete > em {
+  border: none;
+  border-left: 8px solid #fd4a98;
+  background: #393939;
+}
+select {
+  background: #494949;
+  color: #999;
+  border: 1px solid #595959;
+  height: 25px;
 }
 header.navbar {
   background: #444;
