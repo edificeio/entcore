@@ -4212,6 +4212,7 @@ i.show-admin {
   background-size: 100% auto;
   margin-left: 2px;
   margin-right: 2px;
+  float: right !important;
 }
 i.show-calendar {
   height: 24px;
@@ -4229,6 +4230,7 @@ i.show-calendar {
   opacity: 0.5;
   margin-left: 2px;
   margin-right: 2px;
+  float: right !important;
 }
 i.show-calendar.selected {
   opacity: 1;
