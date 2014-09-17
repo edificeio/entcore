@@ -69,7 +69,6 @@ project(':common') {
 
 project(':app-registry') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -78,7 +77,6 @@ project(':app-registry') {
 
 project(':auth') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -88,7 +86,6 @@ project(':auth') {
 
 project(':communication') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -97,7 +94,6 @@ project(':communication') {
 
 project(':directory') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -112,7 +108,6 @@ project(':infra') {
 
 project(':portal') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
@@ -120,7 +115,6 @@ project(':portal') {
 
 project(':workspace') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -129,7 +123,6 @@ project(':workspace') {
 
 project(':conversation') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
@@ -146,14 +139,12 @@ project(':feeder') {
 
 project(':archive') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
   }
 }
 
 project(':timeline') {
   dependencies {
-    provided "fr.wseduc:processor:$processorVersion"
     compile project(':common')
   }
 }
