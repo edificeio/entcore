@@ -3923,7 +3923,7 @@ i.actualites-large {
 .tabs header.selected {
   border-color: #D9F1F1;
   border-bottom-color: #fff;
-  color: #387c95;
+  color: #266881;
 }
 .lightbox-window {
   padding: 10px;
@@ -4426,7 +4426,7 @@ nav.vertical.stamps article:hover i.send-mail {
   margin: 7px;
 }
 nav.vertical.stamps article.selected {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 nav.vertical.stamps article.selected i.send-mail {
@@ -4462,7 +4462,7 @@ nav.vertical.stamps article.selected a {
   border: 0;
 }
 .dominos .item .domino .bottom {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 .dominos .item .domino .bottom a:hover {
@@ -4530,14 +4530,14 @@ nav.vertical.stamps article.selected a {
   color: #fff;
 }
 .grey {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 .grey a {
   color: #fff;
 }
 .actions-list {
-  background: #387c95;
+  background: #266881;
 }
 .actions-list a:hover {
   color: #FFF;
@@ -4641,7 +4641,7 @@ input[type=submit][disabled]:hover {
   display: block;
 }
 .navbar {
-  background: #387c95;
+  background: #266881;
   width: 100%;
 }
 .navbar .welcome-message {
@@ -4712,7 +4712,7 @@ input[type=button].cancel {
   color: #ffffff;
 }
 .icons-view.apps .element:hover legend {
-  background: #387c95;
+  background: #266881;
 }
 .small-text a,
 .small-text em,
@@ -4749,12 +4749,12 @@ input[type=button].cancel {
   float: left;
 }
 .icons-select .current.editing {
-  background: #387c95;
+  background: #266881;
   color: #fff;
   padding-left: 50px;
 }
 .icons-select .options-list {
-  background: #387c95;
+  background: #266881;
   color: #fff;
   font-size: 14px;
   -webkit-border-bottom-left-radius: 3px;
@@ -4828,7 +4828,7 @@ input:-webkit-autofill {
 }
 .panel {
   width: 415px;
-  background: #387c95;
+  background: #266881;
   margin-left: auto;
   margin-right: auto;
   -webkit-border-radius: 5px;
@@ -4993,7 +4993,7 @@ nav.vertical ul li a {
 nav.vertical ul li a.selected {
   color: #fff;
   border-right: 8px solid #23a9aa;
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul li a:hover {
   color: #23a9aa;
@@ -5014,7 +5014,7 @@ nav.vertical ul.green li a.green {
   background: none;
 }
 nav.vertical ul.green li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul.orange {
   background: none;
@@ -5025,7 +5025,7 @@ nav.vertical ul.orange li a.orange {
   background: none;
 }
 nav.vertical ul.orange li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul.pink {
   background: none;
@@ -5036,7 +5036,7 @@ nav.vertical ul.pink li a.pink {
   background: none;
 }
 nav.vertical ul.pink li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul.cyan {
   background: none;
@@ -5047,7 +5047,7 @@ nav.vertical ul.cyan li a.cyan {
   background: none;
 }
 nav.vertical ul.cyan li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul.purple {
   background: none;
@@ -5058,7 +5058,7 @@ nav.vertical ul.purple li a.purple {
   background: none;
 }
 nav.vertical ul.purple li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical ul.yellow {
   background: none;
@@ -5069,7 +5069,7 @@ nav.vertical ul.yellow li a.yellow {
   background: none;
 }
 nav.vertical ul.yellow li a.selected {
-  background: #387c95;
+  background: #266881;
 }
 nav.vertical a.classic-link {
   display: block;
@@ -5156,7 +5156,7 @@ table tr {
   border-left: 1px solid #23a9aa;
 }
 table tr.checked {
-  background: #387c95;
+  background: #266881;
   color: #fff;
   border-color: #333;
 }
@@ -5174,14 +5174,14 @@ table tr:hover {
   background: #D9F1F1;
 }
 table thead tr {
-  background: #387c95;
+  background: #266881;
   font-family: Lato;
   font-weight: 300;
   font-size: 1.3em;
   border-top: 5px solid #23a9aa;
   border-bottom: 1px solid #23a9aa;
-  border-left: 1px solid #387c95;
-  border-right: 1px solid #387c95;
+  border-left: 1px solid #266881;
+  border-right: 1px solid #266881;
   color: #fff;
 }
 table thead tr:hover {
@@ -5196,7 +5196,7 @@ table thead tr:hover {
   margin-left: 0px;
 }
 .toggle-panel {
-  background: #387c95;
+  background: #266881;
   padding: 20px;
   color: #fff;
   -o-transition: opacity 250ms ease;
@@ -5218,7 +5218,7 @@ table thead tr:hover {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  background: #387c95;
+  background: #266881;
   border: none;
   color: #fff;
 }
@@ -5264,10 +5264,10 @@ header {
   margin-top: 55px;
 }
 .calendar.widget .content .day.today {
-  background: #387c95;
+  background: #266881;
 }
 .calendar.widget .content h2 {
-  color: #387c95;
+  color: #266881;
 }
 .last-mails-widget,
 .pages-widget {
@@ -5357,7 +5357,7 @@ filters p:first-child i {
   width: 100%;
   left: 0;
   margin-left: 0;
-  background: #387c95;
+  background: #266881;
   height: 40px;
 }
 .toggle-buttons button {
@@ -5404,7 +5404,7 @@ filters p:first-child i {
 }
 .filters.line {
   right: 0;
-  background: #387c95;
+  background: #266881;
   color: #fff;
   border-left: 10px solid #23a9aa;
   height: 40px;
@@ -5525,7 +5525,7 @@ textarea {
   color: #008cba;
 }
 .comment {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 article.selected {
@@ -5601,7 +5601,7 @@ i.folder-large {
   padding: 0;
 }
 .datepicker table thead tr {
-  background: #387c95;
+  background: #266881;
 }
 .datepicker table tr {
   background: #fff;
@@ -5772,7 +5772,7 @@ i.folder-large {
   font-family: Lato;
 }
 .accordions .accordion h2:hover {
-  background: #387c95;
+  background: #266881;
 }
 .accordions .accordion .toggle {
   border: 0;
@@ -5822,7 +5822,7 @@ select {
 }
 .side-tabs ul li {
   color: #fff;
-  background: #387c95;
+  background: #266881;
   border-color: #23a9aa;
   border-right: none;
 }
@@ -5861,7 +5861,7 @@ select {
   color: #23a9aa;
 }
 .illustrated-article .illustration legend {
-  background: #387c95;
+  background: #266881;
   color: #fff;
   margin: 0;
 }
@@ -5876,7 +5876,7 @@ select {
   padding: 8px;
 }
 .square-menu button {
-  background: #387c95;
+  background: #266881;
   border-radius: 0;
   color: #fff;
 }
@@ -5971,7 +5971,7 @@ select {
   outline: 1px solid #23a9aa;
 }
 .editor.drawing-grid .grid-add-row {
-  background: #387c95;
+  background: #266881;
   border-radius: 0;
 }
 .color-picker {
@@ -6017,7 +6017,7 @@ select {
   background: #23a9aa;
 }
 .color-picker button.black {
-  background: #387c95;
+  background: #266881;
 }
 .media-container.pink {
   background: #fd4a98;
@@ -6063,7 +6063,7 @@ select {
   transition: background 250ms ease;
 }
 .media-container.black {
-  background: #387c95;
+  background: #266881;
   color: #fff;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -6327,7 +6327,7 @@ select {
   color: #666;
 }
 .share .autocomplete > em:hover {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 .share tr {
@@ -6380,10 +6380,10 @@ select {
   opacity: 1;
 }
 .drop-down-filters p:first-child:hover {
-  background: #387c95;
+  background: #266881;
 }
 .drop-down-filters .wrapper {
-  background: #387c95;
+  background: #266881;
   box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
   width: 100%;
 }
@@ -6456,7 +6456,7 @@ select {
   background: #23a9aa;
 }
 table thead tr:hover {
-  background: #387c95;
+  background: #266881;
 }
 .lightbox-view thead tr {
   background: #fff;
@@ -6483,7 +6483,7 @@ table thead tr:hover {
   border-top-right-radius: 3px;
   font-size: 15px;
   background: #fff;
-  border: 1px solid #387c95;
+  border: 1px solid #266881;
   color: #000;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -6496,7 +6496,7 @@ table thead tr:hover {
   padding: 0;
   margin: 0;
   background: #fff;
-  border: 1px solid #387c95;
+  border: 1px solid #266881;
   border-top: 0;
   position: absolute;
   width: 100%;
@@ -6519,7 +6519,7 @@ table thead tr:hover {
   color: #444;
 }
 .drop-down-button .options ul li:hover {
-  background: #387c95;
+  background: #266881;
   color: #fff;
 }
 .drop-down-button.hidden label {
