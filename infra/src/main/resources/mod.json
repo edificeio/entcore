@@ -136,7 +136,7 @@
       }
     },
     {
-      "name": "com.wse~gridfs-persistor~1.1.0",
+      "name": "fr.wseduc~mod-gridfs-persistor~1.2-SNAPSHOT",
       "config": {
         "address": "wse.gridfs.persistor",
         "host": "localhost",
@@ -154,7 +154,7 @@
       }
     },
     {
-      "name": "com.wse~mod-image-resizer~1.0.1",
+      "name": "fr.wseduc~mod-image-resizer~1.1-SNAPSHOT",
       "config": {
         "address": "wse.image.resizer",
         "gridfs": {
@@ -166,7 +166,7 @@
       }
     },
     {
-      "name": "com.wse~http-proxy~1.0.0",
+      "name": "fr.wseduc~http-proxy~1.1-SNAPSHOT",
       "config": {
         "port": 8090,
         "proxies": [
