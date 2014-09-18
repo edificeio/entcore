@@ -7,6 +7,7 @@
 	"surname" : { "attribute" : "ENTPersonNomPatro" },
 	"title" : { "attribute" : "personalTitle" },
 	"structures" : { "attribute" : "ENTPersonStructRattach", "converter" : "head-array" },
+	"attachmentId" : { "attribute" : "ENTEleveStructRattachId" },
 	"accommodation" : { "attribute" : "ENTEleveRegime" },
 	"module" : { "attribute" : "ENTEleveMEF" },
 	"moduleName" : { "attribute" : "ENTEleveLibelleMEF" },
