@@ -38,6 +38,7 @@
 "auth.welcome.p1" : "Bem vindo sobre One, o Ambiente Virtual de Aprendizagem para escolas primàrias!",
 "auth.welcome.p2" : "Alunos, professores, funcionàrios e pais, ONE permite aceder facilmente a informações e instrumentos colaborativos. Este versão è muito simples e vai evoluir durante o ano com novos serviços e novas funcionalidades.",
 "auth.welcome.p3" : "Para acessar, tome seu ID e sua senha dados por a escola.",
-"cancel" : "Cancelar"
+"cancel" : "Cancelar",
+"label.accept.cgu" : "Eu aceito os termos e condições."
 }
 

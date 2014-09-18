@@ -21,6 +21,26 @@
 "app.registry.application.icon" : "Icone",
 "app.registry.createExternalApp" : "Criar uma aplicação externa",
 "app.registry.application.display.name" : "Chave de display",
-"app.registry.application.scope" : "Scope"
+"app.registry.application.scope" : "Scope",
+"workspace.view": "Espace documentaire : accéder à l'espace documentaire",
+"workspace.share.json": "Espace documentaire : partager un document",
+"workspace.rack.restore": "Espace documentaire : restaurer les fichiers du casier dans la corbeille",
+"workspace.rack.available.users": "Espace documentaire : afficher les utilisateurs disponibles du casier",
+"workspace.rack.document.move.trash": "Espace documentaire : mettre un document du casier à la corbeille",
+"workspace.rack.list.trash.documents": "Espace documentaire : afficher les documents du casier dans la corbeille",
+"workspace.rack.list.documents": "Espace documentaire : afficher les documents du casier",
+"workspace.document.list.folders": "Espace documentaire : afficher les dossiers de l'espace documentaire",
+"workspace.documents.list.by.folder": "Espace documentaire : afficher les documents dans un dossier",
+"workspace.documents.list": "Espace documentaire : afficher les documents",
+"workspace.rack.document.get": "Espace documentaire : télécharger un document du casier",
+"workspace.rack.document.delete": "Espace documentaire : supprimer un document du casier définitivement",
+"workspace.rack.documents.copy": "Espace documentaire : copier un document du casier",
+"workspace.document.copy": "Espace documentaire : copier un document",
+"workspace.rack.document.add": "Espace documentaire : envoyer un document dans le casier d'un utilisateur",
+"workspace.folder.add": "Espace documentaire : créer un dossier",
+"workspace.document.add": "Espace documentaire : créer un document",
+"conversation.view": "Messagerie : accéder à la messagerie",
+"conversation.send": "Messagerie : envoyer un message",
+"conversation.create.draft": "Messagerie : créer un brouillon"
 }
 
