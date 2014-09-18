@@ -91,6 +91,7 @@ i.actualites-large{
 			}
 			legend{
 				text-shadow: none;
+				text-align: center;
 			}
 		}
 		.element.selected{
@@ -99,18 +100,14 @@ i.actualites-large{
 			}
 		}
 	}
-	nav.vertical{
+	nav.vertical {
 		padding-right: 10px;
-		li{
+		li {
 			padding-left: 10px;
 		}
-		ul:first-child > li, div ul:first-child > li{
+		ul:first-child > li, div ul:first-child > li {
 			padding-left: 0;
 		}
-	}
-	.info{
-		background: #505050;
-		color: #999;
 	}
 	.tabs{
 		margin-top: 10px;
@@ -388,6 +385,9 @@ nav.vertical.stamps{
 			.bottom{
 				background: @dark-blue;
 				color: #fff;
+				div.content{
+					padding: 8px;
+				}
 				a:hover{
 					color: #fff;
 				}
@@ -1198,6 +1198,9 @@ table{
 				background: #fff;
 				.run-transition(background)
 			}
+			legend{
+				text-align: center;
+			}
 		}
 		.element.selected{
 			.container{
@@ -1987,11 +1990,6 @@ table thead tr:hover{
 	background: @dark-blue;
 }
 
-.lightbox-view thead tr {
-	background: #fff;
-	color: #000;
-}
-
 .drop-down-button{
 	position: absolute;
 	z-index: 650;
@@ -2070,4 +2068,95 @@ table thead tr:hover{
 
 hr.solid{
 
+}
+
+.letter-picker{
+	.lightbox-view{
+		background: transparent;
+		h2{
+			margin-right: 1px;
+			width: 88px;
+			height: 88px;
+			line-height: 88px;
+			text-align: center;
+			font-family: Lato;
+			font-size: 35px;
+			background: @bright-blue;
+			color: #fff;
+			margin-bottom: 1px;
+			.run-transition(background);
+		}
+		h2:hover{
+			background: #fff;
+			color: @bright-blue;
+		}
+		h2.disabled{
+			background: #666;
+			color: #999;
+			cursor: default;
+		}
+	}
+}
+
+h1.letter-picker{
+	height: 50px;
+	width: 50px;
+	background: @bright-blue;
+	color: #fff;
+	line-height: 50px;
+	text-align: center;
+	.run-transition(background);
+	margin-left: auto;
+	margin-right: auto;
+	clear: both;
+	margin-bottom: -9px;
+	margin-top: 40px;
+}
+
+h1.letter-picker:first-child{
+	margin-top: 15px;
+}
+
+h1.letter-picker:hover{
+	background: @dark-blue;
+}
+
+hr.line{
+	border-bottom: 1px dashed #ddd;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+ul.toc{
+	padding: 0;
+	margin: 0;
+	li{
+		list-style-type: none;
+		a{
+			font-family: Lato;
+			font-size: 16px;
+
+		}
+	}
+}
+
+.dominos.fallen{
+	.item{
+		min-width: 295px;
+		width: 25%;
+		.domino{
+			.top, .bottom{
+				clear: none;
+				float: left;
+				padding-bottom: 48%;
+
+			}
+			.bottom{
+				width: 48%;
+			}
+			.top{
+				width:52%;
+			}
+		}
+	}
 }

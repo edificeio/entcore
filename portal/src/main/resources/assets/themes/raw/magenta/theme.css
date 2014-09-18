@@ -688,9 +688,6 @@ textarea {
   width: 100%;
   height: 130px;
 }
-.centered-text {
-  text-align: center;
-}
 .badge {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -3608,6 +3605,7 @@ html.print body section {
 }
 .lightbox-view .icons-view .element legend {
   text-shadow: none;
+  text-align: center;
 }
 .lightbox-view .icons-view .element.selected .img.container {
   background: #23a9aa;
@@ -3621,10 +3619,6 @@ html.print body section {
 .lightbox-view nav.vertical ul:first-child > li,
 .lightbox-view nav.vertical div ul:first-child > li {
   padding-left: 0;
-}
-.lightbox-view .info {
-  background: #505050;
-  color: #999;
 }
 .lightbox-view .tabs {
   margin-top: 10px;
@@ -3668,6 +3662,10 @@ html.print body section {
 }
 .lightbox-view nav.vertical a:hover {
   background: #555;
+  color: #999;
+}
+.lightbox-view .info {
+  background: #505050;
   color: #999;
 }
 .lightbox-view input[type=text],
@@ -3937,6 +3935,7 @@ i.actualites-large {
 }
 .lightbox-window .icons-view .element legend {
   text-shadow: none;
+  text-align: center;
 }
 .lightbox-window .icons-view .element.selected .img.container {
   background: #23a9aa;
@@ -3950,10 +3949,6 @@ i.actualites-large {
 .lightbox-window nav.vertical ul:first-child > li,
 .lightbox-window nav.vertical div ul:first-child > li {
   padding-left: 0;
-}
-.lightbox-window .info {
-  background: #505050;
-  color: #999;
 }
 .lightbox-window .tabs {
   margin-top: 10px;
@@ -4463,6 +4458,9 @@ nav.vertical.stamps article.selected a {
 .dominos .item .domino .bottom {
   background: #266881;
   color: #fff;
+}
+.dominos .item .domino .bottom div.content {
+  padding: 8px;
 }
 .dominos .item .domino .bottom a:hover {
   color: #fff;
@@ -5323,6 +5321,9 @@ header {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+.icons-view .element legend {
+  text-align: center;
+}
 .icons-view .element.selected .container {
   border: none;
   background: #23a9aa;
@@ -5648,6 +5649,7 @@ i.folder-large {
 }
 .lightbox-view .icons-view .element legend {
   text-shadow: none;
+  text-align: center;
 }
 .lightbox-view .icons-view .element.selected .img.container {
   background: #23a9aa;
@@ -5661,10 +5663,6 @@ i.folder-large {
 .lightbox-view nav.vertical ul:first-child > li,
 .lightbox-view nav.vertical div ul:first-child > li {
   padding-left: 0;
-}
-.lightbox-view .info {
-  background: #505050;
-  color: #999;
 }
 .lightbox-view .tabs {
   margin-top: 10px;
@@ -5708,6 +5706,10 @@ i.folder-large {
 }
 .lightbox-view nav.vertical a:hover {
   background: #555;
+  color: #999;
+}
+.lightbox-view .info {
+  background: #505050;
   color: #999;
 }
 .lightbox-view input[type=text],
@@ -6457,10 +6459,6 @@ select {
 table thead tr:hover {
   background: #266881;
 }
-.lightbox-view thead tr {
-  background: #fff;
-  color: #000;
-}
 .drop-down-button {
   position: absolute;
   z-index: 650;
@@ -6539,6 +6537,89 @@ table thead tr:hover {
 .share .select-file input[type=text] {
   margin: 0;
   width: 200px;
+}
+.letter-picker .lightbox-view {
+  background: transparent;
+}
+.letter-picker .lightbox-view h2 {
+  margin-right: 1px;
+  width: 88px;
+  height: 88px;
+  line-height: 88px;
+  text-align: center;
+  font-family: Lato;
+  font-size: 35px;
+  background: #23a9aa;
+  color: #fff;
+  margin-bottom: 1px;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+.letter-picker .lightbox-view h2:hover {
+  background: #fff;
+  color: #23a9aa;
+}
+.letter-picker .lightbox-view h2.disabled {
+  background: #666;
+  color: #999;
+  cursor: default;
+}
+h1.letter-picker {
+  height: 50px;
+  width: 50px;
+  background: #23a9aa;
+  color: #fff;
+  line-height: 50px;
+  text-align: center;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+  margin-left: auto;
+  margin-right: auto;
+  clear: both;
+  margin-bottom: -9px;
+  margin-top: 40px;
+}
+h1.letter-picker:first-child {
+  margin-top: 15px;
+}
+h1.letter-picker:hover {
+  background: #266881;
+}
+hr.line {
+  border-bottom: 1px dashed #ddd;
+  margin-left: 0;
+  margin-right: 0;
+}
+ul.toc {
+  padding: 0;
+  margin: 0;
+}
+ul.toc li {
+  list-style-type: none;
+}
+ul.toc li a {
+  font-family: Lato;
+  font-size: 16px;
+}
+.dominos.fallen .item {
+  min-width: 295px;
+  width: 25%;
+}
+.dominos.fallen .item .domino .top,
+.dominos.fallen .item .domino .bottom {
+  clear: none;
+  float: left;
+  padding-bottom: 48%;
+}
+.dominos.fallen .item .domino .bottom {
+  width: 48%;
+}
+.dominos.fallen .item .domino .top {
+  width: 52%;
 }
 a {
   color: #fd4a98;
@@ -7001,6 +7082,10 @@ nav.vertical.stamps article {
 }
 .lightbox-window nav.vertical a:hover {
   background: #555;
+  color: #999;
+}
+.lightbox-window .info {
+  background: #505050;
   color: #999;
 }
 table thead tr {

@@ -824,30 +824,11 @@ module.directive('container', function($compile){
 
 			template.watch(attributes.template, function(){
 				scope.templateContainer = template.containers[attributes.template];
-				if(attributes.template !== 'main'){
-					return;
-				}
-
-				history.pushState({ template: { name: attributes.template, view: template.containers[attributes.template] }, scope: serializeScope(scope) }, null, window.location.href);
 			});
 
 			if(attributes.template){
 				scope.templateContainer = template.containers[attributes.template];
 			}
-
-			window.addEventListener('popstate', function(event){
-				if(attributes.template !== 'main'){
-					return;
-				}
-
-				if(history.state && history.state.template){
-					template.containers[history.state.template.name] = history.state.template.view;
-
-					applyScope(history.state.scope.parent, scope.$parent);
-					scope.templateContainer = template.containers[attributes.template];
-					scope.$apply('templateContainer');
-				}
-			});
 		}
 	}
 });
@@ -3359,6 +3340,61 @@ module.directive('filters', function(){
 		}
 	}
 });
+
+module.directive('alphabetical', function($compile, $parse){
+	return {
+		restrict: 'E',
+		controller: function($scope){
+			$scope.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+			$scope.matchingElements = {};
+			$scope.matching = function(letter){
+				return function(element){
+					return element[$scope.title][0].toUpperCase() === letter;
+				}
+			};
+
+			$scope.updateElements = function(){
+				$scope.letters.forEach(function(letter){
+					$scope.matchingElements[letter] = _.filter($scope.collection($scope), function(element){
+						return element[$scope.title][0].toUpperCase() === letter;
+					});
+				});
+			};
+
+			$scope.display = {
+				pickLetter: false
+			}
+		},
+		compile: function(element, attributes){
+			var iterator = attributes.list;
+			var iteratorContent = element.html();
+			element.html('<lightbox class="letter-picker" show="display.pickLetter" on-close="display.pickLetter = false;">' +
+				'<div ng-repeat="letter in letters"><h2 ng-click="viewLetter(letter)" class="cell" ng-class="{disabled: matchingElements[letter].length <= 0 }">[[letter]]</h2></div>' +
+				'</lightbox>' +
+				'<div ng-repeat="letter in letters">' +
+				'<div ng-if="matchingElements[letter].length > 0" class="row">' +
+				'<h1 class="letter-picker" ng-click="display.pickLetter = true;" id="alphabetical-[[letter]]">[[letter]]</h1><hr class="line" />' +
+				'<div class="row"><div ng-repeat="' + iterator + ' |filter: matching(letter)">' + iteratorContent + '</div></div>' +
+				'</div><div class="row"></div>' +
+				'</div>');
+			element.addClass('alphabetical');
+			var match = iterator.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+track\s+by\s+([\s\S]+?))?\s*$/);
+			var collection = match[2];
+			return function(scope, element, attributes){
+				scope.title = attributes.title || 'title';
+				scope.collection = $parse(collection);
+				scope.$watchCollection(collection, function(newVal){
+					scope.updateElements();
+				});
+				scope.updateElements();
+				scope.viewLetter = function(letter){
+					document.getElementById('alphabetical-' + letter).scrollIntoView();
+					scope.display.pickLetter = false;
+				};
+			}
+		}
+	}
+})
 
 $(document).ready(function(){
 	setTimeout(function(){
