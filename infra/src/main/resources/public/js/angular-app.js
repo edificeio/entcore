@@ -262,14 +262,14 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		Collection.prototype.trigger = function(event){
 			$timeout(function(){
 				fa.call(this, event);
-			}.bind(this));
+			}.bind(this), 10);
 		};
 
 		var fn = Model.prototype.trigger;
 		Model.prototype.trigger = function(event){
 			$timeout(function(){
 				fn.call(this, event);
-			}.bind(this));
+			}.bind(this), 10);
 		};
 
 		return model;
