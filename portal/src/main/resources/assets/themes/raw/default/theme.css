@@ -6523,3 +6523,10 @@ ul.toc li a {
 .dominos.fallen .item .domino .top {
   width: 52%;
 }
+.lightbox-view .tabs.linker .illustrated-list li a {
+  display: block;
+}
+.lightbox-view .tabs.linker .illustrated-list li.selected a {
+  background: #266881;
+  color: #fff;
+}

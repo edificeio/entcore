@@ -544,6 +544,7 @@ module.directive('linker', function($compile){
 				contextEditor.getSelection().selectBookmarks(bookmarks);
 
 				var linkNode = scope.linker.editor.document.createElement('a');
+				linkNode.data('reload', true);
 				if(scope.linker.params.link){
 					linkNode.setAttribute('href', scope.linker.params.link);
 
@@ -584,7 +585,7 @@ module.directive('linker', function($compile){
 
 				scope.chooseLink = false;
 				scope.linker.onChange();
-				scope.linker.$apply();
+				scope.$apply();
 			};
 
 			scope.linker.cancel = function(){
