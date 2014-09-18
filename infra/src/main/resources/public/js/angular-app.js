@@ -1789,9 +1789,13 @@ module.directive('htmlEditor', function($compile, $parse){
 						}
 
 						if(scope.format === 'img'){
+							var imageLink = contextEditor.document.createElement('a');
+							imageLink.setAttribute('href', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
+							imageLink.setAttribute('target', '_blank');
 							var image = contextEditor.document.createElement('img');
 							image.setAttribute('src', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
-							contextEditor.insertElement(image);
+							imageLink.append(image);
+							contextEditor.insertElement(imageLink);
 						}
 						if(scope.format === 'audio'){
 							var sound = contextEditor.document.createElement('audio');
