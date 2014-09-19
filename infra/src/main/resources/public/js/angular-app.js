@@ -190,9 +190,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		var routes = {};
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function' && !$rootScope.initialLoadingDone){
+			if(typeof routes[$route.current.action] === 'function'){
 				routes[$route.current.action]($routeParams);
-				$rootScope.initialLoadingDone = true;
 			}
 		});
 
