@@ -24,3 +24,4 @@ data
 developer.id
 *.mod.json
 .jshintrc
+Thumbs.db
