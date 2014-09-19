@@ -60,7 +60,6 @@ public class PortalController extends BaseController {
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
-		getWithRegEx("/assets/.+", "assets");
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
 		assetsPath = container.config().getString("assets-path", ".");
@@ -127,31 +126,47 @@ public class PortalController extends BaseController {
 		renderView(request);
 	}
 
+	@Get(value = "/assets/.+", regex = true)
 	public void assets(final HttpServerRequest request) {
+		String path = assetsPath + request.path();
 		if (dev) {
-			request.response().sendFile(assetsPath + request.path());
+			request.response().sendFile(path);
 		} else {
-			if (staticRessources.containsKey(request.uri())) {
-				StaticResource.serveRessource(request,
-						assetsPath + request.path(),
-						staticRessources.get(request.uri()));
-			} else {
-				vertx.fileSystem().props(assetsPath + request.path(),
-						new Handler<AsyncResult<FileProps>>(){
-					@Override
-					public void handle(AsyncResult<FileProps> af) {
-						if (af.succeeded()) {
-							String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
-							staticRessources.put(request.uri(), lastModified);
-							StaticResource.serveRessource(request,
-									assetsPath + request.path(),
-									lastModified);
-						} else {
-							request.response().sendFile(assetsPath + request.path());
-						}
+			sendWithLastModified(request, path);
+		}
+	}
+
+	@Get(value = "/current/assets/.+", regex = true)
+	public void currentAssets(final HttpServerRequest request) {
+		final String path = assetsPath + themesPrefix + request.path().substring(15);
+		if (dev) {
+			request.response().sendFile(path);
+		} else {
+			sendWithLastModified(request, path);
+		}
+	}
+
+	private void sendWithLastModified(final HttpServerRequest request, final String path) {
+		if (staticRessources.containsKey(request.uri())) {
+			StaticResource.serveRessource(request,
+					path,
+					staticRessources.get(request.uri()));
+		} else {
+			vertx.fileSystem().props(path,
+					new Handler<AsyncResult<FileProps>>(){
+				@Override
+				public void handle(AsyncResult<FileProps> af) {
+					if (af.succeeded()) {
+						String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
+						staticRessources.put(request.uri(), lastModified);
+						StaticResource.serveRessource(request,
+								path,
+								lastModified);
+					} else {
+						request.response().sendFile(path);
 					}
-				});
-			}
+				}
+			});
 		}
 	}
 

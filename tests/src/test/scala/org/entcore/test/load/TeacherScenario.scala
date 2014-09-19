@@ -144,7 +144,7 @@ object TeacherScenario {
     .headers(headers_5))
     .pause(33 milliseconds)
     .exec(http("logo.png")
-    .get("""/auth/public/img/illustrations/logo.png""")
+    .get("""/current/assets/img/illustrations/logo.png""")
     .headers(headers_5))
     .pause(40 milliseconds)
     .exec(http("KGJuneBug.ttf")
@@ -1359,7 +1359,7 @@ object TeacherScenario {
     .headers(headers_354)
     .check(status.in(Seq(200, 304))))
     .exec(http("logo.png")
-    .get("""/auth/public/img/illustrations/logo.png""")
+    .get("""/current/assets/img/illustrations/logo.png""")
     .headers(headers_353)
     .check(status.in(Seq(200, 304))))
 
