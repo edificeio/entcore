@@ -19,8 +19,6 @@
 
 package org.entcore.portal.controllers;
 
-import com.samskivert.mustache.Mustache;
-import com.samskivert.mustache.Template;
 import fr.wseduc.rs.Get;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
@@ -31,8 +29,6 @@ import org.entcore.portal.utils.ThemeUtils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -73,22 +69,6 @@ public class PortalController extends BaseController {
 			@Override
 			public void handle(List<String> event) {
 				themes = event;
-			}
-		});
-	}
-
-	private void assetTemplateLambda(final HttpServerRequest request, JsonObject params) {
-		params.putValue("asset", new Mustache.Lambda() {
-
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String path = frag.execute();
-				String r = container.config().getBoolean("ssl", false) ? "https://" : "http://"
-						+ request.headers().get("Host")
-						+ "/assets/themes"
-						+ "/" + container.config().getString("skin")
-						+ "/" + path;
-				out.write(r);
 			}
 		});
 	}
@@ -144,16 +124,7 @@ public class PortalController extends BaseController {
 	@Get("/adapter")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
-		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
-
-			@Override
-			public void handle(JsonObject session) {
-				JsonObject params = new JsonObject();
-				assetTemplateLambda(request, params);
-				renderView(request, params);
-			}
-		});
-
+		renderView(request);
 	}
 
 	public void assets(final HttpServerRequest request) {
