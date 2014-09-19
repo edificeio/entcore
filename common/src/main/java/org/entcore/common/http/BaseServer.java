@@ -20,6 +20,7 @@
 package org.entcore.common.http;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.http.filter.ActionFilter;
@@ -31,6 +32,13 @@ import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.json.JsonObject;
+
+import java.io.File;
+import java.util.Locale;
 
 public abstract class BaseServer extends Server {
 
@@ -74,6 +82,51 @@ public abstract class BaseServer extends Server {
 			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider));
 		}
 		vertx.eventBus().registerHandler("user.repository", repositoryHandler);
+
+		loadI18nAssetsFiles();
+	}
+
+	private void loadI18nAssetsFiles() {
+		final String i18nDirectory = config.getString("assets-path", "../..") + File.separator + "assets" +
+				File.separator + "i18n" + File.separator + this.getClass().getSimpleName();
+		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
+			@Override
+			public void handle(AsyncResult<Boolean> ar) {
+				if (ar.succeeded() && ar.result()) {
+					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<String[]>>() {
+						@Override
+						public void handle(AsyncResult<String[]> asyncResult) {
+							if (asyncResult.succeeded()) {
+								String[] files = asyncResult.result();
+								final I18n i18n = I18n.getInstance();
+								for (final String s : files) {
+									final Locale locale = Locale.forLanguageTag(
+											s.substring(s.lastIndexOf(File.separatorChar) + 1, s.lastIndexOf('.')));
+									vertx.fileSystem().readFile(s, new Handler<AsyncResult<Buffer>>() {
+										@Override
+										public void handle(AsyncResult<Buffer> ar) {
+											if (ar.succeeded()) {
+												try {
+													i18n.add(locale, new JsonObject(ar.result().toString()));
+												} catch (Exception e) {
+													log.error("Error loading i18n asset file : " + s, e);
+												}
+											} else {
+												log.error("Error loading i18n asset file : " + s, ar.cause());
+											}
+										}
+									});
+								}
+							} else {
+								log.error("Error loading assets i18n.", asyncResult.cause());
+							}
+						}
+					});
+				} else if (ar.failed()) {
+					log.error("Error loading assets i18n.", ar.cause());
+				}
+			}
+		});
 	}
 
 	protected BaseServer setResourceProvider(ResourcesProvider resourceProvider) {
