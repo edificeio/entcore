@@ -1,5 +1,5 @@
 {
-	"directory.admin.title" : "One : Admin directory",
+	"directory.admin.title" : "Admin directory",
 	"directory.admin.header" : "Directory",
 	"directory.admin.display" : "Display",
 	"directory.admin.create" : "Create",
@@ -149,7 +149,7 @@
 	"email.activation.infos" : "Note your username, you will be asked for each connection.",
 	"email.activation.infos2" : "You will find tutorials and documentation on website.",
 	"email.regards" : "Regards,",
-	"email.signature" : "The One Team",
+	"email.signature" : "The Ent-Core Team",
 	"import.invalid.student" : "Invalid student import.",
 	"import.invalid.relative" : "Invalid relative import. You must import students first.",
 	"missing.csv" : "Missing csv file.",

@@ -1,5 +1,5 @@
 {
-"auth.title" : "One : Autenticação",
+"auth.title" : "Autenticação",
 "auth.header" : "Conexão",
 "auth.activation.title" : "Ativação da sua conta",
 "auth.activation.header" : "Ativar minha conta",
@@ -35,8 +35,8 @@
 "email.click.to.reset" : "\nVocê pidiu a reinicialização da sua senha. \nPara fazer esta reinicialização, favor carregar sobre a ligação.\n",
 "email.reset.infos" : "\nSe você não pidiu este, pode ignorar este mensagem.\n",
 "email.regards" : "Atenciosamente.",
-"auth.welcome.p1" : "Bem vindo sobre One, o Ambiente Virtual de Aprendizagem para escolas primàrias!",
-"auth.welcome.p2" : "Alunos, professores, funcionàrios e pais, ONE permite aceder facilmente a informações e instrumentos colaborativos. Este versão è muito simples e vai evoluir durante o ano com novos serviços e novas funcionalidades.",
+"auth.welcome.p1" : "Bem vindo sobre Ent-Core",
+"auth.welcome.p2" : "",
 "auth.welcome.p3" : "Para acessar, tome seu ID e sua senha dados por a escola.",
 "cancel" : "Cancelar",
 "label.accept.cgu" : "Eu aceito os termos e condições."

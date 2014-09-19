@@ -43,6 +43,6 @@
 	"scrapbook": "Cahier multimédia",
 	"classadmin": "Class parameters",
 
-	"admin.title" : "One : administration console",
-	"admin.header" : "One : administration console"
+	"admin.title" : "Administration console",
+	"admin.header" : "Administration console"
 }

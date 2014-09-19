@@ -1,5 +1,5 @@
 {
-"portal.title" : "One",
+"portal.title" : "Ent-Core",
 "portal.header.navigation.whatsnew" : "O que há de novo?",
 "portal.header.navigation.classMembers" : "A classe",
 "portal.header.navigation.myapps" : "Minhas apps",
@@ -85,7 +85,7 @@
 "e401.page": "Você não tem permissão para acessar este arquivo.",
 "e500" : "Erro Interno de Servidor",
 "oops": "Oups !",
-"admin.title" : "One : consola administrativa",
-"admin.header" : "One : consola administrativa"
+"admin.title" : "Consola administrativa",
+"admin.header" : "Consola administrativa"
 }
 

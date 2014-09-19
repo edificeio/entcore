@@ -1,5 +1,5 @@
 {
-"directory.admin.title" : "One : admin diretório",
+"directory.admin.title" : "admin diretório",
 "directory.admin.header" : "Diretório",
 "directory.admin.display" : "Visualizar",
 "directory.admin.create" : "Criar",
@@ -50,7 +50,7 @@
 "userBook.profile.motto" : "Lema",
 "userBook.profile.changeavatar" : "Alterar",
 "account.myaccount": "Minha conta",
-"userBook.profile.displayName": "Nome em One",
+"userBook.profile.displayName": "Nome em",
 "userBook.profile.firstName": "Sobrenome",
 "userBook.profile.lastName": "Nome",
 "userBook.account.classFiles" : "Ver os cadernos da classe",

@@ -11,7 +11,7 @@
 	"export.download" : "ici.",
 	"export.class.admin.donotanswer" : "Ce message a été généré automatiquement, merci de ne pas y répondre.",
 	"export.regards" : "Cordialement,",
-	"export.signature" : "L'équipe ONE",
+	"export.signature" : "L'équipe Ent-Core",
 	"export.error" : "Nous ne sommes pas en mesure de réaliser cet export actuellement. Veuillez réessayer plus tard.",
 	"get.export.path.error" : "Erreur lors de la recherche de l'export.",
 	"exportId.not.found" : "L'export demandé n'existe pas.",

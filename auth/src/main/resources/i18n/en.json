@@ -1,5 +1,5 @@
 {
-	"auth.title" : "One : Authentication",
+	"auth.title" : "Authentication",
 	"auth.header" : "CONNECTION",
 	"auth.activation.title" : "Account activation",
 	"auth.activation.header" : "Account activation",
@@ -38,9 +38,9 @@
 	"email.reset.infos" : "If you are not at the origin of this request, please ignore this email.",
 	"email.regards" : "Sincerely,",
 	"email.login" : "Login",
-	"email.signature" : "The One Team",
-	"auth.welcome.p1" : "Welcom on One, the Virtual Learning Environment for the primary degre!",
-	"auth.welcome.p2" : "Pupils, teachers, staff and parents, this VLE  is addressed to each of you and allows you to easily access to information and collaborative tools. This version is very simple and will evolve during the school year with new services and new features.",
-	"auth.welcome.p3" : "To log in, please have your username and password gievn by your school.",
+	"email.signature" : "The Ent-Core Team",
+	"auth.welcome.p1" : "Welcome on Ent-Core, the versatile ENT engine based on the JVM!",
+	"auth.welcome.p2" : "",
+	"auth.welcome.p3" : "To log in, please have your username and password given by your school.",
 	"cancel" : "Cancel"
 }

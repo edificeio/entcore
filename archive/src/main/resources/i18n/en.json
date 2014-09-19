@@ -11,7 +11,7 @@
 	"export.download" : "here.",
 	"export.class.admin.donotanswer" : "This is an automatic message, please don't answer it.",
 	"export.regards" : "Sincerely,",
-	"export.signature" : "ONE Team",
+	"export.signature" : "The Ent-Core Team",
 	"export.error" : "We cannot generate the archive now. Please try again later.",
 	"get.export.path.error" : "An error occured finding the archive.",
 	"exportId.not.found" : "The archive doesn't exist.",
