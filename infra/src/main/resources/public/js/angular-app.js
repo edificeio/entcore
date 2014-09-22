@@ -343,13 +343,14 @@ module.directive('lightbox', function($compile){
 			scope.$watch('show', function(newVal){
 				if(newVal){
 					var lightboxWindow = element.find('.lightbox-view');
+					//delay to account for templates loading inside the lightbox
 					setTimeout(function(){
 						lightboxWindow.fadeIn();
-					}, 0);
 
-					lightboxWindow.css({
-						top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
-					});
+						lightboxWindow.css({
+							top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
+						});
+					}, 10);
 
 					var backdrop = element.find('.lightbox-background');
 					setTimeout(function(){
@@ -516,8 +517,8 @@ module.directive('linker', function($compile){
 				Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
 					appBehaviour.create(scope.linker.resource, function(){
 						scope.linker.searchApplication();
-						scope.linker.search.text = scope.resource.title;
-						scope.linker.$apply();
+						scope.linker.search.text = scope.linker.resource.title;
+						scope.$apply();
 					});
 				});
 			};
@@ -2552,6 +2553,11 @@ module.directive('gridResizable', function($compile){
 
 			element.addClass('grid-media');
 
+			var lock = {};
+			if(element.find('grid-cell, sniplet').length > 0){
+				lock.vertical = true;
+			}
+
 			//cursor styles to indicate resizing possibilities
 			element.on('mouseover', function(e){
 				element.on('mousemove', function(e){
@@ -2561,8 +2567,8 @@ module.directive('gridResizable', function($compile){
 					var mouse = { x: e.pageX, y: e.pageY };
 					resizeLimits = {
 						horizontal:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
-						vertical: element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) +
-							5 > mouse.y && mouse.y > element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) - 15
+						vertical: (element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) +
+							5 > mouse.y && mouse.y > element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) - 15) && !lock.vertical
 					};
 
 					var orientations = {
@@ -2786,7 +2792,7 @@ module.directive('gridDraggable', function($compile){
 				}
 
 				$(window).on('mousemove.drag', function(e){
-					if(element.data('dragging') !== true && element.data('resizing') !== true && (e.clientX !== mouse.x && e.clientY !== mouse.y)){
+					if(element.data('resizing') !== true && (e.clientX !== mouse.x && e.clientY !== mouse.y) && element.data('dragging') !== true){
 						element.trigger('startDrag');
 
 						var elementDistance = {

@@ -1343,10 +1343,10 @@ function bootstrap(func){
 					if(typeof this.applicationsBehaviours[serviceName].resource !== 'function'){
 						var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
 
-						this.applicationsBehaviours[serviceName].resource = function(){
+						this.applicationsBehaviours[serviceName].resource = function(element){
 							for(var behaviour in resourceRights){
-								if(model.me.hasRight(resource, resourceRights[behaviour]) || model.me.userId === resource.owner.userId){
-									resource.myRights[behaviour] = resourceRights[behaviour];
+								if(model.me.hasRight(element, resourceRights[behaviour]) || model.me.userId === element.owner.userId){
+									element.myRights[behaviour] = resourceRights[behaviour];
 								}
 							}
 						}
@@ -1364,6 +1364,7 @@ function bootstrap(func){
 			loadBehaviours: function(serviceName, callback){
 				if(this.applicationsBehaviours[serviceName]){
 					callback(this.applicationsBehaviours[serviceName]);
+					return;
 				}
 
 				if(serviceName === '.') {

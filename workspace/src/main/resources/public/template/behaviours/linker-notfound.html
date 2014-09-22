@@ -2,14 +2,14 @@
 
 <div class="twelve cell select-file input-block vertical-spacing-twice">
 	<div class="hidden-content">
-		<input type="file" files-input-change ng-model="resource.file"  />
+		<input type="file" files-input-change ng-model="linker.resource.file"  />
 	</div>
 	<button class="file-button" translate content="library.file.choose"></button>
-	<input type="text" ng-model="resource.title" data-display-file />
+	<input type="text" ng-model="linker.resource.title" data-display-file />
 </div>
-<div class="row" ng-if="resource.file">
-	<input type="button" class="right-magnet" ng-click="createResource()" i18n-value="library.upload.import" ng-if="!resource.loading" />
-	<div ng-if="resource.loading">
+<div class="row" ng-if="linker.resource.file">
+	<input type="button" class="right-magnet" ng-click="linker.createResource()" i18n-value="library.upload.import" ng-if="!linker.resource.loading" />
+	<div ng-if="linker.resource.loading">
 		<loading-icon class="right-magnet" request="file-upload-[[file.title]]" default="loading"></loading-icon>
 	</div>
 </div>
