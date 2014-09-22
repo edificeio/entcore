@@ -11,7 +11,6 @@
 	</filters>
 
 	<div data-ng-repeat="notification in notifications.all" class="row notification">
-		<i class="[[notification['event-type'].split('_')[0].toLowerCase()]] type"></i>
 		<article ng-class="{ 'unread': isUnRead(notification) }">
 			<div class="cell">
 				<div class="row">
