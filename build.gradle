@@ -1,4 +1,6 @@
 apply from: "gradle/setup.gradle"
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 
 subprojects {
   apply plugin: 'eclipse'
@@ -58,6 +60,31 @@ subprojects {
 			rootProject.delete "mods/${project.ext.moduleName}"
 		}
 	}
+}
+
+def generateMissingI18n() {
+  JsonSlurper jsonSlurper = new JsonSlurper()
+  File rootDir = new File(".")
+  rootDir.eachFileRecurse {
+    if (it.isDirectory() && ("i18n".equals(it.getName()) || ("timeline".equals(it.getName()) && it.getParent().endsWith("i18n")))) {
+      Map i18n = [:]
+      it.eachFileMatch(~/.+.json/) { file ->
+        def t = file.text
+        i18n.put(file.getName(), (Map) jsonSlurper.parseText((t != null && !t.empty) ? t : "{}"))
+      }
+      Map fr = i18n.remove("fr.json")
+      new File(it, "fr.json").withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(fr.sort())) }
+      i18n.each { key, lang ->
+        Map out = fr.findAll({true})
+        out.putAll(lang)
+        new File(it, key).withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
+      }
+    }
+  }
+}
+
+task generateI18n(description:'Generate missing keys in i18n files') << {
+  generateMissingI18n()
 }
 
 project(':common') {
