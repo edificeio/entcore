@@ -1,6 +1,5 @@
 {
-"timeline.workspace.shared.document" : "compartou com você o documento",
-	"timeline.workspace.shared.scrapbook" : "compartilhou com você notebook multimídia",
-	"timeline.workspace.storage.size.alert" : "Seu espaço é em breve completo."
+    "timeline.workspace.shared.document": "compartou com você o documento",
+    "timeline.workspace.shared.scrapbook": "compartilhou com você notebook multimídia",
+    "timeline.workspace.storage.size.alert": "Seu espaço é em breve completo."
 }
-

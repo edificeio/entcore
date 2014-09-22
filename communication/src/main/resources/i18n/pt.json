@@ -1,7 +1,6 @@
 {
-"communication.title" : "Comunicação",
-"communication.header" : "Comunicação",
-"communication.conf.profils" : "Configurar a comunicação",
-"communication.rule.enabled" : "Regra de comunicação ativada"
+    "communication.conf.profils": "Configurar a comunicação",
+    "communication.header": "Comunicação",
+    "communication.rule.enabled": "Regra de comunicação ativada",
+    "communication.title": "Comunicação"
 }
-
