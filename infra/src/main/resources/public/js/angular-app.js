@@ -323,7 +323,7 @@ module.directive('lightbox', function($compile){
 		template: '<div>'+
 					'<section class="lightbox-background"></section>'+
 					'<section class="lightbox-view">'+
-						'<div class="twelve cell reduce-block-eight" ng-transclude></div>'+
+						'<div class="twelve cell" ng-transclude></div>'+
 						'<div class="close-lightbox">'+
 						'<i class="close-2x"></i>'+
 						'</div>'+
@@ -332,8 +332,8 @@ module.directive('lightbox', function($compile){
 				'</div>',
 		link: function(scope, element, attributes){
 			element.find('.lightbox-background, i').on('click', function(){
-				element.find('.lightbox-view').fadeOut();
-				element.find('.lightbox-background').fadeOut();
+				element.find('.lightbox-view').first().fadeOut();
+				element.find('.lightbox-background').first().fadeOut();
 
 				scope.$eval(scope.onClose);
 				if(!scope.$$phase){
@@ -1569,11 +1569,13 @@ function createCKEditorInstance(editor, scope, $compile){
 		}
 		editor.on('focus', function(){
 			ckeEditorFixedPositionning();
+			editor.css({ cursor: 'text' });
 		});
 	});
 
 	editor.on('blur', function(e) {
 		scope.ngModel.assign(scope, editor.html());
+		editor.attr('style', '');
 		scope.$apply();
 	});
 
@@ -1624,8 +1626,14 @@ module.directive('textEditor', function($compile){
 					}
 					editor.focus();
 				});
-				$element.parent().on('startDrag', function(){
+
+				parentElement.on('startDrag', function(){
 					editor.blur();
+					editor.attr('contenteditable', false);
+				});
+
+				parentElement.on('stopDrag', function(){
+					editor.attr('contenteditable', true);
 				});
 
 				var followResize = true;
@@ -2469,13 +2477,9 @@ module.directive('drawingGrid', function(){
 	return function(scope, element, attributes){
 		element.addClass('drawing-grid');
 		element.on('click', function(e){
-			var skip = true;
 			element.parents('grid-cell').data('lock', true);
 
 			$('body').on('click.lock', function(){
-				if(skip){
-					return;
-				}
 				element.parents('grid-cell').data('lock', false);
 				$('body').unbind('click.lock')
 			});
@@ -2554,9 +2558,6 @@ module.directive('gridResizable', function($compile){
 			element.addClass('grid-media');
 
 			var lock = {};
-			if(element.find('grid-cell, sniplet').length > 0){
-				lock.vertical = true;
-			}
 
 			//cursor styles to indicate resizing possibilities
 			element.on('mouseover', function(e){
@@ -2564,6 +2565,11 @@ module.directive('gridResizable', function($compile){
 					if(element.data('resizing') || element.data('lock')){
 						return;
 					}
+
+					if(element.find('grid-cell, sniplet').length > 0){
+						lock.vertical = true;
+					}
+
 					var mouse = { x: e.pageX, y: e.pageY };
 					resizeLimits = {
 						horizontal:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
@@ -2590,7 +2596,7 @@ module.directive('gridResizable', function($compile){
 					}
 
 					element.css({ cursor: cursor });
-					element.find('[contenteditable]').css({ cursor: cursor });
+					element.find('*').css({ cursor: cursor });
 				});
 				element.on('mouseout', function(e){
 					element.unbind('mousemove');
@@ -2743,6 +2749,7 @@ module.directive('gridResizable', function($compile){
 						cells.data('lock', false);
 						cells.attr('style', '');
 						cells.addClass('grid-media');
+						element.find('*').css({ cursor: 'inherit' });
 					}, 100);
 					$(window).unbind('mousemove.resize');
 					$(window).unbind('mouseup.resize');
@@ -2759,11 +2766,10 @@ module.directive('gridDraggable', function($compile){
 		link: function(scope, element, attributes){
 			element.on('mousedown', function(e){
 				var parent = element.parents('.drawing-grid');
-				if(element.data('lock') === true){
+				if(element.data('lock') === true || parent.first().hasClass('blur-grid')){
 					return;
 				}
 
-				e.preventDefault();
 				var interrupt = false;
 				var mouse = { y: e.clientY, x: e.clientX };
 				var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
@@ -2956,6 +2962,65 @@ module.directive('gridDraggable', function($compile){
 					}
 				};
 			});
+		}
+	}
+});
+
+module.directive('sniplet', function($parse, $timeout){
+	return {
+		restrict: 'E',
+		controller: function($scope, $timeout){
+			$timeout(function(){
+				Behaviours.loadBehaviours($scope.application, function(behaviours){
+					var snipletControllerExpansion = behaviours.sniplets[$scope.template].controller;
+					for(var prop in snipletControllerExpansion){
+						$scope[prop] = snipletControllerExpansion[prop];
+					}
+					if(typeof $scope.init === 'function'){
+						$scope.init();
+					}
+				});
+			}, 1);
+		},
+		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-' + template + '.html'\"></div>",
+		link: function(scope, element, attributes){
+			scope.application = attributes.application;
+			scope.template = attributes.template;
+			scope.source = scope.$eval(attributes.source);
+		}
+	}
+});
+
+module.directive('snipletSource', function($parse, $timeout){
+	return {
+		restrict: 'E',
+		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-source-' + template + '.html'\"></div>",
+		controller: function($scope, $timeout){
+			$scope.setSnipletSource = function(source){
+				$scope.ngModel.assign($scope, source);
+				$scope.ngChange();
+			};
+
+			$timeout(function(){
+				Behaviours.loadBehaviours($scope.application, function(behaviours){
+					var snipletControllerExpansion = behaviours.sniplets[$scope.template].controller;
+					for(var prop in snipletControllerExpansion){
+						$scope[prop] = snipletControllerExpansion[prop];
+					}
+
+					if(typeof $scope.initSource === 'function'){
+						$scope.initSource();
+					}
+				});
+			}, 1);
+		},
+		link: function(scope, element, attributes){
+			scope.application = attributes.application;
+			scope.template = attributes.template;
+			scope.ngModel = $parse(attributes.ngModel);
+			scope.ngChange = function(){
+				scope.$eval(attributes.ngChange);
+			}
 		}
 	}
 });

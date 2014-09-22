@@ -1265,6 +1265,33 @@ calendar.Calendar.prototype.clearScheduleItems = function(){
 	});
 }
 
+var sniplets = {
+	load: function(callback){
+		var sniplets = this;
+		http().get('/resources-applications').done(function(apps) {
+			var apps = _.filter(model.me.apps, function (app) {
+				return _.find(apps, function (match) {
+					return app.address.indexOf(match) !== -1
+				});
+			});
+			var all = apps.length;
+			apps.forEach(function(app){
+				var appPrefix = app.address.split('/')[1];
+				Behaviours.loadBehaviours(appPrefix, function(behaviours){
+					if(behaviours.sniplets){
+						sniplets.sniplets = sniplets.sniplets.concat(_.map(behaviours.sniplets, function(sniplet, name){ return { application: appPrefix, template: name, sniplet: sniplet } }))
+					}
+					all --;
+					if(typeof callback === 'function' && all === 0){
+						callback();
+					}
+				});
+			});
+		})
+	},
+	sniplets: []
+}
+
 function bootstrap(func){
 	calendar.init();
 	http().get('/auth/oauth2/userinfo').done(function(data){

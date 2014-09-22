@@ -96,5 +96,8 @@
     "workspace": "Espace documentaire",
     "workspace.appDocuments": "Documents ajoutés dans les applis",
     "workspace.myDocuments": "Mes documents",
-    "workspace.sharedDocuments": "Documents partagés avec moi"
+    "workspace.sharedDocuments": "Documents partagés avec moi",
+	"books": "Lecture",
+	"post.author": "Ecrit par ",
+	"post.date": "le"
 }
