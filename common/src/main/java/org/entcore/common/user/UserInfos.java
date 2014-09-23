@@ -145,6 +145,7 @@ public class UserInfos {
 	private List<Application> apps;
 	private List<String> profilGroupsIds;
 	private List<String> classes;
+	private List<String> structures;
 	private Map<String, Object> cache;
 
 	public Map<String, Function> getFunctions() {
@@ -282,6 +283,14 @@ public class UserInfos {
 			return cache.get(attribute);
 		}
 		return null;
+	}
+
+	public List<String> getStructures() {
+		return structures;
+	}
+
+	public void setStructures(List<String> structures) {
+		this.structures = structures;
 	}
 
 }
