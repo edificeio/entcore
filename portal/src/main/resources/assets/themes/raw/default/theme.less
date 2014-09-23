@@ -631,6 +631,7 @@ button.cancel, input[type=button].cancel{
 
 .icons-select{
 	font-family: Lato;
+	background: transparent;
 
 	i{
 		float: none;
@@ -649,13 +650,14 @@ button.cancel, input[type=button].cancel{
 		.run-transition(padding-left);
 		i{
 			float: left;
+			margin-right: 8px;
 		}
 	}
 
 	.current.editing{
 		background: @dark-blue;
 		color: #fff;
-		padding-left: 50px;
+		padding-left: 68px;
 	}
 
 	.options-list{
@@ -664,6 +666,7 @@ button.cancel, input[type=button].cancel{
 		font-size: 14px;
 		.border-radius-bottom(3px);
 		box-shadow: 3px 3px 5px rgba(0,0,0,0.4);
+		top: 60px;
 	}
 
 	.wrapper{
@@ -1432,6 +1435,9 @@ textarea{
 		thead{
 			tr{
 				background: @dark-blue;
+				th:hover{
+					background: @bright-blue;
+				}
 			}
 		}
 		tr{
@@ -2169,4 +2175,9 @@ ul.toc{
 		background: @dark-blue;
 		color: #fff;
 	}
+}
+
+.text-container{
+	padding: 0;
+	padding-top: 48px;
 }

@@ -600,6 +600,11 @@ textarea.inline-editing {
 nav.vertical {
   padding-right: 10px;
 }
+nav.vertical h2 {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 nav.vertical h1 {
   margin-top: 0;
 }
@@ -617,7 +622,7 @@ nav.vertical ul li {
   display: block;
   font-size: 14px;
   font-weight: normal;
-  width: 100%;
+  width: 100% !important;
   top: 0;
 }
 nav.vertical ul li a {
@@ -688,6 +693,9 @@ nav.stamps article {
 textarea {
   width: 100%;
   height: 130px;
+}
+.centered-text {
+  text-align: center;
 }
 .badge {
   -webkit-border-radius: 10px;
@@ -1339,10 +1347,6 @@ a {
 }
 .v-center-container .v-center img {
   width: 100%;
-}
-.contextual-editor {
-  width: 500px;
-  height: 200px;
 }
 .contextual-editor.cke_editable {
   border: 1px solid #ccc;
@@ -2369,7 +2373,8 @@ em.high-importance {
   height: 0px;
 }
 .notification article {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  margin-top: 12px;
   padding: 9px;
   margin-left: 110px;
   height: 84px;
@@ -2872,13 +2877,15 @@ a.cke_smile img {
   width: 100%;
   overflow: hidden;
   padding-top: 2px;
+  border-left: 1px solid #ddd;
+  border-top: 1px dashed #ddd;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
 .grid-guides .cell {
-  background: #fff;
+  background: #bbb;
   opacity: 0.1;
   border-right: 1px solid #000;
   border-bottom: 1px solid #000;
@@ -2886,7 +2893,10 @@ a.cke_smile img {
   margin-top: -1px;
 }
 .grid-guides .row {
-  min-height: 0;
+  min-height: 0 !important;
+}
+.grid-guides .row .cell:first-child {
+  border-left: 1px solid #000;
 }
 .guide-line {
   border-bottom: 2px solid transparent;
@@ -2901,6 +2911,9 @@ a.cke_smile img {
   float: left;
   display: block;
   position: relative;
+  margin: 0;
+  border: 0;
+  padding: 12px;
 }
 .grid-add-row img {
   max-width: 100%;
@@ -3034,12 +3047,14 @@ a.cke_smile img {
 .media .text-wrapper h2,
 .media .text-wrapper h3 {
   padding: 7px;
+  margin: 0;
 }
 .media.cell {
   background: transparent;
 }
 .editor-view .viewer .media {
   opacity: 0.3;
+  cursor: inherit;
 }
 .editor-view .viewer .drawing-grid.editor .media {
   opacity: 1;
@@ -3190,10 +3205,9 @@ a.cke_smile img {
 }
 .square-menu button {
   width: 51px;
-  margin-top: 2px;
   height: 47px;
+  margin: 0;
   float: right;
-  margin-right: 5px;
 }
 .square-menu ul.menu-items {
   margin: 0;
@@ -4720,6 +4734,7 @@ input[type=button].cancel {
 }
 .icons-select {
   font-family: Lato;
+  background: transparent;
 }
 .icons-select i {
   float: none;
@@ -4745,11 +4760,12 @@ input[type=button].cancel {
 }
 .icons-select .current i {
   float: left;
+  margin-right: 8px;
 }
 .icons-select .current.editing {
   background: #266881;
   color: #fff;
-  padding-left: 50px;
+  padding-left: 68px;
 }
 .icons-select .options-list {
   background: #266881;
@@ -4766,6 +4782,7 @@ input[type=button].cancel {
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
   box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4);
+  top: 60px;
 }
 .icons-select .wrapper {
   padding: 12px;
@@ -5603,6 +5620,9 @@ i.folder-large {
 }
 .datepicker table thead tr {
   background: #266881;
+}
+.datepicker table thead tr th:hover {
+  background: #23a9aa;
 }
 .datepicker table tr {
   background: #fff;
@@ -6628,6 +6648,10 @@ ul.toc li a {
 .lightbox-view .tabs.linker .illustrated-list li.selected a {
   background: #266881;
   color: #fff;
+}
+.text-container {
+  padding: 0;
+  padding-top: 48px;
 }
 a {
   color: #fd4a98;
