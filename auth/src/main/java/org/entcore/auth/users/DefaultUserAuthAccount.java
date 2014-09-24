@@ -134,7 +134,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 							!json.getObject("0").getString("email").trim().isEmpty()) {
 						sendResetPasswordLink(request, login, json.getObject("0")
 								.getString("email"), resetCode, handler);
-					} else {
+					} else if (container.config().getBoolean("teacherForgotPasswordEmail", false)) {
 						neo.send(query2, params, new Handler<Message<JsonObject>>(){
 
 							@Override
@@ -151,6 +151,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 								}
 							}
 						});
+					} else {
+						handler.handle(false);
 					}
 				} else {
 					handler.handle(false);

@@ -503,7 +503,7 @@ public class AuthController extends BaseController {
 				JsonObject error = new JsonObject()
 				.putObject("error", new JsonObject()
 				.putString("message", message));
-				renderView(request, error);
+				renderJson(request, error, 400);
 			}
 		});
 	}

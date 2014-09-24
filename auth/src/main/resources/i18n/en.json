@@ -25,7 +25,7 @@
     "auth.reset.header": "Password reset",
     "auth.reset.invalid.argument": "Form errors",
     "auth.reset.title": "Password reset",
-    "auth.resetCodeSent": "An email was sent to you (or your teacher if you are a student), with instructions to change your password.",
+    "auth.resetCodeSent": "An email was sent to you, with instructions to change your password.",
     "auth.title": "Authentication",
     "auth.welcome": "Welcome!",
     "auth.welcome.p1": "Welcome on Ent-Core, the versatile ENT engine based on the JVM!",

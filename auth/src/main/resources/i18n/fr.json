@@ -25,7 +25,7 @@
     "auth.reset.header": "Réinitialisation du mot de passe",
     "auth.reset.invalid.argument": "Le formulaire contient des erreurs",
     "auth.reset.title": "Réinitialisation du mot de passe",
-    "auth.resetCodeSent": "Un mail vous a été envoyé (ou à votre enseignant si vous êtes un élève), avec les instructions pour changer votre mot de passe.",
+    "auth.resetCodeSent": "Un mail vous a été envoyé, avec les instructions pour changer votre mot de passe.",
     "auth.title": "Authentification",
     "auth.welcome": "Bienvenue !",
     "auth.welcome.p1": "Bienvenue sur Ent-Core, le moteur d'ENT versatile basé sur la JVM !",

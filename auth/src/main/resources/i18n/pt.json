@@ -25,7 +25,7 @@
     "auth.reset.header": "Reinicialização da senha",
     "auth.reset.invalid.argument": "O formulàrio tem erros",
     "auth.reset.title": "Reinicialização da senha",
-    "auth.resetCodeSent": "Um email foi enviado (o a seu profesor se você ê aluno) com instruções para modificar a senha.",
+    "auth.resetCodeSent": "Um email foi enviado com instruções para modificar a senha.",
     "auth.title": "Autenticação",
     "auth.welcome": "Bem vindo!",
     "auth.welcome.p1": "Bem vindo sobre Ent-Core",
