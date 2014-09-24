@@ -24,9 +24,14 @@ import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.registry.filters.ApplicationFilter;
+import org.entcore.registry.filters.LinkRoleGroupFilter;
+import org.entcore.registry.filters.RoleFilter;
 import org.entcore.registry.services.AppRegistryService;
 import org.entcore.registry.services.impl.DefaultAppRegistryService;
 import org.vertx.java.core.Handler;
@@ -47,19 +52,7 @@ public class AppRegistryController extends BaseController {
 	@Get("/admin")
 	@SecuredAction("app-registry.view")
 	public void view(final HttpServerRequest request) {
-//		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-//
-//			@Override
-//			public void handle(UserInfos user) {
-//				listStructures(user, new Handler<JsonArray>() {
-//
-//					@Override
-//					public void handle(JsonArray event) {
-						renderView(request, new JsonObject());//.putArray("schools", event));
-//					}
-//				});
-//			}
-//		});
+		renderView(request);
 	}
 
 	@Get("/static-admin")
@@ -75,9 +68,10 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Get("/applications")
-	@SecuredAction("app-registry.list.applications")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listApplications(HttpServerRequest request) {
-		appRegistryService.listApplications(arrayResponseHandler(request));
+		String structureId = request.params().get("structureId");
+		appRegistryService.listApplications(structureId, arrayResponseHandler(request));
 	}
 
 	@Get("/application/:name")
@@ -92,14 +86,15 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Get("/applications/actions")
-	@SecuredAction("app-registry.list.applications.actions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listApplicationsWithActions(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
 		String actionType = request.params().get("actionType");
-		appRegistryService.listApplicationsWithActions(actionType, arrayResponseHandler(request));
+		appRegistryService.listApplicationsWithActions(structureId, actionType, arrayResponseHandler(request));
 	}
 
 	@Post("/role")
-	@SecuredAction("app-registry.create.role")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void createRole(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -109,7 +104,8 @@ public class AppRegistryController extends BaseController {
 				if (actions != null && roleName != null &&
 						actions.size() > 0 && !roleName.trim().isEmpty()) {
 					final JsonObject role = new JsonObject().putString("name", roleName);
-					appRegistryService.createRole(role, actions, notEmptyResponseHandler(request, 201, 409));
+					String structureId = request.params().get("structureId");
+					appRegistryService.createRole(structureId, role, actions, notEmptyResponseHandler(request, 201, 409));
 				} else {
 					badRequest(request, "invalid.parameters");
 				}
@@ -118,7 +114,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Put("/role/:id")
-	@SecuredAction("app-registry.update.role")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(RoleFilter.class)
 	public void updateRole(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -140,7 +137,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Delete("/role/:id")
-	@SecuredAction("app-registry.create.role")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(RoleFilter.class)
 	public void deleteRole(final HttpServerRequest request) {
 		String roleId = request.params().get("id");
 		if (roleId != null && !roleId.trim().isEmpty()) {
@@ -151,7 +149,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Post("/authorize/group")
-	@SecuredAction("app-registry.link.Group")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(LinkRoleGroupFilter.class)
 	public void linkGroup(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -178,26 +177,29 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Get("/roles")
-	@SecuredAction("app-registry.list.roles")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listRoles(HttpServerRequest request) {
-		appRegistryService.listRoles(arrayResponseHandler(request));
+		String structureId = request.params().get("structureId");
+		appRegistryService.listRoles(structureId, arrayResponseHandler(request));
 	}
 
 	@Get("/roles/actions")
-	@SecuredAction("app-registry.list.roles.actions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listRolesWithActions(HttpServerRequest request) {
-		appRegistryService.listRolesWithActions(arrayResponseHandler(request));
+		String structureId = request.params().get("structureId");
+		appRegistryService.listRolesWithActions(structureId, arrayResponseHandler(request));
 	}
 
 	@Get("/groups/roles")
-	@SecuredAction("app-registry.list.groups.roles")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		appRegistryService.listGroupsWithRoles(structureId, arrayResponseHandler(request));
 	}
 
 	@Get("/application/conf/:id")
-	@SecuredAction("app-registry.application")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(ApplicationFilter.class)
 	public void application(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
@@ -208,7 +210,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Put("/application/conf/:id")
-	@SecuredAction("app-registry.application.conf")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(ApplicationFilter.class)
 	public void applicationConf(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "updateApplication", new Handler<JsonObject>() {
 			@Override
@@ -224,7 +227,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Delete("/application/conf/:id")
-	@SecuredAction("app-registry.application")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(ApplicationFilter.class)
 	public void deleteApplication(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
@@ -235,12 +239,13 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Post("/application/external")
-	@SecuredAction("app-registry.create.external.app")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void createExternalApp(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
-				appRegistryService.createApplication(body, null, notEmptyResponseHandler(request, 201, 409));
+				String structureId = request.params().get("structureId");
+				appRegistryService.createApplication(structureId, body, null, notEmptyResponseHandler(request, 201, 409));
 			}
 		});
 	}
@@ -251,7 +256,7 @@ public class AppRegistryController extends BaseController {
 		final String application = app.getString("name");
 		final JsonArray securedActions = message.body().getArray("actions");
 		if (application != null && securedActions != null && !application.trim().isEmpty()) {
-			appRegistryService.createApplication(app, securedActions, new Handler<Either<String, JsonObject>>() {
+			appRegistryService.createApplication(null, app, securedActions, new Handler<Either<String, JsonObject>>() {
 				@Override
 				public void handle(Either<String, JsonObject> event) {
 					JsonObject j = new JsonObject();

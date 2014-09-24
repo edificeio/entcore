@@ -26,19 +26,20 @@ import org.vertx.java.core.json.JsonObject;
 
 public interface AppRegistryService {
 
-	void listApplications(Handler<Either<String, JsonArray>> handler);
+	void listApplications(String structureId, Handler<Either<String, JsonArray>> handler);
 
-	void listRoles(Handler<Either<String, JsonArray>> handler);
+	void listRoles(String structureId, Handler<Either<String, JsonArray>> handler);
 
-	void listRolesWithActions(Handler<Either<String, JsonArray>> handler);
+	void listRolesWithActions(String structureId, Handler<Either<String, JsonArray>> handler);
 
 	void listActions(String application, Handler<Either<String, JsonArray>> handler);
 
 	void listGroupsWithRoles(String structureId, Handler<Either<String, JsonArray>> handler);
 
-	void listApplicationsWithActions(String actionType, Handler<Either<String, JsonArray>> handler);
+	void listApplicationsWithActions(String structureId, String actionType, Handler<Either<String, JsonArray>> handler);
 
-	void createRole(JsonObject role, JsonArray actions, Handler<Either<String, JsonObject>> handler);
+	// if structureId is null => global role
+	void createRole(String structureId, JsonObject role, JsonArray actions, Handler<Either<String, JsonObject>> handler);
 
 	void updateRole(String roleId, JsonObject role, JsonArray actions, Handler<Either<String, JsonObject>> handler);
 
@@ -46,7 +47,9 @@ public interface AppRegistryService {
 
 	void linkRolesToGroup(String groupId, JsonArray rolesIds, Handler<Either<String, JsonObject>> handler);
 
-	void createApplication(JsonObject application, JsonArray actions, Handler<Either<String, JsonObject>> handler);
+	// if structureId is null => global application
+	void createApplication(String structureId, JsonObject application, JsonArray actions,
+			Handler<Either<String, JsonObject>> handler);
 
 	void getApplication(String applicationId, Handler<Either<String, JsonObject>> handler);
 

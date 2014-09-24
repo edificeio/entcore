@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2014
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,22 +15,14 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
-package org.entcore.registry;
+package org.entcore.registry.filters;
 
-import org.entcore.common.http.BaseServer;
-import org.entcore.registry.controllers.AppRegistryController;
-import org.entcore.registry.filters.AppRegistryFilter;
+public class RoleFilter extends AbstractFilter {
 
-public class AppRegistry extends BaseServer {
-
-	@Override
-	public void start() {
-		super.start();
-		addController(new AppRegistryController());
-		setDefaultResourceFilter(new AppRegistryFilter());
+	public RoleFilter() {
+		super("Role");
 	}
 
 }

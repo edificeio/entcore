@@ -23,6 +23,9 @@ object IntegrationTestScenario {
   .group("Communication Scenario") {
     CommunicationScenario.scn
   }
+  .group("App-registry ADML Scenario") {
+    AppRegistryAdmlScenario.scn
+  }
   .group("Conversation Scenario") {
     ConversationScenario.scn
   }

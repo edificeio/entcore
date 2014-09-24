@@ -40,28 +40,46 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	private final Neo4j neo = Neo4j.getInstance();
 
 	@Override
-	public void listApplications(Handler<Either<String, JsonArray>> handler) {
+	public void listApplications(String structureId, Handler<Either<String, JsonArray>> handler) {
+		String filter = "";
+		JsonObject params = null;
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "WHERE NOT(HAS(n.structureId)) OR n.structureId = {structure} ";
+			params = new JsonObject().putString("structure", structureId);
+		}
 		String query =
-				"MATCH (n:Application) " +
+				"MATCH (n:Application) " + filter +
 				"RETURN n.id as id, n.name as name";
-		neo.execute(query, (JsonObject) null, validResultHandler(handler));
+		neo.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
-	public void listRoles(Handler<Either<String, JsonArray>> handler) {
+	public void listRoles(String structureId, Handler<Either<String, JsonArray>> handler) {
+		String filter = "";
+		JsonObject params = null;
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "WHERE NOT(HAS(n.structureId)) OR n.structureId = {structure} ";
+			params = new JsonObject().putString("structure", structureId);
+		}
 		String query =
-				"MATCH (n:Role) " +
+				"MATCH (n:Role) " + filter +
 				"RETURN n.id as id, n.name as name ORDER BY name ASC ";
-		neo.execute(query, (JsonObject) null, validResultHandler(handler));
+		neo.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
-	public void listRolesWithActions(Handler<Either<String, JsonArray>> handler) {
+	public void listRolesWithActions(String structureId, Handler<Either<String, JsonArray>> handler) {
+		String filter = "";
+		JsonObject params = null;
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "WHERE NOT(HAS(n.structureId)) OR n.structureId = {structure} ";
+			params = new JsonObject().putString("structure", structureId);
+		}
 		String query =
-				"MATCH (n:Role) " +
+				"MATCH (n:Role) " + filter +
 				"OPTIONAL MATCH n-[r:AUTHORIZE]->a " +
 				"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions";
-		neo.execute(query, (JsonObject) null, validResultHandler(handler));
+		neo.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
@@ -92,11 +110,17 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void listApplicationsWithActions(String actionType, Handler<Either<String, JsonArray>> handler) {
-		String query =
-				"MATCH (n:Application) " +
-				"OPTIONAL MATCH n-[r:PROVIDE]->(a:Action) ";
+	public void listApplicationsWithActions(String structureId, String actionType,
+			Handler<Either<String, JsonArray>> handler) {
+		String filter = "";
 		JsonObject params = new JsonObject();
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			filter = "WHERE NOT(HAS(n.structureId)) OR n.structureId = {structure} ";
+			params.putString("structure", structureId);
+		}
+		String query =
+				"MATCH (n:Application) " + filter +
+				"OPTIONAL MATCH n-[r:PROVIDE]->(a:Action) ";
 		if (actionType != null &&
 				("WORKFLOW".equals(actionType) || "RESOURCE".equals(actionType))) {
 			query += "WHERE r IS NULL OR a.type = {actionType} ";
@@ -107,7 +131,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void createRole(JsonObject role, JsonArray actions, Handler<Either<String, JsonObject>> handler) {
+	public void createRole(String structureId, JsonObject role, JsonArray actions,
+			Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:Role) " +
 				"WHERE n.name = {roleName} " +
@@ -119,6 +144,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"WHERE n.name IN {actions} " +
 				"CREATE UNIQUE m-[:AUTHORIZE]->n " +
 				"RETURN DISTINCT m.id as id";
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			role.putString("structureId", structureId);
+		}
 		JsonObject params = new JsonObject()
 				.putArray("actions", actions)
 				.putObject("role", role.putString("id", UUID.randomUUID().toString()))
@@ -189,7 +217,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void createApplication(JsonObject application, JsonArray actions,
+	public void createApplication(String structureId, JsonObject application, JsonArray actions,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (defaultValidationParamsNull(handler, application, application.getString("name"))) return;
 		final String applicationName = application.getString("name");
@@ -206,6 +234,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"CREATE (m:Application {props}) " +
 				"RETURN m.id as id";
 		final JsonObject params = new JsonObject().putString("applicationName", applicationName);
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			application.putString("structureId", structureId);
+		}
 		final StatementsBuilder b = new StatementsBuilder()
 				.add(createApplicationQuery, params.copy().putObject("props", application));
 		if (actions != null && actions.size() > 0) {
