@@ -3371,9 +3371,10 @@ module.directive('alphabetical', function($compile, $parse){
 				});
 			};
 
-			$scope.display = {
-				pickLetter: false
+			if(!$scope.display){
+				$scope.display = {};
 			}
+			$scope.display.pickLetter;
 		},
 		compile: function(element, attributes){
 			var iterator = attributes.list;
