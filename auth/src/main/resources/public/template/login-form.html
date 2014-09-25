@@ -6,14 +6,14 @@
 			<form method="post" ng-submit="connect()">
 				<p>
 					<label translate content="auth.email"></label>
-					<input type="text" ng-model="user.email" name="email" id="email" />
+					<input type="text" ng-model="user.email" name="email" id="email" autofocus tabindex=1 />
 				</p>
 				<p>
 					<label translate content="auth.password"></label>
-					<input type="password" ng-model="user.password" name="password" id="password" />
+					<input type="password" ng-model="user.password" name="password" id="password" tabindex=2 />
 				</p>
 				<a href="/auth/forgot" translate content="missing.password"></a>
-				<input type="submit" translate attr="value" value="auth.login" />
+				<input type="submit" translate attr="value" value="auth.login" tabindex=3 />
 				<a href="/auth/activation" class="cell reduce-block-six right-magnet" translate content="auth.activateAccount"></a>
 				<div class="clear"></div>
 			</form>
