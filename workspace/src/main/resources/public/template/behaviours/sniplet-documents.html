@@ -1,0 +1,42 @@
+<button ng-click="display.selectSnipletDocument = true">Ajouter un document</button>
+
+<article class="list icons-view">
+	<header>&nbsp;</header>
+	<div ng-repeat="document in source.documents" class="element" ng-class="{ selected: document.selected }">
+		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
+			<div class="twelve cell height-twelve">
+				<div class="clip absolute">
+					<img ng-src="[[documentIcon(document)]]" alt="thumbnail" />
+				</div>
+			</div>
+		</a>
+		<input type="checkbox" data-ng-model="document.selected" />
+
+		<legend>
+			<a ng-href="/workspace/document/[[document._id]]">
+				[[document.name]]
+			</a>
+			<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
+		</legend>
+	</div>
+</article>
+
+
+<lightbox show="display.selectSnipletDocument" on-close="display.selectSnipletDocument = false;">
+	<h2>Rechercher un document</h2>
+
+	<div class="row">
+		<input type="text" ng-model="searchText" i18n-placeholder="search" class="twelve cell" />
+	</div>
+
+	<div class="row" ng-if="searchText">
+		<ul class="illustrated-list">
+			<li ng-repeat="document in documents | filter:searchText" ng-click="addDocument(document)">
+				<img skin-src="[[documentIcon(document)]]" class="illustration" />
+				<a class="name">[[document.name]]</a>
+				<em class="owner">[[document.ownerName]]</em>
+			</li>
+		</ul>
+	</div>
+
+</lightbox>

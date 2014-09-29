@@ -55,7 +55,8 @@ var workspaceBehaviours = {
 				}
 			}
 		}
-	}
+	},
+	viewRights: ["org-entcore-workspace-service-WorkspaceService|copyDocuments", "org-entcore-workspace-service-WorkspaceService|getDocument"]
 };
 
 Behaviours.register('workspace', {
@@ -129,5 +130,42 @@ Behaviours.register('workspace', {
 			file.loading = false;
 			this.loadResources(callback);
 		}.bind(this));
+	},
+	sniplets: {
+		documents: {
+			title: 'Documents',
+			description: 'Il vous permet d\'ajouter des documents que vos visiteurs pourront télécharger',
+			controller: {
+				initSource: function(){
+					this.setSnipletSource({
+						documents: []
+					});
+				},
+				init: function(){
+					http().get('/workspace/documents', { filter: 'owner' }).done(function(data){
+						this.documents = data;
+						this.$apply();
+					}.bind(this))
+				},
+				addDocument: function(document){
+					this.source.documents.push(document);
+					Behaviours.copyRights(this.snipletResource, document, workspaceBehaviours.viewRights, 'workspace');
+					this.display.selectSnipletDocument = false;
+				},
+				copyRights: function(snipletResource, source){
+					source.documents.forEach(function(document){
+						Behaviours.copyRights(snipletResource, document, workspaceBehaviours.viewRights, 'workspace');
+					});
+				},
+				documentIcon: function(doc){
+					if(doc.metadata['content-type'].indexOf('image') !== -1){
+						return '/workspace/document/' + doc._id + '?thumbnail=150x150';
+					}
+					else{
+						return '/img/icons/unknown-large.png';
+					}
+				}
+			}
+		}
 	}
 });

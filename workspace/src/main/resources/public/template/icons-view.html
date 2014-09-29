@@ -30,7 +30,7 @@
 			</legend>
 		</div>
 		<section data-ng-repeat-end></section>
-		<div ng-repeat-start="document in openedFolder.content" class="element reduce-block-six" ng-class="{ selected: document.selected }">
+		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }">
 			<a ng-href="[[documentPath(document)]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
