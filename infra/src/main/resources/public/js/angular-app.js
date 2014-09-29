@@ -188,9 +188,11 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 	})
 	.factory('route', function($rootScope, $route, $routeParams){
 		var routes = {};
+		var currentAction = undefined;
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function'){
+			if(typeof routes[$route.current.action] === 'function' && currentAction !== $route.current.action){
+				currentAction = $route.current.action;
 				routes[$route.current.action]($routeParams);
 			}
 		});
@@ -956,6 +958,7 @@ module.directive('mediaSelect', function($compile){
 			fileFormat: '=',
 			label: "@",
 			class: "@",
+			value: '@',
 			tooltip: "@"
 		},
 		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[tooltip]]" />' +
@@ -3771,10 +3774,10 @@ function Share($rootScope, $scope, ui, _, lang){
 					return action.displayName.split('.')[1].indexOf(dependency) !== -1;
 				}) !== undefined
 			})
-				.forEach(function(item){
-					element.actions[item.displayName] = false;
-					data.actions = data.actions.concat(actionToRights(element, item));
-				})
+			.forEach(function(item){
+				element.actions[item.displayName] = false;
+				data.actions = data.actions.concat(actionToRights(element, item));
+			})
 		}
 		else{
 			action.requires.forEach(function(required){
@@ -3788,7 +3791,13 @@ function Share($rootScope, $scope, ui, _, lang){
 
 		$scope.resources.forEach(function(resource){
 			http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
-				$rootScope.$broadcast('share-updated');
+				if(setPath === 'remove'){
+					$rootScope.$broadcast('share-updated', { removed: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
+				}
+				else{
+					$rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
+				}
+
 			});
 		});
 	}

@@ -1357,6 +1357,48 @@ function bootstrap(func){
 
 	Behaviours = (function(){
 		return {
+			copyRights: function(rightsProvider, resource, viewRights, appPrefix){
+				if(resource._id && rightsProvider){
+					if(rightsProvider.shared){
+						rightsProvider.shared.forEach(function(share){
+							var data = { actions: viewRights };
+							if(share.groupId){
+								data.groupId = share.groupId;
+							}
+							else{
+								data.userId = share.userId;
+							}
+							http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
+						});
+					}
+					else{
+						var data = {};
+						if(rightsProvider.added){
+							if(rightsProvider.added.userId){
+								data.userId = rightsProvider.added.userId;
+							}
+							else{
+								data.groupId = rightsProvider.added.groupId;
+							}
+							data.actions = viewRights;
+
+							http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
+						}
+						if(rightsProvider.removed){
+							if(rightsProvider.removed.userId){
+								data.userId = rightsProvider.removed.userId;
+							}
+							else{
+								data.groupId = rightsProvider.removed.groupId;
+							}
+							data.actions = viewRights;
+							if(_.find(rightsProvider.removed.actions, function(action, name){ return name.indexOf('.read') !== -1 })){
+								http().put('/' + appPrefix + '/share/remove/' + resource._id, http().serialize(data));
+							}
+						}
+					}
+				}
+			},
 			register: function(application, appBehaviours){
 				this.applicationsBehaviours[application] = {};
 				this.applicationsBehaviours[application] = appBehaviours;
