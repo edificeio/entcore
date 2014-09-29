@@ -1,1 +1,1 @@
-fr.wseduc.webutils.eventbus.EventBusWithLoggerFactory
+fr.wseduc.webutils.eventbus.DefaultEventBusFactory
