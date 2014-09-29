@@ -102,6 +102,7 @@ public class WorkspaceService extends BaseController {
 		post("/rack/documents/copy/:ids", "copyRackDocuments");
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
+		get("/rack/:id", "getRackDocument");
 	}
 
 	@Get("/workspace")
@@ -960,7 +961,6 @@ public class WorkspaceService extends BaseController {
 		getFile(request, documentDao, null);
 	}
 
-	@Get("/rack/:id")
 	@SecuredAction("workspace.rack.document.get")
 	public void getRackDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
