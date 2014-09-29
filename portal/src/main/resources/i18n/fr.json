@@ -33,7 +33,7 @@
     "friday": "vendredi",
     "hiboutheque": "Hibouthèque",
     "homeworks": "Cahier de textes",
-    "library.browse.add": "Ajouter",
+    "add": "Ajouter",
     "library.browse.notfound": "Aucun document ne correspond à votre recherche",
     "library.browse.title": "Sélectionner les fichiers",
     "library.file.choose": "Parcourir",
@@ -99,5 +99,6 @@
     "workspace.sharedDocuments": "Documents partagés avec moi",
 	"books": "Lecture",
 	"post.author": "Ecrit par ",
-	"post.date": "le"
+	"post.date": "le",
+    "linker.notfound": "Votre recherche ne retourne aucun résultat !"
 }

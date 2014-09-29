@@ -12,6 +12,8 @@
 .row:after {
   clear: both;
   content: " ";
+  display: block;
+  width: 100%;
 }
 .cell {
   -webkit-box-sizing: border-box;
@@ -368,51 +370,39 @@
   left: 0;
 }
 .one {
-  width: 1;
   width: 8.33333333%;
 }
 .two {
-  width: 1;
   width: 16.66666667%;
 }
 .three {
-  width: 1;
   width: 25%;
 }
 .four {
-  width: 1;
   width: 33.33333333%;
 }
 .five {
-  width: 1;
   width: 41.66666667%;
 }
 .six {
-  width: 1;
   width: 50%;
 }
 .seven {
-  width: 1;
   width: 58.33333333%;
 }
 .eight {
-  width: 1;
   width: 66.66666667%;
 }
 .nine {
-  width: 1;
   width: 75%;
 }
 .ten {
-  width: 1;
   width: 83.33333333%;
 }
 .eleven {
-  width: 1;
   width: 91.66666667%;
 }
 .twelve {
-  width: 1;
   width: 100%;
 }
 .centered {
@@ -678,7 +668,6 @@ nav.stamps article {
   margin-bottom: 7px;
   padding: 0;
   height: 113px;
-  width: 1;
   width: 100%;
 }
 .dominos .mood {
@@ -697,7 +686,7 @@ textarea {
   height: 130px;
 }
 .centered-text {
-  text-align: center;
+  text-align: center !important;
 }
 .badge {
   -webkit-border-radius: 10px;
@@ -887,7 +876,6 @@ p i {
 }
 .birthday .content {
   margin-top: 35px;
-  width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -936,7 +924,6 @@ p i {
 }
 .birthday nav.vertical ul li a .user {
   display: inline-block;
-  width: 1;
   width: 41.66666667%;
   height: 100%;
   line-height: 100%;
@@ -1000,7 +987,6 @@ p i {
 }
 .calendar.widget .content {
   margin-top: 55px;
-  width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -1049,7 +1035,6 @@ p i {
   margin-bottom: 10px;
 }
 .dominos {
-  width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -1063,7 +1048,6 @@ p i {
   max-width: 100%;
 }
 .dominos .item {
-  width: 1;
   width: 20%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -1086,7 +1070,6 @@ p i {
   float: left;
   display: block;
   position: relative;
-  width: 1;
   width: 100%;
 }
 .dominos .item .domino img {
@@ -1780,7 +1763,6 @@ section .contextual-buttons .action-buttons {
   float: left;
   display: block;
   position: relative;
-  width: 1;
   width: 83.33333333%;
   margin-bottom: 10px;
 }
@@ -1853,6 +1835,10 @@ hr {
 }
 .label-badge {
   display: inline-block;
+}
+.media .lightbox-view,
+.media .lightbox-window {
+  cursor: pointer;
 }
 .lightbox-window form {
   padding: 10px;
@@ -1928,6 +1914,20 @@ section.lightbox-window .lightbox-buttons {
 section.lightbox-window .lightbox-buttons input[type=submit],
 section.lightbox-window .lightbox-buttons input[type=button] {
   float: right;
+}
+section.lightbox-window .close-lightbox {
+  height: 20px;
+  width: 20px;
+  background-image: url("../img/icons/glyphicons_207_remove_2.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
 }
 .loading-panel {
   width: 100%;
@@ -2430,7 +2430,7 @@ em.high-importance {
 }
 .illustrated-list img {
   height: 40px;
-  width: 40px;
+  width: 40px !important;
   display: block;
   float: left;
   margin-right: 10px;
@@ -2797,7 +2797,6 @@ a.cke_smile img {
 .accordions .accordion .toggle {
   border: 0;
   background: #333;
-  width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -2887,7 +2886,7 @@ a.cke_smile img {
   overflow: hidden;
   padding-top: 2px;
   border-left: 1px solid #ddd;
-  border-top: 1px dashed #ddd;
+  border-top: 1px dashed #888;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -2912,9 +2911,9 @@ a.cke_smile img {
 }
 .grid-view .media {
   outline: none;
+  cursor: default;
 }
 .grid-add-row {
-  width: 1;
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -3095,6 +3094,7 @@ a.cke_smile img {
 }
 .viewer .media {
   outline: none;
+  cursor: default;
 }
 .viewer .drawing-grid.editor .media {
   outline: 1px dotted black;
@@ -3548,8 +3548,8 @@ a.cke_smile img {
 .page-markers .marker .content {
   position: absolute;
   transform: rotate(-45deg);
-  bottom: -95px;
-  left: -115px;
+  bottom: -69px;
+  left: -66px;
   width: 80px;
   height: 30px;
   line-height: 30px;
@@ -3564,8 +3564,11 @@ a.cke_smile img {
   line-height: 30px;
   width: 120px;
   height: 30px;
-  bottom: -70px;
+  bottom: -87px;
   left: -110px;
+}
+.blogs-posts-list table {
+  table-layout: fixed;
 }
 html,
 body {
@@ -5360,7 +5363,7 @@ article {
   background: transparent;
   border-radius: 3px;
   border: none;
-  margin-bottom: 45px;
+  margin-bottom: 15px;
 }
 body {
   font-size: 14px;
@@ -5496,11 +5499,16 @@ filters p:first-child i {
 }
 .toggle-buttons button {
   background: none;
-  padding: 7px;
+  padding: 9px;
   border: none;
   font-size: 1.3em;
   font-weight: normal;
-  margin-right: 15px;
+  margin: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
 }
 .toggle-buttons button[disabled],
 .toggle-buttons button.disabled {
@@ -5508,7 +5516,7 @@ filters p:first-child i {
 }
 .toggle-buttons button:hover {
   color: #23a9aa;
-  background: #555;
+  background: #333;
 }
 .toggle-buttons button[disabled]:hover,
 .toggle-buttons button.disabled:hover {
@@ -6056,9 +6064,6 @@ select {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  background-size: 60% auto;
-  background-color: transparent;
-  border: none;
 }
 .menu-items i.sound,
 .menu-items input[type=button].sound {
@@ -6074,9 +6079,6 @@ select {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  background-size: 60% auto;
-  background-color: transparent;
-  border: none;
 }
 .menu-items i.video {
   height: 30px;
@@ -6091,7 +6093,6 @@ select {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  background-size: 60% auto;
   background-color: transparent;
   border: none;
 }
@@ -6127,6 +6128,21 @@ select {
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
+}
+.menu-items input[type=button] {
+  background-position: 4px !important;
+  padding-left: 29px;
+  font-family: Arial;
+  color: #23a9aa;
+  background-size: 19px;
+  background-color: transparent;
+  border: none;
+  width: 100% !important;
+  text-align: left;
+  font-size: 12px;
+}
+.menu-items input[type=button]:hover {
+  color: #000;
 }
 .square-menu button {
   background: #266881;
@@ -6397,23 +6413,18 @@ select {
   background-size: 100% auto;
 }
 .schedule .schedule-items .schedule-item.one {
-  width: 1;
   width: 8.33333333%;
 }
 .schedule .schedule-items .schedule-item.two {
-  width: 1;
   width: 16.66666667%;
 }
 .schedule .schedule-items .schedule-item.three {
-  width: 1;
   width: 25%;
 }
 .schedule .schedule-items .schedule-item.four {
-  width: 1;
   width: 33.33333333%;
 }
 .schedule .schedule-items .schedule-item.six {
-  width: 1;
   width: 50%;
 }
 .share h3 {
@@ -6752,6 +6763,7 @@ nav.illustrated-links ul li .illustration img {
   height: 120px;
 }
 nav.illustrated-links ul li .content {
+  padding: 8px;
   padding-left: 15px;
   display: table-cell;
   vertical-align: top;
@@ -6877,6 +6889,7 @@ nav.illustrated-links ul li .content em {
 .page-markers .marker {
   border-color: transparent transparent #266881 transparent;
   color: #fff;
+  font-family: Lato;
 }
 .page-markers .marker:nth-child(2) {
   color: #fff;

@@ -1143,7 +1143,7 @@ table{
 		background: transparent;
 		border-radius: 3px;
 		border: none;
-		margin-bottom: 45px;
+		margin-bottom: 15px;
 	}
 
 	body{
@@ -1279,18 +1279,19 @@ filters{
 	height: 40px;
 	button{
 		background: none;
-		padding: 7px;
+		padding: 9px;
 		border: none;
 		font-size: 1.3em;
 		font-weight: normal;
-		margin-right: 15px;
+		margin: 0;
+		.border-radius(0);
 	}
 	button[disabled], button.disabled{
 		color: #888;
 	}
 	button:hover{
 		color: @bright-blue;
-		background: #555;
+		background: #333;
 	}
 	button[disabled]:hover, button.disabled:hover{
 		cursor: default;
@@ -1658,19 +1659,12 @@ select{
 		}
 		i.image, input[type=button].image{
 			.icon(picture-icon, 30px);
-			background-size: 60% auto;
-			background-color: transparent;
-			border: none;
 		}
 		i.sound, input[type=button].sound{
 			.icon(music-icon, 30px);
-			background-size: 60% auto;
-			background-color: transparent;
-			border: none;
 		}
 		i.video{
 			.icon(video-icon, 30px);
-			background-size: 60% auto;
 			background-color: transparent;
 			border: none;
 		}
@@ -1684,6 +1678,21 @@ select{
 			.icon(glyphicons_155_show_big_thumbnails, 30px);
 			background-size: 60% auto;
 			background-color: transparent
+		}
+		input[type=button]{
+			background-position: 4px !important;
+			padding-left: 29px;
+			font-family: Arial;
+			color: @bright-blue;
+			background-size: 19px;
+			background-color: transparent;
+			border: none;
+			width: 100% !important;
+			text-align: left;
+			font-size: 12px;
+		}
+		input[type=button]:hover{
+			color: #000;
 		}
 	}
 
@@ -2216,7 +2225,7 @@ ul.toc{
 
 .text-container {
 	padding: 0;
-	padding-top: 48px;
+	padding-top: 48px
 }
 
 nav.illustrated-links{
@@ -2239,6 +2248,7 @@ nav.illustrated-links{
 				}
 			}
 			.content{
+				padding: 8px;
 				padding-left: 15px;
 				display: table-cell;
 				vertical-align: top;
@@ -2324,6 +2334,7 @@ nav.illustrated-links{
 	.marker{
 		border-color: transparent transparent @dark-blue transparent;
 		color: #fff;
+		font-family: Lato;
 	}
 	.marker:nth-child(2){
 		color: #fff;
