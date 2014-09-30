@@ -67,9 +67,9 @@ public class DirectoryController extends BaseController {
 		this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 	}
 
-	@Get("/admin")
-	@SecuredAction("directory.view")
-	public void directory(HttpServerRequest request) {
+	@Get("/admin-console")
+	@SecuredAction("directory.adminConsole")
+	public void adminConsole(HttpServerRequest request) {
 		renderView(request, new JsonObject());
 	}
 

@@ -1,0 +1,504 @@
+<html>
+    <head>
+        <title>{{#i18n}}directory.admin.title{{/i18n}}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+        <script src="{{#static}}js/admin/model.js{{/static}}" type="text/javascript"></script>
+        <script src="{{#static}}js/admin/controller.js{{/static}}" type="text/javascript"></script>
+    </head>
+</html>
+<body>
+    <admin-portal>
+        <article ng-controller="AdminDirectoryController" class="twelve cell list-view">
+
+            <div class="eleven leaf-menu-container">
+                <div class="leaf-menu" ng-class="{ selected: selected === 0 }">
+                    <a ng-click="selected=0">[[lang.translate("directory.userOps")]]</a>
+                </div>
+                <div class="leaf-menu" ng-class="{ selected: selected === 3 }">
+                    <a ng-click="selected=3">[[lang.translate("directory.classOps")]]</a>
+                </div>
+                <div class="leaf-menu" ng-class="{ selected: selected === 1 }">
+                    <a ng-click="selected=1">[[lang.translate("directory.feeding")]]</a>
+                </div>
+                <div class="leaf-menu" ng-class="{ selected: selected === 2 }">
+                    <a ng-click="selected=2; refreshIsolated()">[[lang.translate("directory.isolatedUsers")]]</a>
+                    <loading-icon request="isolated-request" only-loading-icon class="directory-inline-middle"></loading-icon>
+                </div>
+            </div>
+
+            <!--
+                |||||||||||||||||||||
+                |||  ACCOUNT OPS  |||
+                |||||||||||||||||||||
+            -->
+            <div ng-if="selected === 0" class="twelve">
+                <!-- Structure selection menu -->
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 750px; overflow-y: scroll;">
+                        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
+                            [[structure.name]]
+                        </li>
+                    </ul>
+                </nav>
+                <article class="side-tabs-content nine cell" ng-if="structure" style="position: relative">
+
+                    <!-- User selection menu -->
+                    <nav class="vertical cell search-container-left">
+
+                        <!-- Filter toggle button -->
+                        <button ng-click="showWhat = showWhat === 'showFilters' ? 'showStructureUser' : 'showFilters'" tooltip="tooltip.users.filtersTooltip"
+                                class="directory-list-glyph-button filter-icon">
+                        </button>
+
+                        <!-- Order toggle button -->
+                        <button ng-click="switchOrdering()" tooltip="tooltip.users.switchOrdering"
+                                class="directory-list-sort-button">
+                        </button>
+
+                        <!-- Creation button -->
+                        <button ng-click="showWhat = 'showCreatedUser'" tooltip="directory.tooltip.creationTooltip"
+                                class="directory-list-glyph-button silhouette-icon" style="margin-top: 94">
+                        </button>
+
+                        <!-- Legend button -->
+                        <button ng-click="showWhat = 'showLegend'" tooltip="directory.tooltip.legend"
+                                class="directory-list-glyph-button question-mark-icon" style="margin-top: 141">
+                        </button>
+
+                        <!-- User list -->
+                        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers"/>
+                        <ul style="height: 640px; padding-top: 10;">
+                            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering" ng-click="$root.structureUser = user; $parent.showWhat = 'showStructureUser'; getUserDetails(user);" style="padding-left: 0">
+                                <span ng-style="userStyle(user)">[[user.displayName]]</span>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Filter container -->
+                    <div ng-if="showWhat === 'showFilters'" class="directory-userlist-right-container">
+                        <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.filterResults")]]</h1>
+                        <div class="row angle-container">
+                            <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.classes")]]</span>
+                            <button ng-click="deselectAllClasses()" style="height: 25px" class="instantButtons deselect right-magnet" tooltip="directory.tooltip.deselectAll"></button>
+                            <button ng-click="selectAllClasses()" style="height: 25px" class="instantButtons select right-magnet" tooltip="directory.tooltip.selectAll"></button>
+                        </div>
+                        <ul class="selectable-list" style="overflow-y: scroll">
+                            <li ng-repeat="class in structure.classes.all | orderBy: 'name'" ng-class="{selected : class.selected}" ng-click="toggleClass(class, structure)">
+                                [[class.name]]
+                            </li>
+                        </ul>
+
+                        <div class="row angle-container">
+                            <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.isolatedUsers")]]</span>
+                        </div>
+                        <div class="twelve cell" style="text-align: center;">
+                            <h4 style="display: inline-block; font-family: Lato; vertical-align: middle;font-size: 17;">Afficher / Masquer</h4>
+                            <input type="checkbox" ng-model="$parent.$parent.$parent.showIsolated" class="directory-inline-middle" style="margin-left: 20px; width: 30px; height: 30px;"/>
+                        </div>
+                    </div>
+
+                    <!-- Legend container -->
+                    <div ng-if="showWhat === 'showLegend'" class="directory-userlist-right-container">
+                        <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.tooltip.legend")]]</h1>
+                        <div class="directory-legend-separator first">
+                            <div class="directory-legend-square red"></div>
+                            <label class="directory-legend-label bold">[[lang.translate("Teacher")]]</label>
+                        </div>
+                        <div class="directory-legend-separator">
+                            <div class="directory-legend-square teal"></div>
+                            <label class="directory-legend-label bold">[[lang.translate("directory.admin.personnel")]]</label>
+                        </div>
+                        <div class="directory-legend-separator">
+                            <div class="directory-legend-square orange"></div>
+                            <label class="directory-legend-label">[[lang.translate("Relative")]]</label>
+                        </div>
+                        <div class="directory-legend-separator">
+                            <div class="directory-legend-square black"></div>
+                            <label class="directory-legend-label">[[lang.translate("Student")]]</label>
+                        </div>
+                        <div class="directory-legend-separator">
+                            <label class="directory-legend-label underline marged">[[lang.translate("directory.isolatedUsers")]]</label>
+                        </div>
+                        <div class="directory-legend-separator">
+                            <label class="directory-legend-label underline marged">[[lang.translate("directory.inactive")]]</label>
+                        </div>
+                    </div>
+
+                    <!-- User data container -->
+                    <div ng-if="structureUser && showWhat === 'showStructureUser'" class="search-container-view">
+                        <div style="width: 97%">
+                            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structureUser.firstName+" "+structureUser.lastName]]</h1></div>
+                            <hr class="separator">
+                            <div style="text-align:center">
+                                <button ng-click="structureUser.update(reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.save")]]</button>
+                                <button ng-click="structure.unlinkUser(structureUser, reloadStructure(structure))">[[lang.translate("directory.admin.unlink.school")]]</button>
+                                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+structureUser.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
+                                    <button class="directory-direct-link-button"></button>
+                                </a>
+                            </div>
+                            <hr class="separator">
+                            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structureUser.id]]</div>
+                            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+structureUser.type)]]</div>
+                            <br>
+                            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[structureUser.login]]</div>
+                            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[structureUser.code]]</div>
+                            <hr style="border: 1px solid black; margin: 15 0 15 0;"/>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
+                                <input type="text" ng-model="structureUser.firstName"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
+                                <input type="text" ng-model="structureUser.lastName"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userBirth")]]</strong>
+                                <div ng-if="!structureUser.birthDate">
+                                    <div class="directory-top-padded" style="display: inline-block; width: 30%"> [[lang.translate("directory.notFilled")]]</div>
+                                    <button ng-click="initUserBirth(structureUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+                                </div>
+                                <div ng-if="structureUser.birthDate">
+                                    <date-picker ng-model="structureUser.birthDate"></date-picker>
+                                    <button ng-click="structureUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+                                </div>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userAddress")]]</strong>
+                                <input type="text" ng-model="structureUser.address"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userCity")]]</strong>
+                                <input type="text" ng-model="structureUser.city"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userZipCode")]]</strong>
+                                <input type="text" ng-model="structureUser.zipCode"/>
+                            </div>
+                            <hr style="border: 1px solid black; margin: 15 0 15 0;" ng-if="!structureUser.code">
+                            <div class="row" ng-if="!structureUser.code">
+                                <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
+                                <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
+                                <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="structureUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
+                            </div>
+                            <div class="twelve cell" ng-if="structureUser.totalClasses && structureUser.totalClasses.length > 0">
+                                <hr class="separator">
+                                <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.classes")]]</h3>
+                                <div class="row">
+                                    <ul class="angle-list" style="padding-left: 5%">
+                                        <li ng-repeat="classe in structureUser.totalClasses | orderBy: 'name'" style="font-size: 15px; padding: 0 0 0 10;">
+                                            <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classe.id]]" target="_blank">[[classe.name]]</a>
+                                            <button ng-click="classe.unlinkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" class="right-magnet" style="font-size: 9; padding: 0; width: 15; height: 15; border-radius: 10px;">X</button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div ng-if="!structureUser.code" class="twelve cell">
+                                <hr class="separator">
+                                <h3 style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
+                                <div style="text-align: center; margin-bottom: 10">
+                                    <div style="width: 250px; border: 1px solid black; display: inline-block;">
+                                        <div ng-style="{ width: getStorageRatio(structureUser.storage, structureUser.quota)+'%' }" style="background-color: #ff0b75; padding: 0; margin: 0; float: left;">&nbsp;</div>
+                                        <div ng-style="{ width: (100 - getStorageRatio(structureUser.storage, structureUser.quota))+'%' }" style="width: 90%; display: inline-block; background-color: #444; padding: 0; margin: 0; float: left;">&nbsp;</div>
+                                        <h4 style="text-align:center; margin:0">
+                                            [[formatStorage(structureUser.storage, structureUser.quota)]] / [[formatQuota(structureUser.quota)]] [[ lang.translate("directory.usedSpace") ]]
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="twelve cell">
+                                    <strong class="three cell directory-top-padded">[[lang.translate("directory.quotaShort")]]</strong>
+                                    <form novalidate name="quotaForm">
+                                        <input type="number" name="size" ng-model="$root.quotaSize" ng-change="structureUser.quota = $root.quotaSize * quotaUnit" min="[[structureUser.storage]]" style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
+                                        <select class="three cell" ng-model="$root.quotaUnit" ng-change="$root.quotaSize = structureUser.quota /$root.quotaUnit" style="margin-left: 10px; margin-right: 10px">
+                                            <option value="1">[[lang.translate("directory.byte")]]</option>
+                                            <option value="1024">[[lang.translate("directory.kilobyte")]]</option>
+                                            <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                                            <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                                            <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                                        </select>
+                                        <button class="two right-magnet" style="margin: 0; font-size: 12" ng-click="structureUser.saveQuota()" ng-disabled="structureUser.quota < structureUser.storage">[[lang.translate("directory.save")]]</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <hr class="separator">
+                            <div class="twelve cell height-three">
+                                <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
+                                <div class="twelve cell">
+                                    <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.school")]]</span>
+                                    <select class="four cell" ng-model="linkStructure" ng-init="linkStructure = structure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+                                </div>
+                                <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
+                                    <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
+                                    <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
+                                    </select>
+                                </div>
+                                <div style="text-align: center">
+                                    <button style="margin-top: 10px" ng-if="linkStructure" ng-click="linkStructure.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToSchool")]]</button>
+                                    <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User creation container -->
+                    <div ng-if="showWhat === 'showCreatedUser'" ng-init="createdUser = initUser()" class="search-container-view">
+                        <div style="width: 97%">
+                            <div class="row">
+                                <h1 style="margin-bottom: 0; text-align:center;">[[(createdUser.firstName || createdUser.lastName) ? createdUser.firstName+" "+createdUser.lastName : "Nom"]]</h1>
+                            </div>
+                            <hr class="separator">
+                            <div style="text-align:center">
+                                <button ng-click="createUser(createdUser)">[[lang.translate("directory.admin.create")]]</button>
+                            </div>
+                            <hr class="separator">
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
+                                <input  class="four cell directory-top-padded" type="text" ng-model="createdUser.firstName"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
+                                <input  class="four cell directory-top-padded" type="text" ng-model="createdUser.lastName"/>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.userType")]]</strong>
+                                <select class="four cell" ng-model="createdUser.type" style="margin-right: 10px;">
+                                    <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+                                    <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                                    <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+                                    <option value="Student">[[lang.translate("directory.Student")]]</option>
+                                </select>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
+                                <div ng-if="!createdUser.birthDate">
+                                    <div class="four cell">[[lang.translate("directory.notFilled")]]</div>
+                                    <button ng-click="initUserBirth(createdUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+                                </div>
+                                <div ng-if="createdUser.birthDate">
+                                    <date-picker class="four cell" ng-model="createdUser.birthDate"></date-picker>
+                                    <button ng-click="createdUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+                                </div>
+                            </div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.classe")]]</strong>
+                                <select class="four cell"
+                                        ng-model="createdUser.classId"
+                                        ng-options="classe.id as classe.name for classe in structure.classes.all | orderBy: 'name'"
+                                        style="margin-right: 10px;">
+                                    <option value="">[[lang.translate("directory.classeLess")]]</option>
+                                </select>
+                            </div>
+                            <div ng-if="createdUser.type === 'Relative'">
+                                <hr class="separator">
+                                <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; border-right: 2px solid black; border-bottom: none; margin: 0">
+                                    <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
+                                    <ul style="height: 320px; padding-top: 10; border-bottom: 2px solid black; margin-bottom: 10px">
+                                        <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'displayName'"
+                                            ng-click="addChild(child, createdUser)"
+                                            style="padding-left: 0">
+                                            <span>[[child.displayName]]</span>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                <div style="width:60%; float: left">
+                                    <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
+                                    <ul style="list-style-type: decimal; font-family: Lato;">
+                                        <li ng-repeat="child in createdUser.children" ng-click="removeChild(child, createdUser)">[[child.displayName]]</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!--
+                |||||||||||||||||||||
+                |||  CLASSES OPS  |||
+                |||||||||||||||||||||
+            -->
+            <div ng-if="selected === 3" class="twelve">
+                <!-- Structure selection menu -->
+                <nav class="side-tabs three cell">
+                    <ul style="max-height: 750px; overflow-y: scroll;">
+                        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
+                            [[structure.name]]
+                        </li>
+                    </ul>
+                </nav>
+
+                <article class="side-tabs-content nine cell" ng-if="structure">
+                    <!-- Class selection menu -->
+                    <nav class="vertical cell search-container-left">
+                        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureClasses"/>
+                        <ul style="height: 640px; padding-top: 10;">
+                            <li ng-repeat="class in structure.classes.all | filter: filterStructureClasses | orderBy: 'name'" ng-click="$parent.classSelected = class" style="padding-left: 0">
+                                [[class.name]]
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Class details -->
+                    <div ng-if="classSelected" class="search-container-view">
+                        <div style="width: 97%">
+                            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[classSelected.name]]</h1></div>
+                            <hr class="separator">
+                            <div style="text-align:center">
+                                <button ng-click="classSelected.update()">[[lang.translate("directory.save")]]</button>
+                                <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classSelected.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
+                                    <button class="directory-direct-link-button"></button>
+                                </a>
+                            </div>
+                            <hr class="separator">
+                            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[classSelected.id]]</div>
+                            <div class="twelve cell">
+                                <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+                                <input type="text" ng-model="classSelected.name"/>
+                            </div>
+                            <a href="[['/directory/admin-console#/classUsers/'+structure.id+'/'+classSelected.id]]" target="_blank">[[lang.translate("directory.classUsers")]]</a>
+                            <hr class="separator">
+                            <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportClass")]]</strong>
+                            <button class="two cell" ng-click="openExport('classId', classSelected.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+                            <hr class="separator">
+                            <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
+                            <div class="twelve cell">
+                                <select class="three cell" ng-model="quotaProfile" ng-init="quotaProfile = 'Teacher'" style="margin-right: 10px;">
+                                    <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+                                    <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                                    <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+                                    <option value="Student">[[lang.translate("directory.Student")]]</option>
+                                </select>
+                                <select class="three cell" ng-model="quotaUnit" ng-init="quotaUnit = 1" style="margin-right: 10px">
+                                    <option value="1">[[lang.translate("directory.byte")]]</option>
+                                    <option value="1024">[[lang.translate("directory.kilobyte")]]</option>
+                                    <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                                    <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                                    <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                                </select>
+                                <input class="three cell" type="number" name="size" ng-model="quotaSize" ng-init="quotaSize = 0" style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
+                                <button class="two right-magnet" style="margin: 0; font-size: 12" ng-click="saveClassQuota(classSelected, quotaSize*quotaUnit, quotaProfile)" ng-disabled="!quotaProfile || (quotaSize <= 0)">[[lang.translate("directory.save")]]</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!--
+                |||||||||||||||||||||
+                |||  MAINTENANCE  |||
+                |||||||||||||||||||||
+            -->
+            <div ng-if="selected === 1" class="twelve">
+                <div class="row">
+                    <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
+                    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">[[lang.translate("directory.import")]]</button>
+                </div>
+                <div class="row">
+                    <label class="five cell"><span>[[lang.translate("directory.launchUserExport")]]</span></label>
+                    <button class="three cell" ng-click="openExport(export_mode, $root.export_id)">[[lang.translate("directory.export")]]</button>
+                </div>
+                <div class="row">
+                    <select ng-model="export_mode" class="two cell directory-top-padded" style="margin-left: 0">
+                        <option value="all">[[lang.translate("directory.all")]]</option>
+                        <option value="structureId">[[lang.translate("directory.structureById")]]</option>
+                        <option value="classId">[[lang.translate("directory.clessById")]]</option>
+                    </select>
+                    <div class="cell" style="width: 10px;">&nbsp;</div>
+                    <div ng-if="export_mode !== 'all'">
+                        <input class="two cell directory-top-padded" type="text" ng-model="$root.export_id" placeholder="[[lang.translate('directory.id')]]"/>
+                    </div>
+                </div>
+            </div>
+
+            <!--
+                |||||||||||||||||||||||||||
+                |||  INACTIVE ACCOUNTS  |||
+                |||||||||||||||||||||||||||
+            -->
+            <div ng-if="selected === 2" class="twelve">
+                <ul bottom-scroll-action="incrementUsersLimit()" style="width: 25%; float:left; list-style: none; font-family: Lato; height: 700px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
+                    <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
+                        <form ng-submit="filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
+                            <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 88%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
+                            <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; background: #AAA; width: 25; height: 25; border: none;" value="✓">
+                        </form>
+                    </div>
+                    <li ng-repeat="user in isolatedUsers.users.all | filter: { displayName: filterIsolatedUsers } | limitTo: usersLimit"
+                        ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
+                        [[user.displayName]]
+                    </li>
+                </ul>
+                <div style="width: 62%; float: left; border-bottom: 2px ridge #ff0b75; padding: 20 0 0 20; height: 694px; padding-right: 20px; overflow-y: scroll" ng-if="isolatedUser">
+                    <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[isolatedUser.firstName+" "+isolatedUser.lastName]]</h1></div>
+                    <hr class="separator">
+                    <div style="text-align:center">
+                        <button ng-click="isolatedUser.update(refreshIsolated())">[[lang.translate("directory.save")]]</button>
+                    </div>
+                    <hr class="separator">
+                    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
+                    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+isolatedUser.type)]]</div>
+                    <br>
+                    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[isolatedUser.login]]</div>
+                    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[isolatedUser.code]]</div>
+                    <hr style="border: 1px solid black; margin: 15 0 15 0;"/>
+                    <div class="twelve cell">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
+                        <input type="text" ng-model="isolatedUser.firstName"/>
+                    </div>
+                    <div class="twelve cell">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
+                        <input type="text" ng-model="isolatedUser.lastName"/>
+                    </div>
+                    <div class="twelve cell">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userBirth")]]</strong>
+                        <div ng-if="!isolatedUser.birthDate">
+                            <div class="directory-top-padded" style="display: inline-block;" class="three"> [[lang.translate("directory.notFilled")]]</div>
+                            <button ng-click="initUserBirth(isolatedUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+                        </div>
+                        <div ng-if="isolatedUser.birthDate">
+                            <date-picker ng-model="isolatedUser.birthDate"></date-picker>
+                            <button ng-click="isolatedUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+                        </div>
+                    </div>
+                    <div class="twelve cell directory-top-padded">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userAddress")]]</strong>
+                        <input type="text" ng-model="isolatedUser.address"/>
+                    </div>
+                    <div class="twelve cell directory-top-padded">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userCity")]]</strong>
+                        <input type="text" ng-model="isolatedUser.city"/>
+                    </div>
+                    <div class="twelve cell directory-top-padded">
+                        <strong class="four cell directory-top-padded">[[lang.translate("directory.userZipCode")]]</strong>
+                        <input type="text" ng-model="isolatedUser.zipCode"/>
+                    </div>
+                    <hr class="separator">
+                    <div class="row">
+                        <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
+                        <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5px;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
+                        <div    class="one cell">&nbsp</div>
+                        <button class="two cell" style="margin: 0px; padding: 2px" ng-click="isolatedUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
+                    </div>
+                    <hr class="separator">
+                    <div class="twelve cell height-three">
+                        <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
+                        <div class="twelve cell">
+                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.school")]]</span>
+                            <select class="four cell" ng-model="linkStructure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+                        </div>
+                        <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
+                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
+                            <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
+                            </select>
+                        </div>
+                        <div style="text-align: center">
+                            <button style="margin-top: 10px" ng-if="linkStructure" ng-click="linkStructure.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToSchool")]]</button>
+                            <button ng-if="linkClass" ng-click="linkClass.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToClass")]]</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </article>
+    </admin-portal>
+</body>

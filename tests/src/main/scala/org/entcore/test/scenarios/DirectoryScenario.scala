@@ -18,7 +18,7 @@ object DirectoryScenario {
 			.param("""password""", """password""")
 		.check(status.is(302)))
 		.exec(http("Get admin page")
-			.get("""/directory/admin""")
+			.get("""/directory/admin-console""")
 		.check(status.is(200)))
 		.exec(http("List Schools")
 			.get("""/directory/api/ecole""")

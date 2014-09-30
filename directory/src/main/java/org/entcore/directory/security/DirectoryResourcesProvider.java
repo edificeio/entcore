@@ -44,6 +44,13 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,
 			UserInfos user, Handler<Boolean> handler) {
+		
+		//Super-admin "hack"
+		if(user.getFunctions().containsKey(SUPER_ADMIN)) {
+			handler.handle(true);
+			return;
+		}
+		
 		final String serviceMethod = binding.getServiceMethod();
 		if (serviceMethod != null && serviceMethod.startsWith(ClassController.class.getName())) {
 			String method = serviceMethod
