@@ -71,7 +71,8 @@ button, input[type=button], input[type=submit], a.button{
 }
 
 button:hover, input[type=button]:hover, input[type=submit]:hover, a.button:hover{
-	border-color: @magenta;
+	background: #444;
+	color: #fff;
 }
 
 nav.vertical{
@@ -621,6 +622,13 @@ table{
 	}
 }
 
+nav.illustrated-links ul li{
+	border-right: 8px solid @magenta;
+	.content{
+		background: #ddd;
+	}
+}
+
 .lightbox-view input[type=text], .lightbox-view input[type=search], .lightbox-view textarea{
 	background: #333;
 }
@@ -638,6 +646,18 @@ select{
 	color: #999;
 	border: 1px solid #595959;
 	height: 25px;
+}
+
+.editor.drawing-grid .grid-add-row{
+	background: @magenta;
+}
+
+.page-markers .marker{
+	border-color: transparent transparent #444 transparent;
+}
+
+.page-markers .marker:nth-child(2){
+	border-color: transparent transparent #23a9aa transparent;
 }
 
 .accordions{
@@ -714,4 +734,8 @@ select{
 	label:hover{
 		border: 1px solid @magenta;
 	}
+}
+
+h1.letter-picker{
+	background: @magenta;
 }

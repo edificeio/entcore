@@ -6793,9 +6793,15 @@ nav.illustrated-links ul li .content em {
   color: #fff;
   font-family: Lato;
 }
+.page-markers .marker a {
+  color: #fff;
+}
 .page-markers .marker:nth-child(2) {
   color: #fff;
   border-color: transparent transparent #23a9aa transparent;
+}
+.page-markers .marker:nth-child(2) a {
+  color: #fff;
 }
 .page-markers .content:hover {
   color: #000;
