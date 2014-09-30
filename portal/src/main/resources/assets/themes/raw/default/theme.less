@@ -65,6 +65,16 @@ i.actualites-large{
 	.run-transition(background);
 }
 
+i.archive-large{
+	.icon(archive-large, 100px);
+	.run-transition(background);
+}
+
+i.residence-artiste-large{
+	.icon(residence-artiste-large, 100px);
+	.run-transition(background);
+}
+
 .tabs{
 	header{
 		font-family: Lato;
@@ -873,6 +883,7 @@ button, input[type=button], a.button, input[type=submit]{
 	.run-transition(background);
 	font-family: Lato;
 	font-weight: 300;
+	line-height: 20px;
 }
 
 nav.horizontal{
@@ -1011,9 +1022,7 @@ nav.vertical{
 		border: 1px solid transparent;
 	}
 	a.classic-link:hover{
-		background: #fff;
-		color: #000;
-		border: 1px solid @bright-blue;
+		background: @dark-blue;
 	}
 }
 

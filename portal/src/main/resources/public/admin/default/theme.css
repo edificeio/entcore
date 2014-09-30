@@ -4051,6 +4051,42 @@ i.actualites-large {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+i.archive-large {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/archive-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.residence-artiste-large {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/residence-artiste-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
 .tabs header {
   font-family: Lato;
   color: #23a9aa;
@@ -5131,6 +5167,7 @@ input[type=submit] {
   transition: background 250ms ease;
   font-family: Lato;
   font-weight: 300;
+  line-height: 20px;
 }
 nav.horizontal a {
   font-family: Lato;
@@ -5290,9 +5327,7 @@ nav.vertical a.classic-link {
   border: 1px solid transparent;
 }
 nav.vertical a.classic-link:hover {
-  background: #fff;
-  color: #000;
-  border: 1px solid #23a9aa;
+  background: #266881;
 }
 nav.horizontal {
   right: 10px;
