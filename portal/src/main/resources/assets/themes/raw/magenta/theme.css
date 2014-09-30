@@ -4579,9 +4579,6 @@ nav.vertical.stamps article h3 {
 nav.vertical.stamps article a {
   margin: 0;
 }
-nav.vertical.stamps article:hover a {
-  color: #444;
-}
 nav.vertical.stamps article:hover i.send-mail {
   height: 24px;
   width: 24px;
@@ -6825,6 +6822,7 @@ ul.toc li a {
 }
 .dominos.fallen .item .domino .bottom {
   width: 48%;
+  margin: 0;
 }
 .dominos.fallen .item .domino .top {
   width: 52%;
@@ -7450,6 +7448,9 @@ nav.vertical ul li a:hover {
 nav.vertical.stamps article {
   background: #444;
 }
+nav.vertical.stamps article h3 {
+  color: #aaa;
+}
 .lightbox-window {
   background: #444;
   border: 5px solid #555;
@@ -7769,4 +7770,16 @@ select {
 }
 h1.letter-picker {
   background: #fd4a98;
+}
+.lightbox-view .icons-view .element .img.container {
+  background: #333;
+}
+.letter-picker .lightbox-view {
+  border: none;
+}
+.letter-picker .lightbox-view h2 {
+  background: #fd4a98;
+}
+.letter-picker .lightbox-view h2:hover {
+  color: #fd4a98;
 }

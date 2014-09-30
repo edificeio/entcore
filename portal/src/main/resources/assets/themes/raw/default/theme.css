@@ -4530,9 +4530,6 @@ nav.vertical.stamps article h3 {
 nav.vertical.stamps article a {
   margin: 0;
 }
-nav.vertical.stamps article:hover a {
-  color: #444;
-}
 nav.vertical.stamps article:hover i.send-mail {
   height: 24px;
   width: 24px;
@@ -6727,6 +6724,7 @@ ul.toc li a {
 }
 .dominos.fallen .item .domino .bottom {
   width: 48%;
+  margin: 0;
 }
 .dominos.fallen .item .domino .top {
   width: 52%;
