@@ -3320,6 +3320,8 @@ module.directive('datePicker', function($compile){
 		link: function($scope, $element, $attributes){
 			$scope.$watch('ngModel', function(newVal){
 				$element.val(moment($scope.ngModel).format('DD/MM/YYYY'));
+                if($element.datepicker)
+                    $element.datepicker('setValue', moment($scope.ngModel).format('DD/MM/YYYY'));
 			});
 			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
 				$element.datepicker({
