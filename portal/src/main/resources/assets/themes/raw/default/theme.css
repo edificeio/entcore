@@ -4309,7 +4309,7 @@ i.show-calendar.selected {
 i.disconnect {
   height: 35px;
   width: 35px;
-  background-image: url("../img/icons/glyphicons_063_power.png");
+  background-image: url("../img/icons/glyphicons_063_power_white.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -4319,9 +4319,6 @@ i.disconnect {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  -webkit-filter: invert(100%);
-  -moz-filter: invert(100%);
-  filter: invert(100%);
   margin: 5px;
   float: right;
   margin-bottom: -6px;
