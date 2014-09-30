@@ -167,4 +167,8 @@ function MyAccount($scope, lang, date, notify, route){
 	$scope.updateAvatar = function(){
 		model.account.uploadAvatar();
 	}
+
+	$scope.longDate = function(dateString){
+		return moment(dateString).format('DD MMMM YYYY')
+	};
 }
