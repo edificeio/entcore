@@ -8,6 +8,10 @@
 
 @magenta: #FD4A98;
 
+html, body{
+	background-color: #eee
+}
+
 a{
 	color: @magenta;
 }
@@ -239,6 +243,8 @@ table{
 	ul{
 		li{
 			border-color: @magenta;
+			color: #ccc;
+			background: #444;
 		}
 		li:hover{
 			color: @magenta;
@@ -287,136 +293,158 @@ table{
 	}
 }
 
-	.progress-bar{
-		.filled{
-			background: @magenta;
-		}
-		.filled.small{
-			color: @magenta;
-		}
+
+ul.angle-list{
+
+	> li{
+		border-bottom: 1px solid @magenta;
+		border-left: 3px solid @magenta;
+		color: black;
 	}
+}
 
-	ul.angle-list{
-		list-style-type: none;
+div.leaf-menu-container{
+	border-bottom: 3px solid @magenta;
+}
+div.leaf-menu:hover {
+	background-color: pink;
+}
+div.leaf-menu.selected{
+	background-color: pink;
+}
 
-		> li{
-			font-family: Lato;
-			font-size: 20px;
-			border-bottom: 1px solid #ff0b75;
-			border-left: 3px solid #ff0b75;
-			padding-left: 5px;
-			color: black;
-			margin-bottom: 10px;
-			padding-top: 5px;
-		}
+div.angle-container{
+	background: #444;
+	color: white;
+	border-left: 5px solid @magenta;
+	border-bottom: 5px solid @magenta;
+}
+
+input[type=text].angle-container-header{
+	color: #333;
+	border-left: 5px solid @magenta;
+	border-bottom: 2px solid @magenta;
+}
+
+div.angle-container-header{
+	color: #333;
+	border-left: 5px solid @magenta;
+	border-bottom: 2px solid @magenta;
+}
+
+button.instantButtons{
+	background-color: crimson;
+}
+
+nav.search-container{
+	border-right: 2px ridge @magenta;
+	border-bottom: 2px ridge @magenta;
+}
+
+nav.search-container-left{
+	border-right: 2px ridge @magenta;
+	border-bottom: 2px ridge @magenta;
+}
+
+nav.search-container,
+nav.search-container-left{
+	> input[type=text]{
+		border-bottom: 1px solid #444;
 	}
+}
 
-	div.leaf-menu{
-		display: inline-block;
-		margin-right: 10px;
-		border-top-right-radius: 15px;
-		border-bottom-left-radius: 15px;
-		padding: 10px;
-		font-family: Lato;
-		font-size: 20px;
-	}
+div.search-container-view{
+	border-bottom: 2px ridge @magenta;
+}
 
-	div.angle-container{
-		background: #444;
-		font-size: 16px;
-		color: white;
-		font-family: Lato;
-		padding: 10;
-		border-left: 5px solid #ff0b75;
-		border-bottom: 5px solid #ff0b75;
-	}
+hr.separator{
+	border: 1px solid black;
+}
 
-	input[type=text].angle-container-header{
-		color: #333;
-		font-weight: 300;
-		font-family: Lato;
-		margin-top: 10px;
-		margin-bottom: 0;
-		line-height: 30px;
-		background: transparent;
-		font-size: 24px;
-		height: 40px;
-		border-left: 5px solid #ff0b75;
-		border-bottom: 2px solid #ff0b75;
-		border-radius: 0;
-	}
-
-	div.angle-container-header{
-		color: #333;
-		font-weight: 300;
-		font-family: Lato;
-		margin-top: 10px;
-		margin-bottom: 0;
-		line-height: 30px;
-		background: transparent;
-		font-size: 24px;
-		height: 40px;
-		border-left: 5px solid #ff0b75;
-		border-bottom: 2px solid #ff0b75;
-		border-radius: 0;
-	}
-
-	.accordions{
-		.accordion.opened{
-			h2{
-				color: @magenta
-			}
+.accordions{
+	.accordion.opened{
+		h2{
+			color: @magenta
 		}
 	}
+}
 
-	.navbar{
-		background: #444;
+ul.angle-list{
+	list-style-type: none;
+
+	> li{
+		border-bottom: 1px solid @magenta;
+		border-left: 3px solid @magenta;
+		color: black;
 	}
+}
 
-	.toggle-buttons{
-		background: #444;
-	}
+div.angle-container{
+	background: #444;
+	color: white;
+	border-left: 5px solid @magenta;
+	border-bottom: 5px solid @magenta;
+}
 
-	.icons-view .element.selected .container {
+button.instantButtons{
+	background-color: crimson;
+}
+
+input[type=text].angle-container-header{
+	color: #333;
+	border-left: 5px solid @magenta;
+	border-bottom: 2px solid @magenta;
+}
+
+nav.search-container-left{
+	border-right: 2px ridge @magenta;
+	border-bottom: 2px ridge @magenta;
+}
+
+div.angle-container-header{
+	color: #333;
+	border-left: 5px solid @magenta;
+	border-bottom: 2px solid @magenta;
+}
+
+.progress-bar{
+	.filled{
 		background: @magenta;
 	}
-
-	nav.vertical ul li a.selected {
-		border-right: 8px solid @magenta;
-		background: #444;
+	.filled.small{
+		color: @magenta;
 	}
+}
 
-	nav.vertical ul li a:hover {
-		background: #ccc;
-	}
 
-	.green{
-		background: @green;
-	}
+.navbar{
+	background: #444;
+}
 
-	.cyan{
-		background: @cyan;
-	}
+.toggle-buttons{
+	background: #444;
+}
 
-	.orange{
-		background: @orange;
-	}
+.icons-view .element.selected .container {
+	background: @magenta;
+}
 
-	.pink{
-		background: @magenta;
-	}
+nav.vertical ul li a.selected {
+	border-right: 8px solid @magenta;
+	background: #444;
+}
 
-	.purple{
-		background: @purple;
-	}
+nav.vertical ul li a:hover {
+	background: #ccc;
+}
 
-	.dominos .item .domino .bottom {
-		background: #444;
-	}
+.green{
+	background: @green;
+}
 
-	.actions-list{
-		background: #444;
-	}
+.cyan{
+	background: @cyan;
+}
 
 	nav.vertical.stamps article{
 		background: #444;
@@ -425,43 +453,29 @@ table{
 		}
 	}
 
-	.lightbox-window{
-		background: #444;
-		border: 5px solid #555;
-		nav.vertical{
-			a{
-				border-color: #555;
-				color: #777;
-			}
-			a.selected{
-				background: #353535;
-			}
-			a:hover{
-				background: #555;
-				color: #999;
-			}
-		}
-		.info{
-			background: #505050;
-			color: #999;
-		}
-	}
+.orange{
+	background: @orange;
+}
 
-	table thead tr{
-		background: #444;
-	}
+.pink{
+	background: @magenta;
+}
 
-	nav.vertical ul li a{
-		border-right: 8px solid #ccc;
-	}
+.purple{
+	background: @purple;
+}
 
-	table tr.checked{
-		background: #444;
-	}
+.dominos .item .domino .bottom {
+	background: #444;
+}
 
-	nav.vertical h2{
-		color: #444;
-	}
+.actions-list{
+	background: #444;
+}
+
+nav.vertical.stamps article{
+	background: #444;
+}
 
 	.drop-down-filters{
 		i.blog{
@@ -490,53 +504,159 @@ table{
 		}
 	}
 
-	.drop-down-filters p:first-child{
-		background: #444;
+.lightbox-window{
+	background: #444;
+	border: 5px solid #555;
+	nav.vertical{
+		a{
+			border-color: #555;
+			color: #777;
+		}
+		a.selected{
+			background: #353535;
+		}
+		a:hover{
+			background: #555;
+			color: #999;
+		}
 	}
+	.info{
+		background: #505050;
+		color: #999;
+	}
+}
 
-	.drop-down-filters p:first-child:hover{
-		background: #000;
-	}
+table thead tr{
+	background: #444;
+	border-top: 5px solid @magenta;
+	border-bottom: 1px solid @magenta;
+	border-left: 1px solid @magenta;
+	border-right: 1px solid @magenta;
+}
 
-	.drop-down-filters .wrapper{
-		background: #444;
-	}
+.datepicker table thead tr {
+	background: #444;
+}
 
-	.schedule legend.timeslots{
-		background: #ddd;
-	}
+.datepicker thead tr:first-child th:hover {
+	background: #eeeeee;
+	color: #444;
+}
 
-	.schedule .days .day legend{
-		background: #ccc;
-	}
+.datepicker table thead tr th:hover {
+	background: #eeeeee;
+	color: #444;
+}
 
-	.tag{
-		color: #ccc
-	}
+.datepicker table tr td:hover {
+	background: inherit;
+}
 
-	table tr:hover{
-		background: #ccc;
-	}
-	.media-container.blue{
-		background: @cyan;
-	}
+.datepicker td span.active {
+	background: #444;
+}
 
-	.media-container.black{
-		background: #444;
+.datepicker td span:hover {
+	background: white;
+}
+
+nav.vertical ul li a{
+	border-right: 8px solid #ccc;
+}
+
+table tr.checked{
+	background: #444;
+}
+
+nav.vertical h2{
+	color: #444;
+}
+
+.drop-down-filters{
+	i.blog{
+		.icon(blog-large-neon, 100px);
+	}
+	i.userbook{
+		.icon(userbook-large-neon, 100px);
+	}
+	i.workspace{
+		.icon(workspace-large-neon, 100px);
+	}
+	i.conversation, i.messagerie{
+		.icon(conversation-large-neon, 100px);
+	}
+	i.rbs{
+		.icon(rbs-large-neon, 100px);
+	}
+}
+
+.drop-down-filters p:first-child{
+	background: #444;
+}
+
+.drop-down-filters p:first-child:hover{
+	background: #000;
+}
+
+.drop-down-filters .wrapper{
+	background: #444;
+}
+
+.schedule legend.timeslots{
+	background: #ddd;
+}
+
+.schedule .days .day legend{
+	background: #ccc;
+}
+
+.tag{
+	color: #ccc
+}
+
+table tr:hover{
+	background: #ccc;
+}
+.media-container.blue{
+	background: @cyan;
+}
+
+.media-container.black{
+	background: #444;
+	color: #aaa;
+}
+
+button.cancel, input[type=button].cancel{
+	background: #ccc;
+}
+
+table tr{
+	border-right: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+}
+
+table thead tr:hover{
+	background: #444;
+}
+
+.lightbox-window{
+	input[type=text], input[type=search], textarea {
+		background: #454545;
+		border: none;
 		color: #aaa;
+		margin-left: 1px;
 	}
-
-	button.cancel, input[type=button].cancel{
-		background: #ccc;
+	h1, h2, h3, h4, h5{
+		color: #fff;
 	}
-
-	table tr{
-		border-right: 1px solid #ccc;
-		border-left: 1px solid #ccc;
+	a:hover{
+		color: #ccc;
+		.run-transition(background);
 	}
-
-	table thead tr:hover{
-		background: #444;
+	tr{
+		background: #555;
+		border-color: #5F5F5F;
+		border-width: 1px;
 	}
 
 	.lightbox-window{
@@ -562,70 +682,71 @@ table{
 			background: #5f5f5f;
 		}
 	}
+}
 
-	.lightbox-backdrop{
-		background: #fff;
-		opacity: 0.7;
-	}
+.lightbox-backdrop{
+	background: #fff;
+	opacity: 0.7;
+}
 
-	.theme-preview.default{
-		background: @cyan;
-	}
+.theme-preview.default{
+	background: @cyan;
+}
 
-	.icons-view.apps{
-		.element{
-			legend{
-				background: #444;
-				color: #aaa;
-				a{
-					color: #aaa
-				}
-				a:hover{
-					color: #aaa
-				}
+.icons-view.apps{
+	.element{
+		legend{
+			background: #444;
+			color: #aaa;
+			a{
+				color: #aaa
 			}
-		}
-		.element:hover{
-			legend{
-				background: @magenta;
-				a{
-					color: #fff;
-				}
+			a:hover{
+				color: #aaa
 			}
 		}
 	}
-
-	.notes-widget{
-		textarea{
+	.element:hover{
+		legend{
 			background: @magenta;
-			color: #fff;
-		}
-	}
-
-	.calendar.widget{
-		.content{
-			.day.today{
-				background: @magenta;
-			}
-			h2{
-				color: @magenta;
+			a{
+				color: #fff;
 			}
 		}
 	}
+}
 
-	.calendar.widget {
+.notes-widget{
+	textarea{
+		background: @magenta;
+		color: #fff;
+	}
+}
+
+.calendar.widget{
+	.content{
+		.day.today{
+			background: @magenta;
+		}
+		h2{
+			color: @magenta;
+		}
+	}
+}
+
+.calendar.widget {
+	border: 1px solid @magenta;
+
+	.content {
 		border: 1px solid @magenta;
-
-		.content {
-			border: 1px solid @magenta;
-			border-top: none;
-		}
+		border-top: none;
 	}
+}
 
-	.notification {
-		border-left: 10px solid @magenta;
-		background: #f6f6f6;
-	}
+.notification {
+	border-left: 10px solid @magenta;
+	background: #f6f6f6;
+}
 
 .illustrated-article{
 	.illustration{
@@ -694,6 +815,11 @@ select{
 
 .datepicker table thead tr{
 	background: #444;
+}
+
+hr.separator{
+	border: 1px solid black;
+	margin: 15 0 15 0;
 }
 
 .accordions{
@@ -874,4 +1000,17 @@ i.notes{
 i.scolarite{
 	.icon(scolarite-neon, 100px);
 	.run-transition(background);
+}
+
+a.button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled],
+a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:hover, input[type=submit][disabled]:hover{
+	color: #fff;
+	background: #BBB;
+	border: 1px solid #CCC;
+	cursor: default;
+}
+
+.comment{
+	background: #444;
+	color: #ccc;
 }
