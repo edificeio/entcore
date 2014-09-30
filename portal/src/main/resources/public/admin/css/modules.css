@@ -3397,7 +3397,7 @@ a.cke_smile img {
 .drop-down-filters ul li label {
   padding: 6px;
   float: left;
-  width: 119px;
+  width: 99px;
 }
 .drop-down-filters ul li label i {
   margin-left: auto;
@@ -3424,8 +3424,8 @@ a.cke_smile img {
   position: absolute;
 }
 .drop-down-filters i.blog {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/blog-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3439,8 +3439,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.userbook {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/userbook-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3454,9 +3454,54 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.workspace {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.wiki {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/wiki-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.news {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/actualites-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.pages {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/pages-filter.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3470,8 +3515,8 @@ a.cke_smile img {
 }
 .drop-down-filters i.conversation,
 .drop-down-filters i.messagerie {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/conversation-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3485,8 +3530,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.draft {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/draft.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3500,8 +3545,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.submitted {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/submitted.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3515,8 +3560,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.published {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/published.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6451,8 +6496,8 @@ select {
   box-sizing: border-box;
 }
 .drop-down-filters i.rbs {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/rbs-large.png");
   background-repeat: no-repeat;
   background-position: center;

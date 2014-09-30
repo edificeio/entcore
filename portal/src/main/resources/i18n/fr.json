@@ -100,5 +100,10 @@
 	"books": "Lecture",
 	"post.author": "Ecrit par ",
 	"post.date": "le",
-    "linker.notfound": "Votre recherche ne retourne aucun résultat !"
+    "linker.notfound": "Votre recherche ne retourne aucun résultat !",
+	"wiki": "Wiki",
+	"forum": "Forum",
+	"news": "Actualités",
+	"pages": "Pages",
+	"rbs": "Réservation de ressources"
 }
