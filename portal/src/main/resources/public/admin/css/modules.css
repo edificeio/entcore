@@ -7149,6 +7149,20 @@ i.actualites-large {
   float: left;
   vertical-align: middle;
 }
+i.residence-artiste-large {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/residence-artiste-large-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 nav.horizontal a:hover {
   color: #fd4a98;
 }
@@ -7576,7 +7590,7 @@ nav.vertical h2 {
 .drop-down-filters i.wiki {
   height: 99px;
   width: 99px;
-  background-image: url("../img/icons/wiki-large-neon.png");
+  background-image: url("../img/icons/wiki-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -7590,7 +7604,7 @@ nav.vertical h2 {
 .drop-down-filters i.forum {
   height: 99px;
   width: 99px;
-  background-image: url("../img/icons/forum-large-neon.png");
+  background-image: url("../img/icons/forum-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -7750,7 +7764,7 @@ nav.illustrated-links ul li .content {
   border-left: 8px solid #fd4a98;
   background: #393939;
 }
-.share autocomplete > em:hover {
+.share .autocomplete > em:hover {
   background: #fd4a98;
   color: #fff;
 }
