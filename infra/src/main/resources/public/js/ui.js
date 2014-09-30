@@ -141,7 +141,7 @@ var ui = (function(){
 		$('body').on('click', '[data-reload]', function(){
 			setTimeout(function(){
 				window.location.reload();
-			}, 10);
+			}, 200);
 		});
 
 		$('body').on('click', '.lightbox-window .close-lightbox i, .lightbox-window .lightbox-buttons .cancel, .lightbox-window .cancel', function(){
