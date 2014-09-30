@@ -26,7 +26,7 @@
 	<button ng-click="scrollUp()">Remonter</button>
 	<ul>
 		<li ng-repeat="url in urls">
-			<a ng-href="[[url.url]]" translate content="admin.[[url.name]]"></a>
+			<a ng-href="[[url.url]]" ng-class="{ selected: getHighlight(url) }" translate content="admin.[[url.name]]"></a>
 			<ul>
 				<li ng-repeat="child in url.children"><a ng-href="[[child.url]]" translate content="admin.[[child.name]]"></a></li>
 			</ul>

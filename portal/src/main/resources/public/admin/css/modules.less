@@ -102,6 +102,10 @@ nav.left{
 	}
 }
 
+nav.vertical{
+	padding-right: 15px;
+}
+
 .container{
 	margin-top: 52px;
 }
@@ -130,4 +134,237 @@ input[type=text]{
 
 .humane-original-info{
 	background: @bright-blue;
+}
+
+ul.angle-list{
+	list-style-type: none;
+
+	> li{
+		font-family: Lato;
+		font-size: 20px;
+		padding-left: 5px;
+		margin-bottom: 10px;
+		padding-top: 5px;
+	}
+}
+
+div.leaf-menu-container{
+	margin-bottom: 15px;
+	padding-bottom: 10px;
+	text-align: center;
+}
+div.leaf-menu{
+	display: inline-block;
+	margin-right: 10px;
+	border-top-right-radius: 15px;
+	border-bottom-left-radius: 15px;
+	padding: 10px;
+	font-family: Lato;
+	font-size: 20px;
+	-moz-transition: background 200ms ease-in;
+	-webkit-transition: background 200ms ease-in;
+	-o-transition: background 200ms ease-in;
+	transition: background 200ms ease-in;
+}
+
+div.angle-container{
+	font-size: 16px;
+	font-family: Lato;
+	padding: 10;
+}
+
+input[type=text].angle-container-header{
+	font-weight: 300;
+	font-family: Lato;
+	margin-top: 10px;
+	margin-bottom: 0;
+	line-height: 30px;
+	background: transparent;
+	font-size: 24px;
+	height: 40px;
+	border-radius: 0;
+}
+
+div.angle-container-header{
+	font-weight: 300;
+	font-family: Lato;
+	margin-top: 10px;
+	margin-bottom: 0;
+	line-height: 30px;
+	background: transparent;
+	font-size: 24px;
+	height: 40px;
+	border-radius: 0;
+}
+
+button.instantButtons{
+	margin-right: 10px;
+	border: 0;
+	width: 33px;
+	height: 28px;
+	vertical-align: middle;
+
+	&.select{
+		background-image: url(/public/img/glyphicons-halflings-white.png);
+		background-position: 14.5% 68%;
+		background-repeat: no-repeat;
+	}
+
+	&.deselect{
+		background-image: url(/public/img/glyphicons-halflings-white.png);
+		background-position: 9% 68%;
+		background-repeat: no-repeat;
+	}
+}
+
+nav.search-container{
+	padding-right: 0;
+}
+
+nav.search-container-left{
+	width: 28%;
+	list-style: none;
+	font-family: Lato;
+	height: 702px;
+	padding: 0;
+	margin-bottom: 14;
+	margin-top: 14;
+}
+
+nav.search-container,
+nav.search-container-left{
+	> input[type=text]{
+		display: inline-block;
+		background-color: inherit;
+		border-radius: 0;
+		padding-left: 20;
+		font-size: 16px;
+		width: 95%;
+		height: 40px;
+	}
+
+	> ul{
+		overflow-y: scroll;
+	}
+}
+
+div.search-container-view{
+	overflow-y: scroll;
+	overflow-x: hidden;
+	width: 68%;
+	padding: 10 0 0 30;
+	height: 704px;
+	position: absolute;
+	margin-left: 26%;
+}
+
+hr.separator{
+	margin: 15 0 15 0;
+}
+
+button.directory-list-glyph-button{
+	position: absolute;
+	margin-left: 93.5%;
+	margin-top: 0;
+	z-index: 100;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	background-image: url(/public/img/glyphicons-halflings.png);
+	background-repeat: no-repeat;
+
+	&.filter-icon{
+		background-position: 91% 104%;
+	}
+	&.silhouette-icon{
+		background-position: 36.5% -5%;
+	}
+	&.question-mark-icon{
+		background-position: 20% 67.5%;
+	}
+}
+
+button.directory-list-sort-button{
+	position: absolute;
+	margin-left: 93.5%;
+	margin-top: 47;
+	z-index: 100;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	background-image: url(/public/img/glyphicons_409_sort-by-attributes-alt.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 15px 15px;
+}
+
+button.directory-direct-link-button{
+	background-image: url(/public/img/glyphicons-halflings.png);
+	width: 25px;
+	height: 25px;
+	background-position: 25.5%;
+}
+
+.directory-userlist-right-container{
+	width: 68%;
+	float: left;
+	border-bottom: 2px ridge #ff0b75;
+	padding: 20 0 0 30;
+	height: 694px;
+	overflow-y: scroll
+}
+
+.directory-inline-middle{
+	display: inline-block;
+	vertical-align: middle;
+}
+
+div.directory-legend-square{
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+	vertical-align: middle;
+
+	&.red{
+		background-color: red;
+	}
+	&.teal{
+		background-color: teal;
+	}
+	&.orange{
+		background-color: orange;
+	}
+	&.black{
+		background-color: black;
+	}
+}
+
+div.directory-legend-separator{
+	width: 100%;
+	margin-top: 5px;
+	&.first{
+		margin-top: inherit;
+	}
+}
+
+label.directory-legend-label{
+	display: inline-block;
+	vertical-align: middle;
+	font-family: Lato;
+	&.bold{
+		font-weight: bold;
+	}
+	&.underline{
+		text-decoration: underline;
+	}
+	&.italic{
+		font-style: italic;
+	}
+	&.marged{
+		margin-left: 35px
+	}
+}
+
+.directory-top-padded{
+	padding-top: 5px;
 }
