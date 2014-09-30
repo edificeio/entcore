@@ -1386,6 +1386,10 @@ a {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+.share .found-users-list {
+  height: 180px;
+  overflow-y: auto;
+}
 .drop-down.hidden {
   max-height: 0px;
 }
@@ -3834,7 +3838,7 @@ html.print body section {
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
 .lightbox-view textarea {
-  background: #454545;
+  background: #555;
   border: none;
   color: #aaa;
   margin-left: 1px;
@@ -5966,7 +5970,7 @@ i.folder-large {
 .lightbox-view input[type=text],
 .lightbox-view input[type=search],
 .lightbox-view textarea {
-  background: #454545;
+  background: #555;
   border: none;
   color: #aaa;
   margin-left: 1px;
@@ -6630,7 +6634,7 @@ select {
   background-size: 70px;
 }
 .drop-down-filters i:hover {
-  opacity: 0.7;
+  opacity: 0.5;
 }
 .date-picker-icon a i.calendar {
   height: 25px;
@@ -7652,7 +7656,7 @@ table thead tr:hover {
 .lightbox-window input[type=text],
 .lightbox-window input[type=search],
 .lightbox-window textarea {
-  background: #454545;
+  background: #555;
   border: none;
   color: #aaa;
   margin-left: 1px;
@@ -7744,6 +7748,10 @@ nav.illustrated-links ul li .content {
   border: none;
   border-left: 8px solid #fd4a98;
   background: #393939;
+}
+.share autocomplete > em:hover {
+  background: #fd4a98;
+  color: #fff;
 }
 select {
   background: #494949;
