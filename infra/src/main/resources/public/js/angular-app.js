@@ -3383,7 +3383,7 @@ module.directive('filters', function(){
 	return {
 		restrict: 'E',
 		template: '<div class="row line drop-down-filters">' +
-					'<p ng-click="showFilters = !showFilters">' +
+					'<p>' +
 						'<span class="small-arrow" ng-class="{ \'right-arrow\': !showFilters, \'bottom-arrow\': showFilters }"></span>' +
 					'</p>' +
 					'<div class="wrapper" ng-class="{ hide: !showFilters }">' +
@@ -3404,7 +3404,24 @@ module.directive('filters', function(){
 					element.find('p:first-child').append(icon[0].outerHTML);
 				});
 			}, 100);
-			element.find('.drop-down-filters').on('click', 'label,p', function(item){
+			element.find('.drop-down-filters').on('click', 'label,p', function(event){
+				if(scope.showFilters){
+					$('body, html, .main').unbind('click.filters');
+					scope.showFilters = false;
+					scope.$apply('showFilters');
+				}
+				else{
+					scope.showFilters = true;
+					scope.$apply('showFilters');
+					$('html').on('click.filters', function(e){
+						if(e.target === element.find('p')[0] || e.target.tagName === 'INPUT'){
+							return;
+						}
+						scope.showFilters = false;
+						scope.$apply('showFilters');
+						$('html').unbind('click.filters');
+					});
+				}
 				element.find('p i').remove();
 				element.find('li').each(function(index, item){
 					var icon = $(item).find('i');

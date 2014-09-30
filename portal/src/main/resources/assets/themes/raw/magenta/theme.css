@@ -3485,6 +3485,21 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
+.drop-down-filters i.forum {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/forum-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
 .drop-down-filters i.news {
   height: 99px;
   width: 99px;
@@ -7483,8 +7498,8 @@ nav.vertical h2 {
   color: #444;
 }
 .drop-down-filters i.blog {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/blog-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7497,8 +7512,8 @@ nav.vertical h2 {
   vertical-align: middle;
 }
 .drop-down-filters i.userbook {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/userbook-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7511,8 +7526,8 @@ nav.vertical h2 {
   vertical-align: middle;
 }
 .drop-down-filters i.workspace {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/workspace-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7526,8 +7541,8 @@ nav.vertical h2 {
 }
 .drop-down-filters i.conversation,
 .drop-down-filters i.messagerie {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/conversation-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7540,9 +7555,51 @@ nav.vertical h2 {
   vertical-align: middle;
 }
 .drop-down-filters i.rbs {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/rbs-large-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.drop-down-filters i.wiki {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/wiki-large-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.drop-down-filters i.forum {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/forum-large-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.drop-down-filters i.news {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/actualites-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
