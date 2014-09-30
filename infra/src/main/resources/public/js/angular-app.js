@@ -2065,13 +2065,19 @@ module.directive('loadingIcon', function($compile){
 				addImage();
 			});
 
-			http().bind('request-ended.' + $attributes.request, function(e){
-				var loadingDonePath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
-				$element.find('.loading-icon').remove();
-				$('<img>')
-					.attr('src', loadingDonePath)
-					.appendTo($element);
-			});
+            if($attributes.onlyLoadingIcon === undefined){
+    			http().bind('request-ended.' + $attributes.request, function(e){
+    				var loadingDonePath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
+    				$element.find('.loading-icon').remove();
+    				$('<img>')
+    					.attr('src', loadingDonePath)
+    					.appendTo($element);
+    			});
+            } else {
+                http().bind('request-ended.' + $attributes.request, function(e){
+                    $element.find('img').remove();
+                })
+            }
 		}
 	}
 })
