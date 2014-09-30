@@ -28,7 +28,9 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 import org.vertx.java.core.Handler;
@@ -47,35 +49,9 @@ public class CommunicationController extends BaseController {
 
 	private final CommunicationService communicationService = new DefaultCommunicationService();
 
-	@Get("/admin")
+	@Get("/admin-console")
 	@SecuredAction("communication.view")
-	public void view(final HttpServerRequest request) {
-//		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-//
-//			@Override
-//			public void handle(UserInfos user) {
-//				if (user != null) {
-//					JsonArray functions = null;
-//					if (user.getFunctionCodes() != null) {
-//						functions = new JsonArray(user.getFunctionCodes().toArray());
-//					}
-//					listVisiblesStructures(user.getUserId(), user.getType(), functions, new Handler<JsonArray>() {
-//
-//						@Override
-//						public void handle(JsonArray event) {
-							renderView(request, new JsonObject());//.putArray("schools", event));
-//						}
-//					});
-//				} else {
-//					unauthorized(request);
-//				}
-//			}
-//		});
-	}
-
-	@Get("/static-view")
-	@SecuredAction("communication.view")
-	public void staticView(final HttpServerRequest request) {
+	public void adminConsole(final HttpServerRequest request) {
 		renderView(request);
 	}
 
@@ -229,6 +205,17 @@ public class CommunicationController extends BaseController {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Send the default communication rules contained inside the mod.json file.
+	 * @param request Incoming request.
+	 */
+	@Get("/rules")
+	@SecuredAction("communication.get.default.rules")
+	public void getDefaultCommunicationRules(final HttpServerRequest request) {
+		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
+		Renders.renderJson(request, initDefaultRules, 200);
 	}
 
 	@Put("/rules/:structureId")

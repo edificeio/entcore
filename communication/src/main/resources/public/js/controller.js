@@ -14,33 +14,76 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-routes.define(function($routeProvider){
-	$routeProvider
-		.when('/view-school', {
-			action: 'viewSchool'
-		})
-		.when('/view-classes', {
-			action: 'viewClasses'
-		})
-		.when('/view-class/:classId', {
-			action: 'viewClass'
-		})
-		.otherwise({
-			redirectTo: '/view-school'
-		})
-});
+function CommunicationAdminController($scope, $http){
+	$scope.lang = lang
+	$scope.structures = model.structures
+	$http.get('rules').success(function(rules){ $scope.defaultRules = _.map(rules, function(val, key){ val.name = key; return val }) })
 
-function CommunicationAdmin($scope, route, views){
-	$scope.containers = views.containers;
-	route({
-		viewSchool: function(params){
-			views.openView('view-school', 'main');
-		},
-		viewClasses: function(params){
-			views.openView('view-classes', 'main');
-		},
-		viewClass: function(params){
+	//Cannot be used directly in the html file due to brackets in notation.
+	$scope.getRelativeStudentProp = function(group){ return group['Relative-Student'] }
 
+	//TODO : palliatif - à enlever
+	model.scope = $scope
+
+	$scope.viewStructure = function(structure){
+		$scope.$parent.structure = structure
+		structure.groups.sync()
+	}
+
+	$scope.viewGroup = function(group){
+		group.getCommunication()
+	}
+
+	$scope.filterGroupsFunction = function(input){
+		return function(group){
+			return !input ? true : group.name.toLowerCase().indexOf(input.toLowerCase()) >= 0
 		}
-	})
+	}
+
+	$scope.accordionClick = function(sectionNb){
+		$scope.section = $scope.section === sectionNb ? 0 : sectionNb
+	}
+
+	$scope.toggleGroupCommunication = function(group, targetGroup) {
+		if(!_.findWhere(group.communiqueWith, { id: targetGroup.id})){
+			group.addGroupLink(targetGroup.id)
+		} else {
+			group.removeGroupLink(targetGroup.id)
+		}
+	}
+
+	$scope.groupStyling = function(group, listedGroup){
+		var otherGroup = _.findWhere(group.communiqueWith, { id: listedGroup.id })
+		var color = !otherGroup ? "gray" : otherGroup.communiqueWith && otherGroup.communiqueWith.indexOf(group.id) >= 0 ? "darkgreen" : "crimson"
+		return { 'border-color' : color }
+	}
+	$scope.commStyling = function(group1, group2){
+		var otherGroupIndex =  group1.communiqueWith ? group1.communiqueWith.indexOf(group2.name) : -1
+		var color = otherGroupIndex < 0 ? "inherit" : group2.communiqueWith && group2.communiqueWith.indexOf(group1.name) >= 0 ? "darkgreen" : "crimson"
+		return { 'background-color' : color }
+	}
+
+	$scope.filterAllOtherGroups = function(groupList, group){
+		return _.reject(groupList, function(g){ return group.id === g.id })
+	}
+
+	$scope.modifyInnerGroupRules = function(group) {
+		group.addLinksWithUsers(group.communiqueUsers)
+	}
+
+	$scope.deleteInnerGroupRules = function(group) {
+		group.removeLinksWithUsers("BOTH")
+		group.communiqueUsers = ""
+	}
+
+	$scope.modifyRelativeGroupRules = function(group) {
+		group.addLinkBetweenRelativeAndStudent(group.relativeCommuniqueStudent)
+	}
+
+	$scope.deleteRelativeGroupRules = function(group) {
+		group.removeLinkBetweenRelativeAndStudent("BOTH")
+		group.relativeCommuniqueStudent = ""
+	}
+
+
 }
