@@ -176,6 +176,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 					logger.info(m.body().encode());
 					message.reply(m.body());
+					eb.publish(USER_REPOSITORY, new JsonObject()
+							.putString("action", "exported")
+							.putString("exportFormat", exporter.getName())
+					);
 				}
 			});
 		} catch (Exception e) {

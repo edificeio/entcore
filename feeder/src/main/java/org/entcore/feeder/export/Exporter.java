@@ -28,4 +28,6 @@ public interface Exporter {
 
 	void export(Handler<Message<JsonObject>> handler) throws Exception;
 
+	String getName();
+
 }

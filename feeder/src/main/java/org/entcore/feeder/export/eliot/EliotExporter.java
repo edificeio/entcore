@@ -110,6 +110,11 @@ public class EliotExporter implements Exporter {
 		});
 	}
 
+	@Override
+	public String getName() {
+		return "ELIOT";
+	}
+
 	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {
 		final String zipPath = path + ".zip";
 		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
