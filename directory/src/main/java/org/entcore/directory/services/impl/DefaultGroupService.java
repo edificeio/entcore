@@ -105,4 +105,25 @@ public class DefaultGroupService implements GroupService {
 		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
+	@Override
+	public void list(String structureId, String type, boolean subGroups, Handler<Either<String, JsonArray>> results) {
+		String condition = "";
+		JsonObject params = new JsonObject();
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			condition = "WHERE s.id = {structureId} ";
+			params.putString("structureId", structureId);
+		}
+		if (type == null || type.trim().isEmpty()) {
+			type = "Group";
+		}
+		String sub = "";
+		if (subGroups) {
+			sub = "*1..2";
+		}
+		String query =
+				"MATCH (s:Structure)<-[:DEPENDS" + sub + "]-(g:" + type + ") " + condition +
+				"RETURN g.id as id, g.name as name, g.displayName as displayName ";
+		neo.execute(query, params, validResultHandler(results));
+	}
+
 }

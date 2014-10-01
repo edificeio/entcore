@@ -22,7 +22,6 @@ package org.entcore.directory;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.http.BaseServer;
@@ -31,10 +30,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
-import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.UserBookService;
-import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -66,12 +62,14 @@ public class Directory extends BaseServer {
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb);
+		GroupService groupService = new DefaultGroupService(eb);
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, container);
 
 		DirectoryController directoryController = new DirectoryController();
 		directoryController.setClassService(classService);
 		directoryController.setSchoolService(schoolService);
 		directoryController.setUserService(userService);
+		directoryController.setGroupService(groupService);
 		addController(directoryController);
 		directoryController.createSuperAdmin();
 
@@ -101,7 +99,7 @@ public class Directory extends BaseServer {
 		addController(profileController);
 
 		GroupController groupController = new GroupController();
-		groupController.setGroupService(new DefaultGroupService(eb));
+		groupController.setGroupService(groupService);
 		addController(groupController);
 
 		TenantController tenantController = new TenantController();

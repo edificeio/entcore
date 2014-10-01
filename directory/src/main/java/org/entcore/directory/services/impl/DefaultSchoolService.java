@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
@@ -124,6 +125,20 @@ public class DefaultSchoolService implements SchoolService {
 				.putString("structureId", structureId)
 				.putString("parentStructureId", parentStructureId);
 		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(0, handler));
+	}
+
+	@Override
+	public void list(JsonArray fields, Handler<Either<String, JsonArray>> results) {
+		if (fields == null || fields.size() == 0) {
+			fields = new JsonArray().add("id").add("externalId").add("name").add("UAI");
+		}
+		StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure) RETURN ");
+		for (Object field : fields) {
+			query.append(" s.").append(field).append(" as ").append(field).append(",");
+		}
+		query.deleteCharAt(query.length() - 1);
+		neo.execute(query.toString(), (JsonObject) null, validResultHandler(results));
 	}
 
 }

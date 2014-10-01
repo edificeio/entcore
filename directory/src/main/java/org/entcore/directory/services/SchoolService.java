@@ -43,4 +43,6 @@ public interface SchoolService {
 
 	void defineParent(String structureId, String parentStructureId, Handler<Either<String,JsonObject>> handler);
 
+	void list(JsonArray fields, Handler<Either<String, JsonArray>> results);
+
 }

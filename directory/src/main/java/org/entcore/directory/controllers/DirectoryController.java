@@ -31,6 +31,7 @@ import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
@@ -59,6 +61,7 @@ public class DirectoryController extends BaseController {
 	private SchoolService schoolService;
 	private ClassService classService;
 	private UserService userService;
+	private GroupService groupService;
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -434,33 +437,20 @@ public class DirectoryController extends BaseController {
 				String id = message.body().getString("userId");
 				userService.get(id, BusResponseHandler.busResponseHandler(message));
 				break;
-			default:
-				message.reply(new JsonObject()
-					.putString("status", "error")
-					.putString("message", "Invalid action."));
+			case "list-structures" :
+				schoolService.list(message.body().getArray("fields"), busArrayHandler(message));
+				break;
+			case "list-groups" :
+				String structureId = message.body().getString("structureId");
+				String type = message.body().getString("type");
+				boolean subGroups = message.body().getBoolean("subGroups", false);
+				groupService.list(structureId, type, subGroups, busArrayHandler(message));
+				break;
+		default:
+			message.reply(new JsonObject()
+				.putString("status", "error")
+				.putString("message", "Invalid action."));
 		}
-//		String action = message.body().getString("action", "");
-//		switch (action) {
-//			case "usersInProfilGroup":
-//				String userId = message.body().getString("userId");
-//				boolean itSelf2 = message.body().getBoolean("itself", false);
-//				String excludeUserId = message.body().getString("excludeUserId");
-//				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
-//				break;
-//			case "list-structures" :
-//				schoolService.list(message.body().getArray("fields"), busArrayHandler(message));
-//				break;
-//			case "list-groups" :
-//				String structureId = message.body().getString("structureId");
-//				String type = message.body().getString("type");
-//				boolean subGroups = message.body().getBoolean("subGroups", false);
-//				groupService.list(structureId, type, subGroups, busArrayHandler(message));
-//				break;
-//			default:
-//				message.reply(new JsonObject()
-//						.putString("status", "error")
-//						.putString("message", "Invalid action."));
-//		}
 	}
 
 	public void setSchoolService(SchoolService schoolService) {
@@ -492,4 +482,7 @@ public class DirectoryController extends BaseController {
 		};
 	}
 
+	public void setGroupService(GroupService groupService) {
+		this.groupService = groupService;
+	}
 }
