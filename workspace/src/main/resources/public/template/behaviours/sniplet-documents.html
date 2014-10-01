@@ -8,11 +8,10 @@
 		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
 			<div class="twelve cell height-twelve">
 				<div class="clip absolute">
-					<img ng-src="[[documentIcon(document)]]" alt="thumbnail" />
+					<img skin-src="[[documentIcon(document)]]" alt="thumbnail" />
 				</div>
 			</div>
 		</a>
-		<input type="checkbox" data-ng-model="document.selected" />
 
 		<legend>
 			<a ng-href="/workspace/document/[[document._id]]">
