@@ -6,9 +6,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.RequestUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -74,7 +76,7 @@ public class TimelineController extends BaseController {
 					try {
 						offset = 25 * Integer.parseInt(page);
 					} catch (NumberFormatException e) {}
-					store.get(user.getUserId(), types, offset, 25, new Handler<JsonObject>() {
+					store.get(user, types, offset, 25, new Handler<JsonObject>() {
 
 						@Override
 						public void handle(JsonObject res) {
@@ -100,6 +102,26 @@ public class TimelineController extends BaseController {
 			@Override
 			public void handle(JsonArray res) {
 				renderJson(request, res);
+			}
+		});
+	}
+
+	@Post("/publish")
+	@SecuredAction("timeline.publish")
+	public void publish(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "publish", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				store.add(json, new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject res) {
+						if ("ok".equals(res.getString("status"))) {
+							created(request);
+						} else {
+							badRequest(request, res.getString("message"));
+						}
+					}
+				});
 			}
 		});
 	}
@@ -137,7 +159,10 @@ public class TimelineController extends BaseController {
 			store.add(json, handler);
 			break;
 		case "get":
-			store.get(json.getString("recipient"),
+			UserInfos u = new UserInfos();
+			u.setUserId(json.getString("recipient"));
+			u.setExternalId(json.getString("externalId"));
+			store.get(u,
 					null,
 					json.getInteger("offset", 0),
 					json.getInteger("limit", 25), handler);

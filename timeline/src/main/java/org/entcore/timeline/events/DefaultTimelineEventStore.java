@@ -1,6 +1,7 @@
 package org.entcore.timeline.events;
 
 import fr.wseduc.mongodb.MongoDb;
+import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -48,10 +49,18 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	@Override
-	public void get(final String recipient, List<String> types, int offset, int limit,
+	public void get(final UserInfos user, List<String> types, int offset, int limit,
 			final Handler<JsonObject> result) {
+		final String recipient = user.getUserId();
+		final String externalId = user.getExternalId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
-			JsonObject query = new JsonObject().putString("recipients.userId", recipient);
+			final JsonObject query = new JsonObject();
+			if (externalId == null || externalId.trim().isEmpty()) {
+				query.putString("recipients.userId", recipient);
+			} else {
+				query.putObject("recipients.userId", new JsonObject()
+						.putArray("$in", new JsonArray().add(recipient).add(externalId)));
+			}
 			if (types != null && !types.isEmpty()) {
 				if (types.size() == 1) {
 					query.putString("type", types.get(0));

@@ -99,5 +99,11 @@ object AppRegistryScenario {
       .param("""secret""", "clientSecret")
       .param("""scope""", "userinfo")
       .check(status.is(200), jsonPath("status").is("ok")))
-
+    .exec(http("Create external applications with client_credentials")
+    .post("""/appregistry/application/external""")
+      .param("""grantType""", """client_credentials""")
+      .param("""name""", "MyExternalApp" + now)
+      .param("""secret""", "clientSecret")
+      .param("""scope""", "org.entcore.timeline.controllers.TimelineController|publish")
+      .check(status.is(200), jsonPath("status").is("ok")))
 }

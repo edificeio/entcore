@@ -119,7 +119,7 @@
 	  }
     },
     {
-      "main":"org.entcore.timeline.Timeline",
+      "name":"org.entcore~timeline~1.9-SNAPSHOT",
       "config": {
       }
     }

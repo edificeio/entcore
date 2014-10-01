@@ -17,6 +17,9 @@ object IntegrationTestScenario {
   .group("Auth Scenario") {
     AuthScenario.scn
   }
+  .group("Timeline Scenario") {
+    TimelineScenario.scn
+  }
   .group("Conversation Scenario") {
     ConversationScenario.scn
   }

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resource": {
+      "type": "string"
+    },
+    "sender": {
+      "type": "string"
+	},
+    "message": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+	},
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+		"properties": {
+		  "userId": {
+			"type": "string"
+		  },
+		  "unread": {
+			"type": "integer"
+		  }
+		}
+      }
+    },
+    "sub-resource": {
+      "type": "string"
+    },
+    "event-type": {
+      "type": "string"
+	}
+  },
+  "required": [
+    "message",
+    "recipients",
+    "type"
+  ]
+}

@@ -132,6 +132,7 @@ public class UserInfos {
 	}
 
 	private String userId;
+	private String externalId;
 	private String firstName;
 	private String lastName;
 	private String username;
@@ -164,6 +165,14 @@ public class UserInfos {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public String getUsername() {

@@ -48,6 +48,7 @@ public class Directory extends BaseServer {
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
 		clearFilters();
+		setOauthClientGrant(true);
 		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
 		setResourceProvider(new DirectoryResourcesProvider());
 		super.start();

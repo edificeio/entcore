@@ -45,6 +45,7 @@ public abstract class BaseServer extends Server {
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler = new RepositoryHandler();
 	private String schema;
+	private boolean oauthClientGrant = false;
 
 	@Override
 	public void start() {
@@ -79,7 +80,7 @@ public abstract class BaseServer extends Server {
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
-			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider));
+			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
 		}
 		vertx.eventBus().registerHandler("user.repository", repositoryHandler);
 
@@ -150,4 +151,7 @@ public abstract class BaseServer extends Server {
 		return schema;
 	}
 
+	public void setOauthClientGrant(boolean oauthClientGrant) {
+		this.oauthClientGrant = oauthClientGrant;
+	}
 }
