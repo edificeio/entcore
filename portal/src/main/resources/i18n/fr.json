@@ -105,5 +105,6 @@
 	"forum": "Forum",
 	"news": "Actualités",
 	"pages": "Pages",
-	"rbs": "Réservation de ressources"
+	"rbs": "Réservation de ressources",
+	"info.video.embed": "Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage (Youtube, Vimeo, etc.). Pour l'insérer ici, copiez le le lien de partage \"embed\" et collez-le ci-dessous."
 }
