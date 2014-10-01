@@ -43,6 +43,8 @@ import org.vertx.java.core.json.JsonObject;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
 import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
+import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
+import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class AppRegistryController extends BaseController {
@@ -188,7 +190,7 @@ public class AppRegistryController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
-		appRegistryService.listGroupsWithRoles(structureId, arrayResponseHandler(request));
+		appRegistryService.listGroupsWithRoles(structureId, true, arrayResponseHandler(request));
 	}
 
 	@Get("/application/conf/:id")
@@ -323,6 +325,7 @@ public class AppRegistryController extends BaseController {
 
 	@BusAddress("wse.app.registry.bus")
 	public void registryEventBusHandler(final Message<JsonObject> message) {
+		final String structureId = message.body().getString("structureId");
 		switch (message.body().getString("action", "")) {
 			case "setDefaultClassRoles" :
 				appRegistryService.setDefaultClassRoles(message.body().getString("classId"),
@@ -337,6 +340,41 @@ public class AppRegistryController extends BaseController {
 						}
 					}
 				});
+				break;
+			case "create-external-application" :
+				appRegistryService.createApplication(structureId,
+						message.body().getObject("application"), null, busResponseHandler(message));
+				break;
+			case "create-role" :
+				final JsonObject role = message.body().getObject("role");
+				final JsonArray actions = message.body().getArray("actions");
+				appRegistryService.createRole(structureId, role, actions, busResponseHandler(message));
+				break;
+			case "link-role-group" :
+				final String groupId = message.body().getString("groupId");
+				final JsonArray roleIds = message.body().getArray("roleIds");
+				appRegistryService.linkRolesToGroup(groupId, roleIds, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							updatedProfileGroupActions(groupId);
+							message.reply(new JsonObject().putString("status", "ok")
+									.putObject("result", event.right().getValue()));
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("status", "error")
+									.putString("message", event.left().getValue());
+							message.reply(error);
+						}
+					}
+				});
+				break;
+			case "list-groups-with-roles" :
+				boolean classGroups = message.body().getBoolean("classGroups", false);
+				appRegistryService.listGroupsWithRoles(structureId, classGroups, busArrayHandler(message));
+				break;
+			case "list-roles" :
+				appRegistryService.listRoles(structureId, busArrayHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error")

@@ -92,12 +92,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void listGroupsWithRoles(String structureId, Handler<Either<String, JsonArray>> handler) {
+	public void listGroupsWithRoles(String structureId, boolean classGroups, Handler<Either<String, JsonArray>> handler) {
 		String query;
 		JsonObject params = new JsonObject();
 		if (structureId != null && !structureId.trim().isEmpty()) {
+			String filter = classGroups ? "*1..2" : "";
 			params.putString("structureId", structureId);
-			query = "MATCH (m:Structure)<-[:DEPENDS*1..2]-(n:ProfileGroup) " +
+			query = "MATCH (m:Structure)<-[:DEPENDS" + filter + "]-(n:ProfileGroup) " +
 					"WHERE m.id = {structureId} " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		} else {

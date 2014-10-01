@@ -1,5 +1,5 @@
 /*
- * Copyright Â© WebServices pour l'Ã‰ducation, 2014
+ * Copyright © WebServices pour l'Éducation, 2014
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *

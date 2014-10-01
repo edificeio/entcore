@@ -34,7 +34,7 @@ public interface AppRegistryService {
 
 	void listActions(String application, Handler<Either<String, JsonArray>> handler);
 
-	void listGroupsWithRoles(String structureId, Handler<Either<String, JsonArray>> handler);
+	void listGroupsWithRoles(String structureId, boolean classGroups, Handler<Either<String, JsonArray>> handler);
 
 	void listApplicationsWithActions(String structureId, String actionType, Handler<Either<String, JsonArray>> handler);
 
