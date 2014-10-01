@@ -1,6 +1,6 @@
 <div class="week-switcher">
 	<date-picker-icon ng-model="calendar.dayForWeek" ng-change="updateCalendarWeek()" class="cell"></date-picker-icon>
-	<div class="cell">du [[calendar.firstDay.date()]] au [[calendar.firstDay.date() + 6]]</div>
+	<div class="cell">[[calendar.firstDay.format('DD/MM')]] au [[moment(calendar.firstDay).add(6, 'days').format('DD/MM')]]</div>
 </div>
 <div class="schedule" drawing-zone>
 	<legend class="timeslots">

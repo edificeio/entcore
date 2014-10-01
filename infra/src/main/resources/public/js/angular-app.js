@@ -611,6 +611,7 @@ module.directive('calendar', function($compile){
 				}), { is_periodic: false });
 				model.calendar.addScheduleItems($scope.items);
 				$scope.calendar = model.calendar;
+				$scope.moment = moment;
 				$scope.display = {
 					editItem: false,
 					createItem: false
