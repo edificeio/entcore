@@ -416,6 +416,15 @@ nav.vertical.stamps{
 		color: #fff;
 	}
 }
+
+.grey{
+	background: #555;
+	color: #fff;
+	a, h1, h2, h3{
+		color: #fff;
+	}
+}
+
 .yellow{
 	background: @yellow;
 	color: #444;
@@ -736,6 +745,12 @@ input[type=text], input[type=search]{
 		margin-top: 2px;
 		margin-left: 4px;
 	}
+}
+
+.badge{
+	line-height: 16px;
+	background: @bright-blue;
+	color: #fff;
 }
 
 .label-badge:hover{
@@ -1489,6 +1504,10 @@ textarea{
 	}
 }
 
+.lightbox-window .datepicker, .lightbox-view .datepicker{
+	z-index: 1100;
+}
+
 	.lightbox-view{
 		.lightbox-window;
 	}
@@ -1880,33 +1899,6 @@ select{
 				font-family: Lato;
 				line-height: 17px;
 				padding-top: 15px;
-				.pending-status::before{
-					content: "?";
-					height: 20px;
-					width: 20px;
-					display: block;
-					color: #000;
-					font-size: 21px;
-					font-family: Arial;
-					font-weight: 900;
-					position: absolute;
-					bottom: 22px;
-					right: 6px;
-				}
-				.validated-status{
-					.icon(glyphicons_206_ok_2, 20px);
-					position: absolute;
-					bottom: 24px;
-					right: 5px;
-					background-size: 100% auto;
-				}
-				.refused-status{
-					.icon(glyphicons_207_remove_2, 16px);
-					position: absolute;
-					bottom: 24px;
-					right: 5px;
-					background-size: 100% auto;
-				}
 			}
 		}
 		.schedule-item.one{
@@ -1925,6 +1917,34 @@ select{
 			.six;
 		}
 	}
+}
+
+.pending-status::before{
+	content: "?";
+	height: 20px;
+	width: 20px;
+	display: block;
+	color: #000;
+	font-size: 21px;
+	font-family: Arial;
+	font-weight: 900;
+	position: absolute;
+	bottom: 22px;
+	right: 6px;
+}
+.validated-status{
+	.icon(glyphicons_206_ok_2, 20px);
+	position: absolute;
+	bottom: 24px;
+	right: 5px;
+	background-size: 100% auto;
+}
+.refused-status{
+	.icon(glyphicons_207_remove_2, 16px);
+	position: absolute;
+	bottom: 24px;
+	right: 5px;
+	background-size: 100% auto;
 }
 
 .share{
@@ -2022,8 +2042,9 @@ select{
 	z-index: 30;
 	top: -35px;
 	left: -8px;
+	font-size: 12px;
 	.date-picker-icon{
-		margin-right: 12px;
+		margin-right: 8px;
 	}
 }
 
@@ -2290,7 +2311,7 @@ nav.illustrated-links{
 }
 
 .edit-grid{
-	button,i{
+	button,i,input[button]{
 		opacity: 1;
 		pointer-events: all;
 	}
@@ -2307,7 +2328,7 @@ nav.illustrated-links{
 }
 
 .blur-grid{
-	button,i{
+	button,i,input[button]{
 		opacity: 0.2;
 		pointer-events: none;
 	}
@@ -2355,4 +2376,28 @@ nav.illustrated-links{
 	.content:hover{
 		color: #000;
 	}
+}
+
+input[type=text][disabled] {
+	background: #ddd;
+	color: #999;
+	padding: 5px;
+	font-size: 14px;
+	line-height: 20px;
+	margin: 3px 0;
+	cursor: default;
+}
+
+.long-badge {
+	border-radius: 10px;
+	background: #ccc;
+	font-weight: bold;
+	font-size: 12px;
+	padding: 1px 4px;
+	display: inline-block;
+	height: 15px;
+	text-align: center;
+	line-height: 19px;
+	color: #000;
+	margin-top: 2px;
 }

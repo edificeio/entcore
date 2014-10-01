@@ -476,11 +476,6 @@
   text-align: center;
   width: 20px;
   height: 20px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
-  border-radius: 4px;
 }
 .datepicker td.day:hover {
   background: #eeeeee;
@@ -2941,7 +2936,6 @@ a.cke_smile img {
   cursor: inherit;
   min-height: 60px;
   position: relative;
-  padding: 10px;
 }
 .nested-grid .drawing-grid > .row:last-child {
   min-height: 0;
@@ -4688,6 +4682,16 @@ nav.vertical.stamps article.selected a {
 .green h3 {
   color: #fff;
 }
+.grey {
+  background: #555;
+  color: #fff;
+}
+.grey a,
+.grey h1,
+.grey h2,
+.grey h3 {
+  color: #fff;
+}
 .yellow {
   background: #e9e35b;
   color: #444;
@@ -5047,6 +5051,11 @@ input[type=search] {
   width: 11px;
   margin-top: 2px;
   margin-left: 4px;
+}
+.badge {
+  line-height: 16px;
+  background: #23a9aa;
+  color: #fff;
 }
 .label-badge:hover {
   color: #23a9aa;
@@ -5873,6 +5882,10 @@ i.folder-large {
 .datepicker table tr td:hover {
   background: #d9f1f1;
 }
+.lightbox-window .datepicker,
+.lightbox-view .datepicker {
+  z-index: 1100;
+}
 .lightbox-view {
   position: fixed;
   z-index: 9999;
@@ -6476,7 +6489,22 @@ select {
   line-height: 17px;
   padding-top: 15px;
 }
-.schedule .schedule-items .schedule-item .schedule-item-content .pending-status::before {
+.schedule .schedule-items .schedule-item.one {
+  width: 8.33333333%;
+}
+.schedule .schedule-items .schedule-item.two {
+  width: 16.66666667%;
+}
+.schedule .schedule-items .schedule-item.three {
+  width: 25%;
+}
+.schedule .schedule-items .schedule-item.four {
+  width: 33.33333333%;
+}
+.schedule .schedule-items .schedule-item.six {
+  width: 50%;
+}
+.pending-status::before {
   content: "?";
   height: 20px;
   width: 20px;
@@ -6489,7 +6517,7 @@ select {
   bottom: 22px;
   right: 6px;
 }
-.schedule .schedule-items .schedule-item .schedule-item-content .validated-status {
+.validated-status {
   height: 20px;
   width: 20px;
   background-image: url("../img/icons/glyphicons_206_ok_2.png");
@@ -6507,7 +6535,7 @@ select {
   right: 5px;
   background-size: 100% auto;
 }
-.schedule .schedule-items .schedule-item .schedule-item-content .refused-status {
+.refused-status {
   height: 16px;
   width: 16px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -6524,21 +6552,6 @@ select {
   bottom: 24px;
   right: 5px;
   background-size: 100% auto;
-}
-.schedule .schedule-items .schedule-item.one {
-  width: 8.33333333%;
-}
-.schedule .schedule-items .schedule-item.two {
-  width: 16.66666667%;
-}
-.schedule .schedule-items .schedule-item.three {
-  width: 25%;
-}
-.schedule .schedule-items .schedule-item.four {
-  width: 33.33333333%;
-}
-.schedule .schedule-items .schedule-item.six {
-  width: 50%;
 }
 .share h3 {
   padding: 10px;
@@ -6663,9 +6676,10 @@ select {
   z-index: 30;
   top: -35px;
   left: -8px;
+  font-size: 12px;
 }
 .week-switcher .date-picker-icon {
-  margin-right: 12px;
+  margin-right: 8px;
 }
 .theme-preview {
   width: 25px;
@@ -6905,7 +6919,8 @@ nav.illustrated-links ul li .content em {
   width: auto;
 }
 .edit-grid button,
-.edit-grid i {
+.edit-grid i,
+.edit-grid input[button] {
   opacity: 1;
   pointer-events: all;
 }
@@ -6921,7 +6936,8 @@ nav.illustrated-links ul li .content em {
   display: block;
 }
 .blur-grid button,
-.blur-grid i {
+.blur-grid i,
+.blur-grid input[button] {
   opacity: 0.2;
   pointer-events: none;
 }
@@ -6937,7 +6953,8 @@ nav.illustrated-links ul li .content em {
   display: none;
 }
 .blur-grid button,
-.blur-grid i {
+.blur-grid i,
+.blur-grid input[button] {
   opacity: 0.2;
   pointer-events: none;
 }
@@ -6953,7 +6970,8 @@ nav.illustrated-links ul li .content em {
   display: none;
 }
 .blur-grid .edit-grid button,
-.blur-grid .edit-grid i {
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
   opacity: 1;
   pointer-events: all;
 }
@@ -6969,7 +6987,8 @@ nav.illustrated-links ul li .content em {
   display: block;
 }
 .blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i {
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
   opacity: 0.2;
   pointer-events: none;
 }
@@ -6985,7 +7004,8 @@ nav.illustrated-links ul li .content em {
   display: none;
 }
 .blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i {
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
   opacity: 1;
   pointer-events: all;
 }
@@ -7017,6 +7037,28 @@ nav.illustrated-links ul li .content em {
 }
 .page-markers .content:hover {
   color: #000;
+}
+input[type=text][disabled] {
+  background: #ddd;
+  color: #999;
+  padding: 5px;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 3px 0;
+  cursor: default;
+}
+.long-badge {
+  border-radius: 10px;
+  background: #ccc;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 1px 4px;
+  display: inline-block;
+  height: 15px;
+  text-align: center;
+  line-height: 19px;
+  color: #000;
+  margin-top: 2px;
 }
 a {
   color: #fd4a98;
