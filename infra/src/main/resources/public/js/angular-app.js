@@ -3440,18 +3440,18 @@ module.directive('alphabetical', function($compile, $parse){
 	return {
 		restrict: 'E',
 		controller: function($scope){
-			$scope.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+			$scope.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '#'];
 			$scope.matchingElements = {};
 			$scope.matching = function(letter){
 				return function(element){
-					return element[$scope.title][0].toUpperCase() === letter;
+					return element[$scope.title][0].toUpperCase() === letter || (letter === '#' && element[$scope.title][0].toLowerCase() === element[$scope.title][0].toUpperCase());
 				}
 			};
 
 			$scope.updateElements = function(){
 				$scope.letters.forEach(function(letter){
 					$scope.matchingElements[letter] = _.filter($scope.collection($scope), function(element){
-						return element[$scope.title][0].toUpperCase() === letter;
+						return element[$scope.title][0].toUpperCase() === letter || (letter === '#' && element[$scope.title][0].toLowerCase() === element[$scope.title][0].toUpperCase());
 					});
 				});
 			};
