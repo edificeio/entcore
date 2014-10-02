@@ -421,8 +421,11 @@ module.directive('linker', function($compile){
 			};
 			var linkNode = $('<a />');
 			var appendText = '';
-			scope.$watch('chooseLink', function(newVal){
-				if(newVal){
+			scope.$watch('display', function(newVal){
+				if(newVal.chooseLink){
+					if(!scope.linker.editor){
+						scope.linker.editor = scope.$eval(attributes.editor);
+					}
 					var contextEditor = scope.linker.editor;
 					var bookmarks = contextEditor.getSelection().createBookmarks(),
 						range = contextEditor.getSelection().getRanges()[0],
@@ -462,7 +465,7 @@ module.directive('linker', function($compile){
 					scope.linker.params = {};
 					scope.linker.search.text = '';
 				}
-			});
+			}, true);
 
 			http().get('/resources-applications').done(function(apps){
 				scope.linker.apps = _.filter(model.me.apps, function(app){
@@ -585,7 +588,7 @@ module.directive('linker', function($compile){
 				linkNode.appendHtml(appendText);
 				scope.linker.editor.insertElement(linkNode);
 
-				scope.chooseLink = false;
+				scope.display.chooseLink = false;
 				scope.linker.onChange();
 				scope.$apply();
 			};
@@ -1596,29 +1599,32 @@ module.directive('textEditor', function($compile){
 		},
 		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
 			'<linker editor="contextEditor" on-change="updateContent()"></linker>',
-		compile: function($element, $attributes, $transclude){
+		compile: function(){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
 				loader.syncLoad('ckeditor');
 				CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
 			}
-			return function($scope, $element, $attributes){
-				var editor = $element.find('[contenteditable=true]');
-				var parentElement = $element.parents('grid-cell');
+			return function(scope, element, attributes){
+				if(!scope.display){
+					scope.display = {};
+				}
+				var editor = element.find('[contenteditable=true]');
+				var parentElement = element.parents('grid-cell');
 				if(parentElement.length === 0){
 					parentElement = editor.parent().parent();
 				}
 				var instance = CKEDITOR.inline(editor[0],
 					{ customConfig: '/' + infraPrefix + '/public/ckeditor/text-config.js' }
 				);
-				$scope.contextEditor = instance;
+				scope.contextEditor = instance;
 				CKEDITOR.on('instanceReady', function(ck){
-					editor.html($compile($scope.ngModel)($scope.$parent));
+					editor.html($compile(scope.ngModel)(scope.$parent));
 				});
 
-				$scope.$watch('ngModel', function(newVal){
+				scope.$watch('ngModel', function(newVal){
 					if(newVal !== editor.html()){
-						editor.html($compile($scope.ngModel)($scope.$parent));
+						editor.html($compile(scope.ngModel)(scope.$parent));
 						resizeParent();
 					}
 				});
@@ -1663,19 +1669,19 @@ module.directive('textEditor', function($compile){
 					resizeParent();
 					parentElement.data('lock', false);
 					editor.css({ cursor: '' });
-					$scope.ngModel = editor.html();
-					$scope.$apply('ngModel');
-					if($scope.ngChange){
-						$scope.ngChange();
+					scope.ngModel = editor.html();
+					scope.$apply('ngModel');
+					if(scope.ngChange){
+						scope.ngChange();
 					}
 				});
 
-				$('body').on('click', '.cke_button__linker', function(){
-					$scope.chooseLink = true;
-					$scope.$apply('chooseLink');
+				$('body').on('click', '#cke_' + instance.name + ' .cke_button__linker', function(){
+					scope.display.chooseLink = true;
+					scope.$apply('display');
 				});
 
-				$element.on('removed', function(){
+				element.on('removed', function(){
 					for(var instance in CKEDITOR.instances){
 						if(CKEDITOR.instances[instance].element.$ === editor[0]){
 							CKEDITOR.instances[instance].destroy();
@@ -1698,7 +1704,7 @@ module.directive('htmlEditor', function($compile, $parse){
 		template: '<div class="twelve cell block-editor">' +
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div>' +
-			'<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
+			'<linker editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<lightbox show="selectFiles" on-close="selectFiles = false;">' +
 			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
 			'</media-library></lightbox>' +
@@ -1721,6 +1727,9 @@ module.directive('htmlEditor', function($compile, $parse){
 			return function(scope, element, attributes){
 				scope.ngModel = $parse(attributes.ngModel);
 				scope.notify = scope.$eval(attributes.notify);
+				if(!scope.display){
+					scope.display = {};
+				}
 
 				scope.selected = { files: [], link: '' };
 
@@ -1774,7 +1783,7 @@ module.directive('htmlEditor', function($compile, $parse){
 				});
 
 				$('body').on('click', '.cke_button__linker', function(){
-					scope.chooseLink = true;
+					scope.display.chooseLink = true;
 					scope.$apply('chooseLink');
 				});
 
@@ -1845,7 +1854,7 @@ module.directive('htmlInlineEditor', function($compile){
             ngChange: '&'
         },
         template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%; min-height: 24px" class="contextual-editor"></div>' +
-            '<linker ng-show="chooseLink" editor="contextEditor" on-change="updateContent()"></linker>' +
+            '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
             '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
             '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
             '</media-library></lightbox>' +
@@ -1867,6 +1876,9 @@ module.directive('htmlInlineEditor', function($compile){
 
             //// Link function ////
             return function($scope, $element, $attributes){
+				if(!$scope.display){
+					$scope.display = {};
+				}
                 $scope.selected = { files: [], link: '' };
 
                 if(!$attributes.fileUploadPath){
@@ -1975,8 +1987,8 @@ module.directive('htmlInlineEditor', function($compile){
 
                 contextEditor.on('contentDom', function(ck){
                     $('#cke_'+ck.editor.name).on('click', '.cke_button__linker', function(){
-                        $scope.chooseLink = true;
-                        $scope.$apply('chooseLink');
+                        $scope.display.chooseLink = true;
+                        $scope.$apply('display');
                     });
 
                     $('#cke_'+ck.editor.name).on('click', '.cke_button__upload', function(){
