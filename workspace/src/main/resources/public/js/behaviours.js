@@ -151,6 +151,9 @@ Behaviours.register('workspace', {
 					this.source.documents.push(document);
 					Behaviours.copyRights(this.snipletResource, document, workspaceBehaviours.viewRights, 'workspace');
 					this.display.selectSnipletDocument = false;
+					if(typeof this.snipletResource.save === 'function'){
+						this.snipletResource.save();
+					}
 				},
 				copyRights: function(snipletResource, source){
 					source.documents.forEach(function(document){
