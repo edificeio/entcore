@@ -1677,6 +1677,7 @@ module.directive('textEditor', function($compile){
 				});
 
 				$('body').on('click', '#cke_' + instance.name + ' .cke_button__linker', function(){
+					$('#cke_' + instance.name).hide();
 					scope.display.chooseLink = true;
 					scope.$apply('display');
 				});
