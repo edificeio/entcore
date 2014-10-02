@@ -272,7 +272,7 @@ public class DefaultConversationService implements ConversationService {
 				"MATCH (c:Conversation {userId : {userId}, active : {true}})-[:HAS_CONVERSATION_FOLDER]->" +
 				"(f:ConversationFolder {name : {folder}})" +
 				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
-				"RETURN m.id as id, m.to as to, m.from as from, m.state as state, " +
+				"RETURN DISTINCT m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.toName as toName, m.fromName as fromName, " +
 				"m.subject as subject, m.date as date, r.unread as unread, m.displayNames as displayNames " +
 				"ORDER BY m.date DESC " +
