@@ -551,12 +551,15 @@ module.directive('linker', function($compile){
 				contextEditor.getSelection().selectBookmarks(bookmarks);
 
 				var linkNode = scope.linker.editor.document.createElement('a');
-				linkNode.data('reload', true);
+
 				if(scope.linker.params.link){
 					linkNode.setAttribute('href', scope.linker.params.link);
 
 					if(scope.linker.params.appPrefix){
 						linkNode.setAttribute('data-app-prefix', scope.linker.params.appPrefix);
+						if(scope.linker.params.appPrefix !== 'workspace' && !scope.linker.externalLink){
+							linkNode.data('reload', true);
+						}
 					}
 					if(scope.linker.params.id){
 						linkNode.setAttribute('data-id', scope.linker.params.id);
