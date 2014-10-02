@@ -189,10 +189,12 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 	.factory('route', function($rootScope, $route, $routeParams){
 		var routes = {};
 		var currentAction = undefined;
+		var currentParams = undefined;
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function' && currentAction !== $route.current.action){
+			if(typeof routes[$route.current.action] === 'function' && (currentAction !== $route.current.action || currentParams !== $route.current.params)){
 				currentAction = $route.current.action;
+				currentParams = $route.current.params;
 				routes[$route.current.action]($routeParams);
 			}
 		});
