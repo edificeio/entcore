@@ -476,6 +476,11 @@
   text-align: center;
   width: 20px;
   height: 20px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
 }
 .datepicker td.day:hover {
   background: #eeeeee;
@@ -1381,10 +1386,6 @@ a {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
-.share .found-users-list {
-  height: 180px;
-  overflow-y: auto;
-}
 .drop-down.hidden {
   max-height: 0px;
 }
@@ -1621,9 +1622,6 @@ ul.icons-tabs li i {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.icons-view .element a i.shared {
-  bottom: 2px;
 }
 .icons-view .element a i.inline {
   display: inline-block;
@@ -1917,7 +1915,7 @@ section.lightbox-window .lightbox-buttons input[type=submit],
 section.lightbox-window .lightbox-buttons input[type=button] {
   float: right;
 }
-section.lightbox-window .close-lightbox i {
+section.lightbox-window .close-lightbox {
   height: 20px;
   width: 20px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -2936,6 +2934,7 @@ a.cke_smile img {
   cursor: inherit;
   min-height: 60px;
   position: relative;
+  padding: 10px;
 }
 .nested-grid .drawing-grid > .row:last-child {
   min-height: 0;
@@ -3397,7 +3396,7 @@ a.cke_smile img {
 .drop-down-filters ul li label {
   padding: 6px;
   float: left;
-  width: 99px;
+  width: 119px;
 }
 .drop-down-filters ul li label i {
   margin-left: auto;
@@ -3424,8 +3423,8 @@ a.cke_smile img {
   position: absolute;
 }
 .drop-down-filters i.blog {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/blog-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3439,8 +3438,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.userbook {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/userbook-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3454,69 +3453,9 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.workspace {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/workspace-large.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.drop-down-filters i.wiki {
-  height: 99px;
-  width: 99px;
-  background-image: url("../img/icons/wiki-filter.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.drop-down-filters i.forum {
-  height: 99px;
-  width: 99px;
-  background-image: url("../img/icons/forum-filter.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.drop-down-filters i.news {
-  height: 99px;
-  width: 99px;
-  background-image: url("../img/icons/actualites-filter.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.drop-down-filters i.pages {
-  height: 99px;
-  width: 99px;
-  background-image: url("../img/icons/pages-filter.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3530,8 +3469,8 @@ a.cke_smile img {
 }
 .drop-down-filters i.conversation,
 .drop-down-filters i.messagerie {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/conversation-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3545,8 +3484,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.draft {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/draft.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3560,8 +3499,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.submitted {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/submitted.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3575,8 +3514,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.published {
-  height: 99px;
-  width: 99px;
+  height: 100px;
+  width: 100px;
   background-image: url("../img/icons/published.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3588,23 +3527,6 @@ a.cke_smile img {
   float: left;
   vertical-align: middle;
   cursor: pointer;
-}
-i.shared {
-  height: 18px;
-  width: 18px;
-  background-image: url("../img/icons/shared.png");
-  background-repeat: no-repeat;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  background-position: center;
-  display: block;
-  position: absolute;
-  bottom: -2px;
-  right: -3px;
 }
 .page-markers {
   position: fixed;
@@ -6961,4 +6883,96 @@ input[type=text][disabled] {
   line-height: 19px;
   color: #000;
   margin-top: 2px;
+}
+.flexible {
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
+}
+.flexible .small-hidden {
+  display: none;
+}
+.flexible:empty {
+  width: 0 !important;
+}
+.flexible:empty + .flexible {
+  width: 100% !important;
+}
+.flexible:empty + .flexible .patchwork {
+  padding-right: 0;
+}
+.flexible:empty + .flexible .patchwork .row h1 {
+  color: #fff;
+}
+.flexible:empty + .flexible .small-hidden {
+  display: block;
+}
+.flexible:empty + .flexible .big-hidden {
+  display: none;
+}
+.patchwork {
+  color: #fff;
+  padding-right: 35px;
+}
+.patchwork .row {
+  background: #23a9aa;
+}
+.patchwork .row > .cell {
+  height: 130px;
+}
+.patchwork .row h1 {
+  color: #333;
+  font-size: 18px;
+}
+.patchwork .row button {
+  background: #555;
+}
+.patchwork .row article {
+  margin-bottom: 0;
+}
+.patchwork .row article .bottom-locked {
+  bottom: 8px;
+}
+.patchwork .row img {
+  height: 130px;
+  width: 130px;
+}
+.patchwork .row.selected h1,
+.patchwork .row:nth-child(2n).selected h1 {
+  color: #fff;
+}
+.patchwork .row:nth-child(2n) {
+  background: #266881;
+}
+.patchwork .row:nth-child(2n) h1 {
+  color: #bbb;
+}
+.patchwork .row:nth-child(2n) .cell {
+  float: right !important;
+  text-align: right;
+}
+.patchwork .row:nth-child(2n) .bottom-locked {
+  right: 8px;
+}
+.patchwork .row:nth-child(2n) button {
+  background: #444;
+}
+.open-right {
+  height: 25px;
+  width: 25px;
+  background-image: url("../img/icons/glyphicons_223_chevron-right.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.illustrated-article .small.illustration .image {
+  width: 100px;
+  height: 100px;
 }

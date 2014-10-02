@@ -192,7 +192,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		var currentParams = undefined;
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function' && (currentAction !== $route.current.action || currentParams !== $route.current.params)){
+			if(typeof routes[$route.current.action] === 'function' &&
+				(currentAction !== $route.current.action || (currentParams !== $route.current.params && !(Object.getOwnPropertyNames($route.current.params).length === 0)))){
 				currentAction = $route.current.action;
 				currentParams = $route.current.params;
 				routes[$route.current.action]($routeParams);
@@ -829,12 +830,16 @@ function applyScope(input, scope){
 module.directive('container', function($compile){
 	return {
 		restrict: 'E',
+		scope: true,
 		template: '<div ng-include="templateContainer"></div>',
 		link: function(scope, element, attributes){
 			scope.tpl = template;
 
 			template.watch(attributes.template, function(){
 				scope.templateContainer = template.containers[attributes.template];
+				if(scope.templateContainer === 'empty'){
+					scope.templateContainer = undefined;
+				}
 			});
 
 			if(attributes.template){

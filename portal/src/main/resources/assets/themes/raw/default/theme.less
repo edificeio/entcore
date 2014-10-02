@@ -2401,3 +2401,90 @@ input[type=text][disabled] {
 	color: #000;
 	margin-top: 2px;
 }
+
+.flexible{
+	.run-transition(width);
+	.small-hidden{
+		display: none;
+	}
+}
+
+.flexible:empty{
+	width: 0 !important;
+}
+
+.flexible:empty + .flexible{
+	width: 100% !important;
+	.patchwork{
+		padding-right: 0;
+		.row{
+			h1{
+				color: #fff;
+			}
+		}
+	}
+	.small-hidden{
+		display: block;
+	}
+	.big-hidden{
+		display: none;
+	}
+}
+
+.patchwork{
+	color: #fff;
+	padding-right: 35px;
+	.row{
+		> .cell{
+			height: 130px;
+		}
+		background: @bright-blue;
+		h1{
+			color: #333;
+			font-size: 18px;
+		}
+		button{
+			background: #555;
+		}
+		article{
+			margin-bottom: 0;
+			.bottom-locked{
+				bottom: 8px;
+			}
+		}
+		img{
+			height: 130px;
+			width: 130px;
+		}
+	}
+	.row.selected, .row:nth-child(2n).selected{
+		h1{
+			color: #fff;
+		}
+	}
+	.row:nth-child(2n){
+		background: @dark-blue;
+		h1{
+			color: #bbb;
+		}
+		.cell{
+			float: right !important;
+			text-align: right;
+		}
+		.bottom-locked{
+			right: 8px;
+		}
+		button{
+			background: #444;
+		}
+	}
+}
+
+.open-right{
+	.icon(glyphicons_223_chevron-right, 25px);
+}
+
+.illustrated-article .small.illustration .image{
+	width: 100px;
+	height: 100px;
+}

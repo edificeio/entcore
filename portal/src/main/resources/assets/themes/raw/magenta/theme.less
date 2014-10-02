@@ -803,3 +803,30 @@ ul.thought-out-actions li:hover{
 .menu-items li{
 	color: @magenta
 }
+
+.patchwork{
+	color: #fff;
+	.row{
+		background: #444;
+		h1{
+			color: #aaa;
+		}
+		button{
+			background: @magenta;
+		}
+	}
+	.row.selected, .row:nth-child(2n).selected{
+		h1{
+			color: #fff;
+		}
+	}
+	.row:nth-child(2n){
+		background: #333;
+		h1{
+			color: #bbb;
+		}
+		button{
+			background: @magenta;
+		}
+	}
+}
