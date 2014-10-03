@@ -6863,9 +6863,18 @@ ul.toc li a {
 .lightbox-view .tabs.linker .illustrated-list li a {
   display: block;
 }
-.lightbox-view .tabs.linker .illustrated-list li.selected a {
+.lightbox-view .tabs.linker .illustrated-list li.selected {
   background: #266881;
+}
+.lightbox-view .tabs.linker .illustrated-list li.selected a {
   color: #fff;
+}
+.lightbox-view .tabs.linker .illustrated-list .name {
+  float: left;
+}
+.lightbox-view .tabs.linker .illustrated-list .owner {
+  float: right;
+  margin-right: 8px;
 }
 .text-container {
   padding: 0;

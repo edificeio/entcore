@@ -2244,9 +2244,18 @@ ul.toc{
 	li a{
 		display: block;
 	}
-	li.selected a{
+	li.selected{
 		background: @dark-blue;
-		color: #fff;
+		a{
+			color: #fff;
+		}
+	}
+	.name{
+		float: left;
+	}
+	.owner{
+		float: right;
+		margin-right: 8px;
 	}
 }
 
