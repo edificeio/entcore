@@ -600,7 +600,7 @@ module.directive('linker', function($compile){
 			};
 
 			scope.linker.cancel = function(){
-				scope.chooseLink = false;
+				scope.display.chooseLink = false;
 			};
 		}
 	}
