@@ -3958,7 +3958,7 @@ i.wiki-large {
 i.forum-large {
   height: 100px;
   width: 100px;
-  background-image: url("../img/icons/forum.png");
+  background-image: url("../img/icons/forum-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3994,7 +3994,7 @@ i.pages-large {
 i.userbook-large {
   height: 100px;
   width: 100px;
-  background-image: url("../img/icons/userbook-large.png");
+  background-image: url("../img/icons/userbook-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -4031,7 +4031,7 @@ i.conversation-large,
 i.messagerie {
   height: 100px;
   width: 100px;
-  background-image: url("../img/icons/conversation-large.png");
+  background-image: url("../img/icons/conversation-large-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -4086,6 +4086,114 @@ i.residence-artiste-large {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/residence-artiste-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.emploi-temps {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/emploi-temps.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.cahier-textes {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/cahier-textes.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.agenda {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/agenda.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.td-base {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/td-base.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.absences {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/absences.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.notes {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/notes.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -8051,6 +8159,96 @@ ul.thought-out-actions li:hover {
 }
 .patchwork .row:nth-child(2n) button {
   background: #fd4a98;
+}
+i.emploi-temps {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/emploi-temps-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.cahier-textes {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/cahier-textes-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.agenda {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/agenda-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.td-base {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/td-base-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.notes {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/notes-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
 }
 header.navbar {
   background: #444;
