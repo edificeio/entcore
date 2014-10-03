@@ -477,11 +477,6 @@
   text-align: center;
   width: 20px;
   height: 20px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
-  border-radius: 4px;
 }
 .datepicker td.day:hover {
   background: #eeeeee;
@@ -1387,6 +1382,10 @@ a {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+.share .found-users-list {
+  height: 180px;
+  overflow-y: auto;
+}
 .drop-down.hidden {
   max-height: 0px;
 }
@@ -1623,6 +1622,9 @@ ul.icons-tabs li i {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.icons-view .element a i.shared {
+  bottom: 2px;
 }
 .icons-view .element a i.inline {
   display: inline-block;
@@ -1916,7 +1918,7 @@ section.lightbox-window .lightbox-buttons input[type=submit],
 section.lightbox-window .lightbox-buttons input[type=button] {
   float: right;
 }
-section.lightbox-window .close-lightbox {
+section.lightbox-window .close-lightbox i {
   height: 20px;
   width: 20px;
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
@@ -2935,7 +2937,6 @@ a.cke_smile img {
   cursor: inherit;
   min-height: 60px;
   position: relative;
-  padding: 10px;
 }
 .nested-grid .drawing-grid > .row:last-child {
   min-height: 0;
@@ -3397,7 +3398,7 @@ a.cke_smile img {
 .drop-down-filters ul li label {
   padding: 6px;
   float: left;
-  width: 119px;
+  width: 99px;
 }
 .drop-down-filters ul li label i {
   margin-left: auto;
@@ -3424,8 +3425,8 @@ a.cke_smile img {
   position: absolute;
 }
 .drop-down-filters i.blog {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/blog-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3439,8 +3440,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.userbook {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/userbook-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3454,9 +3455,69 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.workspace {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/workspace-large.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.wiki {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/wiki-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.forum {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/forum-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.news {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/actualites-filter.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.drop-down-filters i.pages {
+  height: 99px;
+  width: 99px;
+  background-image: url("../img/icons/pages-filter.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
@@ -3470,8 +3531,8 @@ a.cke_smile img {
 }
 .drop-down-filters i.conversation,
 .drop-down-filters i.messagerie {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/conversation-large.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3485,8 +3546,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.draft {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/draft.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3500,8 +3561,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.submitted {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/submitted.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3515,8 +3576,8 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.published {
-  height: 100px;
-  width: 100px;
+  height: 99px;
+  width: 99px;
   background-image: url("../img/icons/published.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -3528,6 +3589,23 @@ a.cke_smile img {
   float: left;
   vertical-align: middle;
   cursor: pointer;
+}
+i.shared {
+  height: 18px;
+  width: 18px;
+  background-image: url("../img/icons/shared.png");
+  background-repeat: no-repeat;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-position: center;
+  display: block;
+  position: absolute;
+  bottom: -2px;
+  right: -3px;
 }
 .page-markers {
   position: fixed;
