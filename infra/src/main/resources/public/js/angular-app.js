@@ -892,8 +892,8 @@ module.directive('imageSelect', function($compile){
 			ngChange: '&',
 			default: '@'
 		},
-		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" ng-if="ngModel" style="cursor: pointer" />' +
-			'<img skin-src="[[default]]" class="pick-file" ng-if="!ngModel" style="cursor: pointer" />' +
+		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
+			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" file-format="\'img\'"></media-library>' +
 			'</lightbox>' +
@@ -2790,6 +2790,7 @@ module.directive('gridDraggable', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
+			element.attr('draggable', false);
 			element.on('mousedown', function(e){
 				var parent = element.parents('.drawing-grid');
 				if(element.data('lock') === true || parent.first().hasClass('blur-grid')){
@@ -2938,8 +2939,7 @@ module.directive('gridDraggable', function($compile){
 						element.css({
 							position: '',
 							left: 'auto',
-							top: 'auto',
-							'z-index': '1'
+							top: 'auto'
 						});
 						element.parent().attr('style', ' ');
 
