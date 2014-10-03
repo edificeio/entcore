@@ -17,7 +17,7 @@
 	"manager": {
 		"priority": 3,
 		"default": false,
-		"requires": ["read", "contrib"]
+		"requires": ["read", "contrib", "publish"]
 	},
 	"comment": {
 		"priority": 4,

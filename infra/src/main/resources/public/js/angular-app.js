@@ -3828,8 +3828,10 @@ function Share($rootScope, $scope, ui, _, lang){
 				}) !== undefined
 			})
 			.forEach(function(item){
-				element.actions[item.displayName] = false;
-				data.actions = data.actions.concat(actionToRights(element, item));
+				if(item){
+					element.actions[item.displayName] = false;
+					data.actions = data.actions.concat(actionToRights(element, item));
+				}
 			})
 		}
 		else{
@@ -3837,8 +3839,10 @@ function Share($rootScope, $scope, ui, _, lang){
 				var action = _.find($scope.actions, function(action){
 					return action.displayName.split('.')[1].indexOf(required) !== -1;
 				});
-				element.actions[action.displayName] = true;
-				data.actions = data.actions.concat(actionToRights(element, action));
+				if(action){
+					element.actions[action.displayName] = true;
+					data.actions = data.actions.concat(actionToRights(element, action));
+				}
 			});
 		}
 
