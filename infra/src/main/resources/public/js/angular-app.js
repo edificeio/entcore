@@ -636,6 +636,7 @@ module.directive('calendar', function($compile){
 					$scope.newItem = {};
 					$scope.newItem.beginning = moment().utc().dayOfYear(day.index).hour(timeslot.start);
 					$scope.newItem.end = moment().utc().dayOfYear(day.index).hour(timeslot.end);
+					model.calendar.newItem = $scope.newItem;
 					$scope.onCreateOpen();
 				};
 
