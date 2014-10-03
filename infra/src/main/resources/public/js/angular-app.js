@@ -636,6 +636,12 @@ module.directive('calendar', function($compile){
 					$scope.newItem = {};
 					$scope.newItem.beginning = moment().utc().dayOfYear(day.index).hour(timeslot.start);
 					$scope.newItem.end = moment().utc().dayOfYear(day.index).hour(timeslot.end);
+					$scope.onCreateOpen();
+				};
+
+				$scope.closeCreateWindow = function(){
+					$scope.display.createItem = false;
+					$scope.onCreateClose();
 				};
 
 				$scope.updateCalendarWeek = function(){
@@ -654,6 +660,12 @@ module.directive('calendar', function($compile){
 			template.open('schedule-create-template', attributes.createTemplate);
 
 			scope.items = scope.$eval(attributes.items);
+			scope.onCreateOpen = function(){
+				scope.$eval(attributes.onCreateOpen);
+			};
+			scope.onCreateClose = function(){
+				scope.$eval(attributes.onCreateClose);
+			};
 			scope.$watch(function(){
 				return scope.$eval(attributes.items)
 			}, function(newVal){
