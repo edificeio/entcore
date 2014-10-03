@@ -437,8 +437,7 @@ public class WorkspaceService extends BaseController {
 										1 == result.<JsonObject>get(0).getInteger("nb")) {
 									final JsonObject doc = new JsonObject();
 									doc.putString("to", to);
-									doc.putString("toName", res.body().getObject("result")
-											.getObject("0").getString("username"));
+									doc.putString("toName", result.<JsonObject>get(0).getString("username"));
 									doc.putString("from", userInfos.getUserId());
 									doc.putString("fromName", userInfos.getUsername());
 									String now = MongoDb.formatDate(new Date());
