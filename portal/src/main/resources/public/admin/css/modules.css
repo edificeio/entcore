@@ -5931,7 +5931,7 @@ textarea {
   color: #008cba;
 }
 .comment {
-  background: #266881;
+  background: #d9f1f1;
   color: #fff;
 }
 article.selected {
@@ -8043,7 +8043,7 @@ nav.illustrated-links ul li .content {
   background: #333;
 }
 .comment {
-  background: #444;
+  background: #ddd;
 }
 .badge {
   background: #fd4a98;
