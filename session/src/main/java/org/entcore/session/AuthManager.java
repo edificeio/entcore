@@ -299,23 +299,26 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
 		String query =
-				"MATCH (n:User) " +
-				"WHERE n.id = {id} AND HAS(n.login) " +
+				"MATCH (n:User {id : {id}}) " +
+				"WHERE HAS(n.login) " +
 				"OPTIONAL MATCH n-[:IN]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WITH app, a, n " +
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
 				"WITH app, a, n, gp " +
-				"OPTIONAL MATCH n-[:IN]->(gpe:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH n-[:IN]->(gpc:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(gps:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"WITH app, a, n, gp, gps, s " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
+				"WITH app, a, n, gp, gps, s, c " +
 				"OPTIONAL MATCH n-[:IN*0..1]->()-[rf:HAS_FUNCTION]->(f:Function) " +
-				"OPTIONAL MATCH gpe-[:HAS_PROFILE]->(p:Profile) " +
+				"WITH app, a, n, gp, gps, s, c, rf, f " +
+				"OPTIONAL MATCH gps-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, " +
 				"n.displayName as username, p.name as type, COLLECT(distinct s.id) as structures, " +
 				"COLLECT(distinct [f.externalId, rf.structures, rf.classes]) as functions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
-				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
+				"s.name as schoolName, s.UAI as uai, (COLLECT(distinct gp.id) + COLLECT(distinct gps.id)) as profilGroupsIds";
 		Map<String, Object> params = new HashMap<>();
 		params.put("id", userId);
 		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
