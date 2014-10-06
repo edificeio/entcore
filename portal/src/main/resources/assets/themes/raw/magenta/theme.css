@@ -8065,6 +8065,9 @@ select {
 .page-markers .marker:nth-child(2) {
   border-color: transparent transparent #23a9aa transparent;
 }
+.datepicker table thead tr {
+  background: #444;
+}
 .accordions .accordion h2 {
   background: -webkit-linear-gradient(#383838, #333333);
   background: -moz-linear-gradient(#383838, #333333);
@@ -8094,6 +8097,9 @@ select {
 .accordions .accordion .toggle .content select {
   background: #2C2C2C;
   border: none;
+}
+.accordions .accordion .toggle textarea {
+  background: #252525;
 }
 .accordions .accordion:last-child h2 {
   border-bottom: 1px solid #555;
