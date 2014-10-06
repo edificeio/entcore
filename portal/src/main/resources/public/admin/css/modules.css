@@ -4136,6 +4136,24 @@ i.cahier-textes {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
+i.scolarite {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/scolarite.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
 i.agenda {
   height: 100px;
   width: 100px;
@@ -8237,6 +8255,24 @@ i.notes {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/notes-neon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  -o-transition: background 250ms ease;
+  -moz-transition: background 250ms ease;
+  -webkit-transition: background 250ms ease;
+  transition: background 250ms ease;
+}
+i.scolarite {
+  height: 100px;
+  width: 100px;
+  background-image: url("../img/icons/scolarite-neon.png");
   background-repeat: no-repeat;
   background-position: center;
   display: block;
