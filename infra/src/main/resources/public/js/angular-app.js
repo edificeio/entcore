@@ -3329,7 +3329,8 @@ module.directive('datePicker', function($compile){
 							days: moment.weekdays(),
 							daysShort: moment.weekdaysShort(),
 							daysMin: moment.weekdaysMin()
-						}
+						},
+						weekStart: 1
 					})
 					.on('changeDate', function(){
 						setTimeout(function(){
@@ -3393,7 +3394,8 @@ module.directive('datePickerIcon', function($compile){
 						days: moment.weekdays(),
 						daysShort: moment.weekdaysShort(),
 						daysMin: moment.weekdaysMin()
-					}
+					},
+					weekStart: 1
 				})
 				.on('changeDate', function(event){
 					$scope.ngModel = event.date
