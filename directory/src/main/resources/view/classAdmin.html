@@ -70,12 +70,20 @@
 			ng-click="show('Relative')"
 			translate content="directory.relatives">
 		</header>
+		<header ng-class="{ selected: display.show === 'Teacher' }"
+				ng-click="show('Teacher')"
+				translate content="userBook.teachers">
+		</header>
+		<header ng-class="{ selected: display.show === 'Personnel' }"
+				ng-click="show('Personnel')"
+				translate content="directory.personnel">
+		</header>
 		<section class="medium-text">
 			<div class="row line">
 				<div class="cell" ng-if="display.importing">
 					<loading-icon class="cell" request="loadingUsers" default="loading" />
 				</div>
-				<div class="eleven cell reduce-block-eight">
+				<div class="eleven cell reduce-block-eight" ng-hide="display.show === 'Personnel' || display.show == 'Teacher'">
 
 					<span translate content="fill.manual"></span>
 					<a translate content="classAdmin.importFile" ng-click="openView('importCSV', 'lightbox')"></a>
@@ -125,7 +133,7 @@
 								</td>
 								<td colspan="2">
 									<input type="submit" class="button right-magnet"
-										   translate attr="value" ng-if="!newUser.lastName || display.show === 'Student'"
+										   translate attr="value"
 										   value="directory.add" />
 								</td>
 							</tr>
