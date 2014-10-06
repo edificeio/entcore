@@ -2361,8 +2361,8 @@ module.directive('resizable', function(){
 					var resizeLimits = {
 						horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
 						horizontalLeft: element.offset().left + 5 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-resize-lock') === undefined,
-						verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
-						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-resize-lock') === undefined
+						verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 5 && element.attr('vertical-resize-lock') === undefined,
+						verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5 && element.attr('vertical-resize-lock') === undefined
 					};
 
 					var orientations = {
@@ -2404,8 +2404,8 @@ module.directive('resizable', function(){
 				var resizeLimits = {
 					horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
 					horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-resize-lock') === undefined,
-					verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
-					verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15 && element.attr('vertical-resize-lock') === undefined
+					verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
+					verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5 && element.attr('vertical-resize-lock') === undefined
 				};
 
 				var initial = {
