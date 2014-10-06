@@ -1382,7 +1382,7 @@ a {
   box-sizing: border-box;
 }
 .share .found-users-list {
-  height: 180px;
+  max-height: 180px;
   overflow-y: auto;
 }
 .drop-down.hidden {
@@ -1970,7 +1970,7 @@ dl dt {
   padding: 15px;
 }
 .share .groups-list {
-  height: 160px;
+  max-height: 160px;
   overflow-y: auto;
 }
 .flowing.sharing td:nth-child(2),
