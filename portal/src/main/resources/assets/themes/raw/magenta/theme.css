@@ -1349,6 +1349,7 @@ a {
 .share th {
   width: 100px;
   text-align: center;
+  line-height: 18px;
 }
 .share td:first-child,
 .share th:first-child {
@@ -1375,7 +1376,6 @@ a {
   width: 100%;
   display: block;
   font-size: 15px;
-  padding: 15px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -1968,6 +1968,10 @@ dl dt {
 }
 .share .sharing-option {
   padding: 15px;
+}
+.share .groups-list {
+  height: 160px;
+  overflow-y: auto;
 }
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
@@ -6690,9 +6694,8 @@ select {
   background-size: 100% auto;
 }
 .share h3 {
-  padding: 10px;
-  padding-top: 0;
-  padding-bottom: 0;
+  padding: 0;
+  margin: 0;
 }
 .share .autocomplete > em {
   border: none;

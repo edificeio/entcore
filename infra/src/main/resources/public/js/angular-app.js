@@ -3804,7 +3804,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		})
 	}
 
-	$scope.maxEdit = 5;
+	$scope.maxEdit = 3;
 
 	$scope.displayMore = function(){
 		var displayMoreInc = 5;
