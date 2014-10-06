@@ -32,7 +32,7 @@
 
 	<div class="row" ng-if="searchText">
 		<ul class="illustrated-list">
-			<li ng-repeat="document in documents | filter:searchText" ng-click="addDocument(document)">
+			<li ng-repeat="document in documents | filter:searchText | limitTo:6" ng-click="addDocument(document)">
 				<img skin-src="[[documentIcon(document)]]" class="illustration" />
 				<a class="name">[[document.name]]</a>
 				<em class="owner">[[document.ownerName]]</em>

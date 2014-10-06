@@ -2412,7 +2412,6 @@ em.high-importance {
 .illustrated-list {
   margin: 0;
   padding: 0;
-  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -2436,6 +2435,11 @@ em.high-importance {
   display: block;
   float: left;
   margin-right: 10px;
+}
+.illustrated-list::after {
+  content: " ";
+  width: 100%;
+  clear: both;
 }
 .lightbox-view .tabs.linker section .icons-view {
   border-left: 0;
@@ -2462,6 +2466,9 @@ em.high-importance {
   width: 100%;
   top: 0;
   left: 0;
+}
+.lightbox-view .tabs.linker .illustrated-list {
+  position: absolute;
 }
 .accordions .accordion {
   padding: 0;
@@ -2887,7 +2894,6 @@ a.cke_smile img {
   width: 100%;
   overflow: hidden;
   padding-top: 2px;
-  border-left: 1px solid #ddd;
   border-top: 1px dashed #888;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -2902,11 +2908,16 @@ a.cke_smile img {
   margin-left: -1px;
   margin-top: -1px;
 }
+.grid-guides .cell:last-child {
+  border-left: none;
+}
 .grid-guides .row {
   min-height: 0 !important;
 }
 .guide-line {
-  border-bottom: 2px solid transparent;
+  border-bottom: 4px solid #ccc;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
 }
 .grid-view .grid-add-row {
   display: none;
@@ -6057,7 +6068,6 @@ i.folder-large {
   color: #f56767;
 }
 .accordions {
-  margin-top: 15px;
   margin-bottom: 15px;
 }
 .accordions .accordion h2 {
