@@ -690,7 +690,7 @@ module.directive('scheduleItem', function($compile){
 			var parentSchedule = element.parents('.schedule');
 			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
-			if(scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear()){
+			if(scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || scope.item.locked){
 				scheduleItemEl.removeAttr('resizable');
 				scheduleItemEl.removeAttr('draggable');
 				scheduleItemEl.unbind('mouseover');
