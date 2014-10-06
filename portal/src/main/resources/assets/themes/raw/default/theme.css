@@ -6612,6 +6612,10 @@ select {
 .share tr {
   color: #444;
 }
+.share tr:hover td.drop-line {
+  background: url(../img/icons/glyphicons_207_remove_2.png) no-repeat;
+  background-position: center 8px;
+}
 .share input[type=text] {
   width: 100%;
   margin-left: 0;
