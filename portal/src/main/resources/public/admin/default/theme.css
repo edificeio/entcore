@@ -1343,6 +1343,16 @@ a {
 .cke_editable {
   padding: 4px;
 }
+.lightbox-window .share .found-users-list,
+.lightbox-view .share .found-users-list {
+  height: 180px;
+  overflow-y: auto;
+}
+.lightbox-window .share .groups-list,
+.lightbox-view .share .groups-list {
+  height: 160px;
+  overflow-y: auto;
+}
 .share table {
   width: 100%;
 }
@@ -1381,10 +1391,6 @@ a {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-}
-.share .found-users-list {
-  height: 180px;
-  overflow-y: auto;
 }
 .drop-down.hidden {
   max-height: 0px;
@@ -1970,10 +1976,6 @@ dl dt {
 .share .sharing-option {
   padding: 15px;
 }
-.share .groups-list {
-  height: 160px;
-  overflow-y: auto;
-}
 .flowing.sharing td:nth-child(2),
 .flowing.sharing td:nth-child(3),
 .flowing.sharing td:nth-child(4),
@@ -2402,6 +2404,13 @@ em.high-importance {
 .notification i.type {
   float: left;
 }
+.notification .notification-date {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 200px;
+  text-align: right;
+}
 .calendar {
   width: 256px;
   height: 151px;
@@ -2412,7 +2421,7 @@ em.high-importance {
 .widgets {
   display: table-cell;
   width: 276px;
-  paddng: 10px;
+  padding: 10px;
 }
 .illustrated-list {
   margin: 0;
@@ -3397,6 +3406,7 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
+  cursor: pointer;
 }
 .drop-down-filters ul {
   margin-top: 0;
@@ -3664,6 +3674,35 @@ i.shared {
 .blogs-posts-list table {
   table-layout: fixed;
 }
+@media screen and (max-width: 800px) {
+  .widgets {
+    display: none;
+  }
+  .widgets-friend {
+    margin-left: 0px;
+  }
+  .drop-down-filters .wrapper i {
+    height: 55px !important;
+    width: 55px !important;
+    background-size: 60px 60px;
+  }
+  .drop-down-filters .wrapper p {
+    display: none;
+  }
+  .drop-down-filters .wrapper label {
+    width: 59px;
+  }
+}
+@media screen and (max-width: 550px) {
+  .notification .avatar {
+    display: none;
+  }
+}
+@media screen and (max-width: 420px) {
+  .drop-down-filters {
+    display: none !important;
+  }
+}
 html,
 body {
   margin: 0;
@@ -3915,6 +3954,7 @@ html.app body {
 html,
 body {
   background: #fff;
+  overflow-x: hidden;
 }
 i.workspace-large {
   height: 100px;
@@ -4683,6 +4723,7 @@ i.tools {
 }
 .container .main {
   max-width: 1200px;
+  min-width: 320px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -5344,6 +5385,20 @@ nav.horizontal a {
 }
 nav.horizontal a:hover {
   color: #23a9aa;
+}
+@media screen and (max-width: 550px) {
+  nav.horizontal {
+    right: 0;
+  }
+  nav.horizontal a {
+    font-size: 14px;
+    margin-left: 0;
+  }
+  nav.horizontal i.disconnect {
+    width: 22px !important;
+    margin-right: 0;
+    margin-left: 0;
+  }
 }
 button:hover,
 input[type=button]:hover,

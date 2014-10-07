@@ -18,6 +18,7 @@
 
 html, body{
 	background: #fff;
+	overflow-x: hidden;
 }
 
 i.workspace-large{
@@ -337,6 +338,7 @@ i.tools{
 	}
 	.main{
 		max-width: 1200px;
+		min-width: 320px;
 		margin-left: auto;
 		margin-right: auto;
 	}
@@ -943,6 +945,21 @@ nav.horizontal{
 	}
 	a:hover{
 		color: @bright-blue;
+	}
+}
+
+@media screen and (max-width: 550px){
+	nav.horizontal{
+		right: 0;
+		a{
+			font-size: 14px;
+			margin-left: 0;
+		}
+		i.disconnect{
+			width: 22px !important;
+			margin-right: 0;
+			margin-left: 0;
+		}
 	}
 }
 
