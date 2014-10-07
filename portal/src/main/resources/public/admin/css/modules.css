@@ -1296,17 +1296,20 @@ table tr.underline {
 .list-view td a {
   word-break: break-word;
 }
-.list-view td.user {
+.list-view td.user,
+.list-view th.user {
   max-width: 100px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 }
-.list-view td.icon {
+.list-view td.icon,
+.list-view th.user {
   width: 25px;
   height: 25px;
 }
-.list-view td.content {
+.list-view td.content,
+.list-view th.user {
   max-width: 280px;
   text-overflow: ellipsis;
   white-space: nowrap;

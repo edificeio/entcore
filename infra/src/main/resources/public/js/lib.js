@@ -1230,6 +1230,9 @@ var calendar = {
 		}
 
 		this.firstDay = moment().week(this.week).day(1);
+		if(moment().day() === 0){
+			this.firstDay = moment().add(-1, 'days').week(this.week).day(1);
+		}
 	},
 	startOfDay: 7,
 	endOfDay: 20,
