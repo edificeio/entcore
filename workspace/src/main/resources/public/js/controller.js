@@ -362,6 +362,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				posted: undefined
 			});
 			$scope.documentComment = $scope.targetDocument;
+			$scope.targetDocument.comment = "";
 			$scope.$apply();
 		});
 	};
