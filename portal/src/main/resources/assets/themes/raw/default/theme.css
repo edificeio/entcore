@@ -1501,6 +1501,10 @@ a {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
+.toggle-buttons .contextual-link {
+  float: right;
+  margin: 10px;
+}
 [draggable] {
   cursor: move;
 }
@@ -5839,6 +5843,12 @@ filters p:first-child i {
 }
 .toggle-buttons behaviour img {
   max-width: 100%;
+}
+.toggle-buttons .contextual-link a {
+  color: #fff;
+}
+.toggle-buttons .contextual-link a {
+  color: #23a9aa;
 }
 .toggle-panel.hide {
   width: 300px;
