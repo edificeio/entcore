@@ -3176,6 +3176,9 @@ module.directive('draggable', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
+			if(attributes.draggable == 'false'){
+				return;
+			}
 			element.on('mousedown', function(e){
 				if(element.data('lock') === true){
 					return;
