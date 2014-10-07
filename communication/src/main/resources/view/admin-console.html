@@ -84,9 +84,15 @@
                                     </h2>
                                     <div class="toggle">
                                         <div class="content" style="overflow-y: scroll; height: 100%; padding-top: 0">
-                                            <input type="text" ng-model="$parent.filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]" style=" width: 100%; margin-top: 0; margin-bottom: 10; background-color: #444; color: white; outline: none"/>
+                                            <select class="large-dark-input"
+                                                    ng-model="commStructure"
+                                                    ng-init="commStructure = structure"
+                                                    ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
+                                                    ng-change="commStructure.groups.sync()">
+                                            </select>
+                                            <input class="large-dark-input" type="text" ng-model="$parent.filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]"/>
                                             <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
-                                                <li ng-repeat="listedGroup in filterAllOtherGroups(structure.groups.all, group) | filter: filterGroupsFunction(filterAccordionGroups) | orderBy: 'name'"
+                                                <li ng-repeat="listedGroup in filterAllOtherGroups(commStructure.groups.all, group) | filter: filterGroupsFunction(filterAccordionGroups) | orderBy: 'name'"
                                                     ng-style="groupStyling(group, listedGroup)"
                                                     ng-click="toggleGroupCommunication(group, listedGroup)"
                                                     style="float: left; display: inline; width: 27%; margin-right: 1%;border-left: 10px solid gray;padding-left: 10; margin-bottom: 5px; transition: border-color 250ms ease;">
