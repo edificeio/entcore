@@ -301,38 +301,41 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String query =
 				"MATCH (n:User {id : {id}}) " +
 				"WHERE HAS(n.login) " +
-				"OPTIONAL MATCH n-[:IN]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
-				"WITH app, a, n " +
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
-				"WITH app, a, n, gp " +
-				"OPTIONAL MATCH gp-[:DEPENDS]->(gps:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
-				"WITH app, a, n, gp, gps, s " +
-				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
-				"WITH app, a, n, gp, gps, s, c " +
+				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[:IN*0..1]->()-[rf:HAS_FUNCTION]->(f:Function) " +
-				"WITH app, a, n, gp, gps, s, c, rf, f " +
-				"OPTIONAL MATCH gps-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN distinct COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
+				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
+				"RETURN distinct " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, " +
 				"n.displayName as username, p.name as type, COLLECT(distinct s.id) as structures, " +
 				"COLLECT(distinct [f.externalId, rf.structures, rf.classes]) as functions, " +
-				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps, " +
-				"s.name as schoolName, s.UAI as uai, (COLLECT(distinct gp.id) + COLLECT(distinct gps.id)) as profilGroupsIds";
-		Map<String, Object> params = new HashMap<>();
-		params.put("id", userId);
-		sendNeo4j(query, params, new Handler<Message<JsonObject>>() {
+				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
+		String query2 =
+				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
+				"WHERE HAS(n.login) " +
+				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps";
+		JsonObject params = new JsonObject();
+		params.putString("id", userId);
+		JsonArray statements = new JsonArray()
+				.add(new JsonObject().putString("statement", query).putObject("parameters", params))
+				.add(new JsonObject().putString("statement", query2).putObject("parameters", params));
+		executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
-				JsonArray result = message.body().getArray("result");
-				if ("ok".equals(message.body().getString("status")) && result != null && result.size() > 0) {
-					JsonObject j = result.get(0);
+				JsonArray results = message.body().getArray("results");
+				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 2 &&
+						results.<JsonArray>get(0).size() > 0 && results.<JsonArray>get(1).size() > 0) {
+					JsonObject j = results.<JsonArray>get(0).get(0);
+					JsonObject j2 = results.<JsonArray>get(1).get(0);
 					j.putString("userId", userId);
 					JsonObject functions = new JsonObject();
 					JsonArray actions = new JsonArray();
 					JsonArray apps = new JsonArray();
-					for (Object o : j.getArray("authorizedActions", new JsonArray())) {
+					for (Object o : j2.getArray("authorizedActions", new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;
 						actions.addObject(new JsonObject()
@@ -340,7 +343,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("displayName", (String) a.get(1))
 								.putString("type", (String) a.get(2)));
 					}
-					for (Object o : j.getArray("apps", new JsonArray())) {
+					for (Object o : j2.getArray("apps", new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;
 						apps.addObject(new JsonObject()
@@ -375,12 +378,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void sendNeo4j(String query, Map<String, Object> params,
+	public void executeTransaction(JsonArray statements, Integer transactionId, boolean commit,
 			Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		jo.putObject("params", new JsonObject(params));
+		jo.putString("action", "executeTransaction");
+		jo.putArray("statements", statements);
+		jo.putBoolean("commit", commit);
+		if (transactionId != null) {
+			jo.putNumber("transactionId", transactionId);
+		}
 		eb.send("wse.neo4j.persistor", jo, handler);
 	}
 
