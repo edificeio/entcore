@@ -5118,18 +5118,22 @@ input[type=button].cancel {
   line-height: 26px;
 }
 .icons-view.apps {
-  margin-top: 62px;
+  margin-top: 12px;
 }
 .icons-view.apps .element {
-  width: 118px;
+  width: 100px;
+  height: 138px;
   padding: 0;
   margin: 0;
 }
 .icons-view.apps .element a i {
-  height: 118px;
+  height: 100px;
+  width: 100px;
 }
 .icons-view.apps .element .container {
   padding: 0;
+  width: 100px;
+  height: 100px;
 }
 .icons-view.apps .element legend {
   background: #23a9aa;
