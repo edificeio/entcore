@@ -2690,7 +2690,7 @@ a.cke_smile img {
   top: 40px;
   transition: top 200ms ease, left 200ms ease, background 200ms ease;
   padding: 2px;
-  padding-top: 7px;
+  padding-top: 4px;
   box-sizing: border-box;
 }
 .radial-menu ul.menu-items li i {
@@ -3665,6 +3665,8 @@ i.shared {
   line-height: 30px;
   text-align: center;
   pointer-events: all;
+  padding: 0;
+  cursor: pointer;
 }
 .page-markers .marker:nth-child(2) {
   border-width: 0 0 130px 130px;
@@ -6082,7 +6084,7 @@ article.selected a {
   font-size: 14px;
   padding: 10px;
   color: #888;
-  border: #FCFCFC solid 5px;
+  border: #eee solid 5px;
   border-radius: 5px;
   background: #fff;
   text-align: left;
@@ -7412,11 +7414,15 @@ input[type=text][disabled] {
   height: 130px;
 }
 .patchwork .row h1 {
-  color: #333;
+  color: #fff;
   font-size: 18px;
 }
 .patchwork .row button {
   background: #555;
+}
+.patchwork .row button:hover {
+  background: #fff;
+  color: #444;
 }
 .patchwork .row article {
   margin-bottom: 0;
@@ -7430,13 +7436,10 @@ input[type=text][disabled] {
 }
 .patchwork .row.selected h1,
 .patchwork .row:nth-child(2n).selected h1 {
-  color: #fff;
+  border-bottom: 1px dashed;
 }
 .patchwork .row:nth-child(2n) {
   background: #266881;
-}
-.patchwork .row:nth-child(2n) h1 {
-  color: #bbb;
 }
 .patchwork .row:nth-child(2n) .cell {
   float: right !important;
@@ -7447,6 +7450,10 @@ input[type=text][disabled] {
 }
 .patchwork .row:nth-child(2n) button {
   background: #444;
+}
+.patchwork .row:nth-child(2n) button:hover {
+  background: #fff;
+  color: #444;
 }
 .open-right {
   height: 25px;
@@ -7638,6 +7645,12 @@ input[type=submit]:hover,
 a.button:hover {
   background: #444;
   color: #fff;
+}
+[contenteditable],
+input[type=text],
+input[type=search],
+input[type=password] {
+  background: #fff;
 }
 nav.vertical ul li a:hover,
 nav.vertical ul li a.selected {
@@ -8471,6 +8484,10 @@ hr.separator {
 h1.letter-picker {
   background: #fd4a98;
 }
+h1.letter-picker:hover {
+  background: #fff;
+  color: #fd4a98;
+}
 .lightbox-view .icons-view .element .img.container {
   background: #333;
 }
@@ -8516,6 +8533,7 @@ ul.thought-out-actions li:hover {
 .patchwork .row.selected h1,
 .patchwork .row:nth-child(2n).selected h1 {
   color: #fff;
+  border-bottom: 1px dashed #666;
 }
 .patchwork .row:nth-child(2n) {
   background: #333;

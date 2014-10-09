@@ -1501,7 +1501,7 @@ article.selected{
 	font-size: 14px;
 	padding: 10px;
 	color: #888;
-	border: #FCFCFC solid 5px;
+	border: #eee solid 5px;
 	border-radius: 5px;
 	background: #fff;
 	text-align: left;
@@ -2499,11 +2499,15 @@ input[type=text][disabled] {
 		}
 		background: @bright-blue;
 		h1{
-			color: #333;
+			color: #fff;
 			font-size: 18px;
 		}
 		button{
 			background: #555;
+		}
+		button:hover{
+			background: #fff;
+			color: #444;
 		}
 		article{
 			margin-bottom: 0;
@@ -2518,14 +2522,11 @@ input[type=text][disabled] {
 	}
 	.row.selected, .row:nth-child(2n).selected{
 		h1{
-			color: #fff;
+			border-bottom: 1px dashed;
 		}
 	}
 	.row:nth-child(2n){
 		background: @dark-blue;
-		h1{
-			color: #bbb;
-		}
 		.cell{
 			float: right !important;
 			text-align: right;
@@ -2535,6 +2536,10 @@ input[type=text][disabled] {
 		}
 		button{
 			background: #444;
+		}
+		button:hover{
+			background: #fff;
+			color: #444;
 		}
 	}
 }

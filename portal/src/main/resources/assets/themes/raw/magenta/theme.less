@@ -83,6 +83,10 @@ button:hover, input[type=button]:hover, input[type=submit]:hover, a.button:hover
 	color: #fff;
 }
 
+[contenteditable], input[type=text], input[type=search], input[type=password]{
+	background: #fff;
+}
+
 nav.vertical{
 	ul{
 		li{
@@ -904,6 +908,10 @@ hr.separator{
 h1.letter-picker{
 	background: @magenta;
 }
+h1.letter-picker:hover{
+	background: #fff;
+	color: @magenta;
+}
 
 .lightbox-view .icons-view .element .img.container{
 	background: #333;
@@ -959,6 +967,7 @@ ul.thought-out-actions li:hover{
 	.row.selected, .row:nth-child(2n).selected{
 		h1{
 			color: #fff;
+			border-bottom: 1px dashed #666;
 		}
 	}
 	.row:nth-child(2n){
