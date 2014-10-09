@@ -914,12 +914,17 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 			formData.append('file', $scope.newFile.files[i]);
 
+			var n = $scope.newFile.files.length;
 			var url = 'rack/' + $scope.to.id;
 			$scope.loading = $scope.translate('loading');
 			http().postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
 				ui.hideLightbox();
 				$scope.loading = '';
 				$scope.openFolder($scope.openedFolder.folder);
+				n--;
+				if(n === 0){
+					notify.info('rack.sent.message');
+				}
 			});
 		}
 	};

@@ -99,5 +99,6 @@
     "workspace.trash.error": "Erreur lors de la mise à la corbeille",
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
-    "workspace.valid": "Appliquer"
+    "workspace.valid": "Appliquer",
+    "rack.sent.message": "Votre document a bien été envoyé"
 }
