@@ -6,7 +6,7 @@
 	</div>
 </nav>
 <article class="list list-view row">
-	<table class="row">
+	<table class="twelve">
 		<thead>
 		<tr>
 			<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
@@ -17,6 +17,10 @@
 		</tr>
 		</thead>
 		<tbody>
+		<tr ng-if="folders.current.mails.empty()">
+			<td colspan="5" translate key="folder.empty">
+			</td>
+		</tr>
 		<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
@@ -24,10 +28,7 @@
 			<td><i class="attachment"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
-		<tr ng-if="folders.current.mails.empty()">
-			<td colspan="5" translate key="folder.empty">
-			</td>
-		</tr>
+
 		</tbody>
 	</table>
 </article>
