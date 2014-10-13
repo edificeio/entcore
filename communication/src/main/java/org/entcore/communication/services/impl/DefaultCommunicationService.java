@@ -420,7 +420,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 					"XOR (type(r) = 'COMMUNIQUE'"+ l +
-					" AND (length(p) < 3 OR (ipg:ProfileGroup AND length(p) = 3)))) ";
+					" AND (length(p) < 3 OR (ipg:ProfileGroup AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
 		}
 		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
