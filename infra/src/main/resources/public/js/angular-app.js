@@ -3198,6 +3198,9 @@ module.directive('draggable', function($compile){
 						'-moz-user-select': 'none',
 						'user-select' : 'none'
 					});
+					if(element.css('position') === 'relative'){
+						element.css({ top: element.position().top, left: element.position().left });
+					}
 					element.css({
 						'position': 'absolute'
 					});
@@ -3245,11 +3248,20 @@ module.directive('draggable', function($compile){
 						var parent = element.parents('.drawing-zone');
 						var parentPosition = parent.offset();
 						var boundaries = {
-							left: parentPosition.left,
-							top: parentPosition.top,
-							right: parentPosition.left + parent.width() - element.width(),
-							bottom: parentPosition.top + parent.height() - element.height()
+							left: -Infinity,
+							top: -Infinity,
+							right: Infinity,
+							bottom: Infinity
 						};
+
+						if(parentPosition) {
+							boundaries = {
+								left: parentPosition.left,
+								top: parentPosition.top,
+								right: parentPosition.left + parent.width() - element.width(),
+								bottom: parentPosition.top + parent.height() - element.height()
+							};
+						}
 
 						var newOffset = {
 							top: mouse.y - elementDistance.y,
@@ -3304,7 +3316,30 @@ module.directive('widgets', function($compile){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/widgets.html',
 		link: function(scope, element, attributes){
-
+			element.on('stopDrag', '.widget-container', function(e){
+				var widgetObj = angular.element(e.target).scope().widget;
+				element.find('.widget-container').each(function(index, widget){
+					if(e.target === widget){
+						return;
+					}
+					if($(e.target).offset().top + ($(e.target).height() / 2) > $(widget).offset().top &&
+						$(e.target).offset().top + ($(e.target).height() / 2) < $(widget).offset().top + $(widget).height()){
+						widgetObj.setIndex(index);
+						scope.$apply('widgets');
+					}
+					//last widget case
+					if($(e.target).offset().top > $(widget).offset().top + $(widget).height() && index === element.find('.widget-container').length - 1){
+						widgetObj.setIndex(index);
+						scope.$apply('widgets');
+					}
+					//first widget case
+					if($(e.target).offset().top + $(e.target).height() > $(widget).offset().top && index === 0){
+						widgetObj.setIndex(index);
+						scope.$apply('widgets');
+					}
+				});
+				element.find('.widget-container').css({ position: 'relative', top: '0px', left: '0px' });
+			});
 		}
 	}
 });
@@ -3887,30 +3922,74 @@ function Admin($scope){
 
 function Widget(){}
 
+Widget.prototype.hide = function(){
+	model.widgets.preferences[this.name].show = false;
+	model.widgets.savePreferences();
+};
+
+Widget.prototype.show = function(){
+	model.widgets.preferences[this.name].show = true;
+	model.widgets.savePreferences();
+};
+
+Widget.prototype.setIndex = function(index){
+	model.widgets.preferences[this.name].index = index;
+	model.widgets.forEach(function(widget, i){
+		if(widget.index >= index && widget !== this){
+			widget.index ++;
+			model.widgets.preferences[widget.name].index ++;
+		}
+	}.bind(this));
+
+	model.widgets.savePreferences();
+};
+
 function Widgets($scope, model, lang, date){
 	model.makeModels([Widget]);
 	model.collection(Widget, {
+		preferences: {},
+		savePreferences: function(){
+			http().putJson('/userbook/preference/widgets', this.preferences);
+		},
 		sync: function(){
 			var that = this;
-			http().get('/widgets').done(function(data){
-				data = data.filter(function(widget){
-					return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
-				});
 
-				that.load(data, function(widget){
-					if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
-						widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
-					}
-					if(widget.i18n){
-						lang.addBundle(widget.i18n, function(){
-							loader.loadFile(widget.js);
-						})
+			http().get('/widgets').done(function(data){
+				http().get('/userbook/preference/widgets').done(function(pref){
+					var preferences = JSON.parse(pref.preference);
+					if(!preferences){
+						this.preferences = {};
 					}
 					else{
-						loader.loadFile(widget.js);
+						this.preferences = preferences;
 					}
-				});
-			});
+					data = data.filter(function(widget){
+						return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
+					});
+					data = data.map(function(widget, i){
+						if(!that.preferences[widget.name]){
+							that.preferences[widget.name] = { index: i, show: true };
+						}
+						widget.index = that.preferences[widget.name].index;
+						widget.show = that.preferences[widget.name].show;
+						return widget;
+					});
+
+					that.load(data, function(widget){
+						if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
+							widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
+						}
+						if(widget.i18n){
+							lang.addBundle(widget.i18n, function(){
+								loader.loadFile(widget.js);
+							})
+						}
+						else{
+							loader.loadFile(widget.js);
+						}
+					});
+				}.bind(this))
+			}.bind(this));
 		},
 		findWidget: function(name){
 			return this.findWhere({name: name});

@@ -1534,6 +1534,9 @@ a {
   float: right;
   margin: 10px;
 }
+.toggle-buttons behaviour {
+  float: left;
+}
 [draggable] {
   cursor: move;
 }
@@ -1608,7 +1611,16 @@ ul.icons-tabs li i {
   padding: 8px;
 }
 .icons-view {
+  max-width: 960px;
+  width: 100%;
   position: relative;
+  clear: both;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  max-width: 1200px;
+  max-width: 100%;
   padding-left: 0;
 }
 .icons-view .element {
@@ -1686,6 +1698,12 @@ ul.icons-tabs li i {
 }
 .icons-view .element em {
   display: none;
+}
+.icons-view:after {
+  clear: both;
+  content: " ";
+  display: block;
+  width: 100%;
 }
 .icons-view.absolute {
   position: absolute;
@@ -1785,7 +1803,7 @@ ul.icons-tabs li i {
   background-size: 100% auto;
   margin-left: auto;
   margin-right: auto;
-  float: none;
+  float: none !important;
 }
 .icons-select .option,
 .icons-select .current {
@@ -2444,9 +2462,14 @@ em.high-importance {
   width: 84px;
   height: 84px;
   float: left;
+  margin-right: 5px;
 }
 .notification .avatar img {
   height: auto;
+}
+.notification .content {
+  float: none;
+  width: 100%;
 }
 .notification i.type {
   float: left;
@@ -2483,6 +2506,7 @@ em.high-importance {
   width: 100%;
   line-height: 40px;
   list-style-type: none;
+  box-sizing: border-box;
 }
 .illustrated-list li.selected {
   color: #fff;
@@ -3806,6 +3830,9 @@ i.shared {
   .notification .avatar {
     display: none;
   }
+  .notification .content {
+    margin: 0;
+  }
   .panel {
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
@@ -3978,10 +4005,13 @@ i.shared {
 .week-switcher .date-picker-icon {
   margin-right: 8px;
 }
-.week-switcher a {
+.date-picker-icon a {
   height: 39px;
   width: 50px;
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .calendar-current-week {
   position: absolute;
@@ -4071,8 +4101,11 @@ i.shared {
 iframe.cke_panel_frame {
   min-height: 100%;
 }
-html,
-body {
+.cke_dialog_body iframe,
+article iframe,
+[contenteditable] iframe {
+  min-height: 0;
+}
 .dominos.fallen .item {
   min-width: 295px;
   width: 25%;
@@ -4202,72 +4235,6 @@ ul.thought-out-actions li p {
 .blur-grid .grid-add-row {
   display: none;
 }
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
 .blur-grid .edit-grid button,
 .blur-grid .edit-grid i,
 .blur-grid .edit-grid input[button] {
@@ -4282,188 +4249,6 @@ ul.thought-out-actions li p {
 }
 .blur-grid .edit-grid .square-menu button,
 .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
   display: block;
 }
 .menu-items {
@@ -4588,6 +4373,79 @@ ul.thought-out-actions li p {
 }
 .menu-items input[type=button]:hover {
   color: #000;
+}
+.flexible {
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
+}
+.flexible .small-hidden {
+  display: none;
+}
+.flexible:empty {
+  width: 0 !important;
+}
+.empty-neighbour {
+  width: 100% !important;
+}
+.empty-neighbour .patchwork {
+  padding-right: 0;
+}
+.empty-neighbour .small-hidden {
+  display: block;
+}
+.empty-neighbour .big-hidden {
+  display: none;
+}
+.patchwork .navigation .items {
+  padding-right: 35px;
+}
+.patchwork .navigation .items .row > .cell {
+  height: 110px;
+}
+.patchwork .navigation .items .row article {
+  margin-bottom: 0;
+}
+.patchwork .navigation .items .row article .bottom-locked {
+  bottom: 8px;
+}
+.patchwork .navigation .items .row img {
+  height: 110px;
+  width: 110px;
+}
+.patchwork .navigation .items .row .buttons {
+  position: absolute;
+  bottom: 0px;
+}
+.patchwork .navigation .items .row.selected h1,
+.patchwork .navigation .items .row:nth-child(2n).selected h1 {
+  border-bottom: 1px dashed;
+}
+.patchwork .navigation .items .row:nth-child(2n) .cell {
+  float: right !important;
+  text-align: right;
+}
+.patchwork .navigation .items .row:nth-child(2n) .bottom-locked {
+  right: 8px;
+}
+.patchwork .navigation {
+  width: 25%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+.patchwork .navigation img {
+  max-width: 100%;
+}
+.patchwork .content {
+  width: 75%;
+  float: right !important;
+  overflow: hidden;
 }
 html,
 body {
@@ -8168,71 +8026,6 @@ nav.illustrated-links ul li .content em {
 .blur-grid .grid-add-row {
   display: none;
 }
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
 .blur-grid .edit-grid button,
 .blur-grid .edit-grid i,
 .blur-grid .edit-grid input[button] {
@@ -8248,287 +8041,6 @@ nav.illustrated-links ul li .content em {
 }
 .blur-grid .edit-grid .square-menu button,
 .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid button,
-.blur-grid i,
-.blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .square-menu button,
-.blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid button,
-.blur-grid .edit-grid i,
-.blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid button,
-.blur-grid .edit-grid .blur-grid i,
-.blur-grid .edit-grid .blur-grid input[button] {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .grid-guides {
-  opacity: 0.3;
-}
-.blur-grid .edit-grid .blur-grid .grid-media {
-  outline: 1px solid rgba(35, 169, 170, 0.32);
-  pointer-events: none;
-}
-.blur-grid .edit-grid .blur-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .grid-add-row {
-  display: none;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
-  display: block;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid button,
-.blur-grid .edit-grid .blur-grid .edit-grid i,
-.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
-  opacity: 1;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
-  opacity: 1;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #23a9aa;
-  pointer-events: all;
-}
-.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
-.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
   display: block;
 }
 .page-markers .marker {
@@ -8571,42 +8083,14 @@ input[type=text][disabled] {
   color: #000;
   margin-top: 2px;
 }
-.flexible {
-  -o-transition: width 250ms ease;
-  -moz-transition: width 250ms ease;
-  -webkit-transition: width 250ms ease;
-  transition: width 250ms ease;
-}
-.flexible .small-hidden {
-  display: none;
-}
-.flexible:empty {
-  width: 0 !important;
-}
-.flexible:empty + .flexible {
-  width: 100% !important;
-}
-.flexible:empty + .flexible .patchwork {
-  padding-right: 0;
-}
 .flexible:empty + .flexible .patchwork .row h1 {
   color: #fff;
 }
-.flexible:empty + .flexible .small-hidden {
-  display: block;
-}
-.flexible:empty + .flexible .big-hidden {
-  display: none;
-}
 .patchwork {
   color: #fff;
-  padding-right: 35px;
 }
 .patchwork .row {
   background: #23a9aa;
-}
-.patchwork .row > .cell {
-  height: 130px;
 }
 .patchwork .row h1 {
   color: #fff;
@@ -8619,12 +8103,6 @@ input[type=text][disabled] {
   background: #fff;
   color: #444;
 }
-.patchwork .row article {
-  margin-bottom: 0;
-}
-.patchwork .row article .bottom-locked {
-  bottom: 8px;
-}
 .patchwork .row img {
   height: 130px;
   width: 130px;
@@ -8635,10 +8113,6 @@ input[type=text][disabled] {
 }
 .patchwork .row:nth-child(2n) {
   background: #266881;
-}
-.patchwork .row:nth-child(2n) .cell {
-  float: right !important;
-  text-align: right;
 }
 .patchwork .row:nth-child(2n) .bottom-locked {
   right: 8px;
@@ -9955,7 +9429,11 @@ h1:first-child {
 html section.main,
 body section.main {
   min-height: 100%;
-  padding-top: 0;
+  max-width: 1300px;
+  margin: 0px;
+  padding: 0px;
+  margin-left: auto;
+  margin-right: auto;
 }
 article.main {
   height: 100%;
@@ -9971,7 +9449,7 @@ article {
   border: none;
   background: transparent;
   padding: 15px;
-  max-width: 1100px;
+  max-width: 1300px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -9994,7 +9472,9 @@ nav.vertical {
   padding-right: 15px;
 }
 .container {
-  margin-top: 52px;
+  padding: 0px;
+  padding-top: 80px;
+  margin: 0px;
 }
 input[type=text],
 select,
@@ -10033,6 +9513,16 @@ ul.angle-list > li {
   padding-left: 5px;
   margin-bottom: 10px;
   padding-top: 5px;
+}
+ul.angle-list > li button.close {
+  font-size: 11;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+}
+ul.angle-list > li button.close::after {
+  content: 'X';
 }
 div.leaf-menu-container {
   margin-bottom: 15px;
@@ -10276,4 +9766,24 @@ label.legend-label.marged {
 }
 .accordions .accordion.opened .toggle {
   height: 450px;
+}
+nav.admin-bar {
+  height: 25px;
+  overflow-y: hidden;
+  transition: height 250ms ease;
+  margin-top: 30px;
+  padding: 10px;
+  position: absolute;
+  width: 99%;
+  z-index: 10;
+  background-color: #eeeeee;
+}
+nav.admin-bar:hover {
+  height: 100px;
+  border-bottom: 1px solid #444;
+}
+.selectable-list li.cols3 {
+  width: 29%;
+  margin: 2px;
+  display: inline-block;
 }

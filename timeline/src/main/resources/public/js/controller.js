@@ -1,7 +1,9 @@
-function MainController($rootScope, $scope, template, lang){
+function MainController($rootScope, $scope, template, lang, model){
 	$scope.closePanel = function(){
 		$rootScope.$broadcast('close-panel');
 	};
+
+	$scope.widgets = model.widgets;
 
 	template.open('main', 'main');
 	template.open('widgets', 'widgets');

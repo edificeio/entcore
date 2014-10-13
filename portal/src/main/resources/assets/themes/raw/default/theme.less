@@ -2450,17 +2450,20 @@ select{
 		.square-menu button, .grid-add-row{
 			display: none;
 		}
-	}
-
-	.blur-grid{
-		.blur-grid;
 		.edit-grid{
-			.edit-grid;
-			.blur-grid{
-				.blur-grid;
-				.edit-grid{
-					.edit-grid;
-				}
+			button,i,input[button]{
+				opacity: 1;
+				pointer-events: all;
+			}
+			.grid-guides{
+				opacity: 1
+			}
+			.grid-media{
+				outline: 1px solid @bright-blue;
+				pointer-events: all;
+			}
+			.square-menu button, .grid-add-row{
+				display: block;
 			}
 		}
 	}
