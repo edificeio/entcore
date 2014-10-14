@@ -70,7 +70,7 @@
 	"appregistry.code":								"Code",
 	"appregistry.clientId":							"Identifiants du client",
 	"appregistry.save":								"Enregistrer",
-	"appregistry.hidePanel":						"Cacher le panneau",
+	"appregistry.cancel":						    "Annuler",
 	"appregistry.authorizations":					"Autorisations",
 	"appregistry.delete":							"Supprimer",
 	"appregistry.createRole":						"Créer un rôle",
