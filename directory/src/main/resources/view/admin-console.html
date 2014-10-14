@@ -248,7 +248,10 @@
                             </div>
                             <hr class="separator">
                             <div style="text-align:center">
-                                <button ng-click="createUser(createdUser)">[[lang.translate("directory.admin.create")]]</button>
+                                <button ng-click="createUser(createdUser)"
+                                    ng-disabled="!createdUser.firstName || !createdUser.lastName || (!createdUser.birthDate && createdUser.type === 'Student')">
+                                    [[lang.translate("directory.admin.create")]]
+                                </button>
                             </div>
                             <hr class="separator">
                             <div class="twelve cell">
