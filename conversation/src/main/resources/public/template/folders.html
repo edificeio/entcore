@@ -1,0 +1,40 @@
+<section class="four cell" bottom-scroll="nextPage()">
+	<h1><a data-reload><i class="conversation"></i><span translate key="conversation.title"></span></a></h1>
+
+	<nav class="vertical">
+		<ul>
+			<li>
+				<a
+						ng-if="!folders.inbox.nbUnread"
+						ng-click="openFolder('inbox')"
+						ng-class="{ selected: folders.current.folderName === 'inbox' }">
+					[[lang.translate('inbox')]]
+				</a>
+				<a
+						ng-if="folders.inbox.nbUnread"
+						ng-click="openFolder('inbox')"
+						ng-class="{ selected: folders.current.folderName === 'inbox' }">
+					<strong>[[lang.translate('inbox')]] ([[folders.inbox.nbUnread]])</strong>
+				</a>
+			</li>
+			<li>
+				<a ng-click="openFolder('outbox')" ng-class="{ selected: folders.current.folderName === 'outbox' }">
+					[[lang.translate('outbox')]]
+				</a>
+			</li>
+			<li>
+				<a ng-click="openFolder('draft')" ng-class="{ selected: folders.current.folderName === 'draft' }">
+					[[lang.translate('draft')]]
+				</a>
+			</li>
+			<li>
+				<a ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }">
+					[[lang.translate('trash')]]
+				</a>
+			</li>
+		</ul>
+	</nav>
+</section>
+<section class="eight cell reduce-block-eight" ng-include="viewsContainers.main">
+
+</section>

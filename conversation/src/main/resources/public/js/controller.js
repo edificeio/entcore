@@ -22,6 +22,9 @@ routes.define(function($routeProvider){
 		.when("/write-mail/:userId", {
 			action: "writeMail"
 		})
+		.when('/inbox', {
+			action: 'inbox'
+		})
 		.otherwise({
 			redirectTo: "/inbox"
 		})
@@ -30,16 +33,28 @@ routes.define(function($routeProvider){
 function Conversation($scope, date, notify, route, model){
 	route({
 		readMail: function(params){
+			$scope.openView('folders', 'page');
 			$scope.readMail(new Mail({ id: params.mailId }));
 		},
 		writeMail: function(params){
+			$scope.openView('folders', 'page');
 			model.folders.openFolder('inbox');
 			new User({ id: params.userId }).findData(function(){
 				$scope.openView('write-mail', 'main');
 				$scope.addUser(this);
 			});
+		},
+		inbox: function(){
+			$scope.openView('folders', 'page');
 		}
 	});
+
+	$scope.clearSearch = function(){
+		$scope.users.found = [];
+		$scope.users.foundCC = [];
+		$scope.users.search = '';
+		$scope.users.searchCC = '';
+	};
 
 	$scope.resetScope = function(){
 		$scope.openInbox();
@@ -70,7 +85,7 @@ function Conversation($scope, date, notify, route, model){
 
 	$scope.nextPage = function(){
 		model.folders.current.nextPage();
-	}
+	};
 
 	$scope.selection = {
 		selectAll: false
@@ -106,7 +121,11 @@ function Conversation($scope, date, notify, route, model){
 	$scope.readMail = function(mail){
 		$scope.openView('read-mail', 'main');
 		setCurrentMail(mail);
-		mail.open();
+		mail.open(function(){
+			if(!mail.state){
+				$scope.openView('e404', 'page');
+			}
+		});
 	};
 
 	var format = {
@@ -200,13 +219,6 @@ function Conversation($scope, date, notify, route, model){
 
 	$scope.removeSelection = function(){
 		model.folders.current.mails.removeMails();
-	};
-
-	$scope.clearSearch = function(){
-		$scope.users.found = [];
-		$scope.users.foundCC = [];
-		$scope.users.search = '';
-		$scope.users.searchCC = '';
 	};
 
 	$scope.updateFoundCCUsers = function(){

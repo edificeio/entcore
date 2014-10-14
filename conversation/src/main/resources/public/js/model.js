@@ -105,7 +105,7 @@ function Mail(data){
 		});
 	};
 
-	this.open = function(){
+	this.open = function(cb){
 		var that = this;
 
 		this.unread = false;
@@ -136,6 +136,10 @@ function Mail(data){
 
 			model.folders.inbox.countUnread();
 			model.folders.current.mails.refresh();
+
+			if(typeof cb === 'function'){
+				cb();
+			}
 		});
 	};
 
