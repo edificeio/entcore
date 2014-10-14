@@ -319,7 +319,7 @@ button.directory-direct-link-button{
 	vertical-align: middle;
 }
 
-div.directory-legend-square{
+div.legend-square{
 	width: 30px;
 	height: 30px;
 	display: inline-block;
@@ -339,7 +339,7 @@ div.directory-legend-square{
 	}
 }
 
-div.directory-legend-separator{
+div.legend-separator{
 	width: 100%;
 	margin-top: 5px;
 	&.first{
@@ -347,7 +347,7 @@ div.directory-legend-separator{
 	}
 }
 
-label.directory-legend-label{
+label.legend-label{
 	display: inline-block;
 	vertical-align: middle;
 	font-family: Lato;
@@ -357,11 +357,46 @@ label.directory-legend-label{
 	&.underline{
 		text-decoration: underline;
 	}
+	&.line-through{
+		text-decoration: line-through;
+	}
 	&.italic{
 		font-style: italic;
 	}
+	&.background-white{
+		background-color: white;
+	}
 	&.marged{
 		margin-left: 35px
+	}
+}
+
+.user-style{
+	font-weight: normal;
+
+	&.student{
+		color: black;
+	}
+	&.teacher{
+		font-weight: bold;
+		color: red;
+	}
+	&.personnel{
+		font-weight: bold;
+		color: teal;
+	}
+	&.relative{
+		color: orange;
+	}
+	&.isolated{
+		text-decoration: underline;
+	}
+	&.not-active{
+		font-style: italic;
+
+		&::after{
+			content: " *";
+		}
 	}
 }
 
