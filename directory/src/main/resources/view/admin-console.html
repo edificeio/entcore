@@ -224,7 +224,7 @@
                             <div class="twelve cell height-three">
                                 <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                                 <div class="twelve cell">
-                                    <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.school")]]</span>
+                                    <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
                                     <select class="four cell" ng-model="linkStructure" ng-init="linkStructure = structure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
                                 </div>
                                 <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
@@ -486,7 +486,7 @@
                     <div class="twelve cell height-three">
                         <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                         <div class="twelve cell">
-                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.school")]]</span>
+                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.achool")]]</span>
                             <select class="four cell" ng-model="linkStructure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
                         </div>
                         <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
