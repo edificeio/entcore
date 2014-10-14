@@ -3419,7 +3419,6 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
-  cursor: pointer;
 }
 .drop-down-filters ul,
 .filters ul {
@@ -3451,6 +3450,7 @@ a.cke_smile img {
   -moz-transition: opacity 250ms ease;
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
+  cursor: pointer;
 }
 .drop-down-filters ul li p,
 .filters ul li p {
@@ -5893,6 +5893,7 @@ header {
   border-color: #D9F1F1;
 }
 filters {
+  padding-bottom: 20px;
   max-width: 960px;
   width: 100%;
   position: relative;
@@ -6718,7 +6719,7 @@ select {
   margin-left: 115px;
   padding-right: 115px;
   box-sizing: border-box;
-  margin-top: 75px;
+  margin-top: 50px;
   overflow: visible;
 }
 .schedule legend.timeslots {
