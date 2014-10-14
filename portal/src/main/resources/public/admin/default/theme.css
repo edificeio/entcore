@@ -1364,7 +1364,6 @@ a {
 .share th {
   width: 100px;
   text-align: center;
-  line-height: 18px;
 }
 .share td:first-child,
 .share th:first-child {
@@ -1391,6 +1390,7 @@ a {
   width: 100%;
   display: block;
   font-size: 15px;
+  padding: 15px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -9009,8 +9009,8 @@ nav.search-container-left > ul {
 div.search-container-view {
   overflow-y: scroll;
   overflow-x: hidden;
-  width: 68%;
-  padding: 10 0 0 30;
+  width: 67%;
+  padding: 10 0 0 4%;
   height: 704px;
   position: absolute;
   margin-left: 26%;
@@ -9058,10 +9058,10 @@ button.directory-direct-link-button {
   background-position: 25.5%;
 }
 .directory-userlist-right-container {
-  width: 68%;
+  width: 67%;
   float: left;
-  border-bottom: 2px ridge #ff0b75;
-  padding: 20 0 0 30;
+  border-bottom: 2px ridge #fd4a98;
+  padding: 20 0 0 4%;
   height: 694px;
   overflow-y: scroll;
 }
@@ -9113,6 +9113,18 @@ label.directory-legend-label.marged {
 }
 .directory-top-padded {
   padding-top: 5px;
+}
+/* Change accordion size & some styles for admin panels */
+.accordions .large-dark-input {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 10;
+  background-color: #444;
+  color: #EEE;
+  outline: none;
+}
+.accordions .accordion.opened .toggle {
+  height: 450px;
 }
 section.container {
   padding-left: 300px;
