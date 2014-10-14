@@ -94,8 +94,8 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 
     $scope.refreshScope = function(){ $scope.$apply() }
 
-    $scope.formatBirthDate = function(d){
-        return date.create(d).format('LL')
+    $scope.formatLongDate = function(d){
+        return d ? date.create(d).format('LLLL') : ""
     }
 
     //Given a data size in bytes, returns a more "user friendly" representation.

@@ -260,6 +260,7 @@
     "directory.modify":							"Modifier",
     "directory.directlink":						"Lien direct",
     "directory.inactive":                       "Personnes non activées.",
+    "directory.deleteDate":                     "Date de pré-suppression :",
 
     "tooltip.users.filtersTooltip": 			"Afficher/Cacher les filtres",
     "tooltip.users.switchOrdering": 			"Ordonner par nom / rôle",
