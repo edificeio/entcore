@@ -3,9 +3,8 @@
 	<filters>
 		<li ng-repeat="type in notificationTypes.all" ng-class="{ selected: type.selected }">
 			<label>
-				<i class="[[type.data.toLowerCase()]] type"></i>
+				<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
 				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-				<p translate content="[[type.data.toLowerCase()]]"></p>
 			</label>
 		</li>
 	</filters>

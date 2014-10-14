@@ -3390,10 +3390,12 @@ a.cke_smile img {
 .color-picker.opened .colors-list {
   height: 72px;
 }
-.drop-down-filters {
+.drop-down-filters,
+.filters {
   z-index: 2;
 }
-.drop-down-filters .wrapper {
+.drop-down-filters .wrapper,
+.filters .wrapper {
   height: 170px;
   -o-transition: height 250ms ease;
   -moz-transition: height 250ms ease;
@@ -3404,17 +3406,22 @@ a.cke_smile img {
   background: #fff;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
 }
-.drop-down-filters .wrapper.hide {
+.drop-down-filters .wrapper.hide,
+.filters .wrapper.hide {
   height: 0;
   box-shadow: none;
 }
-.drop-down-filters p:first-child {
+.drop-down-filters p:first-child,
+.filters p:first-child,
+.drop-down-filters .filters-icons,
+.filters .filters-icons {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
   cursor: pointer;
 }
-.drop-down-filters ul {
+.drop-down-filters ul,
+.filters ul {
   margin-top: 0;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -3422,16 +3429,19 @@ a.cke_smile img {
   box-sizing: border-box;
   padding: 8px;
 }
-.drop-down-filters ul li {
+.drop-down-filters ul li,
+.filters ul li {
   display: inline;
   color: #000;
 }
-.drop-down-filters ul li label {
+.drop-down-filters ul li label,
+.filters ul li label {
   padding: 6px;
   float: left;
   width: 99px;
 }
-.drop-down-filters ul li label i {
+.drop-down-filters ul li label i,
+.filters ul li label i {
   margin-left: auto;
   margin-right: auto;
   float: none !important;
@@ -3441,21 +3451,25 @@ a.cke_smile img {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.drop-down-filters ul li p {
+.drop-down-filters ul li p,
+.filters ul li p {
   text-align: center;
   margin: 0;
   font-size: 14px;
   line-height: 20px;
   margin-top: 8px;
 }
-.drop-down-filters ul li.selected i {
+.drop-down-filters ul li.selected i,
+.filters ul li.selected i {
   opacity: 1;
 }
-.drop-down-filters ul input[type=checkbox] {
+.drop-down-filters ul input[type=checkbox],
+.filters ul input[type=checkbox] {
   visibility: hidden;
   position: absolute;
 }
-.drop-down-filters i.blog {
+.drop-down-filters i.blog,
+.filters i.blog {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/blog-large.png");
@@ -3470,7 +3484,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.userbook {
+.drop-down-filters i.userbook,
+.filters i.userbook {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/userbook-large.png");
@@ -3485,7 +3500,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.workspace {
+.drop-down-filters i.workspace,
+.filters i.workspace {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/workspace-large.png");
@@ -3500,7 +3516,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.wiki {
+.drop-down-filters i.wiki,
+.filters i.wiki {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/wiki-filter.png");
@@ -3515,7 +3532,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.forum {
+.drop-down-filters i.forum,
+.filters i.forum {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/forum-filter.png");
@@ -3530,7 +3548,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.news {
+.drop-down-filters i.news,
+.filters i.news {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/actualites-filter.png");
@@ -3545,7 +3564,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.pages {
+.drop-down-filters i.pages,
+.filters i.pages {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/pages-filter.png");
@@ -3561,7 +3581,9 @@ a.cke_smile img {
   cursor: pointer;
 }
 .drop-down-filters i.conversation,
-.drop-down-filters i.messagerie {
+.filters i.conversation,
+.drop-down-filters i.messagerie,
+.filters i.messagerie {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/conversation-large.png");
@@ -3576,7 +3598,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.draft {
+.drop-down-filters i.draft,
+.filters i.draft {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/draft.png");
@@ -3591,7 +3614,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.submitted {
+.drop-down-filters i.submitted,
+.filters i.submitted {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/submitted.png");
@@ -3606,7 +3630,8 @@ a.cke_smile img {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters i.published {
+.drop-down-filters i.published,
+.filters i.published {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/published.png");
@@ -3687,7 +3712,7 @@ i.shared {
     display: none;
   }
   .widgets-friend {
-    margin-left: 0px;
+    margin-left: 0px !important;
   }
   .drop-down-filters .wrapper i {
     height: 55px !important;
@@ -3699,6 +3724,9 @@ i.shared {
   }
   .drop-down-filters .wrapper label {
     width: 59px;
+  }
+  .navbar .welcome-message {
+    display: none;
   }
 }
 .panel {
@@ -3762,7 +3790,8 @@ i.shared {
   }
 }
 @media screen and (max-width: 420px) {
-  .drop-down-filters {
+  .drop-down-filters,
+  .filters {
     display: none !important;
   }
 }
@@ -5943,22 +5972,6 @@ filters p:first-child i {
   -webkit-transition: opacity 250ms ease;
   transition: opacity 250ms ease;
 }
-.filters.line {
-  right: 0;
-  background: #266881;
-  color: #fff;
-  border-left: 10px solid #23a9aa;
-  height: 40px;
-  padding: 11px;
-}
-.filters.line li {
-  display: block;
-  float: right;
-  font-size: 14px;
-}
-.filters.line li:first-child {
-  display: none;
-}
 a:hover {
   color: #000;
 }
@@ -6882,7 +6895,8 @@ select {
   margin-left: 0;
   box-sizing: border-box;
 }
-.drop-down-filters i.rbs {
+.drop-down-filters i.rbs,
+.filters i.rbs {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/rbs-large.png");
@@ -6897,7 +6911,10 @@ select {
   vertical-align: middle;
   cursor: pointer;
 }
-.drop-down-filters p:first-child {
+.drop-down-filters p:first-child,
+.filters p:first-child,
+.drop-down-filters .filters-icons,
+.filters .filters-icons {
   font-size: 16px;
   padding: 10px;
   background: #23a9aa;
@@ -6907,10 +6924,16 @@ select {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
-.drop-down-filters p:first-child i.mine {
+.drop-down-filters p:first-child i.mine,
+.filters p:first-child i.mine,
+.drop-down-filters .filters-icons i.mine,
+.filters .filters-icons i.mine {
   background-size: 100% auto;
 }
-.drop-down-filters p:first-child i {
+.drop-down-filters p:first-child i,
+.filters p:first-child i,
+.drop-down-filters .filters-icons i,
+.filters .filters-icons i {
   height: 40px !important;
   width: 40px !important;
   opacity: 0.2;
@@ -6921,24 +6944,32 @@ select {
   border-radius: 20px;
   vertical-align: top;
 }
-.drop-down-filters p:first-child i.selected {
+.drop-down-filters p:first-child i.selected,
+.filters p:first-child i.selected,
+.drop-down-filters .filters-icons i.selected,
+.filters .filters-icons i.selected {
   opacity: 1;
 }
-.drop-down-filters p:first-child:hover {
+.drop-down-filters p:first-child:hover,
+.filters p:first-child:hover {
   background: #266881;
 }
-.drop-down-filters .wrapper {
+.drop-down-filters .wrapper,
+.filters .wrapper {
   background: #266881;
   box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
   width: 100%;
 }
-.drop-down-filters .wrapper ul li {
+.drop-down-filters .wrapper ul li,
+.filters .wrapper ul li {
   color: #fff;
 }
-.drop-down-filters .wrapper ul li i {
+.drop-down-filters .wrapper ul li i,
+.filters .wrapper ul li i {
   border-radius: 50px;
 }
-.drop-down-filters i.mine {
+.drop-down-filters i.mine,
+.filters i.mine {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/default.png");
@@ -6953,8 +6984,34 @@ select {
   vertical-align: middle;
   background-size: 70px;
 }
-.drop-down-filters i:hover {
+.drop-down-filters i:hover,
+.filters i:hover {
   opacity: 0.5;
+}
+.drop-down-filters .filters-icons ul,
+.filters .filters-icons ul {
+  height: 40px;
+  padding: 0;
+}
+.drop-down-filters .filters-icons ul li,
+.filters .filters-icons ul li {
+  padding: 0;
+}
+.drop-down-filters .filters-icons ul li label,
+.filters .filters-icons ul li label {
+  padding-top: 0;
+  width: auto;
+}
+.drop-down-filters .filters-icons ul li label i,
+.filters .filters-icons ul li label i {
+  background-size: 100% auto;
+}
+.filters {
+  height: 0;
+  padding: 0;
+}
+.filters p ul li i {
+  border-radius: 50px;
 }
 .date-picker-icon a i.calendar {
   height: 25px;
@@ -7977,7 +8034,8 @@ nav.vertical.stamps article h3 {
 nav.vertical.stamps article {
   background: #444;
 }
-.drop-down-filters i.blog {
+.drop-down-filters i.blog,
+.filters i.blog {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/blog-large-neon.png");
@@ -7991,7 +8049,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.userbook {
+.drop-down-filters i.userbook,
+.filters i.userbook {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/userbook-large-neon.png");
@@ -8005,7 +8064,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.workspace {
+.drop-down-filters i.workspace,
+.filters i.workspace {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/workspace-large-neon.png");
@@ -8020,7 +8080,9 @@ nav.vertical.stamps article {
   vertical-align: middle;
 }
 .drop-down-filters i.conversation,
-.drop-down-filters i.messagerie {
+.filters i.conversation,
+.drop-down-filters i.messagerie,
+.filters i.messagerie {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/conversation-large-neon.png");
@@ -8034,7 +8096,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.rbs {
+.drop-down-filters i.rbs,
+.filters i.rbs {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/rbs-large-neon.png");
@@ -8048,7 +8111,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.wiki {
+.drop-down-filters i.wiki,
+.filters i.wiki {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/wiki-neon.png");
@@ -8062,7 +8126,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.forum {
+.drop-down-filters i.forum,
+.filters i.forum {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/forum-neon.png");
@@ -8076,7 +8141,8 @@ nav.vertical.stamps article {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.news {
+.drop-down-filters i.news,
+.filters i.news {
   height: 99px;
   width: 99px;
   background-image: url("../img/icons/actualites-large-neon.png");
@@ -8145,7 +8211,8 @@ table tr.checked {
 nav.vertical h2 {
   color: #444;
 }
-.drop-down-filters i.blog {
+.drop-down-filters i.blog,
+.filters i.blog {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/blog-large-neon.png");
@@ -8159,7 +8226,8 @@ nav.vertical h2 {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.userbook {
+.drop-down-filters i.userbook,
+.filters i.userbook {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/userbook-large-neon.png");
@@ -8173,7 +8241,8 @@ nav.vertical h2 {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.workspace {
+.drop-down-filters i.workspace,
+.filters i.workspace {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/workspace-large-neon.png");
@@ -8188,7 +8257,9 @@ nav.vertical h2 {
   vertical-align: middle;
 }
 .drop-down-filters i.conversation,
-.drop-down-filters i.messagerie {
+.filters i.conversation,
+.drop-down-filters i.messagerie,
+.filters i.messagerie {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/conversation-large-neon.png");
@@ -8202,7 +8273,8 @@ nav.vertical h2 {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters i.rbs {
+.drop-down-filters i.rbs,
+.filters i.rbs {
   height: 100px;
   width: 100px;
   background-image: url("../img/icons/rbs-large-neon.png");
@@ -8216,7 +8288,8 @@ nav.vertical h2 {
   float: left;
   vertical-align: middle;
 }
-.drop-down-filters p:first-child {
+.drop-down-filters p:first-child,
+.filters {
   background: #444;
 }
 .drop-down-filters p:first-child:hover {
