@@ -134,6 +134,7 @@
                             <div style="text-align:center">
                                 <button ng-click="structureUser.update(reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.save")]]</button>
                                 <button ng-click="structure.unlinkUser(structureUser, reloadStructure(structure))">[[lang.translate("directory.admin.unlink.school")]]</button>
+                                <button ng-click="structureUser.delete(reloadStructure(structure))">[[lang.translate("directory.delete")]]</button>
                                 <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+structureUser.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
                                     <button class="directory-direct-link-button"></button>
                                 </a>
@@ -437,6 +438,7 @@
                     <hr class="separator">
                     <div style="text-align:center">
                         <button ng-click="isolatedUser.update(refreshIsolated())">[[lang.translate("directory.save")]]</button>
+                        <button ng-click="isolatedUser.delete(refreshIsolated())">[[lang.translate("directory.delete")]]</button>
                     </div>
                     <hr class="separator">
                     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
