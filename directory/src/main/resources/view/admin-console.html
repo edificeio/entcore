@@ -486,7 +486,7 @@
                         <button class="two cell" style="margin: 0px; padding: 2px" ng-click="isolatedUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
                     </div>
                     <hr class="separator">
-                    <div class="twelve cell height-three">
+                    <div ng-show="isolatedUser.type" class="twelve cell height-three">
                         <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                         <div class="twelve cell">
                             <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.achool")]]</span>
