@@ -52,6 +52,7 @@
 	"appregistry.appParam":							"Paramétrage des applications",
 	"appregistry.appRoles":							"Rôles applicatifs",
 	"appregistry.crossRoles":						"Rôles transverses",
+    "appregistry.role":                             "Rôle",
 	"appregistry.roleAttribution":					"Attribution des rôles",
 	"appregistry.createApp":						"Créer une application",
 	"appregistry.preview":							"Prévisualisation",
@@ -83,6 +84,9 @@
 	"appregistry.notify.createApp":					"Application créée",
 	"appregistry.notify.modified":					"Modifications enregistrées",
 	"appregistry.notify.deleteApp":					"Application supprimée",
+    "appregistry.notify.createRole":				"Rôle créée",
+    "appregistry.notify.modifyRole":				"Rôle enregistré",
+    "appregistry.notify.deleteRole":				"Rôle supprimé",
 	"appregistry.tooltip.selectAll":				"Tout sélectionner",
 	"appregistry.tooltip.deselectAll":				"Tout désélectionner"
 

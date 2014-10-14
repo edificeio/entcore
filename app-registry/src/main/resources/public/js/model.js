@@ -71,7 +71,7 @@ Application.prototype.createApplication = function(){
 	})
 	.done(function(){
 		model.applications.sync();
-		notify.info(lang.translate('appregistry.notify.createApp'));
+		notify.message('success', lang.translate('appregistry.notify.createApp'));
 	});
 };
 
@@ -108,7 +108,7 @@ Application.prototype.save = function(){
 Application.prototype.delete = function(){
 	http().delete('/appregistry/application/conf/'+this.id).done(function(){
 		model.applications.sync();
-		notify.info(lang.translate('appregistry.notify.deleteApp'));
+		notify.error(lang.translate('appregistry.notify.deleteApp'));
 	})
 }
 
@@ -158,23 +158,27 @@ Role.prototype.createRole = function(hook){
 			return action.name;
 		})
 	}).done(function(){
+		notify.message('success', lang.translate("appregistry.notify.createRole"))
 		typeof hook === "function" ? hook() : null
 	});
 }
 
-Role.prototype.updateRole = function(hook){
+Role.prototype.updateRole = function(hook, skipNotify){
 	http().putJson('/appregistry/role/' + this.id, {
 		role: this.name,
 		actions: _.map(this.actions.all, function(action){
 			return action.name;
 		})
 	}).done(function(){
+		if(!skipNotify)
+			notify.info(lang.translate("appregistry.notify.modifyRole"))
 		typeof hook === "function" ? hook() : null
 	})
 }
 
 Role.prototype.delete = function(hook){
 	http().delete('/appregistry/role/' + this.id).done(function(){
+		notify.error(lang.translate("appregistry.notify.deleteRole"))
 		typeof hook === "function" ? hook() : null
 	})
 }
@@ -186,7 +190,7 @@ Role.prototype.save = function(hook){
 		this.updateRole(hook)
 }
 
-Role.prototype.saveCross = function(hook){
+Role.prototype.saveCross = function(hook, skipNotify){
 	//Aggregate app-roles actions before saving
 	var role = this
 	role.actions.all = []
@@ -197,9 +201,9 @@ Role.prototype.saveCross = function(hook){
 		})
 	})
 	if(!this.id){
-		this.createRole(hook)
+		this.createRole(hook, skipNotify)
 	} else {
-		this.updateRole(hook)
+		this.updateRole(hook, skipNotify)
 	}
 }
 

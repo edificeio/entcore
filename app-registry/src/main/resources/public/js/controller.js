@@ -155,7 +155,7 @@ function AppRegistry($scope, $sce, model){
 			}
 			launcher.decrement()
 			_.forEach(crossRoleStack, function(crossRole){
-				crossRole.saveCross(function(){ launcher.decrement() })
+				crossRole.saveCross(function(){ launcher.decrement() }, true)
 			})
 		} else {
 			deletion()
