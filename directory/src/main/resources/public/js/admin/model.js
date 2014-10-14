@@ -252,10 +252,11 @@ model.build = function(){
     this.makeModels([User, IsolatedUsers, Structure, Classe])
 
     this.collection(Structure, {
-        sync: function(){
+        sync: function(hook){
             var that = this
             http().get('structure/admin/list').done(function(data){
                 that.load(data)
+                hookCheck(hook)
             })
         }
     })

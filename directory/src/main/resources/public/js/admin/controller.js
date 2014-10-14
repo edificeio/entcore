@@ -23,10 +23,13 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 
             $scope.selected = 0
 			$scope.showWhat = 'showStructureUser'
-            $scope.structure = $scope.structures.find(function(structure){
-                return structure.id === structureId
-            })
-            $scope.reloadStructureAndRetrieveUser({ id: userId })()
+
+			$scope.structures.sync(function(){
+				$scope.structure = $scope.structures.find(function(structure){
+					return structure.id === structureId
+				})
+				$scope.reloadStructureAndRetrieveUser({ id: userId })()
+			})
         },
         viewClass: function(params){
 			if($scope.selected !== undefined)
@@ -39,10 +42,13 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
             $scope.structure = $scope.structures.find(function(structure){
                 return structure.id === structureId
             })
-            $scope.structure.classes.sync(function(){
-                $scope.classSelected = $scope.structure.classes.findWhere({ id: classId})
-                $scope.$apply()
-            })
+
+			$scope.structures.sync(function(){
+	            $scope.structure.classes.sync(function(){
+	                $scope.classSelected = $scope.structure.classes.findWhere({ id: classId})
+	                $scope.$apply()
+	            })
+			})
         },
 		viewClassUsers: function(params){
 			if($scope.selected !== undefined)
@@ -53,22 +59,25 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 
 			$scope.selected = 0
 			$scope.showWhat = 'showStructureUser'
-			$scope.structure = $scope.structures.find(function(structure){
-				return structure.id === structureId
+
+			$scope.structures.sync(function(){
+				$scope.structure = $scope.structures.find(function(structure){
+					return structure.id === structureId
+				})
+				$scope.structure.loadStructure(
+					null,
+					function(){
+						$scope.showIsolated = false
+						$scope.deselectAllClasses()
+						$scope.structure.classes.forEach(function(classe){
+							if(classe.id === classId){
+								classe.selected = true
+								$scope.structure.addClassUsers(classe, [$scope.refreshScope])
+							}
+						})
+					}
+				)
 			})
-			$scope.structure.loadStructure(
-				null,
-				function(){
-					$scope.showIsolated = false
-					$scope.deselectAllClasses()
-					$scope.structure.classes.forEach(function(classe){
-						if(classe.id === classId){
-							classe.selected = true
-							$scope.structure.addClassUsers(classe, [$scope.refreshScope])
-						}
-					})
-				}
-			)
 		}
 	})
 
