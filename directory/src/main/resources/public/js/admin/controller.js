@@ -133,16 +133,15 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 
     // Angular user styling (depends on its role / isolated)
     $scope.userStyle = function(user){
-        var fontWeight = user.type === "Teacher" ||  user.type === "Personnel" ? "bold" : "normal"
-        var textColor = user.type === "Teacher" ? "red" : user.type === "Personnel" ? "teal" : user.type === "Relative" ? "orange" : "inherit"
-        var underline = user.isolated ? "underline" : "inherit"
-		var fontStyle = user.code ? "italic" : "normal"
-        return {
-            'font-weight': fontWeight,
-            'color': textColor,
-            'text-decoration': underline,
-			'font-style': fontStyle
-        }
+		return {
+			'user-style': true,
+			'teacher': user.type === "Teacher",
+			'personnel': user.type === "Personnel",
+			'relative': user.type === "Relative",
+			'student': user.type === "Student",
+			'isolated': user.isolated,
+			'not-active': user.code
+		}
     }
 
     // Angular user list ordering

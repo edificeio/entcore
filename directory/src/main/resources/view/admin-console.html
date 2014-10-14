@@ -102,27 +102,27 @@
                     <!-- Legend container -->
                     <div ng-if="showWhat === 'showLegend'" class="directory-userlist-right-container">
                         <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.tooltip.legend")]]</h1>
-                        <div class="directory-legend-separator first">
-                            <div class="directory-legend-square red"></div>
-                            <label class="directory-legend-label bold">[[lang.translate("Teacher")]]</label>
+                        <div class="legend-separator first">
+                            <div class="legend-square red"></div>
+                            <label class="legend-label" ng-class="userStyle({type: 'Teacher'})">[[lang.translate("Teacher")]]</label>
                         </div>
-                        <div class="directory-legend-separator">
-                            <div class="directory-legend-square teal"></div>
-                            <label class="directory-legend-label bold">[[lang.translate("directory.admin.personnel")]]</label>
+                        <div class="legend-separator">
+                            <div class="legend-square teal"></div>
+                            <label class="legend-label" ng-class="userStyle({type: 'Personnel'})">[[lang.translate("directory.admin.personnel")]]</label>
                         </div>
-                        <div class="directory-legend-separator">
-                            <div class="directory-legend-square orange"></div>
-                            <label class="directory-legend-label">[[lang.translate("Relative")]]</label>
+                        <div class="legend-separator">
+                            <div class="legend-square orange"></div>
+                            <label class="legend-label" ng-class="userStyle({type: 'Relative'})">[[lang.translate("Relative")]]</label>
                         </div>
-                        <div class="directory-legend-separator">
-                            <div class="directory-legend-square black"></div>
-                            <label class="directory-legend-label">[[lang.translate("Student")]]</label>
+                        <div class="legend-separator">
+                            <div class="legend-square black"></div>
+                            <label class="legend-label" ng-class="userStyle({type: 'Student'})">[[lang.translate("Student")]]</label>
                         </div>
-                        <div class="directory-legend-separator">
-                            <label class="directory-legend-label underline marged">[[lang.translate("directory.isolatedUsers")]]</label>
+                        <div class="legend-separator">
+                            <label class="legend-label" ng-class="userStyle({isolated: true})">[[lang.translate("directory.isolatedUsers")]]</label>
                         </div>
-                        <div class="directory-legend-separator">
-                            <label class="directory-legend-label underline marged">[[lang.translate("directory.inactive")]]</label>
+                        <div class="legend-separator">
+                            <label class="legend-label" ng-class="userStyle({code: ' '})">[[lang.translate("directory.inactive")]]</label>
                         </div>
                     </div>
 
@@ -423,7 +423,7 @@
                 <ul bottom-scroll-action="incrementUsersLimit()" style="width: 25%; float:left; list-style: none; font-family: Lato; height: 700px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
                     <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
                         <form ng-submit="filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
-                            <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 88%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
+                            <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 86%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
                             <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; background: #AAA; width: 25; height: 25; border: none;" value="✓">
                         </form>
                     </div>
