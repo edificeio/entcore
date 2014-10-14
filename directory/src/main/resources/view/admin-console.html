@@ -14,6 +14,7 @@
             <div class="eleven leaf-menu-container">
                 <div class="leaf-menu" ng-class="{ selected: selected === 0 }">
                     <a ng-click="selected=0">[[lang.translate("directory.userOps")]]</a>
+                    <loading-icon request="user-requests" only-loading-icon class="directory-inline-middle"></loading-icon>
                 </div>
                 <div class="leaf-menu" ng-class="{ selected: selected === 3 }">
                     <a ng-click="selected=3">[[lang.translate("directory.classOps")]]</a>
@@ -67,10 +68,10 @@
                         </button>
 
                         <!-- User list -->
-                        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers"/>
-                        <ul style="height: 640px; padding-top: 10;">
-                            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering" ng-click="$root.structureUser = user; $parent.showWhat = 'showStructureUser'; getUserDetails(user);" style="padding-left: 0">
-                                <span ng-style="userStyle(user)">[[user.displayName]]</span>
+                        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
+                        <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 640px; padding-top: 10;">
+                            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: usersLimit" ng-click="$root.structureUser = user; $parent.showWhat = 'showStructureUser'; getUserDetails(user);" style="padding-left: 0">
+                                <span ng-class="userStyle(user)">[[user.displayName]]</span>
                             </li>
                         </ul>
                     </nav>

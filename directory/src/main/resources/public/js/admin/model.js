@@ -177,7 +177,7 @@ function Structure(){
             structure.users.removeAll()
 
             //Add isolated users
-            http().get("list/isolated", { structureId: structure.id }).done(function(data){
+            http().get("list/isolated", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
                 _.forEach(data, function(u){
                     var user = new User(u)
                     u.isolated = true
@@ -198,7 +198,7 @@ function Structure(){
     //Used when filtering the user list, adds in arrays which classes a user belongs to.
     this.addClassUsers = function(classe, hookArray, initClasses){
         var structure = this
-        http().get("user/admin/list", { classId: classe.id }).done(function(data){
+        http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
             _.forEach(data, function(u){
                 var existing = _.findWhere(structure.users.all, {id: u.id})
                 if(existing){
@@ -223,7 +223,7 @@ function Structure(){
     //Used in conjunction with addClassUsers when filtering the user list, removes from the array the class associated with the users.
     this.removeClassUsers = function(classe, hook){
         var structure = this
-        http().get("user/admin/list", { classId: classe.id }).done(function(data){
+        http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
             _.forEach(data, function(u){
                 var existingUser = _.findWhere(structure.users.all, { id: u.id })
                 if(existingUser){
@@ -240,7 +240,7 @@ function IsolatedUsers(){
     this.collection(User, {
         sync: function(){
             var that = this
-            return http().get('list/isolated', {}, {requestName: 'isolated-request'}).done(function(users){
+            return http().get('list/isolated', {}, { requestName: 'isolated-request' }).done(function(users){
                 that.load(users);
             })
         }
