@@ -133,7 +133,7 @@
                             <div class="row angle-container">
                                 <button ng-click="selectAllActions()"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
                                 <button ng-click="deselectAllActions()" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
-                                <button class="three right-magnet" ng-click="createRole(application.name);">[[lang.translate("appregistry.save")]]</button>
+                                <button class="three right-magnet" ng-click="createRole(application.name);" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
                                 <button class="three right-magnet" ng-click="hideRoleCreationPanel()" style="margin-right: 10px">[[lang.translate("appregistry.cancel")]]</button>
                             </div>
                             <h3>[[lang.translate("appregistry.authorizations")]]</h3>
@@ -152,7 +152,7 @@
                             <div class="row angle-container">
                                 <button ng-click="selectAllActions(role)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
                                 <button ng-click="deselectAllActions(role)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
-                                <button class="two right-magnet" ng-click="role.save()">[[lang.translate("appregistry.save")]]</button>
+                                <button class="two right-magnet" ng-click="role.save()" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
                                 <button class="two right-magnet" ng-click="deleteRole(role)" style="margin-right: 10px;">[[lang.translate("appregistry.delete")]]</button>
                             </div>
                                 <div class="row content">
