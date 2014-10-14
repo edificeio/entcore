@@ -19,7 +19,7 @@
                     <a ng-click="selected=1; role = undefined">[[lang.translate("appregistry.appRoles")]]</a>
                 </div>
     		    <div class="leaf-menu" ng-class="{ selected: selected === 2 }">
-                    <a ng-click="selected=2; crossRoles = flagCrossRoles(); newRole('Role')">[[lang.translate("appregistry.crossRoles")]]</a>
+                    <a ng-click="selected=2; crossRoles = flagCrossRoles(); newRole()">[[lang.translate("appregistry.crossRoles")]]</a>
                 </div>
                 <div class="leaf-menu" ng-class="{ selected: selected === 3 }">
                     <a ng-click="selected=3; crossRoles = flagCrossRoles(); school = schools.all[0]">[[lang.translate("appregistry.roleAttribution")]]</a>
@@ -176,7 +176,7 @@
             <div ng-if="selected === 2" class="twelve"/>
                 <nav class="side-tabs three cell">
                     <ul style="max-height: 750px; overflow-y: scroll;">
-                        <li ng-click="newRole('Role')" ng-class="{ selected: !$parent.role.id }">
+                        <li ng-click="newRole()" ng-class="{ selected: !$parent.role.id }">
                             <strong>[[lang.translate("appregistry.createRole")]]</strong>
                         </li>
                         <li ng-repeat="role in $parent.crossRoles | orderBy: 'name'" ng-click="viewRole(role)" ng-class="{ selected: $parent.role === role }">
@@ -185,13 +185,13 @@
                     </ul>
                 </nav>
                 <article class="side-tabs-content nine cell" ng-if="role">
-                    <div class="row"><h1 class="nine cell">[[role.name]]</h1></div>
+                    <div class="row"><h1 class="nine cell">[[role.name || '&nbsp']]</h1></div>
 
                     <div class="row">
                         <label class="three comment"><span>[[lang.translate("appregistry.roleName")]]</span></label>
-                        <input class="four" type="text" ng-model="role.name" style="height: 36px; border-radius: initial; border: 1px dotted black; margin: 0;"/>
-                        <button class="right-magnet three" ng-if="!role.id" ng-click="saveCrossRole(role)">[[lang.translate("appregistry.create")]]</button>
-                        <button class="right-magnet" ng-if="role.id" ng-click="saveCrossRole(role)">[[lang.translate("appregistry.save")]]</button>
+                        <input class="four" type="text" ng-model="role.name" placeholder="[[lang.translate('appregistry.role')]]" style="height: 36px; border-radius: initial; border: 1px dotted black; margin: 0;"/>
+                        <button class="right-magnet three" ng-if="!role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.create")]]</button>
+                        <button class="right-magnet" ng-if="role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.save")]]</button>
                         <button class="right-magnet" ng-click="deleteRole(role)" ng-if="role.id" style="margin-right: 10px">[[lang.translate("appregistry.delete")]]</button>
                     </div>
 

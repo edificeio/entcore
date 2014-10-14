@@ -252,6 +252,21 @@ function AppRegistry($scope, $sce, model){
 		})
 	}
 
+	$scope.validateCrossRole = function(crossRole){
+		if(crossRole.appRoles.length > 0){
+			var applicationReference = $scope.applications.find(function(application){
+				return application.actions.findWhere({name: crossRole.appRoles[0].actions.all[0].name})
+			})
+			var differentAppsCheck = _.every(crossRole.appRoles, function(role){
+				return role.actions.every(function(action){
+					return applicationReference.actions.findWhere({name: action.name})
+				})
+			})
+			return !differentAppsCheck && crossRole.name
+		}
+		return false
+	}
+
 	$scope.roleMode = 0
 
 }
