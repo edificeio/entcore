@@ -1364,7 +1364,6 @@ a {
 .share th {
   width: 100px;
   text-align: center;
-  line-height: 18px;
 }
 .share td:first-child,
 .share th:first-child {
@@ -1391,6 +1390,7 @@ a {
   width: 100%;
   display: block;
   font-size: 15px;
+  padding: 15px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
