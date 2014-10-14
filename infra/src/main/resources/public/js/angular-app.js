@@ -2138,8 +2138,9 @@ module.directive('tooltip', function($compile){
 				}
 				var tip = $('<div />')
 					.addClass('tooltip')
-					.html('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')
+					.html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
 					.appendTo('body');
+				scope.$apply();
 
 				tip.offset({
 					top: parseInt(element.offset().top + element.height()),

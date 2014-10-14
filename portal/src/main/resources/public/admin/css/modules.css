@@ -574,6 +574,7 @@ iframe {
   width: 100%;
   height: 100%;
   overflow: visible;
+  min-height: 500px;
 }
 body.app {
   margin: 0;
@@ -5433,11 +5434,11 @@ input:-webkit-autofill {
   }
 }
 .tooltip .content {
-  background: #23a9aa;
+  background: #266881;
   color: #fff;
 }
 .tooltip .arrow {
-  color: #23a9aa;
+  color: #266881;
 }
 .loading-panel {
   background: #fff;
