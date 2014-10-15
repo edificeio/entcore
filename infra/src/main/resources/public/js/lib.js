@@ -410,6 +410,9 @@ function Collection(obj){
 			if(this.behaviours){
 				newItem.behaviours(this.behaviours);
 			}
+			else{
+				newItem.behaviours(appPrefix);
+			}
 
 			this.all.push(newItem);
 			newItem.on('change', function(){
@@ -902,7 +905,10 @@ function Collection(obj){
 	};
 
 	Model.prototype.behaviours = function(serviceName){
-		return Behaviours.findBehaviours(serviceName, this);
+		if(this.shared || this.owner){
+			return Behaviours.findBehaviours(serviceName, this);
+		}
+		return {};
 	};
 
 	Model.prototype.inherits = function(targetFunction, prototypeFunction){
@@ -1154,7 +1160,155 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 	});
 };
 
-var Behaviours = {};
+Behaviours = (function(){
+	return {
+		copyRights: function(rightsProvider, resource, viewRights, appPrefix){
+			if(resource._id && rightsProvider){
+				if(rightsProvider.shared){
+					rightsProvider.shared.forEach(function(share){
+						var data = { actions: viewRights };
+						if(share.groupId){
+							data.groupId = share.groupId;
+						}
+						else{
+							data.userId = share.userId;
+						}
+						http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
+					});
+				}
+				else{
+					var data = {};
+					if(rightsProvider.added){
+						if(rightsProvider.added.userId){
+							data.userId = rightsProvider.added.userId;
+						}
+						else{
+							data.groupId = rightsProvider.added.groupId;
+						}
+						data.actions = viewRights;
+
+						http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
+					}
+					if(rightsProvider.removed){
+						if(rightsProvider.removed.userId){
+							data.userId = rightsProvider.removed.userId;
+						}
+						else{
+							data.groupId = rightsProvider.removed.groupId;
+						}
+						data.actions = viewRights;
+						if(_.find(rightsProvider.removed.actions, function(action, name){ return name.indexOf('.read') !== -1 })){
+							http().put('/' + appPrefix + '/share/remove/' + resource._id, http().serialize(data));
+						}
+					}
+				}
+			}
+		},
+		register: function(application, appBehaviours){
+			this.applicationsBehaviours[application] = {};
+			this.applicationsBehaviours[application] = appBehaviours;
+		},
+		findBehaviours: function(serviceName, resource){
+			if(this.applicationsBehaviours[serviceName]){
+				if(!resource.myRights){
+					resource.myRights = {};
+				}
+
+				if(typeof this.applicationsBehaviours[serviceName].resource !== 'function' && typeof this.applicationsBehaviours[serviceName].rights === 'object'){
+					var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
+
+					this.applicationsBehaviours[serviceName].resource = function(element){
+						for(var behaviour in resourceRights){
+							if(model.me.hasRight(element, resourceRights[behaviour]) || (element.owner && model.me.userId === element.owner.userId)){
+								element.myRights[behaviour] = resourceRights[behaviour];
+							}
+						}
+					}
+				}
+				if(typeof this.applicationsBehaviours[serviceName].resource === 'function'){
+					return this.applicationsBehaviours[serviceName].resource(resource);
+				}
+				else{
+					return {};
+				}
+			}
+
+			if(serviceName !== '.'){
+				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+				if(this.applicationsBehaviours[serviceName] && typeof this.applicationsBehaviours[serviceName].resource === 'function'){
+					return this.applicationsBehaviours[serviceName].resource(resource);
+				}
+				else{
+					this.applicationsBehaviours[serviceName] = {};
+					return this.applicationsBehaviours[serviceName];
+				}
+			}
+
+			return {}
+		},
+		loadBehaviours: function(serviceName, callback){
+			if(this.applicationsBehaviours[serviceName]){
+				callback(this.applicationsBehaviours[serviceName]);
+				return;
+			}
+
+			if(serviceName === '.') {
+				return;
+			}
+
+			loader.asyncLoad('/' + serviceName + '/public/js/behaviours.js', function(){
+				callback(this.applicationsBehaviours[serviceName])
+			}.bind(this));
+		},
+		findWorkflow: function(serviceName){
+			var returnWorkflows = function(){
+				if(!this.applicationsBehaviours[serviceName]){
+					return {};
+				}
+				if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){
+					return this.applicationsBehaviours[serviceName].workflow();
+				}
+				else{
+					if(typeof this.applicationsBehaviours[serviceName].rights === 'object' && this.applicationsBehaviours[serviceName].rights.workflow){
+						if(!this.applicationsBehaviours[serviceName].dependencies){
+							this.applicationsBehaviours[serviceName].dependencies = {};
+						}
+						return this.workflowsFrom(this.applicationsBehaviours[serviceName].rights.workflow, this.applicationsBehaviours[serviceName].dependencies.workflow)
+					}
+				}
+			}.bind(this);
+
+			if(this.applicationsBehaviours[serviceName]){
+				return returnWorkflows();
+			}
+
+			if(window.loader){
+				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+				return returnWorkflows();
+			}
+		},
+		workflowsFrom: function(obj, dependencies){
+			if(typeof obj !== 'object'){
+				return {};
+			}
+			if(typeof dependencies !== 'object'){
+				dependencies = {};
+			}
+			var workflow = { };
+			for(var prop in obj){
+				if(model.me.hasWorkflow(obj[prop])){
+					workflow[prop] = true;
+					if(typeof dependencies[prop] === 'string'){
+						workflow[prop] = workflow[prop] && model.me.hasWorkflow(dependencies[prop]);
+					}
+				}
+			}
+
+			return workflow;
+		},
+		applicationsBehaviours: {}
+	}
+}());
 
 var calendar = {
 	getHours: function(scheduleItem, day){
@@ -1296,7 +1450,6 @@ var sniplets = {
 }
 
 function bootstrap(func){
-	calendar.init();
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		if(typeof data !== 'object'){
 			skin.loadDisconnected();
@@ -1325,7 +1478,7 @@ function bootstrap(func){
 
 		model.me.hasRight = function(resource, right){
 			if(right === 'owner'){
-				return resource.owner.userId === model.me.userId;
+				return resource.owner && resource.owner.userId === model.me.userId;
 			}
 
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
@@ -1352,149 +1505,12 @@ function bootstrap(func){
 
 		model.me.workflow.load(['workspace', appPrefix]);
 		model.trigger('me.change');
+
+		calendar.init();
+
 		func();
 	})
 	.e404(function(){
 		func();
 	});
-
-	Behaviours = (function(){
-		return {
-			copyRights: function(rightsProvider, resource, viewRights, appPrefix){
-				if(resource._id && rightsProvider){
-					if(rightsProvider.shared){
-						rightsProvider.shared.forEach(function(share){
-							var data = { actions: viewRights };
-							if(share.groupId){
-								data.groupId = share.groupId;
-							}
-							else{
-								data.userId = share.userId;
-							}
-							http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
-						});
-					}
-					else{
-						var data = {};
-						if(rightsProvider.added){
-							if(rightsProvider.added.userId){
-								data.userId = rightsProvider.added.userId;
-							}
-							else{
-								data.groupId = rightsProvider.added.groupId;
-							}
-							data.actions = viewRights;
-
-							http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
-						}
-						if(rightsProvider.removed){
-							if(rightsProvider.removed.userId){
-								data.userId = rightsProvider.removed.userId;
-							}
-							else{
-								data.groupId = rightsProvider.removed.groupId;
-							}
-							data.actions = viewRights;
-							if(_.find(rightsProvider.removed.actions, function(action, name){ return name.indexOf('.read') !== -1 })){
-								http().put('/' + appPrefix + '/share/remove/' + resource._id, http().serialize(data));
-							}
-						}
-					}
-				}
-			},
-			register: function(application, appBehaviours){
-				this.applicationsBehaviours[application] = {};
-				this.applicationsBehaviours[application] = appBehaviours;
-			},
-			findBehaviours: function(serviceName, resource){
-				if(this.applicationsBehaviours[serviceName]){
-					if(!resource.myRights){
-						resource.myRights = {};
-					}
-
-					if(typeof this.applicationsBehaviours[serviceName].resource !== 'function'){
-						var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
-
-						this.applicationsBehaviours[serviceName].resource = function(element){
-							for(var behaviour in resourceRights){
-								if(model.me.hasRight(element, resourceRights[behaviour]) || model.me.userId === element.owner.userId){
-									element.myRights[behaviour] = resourceRights[behaviour];
-								}
-							}
-						}
-					}
-					return this.applicationsBehaviours[serviceName].resource(resource);
-				}
-
-				if(serviceName !== '.'){
-					loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
-					return this.applicationsBehaviours[serviceName].resource(resource);
-				}
-
-				return {}
-			},
-			loadBehaviours: function(serviceName, callback){
-				if(this.applicationsBehaviours[serviceName]){
-					callback(this.applicationsBehaviours[serviceName]);
-					return;
-				}
-
-				if(serviceName === '.') {
-					return;
-				}
-
-				loader.asyncLoad('/' + serviceName + '/public/js/behaviours.js', function(){
-					callback(this.applicationsBehaviours[serviceName])
-				}.bind(this));
-			},
-			findWorkflow: function(serviceName){
-				var returnWorkflows = function(){
-					if(!this.applicationsBehaviours[serviceName]){
-						return {};
-					}
-					if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){
-						return this.applicationsBehaviours[serviceName].workflow();
-					}
-					else{
-						if(typeof this.applicationsBehaviours[serviceName].rights === 'object' && this.applicationsBehaviours[serviceName].rights.workflow){
-							if(!this.applicationsBehaviours[serviceName].dependencies){
-								this.applicationsBehaviours[serviceName].dependencies = {};
-							}
-							return this.workflowsFrom(this.applicationsBehaviours[serviceName].rights.workflow, this.applicationsBehaviours[serviceName].dependencies.workflow)
-						}
-					}
-				}.bind(this);
-
-				if(this.applicationsBehaviours[serviceName]){
-					return returnWorkflows();
-				}
-
-				if(window.loader){
-					loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
-					return returnWorkflows();
-				}
-			},
-			workflowsFrom: function(obj, dependencies){
-				if(typeof obj !== 'object'){
-					return {};
-				}
-				if(typeof dependencies !== 'object'){
-					dependencies = {};
-				}
-				var workflow = { };
-				for(var prop in obj){
-					if(model.me.hasWorkflow(obj[prop])){
-						workflow[prop] = true;
-						if(typeof dependencies[prop] === 'string'){
-							workflow[prop] = workflow[prop] && model.me.hasWorkflow(dependencies[prop]);
-						}
-					}
-				}
-
-				return workflow;
-			}
-		}
-	}());
-
-	Behaviours.applicationsBehaviours = {};
 }
