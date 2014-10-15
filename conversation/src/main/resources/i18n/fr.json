@@ -57,5 +57,6 @@
     "undelivered": " n'a pas accès à la messagerie",
     "updating": "Mise à jour...",
     "widget.empty": "Vous n'avez aucun message",
-    "widget.title": "messages"
+    "widget.title": "messages",
+	"e401.page": "Vous n'avez pas le droit d'envoyer un message à cette personne."
 }

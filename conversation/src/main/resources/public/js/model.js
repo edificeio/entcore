@@ -206,11 +206,11 @@ model.build = function(){
 
 	this.collection(User, {
 		sync: function(){
-			var that = this;
 			http().get('/conversation/visible').done(function(data){
-				that.addRange(data.groups);
-				that.addRange(data.users);
-			});
+				this.addRange(data.groups);
+				this.addRange(data.users);
+				this.trigger('sync');
+			}.bind(this));
 		},
 		find: function(search, include, exclude){
 			var searchTerm = lang.removeAccents(search).toLowerCase();

@@ -37,11 +37,18 @@ function Conversation($scope, date, notify, route, model){
 			$scope.readMail(new Mail({ id: params.mailId }));
 		},
 		writeMail: function(params){
-			$scope.openView('folders', 'page');
 			model.folders.openFolder('inbox');
 			new User({ id: params.userId }).findData(function(){
 				$scope.openView('write-mail', 'main');
 				$scope.addUser(this);
+			});
+			model.users.on('sync', function(){
+				if(this.findWhere({ id: params.userId })){
+					$scope.openView('folders', 'page');
+				}
+				else{
+					$scope.openView('e401', 'page');
+				}
 			});
 		},
 		inbox: function(){
