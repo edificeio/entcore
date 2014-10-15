@@ -166,13 +166,25 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
         $scope.userOrdering[1] = temp
     }
 
-    $scope.showIsolated = true
+	//Show by default
+    $scope.showIsolated 	= true
+	$scope.showInactive 	= true
+	$scope.showTeachers		= true
+	$scope.showPersonnel	= true
+	$scope.showRelative		= true
+	$scope.showStudents		= true
     $scope.structureUserFilteringFunction = function(user){
-        return (    user.classesList &&
-                    user.classesList.length > 0 &&
-                    ($rootScope.filterStructureUsers ? user.displayName.toLowerCase().indexOf($rootScope.filterStructureUsers.toLowerCase()) >= 0 : true)
-                ) || ($scope.showIsolated && user.isolated && ($rootScope.filterStructureUsers ? user.displayName.toLowerCase().indexOf($rootScope.filterStructureUsers.toLowerCase()) >= 0 : true))
-    }
+		var filterByClass	 = user.classesList && user.classesList.length > 0
+		var filterByInput 	 = $rootScope.filterStructureUsers ? user.displayName.toLowerCase().indexOf($rootScope.filterStructureUsers.toLowerCase()) >= 0 : true
+		var filterIsolated 	 = $scope.showIsolated 	&& user.isolated
+		var filterInactive	 = user.code 				 ? $scope.showInactive  : true
+		var filterTeachers 	 = user.type === 'Teacher' 	 ? $scope.showTeachers 	: true
+		var filterPersonnel  = user.type === 'Personnel' ? $scope.showPersonnel : true
+		var filterRelative 	 = user.type === 'Relative'  ? $scope.showRelative 	: true
+		var filterStudents 	 = user.type === 'Student' 	 ? $scope.showStudents 	: true
+
+        return filterByInput && (filterByClass || filterIsolated) && filterInactive && filterTeachers && filterPersonnel && filterRelative && filterStudents
+	}
     ////////
 
     //Starts the download in a new tab.

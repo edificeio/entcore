@@ -79,6 +79,7 @@
                     <!-- Filter container -->
                     <div ng-if="showWhat === 'showFilters'" class="directory-userlist-right-container">
                         <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.filterResults")]]</h1>
+                        <!-- Classes -->
                         <div class="row angle-container">
                             <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.classes")]]</span>
                             <button ng-click="deselectAllClasses()" style="height: 25px" class="instantButtons deselect right-magnet" tooltip="directory.tooltip.deselectAll"></button>
@@ -89,14 +90,31 @@
                                 [[class.name]]
                             </li>
                         </ul>
-
+                        <!-- User criterias -->
                         <div class="row angle-container">
-                            <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.isolatedUsers")]]</span>
+                            <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.admin.userFilters")]]</span>
                         </div>
-                        <div class="twelve cell" style="text-align: center;">
-                            <h4 style="display: inline-block; font-family: Lato; vertical-align: middle;font-size: 17;">Afficher / Masquer</h4>
-                            <input type="checkbox" ng-model="$parent.$parent.$parent.showIsolated" class="directory-inline-middle" style="margin-left: 20px; width: 30px; height: 30px;"/>
-                        </div>
+
+                        <ul class="selectable-list" style="overflow-y: scroll">
+                            <li ng-class="{selected : $parent.$parent.$parent.showIsolated}" ng-click="$parent.$parent.$parent.showIsolated = !$parent.$parent.$parent.showIsolated">
+                                [[lang.translate("directory.admin.showIsolated")]]
+                            </li>
+                            <li ng-class="{selected : $parent.$parent.$parent.showInactive}" ng-click="$parent.$parent.$parent.showInactive = !$parent.$parent.$parent.showInactive">
+                                [[lang.translate("directory.admin.showInactive")]]
+                            </li>
+                            <li ng-class="{selected : $parent.$parent.$parent.showTeachers}" ng-click="$parent.$parent.$parent.showTeachers = !$parent.$parent.$parent.showTeachers">
+                                [[lang.translate("directory.admin.showTeachers")]]
+                            </li>
+                            <li ng-class="{selected : $parent.$parent.$parent.showPersonnel}" ng-click="$parent.$parent.$parent.showPersonnel = !$parent.$parent.$parent.showPersonnel">
+                                [[lang.translate("directory.admin.showPersonnel")]]
+                            </li>
+                            <li ng-class="{selected : $parent.$parent.$parent.showRelative}" ng-click="$parent.$parent.$parent.showRelative = !$parent.$parent.$parent.showRelative">
+                                [[lang.translate("directory.admin.showRelative")]]
+                            </li>
+                            <li ng-class="{selected : $parent.$parent.$parent.showStudents}" ng-click="$parent.$parent.$parent.showStudents = !$parent.$parent.$parent.showStudents">
+                                [[lang.translate("directory.admin.showStudents")]]
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- Legend container -->
