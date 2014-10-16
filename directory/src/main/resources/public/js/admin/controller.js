@@ -39,11 +39,12 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
             var structureId = params.structureId
 
             $scope.selected = 3
-            $scope.structure = $scope.structures.find(function(structure){
-                return structure.id === structureId
-            })
 
 			$scope.structures.sync(function(){
+				$scope.structure = $scope.structures.find(function(structure){
+					return structure.id === structureId
+				})
+
 	            $scope.structure.classes.sync(function(){
 	                $scope.classSelected = $scope.structure.classes.findWhere({ id: classId})
 	                $scope.$apply()
