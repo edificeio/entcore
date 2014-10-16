@@ -312,9 +312,9 @@
                             </div>
                             <div ng-if="createdUser.type === 'Relative'">
                                 <hr class="separator">
-                                <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; border-right: 2px solid black; border-bottom: none; margin: 0">
+                                <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; margin: 0">
                                     <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
-                                    <ul style="height: 320px; padding-top: 10; border-bottom: 2px solid black; margin-bottom: 10px">
+                                    <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
                                         <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'displayName'"
                                             ng-click="addChild(child, createdUser)"
                                             style="padding-left: 0">
@@ -506,7 +506,7 @@
                     <div ng-show="isolatedUser.type" class="twelve cell height-three">
                         <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                         <div class="twelve cell">
-                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.achool")]]</span>
+                            <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
                             <select class="four cell" ng-model="linkStructure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
                         </div>
                         <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
