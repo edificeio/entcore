@@ -108,7 +108,7 @@ Application.prototype.save = function(){
 Application.prototype.delete = function(){
 	http().delete('/appregistry/application/conf/'+this.id).done(function(){
 		model.applications.sync();
-		notify.error(lang.translate('appregistry.notify.deleteApp'));
+		notify.info(lang.translate('appregistry.notify.deleteApp'));
 	})
 }
 
@@ -178,7 +178,7 @@ Role.prototype.updateRole = function(hook, skipNotify){
 
 Role.prototype.delete = function(hook){
 	http().delete('/appregistry/role/' + this.id).done(function(){
-		notify.error(lang.translate("appregistry.notify.deleteRole"))
+		notify.info(lang.translate("appregistry.notify.deleteRole"))
 		typeof hook === "function" ? hook() : null
 	})
 }
