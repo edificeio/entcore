@@ -28,6 +28,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
@@ -94,7 +95,7 @@ public class DirectoryController extends BaseController {
 		if (structureId != null) {
 			t.putString("structureExternalId", structureId);
 		}
-		eb.send("entcore.feeder", t, new Handler<Message<JsonObject>> () {
+		eb.send("entcore.feeder", t, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -429,11 +430,37 @@ public class DirectoryController extends BaseController {
 				String excludeUserId = message.body().getString("excludeUserId");
 				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
 				break;
-		default:
-			message.reply(new JsonObject()
-				.putString("status", "error")
-				.putString("message", "Invalid action."));
+			case "getUser" :
+				String id = message.body().getString("userId");
+				userService.get(id, BusResponseHandler.busResponseHandler(message));
+				break;
+			default:
+				message.reply(new JsonObject()
+					.putString("status", "error")
+					.putString("message", "Invalid action."));
 		}
+//		String action = message.body().getString("action", "");
+//		switch (action) {
+//			case "usersInProfilGroup":
+//				String userId = message.body().getString("userId");
+//				boolean itSelf2 = message.body().getBoolean("itself", false);
+//				String excludeUserId = message.body().getString("excludeUserId");
+//				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
+//				break;
+//			case "list-structures" :
+//				schoolService.list(message.body().getArray("fields"), busArrayHandler(message));
+//				break;
+//			case "list-groups" :
+//				String structureId = message.body().getString("structureId");
+//				String type = message.body().getString("type");
+//				boolean subGroups = message.body().getBoolean("subGroups", false);
+//				groupService.list(structureId, type, subGroups, busArrayHandler(message));
+//				break;
+//			default:
+//				message.reply(new JsonObject()
+//						.putString("status", "error")
+//						.putString("message", "Invalid action."));
+//		}
 	}
 
 	public void setSchoolService(SchoolService schoolService) {
