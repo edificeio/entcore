@@ -29,8 +29,8 @@
 		</div>
 		<div class="row horizontal-spacing-twice">
 			<div class="twelve cell centered">
+				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
 				<button type="button" translate attr="value" value="remove" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
-				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'"></media-select>
 			</div>
 		</div>
 	</div>
