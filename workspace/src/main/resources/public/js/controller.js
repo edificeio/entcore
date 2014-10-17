@@ -466,7 +466,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.currentViews = {
 		lightbox: '',
-		documents: $scope.views.documents.list
+		documents: $scope.views.documents.icons
 	};
 
 	$scope.switchView = function(view, value){
