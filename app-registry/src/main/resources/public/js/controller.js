@@ -162,6 +162,26 @@ function AppRegistry($scope, $sce, model){
 		}
 	}
 
+	$scope.saveAppRole = function(role){
+		var crossRoleStack = []
+		$scope.crossRoles.forEach(function(crossRole){
+			var index = crossRole.appRoles.indexOf(role)
+			if(index >= 0){
+				crossRoleStack.push(crossRole)
+			}
+		})
+
+		var launcher = {
+			count: crossRoleStack.length + 1,
+			decrement: function(){ if(--this.count === 0){ this.launch() } },
+			launch: function(){ role.save() }
+		}
+		launcher.decrement()
+		_.forEach(crossRoleStack, function(crossRole){
+			crossRole.saveCross(function(){ launcher.decrement() }, true)
+		})
+	}
+
 	$scope.saveCrossRole = function(role){
 		role.saveCross(function(){
 			$scope.roles.sync(function(){

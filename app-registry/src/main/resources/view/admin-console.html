@@ -16,7 +16,7 @@
                     <a ng-click="selected=0">[[lang.translate("appregistry.appParam")]]</a>
                 </div>
     		    <div class="leaf-menu" ng-class="{ selected: selected === 1 }">
-                    <a ng-click="selected=1; role = undefined">[[lang.translate("appregistry.appRoles")]]</a>
+                    <a ng-click="selected=1; crossRoles = flagCrossRoles(); role = undefined">[[lang.translate("appregistry.appRoles")]]</a>
                 </div>
     		    <div class="leaf-menu" ng-class="{ selected: selected === 2 }">
                     <a ng-click="selected=2; crossRoles = flagCrossRoles(); newRole()">[[lang.translate("appregistry.crossRoles")]]</a>
@@ -152,7 +152,7 @@
                             <div class="row angle-container">
                                 <button ng-click="selectAllActions(role)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
                                 <button ng-click="deselectAllActions(role)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
-                                <button class="two right-magnet" ng-click="role.save()" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
+                                <button class="two right-magnet" ng-click="saveAppRole(role)" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
                                 <button class="two right-magnet" ng-click="deleteRole(role)" style="margin-right: 10px;">[[lang.translate("appregistry.delete")]]</button>
                             </div>
                                 <div class="row content">
