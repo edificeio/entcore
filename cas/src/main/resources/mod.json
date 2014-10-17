@@ -1,0 +1,5 @@
+{
+	"main":"org.entcore.cas.Cas",
+	"port": 8023,
+	"mode": "dev"
+}

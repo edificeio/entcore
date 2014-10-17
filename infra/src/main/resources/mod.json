@@ -118,6 +118,11 @@
 	  "config": {
 	  }
     },
+	{
+	  "name": "org.entcore~cas~1.10-SNAPSHOT",
+	  "config": {
+	  }
+	},
     {
       "name":"org.entcore~timeline~1.10-SNAPSHOT",
       "config": {
@@ -209,6 +214,10 @@
           {
             "location": "/conversation",
             "proxy_pass": "http://localhost:8019"
+		  },
+		  {
+			"location": "/cas",
+			"proxy_pass": "http://localhost:8023"
           },
           {
             "location": "/archive",

@@ -212,7 +212,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		JsonObject s =  unmarshal(sessions.remove(sessionId));
 		if (s != null) {
-			LoginInfo info = logins.remove(s.getString("userId"));
+			final String userId = s.getString("userId");
+			LoginInfo info = logins.remove(userId);
+			if (config.getBoolean("slo", false)) {
+				eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
+			}
 			if (info != null) {
 				vertx.cancelTimer(info.timerId);
 			}
