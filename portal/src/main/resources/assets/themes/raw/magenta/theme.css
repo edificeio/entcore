@@ -3441,6 +3441,7 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
+  cursor: pointer;
 }
 .drop-down-filters ul,
 .filters ul {
@@ -4030,6 +4031,93 @@ i.shared {
   background: #fff;
   border: 1px solid #ccc;
   color: #000;
+}
+@media screen and (max-width: 800px) {
+  .widgets {
+    display: none;
+  }
+  .widgets-friend {
+    margin-left: 0px !important;
+  }
+  .drop-down-filters .wrapper i {
+    height: 55px !important;
+    width: 55px !important;
+    background-size: 60px 60px;
+  }
+  .drop-down-filters .wrapper p {
+    display: none;
+  }
+  .drop-down-filters .wrapper label {
+    width: 59px;
+  }
+  .navbar .welcome-message {
+    display: none;
+  }
+}
+.panel {
+  width: 415px;
+  margin-left: auto;
+  margin-right: auto;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  padding: 15px;
+}
+.panel label {
+  width: 150px;
+}
+.panel input[type=text],
+.panel input[type=password] {
+  width: 200px;
+  float: right;
+  line-height: 20px;
+  border: 0;
+}
+.panel a {
+  display: block;
+  clear: both;
+}
+.panel h1 img {
+  display: none;
+}
+.panel input[type=submit] {
+  float: right;
+}
+@media screen and (max-width: 550px) {
+  .notification .avatar {
+    display: none;
+  }
+  .panel {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+    border-radius: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .panel label,
+  .panel input[type=text],
+  .panel input[type=password] {
+    clear: both;
+    float: left !important;
+  }
+  .panel input[type=submit],
+  .panel a {
+    clear: both;
+    float: left !important;
+  }
+}
+@media screen and (max-width: 420px) {
+  .drop-down-filters {
+    display: none !important;
+  }
 }
 html,
 body {

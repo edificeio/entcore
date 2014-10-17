@@ -1333,7 +1333,7 @@ table tr.underline {
   height: 25px;
 }
 .list-view td.content,
-.list-view th.content {
+.list-view th.user {
   max-width: 280px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3441,6 +3441,7 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
+  cursor: pointer;
 }
 .drop-down-filters ul,
 .filters ul {
@@ -7663,3 +7664,4 @@ input[type=text][disabled] {
   width: 100px;
   height: 100px;
 }
+

@@ -1388,6 +1388,7 @@ a {
 .share th {
   width: 100px;
   text-align: center;
+  line-height: 18px;
 }
 .share td:first-child,
 .share th:first-child {
@@ -1414,7 +1415,6 @@ a {
   width: 100%;
   display: block;
   font-size: 15px;
-  padding: 15px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -3442,6 +3442,7 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
+  cursor: pointer;
 }
 .drop-down-filters ul,
 .filters ul {
@@ -9048,25 +9049,6 @@ header.navbar h1:first-child {
 header.navbar a {
   float: right;
 }
-i.disconnect {
-  height: 35px;
-  width: 35px;
-  background-image: url("../img/icons/glyphicons_063_power.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  -webkit-filter: invert(100%);
-  -moz-filter: invert(100%);
-  filter: invert(100%);
-  margin: 5px;
-  float: right;
-}
 i.ok {
   height: 31px;
   width: 31px;
@@ -9444,3 +9426,4 @@ label.legend-label.marged {
 section.container {
   padding-left: 300px;
 }
+
