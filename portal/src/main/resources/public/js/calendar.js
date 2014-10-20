@@ -1,6 +1,7 @@
 (function(){
 	var Calendar = model.widgets.findWidget('calendar');
 
+	Calendar.daysInWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 	Calendar.today = function(format){
 		return moment().format(format);
 	};

@@ -19,14 +19,14 @@
  -->
 
 <div class="calendar widget">
-	<h1 class="current-month-header">[[widget.today('MMMM')]]</h1>
+	<h1 class="current-month-header calendar-month-[[widget.today('M')]]">[[widget.today('MMMM')]]</h1>
 	<div class="content">
 		<div class="fluid five cell current-day">
 			<h1>[[widget.today('dddd')]]</h1>
 			<h2>[[widget.today('D')]]</h2>
 			<h3>[[widget.getSeason()]]</h3>
 		</div>
-		<div class="seven fluid right-magnet">
+		<div class="seven right-magnet">
 			<div class="row">
 				<div ng-repeat="day in widget.daysInWeek">[[day]]</div>
 			</div>
