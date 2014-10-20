@@ -411,7 +411,7 @@ public class DirectoryController extends BaseController {
 			+ "password:'"+ BCrypt.hashpw(admin.getString("password"), BCrypt.gensalt()) +"'})" +
 			"-[:IN]->(fg:FunctionGroup)-[:HAS_FUNCTION]->" +
 			"(f:Function { externalId : 'SUPER_ADMIN', name : 'SuperAdmin' })");
-		neo.execute("MERGE (u:User {id:'OAuthSystemUser'})", (JsonObject) null, (Handler<Message<JsonObject>>) null);
+		neo.execute("MERGE (u:User {id:'OAuthSystemUser'}) ON CREATE SET u.manual = true", (JsonObject) null, (Handler<Message<JsonObject>>) null);
 	}
 
 	@BusAddress("directory")
