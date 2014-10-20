@@ -614,7 +614,10 @@ public class Importer {
 					Set<String> existingUser = new TreeSet<>();
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
-						existingUser.add(((JsonObject) o).getString("externalId"));
+						String externalId = ((JsonObject) o).getString("externalId");
+						if (externalId != null) {
+							existingUser.add(externalId);
+						}
 					}
 					existingUser.removeAll(userImportedExternalId); // set difference
 					String q = // mark missing users
