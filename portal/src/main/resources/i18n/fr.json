@@ -108,5 +108,6 @@
 	"pages": "Pages",
 	"rbs": "Réservation de ressources",
     "library.browse.add": "Ajouter",
+	"title": "Titre",
 	"info.video.embed": "Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage (Youtube, Vimeo, etc.). Pour l'insérer ici, copiez le le lien de partage \"embed\" et collez-le ci-dessous."
 }
