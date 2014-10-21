@@ -587,7 +587,7 @@ textarea.inline-editing {
   box-sizing: content-box;
 }
 nav.vertical {
-  padding-right: 10px;
+  padding-right: 15px;
 }
 nav.vertical h2 {
   overflow: hidden;
@@ -634,12 +634,30 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
+nav.vertical ul li a i.arrow {
+  float: left;
+}
+nav.vertical ul li a i.arrow::before {
+  content: ">";
+  font-weight: 900;
+  font-size: 12px;
+  display: block;
+  margin-top: 0px;
+  margin-right: 6px;
+  font-family: Arial;
+}
 nav.vertical ul li a img {
   vertical-align: middle;
   margin-right: 5px;
 }
 nav.vertical ul li a.selected {
   background: #ccc;
+}
+nav.vertical ul li a.opened i.arrow::before {
+  content: "v";
+  margin-top: -2px;
+  font-family: Lato;
+  font-size: 13px;
 }
 nav.vertical ul li input {
   position: relative !important;
@@ -1022,6 +1040,16 @@ p i {
   height: 17px;
   text-align: center;
   padding-top: 2px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+.calendar.widget .day img {
+  max-width: 100%;
 }
 .calendar.widget .current-month-header {
   position: absolute;
@@ -2398,7 +2426,6 @@ em.high-importance {
   margin-bottom: 12px;
   margin-top: 12px;
   padding: 9px;
-  margin-left: 110px;
   height: 84px;
 }
 .notification .avatar {
@@ -2412,7 +2439,7 @@ em.high-importance {
 .notification i.type {
   float: left;
 }
-.notification .notification-date {
+.notification-date {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -2467,9 +2494,7 @@ em.high-importance {
   border-left: 0;
 }
 .lightbox-view .tabs.linker select {
-  background: none;
   height: 25px;
-  margin-top: 1px;
 }
 .lightbox-view .tabs.linker .found-resources {
   position: relative;
@@ -5121,7 +5146,7 @@ ul.thought-out-actions li:hover {
   border: 1px solid #23a9aa;
   border-top: 0;
   background: #fff;
-  margin-top: 18%;
+  height: 124px;
 }
 .calendar.widget .content .day {
   font-size: 10px;
@@ -5811,7 +5836,7 @@ header {
 .calendar.widget .content {
   margin-left: -1px;
   box-sizing: content-box;
-  margin-top: 55px;
+  margin-top: 35px;
 }
 .calendar.widget .content .day.today {
   background: #266881;

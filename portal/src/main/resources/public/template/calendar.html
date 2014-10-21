@@ -27,12 +27,12 @@
 			<h3>[[widget.getSeason()]]</h3>
 		</div>
 		<div class="seven right-magnet">
-			<div class="row">
-				<div ng-repeat="day in widget.daysInWeek">[[day]]</div>
+			<div class="row days-letters">
+				<div ng-repeat="day in widget.daysInWeek" class="day">[[day.letter]]</div>
 			</div>
-			<div class="row">
-				<div class="day cell previous-month" ng-repeat="prev in widget.previousMonth">[[widget.getDayInMonth(prev)]]</div>
-				<div class="day cell current-month"
+			<div class="row month-days">
+				<div class="day previous-month" ng-repeat="prev in widget.previousMonth">[[widget.getDayInMonth(prev)]]</div>
+				<div class="day current-month"
 					 ng-repeat="day in widget.month"
 					 ng-class="{ today: day.date() === widget.todayDate() }">
 					[[widget.getDayInMonth(day)]]
