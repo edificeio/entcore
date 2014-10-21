@@ -100,5 +100,6 @@
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
     "workspace.valid": "Appliquer",
-    "rack.sent.message": "Votre document a bien été envoyé"
+    "rack.sent.message": "Votre document a bien été envoyé",
+	"workspace.folder.create": "Créer"
 }
