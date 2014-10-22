@@ -1333,12 +1333,12 @@ table tr.underline {
   overflow: hidden;
 }
 .list-view td.icon,
-.list-view th.user {
+.list-view th.icon {
   width: 25px;
   height: 25px;
 }
 .list-view td.content,
-.list-view th.user {
+.list-view th.content {
   max-width: 280px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2691,6 +2691,7 @@ em.high-importance {
 }
 body {
   cursor: default !important;
+  line-height: 20px;
 }
 a.cke_smile img {
   width: 40px;
