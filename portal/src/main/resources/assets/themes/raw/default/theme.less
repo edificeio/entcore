@@ -981,6 +981,23 @@ nav.vertical{
 				background: #D9F1F1;
 				border-right: 8px solid @bright-blue;
 			}
+			i.caret{
+				height: 20px;
+				width: 25px;
+				display: block;
+				float: left;
+				color: #fff;
+				font-size: 25px;
+				font-family: Arial;
+				font-weight: 900;
+				line-height: 12px;
+			}
+			i.caret::before{
+				content: "▸";
+			}
+			i.caret.expanded::before{
+				content: "▾";
+			}
 		}
 	}
 	ul:first-child > li, div ul:first-child > li, h2 + ul > li{
@@ -1561,6 +1578,7 @@ i.folder-large{
 			background: @blue-background;
 			.content{
 				color: #666;
+				overflow: auto;
 				h3{
 					font-weight: normal;
 					color: @bright-blue;
@@ -1898,7 +1916,6 @@ select{
 		.schedule-item{
 			width: 100%;
 			overflow: hidden;
-			white-space: nowrap;
 			text-overflow: ellipsis;
 			position: absolute;
 			border: 1px solid transparent;
@@ -1912,12 +1929,35 @@ select{
 				width: 100%;
 				height: 100%;
 				font-size: 12px;
-				text-align: center;
-				padding: 1px;
+				text-align: left;
+				padding: 5px;
 				color: #fff;
 				font-family: Lato;
 				line-height: 17px;
-				padding-top: 15px;
+				.pending-status::before{
+					position: absolute;
+					bottom: 12px;
+					right: 12px;
+					z-index: 510;
+				}
+				.validated-status{
+					position: absolute;
+					bottom: 14px;
+					right: 12px;
+					z-index: 510;
+				}
+				.refused-status{
+					position: absolute;
+					bottom: 15px;
+					right: 14px;
+					z-index: 510;
+				}
+				.periodic-status{
+					position: absolute;
+					bottom: 15px;
+					right: 36px;
+					z-index: 510;
+				}
 			}
 		}
 		.schedule-item.one{
@@ -1947,22 +1987,17 @@ select{
 	font-size: 21px;
 	font-family: Arial;
 	font-weight: 900;
-	position: absolute;
-	bottom: 22px;
-	right: 6px;
 }
 .validated-status{
 	.icon(glyphicons_206_ok_2, 20px);
-	position: absolute;
-	bottom: 24px;
-	right: 5px;
 	background-size: 100% auto;
 }
 .refused-status{
 	.icon(glyphicons_207_remove_2, 16px);
-	position: absolute;
-	bottom: 24px;
-	right: 5px;
+	background-size: 100% auto;
+}
+.periodic-status{
+	.icon(glyphicons_057_history, 16px);
 	background-size: 100% auto;
 }
 

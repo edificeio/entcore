@@ -586,7 +586,7 @@ textarea.inline-editing {
   box-sizing: content-box;
 }
 nav.vertical {
-  padding-right: 15px;
+  padding-right: 10px;
 }
 nav.vertical h2 {
   overflow: hidden;
@@ -633,30 +633,12 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
-nav.vertical ul li a i.arrow {
-  float: left;
-}
-nav.vertical ul li a i.arrow::before {
-  content: ">";
-  font-weight: 900;
-  font-size: 12px;
-  display: block;
-  margin-top: 0px;
-  margin-right: 6px;
-  font-family: Arial;
-}
 nav.vertical ul li a img {
   vertical-align: middle;
   margin-right: 5px;
 }
 nav.vertical ul li a.selected {
   background: #ccc;
-}
-nav.vertical ul li a.opened i.arrow::before {
-  content: "v";
-  margin-top: -2px;
-  font-family: Lato;
-  font-size: 13px;
 }
 nav.vertical ul li input {
   position: relative !important;
@@ -1039,16 +1021,6 @@ p i {
   height: 17px;
   text-align: center;
   padding-top: 2px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  display: block;
-  position: relative;
-}
-.calendar.widget .day img {
-  max-width: 100%;
 }
 .calendar.widget .current-month-header {
   position: absolute;
@@ -1332,12 +1304,12 @@ table tr.underline {
   overflow: hidden;
 }
 .list-view td.icon,
-.list-view th.icon {
+.list-view th.user {
   width: 25px;
   height: 25px;
 }
 .list-view td.content,
-.list-view th.content {
+.list-view th.user {
   max-width: 280px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2690,7 +2662,6 @@ em.high-importance {
 }
 body {
   cursor: default !important;
-  line-height: 20px;
 }
 a.cke_smile img {
   width: 40px;
@@ -5502,6 +5473,23 @@ nav.vertical ul li a:hover {
   background: #D9F1F1;
   border-right: 8px solid #23a9aa;
 }
+nav.vertical ul li i.caret {
+  height: 20px;
+  width: 25px;
+  display: block;
+  float: left;
+  color: #fff;
+  font-size: 25px;
+  font-family: Arial;
+  font-weight: 900;
+  line-height: 12px;
+}
+nav.vertical ul li i.caret::before {
+  content: "▸";
+}
+nav.vertical ul li i.caret.expanded::before {
+  content: "▾";
+}
 nav.vertical ul:first-child > li,
 nav.vertical div ul:first-child > li,
 nav.vertical h2 + ul > li {
@@ -6233,6 +6221,7 @@ i.folder-large {
 }
 .accordions .accordion .toggle .content {
   color: #666;
+  overflow: auto;
 }
 .accordions .accordion .toggle .content h3 {
   font-weight: normal;
@@ -6648,7 +6637,6 @@ select {
 .schedule .schedule-items .schedule-item {
   width: 100%;
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
   position: absolute;
   border: 1px solid transparent;
@@ -6666,12 +6654,35 @@ select {
   width: 100%;
   height: 100%;
   font-size: 12px;
-  text-align: center;
-  padding: 1px;
+  text-align: left;
+  padding: 5px;
   color: #fff;
   font-family: Lato;
   line-height: 17px;
-  padding-top: 15px;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .pending-status::before {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 510;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .validated-status {
+  position: absolute;
+  bottom: 14px;
+  right: 12px;
+  z-index: 510;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .refused-status {
+  position: absolute;
+  bottom: 15px;
+  right: 14px;
+  z-index: 510;
+}
+.schedule .schedule-items .schedule-item .schedule-item-content .periodic-status {
+  position: absolute;
+  bottom: 15px;
+  right: 36px;
+  z-index: 510;
 }
 .schedule .schedule-items .schedule-item.one {
   width: 8.33333333%;
@@ -6697,9 +6708,6 @@ select {
   font-size: 21px;
   font-family: Arial;
   font-weight: 900;
-  position: absolute;
-  bottom: 22px;
-  right: 6px;
 }
 .validated-status {
   height: 20px;
@@ -6714,9 +6722,6 @@ select {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  position: absolute;
-  bottom: 24px;
-  right: 5px;
   background-size: 100% auto;
 }
 .refused-status {
@@ -6732,9 +6737,21 @@ select {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
-  position: absolute;
-  bottom: 24px;
-  right: 5px;
+  background-size: 100% auto;
+}
+.periodic-status {
+  height: 16px;
+  width: 16px;
+  background-image: url("../img/icons/glyphicons_057_history.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
   background-size: 100% auto;
 }
 .share h3 {
