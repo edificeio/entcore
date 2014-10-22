@@ -6221,7 +6221,6 @@ i.folder-large {
 }
 .accordions .accordion .toggle .content {
   color: #666;
-  overflow: auto;
 }
 .accordions .accordion .toggle .content h3 {
   font-weight: normal;
@@ -6247,6 +6246,7 @@ i.folder-large {
   border: 1px solid #fff;
   border-top: 0;
   padding: 10px;
+  overflow: auto;
 }
 select {
   background: #eee;
