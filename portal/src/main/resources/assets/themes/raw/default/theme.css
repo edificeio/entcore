@@ -586,7 +586,7 @@ textarea.inline-editing {
   box-sizing: content-box;
 }
 nav.vertical {
-  padding-right: 10px;
+  padding-right: 15px;
 }
 nav.vertical h2 {
   overflow: hidden;
@@ -633,12 +633,26 @@ nav.vertical ul li a i {
   float: right;
   margin-top: 2px;
 }
+nav.vertical ul li a i.arrow {
+  float: left;
+}
+nav.vertical ul li a i.arrow::before {
+  content: ">";
+  font-weight: 900;
+  font-size: 12px;
+  display: block;
+  margin-right: 6px;
+  font-family: Arial;
+}
 nav.vertical ul li a img {
   vertical-align: middle;
   margin-right: 5px;
 }
 nav.vertical ul li a.selected {
   background: #ccc;
+}
+nav.vertical ul li a.opened i.arrow::before {
+  content: "v";
 }
 nav.vertical ul li input {
   position: relative !important;
@@ -1021,6 +1035,16 @@ p i {
   height: 17px;
   text-align: center;
   padding-top: 2px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+.calendar.widget .day img {
+  max-width: 100%;
 }
 .calendar.widget .current-month-header {
   position: absolute;
@@ -1304,12 +1328,12 @@ table tr.underline {
   overflow: hidden;
 }
 .list-view td.icon,
-.list-view th.user {
+.list-view th.icon {
   width: 25px;
   height: 25px;
 }
 .list-view td.content,
-.list-view th.user {
+.list-view th.content {
   max-width: 280px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1583,6 +1607,7 @@ ul.icons-tabs li i {
   padding: 8px;
 }
 .icons-view {
+  position: relative;
   padding-left: 0;
 }
 .icons-view .element {
@@ -2662,6 +2687,7 @@ em.high-importance {
 }
 body {
   cursor: default !important;
+  line-height: 20px;
 }
 a.cke_smile img {
   width: 40px;
@@ -5463,31 +5489,33 @@ nav.vertical ul li a {
   margin-left: 0;
   border-right: 8px solid #D9F1F1;
 }
+nav.vertical ul li a i.arrow {
+  height: 20px;
+  display: block;
+  float: left;
+  color: #fff;
+  font-family: Arial;
+}
+nav.vertical ul li a i.arrow::before {
+  content: "▸";
+  font-size: 25px;
+  line-height: 13px;
+  color: #23a9aa;
+}
 nav.vertical ul li a.selected {
   color: #fff;
   border-right: 8px solid #23a9aa;
   background: #266881;
+}
+nav.vertical ul li a.selected i.arrow::before {
+  color: #fff;
 }
 nav.vertical ul li a:hover {
   color: #23a9aa;
   background: #D9F1F1;
   border-right: 8px solid #23a9aa;
 }
-nav.vertical ul li i.caret {
-  height: 20px;
-  width: 25px;
-  display: block;
-  float: left;
-  color: #fff;
-  font-size: 25px;
-  font-family: Arial;
-  font-weight: 900;
-  line-height: 12px;
-}
-nav.vertical ul li i.caret::before {
-  content: "▸";
-}
-nav.vertical ul li i.caret.expanded::before {
+nav.vertical ul li a.opened i.arrow::before {
   content: "▾";
 }
 nav.vertical ul:first-child > li,
@@ -5583,6 +5611,14 @@ nav.vertical a.classic-link {
 }
 nav.vertical a.classic-link:hover {
   background: #266881;
+}
+nav.vertical a.green i.arrow::before,
+nav.vertical a.orange i.arrow::before,
+nav.vertical a.pink i.arrow::before,
+nav.vertical a.cyan i.arrow::before,
+nav.vertical a.purple i.arrow::before,
+nav.vertical a.yellow i.arrow::before {
+  color: #fff !important;
 }
 nav.horizontal {
   right: 10px;

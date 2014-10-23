@@ -970,33 +970,37 @@ nav.vertical{
 				font-weight: 300;
 				margin-left: 0;
 				border-right: 8px solid #D9F1F1;
+				i.arrow{
+					height: 20px;
+					display: block;
+					float: left;
+					color: #fff;
+					font-family: Arial;
+				}
+				i.arrow::before{
+					content: "▸";
+					font-size: 25px;
+					line-height: 13px;
+					color: @bright-blue;
+				}
 			}
 			a.selected{
 				color: #fff;
 				border-right: 8px solid @bright-blue;
 				background: @dark-blue;
+				i.arrow::before{
+					color: #fff;
+				}
 			}
 			a:hover{
 				color: @bright-blue;
 				background: #D9F1F1;
 				border-right: 8px solid @bright-blue;
 			}
-			i.caret{
-				height: 20px;
-				width: 25px;
-				display: block;
-				float: left;
-				color: #fff;
-				font-size: 25px;
-				font-family: Arial;
-				font-weight: 900;
-				line-height: 12px;
-			}
-			i.caret::before{
-				content: "▸";
-			}
-			i.caret.expanded::before{
-				content: "▾";
+			a.opened{
+				i.arrow::before{
+					content: "▾";
+				}
 			}
 		}
 	}
@@ -1079,6 +1083,11 @@ nav.vertical{
 	}
 	a.classic-link:hover{
 		background: @dark-blue;
+	}
+	a.green, a.orange, a.pink, a.cyan, a.purple, a.yellow{
+		i.arrow::before{
+			color: #fff !important;
+		}
 	}
 }
 
