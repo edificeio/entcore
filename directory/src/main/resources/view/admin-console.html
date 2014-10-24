@@ -423,7 +423,7 @@
                     <select ng-model="export_mode" class="two cell directory-top-padded" style="margin-left: 0">
                         <option value="all">[[lang.translate("directory.all")]]</option>
                         <option value="structureId">[[lang.translate("directory.structureById")]]</option>
-                        <option value="classId">[[lang.translate("directory.clessById")]]</option>
+                        <option value="classId">[[lang.translate("directory.classById")]]</option>
                     </select>
                     <div class="cell" style="width: 10px;">&nbsp;</div>
                     <div ng-if="export_mode !== 'all'">
@@ -440,12 +440,12 @@
             <div ng-if="selected === 2" class="twelve">
                 <ul bottom-scroll-action="incrementUsersLimit()" style="width: 25%; float:left; list-style: none; font-family: Lato; height: 700px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
                     <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
-                        <form ng-submit="filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
+                        <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
                             <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 86%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
                             <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; background: #AAA; width: 25; height: 25; border: none;" value="✓">
                         </form>
                     </div>
-                    <li ng-repeat="user in isolatedUsers.users.all | filter: { displayName: filterIsolatedUsers } | limitTo: usersLimit"
+                    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction | limitTo: usersLimit"
                         ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
                         [[user.displayName]]
                     </li>
