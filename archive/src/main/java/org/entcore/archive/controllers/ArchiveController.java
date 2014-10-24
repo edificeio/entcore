@@ -29,8 +29,11 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.response.DefaultResponseHandler;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -51,6 +54,8 @@ import java.util.Set;
 public class ArchiveController extends BaseController {
 
 	private ExportService exportService;
+	private EventStore eventStore;
+	private enum ArchiveEvent { ACCESS }
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -69,12 +74,14 @@ public class ArchiveController extends BaseController {
 				new NotificationHelper(vertx, eb, container) : null;
 		exportService = new FileSystemExportService(vertx.fileSystem(),
 				eb, exportPath, expectedExports, notification);
+		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 	}
 
 	@Get("")
 	@SecuredAction("archive.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(ArchiveEvent.ACCESS.name(), request);
 	}
 
 	@Post("/export")

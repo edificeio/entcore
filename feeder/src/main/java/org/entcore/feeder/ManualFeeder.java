@@ -21,6 +21,9 @@ package org.entcore.feeder;
 
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.Profile;
 import org.entcore.feeder.dictionary.structures.Tenant;
@@ -51,6 +54,7 @@ public class ManualFeeder extends BusModBase {
 	private static final Validator classValidator = new Validator("dictionary/schema/Class.json");
 	private static final Map<String, Validator> profiles;
 	private final Neo4j neo4j;
+	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -196,7 +200,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			JsonObject user, String profile, String structureId, JsonArray childrenIds) {
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds) {
 		String related = "";
 		JsonObject params = new JsonObject()
 				.putString("structureId", structureId)
@@ -220,6 +224,10 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				message.reply(m.body());
+				if ("ok".equals(m.body().getString("status"))) {
+					eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+							(UserInfos) null, new JsonObject().putString("new-user", user.getString("id")));
+				}
 			}
 		});
 	}
@@ -298,7 +306,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInClass(final Message<JsonObject> message,
-			JsonObject user, String profile, String classId, JsonArray childrenIds) {
+			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		String related = "";
 		JsonObject params = new JsonObject()
 				.putString("classId", classId)
@@ -322,6 +330,10 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				message.reply(m.body());
+				if ("ok".equals(m.body().getString("status"))) {
+					eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+							(UserInfos) null, new JsonObject().putString("new-user", user.getString("id")));
+				}
 			}
 		});
 	}

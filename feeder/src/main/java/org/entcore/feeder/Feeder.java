@@ -20,6 +20,9 @@
 package org.entcore.feeder;
 
 import fr.wseduc.cron.CronTrigger;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.GraphData;
@@ -46,6 +49,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private ManualFeeder manual;
 	private Neo4j neo4j;
 	private Exporter exporter;
+	private EventStore eventStore;
+	public enum FeederEvent { IMPORT, DELETE_USER, CREATE_USER }
 
 	@Override
 	public void start() {
@@ -57,6 +62,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		neo4j = new Neo4j(vertx.eventBus(), neo4jAddress);
 		TransactionManager.getInstance().setNeo4j(neo4j);
+		EventStoreFactory factory = EventStoreFactory.getFactory();
+		factory.setVertx(vertx);
+		eventStore = factory.getEventStore(Feeder.class.getSimpleName());
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final String deleteCron = container.config().getString("delete-cron", "0 0 2 * * ? *");
@@ -213,25 +221,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
-									if (config.getBoolean("apply-communication-rules", false)) {
-										String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
-										neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> message) {
-												JsonArray ids = message.body().getArray("result", new JsonArray());
-												if ("ok".equals(message.body().getString("status")) && ids != null &&
-														ids.size() == 1) {
-													JsonObject j = new JsonObject()
-															.putString("action", "initAndApplyDefaultCommunicationRules")
-															.putArray("schoolIds", ((JsonObject) ids.get(0))
-																	.getArray("ids", new JsonArray()));
-													eb.send("wse.communication", j);
-												} else {
-													logger.error(message.body().getString("message"));
-												}
-										 }
-										});
-									}
+									applyComRules();
+									storeImportedEvent();
 									sendOK(message);
 								} else if (m != null) {
 									logger.error(m.body().getString("message"));
@@ -249,6 +240,47 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						importer.clear();
 					}
 				}
+			});
+		}
+	}
+
+	private void storeImportedEvent() {
+		String countQuery =
+				"MATCH (:User) WITH count(*) as nbUsers " +
+				"MATCH (:Structure) WITH count(*) as nbStructures, nbUsers " +
+				"MATCH (:Class) RETURN nbUsers, nbStructures, count(*) as nbClasses ";
+		neo4j.execute(countQuery, null, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonArray res = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
+					eventStore.createAndStoreEvent(FeederEvent.IMPORT.name(),
+							(UserInfos) null, res.<JsonObject>get(0));
+				} else {
+					logger.error(event.body().getString("message"));
+				}
+			}
+		});
+	}
+
+	private void applyComRules() {
+		if (config.getBoolean("apply-communication-rules", false)) {
+			String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
+			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					JsonArray ids = message.body().getArray("result", new JsonArray());
+					if ("ok".equals(message.body().getString("status")) && ids != null &&
+							ids.size() == 1) {
+						JsonObject j = new JsonObject()
+								.putString("action", "initAndApplyDefaultCommunicationRules")
+								.putArray("schoolIds", ((JsonObject) ids.get(0))
+										.getArray("ids", new JsonArray()));
+						eb.send("wse.communication", j);
+					} else {
+						logger.error(message.body().getString("message"));
+					}
+			 }
 			});
 		}
 	}

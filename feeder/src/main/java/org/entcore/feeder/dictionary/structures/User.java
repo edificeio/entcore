@@ -19,6 +19,9 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.Joiner;
 import org.entcore.feeder.utils.TransactionHelper;
@@ -41,6 +44,7 @@ public class User {
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 		private final long delay;
 		private final EventBus eb;
+		private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 
 		public DeleteTask(long delay, EventBus eb) {
 			this.delay = delay;
@@ -64,6 +68,8 @@ public class User {
 								eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
 										.putString("action", "delete-users")
 										.putArray("old-users", r));
+								eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
+										(UserInfos) null, new JsonObject().putArray("old-users", r));
 							} else if (r == null) {
 								log.error("User delete task return null array.");
 							}

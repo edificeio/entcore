@@ -22,9 +22,12 @@ package org.entcore.portal.controllers;
 import fr.wseduc.rs.Get;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
+import org.entcore.portal.Portal;
 import org.entcore.portal.utils.ThemeUtils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -55,6 +58,8 @@ public class PortalController extends BaseController {
 	private List<String> themes;
 	private String themesPrefix;
 	private String assetsPath;
+	private EventStore eventStore;
+	private enum PortalEvent { ACCESS_ADAPTER }
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -70,6 +75,7 @@ public class PortalController extends BaseController {
 				themes = event;
 			}
 		});
+		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 	}
 
 	@Get("/welcome")
@@ -124,6 +130,8 @@ public class PortalController extends BaseController {
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(PortalEvent.ACCESS_ADAPTER.name(),
+				request, new JsonObject().putString("adapter", request.uri()));
 	}
 
 	@Get(value = "/assets/.+", regex = true)

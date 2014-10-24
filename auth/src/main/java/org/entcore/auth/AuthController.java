@@ -42,6 +42,8 @@ import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
 import fr.wseduc.security.ActionType;
@@ -90,6 +92,8 @@ public class AuthController extends BaseController {
 	private UserAuthAccount userAuthAccount;
 	private static final Tracer trace = TracerFactory.getTracer("auth");
 	private static final String USERINFO_SCOPE = "userinfo";
+	private EventStore eventStore;
+	private enum AuthEvent { ACTIVATION, LOGIN }
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -108,6 +112,7 @@ public class AuthController extends BaseController {
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		userAuthAccount = new DefaultUserAuthAccount(vertx, container);
+		eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 	}
 
 	@Get("/oauth2/auth")
@@ -255,6 +260,7 @@ public class AuthController extends BaseController {
 						String c = callBack.toString();
 						if (userId != null && !userId.trim().isEmpty()) {
 							trace.info("Connexion de l'utilisateur " + login);
+							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
 							createSession(userId, request, c);
 						} else {
 							trace.info("Erreur de connexion pour l'utilisateur " + login);
@@ -440,6 +446,7 @@ public class AuthController extends BaseController {
 						public void handle(Either<String, String> activated) {
 							if (activated.isRight() && activated.right().getValue() != null) {
 								trace.info("Activation du compte utilisateur " + login);
+								eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
 								if (container.config().getBoolean("activationAutoLogin", false)) {
 									createSession(activated.right().getValue(), request,
 											container.config().getString("host"));

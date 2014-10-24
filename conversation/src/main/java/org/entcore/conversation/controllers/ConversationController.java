@@ -27,6 +27,8 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
@@ -59,6 +61,8 @@ public class ConversationController extends BaseController {
 
 	private ConversationService conversationService;
 	private TimelineHelper notification;
+	private EventStore eventStore;
+	private enum ConversationEvent {GET_RESOURCE, ACCESS }
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -67,12 +71,14 @@ public class ConversationController extends BaseController {
 		this.conversationService = new DefaultConversationService(vertx,
 				container.config().getString("app-name", Conversation.class.getSimpleName()));
 		notification = new TimelineHelper(vertx, eb, container);
+		eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
 	}
 
 	@Get("conversation")
 	@SecuredAction("conversation.view")
 	public void view(HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(ConversationEvent.ACCESS.name(), request);
 	}
 
 	@Post("draft")
@@ -331,6 +337,8 @@ public class ConversationController extends BaseController {
 							if (r.isRight()) {
 								translateGroupsNames(r.right().getValue(), request);
 								renderJson(request, r.right().getValue());
+								eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(), request,
+										new JsonObject().putString("resource", id));
 							} else {
 								JsonObject error = new JsonObject()
 										.putString("error", r.left().getValue());

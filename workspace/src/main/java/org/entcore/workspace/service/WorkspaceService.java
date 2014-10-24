@@ -46,6 +46,8 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
@@ -53,6 +55,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import fr.wseduc.webutils.*;
+import org.entcore.workspace.Workspace;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -86,6 +89,8 @@ public class WorkspaceService extends BaseController {
 	private FolderService folderService;
 	private QuotaService quotaService;
 	private int threshold;
+	private EventStore eventStore;
+	private enum WokspaceEvent { ACCESS, GET_RESOURCE }
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -99,6 +104,7 @@ public class WorkspaceService extends BaseController {
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
 		this.threshold = container.config().getInteger("alertStorage", 80);
+		eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
 		post("/rack/documents/copy/:ids", "copyRackDocuments");
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
@@ -114,6 +120,7 @@ public class WorkspaceService extends BaseController {
 				if (user != null) {
 					if (user.getAttribute("storage") != null && user.getAttribute("quota") != null) {
 						renderView(request);
+						eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
 						return;
 					}
 					quotaService.quotaAndUsage(user.getUserId(), new Handler<Either<String, JsonObject>>() {
@@ -126,6 +133,7 @@ public class WorkspaceService extends BaseController {
 								}
 							}
 							renderView(request);
+							eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
 						}
 					});
 				} else {
@@ -999,6 +1007,8 @@ public class WorkspaceService extends BaseController {
 									result.getString("name"), eb, gridfsAddress, request.response(),
 									inline, result.getObject("metadata"));
 						}
+						eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+								new JsonObject().putString("resource", request.params().get("id")));
 					} else {
 						request.response().setStatusCode(404).end();
 					}
