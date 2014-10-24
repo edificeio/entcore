@@ -8,7 +8,7 @@
 					<div class="twelve cell">
 						<div class="six cell reduce-block-four" ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)" class="element">
 							<div class="twelve cell photo-preview">
-								<img ng-src="[[skin.skinPath]]thumbnail.png" />
+								<img ng-src="[[skin.path]]thumbnail.png" />
 							</div>
 							<em ng-click="saveTheme(skin, $event)" class="medium-importance centered twelve cell">[[lang.translate(skin.displayName)]]</em>
 						</div>

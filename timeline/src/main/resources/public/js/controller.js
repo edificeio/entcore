@@ -47,7 +47,7 @@ function Personalization($rootScope, $scope, model, ui){
 	$scope.saveTheme = function(skin, $event){
 		$event.stopPropagation();
 		skin.setForUser();
-		ui.setStyle(skin.skinPath);
+		ui.setStyle(skin.path);
 	};
 
 	$scope.togglePanel = function($event){
