@@ -151,10 +151,18 @@ public class SqlShareService extends GenericShareService {
 
 	private void removeShare(String resourceId, String userId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler) {
-		Object[] a = actions.toArray();
-		String query = "DELETE FROM " + shareTable + " WHERE action IN " + Sql.listPrepared(a) +
-				" AND resource_id = ? AND member_id = ?";
-		JsonArray values = new JsonArray(a).add(Sql.parseId(resourceId)).add(userId);
+		String actionFilter;
+		JsonArray values;
+		if (actions != null && actions.size() > 0) {
+			Object[] a = actions.toArray();
+			actionFilter = "action IN " + Sql.listPrepared(a) + " AND ";
+			values = new JsonArray(a);
+		} else {
+			actionFilter = "";
+			values = new JsonArray();
+		}
+		String query = "DELETE FROM " + shareTable + " WHERE " + actionFilter + "resource_id = ? AND member_id = ?";
+		values.add(Sql.parseId(resourceId)).add(userId);
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(handler));
 	}
 
