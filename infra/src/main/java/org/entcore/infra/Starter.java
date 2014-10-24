@@ -19,7 +19,10 @@
 
 package org.entcore.infra;
 
-import fr.wseduc.webutils.Server;
+import org.entcore.common.http.BaseServer;
+import org.entcore.infra.controllers.EventStoreController;
+import org.entcore.infra.services.EventStoreService;
+import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -30,7 +33,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Starter extends Server {
+public class Starter extends BaseServer {
 
 	String developerId = "";
 
@@ -64,7 +67,10 @@ public class Starter extends Server {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
-
+		EventStoreService eventStoreService = new MongoDbEventStore();
+		EventStoreController eventStoreController = new EventStoreController();
+		eventStoreController.setEventStoreService(eventStoreService);
+		addController(eventStoreController);
 	}
 
 	private void deployPreRequiredModules(JsonArray array, final VoidHandler handler) {

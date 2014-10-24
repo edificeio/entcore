@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.common.http.filter.HttpActionFilter;
 import org.entcore.common.http.filter.ResourceProviderFilter;
@@ -76,6 +77,10 @@ public abstract class BaseServer extends Server {
 		validator.setEventBus(getEventBus(vertx));
 		validator.setAddress("json.schema.validator");
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
+
+		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+		eventStoreFactory.setContainer(container);
+		eventStoreFactory.setVertx(vertx);
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
