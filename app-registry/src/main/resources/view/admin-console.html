@@ -75,7 +75,7 @@
                             <option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
                         </select>
                     </div>
-                    <div class="row" ng-if="application.external">
+                    <div class="row">
                         <input type="checkbox" ng-model="application.transferSession" ng-change="setUserinfoScope()" />
                         <label class="three cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
                     </div>
@@ -85,7 +85,7 @@
                             <label class="four cell">[[lang.translate("appregistry.scope")]]</label>
                             <input class="four cell" type="text" ng-model="application.scope" />
                         </div>
-                        <div class="row" ng-if="application.external">
+                        <div class="row">
                             <label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
                             <input type="text" ng-model="application.secret" class="four cell" />
                         </div>
