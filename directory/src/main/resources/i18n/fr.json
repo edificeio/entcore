@@ -261,7 +261,7 @@
     "directory.modify":							"Modifier",
     "directory.directlink":						"Lien direct",
     "directory.inactive":                       "Personnes non activées.",
-    "directory.deleteDate":                     "Date de pré-suppression :",
+    "directory.predeletionDate":                "Date de pré-suppression :",
     "directory.admin.userFilters":              "Filtres sur les personnes",
     "directory.admin.showIsolated":             "Afficher les personnes rattachées à la structure",
     "directory.admin.showInactive":             "Afficher les personnes dont le compte n'a pas été activé",
