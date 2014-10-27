@@ -336,7 +336,11 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(item){
 				return item === document;
 			});
-			http().put('restore/document/' + document._id);
+
+			http().put('restore/document/' + document._id)
+				.e401(function(){
+					http().put('restore/rack/' + document._id);
+				});
 		});
 
 		$scope.selectedFolders().forEach(function(folder){
