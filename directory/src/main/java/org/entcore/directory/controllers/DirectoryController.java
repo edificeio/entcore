@@ -73,6 +73,12 @@ public class DirectoryController extends BaseController {
 		renderView(request, new JsonObject());
 	}
 
+	@Get("/class-admin")
+	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	public void classAdmin(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@Post("/import")
 	@SecuredAction("directory.import")
 	public void launchImport(HttpServerRequest request) {

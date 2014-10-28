@@ -100,12 +100,6 @@ public class UserBookController extends BaseController {
 		renderView(request);
 	}
 
-	@Get("/classAdmin")
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
-	public void classAdmin(HttpServerRequest request) {
-		renderView(request);
-	}
-
 	@Get("/api/search")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {
