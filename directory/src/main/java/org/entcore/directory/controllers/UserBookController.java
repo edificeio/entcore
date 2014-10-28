@@ -337,6 +337,7 @@ public class UserBookController extends BaseController {
 				params.put("id", user.getUserId());
 				params.put("category", request.params().get("category"));
 				String visibility = "PUBLIC".equals(request.params().get("value")) ? "PUBLIC" : "PRIVE";
+				UserUtils.removeSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, null);
 				neo.send("MATCH (n:User)-[:USERBOOK]->(m)-[s]->(p) "
 					+ "WHERE n.id = {id} AND p.category={category} "
 					+ "DELETE s CREATE (m)-[j:"+ visibility +"]->(p) "
@@ -469,6 +470,7 @@ public class UserBookController extends BaseController {
 								 "WHERE n.id = {id} " +
 								 "DELETE r";
 					}
+					UserUtils.removeSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, null);
 					neo.send(query, params, request.response());
 				} else {
 					unauthorized(request);
