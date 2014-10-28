@@ -3190,8 +3190,6 @@ module.directive('draggable', function($compile){
 				e.preventDefault();
 				var interrupt = false;
 				if(element.data('resizing') !== true){
-					element.trigger('startDrag');
-
 					$('body').css({
 						'-webkit-user-select': 'none',
 						'-moz-user-select': 'none',
@@ -3208,6 +3206,9 @@ module.directive('draggable', function($compile){
 					$(window).on('mousemove.drag', function(e){
 						if(e.clientX === mouse.x && e.clientY === mouse.y){
 							return;
+						}
+						if(!element.data('dragging')){
+							element.trigger('startDrag');
 						}
 						element.unbind("click");
 						element.data('dragging', true);
