@@ -23,37 +23,27 @@ import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
-import fr.wseduc.webutils.Controller;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
-import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.neo4j.Neo;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.impl.DefaultUserBookService;
-import org.entcore.directory.services.impl.DefaultUserService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
-import static org.entcore.common.user.SessionAttributes.*;
+import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 
 public class UserController extends BaseController {

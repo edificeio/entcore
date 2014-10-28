@@ -22,18 +22,11 @@ package org.entcore.directory.controllers;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.directory.services.ProfileService;
-import org.entcore.directory.services.impl.DefaultProfileService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
-
-import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
