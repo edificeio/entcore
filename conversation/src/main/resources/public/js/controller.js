@@ -38,13 +38,13 @@ function Conversation($scope, date, notify, route, model){
 		},
 		writeMail: function(params){
 			model.folders.openFolder('inbox');
-			new User({ id: params.userId }).findData(function(){
-				$scope.openView('write-mail', 'main');
-				$scope.addUser(this);
-			});
 			model.users.on('sync', function(){
 				if(this.findWhere({ id: params.userId })){
 					$scope.openView('folders', 'page');
+					new User({ id: params.userId }).findData(function(){
+						$scope.openView('write-mail', 'main');
+						$scope.addUser(this);
+					});
 				}
 				else{
 					$scope.openView('e401', 'page');
