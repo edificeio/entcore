@@ -468,7 +468,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.putString("userId", userId);
-		neo4j.execute(query, params, validResultsHandler(handler));
+		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
