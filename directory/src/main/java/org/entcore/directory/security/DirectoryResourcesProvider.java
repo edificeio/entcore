@@ -142,8 +142,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String query =
-				"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class)" +
-				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User) " +
+				"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WITH c " +
+				"MATCH c<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE u.id IN {userIds} " +
 				"RETURN count(distinct u) = {size} as exists ";
 		JsonObject params = new JsonObject()
