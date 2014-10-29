@@ -36,7 +36,7 @@
 						<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
 					</th>
-					<th></th>
+					<th ng-if="currentTree.name !== 'trash'"></th>
 					<th scope="col" class="date" ng-click="orderByField('created')">
 						<span translate content="modified"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
@@ -67,7 +67,7 @@
 					</td>
 					<td class="content"><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 					<td class="user"><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
-					<td><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
+					<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 					<td class="date">[[longDate(document.created)]]</td>
 				</tr>
 				<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="document === selectedDocuments()[0] && document.showComments">
