@@ -82,10 +82,6 @@ User.prototype.saveInfos = function(){
 	http().putJson('/directory/user/' + this.id, userData);
 };
 
-User.prototype.saveVisibility = function(){
-
-};
-
 User.prototype.saveChanges = function(){
 	if(this.edit.userbook){
 		this.saveUserbook();
@@ -142,11 +138,15 @@ User.prototype.loadUserbook = function(){
 
 User.prototype.loadVisibility = function(){
 	http().get('/userbook/api/person').done(function(data){
+		model.me.email = data.result[0].email;
 		this.updateData({
 			schoolName: data.result[0].schoolName,
-			hobbies: _.map(this.hobbies, function(hobby, index){
-				hobby.visibility = data.result[0].visibility[index];
-				return hobby;
+			hobbies: _.map(data.result[0].category, function(category, index){
+				return {
+					visibility: data.result[0].visibility[index],
+					category: category,
+					values: data.result[0].values[index]
+				};
 			}),
 			visible: {
 				email: data.result[0].visibleInfos.indexOf("SHOW_EMAIL") !== -1 ? "public" : "prive",
@@ -419,9 +419,11 @@ model.build = function(){
 	this.classAdmin = new ClassAdmin();
 	this.network = new Network();
 
-	http().get('/userbook/api/person').done(function(data){
-		model.me.email = data.result[0].email;
-	});
+	if(window.location.href.indexOf('mon-compte') === -1){
+		http().get('/userbook/api/person').done(function(data){
+			model.me.email = data.result[0].email;
+		});
+	}
 
 	User.prototype.moods = _.map(User.prototype.moods, function(mood){
 		return {
