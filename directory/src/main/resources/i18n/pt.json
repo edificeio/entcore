@@ -90,6 +90,7 @@
     "directory.lastName": "Nome",
     "directory.login": "Id",
     "directory.personnel": "Funcionàrios",
+    "directory.personnels": "Funcionàrios",
     "directory.relative": "Pais",
     "directory.relatives": "Pais",
     "directory.remove.confirm": "Si vous demandez la suppression de ces utilisateurs, ils pourront exporter leurs données, puis perdront leur accès à l'ENT. Voulez-vous vraiment les supprimer ?",
