@@ -385,11 +385,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ProfileGroup)-[:DEPENDS]->(ssg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name : 'Student'}), " +
 				"c<-[:DEPENDS]-(ctg:ProfileGroup)-[:DEPENDS]->(stg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name : 'Teacher'}), " +
 				"c<-[:DEPENDS]-(crg:ProfileGroup)-[:DEPENDS]->(srg:ProfileGroup)-[:HAS_PROFILE]->(rp:Profile {name : 'Relative'}), " +
-				"(rs:Role), (rt:Role), (rr:Role) " +
+				"c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(pp:Profile {name : 'Personnel'}), " +
+				"(rs:Role), (rt:Role), (rr:Role), (pr:Role) " +
 				"WHERE rs.name =~ '^[A-Za-z0-9]+-(student|all)-default$' " +
 				"AND rt.name =~ '^[A-Za-z0-9]+-(teacher|all)-default$' " +
 				"AND rr.name =~ '^[A-Za-z0-9]+-(relative|all)-default$' " +
-				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr";
+				"AND pr.name =~ '^[A-Za-z0-9]+-(personnel|all)-default$' " +
+				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr, cpg-[:AUTHORIZED]->pr";
 		neo.execute(query, new JsonObject().putString("id", classId), validEmptyHandler(handler));
 	}
 
