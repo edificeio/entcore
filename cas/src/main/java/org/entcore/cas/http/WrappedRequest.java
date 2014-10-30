@@ -19,13 +19,15 @@
 
 package org.entcore.cas.http;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.http.HttpServerRequest;
+
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.cas.http.Response;
-import org.vertx.java.core.http.HttpServerRequest;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class WrappedRequest implements Request {
 
@@ -71,6 +73,16 @@ public class WrappedRequest implements Request {
 					params.put(e.getKey(), e.getValue());
 				}
 				handler.handle(params);
+			}
+		});
+	}
+
+	@Override
+	public void getBody(final Handler<String> handler, final String encoding) {
+		request.bodyHandler(new org.vertx.java.core.Handler<Buffer>(){
+			@Override
+			public void handle(Buffer event) {
+				handler.handle(event != null ? event.toString(encoding != null ? encoding : "UTF-8") : null);
 			}
 		});
 	}

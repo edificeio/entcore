@@ -19,16 +19,20 @@
 
 package org.entcore.cas;
 
-import fr.wseduc.cas.data.DataHandlerFactory;
-import fr.wseduc.cas.endpoint.Credential;
-import fr.wseduc.cas.endpoint.Validator;
-import fr.wseduc.cas.http.HttpClientFactory;
 import org.entcore.cas.controllers.CredentialController;
 import org.entcore.cas.controllers.EntCoreCredentialResponse;
+import org.entcore.cas.controllers.SamlValidatorController;
 import org.entcore.cas.controllers.ValidatorController;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
 import org.entcore.cas.http.VertxHttpClientFactory;
 import org.entcore.common.http.BaseServer;
+
+import fr.wseduc.cas.data.DataHandlerFactory;
+import fr.wseduc.cas.endpoint.Credential;
+import fr.wseduc.cas.endpoint.CasValidator;
+import fr.wseduc.cas.endpoint.SamlValidator;
+import fr.wseduc.cas.http.HttpClientFactory;
+
 
 public class Cas extends BaseServer {
 
@@ -46,11 +50,17 @@ public class Cas extends BaseServer {
 		credentialController.setCredential(credential);
 		addController(credentialController);
 
-		Validator validator = new Validator();
-		validator.setDataHandlerFactory(dataHandlerFactory);
+		CasValidator casValidator = new CasValidator();
+		casValidator.setDataHandlerFactory(dataHandlerFactory);
 		ValidatorController validatorController = new ValidatorController();
-		validatorController.setValidator(validator);
+		validatorController.setValidator(casValidator);
 		addController(validatorController);
+
+		SamlValidator samlValidator = new SamlValidator();
+		samlValidator.setDataHandlerFactory(dataHandlerFactory);
+		SamlValidatorController samlvalidatorController = new SamlValidatorController();
+		samlvalidatorController.setValidator(samlValidator);
+		addController(samlvalidatorController);
 	}
 
 }
