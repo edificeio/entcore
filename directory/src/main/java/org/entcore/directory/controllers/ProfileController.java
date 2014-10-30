@@ -62,7 +62,7 @@ public class ProfileController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				profileService.createFunctionGroup(event.getArray("functionsCodes"),
-						event.getArray("structures"), event.getArray("classes"), notEmptyResponseHandler(request, 201));
+						event.getString("name"), event.getString("externalId"), notEmptyResponseHandler(request, 201));
 			}
 		});
 	}

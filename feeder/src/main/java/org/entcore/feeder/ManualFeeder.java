@@ -722,12 +722,20 @@ public class ManualFeeder extends BusModBase {
 			sendError(message, "missing.functions");
 			return;
 		}
-		final JsonArray structures = message.body().getArray("structures");
-		final JsonArray classes = message.body().getArray("classes");
+		final String name = message.body().getString("name");
+		if (name == null || name.trim().isEmpty()) {
+			sendError(message, "missing.name");
+			return;
+		}
+		final String externalId = message.body().getString("externalId");
+		if (externalId == null || externalId.trim().isEmpty()) {
+			sendError(message, "missing.externalId");
+			return;
+		}
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
 			@Override
 			public void apply(TransactionHelper tx) {
-				Profile.createFunctionGroup(functions, structures, classes, tx);
+				Profile.createFunctionGroup(functions, name, externalId, tx);
 			}
 		});
 	}

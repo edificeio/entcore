@@ -121,23 +121,19 @@ public class Profile {
 		JsonObject params = new JsonObject().putString("externalId", functionExternalId);
 		transaction.add(query, params);
 	}
-	public static void createFunctionGroup(JsonArray functions, JsonArray structures, JsonArray classes,
+	public static void createFunctionGroup(JsonArray functions, String name, String externalId,
 			TransactionHelper transaction) {
-		JsonObject fg = new JsonObject();
-		if (structures != null) {
-			fg.putArray("structures", structures);
-		}
-		if (classes != null) {
-			fg.putArray("classes", classes);
-		}
+		JsonObject fg = new JsonObject()
+				.putString("id", UUID.randomUUID().toString())
+				.putString("name", name)
+				.putString("externalId", externalId);
 		JsonObject params = new JsonObject()
 				.putArray("functions", functions)
-				.putObject("props2", fg.copy())
-				.putObject("props", fg.putString("id", UUID.randomUUID().toString()));
+				.putObject("props", fg);
 		String query =
 				"MATCH (f:Function) " +
 				"WHERE f.externalId IN {functions} " +
-				"CREATE (fg:Group:FunctionGroup {props})-[:HAS_FUNCTION {props2}]->f " +
+				"CREATE (fg:Functions {props})-[:CONTAINS_FUNCTION]->f " +
 				"RETURN fg.id as id ";
 		transaction.add(query, params);
 	}

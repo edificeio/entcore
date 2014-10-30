@@ -31,7 +31,7 @@ public interface ProfileService {
 
 	void deleteFunction(String functionCode, Handler<Either<String, JsonObject>> handler);
 
-	void createFunctionGroup(JsonArray functionsCodes, JsonArray structuresIds, JsonArray classesIds,
+	void createFunctionGroup(JsonArray functionsCodes, String name, String externalId,
 			Handler<Either<String, JsonObject>> result);
 
 	void deleteFunctionGroup(String functionGroupId, Handler<Either<String, JsonObject>> result);

@@ -23,7 +23,6 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.Joiner;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
@@ -33,9 +32,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
-
-import java.util.Set;
-
 
 public class User {
 
@@ -232,7 +228,8 @@ public class User {
 	public static void addFunction(String userId, String functionCode, JsonArray structures, JsonArray classes,
 			TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}}), (f:Function {externalId : {functionCode}}) " +
+				"MATCH (u:User { id : {userId}}), (f) " +
+				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
 				"CREATE UNIQUE u-[:HAS_FUNCTION {props}]->f ";
 		JsonObject fg = new JsonObject();
 		if (structures != null) {
@@ -246,12 +243,63 @@ public class User {
 				.putString("functionCode", functionCode)
 				.putObject("props", fg);
 		transactionHelper.add(query, params);
+		String qu =
+				"MATCH (u:User { id : {userId}}), (fg:FunctionGroup { externalId : {externalId}}) " +
+				"CREATE UNIQUE fg<-[:IN]-u ";
+		if (structures != null) {
+			String q2 =
+					"MATCH (n:Structure {id : {structureId}}), (f) " +
+					"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+					"WITH n, f " +
+					"MERGE (fg:Group:FunctionGroup { externalId : {externalId}}) " +
+					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+					"CREATE UNIQUE n<-[:DEPENDS]-fg";
+			for (Object o : structures) {
+				String extId = o.toString() + "-" + functionCode;
+				JsonObject p2 = new JsonObject()
+						.putString("structureId", o.toString())
+						.putString("functionCode", functionCode)
+						.putString("externalId", extId);
+				transactionHelper.add(q2, p2);
+				JsonObject pu = new JsonObject()
+						.putString("userId", userId)
+						.putString("externalId", extId);
+				transactionHelper.add(qu, pu);
+			}
+		}
+		if (classes != null) {
+			String q2 =
+					"MATCH (n:Class {id : {classId}}), (f) " +
+					"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+					"WITH n, f " +
+					"MERGE (fg:Group:FunctionGroup { externalId : {externalId}}) " +
+					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+					"CREATE UNIQUE n<-[:DEPENDS]-fg";
+			for (Object o : classes) {
+				String extId = o.toString() + "-" + functionCode;
+				JsonObject p2 = new JsonObject()
+						.putString("classId", o.toString())
+						.putString("functionCode", functionCode)
+						.putString("externalId", extId);
+				transactionHelper.add(q2, p2);
+				JsonObject pu = new JsonObject()
+						.putString("userId", userId)
+						.putString("externalId", extId);
+				transactionHelper.add(qu, pu);
+			}
+		}
 	}
 
 	public static void removeFunction(String userId, String functionCode, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f:Function {externalId : {functionCode}}) " +
-				"DELETE r ";
+				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f) " +
+				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+				"WITH r.structures as structures, r.classes as classes, r, u, f " +
+				"DELETE r " +
+				"WITH (coalesce(structures, []) + coalesce(classes, [])) as ids, u, f " +
+				"UNWIND ids as s " +
+				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN]-u " +
+				"DELETE r";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("functionCode", functionCode);

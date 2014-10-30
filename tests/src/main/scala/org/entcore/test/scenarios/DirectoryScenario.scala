@@ -108,25 +108,27 @@ object DirectoryScenario {
     .exec(http("Create function group")
       .post("""/directory/functiongroup""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionsCodes": ["CLASS_ADMIN_${now}"], "classes": ["${classId}"]}"""))
+      .body(StringBody("""{"functionsCodes": ["CLASS_ADMIN_${now}"], "name": "Admin de la classe ${now}",
+       "externalId" : "CLASS_ADMIN_FS_${now}"}"""))
       .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id")))
 
     .exec(http("Create function group")
       .post("""/directory/functiongroup""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionsCodes": ["DELETE_${now}"], "classes": ["${schoolId}"]}"""))
+      .body(StringBody("""{"functionsCodes": ["DELETE_${now}"],"name": "Delete ${now}",
+       "externalId" : "DELETE_FS_${now}"}"""))
       .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id-delete")))
 
     // add user to group
-    .exec(http("add user to group")
-      .post("""/directory/user/group/${teacherId}/${function-group-id}""")
-      .header("Content-Length", "0")
-      .check(status.is(200)))
-
-    .exec(http("add user to group")
-      .post("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
-      .header("Content-Length", "0")
-      .check(status.is(200)))
+//    .exec(http("add user to group")
+//      .post("""/directory/user/group/${teacherId}/${function-group-id}""")
+//      .header("Content-Length", "0")
+//      .check(status.is(200)))
+//
+//    .exec(http("add user to group")
+//      .post("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
+//      .header("Content-Length", "0")
+//      .check(status.is(200)))
 
     // add user function
     .exec(http("User add function ")
@@ -139,6 +141,18 @@ object DirectoryScenario {
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "structures": ["${schoolId}"]}"""))
+      .check(status.is(200)))
+
+    .exec(http("User add function ")
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "DELETE_FS_${now}", "classes": ["${classId}"]}"""))
+      .check(status.is(200)))
+
+    .exec(http("User add function ")
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "CLASS_ADMIN_FS_${now}", "classes": ["${classId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")

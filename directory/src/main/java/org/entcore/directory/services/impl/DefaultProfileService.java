@@ -56,13 +56,13 @@ public class DefaultProfileService implements ProfileService {
 	}
 
 	@Override
-	public void createFunctionGroup(JsonArray functionsCodes, JsonArray structuresIds, JsonArray classesIds,
+	public void createFunctionGroup(JsonArray functionsCodes, String name, String externalId,
 			Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-create-function-group")
 				.putArray("functions", functionsCodes)
-				.putArray("structures", structuresIds)
-				.putArray("classes", classesIds);
+				.putString("externalId", externalId)
+				.putString("name", name);
 		eb.send(Directory.FEEDER, action, validUniqueResultHandler(0, result));
 	}
 

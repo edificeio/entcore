@@ -9,20 +9,16 @@
         "type": "string"
       }
     },
-    "structures": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "name": {
+      "type": "string"
     },
-    "classes": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "externalId": {
+      "type": "string"
     }
   },
   "required": [
-    "functionsCodes"
+    "functionsCodes",
+    "name",
+    "externalId"
   ]
 }

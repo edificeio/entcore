@@ -304,6 +304,8 @@ public class Importer {
 		JsonObject j = new JsonObject();
 		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.id IS UNIQUE;", j);
 		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.externalId IS UNIQUE;", j);
+		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.id IS UNIQUE;", j);
+		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.externalId IS UNIQUE;", j);
 	}
 
 	public void classConstraints() {

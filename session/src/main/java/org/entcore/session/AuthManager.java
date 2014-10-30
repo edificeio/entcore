@@ -304,7 +304,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
-				"OPTIONAL MATCH n-[:IN*0..1]->()-[rf:HAS_FUNCTION]->(f:Function) " +
+				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct " +
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
