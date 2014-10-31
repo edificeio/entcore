@@ -250,7 +250,7 @@ public class UserController extends BaseController {
 	}
 
 	@Post("/user/group/:userId/:groupId")
-	@SecuredAction("user.add.group")
+	@SecuredAction(value = "user.add.group", type = ActionType.RESOURCE)
 	public void addGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
@@ -258,11 +258,18 @@ public class UserController extends BaseController {
 	}
 
 	@Delete("/user/group/:userId/:groupId")
-	@SecuredAction("user.remove.group")
+	@SecuredAction(value = "user.remove.group", type = ActionType.RESOURCE)
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
 		userService.removeGroup(userId, groupId, defaultResponseHandler(request));
+	}
+
+	@Get("/user/group/:groupId")
+	@SecuredAction(value = "user.list.group", type = ActionType.RESOURCE)
+	public void listGroup(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		userService.list(groupId, true, null, arrayResponseHandler(request));
 	}
 
 	@Get("/user/admin/list")

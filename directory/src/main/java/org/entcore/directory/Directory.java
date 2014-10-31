@@ -100,7 +100,9 @@ public class Directory extends BaseServer {
 		profileController.setProfileService(new DefaultProfileService(eb));
 		addController(profileController);
 
-		addController(new GroupController());
+		GroupController groupController = new GroupController();
+		groupController.setGroupService(new DefaultGroupService(eb));
+		addController(groupController);
 
 		TenantController tenantController = new TenantController();
 		tenantController.setTenantService(new DefaultTenantService(eb));

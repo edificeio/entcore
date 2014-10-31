@@ -25,6 +25,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.be1d.Be1dFeeder;
+import org.entcore.feeder.dictionary.structures.Group;
 import org.entcore.feeder.dictionary.structures.Profile;
 import org.entcore.feeder.dictionary.structures.Tenant;
 import org.entcore.feeder.dictionary.structures.User;
@@ -808,6 +809,33 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void apply(TransactionHelper tx) throws ValidationException {
 				Tenant.createOrUpdate(tenant, tx);
+			}
+		});
+	}
+
+	public void createGroup(Message<JsonObject> message) {
+		final JsonObject group = message.body().getObject("group");
+		if (group == null || group.size() == 0) {
+			sendError(message, "missing.group");
+			return;
+		}
+		final String structureId = message.body().getString("structureId");
+		final String classId = message.body().getString("classId");
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) throws ValidationException {
+				Group.manualCreateOrUpdate(group, structureId, classId, tx);
+			}
+		});
+	}
+
+	public void deleteGroup(Message<JsonObject> message) {
+		final String groupId = getMandatoryString("groupId", message);
+		if (groupId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Group.manualDelete(groupId, tx);
 			}
 		});
 	}

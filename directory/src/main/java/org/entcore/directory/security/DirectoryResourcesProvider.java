@@ -20,8 +20,10 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.controllers.ClassController;
 import org.entcore.directory.controllers.GroupController;
@@ -33,7 +35,10 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -87,6 +92,13 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 					isAdmin(user, true, handler);
 					break;
+				case "addGroup" :
+				case "removeGroup" :
+					isAdminOfUserAndGroup(request, user, handler);
+					break;
+				case "listGroup":
+					isAdminOfGroup(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(StructureController.class.getName())) {
@@ -105,11 +117,124 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 					isAdmin(user, false, handler);
 					break;
+				case "create" :
+					isAdminOfStructureOrClass(request, user, handler);
+					break;
+				case "update" :
+				case "delete" :
+					isAdminOfGroup(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private void isAdminOfUserAndGroup(HttpServerRequest request, UserInfos user, Handler<Boolean> handler) {
+		Set<String> ids = prevalidateAndGetIds(user, handler);
+		if (ids == null) return;
+		String query =
+				"MATCH (g:Group {id : {id}})-[:DEPENDS]->()-[:BELONGS*0..1]->s, " +
+				"(u:User {id : {userId}})-[:IN]->()-[:DEPENDS]->()-[:BELONGS*0..1]->s2 " +
+				"WHERE s.id IN {ids} AND s2.id IN {ids} " +
+				"RETURN count(*) > 0 as exists";
+		JsonObject params = new JsonObject()
+				.putString("id", request.params().get("groupId"))
+				.putString("userId", request.params().get("userId"))
+				.putArray("ids", new JsonArray(ids.toArray()));
+		validateQuery(request, handler, query, params);
+	}
+
+	private void isAdminOfGroup(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+		Set<String> ids = prevalidateAndGetIds(user, handler);
+		if (ids == null) return;
+		String query =
+				"MATCH (g:Group {id : {id}})-[:DEPENDS]->c-[:BELONGS*0..1]->s " +
+				"WHERE s.id IN {ids} " +
+				"RETURN count(*) > 0 as exists";
+		JsonObject params = new JsonObject()
+				.putString("id", request.params().get("groupId"))
+				.putArray("ids", new JsonArray(ids.toArray()));
+		validateQuery(request, handler, query, params);
+	}
+
+	private void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
+		request.pause();
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				request.resume();
+				JsonArray res = r.body().getArray("result");
+				handler.handle(
+						"ok".equals(r.body().getString("status")) &&
+						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+				);
+			}
+		});
+	}
+
+	private Set<String> prevalidateAndGetIds(UserInfos user, Handler<Boolean> handler) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			handler.handle(false);
+			return null;
+		}
+		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+		UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
+		if ((adminLocal == null || adminLocal.getStructures() == null) &&
+				(classAdmin == null || classAdmin.getClasses() == null)) {
+			handler.handle(false);
+			return null;
+		}
+		Set<String> ids = new HashSet<>();
+		if (adminLocal != null && adminLocal.getStructures() != null) {
+			ids.addAll(adminLocal.getStructures());
+		}
+		if (classAdmin != null && classAdmin.getClasses() != null) {
+			ids.addAll(classAdmin.getClasses());
+		}
+		return ids;
+	}
+
+	private void isAdminOfStructureOrClass(final HttpServerRequest request, UserInfos user,
+			final Handler<Boolean> handler) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+		final UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
+		if ((adminLocal == null || adminLocal.getStructures() == null) &&
+				(classAdmin == null || classAdmin.getClasses() == null)) {
+			handler.handle(false);
+			return;
+		}
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				String classId = event.getString("classId");
+				String structureId = event.getString("structureId");
+				if ((adminLocal != null && adminLocal.getStructures() != null &&
+						adminLocal.getStructures().contains(structureId)) ||
+						(classAdmin != null && classAdmin.getClasses() != null &&
+								classAdmin.getClasses().contains(classId))) {
+					handler.handle(true);
+				} else if (adminLocal != null && classId != null && adminLocal.getStructures() != null) {
+					String query =
+							"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
+							"WHERE s.id IN ids " +
+							"RETURN count(*) > 0 as exists";
+					JsonObject params = new JsonObject()
+							.putString("classId", classId)
+							.putArray("ids", new JsonArray(adminLocal.getStructures().toArray()));
+					validateQuery(request, handler, query, params);
+				} else {
+					handler.handle(false);
+				}
+			}
+		});
 	}
 
 	private void isAdmin(UserInfos user, boolean allowClass, Handler<Boolean> handler) {
@@ -151,18 +276,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				.putArray("userIds", new JsonArray(userIds.toArray()))
 				.putString("teacherId", user.getUserId())
 				.putNumber("size", userIds.size());
-		request.pause();
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				request.resume();
-				JsonArray res = r.body().getArray("result");
-				handler.handle(
-						"ok".equals(r.body().getString("status")) &&
-								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
-				);
-			}
-		});
+		validateQuery(request, handler, query, params);
 	}
 
 	private void isClassTeacher(final HttpServerRequest request, UserInfos user,
@@ -179,18 +293,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.putString("classId", classId)
 				.putString("teacherId", user.getUserId());
-		request.pause();
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> r) {
-				request.resume();
-				JsonArray res = r.body().getArray("result");
-				handler.handle(
-						"ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
-				);
-			}
-		});
+		validateQuery(request, handler, query, params);
 	}
 
 }

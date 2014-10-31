@@ -23,10 +23,16 @@ import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 public interface GroupService {
 
 	void listAdmin(String structureId, UserInfos userInfos, JsonArray expectedTypes,
 			Handler<Either<String, JsonArray>> results);
+
+	void createOrUpdateManual(JsonObject group, String structureId, String classId,
+			Handler<Either<String, JsonObject>> result);
+
+	void deleteManual(String groupId, Handler<Either<String, JsonObject>> result);
 
 }

@@ -23,20 +23,29 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.directory.Directory;
 import org.entcore.directory.services.GroupService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 
+import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultGroupService implements GroupService {
 
 	private final Neo4j neo = Neo4j.getInstance();
+	private final EventBus eventBus;
+
+	public DefaultGroupService(EventBus eventBus) {
+		this.eventBus = eventBus;
+	}
 
 	@Override
 	public void listAdmin(String structureId, UserInfos userInfos, JsonArray expectedTypes,
@@ -71,10 +80,29 @@ public class DefaultGroupService implements GroupService {
 			params.putString("structure", structureId);
 		}
 		String query =
-				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g) " + condition +
+				"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
 				"RETURN g.id as id, g.name as name, g.displayName as displayName, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type ";
 		neo.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void createOrUpdateManual(JsonObject group, String structureId, String classId,
+			Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-create-group")
+				.putString("structureId", structureId)
+				.putString("classId", classId)
+				.putObject("group", group);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(0, result));
+	}
+
+	@Override
+	public void deleteManual(String groupId, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-delete-group")
+				.putString("groupId", groupId);
+		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
 }

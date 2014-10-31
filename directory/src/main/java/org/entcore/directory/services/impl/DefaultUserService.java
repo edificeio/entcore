@@ -314,18 +314,18 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void list(String profileGroupId, boolean itSelf, String userId,
+	public void list(String groupId, boolean itSelf, String userId,
 			final Handler<Either<String, JsonArray>> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
 		String query =
-				"MATCH (n:ProfileGroup)<-[:IN]-(u:User) " +
+				"MATCH (n:Group)<-[:IN]-(u:User) " +
 				"WHERE n.id = {groupId} " + condition +
 				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				"RETURN distinct u.id as id, u.login as login," +
 				" u.displayName as username, profile.name as type " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
-		params.putString("groupId", profileGroupId);
+		params.putString("groupId", groupId);
 		if (!itSelf && userId != null) {
 			params.putString("userId", userId);
 		}

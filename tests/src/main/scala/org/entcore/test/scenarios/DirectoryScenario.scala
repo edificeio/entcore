@@ -119,17 +119,6 @@ object DirectoryScenario {
        "externalId" : "DELETE_FS_${now}"}"""))
       .check(status.is(201), jsonPath("$.id").find.saveAs("function-group-id-delete")))
 
-    // add user to group
-//    .exec(http("add user to group")
-//      .post("""/directory/user/group/${teacherId}/${function-group-id}""")
-//      .header("Content-Length", "0")
-//      .check(status.is(200)))
-//
-//    .exec(http("add user to group")
-//      .post("""/directory/user/group/${teacherId}/${function-group-id-delete}""")
-//      .header("Content-Length", "0")
-//      .check(status.is(200)))
-
     // add user function
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
@@ -181,5 +170,29 @@ object DirectoryScenario {
 //    .exec(http("Delete function")
 //      .delete("""/directory/function/DELETE_${now}""")
 //      .check(status.is(204)))
+
+  // create group
+  .exec(http("Create group")
+    .post("""/directory/group""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"name": "Group with rattachment"}"""))
+    .check(status.is(201), jsonPath("$.id").find.saveAs("manuel-group-id")))
+
+  .exec(http("update group")
+    .put("""/directory/group/${manuel-group-id}""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"name": "Group with rattachment updated"}"""))
+    .check(status.is(200), jsonPath("$.id").find.is("${manuel-group-id}")))
+
+  // add user to group
+  .exec(http("add user to group")
+    .post("""/directory/user/group/${teacherId}/${manuel-group-id}""")
+    .header("Content-Length", "0")
+    .check(status.is(200)))
+
+  .exec(http("add user to group")
+    .post("""/directory/user/group/${studentId}/${manuel-group-id}""")
+    .header("Content-Length", "0")
+    .check(status.is(200)))
 
 }
