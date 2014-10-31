@@ -1684,6 +1684,9 @@ ul.icons-tabs li i {
 .icons-view .element em {
   display: none;
 }
+.icons-view.absolute {
+  position: absolute;
+}
 .select-file input[type=text] {
   float: left;
   margin-right: 0;
@@ -3959,6 +3962,18 @@ i.shared {
 .week-switcher .date-picker-icon {
   margin-right: 8px;
 }
+.calendar-current-week {
+  position: absolute;
+  top: -98px;
+  height: 45px;
+  background: #efefef;
+  width: 100%;
+  text-align: right;
+  font-weight: bold;
+  line-height: 45px;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
 .drop-down-button {
   position: absolute;
   z-index: 650;
@@ -4031,6 +4046,9 @@ i.shared {
   background: #fff;
   border: 1px solid #ccc;
   color: #000;
+}
+iframe.cke_panel_frame {
+  min-height: 100%;
 }
 html,
 body {
@@ -9046,25 +9064,6 @@ header.navbar h1:first-child {
   border-bottom: 0;
 }
 header.navbar a {
-  float: right;
-}
-i.disconnect {
-  height: 35px;
-  width: 35px;
-  background-image: url("../img/icons/glyphicons_063_power.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  vertical-align: middle;
-  -webkit-filter: invert(100%);
-  -moz-filter: invert(100%);
-  filter: invert(100%);
-  margin: 5px;
   float: right;
 }
 i.ok {

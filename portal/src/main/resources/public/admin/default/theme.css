@@ -1684,6 +1684,9 @@ ul.icons-tabs li i {
 .icons-view .element em {
   display: none;
 }
+.icons-view.absolute {
+  position: absolute;
+}
 .select-file input[type=text] {
   float: left;
   margin-right: 0;
@@ -3442,7 +3445,6 @@ a.cke_smile img {
   margin-top: 10px;
   margin-bottom: 10px;
   color: #000;
-  cursor: pointer;
 }
 .drop-down-filters ul,
 .filters ul {
@@ -3960,6 +3962,18 @@ i.shared {
 .week-switcher .date-picker-icon {
   margin-right: 8px;
 }
+.calendar-current-week {
+  position: absolute;
+  top: -98px;
+  height: 45px;
+  background: #efefef;
+  width: 100%;
+  text-align: right;
+  font-weight: bold;
+  line-height: 45px;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
 .drop-down-button {
   position: absolute;
   z-index: 650;
@@ -4032,6 +4046,9 @@ i.shared {
   background: #fff;
   border: 1px solid #ccc;
   color: #000;
+}
+iframe.cke_panel_frame {
+  min-height: 100%;
 }
 html,
 body {
@@ -9426,4 +9443,3 @@ label.legend-label.marged {
 section.container {
   padding-left: 300px;
 }
-
