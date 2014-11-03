@@ -4229,6 +4229,7 @@ function MediaLibrary($scope){
 				model.mediaLibrary.appDocuments.documents.sync();
 				if(!waitNumber){
 					$scope.display.show = 'browse';
+					$scope.listFrom('appDocuments');
 				}
 				$scope.$apply('display');
 			});
