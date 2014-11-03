@@ -73,12 +73,12 @@
 		<div class="row">
 			<label translate content="userBook.profile.birthdate" class="four cell"></label>
 			<date-picker
-					ng-if="account.type === 'Student'"
+					ng-if="account.type.indexOf('Student') !== -1"
 					ng-model="account.birthDate"
 					ng-change="saveChanges()"
 					class="inline-editing seven">
 			</date-picker>
-			<em class="seven cell" ng-if="account.type !== 'Student'">[[longDate(account.birthDate)]]</em>
+			<em class="seven cell" ng-if="account.type.indexOf('Student') === -1">[[longDate(account.birthDate)]]</em>
 			<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
 			<div class="clear"></div>
 		</div>
