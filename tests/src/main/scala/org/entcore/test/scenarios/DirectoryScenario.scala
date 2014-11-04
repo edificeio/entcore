@@ -195,4 +195,17 @@ object DirectoryScenario {
     .header("Content-Length", "0")
     .check(status.is(200)))
 
+  // Create structure
+  .exec(http("Create structure")
+    .post("/directory/school")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"name": "Etab ${now}"}"""))
+    .check(status.is(201), jsonPath("$.id").find.saveAs("parent-structure-id")))
+
+  // Structure attachment
+  .exec(http("Structure attachment")
+    .put("""/directory/structure/${schoolId}/parent/${parent-structure-id}""")
+    .header("Content-Length", "0")
+    .check(status.is(200)))
+
 }

@@ -117,4 +117,13 @@ public class DefaultSchoolService implements SchoolService {
 		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(result));
 	}
 
+	@Override
+	public void defineParent(String structureId, String parentStructureId, Handler<Either<String, JsonObject>> handler) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-structure-attachment")
+				.putString("structureId", structureId)
+				.putString("parentStructureId", parentStructureId);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(0, handler));
+	}
+
 }

@@ -97,6 +97,14 @@ public class StructureController extends BaseController {
 		});
 	}
 
+	@Put("/structure/:structureId/parent/:parentStructureId")
+	@SecuredAction("structure.define.parent")
+	public void defineParent(final HttpServerRequest request) {
+		final String parentStructureId = request.params().get("parentStructureId");
+		final String structureId = request.params().get("structureId");
+		structureService.defineParent(structureId, parentStructureId, notEmptyResponseHandler(request));
+	}
+
 	public void setStructureService(SchoolService structureService) {
 		this.structureService = structureService;
 	}

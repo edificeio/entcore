@@ -25,10 +25,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.be1d.Be1dFeeder;
-import org.entcore.feeder.dictionary.structures.Group;
-import org.entcore.feeder.dictionary.structures.Profile;
-import org.entcore.feeder.dictionary.structures.Tenant;
-import org.entcore.feeder.dictionary.structures.User;
+import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
@@ -836,6 +833,17 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void apply(TransactionHelper tx) {
 				Group.manualDelete(groupId, tx);
+			}
+		});
+	}
+
+	public void structureAttachment(Message<JsonObject> message) {
+		final String structureId = getMandatoryString("structureId", message);
+		final String parentStructureId = getMandatoryString("parentStructureId", message);
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) throws ValidationException {
+				Structure.addAttachment(structureId, parentStructureId, tx);
 			}
 		});
 	}

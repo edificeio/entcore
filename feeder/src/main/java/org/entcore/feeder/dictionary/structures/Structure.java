@@ -296,4 +296,17 @@ public class Structure {
 		transactionHelper.add(query.toString(), params);
 	}
 
+	public static void addAttachment(String structureId, String parentStructureId,
+			TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (s:Structure { id : {structureId}}), " +
+				"(ps:Structure { id : {parentStructureId}}) " +
+				"CREATE UNIQUE s-[r:HAS_ATTACHMENT]->ps " +
+				"RETURN id(r) as id";
+		transactionHelper.add(query, new JsonObject()
+				.putString("structureId", structureId)
+				.putString("parentStructureId", parentStructureId)
+		);
+	}
+
 }

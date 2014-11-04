@@ -11,7 +11,7 @@ object AppRegistryScenario {
   lazy val now = System.currentTimeMillis()
 
 	val scn = exec(http("Get app-registry view")
-			.get("""/appregistry/"/admin-console""")
+			.get("""/appregistry/admin-console""")
 		.check(status.is(200)))
 		.exec(http("Find workflow habilitations")
 			.get("""/appregistry/applications/actions?actionType=WORKFLOW""")
