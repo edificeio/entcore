@@ -19,15 +19,11 @@
 
 package org.entcore.cas.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.wseduc.cas.async.Handler;
-import fr.wseduc.cas.data.DataHandler;
-import fr.wseduc.cas.entities.AuthCas;
-import fr.wseduc.cas.entities.User;
-import fr.wseduc.cas.exceptions.AuthenticationException;
-import fr.wseduc.cas.exceptions.Try;
-import fr.wseduc.cas.http.Request;
-import fr.wseduc.mongodb.MongoDb;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.entcore.cas.http.WrappedRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -37,10 +33,16 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.wseduc.cas.async.Handler;
+import fr.wseduc.cas.data.DataHandler;
+import fr.wseduc.cas.entities.AuthCas;
+import fr.wseduc.cas.entities.User;
+import fr.wseduc.cas.exceptions.AuthenticationException;
+import fr.wseduc.cas.exceptions.Try;
+import fr.wseduc.cas.http.Request;
+import fr.wseduc.mongodb.MongoDb;
 
 public class EntCoreDataHandler extends DataHandler {
 
@@ -48,7 +50,7 @@ public class EntCoreDataHandler extends DataHandler {
 	public static final String COLLECTION = "authcas";
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private final EventBus eb;
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	private static final Logger log = LoggerFactory.getLogger(EntCoreDataHandler.class);
 
@@ -78,7 +80,7 @@ public class EntCoreDataHandler extends DataHandler {
 	}
 
 	@Override
-	protected void getUser(String userId, final Handler<User> userHandler) {
+	protected void getUser(String userId, final String service, final Handler<User> userHandler) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", "getUser").putString("userId", userId);
 		eb.send("directory", jo, new org.vertx.java.core.Handler<Message<JsonObject>>() {
