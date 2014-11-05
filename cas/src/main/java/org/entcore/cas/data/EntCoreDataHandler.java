@@ -20,11 +20,11 @@
 package org.entcore.cas.data;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import org.entcore.cas.http.WrappedRequest;
+import org.entcore.cas.services.RegisteredService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.eventbus.EventBus;
@@ -51,6 +51,7 @@ public class EntCoreDataHandler extends DataHandler {
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private final EventBus eb;
 	private final ObjectMapper mapper = new ObjectMapper();
+	private List<RegisteredService> services;
 
 	private static final Logger log = LoggerFactory.getLogger(EntCoreDataHandler.class);
 
@@ -61,8 +62,13 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	public void validateService(String service, Handler<Boolean> handler) {
-		// TODO implement in conf or database
-		handler.handle(true);
+		for (RegisteredService registeredService : services) {
+			if (registeredService.matches(service)) {
+				handler.handle(true);
+				return;
+			}
+		}
+		handler.handle(false);
 	}
 
 	@Override
@@ -80,30 +86,14 @@ public class EntCoreDataHandler extends DataHandler {
 	}
 
 	@Override
-	protected void getUser(String userId, final String service, final Handler<User> userHandler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "getUser").putString("userId", userId);
-		eb.send("directory", jo, new org.vertx.java.core.Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body().getObject("result");
-				log.debug("res : " + res);
-				if ("ok".equals(event.body().getString("status")) && res != null) {
-					User user = new User();
-					user.setUser(res.getString(DEFAULT_USER_VALUE));
-					res.removeField(DEFAULT_USER_VALUE);
-					res.removeField("password");
-					Map<String, String> attributes = new HashMap<>();
-					user.setAttributes(attributes);
-					for (String attr : res.getFieldNames()) {
-						attributes.put(attr, res.getValue(attr).toString());
-					}
-					userHandler.handle(user);
-				} else {
-					userHandler.handle(null);
-				}
+	protected void getUser(final String userId, final String service, final Handler<User> userHandler) {
+		for (RegisteredService registeredService : services) {
+			if (registeredService.matches(service)) {
+				registeredService.getUser(userId, userHandler);
+				return;
 			}
-		});
+		}
+		userHandler.handle(null);
 	}
 
 	@Override
@@ -227,4 +217,7 @@ public class EntCoreDataHandler extends DataHandler {
 		}
 	}
 
+	public void setServices(List<RegisteredService> services) {
+		this.services = services;
+	}
 }

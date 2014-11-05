@@ -28,8 +28,8 @@ import org.entcore.cas.http.VertxHttpClientFactory;
 import org.entcore.common.http.BaseServer;
 
 import fr.wseduc.cas.data.DataHandlerFactory;
-import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.cas.endpoint.CasValidator;
+import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.cas.endpoint.SamlValidator;
 import fr.wseduc.cas.http.HttpClientFactory;
 
@@ -40,7 +40,7 @@ public class Cas extends BaseServer {
 	public void start() {
 		super.start();
 
-		DataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx));
+		DataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 		HttpClientFactory httpClientFactory = new VertxHttpClientFactory(vertx);
 
 		Credential credential = new Credential();

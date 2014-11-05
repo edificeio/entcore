@@ -1,5 +1,14 @@
 {
 	"main":"org.entcore.cas.Cas",
 	"port": 8023,
-	"mode": "dev"
+	"mode": "dev",
+	"services" : [
+		{
+			"class" : "org.entcore.cas.services.DefaultRegisteredService",
+			"principalAttributeName" : "login",
+			"patterns" : [
+				"^(http|https):\/\/.*"
+			]
+		}
+	]
 }
