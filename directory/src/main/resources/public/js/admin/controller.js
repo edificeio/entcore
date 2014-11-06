@@ -215,7 +215,8 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 
     //Deep loading of a structure (classes + users + class flags on users) and view refresh
     $scope.viewStructure = function(structure){
-        $scope.structure = structure;
+        $scope.structure = structure
+		structure.manualGroups.sync($scope.refreshScope)
         structure.loadStructure($scope.refreshScope)
     }
 
@@ -315,5 +316,36 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 		var index = user.children.indexOf(child)
 		if(index >= 0)
 			user.children.splice(index, 1)
+	}
+
+	//Groups
+	$scope.initGroup = function(){
+		var newGroup = new ManualGroup()
+		return newGroup
+	}
+
+	$scope.refreshGroups = function(structure){
+		structure.manualGroups.sync($scope.refreshScope)
+	}
+	$scope.saveGroup = function(group){
+		group.save($scope.structure, function(){ $scope.refreshGroups($scope.structure)})
+	}
+	$scope.updateGroup = function(group){
+		group.update(function(){ $scope.refreshGroups($scope.structure)})
+	}
+	$scope.deleteGroup = function(group){
+		group.delete(function(){ $scope.refreshGroups($scope.structure)})
+	}
+	$scope.addUserToGroup = function(user, group){
+		if(_.some(group.data.users, function(x){ return user.displayName === x.username }))
+			return
+		group.addUser(user, function(){
+			group.getUsers($scope.refreshScope)
+		})
+	}
+	$scope.removeUserFromGroup = function(user, group){
+		group.removeUser(user, function(){
+			group.getUsers($scope.refreshScope)
+		})
 	}
 }

@@ -142,6 +142,56 @@ function Classe(){
     }
 }
 
+//Manual groups
+function ManualGroup(){}
+ManualGroup.prototype = {
+    save: function(structure, hook){
+        var that = this
+        http().postJson("group", {
+            name: that.name,
+            structureId: structure.id
+        }).done(function(){
+            notify.info(lang.translate("directory.notify.groupUpdate"))
+            hookCheck(hook)
+        })
+    },
+    update: function(hook){
+        var that = this
+        http().putJson("group/"+that.id, {
+            name: that.name,
+        }).done(function(){
+            notify.info(lang.translate("directory.notify.groupUpdate"))
+            hookCheck(hook)
+        })
+    },
+    delete: function(hook){
+        var that = this
+        http().delete("group/"+that.id).done(function(){
+            notify.info(lang.translate("directory.notify.groupDeleted"))
+            hookCheck(hook)
+        })
+    },
+    getUsers: function(hook){
+        var that = this
+        return http().get("user/group/"+that.id).done(function(data){
+            that.data.users = data
+            hookCheck(hook)
+        })
+    },
+    addUser: function(user, hook){
+        var that = this
+        return http().post("user/group/"+user.id+"/"+that.id).done(function(){
+            hookCheck(hook)
+        })
+    },
+    removeUser: function(user, hook){
+        var that = this
+        return http().delete("user/group/"+user.id+"/"+that.id).done(function(){
+            hookCheck(hook)
+        })
+    }
+}
+
 function Structure(){
 
     this.collection(Classe, {
@@ -157,6 +207,16 @@ function Structure(){
 
     this.collection(User, {})
 
+    this.collection(ManualGroup, {
+        sync: function(hook){
+            var that = this
+            return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-requests' }).done(function(groups){
+                that.load(groups)
+                that.forEach(function(group){ group.getUsers() })
+                hookCheck(hook)
+            })
+        }
+    })
 
     this.linkUser = function(user, hook){
         http().put("structure/"+this.id+"/link/"+user.id).done(function(){
@@ -247,9 +307,8 @@ function IsolatedUsers(){
     })
 }
 
-
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, Structure, Classe])
+    this.makeModels([User, IsolatedUsers, Structure, Classe, ManualGroup])
 
     this.collection(Structure, {
         sync: function(hook){

@@ -203,6 +203,7 @@
 
     "directory.userOps":						"Opérations sur les utilisateurs",
     "directory.classOps":						"Opérations sur les classes",
+    "directory.groupOps":						"Opérations sur les groupes",
     "directory.feeding":						"Alimentation",
     "directory.isolatedUsers":					"Personnes non rattachées",
     "directory.filterResults":					"Filtrer les résultats",
@@ -240,6 +241,7 @@
     "directory.structureById":					"Structure (par id)",
     "directory.classById":						"Classe (par id)",
     "directory.name":							"Nom :",
+    "directory.groupName":                      "Nom du groupe",
     "directory.search":							"Chercher",
     "directory.mail":							"e-mail",
     "directory.Personnel":						"Personnel",
@@ -247,6 +249,7 @@
     "directory.Relative":						"Parent",
     "directory.Student":						"Etudiant",
     "directory.children":						"Enfants",
+    "directory.groupUsers":						"Utilisateurs dans le groupe",
     "directory.null":							"",
     "directory.showHide":						"Afficher / Masquer",
     "directory.quota":							"Quota de stockage",
@@ -276,12 +279,16 @@
     "directory.tooltip.deselectAll":			"Tout désélectionner",
     "directory.tooltip.creationTooltip":        "Créer un utilisateur",
     "directory.tooltip.legend":				    "Légende",
+    "directory.tooltip.createGroup":	        "Créer un groupe",
 
     "directory.notify.userUpdate":				"Utilisateur mis à jour",
     "directory.notify.mailSent":				"Email envoyé",
     "directory.notify.mailError":				"Erreur lors de l'envoi",
     "directory.notify.classUpdate":				"Classe mise à jour",
+    "directory.notify.groupUpdate":				"Groupe mis à jour",
     "directory.notify.quotaUpdate":				"Quota mis à jour",
     "directory.notify.userCreated":             "Utilisateur crée",
-    "directory.notify.userCreationError":       "La création de l'utilisateur a échoué"
+    "directory.notify.userCreationError":       "La création de l'utilisateur a échoué",
+    "directory.notify.groupCreated":            "Groupe crée",
+    "directory.notify.groupDeleted":            "Groupe supprimé"
 }
