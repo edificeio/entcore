@@ -311,7 +311,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, " +
 				"n.displayName as username, p.name as type, COLLECT(distinct s.id) as structures, " +
 				"COLLECT(distinct [f.externalId, rf.structures, rf.classes]) as functions, " +
-				"s.name as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
+				"HEAD(COLLECT(s.name)) as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WHERE HAS(n.login) " +
