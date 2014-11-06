@@ -58,6 +58,7 @@
 					<div data-ng-include="'folder-content'"></div>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
 					<div class="row">
+						<hr class="row" />
 						<h2>Espace utilisé</h2>
 						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
 					</div>
