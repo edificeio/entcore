@@ -444,10 +444,10 @@
                     <!-- New group -->
                     <div ng-if="showWhat === 'showGroupCreation'" ng-init="createdGroup = initGroup()" class="search-container-view">
                         <div style="width: 97%">
-                            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdGroup.name]]</h1></div>
+                            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdGroup.name ? createdGroup.name : lang.translate('directory.lastName')]]</h1></div>
                             <hr class="separator">
                             <div style="text-align:center">
-                                <button ng-click="saveGroup(createdGroup)">[[lang.translate("directory.admin.create")]]</button>
+                                <button ng-click="saveGroup(createdGroup)" ng-disabled="!createdGroup.name">[[lang.translate("directory.admin.create")]]</button>
                             </div>
                             <hr class="separator">
                             <div class="twelve cell">

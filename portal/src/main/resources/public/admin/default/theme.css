@@ -1634,6 +1634,9 @@ ul.icons-tabs li i {
   display: block;
   padding: 7px;
   border: 1px solid transparent;
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
 }
 .icons-view .element .img.container {
   border: 1px solid #ccc;
@@ -1691,6 +1694,7 @@ ul.icons-tabs li i {
   float: left;
   margin-right: 0;
   margin-top: 0;
+  padding: 6px;
 }
 .select-file button {
   margin-left: 0;
@@ -1771,20 +1775,28 @@ ul.icons-tabs li i {
   -webkit-transition: height 250ms ease;
   transition: height 250ms ease;
 }
+.icons-select .options-list.icons-view {
+  padding: 0;
+}
 .icons-select .options-list.toggle-visible {
   height: 260px;
 }
 .icons-select .option i {
   background-size: 100% auto;
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
 }
 .icons-select .option,
 .icons-select .current {
   cursor: pointer;
 }
+.icons-select .option {
+  text-align: center;
+}
 .icons-select span {
   display: block;
   line-height: 26px;
-  float: left;
 }
 .icons-select .current {
   padding: 5px;
@@ -2489,6 +2501,9 @@ em.high-importance {
   content: " ";
   width: 100%;
   clear: both;
+}
+.illustrated-links ul {
+  padding: 0;
 }
 .lightbox-view .tabs.linker section .icons-view {
   border-left: 0;
@@ -3287,8 +3302,8 @@ a.cke_smile img {
   min-height: 60px;
 }
 .square-menu {
-  min-width: 80px;
-  width: 80px;
+  min-width: 50px;
+  width: 50px;
   display: table-cell;
 }
 .square-menu button {
@@ -3842,6 +3857,7 @@ i.shared {
   height: 40px;
   line-height: 40px;
   text-align: center;
+  box-sizing: border-box;
 }
 .schedule .days {
   width: 100%;
@@ -3962,6 +3978,11 @@ i.shared {
 .week-switcher .date-picker-icon {
   margin-right: 8px;
 }
+.week-switcher a {
+  height: 39px;
+  width: 50px;
+  display: block;
+}
 .calendar-current-week {
   position: absolute;
   top: -98px;
@@ -4049,6 +4070,522 @@ i.shared {
 }
 iframe.cke_panel_frame {
   min-height: 100%;
+}
+.dominos.fallen .item {
+  min-width: 295px;
+  width: 25%;
+}
+.dominos.fallen .item .domino .top,
+.dominos.fallen .item .domino .bottom {
+  clear: none;
+  float: left;
+  padding-bottom: 48%;
+}
+.dominos.fallen .item .domino .bottom {
+  width: 48%;
+  margin: 0;
+}
+.dominos.fallen .item .domino .top {
+  width: 52%;
+}
+.letter-picker i.close-2x {
+  display: none;
+}
+.letter-picker .lightbox-view {
+  background: transparent;
+}
+.letter-picker .lightbox-view h2 {
+  color: #fff;
+  margin: 1px;
+  width: 86px;
+  height: 86px;
+  line-height: 86px;
+  text-align: center;
+  font-size: 24px;
+}
+.letter-picker .lightbox-view h2.disabled {
+  color: #ddd;
+}
+h1.letter-picker {
+  width: 16px;
+  margin-left: 5px;
+  text-align: center;
+  clear: both;
+}
+nav.illustrated-links ul li {
+  list-style-type: none;
+  display: table;
+  margin-bottom: 12px;
+}
+nav.illustrated-links ul li .illustration {
+  display: table-cell;
+  min-width: 120px;
+  height: 120px;
+}
+nav.illustrated-links ul li .illustration img {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+}
+nav.illustrated-links ul li .content {
+  padding: 8px;
+  padding-left: 15px;
+  display: table-cell;
+  vertical-align: top;
+  width: 100%;
+}
+nav.illustrated-links ul li .content h1 {
+  margin: 0px;
+  font-size: 22px;
+}
+nav.illustrated-links ul li .content em,
+nav.illustrated-links ul li .content strong {
+  font-size: 12px;
+  font-weight: normal;
+}
+nav.illustrated-links ul li .content p {
+  color: #666;
+  font-size: 12px;
+  margin: 0;
+}
+nav.illustrated-links ul li .content em {
+  color: #aaa;
+}
+ul.thought-out-actions {
+  padding: 0;
+  margin: 0;
+}
+ul.thought-out-actions li {
+  margin-bottom: 1px;
+  list-style-type: none;
+  padding: 8px;
+}
+ul.thought-out-actions li h2 {
+  margin: 0;
+  font-size: 20px;
+}
+ul.thought-out-actions li p {
+  margin: 0;
+  font-size: 12px;
+}
+.edit-grid button,
+.edit-grid i,
+.edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.edit-grid .grid-guides {
+  opacity: 1;
+}
+.edit-grid .grid-media {
+  pointer-events: all;
+}
+.edit-grid .square-menu button,
+.edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.menu-items {
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+}
+.menu-items li {
+  min-height: 30px;
+  line-height: 30px;
+  list-style-type: none;
+  cursor: pointer !important;
+}
+.menu-items li:hover {
+  color: #000;
+}
+.menu-items i.text {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/text-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+  border: none;
+}
+.menu-items i.image,
+.menu-items input[type=button].image {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/picture-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.menu-items i.sound,
+.menu-items input[type=button].sound {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/music-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
+.menu-items i.video {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/video-icon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-color: transparent;
+  border: none;
+}
+.menu-items i.grid {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/glyphicons_099_vector_path_all.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+  border: none;
+}
+.menu-items i.sniplet {
+  height: 30px;
+  width: 30px;
+  background-image: url("../img/icons/glyphicons_155_show_big_thumbnails.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+  background-size: 60% auto;
+  background-color: transparent;
+}
+.menu-items input[type=button] {
+  background-position: 4px !important;
+  padding-left: 29px;
+  background-size: 19px;
+  background-color: transparent;
+  border: none;
+  width: 100% !important;
+  text-align: left;
+  font-size: 12px;
+}
+.menu-items input[type=button]:hover {
+  color: #000;
 }
 html,
 body {
@@ -7639,12 +8176,60 @@ nav.illustrated-links ul li .content em {
   opacity: 0.3;
 }
 .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
   outline: 1px solid rgba(35, 169, 170, 0.32);
   pointer-events: none;
 }
 .blur-grid .square-menu button,
 .blur-grid .grid-add-row {
   display: none;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
 }
 .blur-grid .edit-grid button,
 .blur-grid .edit-grid i,
@@ -7673,12 +8258,259 @@ nav.illustrated-links ul li .content em {
   opacity: 0.3;
 }
 .blur-grid .edit-grid .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
   outline: 1px solid rgba(35, 169, 170, 0.32);
   pointer-events: none;
 }
 .blur-grid .edit-grid .blur-grid .square-menu button,
 .blur-grid .edit-grid .blur-grid .grid-add-row {
   display: none;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid button,
+.blur-grid i,
+.blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .square-menu button,
+.blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid button,
+.blur-grid .edit-grid i,
+.blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid button,
+.blur-grid .edit-grid .blur-grid i,
+.blur-grid .edit-grid .blur-grid input[button] {
+  opacity: 0.2;
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .grid-guides {
+  opacity: 0.3;
+}
+.blur-grid .edit-grid .blur-grid .grid-media {
+  outline: 1px solid rgba(35, 169, 170, 0.32);
+  pointer-events: none;
+}
+.blur-grid .edit-grid .blur-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .grid-add-row {
+  display: none;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  outline: 1px solid #23a9aa;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid button,
+.blur-grid .edit-grid .blur-grid .edit-grid i,
+.blur-grid .edit-grid .blur-grid .edit-grid input[button] {
+  opacity: 1;
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-guides {
+  opacity: 1;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-media {
+  pointer-events: all;
+}
+.blur-grid .edit-grid .blur-grid .edit-grid .square-menu button,
+.blur-grid .edit-grid .blur-grid .edit-grid .grid-add-row {
+  display: block;
 }
 .blur-grid .edit-grid .blur-grid .edit-grid button,
 .blur-grid .edit-grid .blur-grid .edit-grid i,
@@ -9319,6 +10151,9 @@ button.directory-list-glyph-button.silhouette-icon {
 }
 button.directory-list-glyph-button.question-mark-icon {
   background-position: 20% 67.5%;
+}
+button.directory-list-glyph-button.plus-icon {
+  background-position: -1.5% 68%;
 }
 button.directory-list-sort-button {
   position: absolute;
