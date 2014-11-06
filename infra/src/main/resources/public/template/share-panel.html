@@ -19,62 +19,62 @@
  -->
 
 <div ng-controller="Share" class="share">
-			<div class="row line">
-				<h3>[[translate('share.title')]]</h3>
-				<div class="block" ng-if="varyingRights">
-					<div class="warning">
-						[[translate('share.varyingrights')]]
-					</div>
-				</div>
-
-				<div class="groups-list">
-					<table>
-						<thead>
-						<th></th>
-						<th ng-repeat="action in actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
-						<th></th>
-						</thead>
-						<tbody>
-						<tr>
-							<td>[[translate('share.me')]]</td>
-							<td ng-repeat="action in actions | orderBy:'priority'">
-								<label class="checkbox"><input type="checkbox" checked disabled /><span></span></label>
-							</td>
-							<td></td>
-						</tr>
-						<tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
-							<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
-							<td ng-repeat="action in actions | orderBy:'priority'">
-								<label class="checkbox">
-									<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
-									<span></span>
-								</label>
-							</td>
-							<td class="drop-line" ng-click="remove(item)"></td>
-						</tr>
-						</tbody>
-					</table>
-					<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
-				</div>
-
-
-			</div>
-			<div class="row">
-				<h3>[[translate('share.search.title')]]</h3>
-				<input type="text" ng-model="search" ng-change="findUserOrGroup()" translate-attr="placeholder" placeholder="share.search.placeholder" />
-				<div class="found-users-list">
-					<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
-						<em ng-click="addEdit(item)" class="row">
-							<span class="cell reduce-block-two">[[item.name]][[item.lastName]] [[item.firstName]]</span>
-							<em class="low-importance cell">[[item.login]]</em>
-							<div class="row"></div>
-						</em>
-					</div>
-					<div class="row">
-						<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">
-							[[translate('seemore')]]
-						</a>
-					</div>
-				</div>
+	<div class="row line">
+		<h2>[[translate('share.title')]]</h2>
+		<div class="block" ng-if="varyingRights">
+			<div class="warning">
+				[[translate('share.varyingrights')]]
 			</div>
 		</div>
+
+		<div class="groups-list">
+			<table>
+				<thead>
+				<th></th>
+				<th ng-repeat="action in actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
+				<th></th>
+				</thead>
+				<tbody>
+				<tr>
+					<td>[[translate('share.me')]]</td>
+					<td ng-repeat="action in actions | orderBy:'priority'">
+						<label class="checkbox"><input type="checkbox" checked disabled /><span></span></label>
+					</td>
+					<td></td>
+				</tr>
+				<tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
+					<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
+					<td ng-repeat="action in actions | orderBy:'priority'">
+						<label class="checkbox">
+							<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
+							<span></span>
+						</label>
+					</td>
+					<td class="drop-line" ng-click="remove(item)"></td>
+				</tr>
+				</tbody>
+			</table>
+			<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
+		</div>
+
+
+	</div>
+	<div class="row">
+		<h2>[[translate('share.search.title')]]</h2>
+		<input type="text" ng-model="search" ng-change="findUserOrGroup()" translate-attr="placeholder" placeholder="share.search.placeholder" />
+		<div class="found-users-list">
+			<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
+				<em ng-click="addEdit(item)" class="row">
+					<span class="cell reduce-block-two">[[item.name]][[item.lastName]] [[item.firstName]]</span>
+					<em class="low-importance cell">[[item.login]]</em>
+					<div class="row"></div>
+				</em>
+			</div>
+			<div class="row">
+				<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">
+					[[translate('seemore')]]
+				</a>
+			</div>
+		</div>
+	</div>
+</div>

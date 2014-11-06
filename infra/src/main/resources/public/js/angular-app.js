@@ -144,6 +144,9 @@ var template = {
 	contains: function(name, view){
 		return this.containers[name] === this.viewPath + view + '.html';
 	},
+	isEmpty: function(name){
+		return this.containers[name] === 'empty' || !this.containers[name];
+	},
 	close: function(name){
 		this.containers[name] = 'empty';
 		if(this.callbacks && this.callbacks[name]){
