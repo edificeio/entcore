@@ -28,7 +28,7 @@
 		<script type="text/javascript" src="/directory/public/js/model.js"></script>
 		<script src="/directory/public/js/account.js" type="text/javascript"></script>
 	</head>
-	<body>
+	<body class="account">
 	<portal>
 
 		<h1 ng-if="me.userId === account.id">
@@ -38,8 +38,8 @@
 			<a href="/userbook/classAdmin"><i class="orange-user"></i><span translate content="account.useraccount"></span></a>
 		</h1>
 
-		<div class="row height-four user-account" ng-include="viewsContainers.user"></div>
-		<div class="row" ng-include="viewsContainers.userbook"></div>
+		<div class="row height-four user-infos" ng-include="viewsContainers.user"></div>
+		<div class="row user-book" ng-include="viewsContainers.userbook"></div>
 	</portal>
 	<section class="lightbox-backdrop"></section>
 	<section class="lightbox-window five cell">
