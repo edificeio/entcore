@@ -1785,7 +1785,7 @@ ul.icons-tabs li i {
   background-size: 100% auto;
   margin-left: auto;
   margin-right: auto;
-  float: none;
+  float: none !important;
 }
 .icons-select .option,
 .icons-select .current {
@@ -3978,10 +3978,13 @@ i.shared {
 .week-switcher .date-picker-icon {
   margin-right: 8px;
 }
-.week-switcher a {
+.date-picker-icon a {
   height: 39px;
   width: 50px;
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .calendar-current-week {
   position: absolute;
@@ -4586,6 +4589,79 @@ ul.thought-out-actions li p {
 }
 .menu-items input[type=button]:hover {
   color: #000;
+}
+.flexible {
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
+}
+.flexible .small-hidden {
+  display: none;
+}
+.flexible:empty {
+  width: 0 !important;
+}
+.empty-neighbour {
+  width: 100% !important;
+}
+.empty-neighbour .patchwork {
+  padding-right: 0;
+}
+.empty-neighbour .small-hidden {
+  display: block;
+}
+.empty-neighbour .big-hidden {
+  display: none;
+}
+.patchwork .navigation .items {
+  padding-right: 35px;
+}
+.patchwork .navigation .items .row > .cell {
+  height: 110px;
+}
+.patchwork .navigation .items .row article {
+  margin-bottom: 0;
+}
+.patchwork .navigation .items .row article .bottom-locked {
+  bottom: 8px;
+}
+.patchwork .navigation .items .row img {
+  height: 110px;
+  width: 110px;
+}
+.patchwork .navigation .items .row .buttons {
+  position: absolute;
+  bottom: 0px;
+}
+.patchwork .navigation .items .row.selected h1,
+.patchwork .navigation .items .row:nth-child(2n).selected h1 {
+  border-bottom: 1px dashed;
+}
+.patchwork .navigation .items .row:nth-child(2n) .cell {
+  float: right !important;
+  text-align: right;
+}
+.patchwork .navigation .items .row:nth-child(2n) .bottom-locked {
+  right: 8px;
+}
+.patchwork .navigation {
+  width: 25%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+.patchwork .navigation img {
+  max-width: 100%;
+}
+.patchwork .content {
+  width: 75%;
+  float: right !important;
+  overflow: hidden;
 }
 html,
 body {
@@ -8569,42 +8645,14 @@ input[type=text][disabled] {
   color: #000;
   margin-top: 2px;
 }
-.flexible {
-  -o-transition: width 250ms ease;
-  -moz-transition: width 250ms ease;
-  -webkit-transition: width 250ms ease;
-  transition: width 250ms ease;
-}
-.flexible .small-hidden {
-  display: none;
-}
-.flexible:empty {
-  width: 0 !important;
-}
-.flexible:empty + .flexible {
-  width: 100% !important;
-}
-.flexible:empty + .flexible .patchwork {
-  padding-right: 0;
-}
 .flexible:empty + .flexible .patchwork .row h1 {
   color: #fff;
 }
-.flexible:empty + .flexible .small-hidden {
-  display: block;
-}
-.flexible:empty + .flexible .big-hidden {
-  display: none;
-}
 .patchwork {
   color: #fff;
-  padding-right: 35px;
 }
 .patchwork .row {
   background: #23a9aa;
-}
-.patchwork .row > .cell {
-  height: 130px;
 }
 .patchwork .row h1 {
   color: #fff;
@@ -8617,12 +8665,6 @@ input[type=text][disabled] {
   background: #fff;
   color: #444;
 }
-.patchwork .row article {
-  margin-bottom: 0;
-}
-.patchwork .row article .bottom-locked {
-  bottom: 8px;
-}
 .patchwork .row img {
   height: 130px;
   width: 130px;
@@ -8633,10 +8675,6 @@ input[type=text][disabled] {
 }
 .patchwork .row:nth-child(2n) {
   background: #266881;
-}
-.patchwork .row:nth-child(2n) .cell {
-  float: right !important;
-  text-align: right;
 }
 .patchwork .row:nth-child(2n) .bottom-locked {
   right: 8px;
@@ -10031,6 +10069,16 @@ ul.angle-list > li {
   padding-left: 5px;
   margin-bottom: 10px;
   padding-top: 5px;
+}
+ul.angle-list > li button.close {
+  font-size: 11;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+}
+ul.angle-list > li button.close::after {
+  content: 'X';
 }
 div.leaf-menu-container {
   margin-bottom: 15px;
