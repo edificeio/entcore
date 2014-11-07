@@ -126,9 +126,9 @@ public class UserInfos {
 	private String firstName;
 	private String lastName;
 	private String username;
-	private String classId;
-	private String schoolName;
-	private String uai;
+	private List<String> classNames;
+	private List<String> structureNames;
+	private List<String> uai;
 	private String level;
 	private String type;
 	private String login;
@@ -197,14 +197,6 @@ public class UserInfos {
 		this.lastName = lastName;
 	}
 
-	public String getClassId() {
-		return classId;
-	}
-
-	public void setClassId(String classId) {
-		this.classId = classId;
-	}
-
 	public String getType() {
 		return type;
 	}
@@ -221,19 +213,27 @@ public class UserInfos {
 		this.login = login;
 	}
 
-	public String getSchoolName() {
-		return schoolName;
+	public List<String> getClassNames() {
+		return classNames;
 	}
 
-	public void setSchoolName(String schoolName) {
-		this.schoolName = schoolName;
+	public void setClassNames(List<String> classNames) {
+		this.classNames = classNames;
 	}
 
-	public String getUai() {
+	public List<String> getStructureNames() {
+		return structureNames;
+	}
+
+	public void setStructureNames(List<String> structureNames) {
+		this.structureNames = structureNames;
+	}
+
+	public List<String> getUai() {
 		return uai;
 	}
 
-	public void setUai(String uai) {
+	public void setUai(List<String> uai) {
 		this.uai = uai;
 	}
 

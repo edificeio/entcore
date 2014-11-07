@@ -307,11 +307,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct " +
-				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
+				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, " +
-				"n.displayName as username, p.name as type, COLLECT(distinct s.id) as structures, " +
-				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"HEAD(COLLECT(s.name)) as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
+				"n.displayName as username, HEAD(COLLECT(distinct p.name)) as type, " +
+				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
+				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
+				"COLLECT(distinct gp.id) as profilGroupsIds";
 		String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WHERE HAS(n.login) " +
