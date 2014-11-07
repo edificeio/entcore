@@ -236,7 +236,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addFunction(userId, event.getString("functionCode"),
-						event.getArray("scope"), defaultResponseHandler(request));
+						event.getArray("scope"), event.getBoolean("inherit", false), defaultResponseHandler(request));
 			}
 		});
 	}

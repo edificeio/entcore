@@ -180,6 +180,12 @@ object CommunicationScenario {
     .header("Content-Length", "0")
     .check(status.is(200)))
 
+    .exec(http("User add function ")
+      .post("""/directory/user/function/${teacherId}""")
+      .header("Content-Type", "application/json")
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "scope": ["${parent-structure-id}"], "inherit":true}"""))
+      .check(status.is(200)))
+
     .exec(Authenticate.logout)
 
 }

@@ -754,12 +754,37 @@ public class ManualFeeder extends BusModBase {
 		final String function = message.body().getString("function");
 		if (userId == null || function == null) return;
 		final JsonArray scope = message.body().getArray("scope");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+		if (scope != null && message.body().getBoolean("inherit", false)) {
+			String query =
+					"MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(:Structure)<-[:BELONGS*0..1]-(scope) " +
+					"WHERE s.id IN {scope} " +
+					"RETURN COLLECT(scope.id) as ids ";
+
+			neo4j.execute(query, new JsonObject().putArray("scope", scope), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonArray result = event.body().getArray("result");
+					if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
+						final JsonArray s = result.<JsonObject>get(0).getArray("ids");
+						executeTransaction(message, new VoidFunction<TransactionHelper>() {
+							@Override
+							public void apply(TransactionHelper tx) {
+								User.addFunction(userId, function, s, tx);
+							}
+						});
+					} else {
+						sendError(message, "invalid.scope");
+					}
+				}
+			});
+		} else {
+			executeTransaction(message, new VoidFunction<TransactionHelper>() {
 				@Override
 				public void apply(TransactionHelper tx) {
 					User.addFunction(userId, function, scope, tx);
 				}
 			});
+		}
 	}
 
 	public void removeUserFunction(Message<JsonObject> message) {

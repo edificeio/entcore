@@ -232,17 +232,17 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}}), (f) " +
 				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-				"CREATE UNIQUE u-[:HAS_FUNCTION {props}]->f ";
-		JsonObject fg = new JsonObject();
+				"MERGE u-[rf:HAS_FUNCTION]->f ";
+
 		JsonArray scope = null;
-		if (s != null) {
-			scope = new JsonArray(new HashSet<String>(s.toList()).toArray());
-			fg.putArray("scope", scope);
-		}
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
-				.putString("functionCode", functionCode)
-				.putObject("props", fg);
+				.putString("functionCode", functionCode);
+		if (s != null) {
+			query += "SET rf.scope = {scope} ";
+			scope = new JsonArray(new HashSet<String>(s.toList()).toArray());
+			params.putArray("scope", scope);
+		}
 		transactionHelper.add(query, params);
 		if (scope != null) {
 			String q2 =

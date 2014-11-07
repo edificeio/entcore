@@ -11,6 +11,10 @@
       "items": {
         "type": "string"
       }
+    },
+    "inherit" : {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
