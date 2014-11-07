@@ -154,12 +154,12 @@
                             <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structureUser.firstName+" "+structureUser.lastName]]</h1></div>
                             <hr class="separator">
                             <div style="text-align:center">
-                                <button ng-click="structureUser.update(reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.save")]]</button>
-                                <button ng-click="structure.unlinkUser(structureUser, reloadStructure(structure))">[[lang.translate("directory.admin.unlink.school")]]</button>
-                                <button ng-click="structureUser.delete(reloadStructure(structure))">[[lang.translate("directory.delete")]]</button>
                                 <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+structureUser.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
                                     <button class="directory-direct-link-button"></button>
                                 </a>
+                                <button ng-click="structureUser.update(reloadStructureAndRetrieveUser(structureUser))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.save")]]</button>
+                                <button ng-click="structure.unlinkUser(structureUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button>
+                                <button ng-click="structureUser.delete(reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.delete")]]</button>
                             </div>
                             <hr class="separator">
                             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structureUser.id]]</div>
@@ -211,7 +211,7 @@
                                     <ul class="angle-list" style="padding-left: 5%">
                                         <li ng-repeat="classe in structureUser.totalClasses | orderBy: 'name'" style="font-size: 15px; padding: 0 0 0 10;">
                                             <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classe.id]]" target="_blank">[[classe.name]]</a>
-                                            <button ng-click="classe.unlinkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" class="right-magnet" style="font-size: 9; padding: 0; width: 15; height: 15; border-radius: 10px;">X</button>
+                                            <button ng-click="classe.unlinkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" class="right-magnet close"></button>
                                         </li>
                                     </ul>
                                 </div>
@@ -244,7 +244,7 @@
                                 </div>
                             </div>
                             <hr class="separator">
-                            <div class="twelve cell height-three">
+                            <div class="twelve cell">
                                 <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                                 <div class="twelve cell">
                                     <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
@@ -256,8 +256,21 @@
                                     </select>
                                 </div>
                                 <div style="text-align: center">
-                                    <button style="margin-top: 10px" ng-if="linkStructure" ng-click="linkStructure.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToSchool")]]</button>
+                                    <button ng-if="linkStructure" ng-click="linkStructure.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" style="margin-top: 5px">[[lang.translate("directory.linkToSchool")]]</button>
                                     <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
+                                </div>
+                            </div>
+                            <hr class="separator">
+                            <div>
+                                <h3 style="margin-top: 0;">[[lang.translate("directory.localAdminAttribution")]]</h3>
+                                <!-- Local admin attribution -->
+                                <div>
+                                    <label class="eight text-flow">[[lang.translate("directory.admin.local-admin.school")]]</label>
+                                    <button ng-click="structureUser.setLocalAdmin(structure)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.set")]]</button>
+                                </div>
+                                <div>
+                                    <label class="eight text-flow">[[lang.translate("directory.admin.remove.local-admin")]]</label>
+                                    <button ng-click="structureUser.removeLocalAdmin(reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.delete")]]</button>
                                 </div>
                             </div>
                         </div>
@@ -593,7 +606,7 @@
                         <button class="two cell" style="margin: 0px; padding: 2px" ng-click="isolatedUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
                     </div>
                     <hr class="separator">
-                    <div ng-show="isolatedUser.type" class="twelve cell height-three">
+                    <div ng-show="isolatedUser.type" class="twelve cell">
                         <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                         <div class="twelve cell">
                             <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>

@@ -213,6 +213,7 @@
     "directory.classUsers":	                    "Voir les personnes rattachées à cette classe",
     "directory.save":							"Enregistrer",
     "directory.delete":							"Supprimer",
+    "directory.set":							"Attribuer",
     "directory.userId":							"Identifiant :",
     "directory.userType":						"Type de compte :",
     "directory.userLogin":						"Login :",
@@ -272,6 +273,9 @@
     "directory.admin.showPersonnel":            "Afficher le personnel",
     "directory.admin.showRelative":             "Afficher les parents",
     "directory.admin.showStudents":             "Afficher les élèves",
+    "directory.localAdminAttribution":          "Attribution de la fonction d'administrateur local",
+    "directory.admin.local-admin.school":       "Attribuer pour cet établissement",
+    "directory.admin.remove.local-admin":       "Supprimer la fonction pour tous les établissements",
 
     "tooltip.users.filtersTooltip": 			"Afficher/Cacher les filtres",
     "tooltip.users.switchOrdering": 			"Ordonner par prénom / rôle",
@@ -290,5 +294,7 @@
     "directory.notify.userCreated":             "Utilisateur crée",
     "directory.notify.userCreationError":       "La création de l'utilisateur a échoué",
     "directory.notify.groupCreated":            "Groupe crée",
-    "directory.notify.groupDeleted":            "Groupe supprimé"
+    "directory.notify.groupDeleted":            "Groupe supprimé",
+    "directory.notify.setLocalAdmin":           "Rôle d'admin. local attribué",
+    "directory.notify.removeLocalAdmin":        "Rôle d'admin. local supprimé"
 }

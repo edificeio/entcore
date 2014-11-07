@@ -96,6 +96,23 @@ User.prototype.saveQuota = function(){
     })
 }
 
+User.prototype.setLocalAdmin = function(structure){
+        var that = this
+        http().postJson("/directory/user/function/"+that.id, {
+            functionCode: "ADMIN_LOCAL",
+            scope: [structure.id]
+        }).done(function(){
+            notify.info(lang.translate("directory.notify.setLocalAdmin"))
+        })
+}
+
+User.prototype.removeLocalAdmin = function(){
+    var that = this
+    http().delete("/directory/user/function/"+that.id+"/ADMIN_LOCAL").done(function(){
+        notify.info(lang.translate("directory.notify.removeLocalAdmin"))
+    })
+}
+
 //Send an email containing a new activation code.
 //An error will be thrown server side if the code is not empty (neo4j side)
 User.prototype.sendResetPassword = function(mail){
