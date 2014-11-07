@@ -2,7 +2,6 @@ package org.entcore.common.aggregation.indicators.mongo;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,8 +21,6 @@ import org.vertx.java.core.json.JsonObject;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-
-import org.entcore.common.aggregation.AggregationTools;
 
 import static org.entcore.common.aggregation.MongoConstants.*;
 
@@ -93,14 +90,14 @@ public class IndicatorMongoImpl extends Indicator{
 			return;
 		}
 		
-		//Document date, default to today's date at midnight
-		Date today = AggregationTools.setToMidnight(Calendar.getInstance());
+		//Document date
+		Date writeDate = this.writeDate;
 		
 		MongoDBBuilder criteriaQuery = new MongoDBBuilder();
 		
 		if(group == null){
 			//When not using groups, set groupedBy specifically to not exists
-			criteriaQuery.put(STATS_FIELD_DATE).is(MongoDb.formatDate(today)).and(STATS_FIELD_GROUPBY).exists(false);
+			criteriaQuery.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate)).and(STATS_FIELD_GROUPBY).exists(false);
 		} else {
 			//Retrieve all the group chain keys and append them into groupedBy.
 			LinkedList<String> groupedByKeys = new LinkedList<>();
@@ -116,7 +113,7 @@ public class IndicatorMongoImpl extends Indicator{
 				groupedByString.append(groupKey);
 			}
 			criteriaQuery
-				.put(STATS_FIELD_DATE).is(MongoDb.formatDate(today))
+				.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
 				.and(STATS_FIELD_GROUPBY).is(groupedByString.toString());
 			
 			//For the group and its ancestors, retrieve each group id and add it to the document.

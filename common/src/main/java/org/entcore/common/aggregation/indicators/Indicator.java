@@ -1,8 +1,11 @@
 package org.entcore.common.aggregation.indicators;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 
+import org.entcore.common.aggregation.AggregationTools;
 import org.entcore.common.aggregation.filters.IndicatorFilter;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
 import org.vertx.java.core.Handler;
@@ -28,6 +31,9 @@ public abstract class Indicator{
 	//Filters and groups
 	protected Collection<IndicatorFilter> filters;
 	protected Collection<IndicatorGroup> groups;
+	
+	//Write date, default to instantiation date @ midnight
+	protected Date writeDate = AggregationTools.setToMidnight(Calendar.getInstance());
 	
 	/**
 	 * Creates a new Indicator without filters or groups.<br>
@@ -92,6 +98,22 @@ public abstract class Indicator{
 	public Indicator addGroup(IndicatorGroup group){
 		groups.add(group);
 		return this;
+	}
+	
+	/**
+	 * Sets the recording date. (usage may vary with the implementation of this class)
+	 * @param date : New recording date to set
+	 */
+	public void setWriteDate(Date date){
+		this.writeDate = date;
+	}
+	
+	/**
+	 * Retrieves the recording date.
+	 * @return : Indicator recording date
+	 */
+	public Date getWriteDate(){
+		return this.writeDate;
 	}
 	
 	/**
