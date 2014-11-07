@@ -182,17 +182,17 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		}
 		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
 		UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
-		if ((adminLocal == null || adminLocal.getStructures() == null) &&
-				(classAdmin == null || classAdmin.getClasses() == null)) {
+		if ((adminLocal == null || adminLocal.getScope() == null) &&
+				(classAdmin == null || classAdmin.getScope() == null)) {
 			handler.handle(false);
 			return null;
 		}
 		Set<String> ids = new HashSet<>();
-		if (adminLocal != null && adminLocal.getStructures() != null) {
-			ids.addAll(adminLocal.getStructures());
+		if (adminLocal != null && adminLocal.getScope() != null) {
+			ids.addAll(adminLocal.getScope());
 		}
-		if (classAdmin != null && classAdmin.getClasses() != null) {
-			ids.addAll(classAdmin.getClasses());
+		if (classAdmin != null && classAdmin.getScope() != null) {
+			ids.addAll(classAdmin.getScope());
 		}
 		return ids;
 	}
@@ -206,8 +206,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		}
 		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
 		final UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
-		if ((adminLocal == null || adminLocal.getStructures() == null) &&
-				(classAdmin == null || classAdmin.getClasses() == null)) {
+		if ((adminLocal == null || adminLocal.getScope() == null) &&
+				(classAdmin == null || classAdmin.getScope() == null)) {
 			handler.handle(false);
 			return;
 		}
@@ -216,19 +216,19 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			public void handle(JsonObject event) {
 				String classId = event.getString("classId");
 				String structureId = event.getString("structureId");
-				if ((adminLocal != null && adminLocal.getStructures() != null &&
-						adminLocal.getStructures().contains(structureId)) ||
-						(classAdmin != null && classAdmin.getClasses() != null &&
-								classAdmin.getClasses().contains(classId))) {
+				if ((adminLocal != null && adminLocal.getScope() != null &&
+						adminLocal.getScope().contains(structureId)) ||
+						(classAdmin != null && classAdmin.getScope() != null &&
+								classAdmin.getScope().contains(classId))) {
 					handler.handle(true);
-				} else if (adminLocal != null && classId != null && adminLocal.getStructures() != null) {
+				} else if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
 					String query =
 							"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
 							"WHERE s.id IN ids " +
 							"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
-							.putArray("ids", new JsonArray(adminLocal.getStructures().toArray()));
+							.putArray("ids", new JsonArray(adminLocal.getScope().toArray()));
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);

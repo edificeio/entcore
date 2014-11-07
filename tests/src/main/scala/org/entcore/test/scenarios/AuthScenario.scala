@@ -47,8 +47,8 @@ object AuthScenario {
     .exec(http("Get session")
       .get("/auth/oauth2/userinfo")
       .check(status.is(200),
-        jsonPath("$.functions.ADMIN_LOCAL_${now}.structures[0]").find.is("${schoolId}"),
-        jsonPath("$.functions.CLASS_ADMIN_${now}.classes[0]").find.is("${classId}")))
+        jsonPath("$.functions.ADMIN_LOCAL_${now}.scope[0]").find.is("${schoolId}"),
+        jsonPath("$.functions.CLASS_ADMIN_${now}.scope[0]").find.is("${classId}")))
 
     .exec(http("Get OAuth2 code with connected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +

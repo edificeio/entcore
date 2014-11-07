@@ -51,7 +51,7 @@ public interface UserService {
 
 	void delete(List<String> users, Handler<Either<String, JsonObject>> result);
 
-	void addFunction(String id, String functionCode, JsonArray structuresIds, JsonArray classesIds,
+	void addFunction(String id, String functionCode, JsonArray scope,
 			Handler<Either<String, JsonObject>> result);
 
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);

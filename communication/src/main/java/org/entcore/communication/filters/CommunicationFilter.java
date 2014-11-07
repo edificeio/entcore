@@ -49,7 +49,7 @@ public class CommunicationFilter implements ResourcesProvider {
 			return;
 		}
 		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-		if (adminLocal == null || adminLocal.getStructures() == null) {
+		if (adminLocal == null || adminLocal.getScope() == null) {
 			handler.handle(false);
 			return;
 		}
@@ -57,7 +57,7 @@ public class CommunicationFilter implements ResourcesProvider {
 		String startGroupId = resourceRequest.params().get("startGroupId");
 		String endGroupId = resourceRequest.params().get("endGroupId");
 		JsonObject params = new JsonObject();
-		params.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()));
+		params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS*1..2]-(:Group {id : {groupId}}) " +

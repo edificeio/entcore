@@ -87,10 +87,10 @@ public class DefaultSchoolService implements SchoolService {
 			return;
 		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
-			List<String> structuresIds = f.getStructures();
-			if (structuresIds != null && !structuresIds.isEmpty()) {
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
 				condition = "WHERE s.id IN {structures} ";
-				params.putArray("structures", new JsonArray(structuresIds.toArray()));
+				params.putArray("structures", new JsonArray(scope.toArray()));
 			}
 		}
 		String query =

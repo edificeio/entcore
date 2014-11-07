@@ -104,7 +104,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				"WHERE s.id IN {structures} " +
 				"RETURN count(*) > 0 as exists ";
 		JsonObject params = new JsonObject()
-				.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()))
+				.putArray("structures", new JsonArray(adminLocal.getScope().toArray()))
 				.putString("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -130,7 +130,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 						"RETURN count(distinct u) as nb ";
 				final JsonArray users = object.getArray("users", new JsonArray());
 				JsonObject params = new JsonObject()
-						.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()))
+						.putArray("structures", new JsonArray(adminLocal.getScope().toArray()))
 						.putArray("users", users);
 				Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 					@Override
@@ -150,7 +150,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		UserInfos.Function adminLocal = getFunction(user, handler);
 		if (adminLocal == null) return;
 		String structureId = request.params().get("structureId");
-		handler.handle(adminLocal.getStructures().contains(structureId));
+		handler.handle(adminLocal.getScope().contains(structureId));
 	}
 
 	private UserInfos.Function getFunction(UserInfos user, Handler<Boolean> handler) {
@@ -164,7 +164,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			return null;
 		}
 		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-		if (adminLocal == null || adminLocal.getStructures() == null) {
+		if (adminLocal == null || adminLocal.getScope() == null) {
 			handler.handle(false);
 			return null;
 		}

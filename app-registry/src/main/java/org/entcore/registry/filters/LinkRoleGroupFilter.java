@@ -51,7 +51,7 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 			return;
 		}
 		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-		if (adminLocal == null || adminLocal.getStructures() == null) {
+		if (adminLocal == null || adminLocal.getScope() == null) {
 			handler.handle(false);
 			return;
 		}
@@ -62,7 +62,7 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 				final JsonArray roleIds = body.getArray("roleIds");
 				final String groupId = body.getString("groupId");
 				JsonObject params = new JsonObject();
-				params.putArray("structures", new JsonArray(adminLocal.getStructures().toArray()));
+				params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
 				if (roleIds != null && groupId != null &&
 						roleIds.size() > 0 && !groupId.trim().isEmpty()) {
 					String query =

@@ -123,31 +123,31 @@ object DirectoryScenario {
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "DELETE_${now}", "classes": ["${classId}"]}"""))
+      .body(StringBody("""{"functionCode": "DELETE_${now}", "scope": ["${classId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "structures": ["${schoolId}"]}"""))
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "scope": ["${schoolId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "DELETE_FS_${now}", "classes": ["${classId}"]}"""))
+      .body(StringBody("""{"functionCode": "DELETE_FS_${now}", "scope": ["${classId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "CLASS_ADMIN_FS_${now}", "classes": ["${classId}"]}"""))
+      .body(StringBody("""{"functionCode": "CLASS_ADMIN_FS_${now}", "scope": ["${classId}"]}"""))
       .check(status.is(200)))
 
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "structures": ["${schoolId}"]}"""))
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "scope": ["${schoolId}"]}"""))
       .check(status.is(200)))
 
     // remove user from group

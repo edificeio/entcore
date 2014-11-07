@@ -102,25 +102,15 @@ public class UserInfos {
 
 	public static class Function {
 		private String code;
-		private List<String> structures;
+		private List<String> scope;
 
-		public List<String> getClasses() {
-			return classes;
+		public List<String> getScope() {
+			return scope;
 		}
 
-		public void setClasses(List<String> classes) {
-			this.classes = classes;
+		public void setScope(List<String> scope) {
+			this.scope = scope;
 		}
-
-		public List<String> getStructures() {
-			return structures;
-		}
-
-		public void setStructures(List<String> structures) {
-			this.structures = structures;
-		}
-
-		private List<String> classes;
 
 		public String getCode() {
 			return code;

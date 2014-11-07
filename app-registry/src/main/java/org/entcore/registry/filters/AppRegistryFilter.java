@@ -45,7 +45,7 @@ public class AppRegistryFilter implements ResourcesProvider {
 
 		String structureId = resourceRequest.params().get("structureId");
 		UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-		if (structureId != null && adminLocal != null && adminLocal.getStructures().contains(structureId)) {
+		if (structureId != null && adminLocal != null && adminLocal.getScope().contains(structureId)) {
 			handler.handle(true);
 			return;
 		}

@@ -33,6 +33,8 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.util.HashSet;
+
 public class User {
 
 	public static class DeleteTask implements Handler<Long> {
@@ -225,60 +227,39 @@ public class User {
 		transactionHelper.add(query, params);
 	}
 
-	public static void addFunction(String userId, String functionCode, JsonArray structures, JsonArray classes,
+	public static void addFunction(String userId, String functionCode, JsonArray s,
 			TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (u:User { id : {userId}}), (f) " +
 				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
 				"CREATE UNIQUE u-[:HAS_FUNCTION {props}]->f ";
 		JsonObject fg = new JsonObject();
-		if (structures != null) {
-			fg.putArray("structures", structures);
-		}
-		if (classes != null) {
-			fg.putArray("classes", classes);
+		JsonArray scope = null;
+		if (s != null) {
+			scope = new JsonArray(new HashSet<String>(s.toList()).toArray());
+			fg.putArray("scope", scope);
 		}
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("functionCode", functionCode)
 				.putObject("props", fg);
 		transactionHelper.add(query, params);
-		String qu =
-				"MATCH (u:User { id : {userId}}), (fg:FunctionGroup { externalId : {externalId}}) " +
-				"CREATE UNIQUE fg<-[:IN]-u ";
-		if (structures != null) {
+		if (scope != null) {
 			String q2 =
-					"MATCH (n:Structure {id : {structureId}}), (f) " +
-					"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+					"MATCH (n), (f) " +
+					"WHERE (n:Structure OR n:Class) AND n.id = {scopeId} AND " +
+					"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
 					"WITH n, f " +
 					"MERGE (fg:Group:FunctionGroup { externalId : {externalId}}) " +
 					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
 					"CREATE UNIQUE n<-[:DEPENDS]-fg";
-			for (Object o : structures) {
+			String qu =
+					"MATCH (u:User { id : {userId}}), (fg:FunctionGroup { externalId : {externalId}}) " +
+							"CREATE UNIQUE fg<-[:IN]-u ";
+			for (Object o : scope) {
 				String extId = o.toString() + "-" + functionCode;
 				JsonObject p2 = new JsonObject()
-						.putString("structureId", o.toString())
-						.putString("functionCode", functionCode)
-						.putString("externalId", extId);
-				transactionHelper.add(q2, p2);
-				JsonObject pu = new JsonObject()
-						.putString("userId", userId)
-						.putString("externalId", extId);
-				transactionHelper.add(qu, pu);
-			}
-		}
-		if (classes != null) {
-			String q2 =
-					"MATCH (n:Class {id : {classId}}), (f) " +
-					"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-					"WITH n, f " +
-					"MERGE (fg:Group:FunctionGroup { externalId : {externalId}}) " +
-					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
-					"CREATE UNIQUE n<-[:DEPENDS]-fg";
-			for (Object o : classes) {
-				String extId = o.toString() + "-" + functionCode;
-				JsonObject p2 = new JsonObject()
-						.putString("classId", o.toString())
+						.putString("scopeId", o.toString())
 						.putString("functionCode", functionCode)
 						.putString("externalId", extId);
 				transactionHelper.add(q2, p2);
@@ -373,11 +354,11 @@ public class User {
 
 	public static void listByFunctions(JsonArray functions, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (f:Function)<-[rf:HAS_FUNCTION]-()<-[:IN*0..1]-u " +
+				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u " +
 				"WHERE f.externalId IN {functions} " +
-				"WITH DISTINCT u.externalId as externalId, rf.structures as structures, f " +
+				"WITH DISTINCT u.externalId as externalId, rf.scope as scope, f " +
 				"MATCH (s:Structure) " +
-				"WHERE s.id in structures " +
+				"WHERE s.id in scope " +
 				"WITH externalId, COLLECT(distinct s.externalId) as structs, f " +
 				"RETURN externalId, COLLECT(distinct [f.externalId, structs]) as functions ";
 		JsonObject params = new JsonObject()

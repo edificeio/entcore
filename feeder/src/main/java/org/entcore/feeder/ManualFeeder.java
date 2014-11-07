@@ -749,18 +749,17 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
-	public void addUserFunction(Message<JsonObject> message) {
+	public void addUserFunction(final Message<JsonObject> message) {
 		final String userId = getMandatoryString("userId", message);
 		final String function = message.body().getString("function");
 		if (userId == null || function == null) return;
-		final JsonArray structures = message.body().getArray("structures");
-		final JsonArray classes = message.body().getArray("classes");
+		final JsonArray scope = message.body().getArray("scope");
 		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.addFunction(userId, function, structures, classes, tx);
-			}
-		});
+				@Override
+				public void apply(TransactionHelper tx) {
+					User.addFunction(userId, function, scope, tx);
+				}
+			});
 	}
 
 	public void removeUserFunction(Message<JsonObject> message) {

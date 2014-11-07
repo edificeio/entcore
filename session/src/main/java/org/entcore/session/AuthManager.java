@@ -310,7 +310,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"HEAD(n.classes) as classId, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, " +
 				"n.displayName as username, p.name as type, COLLECT(distinct s.id) as structures, " +
-				"COLLECT(distinct [f.externalId, rf.structures, rf.classes]) as functions, " +
+				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"HEAD(COLLECT(s.name)) as schoolName, s.UAI as uai, COLLECT(distinct gp.id) as profilGroupsIds";
 		String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
@@ -361,8 +361,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						if (code != null) {
 							functions.putObject(code, new JsonObject()
 									.putString("code", code)
-									.putArray("structures", (JsonArray) a.get(1))
-									.putArray("classes", (JsonArray) a.get(2))
+									.putArray("scope", (JsonArray) a.get(1))
 							);
 						}
 					}

@@ -21,7 +21,6 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
-import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
@@ -222,37 +221,16 @@ public class DefaultUserService implements UserService {
 				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
 			results.handle(new Either.Left<String, JsonArray>("forbidden"));
 			return;
-		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
-			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
-			List<String> structuresIds = f.getStructures();
-			List<String> classesIds = f.getClasses();
-			if (structuresIds != null && !structuresIds.isEmpty() && classesIds != null && !classesIds.isEmpty()) {
-				condition = "AND (s.id IN {structures} OR c.id IN {classes}";
-				params.putArray("structures", new JsonArray(structuresIds.toArray()));
-				params.putArray("classes", new JsonArray(classesIds.toArray()));
-			} else if (structuresIds != null && !structuresIds.isEmpty()) {
-				condition = "AND (s.id IN {structures}";
-				params.putArray("structures", new JsonArray(structuresIds.toArray()));
-			} else if (classesIds != null && !classesIds.isEmpty()) {
-				condition = "AND (c.id IN {classes}";
-				params.putArray("classes", new JsonArray(classesIds.toArray()));
-			}
-		}
-		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL) ||
 				userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
-			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
-			List<String> classesIds = f.getClasses();
-			if (classesIds != null && !classesIds.isEmpty()) {
-				if (condition.isEmpty()) {
-					condition = "AND c.id IN {classes2} ";
-				} else {
-					condition += " OR c.id IN {classes2}) ";
-				}
-				params.putArray("classes2", new JsonArray(classesIds.toArray()));
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition = "AND (s.id IN {scope} OR c.id IN {scope}) ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
 			}
-		} else if (!condition.isEmpty()) {
-			condition += ") ";
 		}
+
 		String query =
 				"MATCH " + filter + "(u:User) " +
 				"WITH u " +
@@ -275,14 +253,13 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void addFunction(String id, String functionCode, JsonArray structuresIds, JsonArray classesIds,
+	public void addFunction(String id, String functionCode, JsonArray scope,
 			Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-add-user-function")
 				.putString("userId", id)
 				.putString("function", functionCode)
-				.putArray("structures", structuresIds)
-				.putArray("classes", classesIds);
+				.putArray("scope", scope);
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
