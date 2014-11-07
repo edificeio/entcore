@@ -20,7 +20,9 @@
 package org.entcore.directory.controllers;
 
 import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.directory.services.ProfileService;
@@ -29,12 +31,19 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 public class ProfileController extends BaseController {
 
 	private ProfileService profileService;
+
+	@Get("/functions")
+	@SecuredAction(value = "profile.list.functions", type = ActionType.RESOURCE)
+	public void listFunctions(final HttpServerRequest request) {
+		profileService.listFunctions(arrayResponseHandler(request));
+	}
 
 	@Post("/function/:profile")
 	@SecuredAction("profile.create.function")

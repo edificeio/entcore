@@ -20,6 +20,7 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.ProfileService;
 import org.vertx.java.core.Handler;
@@ -28,11 +29,13 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultProfileService implements ProfileService {
 
 	private final EventBus eb;
+	private Neo4j neo4j = Neo4j.getInstance();
 
 	public DefaultProfileService(EventBus eb) {
 		this.eb = eb;
@@ -72,6 +75,15 @@ public class DefaultProfileService implements ProfileService {
 				.putString("action", "manual-delete-function-group")
 				.putString("groupId", functionGroupId);
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
+	public void listFunctions(Handler<Either<String, JsonArray>> result) {
+		String query =
+				"MATCH (f:Function) RETURN f.name as name, f.externalId as externalId " +
+				"UNION " +
+				"MATCH (f:Functions) RETURN f.name as name, f.externalId as externalId ";
+		neo4j.execute(query, (JsonObject) null, validResultHandler(result));
 	}
 
 }

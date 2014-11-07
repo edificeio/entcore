@@ -36,4 +36,6 @@ public interface ProfileService {
 
 	void deleteFunctionGroup(String functionGroupId, Handler<Either<String, JsonObject>> result);
 
+	void listFunctions(Handler<Either<String,JsonArray>> result);
+
 }
