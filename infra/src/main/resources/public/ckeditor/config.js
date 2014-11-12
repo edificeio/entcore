@@ -16,7 +16,7 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		'/',
 		{ name: 'links', items: ['Linker', 'Unlink'] },
-		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload', 'Audio', 'Video'] },
+		{ name: 'insert', items: ['Table', 'Smiley', 'SpecialChar', 'Upload', 'Audio', 'Video', 'Mathjax'] },
 		{ name: 'styles', items: ['Format', 'Font', 'FontSize'] }
 	];
 
@@ -42,5 +42,5 @@ CKEDITOR.editorConfig = function(config){
 	config.templates_replaceContent = false;
 	config.font_names = 'Arial;Times New Roman;Verdana;EcritureA;Comic Sans MS';
 	config.fontSize_sizes = "10/10px;12/12px;14/14px;16/16px;18/18px;20/20px;22/22px;24/24px;26/26px;28/28px;36/36px;48/48px;72/72px";
-	config.mathJaxLib = 'https:\/\/cdn.mathjax.org\/mathjax\/2.2-latest\/MathJax.js?config=TeX-AMS_HTML';
+	config.mathJaxLib = 'https:\/\/cdn.mathjax.org\/mathjax\/latest\/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
 };

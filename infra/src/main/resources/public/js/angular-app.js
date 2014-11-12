@@ -1250,6 +1250,9 @@ module.directive('bindHtml', function($compile){
 						.detach()
 						.appendTo(parent);
 				});
+				if(window.MathJax && window.MathJax.Hub){
+					MathJax.Hub.Typeset();
+				}
 			});
 		}
 	}
@@ -1584,7 +1587,9 @@ var ckeEditorFixedPositionning = function(){
 };
 
 function createCKEditorInstance(editor, scope, $compile){
+	var ckeInstance;
 	CKEDITOR.on('instanceReady', function(ck){
+		ckeInstance = ck;
 		editor.focus();
 		scope.ngModel.assign(scope, scope.ngModel(scope) || '');
 		editor.html($compile(scope.ngModel(scope))(scope));
@@ -1606,7 +1611,7 @@ function createCKEditorInstance(editor, scope, $compile){
 	});
 
 	editor.on('blur', function(e) {
-		scope.ngModel.assign(scope, editor.html());
+		scope.ngModel.assign(scope, ckeInstance.editor.getData());
 		editor.attr('style', '');
 		scope.$apply();
 	});
@@ -3956,13 +3961,13 @@ function Widgets($scope, model, lang, date){
 
 			http().get('/widgets').done(function(data){
 				http().get('/userbook/preference/widgets').done(function(pref){
-					var preferences = JSON.parse(pref.preference);
-					if(!preferences){
+					if(!pref.preference){
 						this.preferences = {};
 					}
 					else{
-						this.preferences = preferences;
+						this.preferences = JSON.parse(pref.preference);
 					}
+
 					data = data.filter(function(widget){
 						return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
 					});

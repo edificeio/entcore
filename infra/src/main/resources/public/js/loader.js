@@ -50,7 +50,8 @@ var loader = (function(){
 			{ path: 'lib.js' },
 			{ path: 'ui.js' },
 			{ path: 'humane.min.js' },
-			{ path: 'angular-app.js' }]
+			{ path: 'angular-app.js' },
+			{ path: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML', completePath: true }]
 	};
 
 	var loadedScripts = {};
