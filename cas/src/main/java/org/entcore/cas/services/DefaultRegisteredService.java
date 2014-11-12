@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import fr.wseduc.cas.entities.ServiceTicket;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -99,7 +100,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public String formatService(String serviceUri) {
+	public String formatService(String serviceUri, ServiceTicket st) {
 		return serviceUri;
 	}
 

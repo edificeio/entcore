@@ -19,45 +19,31 @@
 
 package org.entcore.cas.services;
 
-import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
+import org.vertx.java.core.json.JsonObject;
 
-import java.util.HashSet;
-import java.util.Set;
+public class EliotRegisteredService extends DefaultRegisteredService {
 
-public class RegisteredServices {
-
-	private final Set<RegisteredService> services = new HashSet<>();
-
-	public void add(RegisteredService service) {
-		services.add(service);
-	}
-
-	public RegisteredService matches(String service) {
-		for (RegisteredService registeredService : services) {
-			if (registeredService.matches(service)) {
-				return registeredService;
-			}
+	@Override
+	public String formatService(String serviceUri, ServiceTicket st) {
+		if (st.getService() != null && st.getService()
+					.replaceFirst("autoLoginTicketSession/getCasTicket/", "")
+					.replaceFirst("autoLoginTicket/getCasTicket/", "")
+					.replaceFirst("&rne.*$", "").equals(serviceUri)) {
+			return st.getService();
 		}
-		return null;
+		return serviceUri;
 	}
 
-	public void getUser(String userId, String service, Handler<User> userHandler) {
-		RegisteredService registeredService = matches(service);
-		if (registeredService != null) {
-			registeredService.getUser(userId, userHandler);
+	@Override
+	protected void prepareUser(final User user, final String userId, final JsonObject data) {
+		if (principalAttributeName != null) {
+			user.setUser(data.getString(principalAttributeName));
+			data.removeField(principalAttributeName);
 		} else {
-			userHandler.handle(null);
+			user.setUser(userId);
 		}
-	}
-
-	public String formatService(String service, ServiceTicket st) {
-		RegisteredService registeredService = matches(service);
-		if (registeredService != null) {
-			return registeredService.formatService(service, st);
-		}
-		return null;
 	}
 
 }

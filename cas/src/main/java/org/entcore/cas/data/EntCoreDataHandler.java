@@ -76,7 +76,7 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	protected void validateService(AuthCas authCas, ServiceTicket st, String service,
 			Handler<Try<ValidationException, Tuple<AuthCas, User>>> handler) {
-		super.validateService(authCas, st, services.formatService(service), handler);
+		super.validateService(authCas, st, services.formatService(service, st), handler);
 	}
 
 	@Override

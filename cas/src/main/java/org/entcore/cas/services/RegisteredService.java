@@ -21,6 +21,7 @@ package org.entcore.cas.services;
 
 import java.util.Map;
 
+import fr.wseduc.cas.entities.ServiceTicket;
 import org.vertx.java.core.eventbus.EventBus;
 
 import fr.wseduc.cas.async.Handler;
@@ -34,6 +35,6 @@ public interface RegisteredService {
 
 	void getUser(String userId, Handler<User> userHandler);
 
-	String formatService(String serviceUri);
+	String formatService(String serviceUri, ServiceTicket st);
 
 }
