@@ -241,3 +241,118 @@ var ui = (function(){
 		}
 	}
 })(jQuery)
+
+
+ui.extendElement = {
+	draggable: function(element, events){
+		element.on('mousedown', function(e){
+			if(element.data('lock') === true){
+				return;
+			}
+			e.preventDefault();
+			var interrupt = false;
+			if(element.data('resizing') !== true){
+				$('body').css({
+					'-webkit-user-select': 'none',
+					'-moz-user-select': 'none',
+					'user-select' : 'none'
+				});
+				if(element.css('position') === 'relative'){
+					element.css({ top: element.position().top, left: element.position().left });
+				}
+				element.css({
+					'position': 'absolute'
+				});
+				var mouse = { y: e.clientY, x: e.clientX };
+				var elementDistance = {
+					y: mouse.y - element.offset().top,
+					x: mouse.x - element.offset().left
+				};
+				$(window).on('mousemove.drag', function(e){
+					if(e.clientX === mouse.x && e.clientY === mouse.y){
+						return;
+					}
+					if(!element.data('dragging')){
+						element.trigger('startDrag');
+					}
+					element.unbind("click");
+					element.data('dragging', true);
+					mouse = {
+						y: e.clientY,
+						x: e.clientX
+					};
+				});
+
+				$('body').on('mouseup.drag', function(e){
+					$('body').css({
+						'-webkit-user-select': 'initial',
+						'-moz-user-select': 'initial',
+						'user-select' : 'initial'
+					});
+					interrupt = true;
+					$('body').unbind('mouseup.drag');
+					$(window).unbind('mousemove.drag');
+
+					setTimeout(function(){
+						if(element.data('dragging')){
+							element.trigger('stopDrag');
+						}
+
+						element.data('dragging', false);
+						if(events && typeof events.mouseUp === 'function'){
+							events.mouseUp();
+						}
+					}, 100);
+				});
+				var moveElement = function(){
+					var parent = element.parents('.drawing-zone');
+					var parentPosition = parent.offset();
+					var boundaries = {
+						left: -Infinity,
+						top: -Infinity,
+						right: Infinity,
+						bottom: Infinity
+					};
+
+					if(parentPosition) {
+						boundaries = {
+							left: parentPosition.left,
+							top: parentPosition.top,
+							right: parentPosition.left + parent.width() - element.width(),
+							bottom: parentPosition.top + parent.height() - element.height()
+						};
+					}
+
+					var newOffset = {
+						top: mouse.y - elementDistance.y,
+						left: mouse.x - elementDistance.x
+					};
+
+					if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
+						newOffset.left = boundaries.left;
+					}
+					if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
+						newOffset.left = boundaries.right - 2
+					}
+					if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
+						newOffset.top = boundaries.top;
+					}
+					if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
+						newOffset.top = boundaries.bottom - 2;
+					}
+
+					element.offset(newOffset);
+
+					if(events && typeof events.tick === 'function'){
+						events.tick();
+					}
+
+					if(!interrupt){
+						requestAnimationFrame(moveElement);
+					}
+				};
+				moveElement();
+			}
+		});
+	}
+}

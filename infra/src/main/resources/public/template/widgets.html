@@ -18,8 +18,8 @@
  ~
  -->
 
-<div class="widgets" ng-controller="Widgets">
-	<div class="row widget-container" ng-repeat="widget in widgets.all | orderBy:'index'" draggable>
+<div class="widgets" ng-controller="Widgets" sortable-list>
+	<div class="row widget-container" ng-repeat="widget in widgets.all | orderBy:'index'" sortable-element>
 		<div class="twelve cell" ng-include="widget.path" ng-if="widget.show !== false"></div>
 	</div>
 </div>
