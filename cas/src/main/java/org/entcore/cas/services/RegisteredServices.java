@@ -19,21 +19,44 @@
 
 package org.entcore.cas.services;
 
-import java.util.Map;
-
-import org.vertx.java.core.eventbus.EventBus;
-
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.User;
 
-public interface RegisteredService {
+import java.util.HashSet;
+import java.util.Set;
 
-	void configure(EventBus eb, Map<String, Object> configuration);
+public class RegisteredServices {
 
-	boolean matches(String serviceUri);
+	private final Set<RegisteredService> services = new HashSet<>();
 
-	void getUser(String userId, Handler<User> userHandler);
+	public void add(RegisteredService service) {
+		services.add(service);
+	}
 
-	String formatService(String serviceUri);
+	public RegisteredService matches(String service) {
+		for (RegisteredService registeredService : services) {
+			if (registeredService.matches(service)) {
+				return registeredService;
+			}
+		}
+		return null;
+	}
+
+	public void getUser(String userId, String service, Handler<User> userHandler) {
+		RegisteredService registeredService = matches(service);
+		if (registeredService != null) {
+			registeredService.getUser(userId, userHandler);
+		} else {
+			userHandler.handle(null);
+		}
+	}
+
+	public String formatService(String service) {
+		RegisteredService registeredService = matches(service);
+		if (registeredService != null) {
+			return registeredService.formatService(service);
+		}
+		return null;
+	}
 
 }

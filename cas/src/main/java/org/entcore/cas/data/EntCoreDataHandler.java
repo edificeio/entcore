@@ -20,11 +20,13 @@
 package org.entcore.cas.data;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
+import fr.wseduc.cas.async.Tuple;
+import fr.wseduc.cas.entities.ServiceTicket;
+import fr.wseduc.cas.exceptions.ValidationException;
 import org.entcore.cas.http.WrappedRequest;
-import org.entcore.cas.services.RegisteredService;
+import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.eventbus.EventBus;
@@ -46,12 +48,11 @@ import fr.wseduc.mongodb.MongoDb;
 
 public class EntCoreDataHandler extends DataHandler {
 
-	public static final String DEFAULT_USER_VALUE = "login";
 	public static final String COLLECTION = "authcas";
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private final EventBus eb;
 	private final ObjectMapper mapper = new ObjectMapper();
-	private List<RegisteredService> services;
+	private RegisteredServices services;
 
 	private static final Logger log = LoggerFactory.getLogger(EntCoreDataHandler.class);
 
@@ -62,13 +63,7 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	public void validateService(String service, Handler<Boolean> handler) {
-		for (RegisteredService registeredService : services) {
-			if (registeredService.matches(service)) {
-				handler.handle(true);
-				return;
-			}
-		}
-		handler.handle(false);
+		handler.handle(services.matches(service) != null);
 	}
 
 	@Override
@@ -76,6 +71,12 @@ public class EntCoreDataHandler extends DataHandler {
 			Handler<Try<AuthenticationException, AuthCas>> tryHandler) {
 		tryHandler.handle(new Try<AuthenticationException, AuthCas>(
 				new AuthenticationException("invalid.authentication.method")));
+	}
+
+	@Override
+	protected void validateService(AuthCas authCas, ServiceTicket st, String service,
+			Handler<Try<ValidationException, Tuple<AuthCas, User>>> handler) {
+		super.validateService(authCas, st, services.formatService(service), handler);
 	}
 
 	@Override
@@ -87,13 +88,7 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	protected void getUser(final String userId, final String service, final Handler<User> userHandler) {
-		for (RegisteredService registeredService : services) {
-			if (registeredService.matches(service)) {
-				registeredService.getUser(userId, userHandler);
-				return;
-			}
-		}
-		userHandler.handle(null);
+		services.getUser(userId, service, userHandler);
 	}
 
 	@Override
@@ -217,7 +212,8 @@ public class EntCoreDataHandler extends DataHandler {
 		}
 	}
 
-	public void setServices(List<RegisteredService> services) {
+	public void setServices(RegisteredServices services) {
 		this.services = services;
 	}
+
 }

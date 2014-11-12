@@ -19,12 +19,11 @@
 
 package org.entcore.cas.data;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.PatternSyntaxException;
 
 import org.entcore.cas.services.RegisteredService;
+import org.entcore.cas.services.RegisteredServices;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -42,7 +41,7 @@ public class EntCoreDataHandlerFactory implements DataHandlerFactory {
 
 	private static final String CONF_SERVICES = "services";
 	private static final String CONF_SERVICE_CLASS = "class";
-	private final List<RegisteredService> services = new ArrayList<RegisteredService>();
+	private final RegisteredServices services = new RegisteredServices();
 
 	public EntCoreDataHandlerFactory(EventBus eb, JsonObject conf) {
 		this.eb = eb;
