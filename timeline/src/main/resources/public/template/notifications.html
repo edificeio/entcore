@@ -11,15 +11,13 @@
 
 	<div data-ng-repeat="notification in notifications.all" class="row notification">
 		<article ng-class="{ 'unread': isUnRead(notification) }">
-			<div class="cell">
-				<div class="row">
-					<div class="avatar">
-						<img class="system-avatar" ng-if="!notification.sender" />
-						<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
-					</div>
-					<div class="cell horizontal-spacing">
-						<p class="inline" bind-html="notification.message"></p>
-					</div>
+			<div class="row">
+				<div class="avatar">
+					<img class="system-avatar" ng-if="!notification.sender" />
+					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+				</div>
+				<div class="content horizontal-spacing">
+					<p class="inline" bind-html="notification.message"></p>
 				</div>
 			</div>
 			<div class="notification-date">
