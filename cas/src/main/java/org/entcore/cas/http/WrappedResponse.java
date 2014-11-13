@@ -21,9 +21,12 @@ package org.entcore.cas.http;
 
 import fr.wseduc.cas.http.Response;
 import org.vertx.java.core.http.HttpServerResponse;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 public class WrappedResponse implements Response {
 
+	private static final Logger log = LoggerFactory.getLogger(WrappedResponse.class);
 	private HttpServerResponse response;
 	private boolean ended = false;
 
@@ -38,6 +41,7 @@ public class WrappedResponse implements Response {
 
 	@Override
 	public void setBody(String s) {
+		log.debug(s);
 		ended = true;
 		response.end(s);
 	}
