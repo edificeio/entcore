@@ -125,7 +125,7 @@ public class MongoDbCrudService implements CrudService {
 		if (user != null) {
 			List<DBObject> groups = new ArrayList<>();
 			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
-			for (String gpId: user.getProfilGroupsIds()) {
+			for (String gpId: user.getGroupsIds()) {
 				groups.add(QueryBuilder.start("groupId").is(gpId).get());
 			}
 			switch (filter) {

@@ -305,7 +305,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String query =
 				"MATCH (n:User {id : {id}}) " +
 				"WHERE HAS(n.login) " +
-				"OPTIONAL MATCH n-[:IN]->(gp:ProfileGroup) " +
+				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
@@ -316,7 +316,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(COLLECT(distinct p.name)) as type, " +
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
-				"COLLECT(distinct gp.id) as profilGroupsIds";
+				"COLLECT(distinct gp.id) as groupsIds";
 		String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WHERE HAS(n.login) " +

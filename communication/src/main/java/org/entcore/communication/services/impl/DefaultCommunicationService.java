@@ -420,7 +420,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 					"XOR (type(r) = 'COMMUNIQUE'"+ l +
-					" AND (length(p) < 3 OR (ipg:ProfileGroup AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
+					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
 		}
 		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ").append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
@@ -486,7 +486,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
 		params.putString("userId", userId);
 		String query =
-				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:ProfileGroup) " +
+				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
 				"WHERE n.id = {userId} " +
 				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				r;

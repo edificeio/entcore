@@ -39,7 +39,7 @@ public class Group {
 				object.putString("id", id);
 			}
 			String query =
-					"MERGE (t:Group:ManualGroup { id : {id}}) " +
+					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
 					"SET " + Neo4j.nodeSetPropertiesFromJson("t", object, "id") +
 					"RETURN t.id as id ";
 			transactionHelper.add(query, object);

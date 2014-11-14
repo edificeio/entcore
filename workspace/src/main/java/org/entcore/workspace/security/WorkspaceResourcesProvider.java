@@ -198,8 +198,8 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	private String orSharedElementMatch(UserInfos user, String serviceMethod) {
 		String s =  serviceMethod.replaceAll("\\.", "-");
 		StringBuilder sb = new StringBuilder();
-		if (user.getProfilGroupsIds() != null) {
-			for (String groupId: user.getProfilGroupsIds()) {
+		if (user.getGroupsIds() != null) {
+			for (String groupId: user.getGroupsIds()) {
 				sb.append(", { \"groupId\": \"" + groupId + "\", \"" + s + "\": true }");
 			}
 		}

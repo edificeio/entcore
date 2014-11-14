@@ -47,8 +47,8 @@ public class ShareAndOwner implements ResourcesProvider {
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 			List<String> gu = new ArrayList<>();
 			gu.add(user.getUserId());
-			if (user.getProfilGroupsIds() != null) {
-				gu.addAll(user.getProfilGroupsIds());
+			if (user.getGroupsIds() != null) {
+				gu.addAll(user.getGroupsIds());
 			}
 			final Object[] groupsAndUserIds = gu.toArray();
 			String query =

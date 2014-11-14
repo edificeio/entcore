@@ -1364,8 +1364,8 @@ public class WorkspaceService extends BaseController {
 
 	private String orSharedElementMatch(UserInfos user) {
 		StringBuilder sb = new StringBuilder();
-		if (user.getProfilGroupsIds() != null) {
-			for (String groupId: user.getProfilGroupsIds()) {
+		if (user.getGroupsIds() != null) {
+			for (String groupId: user.getGroupsIds()) {
 				sb.append(", { \"groupId\": \"" + groupId + "\" }");
 			}
 		}

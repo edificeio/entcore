@@ -68,7 +68,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			}
 			filteredInfos.removeField("userId");
 			filteredInfos.removeField("functions");
-			filteredInfos.removeField("profilGroupsIds");
+			filteredInfos.removeField("groupsIds");
 			filteredInfos.removeField("structures");
 			filteredInfos.removeField("classes");
 			filteredInfos.removeField("apps");

@@ -71,8 +71,8 @@ public class FileSystemExportService implements ExportService {
 						@Override
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
-								final Set<String> g = (user.getProfilGroupsIds() != null) ? new
-									HashSet<>(user.getProfilGroupsIds()) : new HashSet<String>();
+								final Set<String> g = (user.getGroupsIds() != null) ? new
+									HashSet<>(user.getGroupsIds()) : new HashSet<String>();
 								User.getOldGroups(user.getUserId(), new Handler<JsonArray>() {
 									@Override
 									public void handle(JsonArray objects) {

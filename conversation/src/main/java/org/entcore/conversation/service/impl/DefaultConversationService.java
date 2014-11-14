@@ -231,7 +231,7 @@ public class DefaultConversationService implements ConversationService {
 		String query =
 				usersQuery +
 				"MATCH v<-[:IN*0..1]-(u:User), (message:ConversationMessage) " +
-				"WHERE (v: User or v:ProfileGroup) " +
+				"WHERE (v: User or v:Group) " +
 				"AND message.id = {messageId} AND message.state = {draft} AND message.from = {userId} AND " +
 				"(v.id IN message.to OR v.id IN message.cc) " +
 				"WITH DISTINCT u, message, (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
@@ -406,11 +406,11 @@ public class DefaultConversationService implements ConversationService {
 			final String acceptLanguage, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
 		final JsonObject visible = new JsonObject();
-		String replyProfileGroupQuery;
+		String replyGroupQuery;
 		final JsonObject params = new JsonObject();
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
 			params.putString("conversation", applicationName);
-			replyProfileGroupQuery =
+			replyGroupQuery =
 					", (m:ConversationMessage)<-[:HAS_CONVERSATION_MESSAGE]-f" +
 					"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 					"WHERE m.id = {parentMessageId} AND c.userId = {userId} " +
@@ -419,8 +419,8 @@ public class DefaultConversationService implements ConversationService {
 					.putString("parentMessageId", parentMessageId);
 			String groups =
 					"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-					"<-[:AUTHORIZED]-(g:ProfileGroup)<-[:DEPENDS*0..1]-(pg:ProfileGroup) " +
-					replyProfileGroupQuery + " AND app.name = {conversation} " +
+					"<-[:AUTHORIZED]-(g:Group)<-[:DEPENDS*0..1]-(pg:Group) " +
+					replyGroupQuery + " AND app.name = {conversation} " +
 					"RETURN DISTINCT pg.id as id, pg.name as name, pg.groupDisplayName as groupDisplayName";
 			findVisibles(eb, user.getUserId(), groups, params, false, true, false,
 					acceptLanguage, new Handler<JsonArray>() {
@@ -435,7 +435,7 @@ public class DefaultConversationService implements ConversationService {
 								"AND (u.id = visibles.id OR u.id IN m.to OR u.id IN m.cc) ";
 					String users =
 							"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-							"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
+							"<-[:AUTHORIZED]-(pg:Group)<-[:IN]-(u:User) " +
 							replyUserQuery + "AND app.name = {conversation} " +
 							"RETURN DISTINCT u.id as id, u.displayName as displayName";
 					findVisibleUsers(eb, user.getUserId(), true, false, users, params, new Handler<JsonArray>() {

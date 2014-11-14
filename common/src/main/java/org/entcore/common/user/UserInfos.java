@@ -134,7 +134,7 @@ public class UserInfos {
 	private String login;
 	private List<Action> authorizedActions;
 	private List<Application> apps;
-	private List<String> profilGroupsIds;
+	private List<String> groupsIds;
 	private List<String> classes;
 	private List<String> structures;
 	private Map<String, Object> cache;
@@ -253,12 +253,18 @@ public class UserInfos {
 		this.apps = apps;
 	}
 
-	public List<String> getProfilGroupsIds() {
-		return profilGroupsIds;
+	public List<String> getGroupsIds() {
+		return groupsIds;
 	}
 
-	public void setProfilGroupsIds(List<String> profilGroupsIds) {
-		this.profilGroupsIds = profilGroupsIds;
+	// keep only for compatibility with other modules
+	@Deprecated
+	public List<String> getProfilGroupsIds() {
+		return groupsIds;
+	}
+
+	public void setGroupsIds(List<String> groupsIds) {
+		this.groupsIds = groupsIds;
 	}
 
 	public List<String> getClasses() {

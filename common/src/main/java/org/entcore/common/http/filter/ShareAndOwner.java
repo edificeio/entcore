@@ -43,7 +43,7 @@ public class ShareAndOwner implements ResourcesProvider {
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 			groups.add(QueryBuilder.start("userId").is(user.getUserId())
 					.put(sharedMethod).is(true).get());
-			for (String gpId: user.getProfilGroupsIds()) {
+			for (String gpId: user.getGroupsIds()) {
 				groups.add(QueryBuilder.start("groupId").is(gpId)
 						.put(sharedMethod).is(true).get());
 			}

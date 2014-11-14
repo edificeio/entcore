@@ -123,8 +123,8 @@ public abstract class GenericEventStore implements EventStore {
 			if (user.getClasses() != null) {
 				event.putArray("classes", new JsonArray(user.getClasses().toArray()));
 			}
-			if (user.getProfilGroupsIds() != null) {
-				event.putArray("groups", new JsonArray(user.getProfilGroupsIds().toArray()));
+			if (user.getGroupsIds() != null) {
+				event.putArray("groups", new JsonArray(user.getGroupsIds().toArray()));
 			}
 		}
 		if (request != null) {
