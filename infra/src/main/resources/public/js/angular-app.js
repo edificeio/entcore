@@ -3943,23 +3943,9 @@ var workspace = {
 		}
 
 		this.protectedDuplicate = function(callback){
-			var document = this;
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', '/workspace/document/' + this._id, true);
-			xhr.responseType = 'blob';
-			xhr.onload = function(e) {
-				if (this.status == 200) {
-					var blobDocument = this.response;
-					var formData = new FormData();
-					formData.append('file', blobDocument, document.metadata.filename);
-					http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
-						if(typeof callback === 'function'){
-							callback(new workspace.Document(data));
-						}
-					});
-				}
-			};
-			xhr.send();
+			Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function(data){
+				callback(new workspace.Document(data))
+			});
 		};
 
 		this.role = function(){

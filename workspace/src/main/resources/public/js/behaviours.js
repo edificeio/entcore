@@ -98,27 +98,30 @@ Behaviours.register('workspace', {
 	},
 	loadResources: function(callback){
 		http().get('/workspace/documents').done(function(documents){
-			this.resources = _.map(documents, function(doc){
-				if(doc.metadata['content-type'].indexOf('image') !== -1){
-					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+			http().get('/workspace/documents?filter=protected').done(function(protectedDocuments){
+				this.resources = _.map(documents.concat(protectedDocuments), function(doc){
+					if(doc.metadata['content-type'].indexOf('image') !== -1){
+						doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+					}
+					else{
+						doc.icon = '/img/icons/unknown-large.png';
+					}
+					return {
+						title: doc.name,
+						owner: {
+							name: doc.ownerName,
+							userId: doc.owner
+						},
+						icon: doc.icon,
+						path: '/workspace/document/' + doc._id,
+						_id: doc._id,
+						metadata: doc.metadata
+					};
+				});
+				if(typeof callback === 'function'){
+					callback(this.resources);
 				}
-				else{
-					doc.icon = '/img/icons/unknown-large.png';
-				}
-				return {
-					title: doc.name,
-					owner: {
-						name: doc.ownerName,
-						userId: doc.owner
-					},
-					icon: doc.icon,
-					path: '/workspace/document/' + doc._id,
-					_id: doc._id
-				};
-			});
-			if(typeof callback === 'function'){
-				callback(this.resources);
-			}
+			}.bind(this));
 		}.bind(this));
 	},
 	create: function(file, callback){
@@ -126,10 +129,30 @@ Behaviours.register('workspace', {
 		var splitName = file.file[0].name.split('.');
 		var formData = new FormData();
 		formData.append('file', file.file[0], file.title + '.' + splitName[splitName.length - 1]);
-		http().postFile('/workspace/document', formData).done(function(data){
+		http().postFile('/workspace/document?protected=true&application=media-library', formData).done(function(data){
 			file.loading = false;
 			this.loadResources(callback);
 		}.bind(this));
+	},
+	protectedDuplicate: function(file, callback){
+		console.log('copy file to media library');
+		console.log(file);
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/workspace/document/' + file._id, true);
+		xhr.responseType = 'blob';
+		xhr.onload = function(e) {
+			if (this.status == 200) {
+				var blobDocument = this.response;
+				var formData = new FormData();
+				formData.append('file', blobDocument, file.metadata.filename);
+				http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
+					if(typeof callback === 'function'){
+						callback(data);
+					}
+				});
+			}
+		};
+		xhr.send();
 	},
 	sniplets: {
 		documents: {
@@ -148,17 +171,21 @@ Behaviours.register('workspace', {
 					}.bind(this))
 				},
 				addDocument: function(document){
-					this.source.documents.push(document);
-					Behaviours.copyRights(this.snipletResource, document, workspaceBehaviours.viewRights, 'workspace');
 					this.display.selectSnipletDocument = false;
-					if(typeof this.snipletResource.save === 'function'){
-						this.snipletResource.save();
-					}
+					Behaviours.applicationsBehaviours.workspace.protectedDuplicate(document, function(file){
+						Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
+							var resource = _.findWhere(resources, { '_id': file._id });
+							console.log('adding resource to sniplet');
+							console.log(resource);
+							this.source.documents.push(resource);
+							if(typeof this.snipletResource.save === 'function'){
+								this.snipletResource.save();
+							}
+							this.$apply();
+						}.bind(this));
+					}.bind(this));
 				},
 				copyRights: function(snipletResource, source){
-					source.documents.forEach(function(document){
-						Behaviours.copyRights(snipletResource, document, workspaceBehaviours.viewRights, 'workspace');
-					});
 				},
 				documentIcon: function(doc){
 					if(doc.metadata['content-type'].indexOf('image') !== -1){
