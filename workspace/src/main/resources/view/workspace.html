@@ -110,6 +110,11 @@
 						ng-if="selectedDocuments()[0].myRights.document.share && workflowRight('share') && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						ng-class="{ cell: true }">
 				</button>
+				<button ng-click="openShareFolderView(selectedFolders()[0])"
+						translate key="workspace.shareFolder"
+						ng-if="selectedFolders()[0].myRights.document.share && workflowRight('share') && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+						ng-class="{ cell: true }">
+				</button>
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
 					<button
 						ng-click="button.action(button.url)"

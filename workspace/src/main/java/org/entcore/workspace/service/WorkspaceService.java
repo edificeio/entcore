@@ -22,6 +22,7 @@ package org.entcore.workspace.service;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
+import static org.entcore.workspace.dao.DocumentDao.DOCUMENTS_COLLECTION;
 import static fr.wseduc.webutils.Utils.getOrElse;
 
 import java.io.UnsupportedEncodingException;
@@ -172,6 +173,92 @@ public class WorkspaceService extends BaseController {
 			}
 		});
 	}
+	
+	private void shareFileAction(final HttpServerRequest request, final String id, final UserInfos user, final List<String> actions, final String groupId, final String userId, final boolean remove){
+		Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					JsonObject n = event.right().getValue()
+							.getObject("notify-timeline");
+					if (n != null) {
+						notifyShare(request, id, user, new JsonArray().add(n));
+					}
+					renderJson(request, event.right().getValue());
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					renderJson(request, error, 400);
+				}
+			}
+		};
+		
+		if (groupId != null) {
+			if(remove)
+				shareService.removeGroupShare(groupId, id, actions, defaultResponseHandler(request));
+			else
+				shareService.groupShare(user.getUserId(), groupId, id, actions, r);
+		} else if (userId != null) {
+			if(remove)
+				shareService.removeUserShare(userId, id, actions, defaultResponseHandler(request));
+			else
+				shareService.userShare(user.getUserId(), userId, id, actions, r);
+		} else {
+			badRequest(request);
+		}
+	}
+	
+	private void shareFolderAction(final HttpServerRequest request, final String id, final UserInfos user, final List<String> actions, final String groupId, final String userId, final boolean remove){
+		
+		Handler<Either<String, JsonObject>> subHandler = new Handler<Either<String, JsonObject>>(){
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					
+					final int number = event.right().getValue().getInteger("number");
+					final int errorsNb = event.right().getValue().getInteger("number-errors");
+					
+					Handler<Either<String, JsonObject>> finalHandler = new Handler<Either<String, JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								JsonObject n = event.right().getValue().getObject("notify-timeline");
+								if (n != null) {
+									notifyShare(request, id, user, new JsonArray().add(n));
+								} else {
+									n = new JsonObject();
+								}
+								n.putNumber("number", number+1).putNumber("number-errors", errorsNb);
+								renderJson(request, n);
+							} else {
+								JsonObject error = new JsonObject().putString("error", event.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					};
+					
+					if (groupId != null) {
+						if(remove)
+							shareService.removeGroupShare(groupId, id, actions, finalHandler);
+						else
+							shareService.groupShare(user.getUserId(), groupId, id, actions, finalHandler);
+					} else if (userId != null) {
+						if(remove)
+							shareService.removeUserShare(userId, id, actions, finalHandler);
+						else
+							shareService.userShare(user.getUserId(), userId, id, actions, finalHandler);
+					} else {
+						badRequest(request);
+					}
+					
+				} else {
+					JsonObject error = new JsonObject().putString("error", event.left().getValue()); 
+					renderJson(request, error, 400);
+				}
+			}
+		};
+		
+		folderService.shareFolderAction(id, user, actions, groupId, userId, shareService, remove, subHandler);
+		
+	}
 
 	@Put("/share/json/:id")
 	@SecuredAction("workspace.share.json")
@@ -200,30 +287,20 @@ public class WorkspaceService extends BaseController {
 								@Override
 								public void handle(Boolean event) {
 									if (Boolean.TRUE.equals(event)) {
-										Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
+										mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
 											@Override
-											public void handle(Either<String, JsonObject> event) {
-												if (event.isRight()) {
-													JsonObject n = event.right().getValue()
-															.getObject("notify-timeline");
-													if (n != null) {
-														notifyShare(request, id, user, new JsonArray().add(n));
-													}
-													renderJson(request, event.right().getValue());
+											public void handle(Message<JsonObject> event) {
+												if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+													final boolean isFolder = !event.body().getObject("result").containsField("file");
+													if(isFolder)
+														shareFolderAction(request, id, user, actions, groupId, userId, false);
+													else
+														shareFileAction(request, id, user, actions, groupId, userId, false);
 												} else {
-													JsonObject error = new JsonObject()
-															.putString("error", event.left().getValue());
-													renderJson(request, error, 400);
+													unauthorized(request);
 												}
 											}
-										};
-										if (groupId != null) {
-											shareService.groupShare(user.getUserId(), groupId, id, actions, r);
-										} else if (userId != null) {
-											shareService.userShare(user.getUserId(), userId, id, actions, r);
-										} else {
-											badRequest(request);
-										}
+										});
 									} else {
 										unauthorized(request);
 									}
@@ -262,15 +339,20 @@ public class WorkspaceService extends BaseController {
 								@Override
 								public void handle(Boolean event) {
 									if (Boolean.TRUE.equals(event)) {
-										if (groupId != null) {
-											shareService.removeGroupShare(groupId, id, actions,
-													defaultResponseHandler(request));
-										} else if (userId != null) {
-											shareService.removeUserShare(userId, id, actions,
-													defaultResponseHandler(request));
-										} else {
-											badRequest(request);
-										}
+										mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> event) {
+												if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+													final boolean isFolder = !event.body().getObject("result").containsField("file");
+													if(isFolder)
+														shareFolderAction(request, id, user, actions, groupId, userId, true);
+													else
+														shareFileAction(request, id, user, actions, groupId, userId, true);
+												} else {
+													unauthorized(request);
+												}
+											}
+										});
 									} else {
 										unauthorized(request);
 									}
@@ -803,7 +885,8 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(final UserInfos userInfos) {
 				if (userInfos != null) {
-					folderService.list(path, userInfos, hierarchical, arrayResponseHandler(request));
+					String filter = request.params().get("filter");
+					folderService.list(path, userInfos, hierarchical, filter, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
@@ -1204,8 +1287,57 @@ public class WorkspaceService extends BaseController {
 										dest.removeField("folder");
 									}
 									insert.add(dest);
-									String filePath = orig.getString("file");
-									if (filePath != null) {
+									final String filePath = orig.getString("file");
+									
+									if((owner != null || user != null) && folder != null && !folder.trim().isEmpty()){
+										
+										//If the document has a new parent folder, replicate sharing rights
+										String parentName, parentFolder;
+										if(folder.lastIndexOf('_') < 0){
+											parentName = folder;
+											parentFolder = folder;
+										} else if(filePath != null){
+											String[] splittedPath = folder.split("_");
+											parentName = splittedPath[splittedPath.length - 1];
+											parentFolder = folder;
+										} else {
+											String[] splittedPath = folder.split("_");
+											parentName = splittedPath[splittedPath.length - 2];
+											parentFolder = folder.substring(0, folder.lastIndexOf("_"));
+										}
+										
+										QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(owner == null ? user.getUserId() : owner)
+												.and("folder").is(parentFolder)
+												.and("name").is(parentName);
+										
+										mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
+											@Override
+											public void handle(Message<JsonObject> event) {
+												if ("ok".equals(event.body().getString("status"))){
+													JsonObject parent = event.body().getObject("result");
+													if(parent != null && parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
+														dest.putArray("shared", parent.getArray("shared"));
+													
+													if (filePath != null) {
+														FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
+															@Override
+															public void handle(JsonObject event) {
+																if (event != null && "ok".equals(event.getString("status"))) {
+																	dest.putString("file", event.getString("_id"));
+																	persist(insert, number.decrementAndGet());
+																}
+															}
+														});
+													} else {
+														persist(insert, number.decrementAndGet());
+													}
+												} else {
+													renderJson(request, event.body(), 404);
+												}
+											}
+										});
+									
+									} else if (filePath != null) {
 										FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
 
 											@Override
@@ -1550,39 +1682,102 @@ public class WorkspaceService extends BaseController {
 	@Put("/documents/move/:ids/:folder")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
-		String ids = request.params().get("ids"); // TODO refactor with json in request body
-		String folder = getOrElse(request.params().get("folder"), "");
+		final String ids = request.params().get("ids"); // TODO refactor with json in request body
+		String tempFolder = getOrElse(request.params().get("folder"), "");
 		try {
-			folder = URLDecoder.decode(folder, "UTF-8");
+			tempFolder = URLDecoder.decode(tempFolder, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			log.warn(e.getMessage(), e);
 		}
-		if (ids != null && !ids.trim().isEmpty()) {
-			JsonArray idsArray = new JsonArray(ids.split(","));
-			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
-			String obj;
-			if (folder != null && !folder.trim().isEmpty()) {
-				obj = "{ \"$set\" : { \"folder\": \"" + folder +
-						"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
-			} else {
-				obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
-						" \"$unset\" : { \"folder\" : 1 }}";
-			}
-			mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
-					new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> r) {
-					JsonObject res = r.body();
-					if ("ok".equals(res.getString("status"))) {
-						renderJson(request, res);
+		final String folder = tempFolder;
+		
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null && user.getUserId() != null) {
+					if (ids != null && !ids.trim().isEmpty()) {
+						JsonArray idsArray = new JsonArray(ids.split(","));
+						final String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
+						
+						if(folder != null && !folder.trim().isEmpty()){
+							
+							//If the document has a parent folder, replicate sharing rights
+							String parentName, parentFolder;
+							if(folder.lastIndexOf('_') < 0){
+								parentName = folder;
+								parentFolder = folder;
+							} else {
+								String[] splittedPath = folder.split("_");
+								parentName = splittedPath[splittedPath.length - 2];
+								parentFolder = folder.substring(0, folder.lastIndexOf("_"));
+							}
+							
+							QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(user.getUserId())
+									.and("folder").is(parentFolder)
+									.and("name").is(parentName);
+							
+							mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if ("ok".equals(event.body().getString("status"))){
+										JsonObject parent = event.body().getObject("result");
+										String obj = "{ \"$set\" : { \"folder\": \"" + folder +
+													"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"";
+										if(parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
+											obj += ", \"shared\" : "+parent.getArray("shared").toString()+" }}";
+										else
+											obj += "}, \"$unset\" : { \"shared\": 1 }}";
+										
+										mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
+												new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> r) {
+												JsonObject res = r.body();
+												if ("ok".equals(res.getString("status"))) {
+													renderJson(request, res);
+												} else {
+													renderJson(request, res, 404);
+												}
+											}
+										});
+									} else {
+										renderJson(request, event.body(), 404);
+									}
+								}
+							});
+						
+						} else {
+							String obj;
+							if (folder != null && !folder.trim().isEmpty()) {
+								obj = "{ \"$set\" : { \"folder\": \"" + folder +
+										"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
+										" \"$unset\" : { \"shared\": 1 }}";
+							} else {
+								obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
+										" \"$unset\" : { \"folder\" : 1, \"shared\": 1 }}";
+							}
+							mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
+									new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> r) {
+									JsonObject res = r.body();
+									if ("ok".equals(res.getString("status"))) {
+										renderJson(request, res);
+									} else {
+										renderJson(request, res, 404);
+									}
+								}
+							});
+						}
 					} else {
-						renderJson(request, res, 404);
+						badRequest(request);
 					}
+				} else {
+					unauthorized(request);
 				}
-			});
-		} else {
-			badRequest(request);
-		}
+			}
+		});
 	}
 
 	@Get("/documents")
@@ -1648,7 +1843,11 @@ public class WorkspaceService extends BaseController {
 					if ("owner".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\"";
 					} else if ("shared".equals(filter)) {
+						String ownerId = request.params().get("ownerId");
 						query += "\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";
+						if(ownerId != null){
+							query += ", \"owner\": \"" + ownerId + "\"";
+						}
 					} else {
 						query += "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 								"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}}]";

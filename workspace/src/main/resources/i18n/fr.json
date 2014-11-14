@@ -95,6 +95,7 @@
     "workspace.select.all": "Tous",
     "workspace.send.rack": "Déposer dans un casier",
     "workspace.share": "Partager",
+    "workspace.shareFolder": "Partager le dossier",
     "workspace.shared.message": "L'attribution des droits a bien été prise en compte",
     "workspace.title": "Espace documentaire",
     "workspace.trash.error": "Erreur lors de la mise à la corbeille",
@@ -102,5 +103,8 @@
     "workspace.unselect.all": "Aucun",
     "workspace.valid": "Appliquer",
     "rack.sent.message": "Votre document a bien été envoyé",
-	"workspace.folder.create": "Créer"
+	"workspace.folder.create": "Créer",
+    "workspace.folders.warning.title" :"Partage d'un dossier",
+    "workspace.folders.warning.content": "<p>Attention, le partage d'un dossier entraîne la modification des partages de tous les fichiers et sous dossiers contenus dans celui-ci.</p><p>De plus, les fichiers et dossiers crées ou déplacés dans ce dossier auront les mêmes droits de partage que ceux attribués sur le dossier.</p>",
+    "workspace.continue": "Continuer"
 }

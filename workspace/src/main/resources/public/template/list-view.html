@@ -47,13 +47,19 @@
 				<tbody>
 				<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
 					<td class="icon"><input type="checkbox" data-ng-model="folder.selected" /></td>
-					<td class="icon"><i class="folder"></i></td>
-					<td colspan="2" class="content">
+					<td class="icon">
+						<div class="twelve cell">
+							<i class="folder"></i>
+							<i ng-if="folder.shared.length > 0" class="shared"></i>
+						</div>
+					</td>
+					<td class="content">
 						<strong>
 							<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
 							<a ng-if="currentTree.name === 'trash'">[[folder.name]]</a>
 						</strong>
 					</td>
+					<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
 					<td></td>
 					<td class="date">[[longDate(folder.created)]]</td>
 				</tr>

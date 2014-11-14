@@ -19,7 +19,11 @@
 
 package org.entcore.workspace.service;
 
+import java.util.List;
+
 import fr.wseduc.webutils.Either;
+
+import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
@@ -39,9 +43,12 @@ public interface FolderService {
 
 	void delete(String id, UserInfos author, Handler<Either<String, JsonArray>> result);
 
-	void list(String name, UserInfos author, boolean hierarchical,
+	void list(String name, UserInfos author, boolean hierarchical, String filter,
 				Handler<Either<String, JsonArray>> results);
 
 	void restore(String id, UserInfos author, Handler<Either<String, JsonObject>> result);
+	
+	void shareFolderAction(String id, UserInfos owner, List<String> actions, String groupId, 
+			String userId, ShareService shareService, boolean remove, Handler<Either<String, JsonObject>> result);
 
 }

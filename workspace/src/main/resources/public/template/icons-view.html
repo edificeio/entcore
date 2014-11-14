@@ -25,8 +25,14 @@
 			<a class="container">
 				<i class="folder-large" data-ng-click="openFolder(folder)"></i>
 			</a>
+			<input type="checkbox" data-ng-model="folder.selected" />
+
 			<legend>
-				<a data-ng-click="openFolder(value)">[[folder.name]]</a>
+				<a data-ng-click="openFolder(value)">
+					<i ng-if="folder.shared.length > 0" class="shared inline"></i>
+					[[folder.name]]
+				</a>
+				<a ng-href="/userbook/annuaire#[[folder.owner]]"><strong>[[folder.ownerName]]</strong></a>
 			</legend>
 		</div>
 		<section data-ng-repeat-end></section>

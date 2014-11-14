@@ -252,6 +252,12 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		$scope.currentViews.lightbox = $scope.views.lightbox.share;
 	};
 
+	$scope.openShareFolderView = function(){
+		$scope.sharedFolders = $scope.selectedFolders();
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.shareFoldersWarning;
+	}
+
 	var refreshFolders = function(){
 		var folder = $scope.openedFolder;
 		$scope.openedFolder = { folder: {} };
@@ -413,7 +419,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	}, {
 		name: 'shared',
 		filter: 'shared',
-		hierarchical: false,
+		hierarchical: true,
 		path: 'documents',
 		buttons: [
 			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
@@ -421,9 +427,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			} }
 		],
 		contextualButtons: [
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return $scope.selectedDocuments().length > 0 } },
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
-				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
+				return $scope.selectedFolders().length === 0 && _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
 			} }
 		]
 	}, {
@@ -456,6 +462,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			copyFile: 'public/template/copy-files.html',
 			comment: 'public/template/comment.html',
 			share: 'public/template/share.html',
+			shareFolders: 'public/template/share-folders.html',
+			shareFoldersWarning: 'public/template/share-folders-warning.html',
 			confirm: 'public/template/confirm.html'
 		},
 		documents: {
@@ -480,7 +488,19 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			params.hierarchical = true;
 		}
 
-		var folderString = folderToString($scope.currentFolderTree, folder);
+		//Shared folders - special case
+		var folderString = ''
+		if(params.filter === "shared"){
+			if(!folder.folder)
+				delete params.hierarchical
+			else{
+				folderString = folder.folder
+				params.ownerId = folder.owner
+			}
+		} else {
+			folderString = folderToString($scope.currentFolderTree, folder);
+		}
+
 		if(folderString !== ''){
 			path += '/' + folderString;
 		}
@@ -489,6 +509,36 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			if(clear){
 				$scope.openedFolder.content = [];
 			}
+
+			//Shared folders - special case
+			//Checks wether the document folder is shared or not.
+			//Excldes documents that can be folded into shared folders
+			if(params.filter === "shared" && !folderString){
+				var recursiveCheck = function(root, doc){
+					if(doc.folder === undefined)
+						return false
+
+					var documentFolder = doc.folder
+					if(doc.folder === root.folder && doc.owner === root.owner)
+						return true
+
+					if(!root.children)
+						return false
+
+					var childCheck = false
+					for(var i = 0; i < root.children.length; i++){
+						if(!childCheck)
+							childCheck = recursiveCheck(root.children[i], doc)
+					}
+
+					return childCheck
+				}
+
+				documents = _.reject(documents, function(document){
+					return recursiveCheck($scope.currentFolderTree, document)
+				})
+			}
+
 			formatDocuments(documents, function(result){
 				$scope.openedFolder.content = $scope.openedFolder.content.concat(result);
 				$scope.openedFolder.content.sort(function(a, b){
@@ -651,6 +701,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	var getFolders = function(tree, params){
 		http().get('/workspace/folders/list', params).done(function(folders){
 			folders.forEach(function(folder){
+				setDocumentRights(folder);
+
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
 					if(_.where($scope.folder.children[$scope.folder.children.length - 1].children, { folder: folder.folder }).length === 0){
@@ -658,21 +710,76 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 					}
 					return;
 				}
+
 				var subFolders = folder.folder.split('_');
 				var cursor = tree;
-				subFolders.forEach(function(subFolder){
+
+				if(tree.name === 'shared'){
+
 					if(cursor === undefined){
 						cursor = {};
 					}
 					if(cursor.children === undefined){
 						cursor.children = [];
 					}
-					if(_.where(cursor.children, {name: subFolder }).length === 0){
-						cursor.children.push(folder)
-					}
-					cursor = _.findWhere(cursor.children, { name: subFolder });
-				})
+
+					cursor.children.push(folder)
+
+				} else {
+
+					subFolders.forEach(function(subFolder){
+						if(cursor === undefined){
+							cursor = {};
+						}
+						if(cursor.children === undefined){
+							cursor.children = [];
+						}
+						if(_.where(cursor.children, { name: subFolder }).length === 0){
+							cursor.children.push(folder)
+						}
+						cursor = _.findWhere(cursor.children, { name: subFolder });
+					})
+				}
 			});
+
+			if(tree.name === 'shared'){
+
+				var recursiveFolderFolding = function(root){
+					if(!root.children)
+						return
+
+					var spliceList = []
+
+					for(var i = 0; i < root.children.length; i++){
+						var folder = root.children[i]
+						var subFolders = folder.folder.split('_');
+
+						if(subFolders.length >= 2){
+							var parentFolderName = subFolders[subFolders.length-2]
+							var parentFolderPath = folder.folder.substring(0, folder.folder.lastIndexOf("_"))
+							var parentOwner = folder.owner
+							var parentFolder = _.findWhere(root.children, { name: parentFolderName, folder: parentFolderPath, owner: parentOwner })
+							if(parentFolder){
+								if(parentFolder.children === undefined){
+									parentFolder.children = [];
+								}
+								parentFolder.children.push(folder)
+								spliceList.push(folder)
+							}
+						}
+					}
+
+					for(i = 0; i < spliceList.length; i++)
+						root.children.splice(root.children.indexOf(spliceList[i]), 1)
+
+					for(i = 0; i < root.children.length; i++){
+						recursiveFolderFolding(root.children[i])
+					}
+				}
+
+				recursiveFolderFolding(tree)
+
+			}
 
 			$scope.$apply()
 		});
@@ -704,6 +811,10 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	function updateFolders(){
 		getFolders($scope.folder.children[0], { filter: 'owner' });
+	}
+
+	function updateSharedFolders(){
+		getFolders($scope.folder.children[1], { filter: 'shared' });
 	}
 
 	$scope.move = function(){
@@ -830,6 +941,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	};
 
 	updateFolders();
+	updateSharedFolders();
 
 	$scope.setFilesName = function(){
 		$scope.newFile.name = '';
@@ -862,12 +974,12 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		}
 
 		http().post('/workspace/folder', $scope.newFolder).done(function(newFolder){
-				updateFolders();
-			})
-			.e400(function(e){
-				var error = JSON.parse(e.responseText);
-				notify.error(error.error);
-			});
+			updateFolders();
+		})
+		.e400(function(e){
+			var error = JSON.parse(e.responseText);
+			notify.error(error.error);
+		});
 	};
 
 	$scope.isInSelectedFolder = function(folder){
