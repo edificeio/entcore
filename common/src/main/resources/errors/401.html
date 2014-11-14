@@ -7,7 +7,7 @@
 	<script type="text/ng-template" id="empty"></script>
 </head>
 <body ng-controller="Account">
-<div ng-if="!me.userId" class="centered container">
+<div ng-if="!me.userId" class="absolute">
 	<default-styles>
 
 		<h1><a data-reload><i class="oops"></i><i18n>oops</i18n></a></h1>
@@ -23,7 +23,7 @@
 
 	</default-styles>
 </div>
-<div ng-if="me.userId" class="centered container">
+<div ng-if="me.userId" class="absolute">
 	<portal>
 
 		<h1><a data-reload><i class="oops"></i><i18n>oops</i18n></a></h1>
