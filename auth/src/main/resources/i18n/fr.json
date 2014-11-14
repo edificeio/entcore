@@ -16,7 +16,7 @@
     "auth.forgot.send": "Envoyer",
     "auth.forgot.title": "Mot de passe oublié",
     "auth.header": "Connexion",
-    "auth.login": "Identifiant",
+    "auth.login": "Connexion",
     "auth.message.header": "Mot de passe oublié",
     "auth.message.title": "Mot de passe oublié",
     "auth.old.password": "Ancien mot de passe",
