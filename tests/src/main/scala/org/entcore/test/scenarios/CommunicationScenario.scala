@@ -88,7 +88,7 @@ object CommunicationScenario {
     .exec(http("Group communicate with")
       .get("/communication/group/${com-group-0}")
       .check(status.is(200), jsonPath("$.communiqueWith[0].id").find.is("${com-group-1}"),
-        jsonPath("$.communiqueUsers").find.is("BOTH")))
+        jsonPath("$.users").find.is("BOTH")))
 
     .exec(http("Group communicate with")
       .get("/communication/group/${com-group-1}")
@@ -115,7 +115,7 @@ object CommunicationScenario {
       .check(status.is(200), bodyString.find.transform(_.map(res => {
         val json = JSONValue.parse(res).asInstanceOf[JSONObject]
         json.get("communiqueWith").asInstanceOf[JSONArray].size().toString })).is("0"),
-        jsonPath("$.communiqueUsers").find.is("OUTGOING")))
+        jsonPath("$.users").find.is("OUTGOING")))
 
     .exec(http("Group communicate with")
       .get("/communication/group/${com-group-1}")
@@ -137,7 +137,7 @@ object CommunicationScenario {
       .check(status.is(200), bodyString.find.transform(_.map(res => {
       val json = JSONValue.parse(res).asInstanceOf[JSONObject]
       json.get("communiqueWith").asInstanceOf[JSONArray].size().toString })).is("0"),
-        jsonPath("$.communiqueUsers").find.notExists))
+        jsonPath("$.users").find.notExists))
 
     .exec(http("Group communicate with")
     .get("/communication/group/${com-group-1}")

@@ -55,6 +55,8 @@ public interface CommunicationService {
 
 	void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler);
 
+	void applyRules(String groupId, Handler<Either<String,JsonObject>> responseHandler);
+
 	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
 
 	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,

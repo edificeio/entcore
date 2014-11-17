@@ -27,6 +27,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -254,7 +255,22 @@ public class UserController extends BaseController {
 	public void addGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
-		userService.addGroup(userId, groupId, defaultResponseHandler(request));
+		userService.addGroup(userId, groupId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> res) {
+				if (res.isRight()) {
+					JsonObject j = new JsonObject()
+							.putString("action", "setCommunicationRules")
+							.putString("groupId", groupId);
+					eb.send("wse.communication", j);
+					JsonArray a = new JsonArray().addString(userId);
+					ApplicationUtils.publishModifiedUserGroup(eb, a);
+					renderJson(request, res.right().getValue());
+				} else {
+					renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+				}
+			}
+		});
 	}
 
 	@Delete("/user/group/:userId/:groupId")

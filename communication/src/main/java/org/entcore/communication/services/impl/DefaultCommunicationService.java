@@ -82,7 +82,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}})<-[:IN]-(u:User) " +
-				"SET g.communiqueUsers = {direction} " +
+				"SET g.users = {direction} " +
 				"CREATE UNIQUE " + createRelationship +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().putString("groupId", groupId).putString("direction", direction.name());
@@ -96,15 +96,15 @@ public class DefaultCommunicationService implements CommunicationService {
 		switch (direction) {
 			case INCOMING:
 				relationship = "g<-[r:COMMUNIQUE]-(u:User) ";
-				set = "SET g.communiqueUsers = CASE WHEN g.communiqueUsers = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
+				set = "SET g.users = CASE WHEN g.users = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
 				break;
 			case OUTGOING:
 				relationship = "g-[r:COMMUNIQUE]->(u:User) ";
-				set = "SET g.communiqueUsers = CASE WHEN g.communiqueUsers = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
+				set = "SET g.users = CASE WHEN g.users = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
 				break;
 			default:
 				relationship = "g-[r:COMMUNIQUE]-(u:User) ";
-				set = "REMOVE g.communiqueUsers ";
+				set = "REMOVE g.users ";
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}}) " +
@@ -349,7 +349,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
 				"WHERE s.id IN {structures} AND HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
 				"WITH DISTINCT g " +
-				"MATCH (pg:ProfileGroup) " +
+				"MATCH (pg:Group) " +
 				"WHERE pg.id IN g.communiqueWith " +
 				"MERGE g-[:COMMUNIQUE]->pg ";
 		s.add(query, params);
@@ -379,6 +379,50 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), " +
 				"v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
 				"WHERE s.id IN {structures} AND NOT(v:Visible) " +
+				"WITH DISTINCT v " +
+				"SET v:Visible ";
+		s.add(setVisible, params);
+		neo4j.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void applyRules(String groupId, Handler<Either<String, JsonObject>> handler) {
+		StatementsBuilder s = new StatementsBuilder();
+		JsonObject params = new JsonObject().putString("groupId", groupId);
+		String query =
+				"MATCH (g:Group {id : {groupId}}) " +
+				"WHERE HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
+				"WITH g " +
+				"MATCH (pg:Group) " +
+				"WHERE pg.id IN g.communiqueWith " +
+				"MERGE g-[:COMMUNIQUE]->pg ";
+		s.add(query, params);
+		String usersIncoming =
+				"MATCH (g:Group {id : {groupId}})<-[:IN]-(u:User) " +
+				"WHERE HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
+				"MERGE g<-[:COMMUNIQUE]-u ";
+		s.add(usersIncoming, params);
+		String usersOutgoing =
+				"MATCH (g:Group {id : {groupId}})<-[:IN]-(u:User) " +
+				"WHERE HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
+				"MERGE g-[:COMMUNIQUE]->u ";
+		s.add(usersOutgoing, params);
+		String relativeIncoming =
+				"MATCH (g:Group {id : {groupId}})<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
+				"WHERE HAS(g.relativeCommuniqueStudent) " +
+				"AND (g.relativeCommuniqueStudent = 'INCOMING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+				"MERGE r<-[:COMMUNIQUE_DIRECT]-u ";
+		s.add(relativeIncoming, params);
+		String relativeOutgoing =
+				"MATCH (g:Group {id : {groupId}})<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
+				"WHERE HAS(g.relativeCommuniqueStudent) " +
+				"AND (g.relativeCommuniqueStudent = 'OUTGOING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+				"MERGE r-[:COMMUNIQUE_DIRECT]->u ";
+		s.add(relativeOutgoing, params);
+		String setVisible =
+				"MATCH (g:Group {id : {groupId}})<-[:IN]-(v), " +
+				"v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+				"WHERE NOT(v:Visible) " +
 				"WITH DISTINCT v " +
 				"SET v:Visible ";
 		s.add(setVisible, params);

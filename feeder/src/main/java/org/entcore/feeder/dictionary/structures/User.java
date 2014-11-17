@@ -299,7 +299,7 @@ public class User {
 
 	public static void removeGroup(String userId, String groupId, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:IN]->(f:Group {id : {groupId}}) " +
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(f:Group {id : {groupId}}) " +
 				"DELETE r";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)

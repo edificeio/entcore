@@ -273,6 +273,10 @@ public class CommunicationController extends BaseController {
 				communicationService.applyDefaultRules(
 						message.body().getArray("schoolIds"), responseHandler);
 				break;
+			case "setCommunicationRules" :
+				communicationService.applyRules(
+						message.body().getString("groupId"), responseHandler);
+				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error")
 						.putString("message", "invalid.action"));
