@@ -28,6 +28,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.LinkRoleGroupFilter;
@@ -52,13 +53,15 @@ public class AppRegistryController extends BaseController {
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 
 	@Get("/admin-console")
-	@SecuredAction("app-registry.adminConsole")
+	@SecuredAction(value = "app-registry.adminConsole", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void staticAdmin(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/app-preview")
-	@SecuredAction("app-registry.adminConsole")
+	@SecuredAction(value = "app-registry.adminConsole", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void appPreview(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -71,7 +74,8 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Get("/application/:name")
-	@SecuredAction("app-registry.list.actions")
+	@SecuredAction(value = "app-registry.list.actions", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void listApplicationActions(HttpServerRequest request) {
 		String name = request.params().get("name");
 		if (name != null && !name.trim().isEmpty()) {

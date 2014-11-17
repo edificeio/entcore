@@ -27,9 +27,9 @@ public class Communication extends BaseServer {
 
 	@Override
 	public void start() {
-		setResourceProvider(new CommunicationFilter());
 		super.start();
 		addController(new CommunicationController());
+		setDefaultResourceFilter(new CommunicationFilter());
 	}
 
 }

@@ -31,6 +31,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 import org.vertx.java.core.Handler;
@@ -50,7 +52,8 @@ public class CommunicationController extends BaseController {
 	private final CommunicationService communicationService = new DefaultCommunicationService();
 
 	@Get("/admin-console")
-	@SecuredAction("communication.view")
+	@SecuredAction(value = "communication.view", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void adminConsole(final HttpServerRequest request) {
 		renderView(request);
 	}
@@ -212,7 +215,8 @@ public class CommunicationController extends BaseController {
 	 * @param request Incoming request.
 	 */
 	@Get("/rules")
-	@SecuredAction("communication.get.default.rules")
+	@SecuredAction(value = "communication.get.default.rules", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void getDefaultCommunicationRules(final HttpServerRequest request) {
 		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
 		Renders.renderJson(request, initDefaultRules, 200);

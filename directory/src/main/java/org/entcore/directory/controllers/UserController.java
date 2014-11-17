@@ -178,7 +178,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/list/isolated")
-	@SecuredAction("user.list.isolated")
+	@SecuredAction(value = "user.list.isolated", type = ActionType.RESOURCE)
 	public void listIsolated(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final List<String> expectedProfile = request.params().getAll("profile");

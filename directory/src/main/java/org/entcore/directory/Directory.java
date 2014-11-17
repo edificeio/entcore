@@ -46,8 +46,8 @@ public class Directory extends BaseServer {
 		clearFilters();
 		setOauthClientGrant(true);
 		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
-		setResourceProvider(new DirectoryResourcesProvider());
 		super.start();
+		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override

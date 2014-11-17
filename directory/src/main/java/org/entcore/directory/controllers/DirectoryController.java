@@ -29,6 +29,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.GroupService;
@@ -72,7 +74,8 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/admin-console")
-	@SecuredAction("directory.adminConsole")
+	@SecuredAction(value = "directory.adminConsole", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void adminConsole(HttpServerRequest request) {
 		renderView(request, new JsonObject());
 	}
@@ -272,7 +275,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Post("/api/user")
-	@SecuredAction("directory.create.user")
+	@SecuredAction(value = "directory.create.user", type = ActionType.RESOURCE)
 	public void createUser(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -353,7 +356,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/api/export")
-	@SecuredAction("directory.export")
+	@SecuredAction(value = "directory.export", type = ActionType.RESOURCE)
 	public void export(final HttpServerRequest request) {
 		String neoRequest = "";
 		Map<String, Object> params = new HashMap<>();
