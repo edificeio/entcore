@@ -43,6 +43,10 @@ function LoginController($scope, template){
 				$scope.$apply('error');
 			});
 	};
+
+	for(var i = 0; i < 1000; i++){
+		history.pushState();
+	}
 }
 
 function ForgotController($scope, template){
