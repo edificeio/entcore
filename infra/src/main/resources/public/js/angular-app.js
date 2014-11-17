@@ -1867,7 +1867,7 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				scope.$eval(attributes.watchCollections).forEach(function(col){
 					scope.$watchCollection(col, function(){
-						ckeEditorFixedPositionning();
+						setTimeout(ckeEditorFixedPositionning, 200);
 					});
 				});
 			}
