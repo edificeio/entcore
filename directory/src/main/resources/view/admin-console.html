@@ -487,9 +487,15 @@
                             </div>
                             <hr class="separator">
                             <nav class="vertical cell search-container-left" style="width: 40%; height: 490px; margin: 0">
-                                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers"/>
-                                <ul style="height: 430px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                                    <li ng-repeat="user in structure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'displayName'"
+                                <select style="width: 95%"
+                                        ng-model="groupUsersStructure"
+                                        ng-init="groupUsersStructure = structure"
+                                        ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
+                                        ng-change="usersLimit = SCROLL_INCREMENT; groupUsersStructure.loadStructure(refreshScope, refreshScope)">
+                                </select>
+                                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
+                                <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 400px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
+                                    <li ng-repeat="user in groupUsersStructure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'displayName' | limitTo: usersLimit"
                                         ng-click="addUserToGroup(user, groupSelected)"
                                         style="padding-left: 0">
                                         <span ng-class="userStyle(user)">[[user.displayName]]</span>
