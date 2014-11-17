@@ -120,7 +120,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		}
 
 		var currentSharedRights = _.filter(document.shared, function(sharedRight){
-			return $scope.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
+			return model.me.groupsIds.indexOf(sharedRight.groupId) !== -1
 				|| sharedRight.userId === $scope.me.userId;
 		});
 

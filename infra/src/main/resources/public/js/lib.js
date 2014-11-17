@@ -1483,7 +1483,7 @@ function bootstrap(func){
 			}
 
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
-				return model.me.profilGroupsIds.indexOf(sharedRight.groupId) !== -1
+				return model.me.groupsIds.indexOf(sharedRight.groupId) !== -1
 					|| sharedRight.userId === model.me.userId;
 			});
 
