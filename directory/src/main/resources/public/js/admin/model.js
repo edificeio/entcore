@@ -98,11 +98,20 @@ User.prototype.saveQuota = function(){
 
 User.prototype.setLocalAdmin = function(structure){
         var that = this
+        var structureIds = [structure.id]
+        if(that.functions){
+            var localAdmin = _.find(that.functions, function(f){ return f[0] === "ADMIN_LOCAL" } )
+            if(localAdmin){
+                for(var i = 0; i < localAdmin[1].length; i++)
+                    structureIds.push(localAdmin[1][i])
+            }
+        }
         http().postJson("/directory/user/function/"+that.id, {
             functionCode: "ADMIN_LOCAL",
-            scope: [structure.id]
+            scope: structureIds
         }).done(function(){
             notify.info(lang.translate("directory.notify.setLocalAdmin"))
+            that.get()
         })
 }
 
@@ -110,6 +119,7 @@ User.prototype.removeLocalAdmin = function(){
     var that = this
     http().delete("/directory/user/function/"+that.id+"/ADMIN_LOCAL").done(function(){
         notify.info(lang.translate("directory.notify.removeLocalAdmin"))
+        that.get()
     })
 }
 
