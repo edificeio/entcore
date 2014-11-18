@@ -45,7 +45,7 @@ function LoginController($scope, template){
 	};
 
 	for(var i = 0; i < 10; i++){
-		history.pushState();
+		history.pushState('', {});
 	}
 }
 
