@@ -510,7 +510,7 @@
                 |||||||||||||||||||||
             -->
             <div ng-if="selected === 3" class="twelve">
-                <div class="row">
+                <div class="row" ng-if="!isAdminLocal()">
                     <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
                     <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">[[lang.translate("directory.import")]]</button>
                 </div>
