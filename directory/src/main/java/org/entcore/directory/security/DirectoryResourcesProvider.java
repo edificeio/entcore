@@ -100,6 +100,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listIsolated" :
 					isAdminOfStructure(request, user, handler);
 					break;
+				case "export" :
+					isAdminOfStructureOrClass4(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(StructureController.class.getName())) {
@@ -262,7 +265,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				} else if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
 					String query =
 							"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
-							"WHERE s.id IN ids " +
+							"WHERE s.id IN {ids} " +
 							"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
@@ -304,7 +307,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				} else if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
 					String query =
 							"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
-									"WHERE s.id IN ids " +
+									"WHERE s.id IN {ids} " +
 									"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
@@ -317,6 +320,38 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
+	private void isAdminOfStructureOrClass4(final HttpServerRequest request, UserInfos user,
+			final Handler<Boolean> handler) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions == null || functions.isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		final UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+		final UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
+		if ((adminLocal == null || adminLocal.getScope() == null) &&
+				(classAdmin == null || classAdmin.getScope() == null)) {
+			handler.handle(false);
+			return;
+		}
+		final String classId = request.params().get("classId");
+		final String structureId = request.params().get("structureId");
+		if (adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(structureId)) {
+			handler.handle(true);
+		}
+		if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
+			String query =
+					"MATCH (s:Structure)<-[:BELONGS]-(c:Class {id : {classId}}) " +
+					"WHERE s.id IN {ids} " +
+					"RETURN count(*) > 0 as exists";
+			JsonObject params = new JsonObject()
+					.putString("classId", classId)
+					.putArray("ids", new JsonArray(adminLocal.getScope().toArray()));
+			validateQuery(request, handler, query, params);
+		} else {
+			handler.handle(false);
+		}
+	}
 
 	private void isAdmin(UserInfos user, boolean allowClass, Handler<Boolean> handler) {
 		handler.handle(

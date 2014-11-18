@@ -193,7 +193,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/export/users")
-	@SecuredAction("user.export")
+	@SecuredAction(value = "user.export", type = ActionType.RESOURCE)
 	public void export(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final String classId = request.params().get("classId");
