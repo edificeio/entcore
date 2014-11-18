@@ -387,21 +387,44 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		validateQuery(request, handler, query, params);
 	}
 
-	private void isClassTeacher(final HttpServerRequest request, UserInfos user,
+	private void isClassTeacher(final HttpServerRequest request, final UserInfos user,
 			final Handler<Boolean> handler) {
-		String classId = request.params().get("classId");
+		final String classId = request.params().get("classId");
 		if (classId == null || classId.trim().isEmpty()) {
 			handler.handle(false);
 			return;
 		}
+		Set<String> ids = prevalidateAndGetIds(user, handler);
+		if (ids == null) return;
 		String query =
-				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
-				"<-[:IN]-(t:`User` { id : {teacherId}}) " +
-				"RETURN count(*) = 1 as exists ";
+				"MATCH (c:Class {id : {classId}})-[:BELONGS]->s2 " +
+				"WHERE s2.id IN {ids} " +
+				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
 				.putString("classId", classId)
-				.putString("teacherId", user.getUserId());
-		validateQuery(request, handler, query, params);
+				.putString("userId", request.params().get("userId"))
+				.putArray("ids", new JsonArray(ids.toArray()));
+		request.pause();
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				request.resume();
+				JsonArray res = r.body().getArray("result");
+				if ("ok".equals(r.body().getString("status")) &&
+						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+					handler.handle(true);
+				} else {
+					String query =
+							"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
+									"RETURN count(*) = 1 as exists ";
+					JsonObject params = new JsonObject()
+							.putString("classId", classId)
+							.putString("teacherId", user.getUserId());
+					validateQuery(request, handler, query, params);
+				}
+			}
+		});
 	}
 
 }
