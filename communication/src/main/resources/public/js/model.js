@@ -31,9 +31,10 @@ function Group(){
 Group.prototype.getCommunication = function() {
     var group = this
     http().get('group/' + this.id).done(function(data) {
-        group.data.users = data.users
+        var backupUsers = data.users
         delete data.users
         group.updateData(data)
+        group.communiqueUsers = backupUsers
         model.scope.$apply()
     })
 }
