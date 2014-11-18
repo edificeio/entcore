@@ -31,7 +31,7 @@
 		<a ng-if="anyTargetFolder() && !newFolder.editing" ng-click="editFolder()">Créer un nouveau dossier</a>
 		<div class="row input-block" ng-if="newFolder.editing">
 			<input type="text" required ng-model="newFolder.name" />
-			<button ng-click="createEditFolder()">[[translate('"workspace.folder.create')]]</button>
+			<button ng-click="createEditFolder()">[[translate('workspace.folder.create')]]</button>
 		</div>
 		<div class="clear"></div>
 		<div class="lightbox-buttons fluid">
