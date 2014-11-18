@@ -288,6 +288,13 @@ public class UserController extends BaseController {
 		userService.list(groupId, true, null, arrayResponseHandler(request));
 	}
 
+	@Get("/user/adml/list/:structureId")
+	@SecuredAction("user.adml.list")
+	public void listAdml(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		userService.listAdml(structureId, arrayResponseHandler(request));
+	}
+
 	@Get("/user/admin/list")
 	@SecuredAction(value = "user.list.admin", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {

@@ -292,6 +292,20 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void listAdml(String scopeId, Handler<Either<String, JsonArray>> result) {
+		String query =
+				"MATCH (n)<-[:DEPENDS]-(g:FunctionGroup)<-[:IN]-(u:User) " +
+				"WHERE (n:Structure OR n:Class) AND n.id = {scopeId} AND g.name =~ '^.*-AdminLocal$' " +
+				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"RETURN distinct u.id as id, u.login as login," +
+				" u.displayName as username, profile.name as type " +
+				"ORDER BY username ";
+		JsonObject params = new JsonObject();
+		params.putString("scopeId", scopeId);
+		neo.execute(query, params, validResultHandler(result));
+	}
+
+	@Override
 	public void list(String groupId, boolean itSelf, String userId,
 			final Handler<Either<String, JsonArray>> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";

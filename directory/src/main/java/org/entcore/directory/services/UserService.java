@@ -60,4 +60,6 @@ public interface UserService {
 
 	void removeGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
 
+	void listAdml(String structureId, Handler<Either<String,JsonArray>> result);
+
 }

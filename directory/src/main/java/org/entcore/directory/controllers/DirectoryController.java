@@ -449,6 +449,10 @@ public class DirectoryController extends BaseController {
 				boolean subGroups = message.body().getBoolean("subGroups", false);
 				groupService.list(structureId, type, subGroups, busArrayHandler(message));
 				break;
+			case "list-adml" :
+				String sId = message.body().getString("structureId");
+				userService.listAdml(sId, responseHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.putString("status", "error")
