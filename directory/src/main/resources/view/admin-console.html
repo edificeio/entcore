@@ -12,23 +12,13 @@
         <article ng-controller="AdminDirectoryController" class="twelve cell list-view">
 
             <div class="eleven leaf-menu-container">
-                <div class="leaf-menu" ng-class="{ selected: selected === 0 }">
-                    <a ng-click="selected=0">[[lang.translate("directory.userOps")]]</a>
-                    <loading-icon request="user-requests" only-loading-icon class="directory-inline-middle"></loading-icon>
-                </div>
-                <div class="leaf-menu" ng-class="{ selected: selected === 3 }">
-                    <a ng-click="selected=3">[[lang.translate("directory.classOps")]]</a>
-                </div>
-                <div class="leaf-menu" ng-class="{ selected: selected === 4 }">
-                    <a ng-click="selected=4">[[lang.translate("directory.groupOps")]]</a>
-                    <loading-icon request="groups-requests" only-loading-icon class="directory-inline-middle"></loading-icon>
-                </div>
-                <div class="leaf-menu" ng-class="{ selected: selected === 1 }">
-                    <a ng-click="selected=1">[[lang.translate("directory.feeding")]]</a>
-                </div>
-                <div class="leaf-menu" ng-class="{ selected: selected === 2 }">
-                    <a ng-click="selected=2; refreshIsolated()">[[lang.translate("directory.isolatedUsers")]]</a>
-                    <loading-icon request="isolated-request" only-loading-icon class="directory-inline-middle"></loading-icon>
+                <div ng-repeat="menuItem in leafMenu | filter: filterLeafMenuItems" class="leaf-menu" ng-class="{ selected: selected === $index }">
+                    <a ng-click="$parent.selected = $index; menuItem.onClick();">[[menuItem.text]]</a>
+                    <loading-icon
+                        ng-if="menuItem.requestName"
+                        request="[[menuItem.requestName]]" only-loading-icon
+                        class="directory-inline-middle">
+                    </loading-icon>
                 </div>
             </div>
 
@@ -356,7 +346,7 @@
                 |||  CLASSES OPS  |||
                 |||||||||||||||||||||
             -->
-            <div ng-if="selected === 3" class="twelve">
+            <div ng-if="selected === 1" class="twelve">
                 <!-- Structure selection menu -->
                 <nav class="side-tabs three cell">
                     <ul style="max-height: 750px; overflow-y: scroll;">
@@ -427,7 +417,7 @@
                 |||  GROUPS OPS   |||
                 |||||||||||||||||||||
             -->
-            <div ng-if="selected === 4" class="twelve">
+            <div ng-if="selected === 2" class="twelve">
                 <!-- Structure selection menu -->
                 <nav class="side-tabs three cell">
                     <ul style="max-height: 750px; overflow-y: scroll;">
@@ -519,7 +509,7 @@
                 |||  MAINTENANCE  |||
                 |||||||||||||||||||||
             -->
-            <div ng-if="selected === 1" class="twelve">
+            <div ng-if="selected === 3" class="twelve">
                 <div class="row">
                     <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
                     <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">[[lang.translate("directory.import")]]</button>
@@ -546,7 +536,7 @@
                 |||  INACTIVE ACCOUNTS  |||
                 |||||||||||||||||||||||||||
             -->
-            <div ng-if="selected === 2" class="twelve">
+            <div ng-if="selected === 4" class="twelve">
                 <ul bottom-scroll-action="incrementUsersLimit()" style="width: 25%; float:left; list-style: none; font-family: Lato; height: 700px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
                     <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
                         <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">

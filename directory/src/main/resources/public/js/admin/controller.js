@@ -38,7 +38,7 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
             var classId = params.classId
             var structureId = params.structureId
 
-            $scope.selected = 3
+            $scope.selected = 1
 
 			$scope.structures.sync(function(){
 				$scope.structure = $scope.structures.find(function(structure){
@@ -98,6 +98,42 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
     $scope.formatLongDate = function(d){
         return d ? date.create(d).format('LLLL') : ""
     }
+
+	$scope.isAdminLocal = function(){
+		return _.findWhere(model.me.functions, {code: "ADMIN_LOCAL"}) !== undefined
+	}
+
+	//// TOP MENU
+	$scope.filterLeafMenuItems = function(item, index){
+		return typeof item.showCondition !== "function" || item.showCondition()
+	}
+
+	$scope.leafMenu = [
+		{
+			text: lang.translate("directory.userOps"),
+			onClick: function(){ },
+			requestName : "user-requests"
+		},
+		{
+			text: lang.translate("directory.classOps"),
+			onClick: function(){ }
+		},
+		{
+			text: lang.translate("directory.groupOps"),
+			onClick: function(){ },
+			requestName : "groups-requests"
+		},
+		{
+			text: lang.translate("directory.feeding"),
+			onClick: function(){ }
+		},
+		{
+			text: lang.translate("directory.isolatedUsers"),
+			onClick: function(){ $scope.refreshIsolated() },
+			requestName : "isolated-request",
+			showCondition: function(){ return !$scope.isAdminLocal() }
+		}
+	]
 
     //Given a data size in bytes, returns a more "user friendly" representation.
     $scope.getAppropriateDataUnit = function(bytes){
