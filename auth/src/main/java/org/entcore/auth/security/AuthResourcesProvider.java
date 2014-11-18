@@ -20,9 +20,11 @@
 package org.entcore.auth.security;
 
 import fr.wseduc.webutils.http.Binding;
+
 import org.entcore.auth.AuthController;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -72,10 +74,20 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		String query =
-				"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
-				"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
-				"RETURN count(*) >= 1 as exists ";
+		
+		String query = "";
+		if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			query =
+					"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->(s:Structure)" +
+					"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
+					"WHERE fg.name = \".*AdminLocal.*\"" +
+					"RETURN count(*) >= 1 as exists ";
+		} else {
+			query =
+					"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+					"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
+					"RETURN count(*) >= 1 as exists ";
+		}
 		JsonObject params = new JsonObject()
 				.putString("id", id)
 				.putString("teacherId", user.getUserId());
@@ -107,10 +119,19 @@ public class AuthResourcesProvider implements ResourcesProvider {
 					handler.handle(false);
 					return;
 				}
-				String query =
+				String query;
+				if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+					query =
+						"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->(s:Structure)" +
+						"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
+						"WHERE fg.name =~ \".*AdminLocal.*\"" +
+						"RETURN count(*) >= 1 as exists ";
+				} else {
+					query =
 						"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
 						"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {login : {login}}) " +
 						"RETURN count(*) >= 1 as exists ";
+				}
 				JsonObject params = new JsonObject()
 						.putString("login", login)
 						.putString("teacherId", user.getUserId());
