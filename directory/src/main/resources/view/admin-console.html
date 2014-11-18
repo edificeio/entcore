@@ -11,7 +11,7 @@
     <admin-portal>
         <article ng-controller="AdminDirectoryController" class="twelve cell list-view">
 
-            <div class="eleven leaf-menu-container">
+            <div class="twelve leaf-menu-container">
                 <div ng-repeat="menuItem in leafMenu | filter: filterLeafMenuItems" class="leaf-menu" ng-class="{ selected: selected === $index }">
                     <a ng-click="$parent.selected = $index; menuItem.onClick();">[[menuItem.text]]</a>
                     <loading-icon
@@ -80,7 +80,7 @@
                             <button ng-click="selectAllClasses()" style="height: 25px" class="instantButtons select right-magnet" tooltip="directory.tooltip.selectAll"></button>
                         </div>
                         <ul class="selectable-list">
-                            <li ng-repeat="class in structure.classes.all | orderBy: 'name'" ng-class="{selected : class.selected}" ng-click="toggleClass(class, structure)">
+                            <li ng-repeat="class in structure.classes.all | orderBy: 'name'" ng-class="{selected : class.selected}" class="cols3" ng-click="toggleClass(class, structure)">
                                 [[class.name]]
                             </li>
                         </ul>

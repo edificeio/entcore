@@ -59,7 +59,11 @@ h1:first-child{
 
 html section.main, body section.main{
 	min-height: 100%;
-	padding-top: 0;
+	max-width: 1300px;
+	margin: 0px;
+	padding: 0px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 article.main{
@@ -73,7 +77,7 @@ article{
 	border: none;
 	background: transparent;
 	padding: 15px;
-	max-width: 1100px;
+	max-width: 1300px;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -100,7 +104,9 @@ nav.vertical{
 }
 
 .container{
-	margin-top: 52px;
+	padding: 0px;
+	padding-top: 80px;
+	margin: 0px;
 }
 
 input[type=text], select, label{
@@ -425,4 +431,30 @@ label.legend-label{
 	.accordion.opened .toggle{
 		height: 450px;
 	}
+}
+
+nav.admin-bar {
+    height: 25px;
+    overflow-y: hidden;
+    transition: height 250ms ease;
+    margin-top: 30px; padding: 10px;
+    position: absolute;
+    width: 99%;
+    z-index: 10;
+    background-color: #EEE
+}
+
+nav.admin-bar:hover {
+    height: 100px;
+    border-bottom: 1px solid #444;
+}
+
+.selectable-list{
+
+	li.cols3{
+		width: 29%;
+		margin: 2px;
+		display: inline-block;
+	}
+
 }

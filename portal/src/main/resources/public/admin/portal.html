@@ -22,10 +22,10 @@
 	<h1 translate content="admin.header">admin.header</h1>
 	<a class="right-magnet cell" href="/auth/logout"><i class="disconnect"></i></a>
 </header>
-<nav ng-controller="Admin" class="vertical left cell">
-	<button ng-click="scrollUp()">Remonter</button>
+<nav ng-controller="Admin" class="vertical admin-bar">
+	<!--button ng-click="scrollUp()">Remonter</button-->
 	<ul>
-		<li ng-repeat="url in urls">
+		<li ng-repeat="url in urls | orderBy : orderUrls">
 			<a ng-href="[[url.url]]" ng-class="{ selected: getHighlight(url) }" translate content="admin.[[url.name]]"></a>
 			<ul>
 				<li ng-repeat="child in url.children"><a ng-href="[[child.url]]" translate content="admin.[[child.name]]"></a></li>

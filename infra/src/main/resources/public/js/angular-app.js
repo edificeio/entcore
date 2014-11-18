@@ -3875,6 +3875,9 @@ function Admin($scope){
     $scope.getHighlight = function(url){
         return window.location.href.indexOf(url.url) >= 0
     }
+    $scope.orderUrls = function(url){
+        return !$scope.getHighlight(url) ? 1 : 0
+    }
 
 	$scope.scrollUp = ui.scrollToTop;
 }
