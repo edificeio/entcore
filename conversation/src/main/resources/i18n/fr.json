@@ -28,6 +28,7 @@
     "group.school.Relative": "Tous les parents de l'{0}.",
     "group.school.Student": "Tous les élèves de l'{0}.",
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
+	"group.AdminLocal": "Tous les administrateurs locaux",
     "inbox": "Boîte de réception",
     "invalid": " recevra le message après avoir activé son compte",
     "mail.sent": "Message envoyé",
