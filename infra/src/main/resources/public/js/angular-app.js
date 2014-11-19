@@ -3878,6 +3878,9 @@ function Admin($scope){
     $scope.orderUrls = function(url){
         return !$scope.getHighlight(url) ? 1 : 0
     }
+    $scope.filterUrls = function(url){
+        return !url.allowed || !url.allowed instanceof Array ? true : _.find(model.me.functions, function(f){ return _.contains(url.allowed, f.code) })
+    }
 
 	$scope.scrollUp = ui.scrollToTop;
 }

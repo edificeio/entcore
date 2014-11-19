@@ -1534,6 +1534,9 @@ a {
   float: right;
   margin: 10px;
 }
+.toggle-buttons behaviour {
+  float: left;
+}
 [draggable] {
   cursor: move;
 }
@@ -1608,7 +1611,16 @@ ul.icons-tabs li i {
   padding: 8px;
 }
 .icons-view {
+  max-width: 960px;
+  width: 100%;
   position: relative;
+  clear: both;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  max-width: 1200px;
+  max-width: 100%;
   padding-left: 0;
 }
 .icons-view .element {
@@ -1686,6 +1698,12 @@ ul.icons-tabs li i {
 }
 .icons-view .element em {
   display: none;
+}
+.icons-view:after {
+  clear: both;
+  content: " ";
+  display: block;
+  width: 100%;
 }
 .icons-view.absolute {
   position: absolute;
@@ -9863,9 +9881,9 @@ label.legend-label.marged {
   height: 450px;
 }
 nav.admin-bar {
-  height: 25px;
+  max-height: 25px;
   overflow-y: hidden;
-  transition: height 250ms ease;
+  transition: max-height 250ms ease;
   margin-top: 30px;
   padding: 10px;
   position: absolute;
@@ -9874,7 +9892,7 @@ nav.admin-bar {
   background-color: #eeeeee;
 }
 nav.admin-bar:hover {
-  height: 100px;
+  max-height: 100px;
   border-bottom: 1px solid #444;
 }
 .selectable-list li.cols3 {

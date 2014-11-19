@@ -80,7 +80,7 @@
         },
 		"admin-urls": [
 			{"name": "directory", "url": "http://localhost:8090/directory/admin-console"},
-			{"name": "appRegistry", "url": "http://localhost:8090/appregistry/admin-console"},
+			{"name": "appRegistry", "url": "http://localhost:8090/appregistry/admin-console", "allowed": ["SUPER_ADMIN"]},
 			{"name": "communication", "url": "http://localhost:8090/communication/admin-console"}
 		],
 		  "widgets": [
