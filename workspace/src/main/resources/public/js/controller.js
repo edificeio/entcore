@@ -28,7 +28,7 @@ var tools = (function(){
 					return type.indexOf('image') !== -1;
 				},
 				'pdf': function(type){
-					return type.indexOf('pdf') !== -1;
+					return type.indexOf('pdf') !== -1 || type === 'application/x-download';
 				},
 				'ppt': function(type){
 					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
