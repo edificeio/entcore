@@ -3218,42 +3218,89 @@ module.directive('sharePanel', function($compile){
 
 module.directive('sortableList', function($compile){
 	return {
+		restrict: 'A',
+		controller: function(){},
 		link: function(scope, element, attributes){
-
 		}
 	}
 });
 
 module.directive('sortableElement', function($compile){
 	return {
+		scope: {
+			ngModel: '=',
+			ngChange: '&'
+		},
+		require: '^sortableList',
+		template: '<div ng-transclude></div>',
+		transclude: true,
 		link: function(scope, element, attributes){
-			var sortables = element.parents('[sortable-list]').find('[sortable-element]');
+			var sortables;
 			ui.extendElement.draggable(element, {
+				lock: {
+					horizontal: true
+				},
 				mouseUp: function(){
+					sortables.removeClass('animated');
 					element.on('click', function(){
 						scope.$parent.$eval(attributes.ngClick);
 					});
+					sortables.each(function(index, item){
+						if(parseInt($(item).css('margin-top')) > 0){
+							element.detach().insertBefore(item);
+						}
+					});
+
+					//get new elements order
+					sortables = element.parents('[sortable-list]').find('[sortable-element]');
+					sortables.each(function(index, item){
+						var itemScope = angular.element(item).scope();
+						itemScope.ngModel = index;
+						itemScope.$apply('ngModel');
+					});
+
+					if(typeof scope.ngChange === 'function'){
+						scope.ngChange();
+					}
+
 					sortables.css({ position: 'relative', top: 0, left: 0, 'margin-top': 0 });
 				},
+				mouseDown: function(){
+					sortables = element.parents('[sortable-list]').find('[sortable-element]');
+					sortables.attr('style', '');
+					setTimeout(function(){
+						sortables.addClass('animated');
+					}, 20);
+					element.css({ 'z-index': 1000 });
+				},
 				tick: function(){
-					sortables.css({ 'margin-top': 0 });
+					var moved = [];
 					sortables.each(function(index, sortable){
 						if(element[0] === sortable){
 							return;
 						}
-						if(element.offset().top + (element.height() / 2) > $(sortable).offset().top &&
-							element.offset().top + (element.height() / 2) < $(sortable).offset().top + $(sortable).height()){
+						var sortableTopDistance = $(sortable).offset().top - parseInt($(sortable).css('margin-top'));
+						if(element.offset().top + element.height() / 2 > sortableTopDistance &&
+							element.offset().top + element.height() / 2 < sortableTopDistance + $(sortable).height()){
 							$(sortable).css({ 'margin-top': element.height()});
+							moved.push(sortable);
 						}
 						//last widget case
-						if(element.offset().top > $(sortable).offset().top + $(sortable).height() && index === sortables.length - 1){
+						if(element.offset().top > sortableTopDistance + $(sortable).height() && index === sortables.length - 1){
 							$(sortable).css({ 'margin-top': element.height()});
+							moved.push(sortable);
 						}
 						//first widget case
-						if(element.offset().top + element.height() < $(sortable).offset().top && index === 0){
+						if(element.offset().top + element.height() / 2 - 2 < sortableTopDistance && index === 0){
 							$(sortable).css({ 'margin-top': element.height()});
+							moved.push(sortable);
 						}
 					});
+					sortables.each(function(index, sortable){
+						if(moved.indexOf(sortable) === -1){
+							$(sortable).css({ 'margin-top': 0 + 'px' });
+						}
+					})
 				}
 			});
 		}
@@ -3291,6 +3338,22 @@ module.directive('widgets', function($compile){
 					}
 				});
 				element.find('.widget-container').css({ position: 'relative', top: '0px', left: '0px' });
+			});
+			model.widgets.on('change', function(){
+				if(element.find('.widget-container').length === 0){
+					element
+						.parents('.widgets')
+						.next('.widgets-friend')
+						.addClass('widgets-enemy');
+					element.parents('.widgets').addClass('hidden');
+				}
+				else{
+					element
+						.parents('.widgets')
+						.next('.widgets-friend')
+						.removeClass('widgets-enemy');
+					element.parents('.widgets').removeClass('hidden');
+				}
 			});
 		}
 	}
@@ -3874,33 +3937,26 @@ function Admin($scope){
 
 function Widget(){}
 
-Widget.prototype.hide = function(){
-	model.widgets.preferences[this.name].show = false;
+Widget.prototype.switchHide = function(){
+	if(!this.hide){
+		this.hide = false;
+	}
+	this.hide = !this.hide;
+	this.trigger('change');
+	model.widgets.trigger('change');
 	model.widgets.savePreferences();
-};
+}
 
-Widget.prototype.show = function(){
-	model.widgets.preferences[this.name].show = true;
-	model.widgets.savePreferences();
-};
-
-Widget.prototype.setIndex = function(index){
-	model.widgets.preferences[this.name].index = index;
-	model.widgets.forEach(function(widget, i){
-		if(widget.index >= index && widget !== this){
-			widget.index ++;
-			model.widgets.preferences[widget.name].index ++;
-		}
-	}.bind(this));
-
-	model.widgets.savePreferences();
-};
-
-function Widgets($scope, model, lang, date){
+function WidgetModel(){
 	model.makeModels([Widget]);
 	model.collection(Widget, {
 		preferences: {},
 		savePreferences: function(){
+			var that = this;
+			this.forEach(function(widget){
+				that.preferences[widget.name].hide = widget.hide;
+				that.preferences[widget.name].index = widget.index;
+			});
 			http().putJson('/userbook/preference/widgets', this.preferences);
 		},
 		sync: function(){
@@ -3915,15 +3971,13 @@ function Widgets($scope, model, lang, date){
 						this.preferences = JSON.parse(pref.preference);
 					}
 
-					data = data.filter(function(widget){
-						return !$scope.list || $scope.list.indexOf(widget.name) !== -1;
-					});
+
 					data = data.map(function(widget, i){
 						if(!that.preferences[widget.name]){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
-						widget.show = that.preferences[widget.name].show;
+						widget.hide = that.preferences[widget.name].hide;
 						return widget;
 					});
 
@@ -3950,10 +4004,18 @@ function Widgets($scope, model, lang, date){
 			model.trigger('widgets.change');
 		}
 	});
+}
 
+function Widgets($scope, model, lang, date){
+	if(!model.widgets){
+		WidgetModel();
+	}
 	model.widgets.sync();
-
 	$scope.widgets = model.widgets;
+
+	$scope.allowedWidget = function(widget){
+		return (!$scope.list || $scope.list.indexOf(widget.name) !== -1) && !widget.hide;
+	}
 
 	model.on('widgets.change', function(){
 		if(!$scope.$$phase){
@@ -3962,6 +4024,10 @@ function Widgets($scope, model, lang, date){
 	});
 
 	$scope.translate = lang.translate;
+	$scope.switchHide = function(widget, $event){
+		widget.switchHide();
+		$event.stopPropagation();
+	}
 }
 
 var workspace = {

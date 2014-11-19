@@ -244,7 +244,7 @@ var ui = (function(){
 
 
 ui.extendElement = {
-	draggable: function(element, events){
+	draggable: function(element, params){
 		element.on('mousedown', function(e){
 			if(element.data('lock') === true){
 				return;
@@ -252,6 +252,10 @@ ui.extendElement = {
 			e.preventDefault();
 			var interrupt = false;
 			if(element.data('resizing') !== true){
+				if(params && typeof params.mouseDown === 'function'){
+					params.mouseDown();
+				}
+
 				$('body').css({
 					'-webkit-user-select': 'none',
 					'-moz-user-select': 'none',
@@ -299,8 +303,8 @@ ui.extendElement = {
 						}
 
 						element.data('dragging', false);
-						if(events && typeof events.mouseUp === 'function'){
-							events.mouseUp();
+						if(params && typeof params.mouseUp === 'function'){
+							params.mouseUp();
 						}
 					}, 100);
 				});
@@ -341,10 +345,16 @@ ui.extendElement = {
 						newOffset.top = boundaries.bottom - 2;
 					}
 
+					if(params.lock && params.lock.vertical){
+						newOffset.top = element.offset().top;
+					}
+					if(params.lock && params.lock.horizontal){
+						newOffset.left = element.offset().left;
+					}
 					element.offset(newOffset);
 
-					if(events && typeof events.tick === 'function'){
-						events.tick();
+					if(params && typeof params.tick === 'function'){
+						params.tick();
 					}
 
 					if(!interrupt){

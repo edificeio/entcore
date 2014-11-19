@@ -45,6 +45,7 @@ function Timeline($scope, date, model, lang){
 
 function Personalization($rootScope, $scope, model, ui){
 	$scope.skins = model.skins;
+	$scope.widgets = model.widgets;
 
 	$scope.saveTheme = function(skin, $event){
 		$event.stopPropagation();
