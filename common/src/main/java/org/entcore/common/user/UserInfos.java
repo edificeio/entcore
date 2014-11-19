@@ -263,6 +263,11 @@ public class UserInfos {
 		return groupsIds;
 	}
 
+	@Deprecated
+	public void setProfilGroupsIds(List<String> profilGroupsIds) {
+		this.groupsIds = profilGroupsIds;
+	}
+
 	public void setGroupsIds(List<String> groupsIds) {
 		this.groupsIds = groupsIds;
 	}
