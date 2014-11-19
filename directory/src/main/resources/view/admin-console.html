@@ -250,8 +250,8 @@
                                     <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
                                 </div>
                             </div>
-                            <hr class="separator">
-                            <div>
+                            <div ng-if="!isAdminLocal()">
+                                <hr class="separator">
                                 <h3 style="margin-top: 0;">[[lang.translate("directory.localAdminAttribution")]]</h3>
                                 <!-- Local admin attribution -->
                                 <div>
