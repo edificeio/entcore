@@ -25,10 +25,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
-import org.entcore.feeder.dictionary.structures.GraphData;
-import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Transition;
-import org.entcore.feeder.dictionary.structures.User;
+import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
 import org.entcore.feeder.utils.Neo4j;
@@ -45,6 +42,7 @@ import java.text.ParseException;
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public static final String USER_REPOSITORY = "user.repository";
+	public static final String FEEDER_ADDRESS = "entcore.feeder";
 	private Feed feed;
 	private ManualFeeder manual;
 	private Neo4j neo4j;
@@ -69,9 +67,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final String deleteCron = container.config().getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = container.config().getString("pre-delete-cron", "0 0 3 * * ? *");
+		final String importCron = container.config().getString("import-cron");
 		try {
 			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
 			new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
+			if (importCron != null && !importCron.trim().isEmpty()) {
+				new CronTrigger(vertx, importCron).schedule(new ImporterTask(eb,
+						container.config().getBoolean("auto-export", false)));
+			}
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.stop();
@@ -80,7 +83,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
 		vertx.eventBus().registerHandler(
-				container.config().getString("address", "entcore.feeder"), this);
+				container.config().getString("address", FEEDER_ADDRESS), this);
 		switch (container.config().getString("feeder", "")) {
 			case "AAF" :
 				feed = new AafFeeder(vertx, container.config().getString("import-files"),
