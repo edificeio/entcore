@@ -486,8 +486,8 @@ module.directive('linker', function($compile){
 				scope.linker.search.application = scope.linker.apps[0];
 				if(currentApp){
 					scope.linker.search.application = currentApp;
-					scope.linker.loadApplicationResources(function(){});
 				}
+				scope.linker.loadApplicationResources(function(){});
 
 				var split = scope.linker.search.application.address.split('/');
 				scope.linker.params.appPrefix = split[split.length - 1];
