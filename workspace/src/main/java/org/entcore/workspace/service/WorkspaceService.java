@@ -1266,6 +1266,7 @@ public class WorkspaceService extends BaseController {
 									String now = MongoDb.formatDate(new Date());
 									dest.removeField("_id");
 									dest.removeField("protected");
+									dest.removeField("comments");
 									dest.putString("application", WORKSPACE_NAME);
 									if (owner != null) {
 										dest.putString("owner", owner);
