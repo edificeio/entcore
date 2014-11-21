@@ -1,6 +1,51 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.10.0 (24/11/2014)
+
+## App-Registry
+
+* Ajout d'une api bus
+
+## Auth
+
+* Bloquer le bouton retour sur la page de connexion
+
+## Cas
+
+* Ajout d'un module cas avec gestion des flux service, proxy et saml
+
+## Directory
+
+* Ajout d'une api bus
+
+## Feeder
+
+* Ajout d'un cron pour déclencher les imports
+
+## Portal
+
+* Les adml ont accès à la console d'administration
+* Gestion des adml
+* Gestion des groupes manuels dans l'admin
+## Framework
+
+* Possibilité de partager des ressources à un groupe manuel
+* Ajout de traces applicatives
+* Agrégateur de traces pour simplifier la construction de stats
+
+## Évolutions techniques
+
+* refactoring des fonctions pour gérer "l'héritage" de structures et le regroupement de fonctions
+
+## Anomalies corrigées
+
+* [Communication] appliquer les règles de com à un utilisateur qui est ajouté à un groupe manuel
+* [Feeder] correction d'un problème de concurrence dans le chargement des données du graphe
+* [Linker] le linker ne chargait pas les ressources dans certains cas
+* [Timeline] correction de la taille des notifications
+* [Workspace] les pdf étaient chargés avec un mauvais mime type
+
 # v1.9.0 (05/11/2014)
 
 ## App-Registry
