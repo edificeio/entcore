@@ -27,6 +27,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class GraphData {
@@ -47,6 +48,7 @@ public class GraphData {
 						"MATCH (p:Profile) " +
 						"OPTIONAL MATCH p<-[:COMPOSE]-(f:Function) " +
 						"return p, collect(f.externalId) as functions ";
+				final AtomicInteger count = new AtomicInteger(2);
 				neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {
@@ -60,7 +62,7 @@ public class GraphData {
 										new Profile(p, r.getArray("functions")));
 							}
 						}
-						if (handler != null) {
+						if (handler != null && count.decrementAndGet() == 0) {
 							handler.handle(message);
 						}
 					}
@@ -74,6 +76,9 @@ public class GraphData {
 						structures.putIfAbsent(s.getString("externalId"),
 								new Structure(s, r.getArray("groups"), r.getArray("classes")));
 					}
+				}
+				if (handler != null && count.decrementAndGet() == 0) {
+					handler.handle(message);
 				}
 			}
 		});
