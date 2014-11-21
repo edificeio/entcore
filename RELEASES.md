@@ -1,6 +1,71 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.9.0 (05/11/2014)
+
+## App-Registry
+
+* Refactoring des api
+* Rendre les api accessibles aux adml
+
+## Auth
+
+* Pouvoir configurer l'envoi du mot de passe de l'élève vers l'email de l'enseignant
+
+## Communication
+
+* Refactoring des api
+* Rendre les api accessibles aux adml
+* Refactoring de la gestion des règles de communication
+
+## Directory
+
+* Autoriser les enseignants à changer la date de naissance des élèves
+* Ajout de deux onglets pour les enseignants et les personnels dans le paramétrage de la classe
+* Un enseignant peut supprimer un autre enseignant dans l'admin de la classe
+
+## Portal
+
+* Style "sea"
+* Nouvelle console d'administration
+* Mise à jour générale de l'ux
+
+## Timeline
+
+* Suppression des droits workflow pour l'accès à la timeline (restreint aux utilisateurs authentifiés)
+* Responsive
+
+## Workspace
+
+* Ajout d'un sniplet documents
+* Documents affichés par défaut en vue icône
+
+## Framework
+
+* Ajout de patchwork et flexible cells
+* Ajout d'une directive sniplets
+* Nouveau composant calendrier
+* Réintégration du module timeline
+* Portage des modules sur le nouveau système de route (basé sur des annotations)
+* Suppression de la dépendance processor (réintégré dans web-utils et common)
+* Possibilité de surcharger toutes les clés i18n dans les assets
+* Tâche gradle pour générer les clés manquantes dans les autres langues
+* Ajout d'un validateur JsonSchema pour valider le corps des requêtes
+
+## Évolutions techniques
+
+* [Infra] Passage à web-utils version 1.8.0
+
+## Anomalies corrigées
+
+* [Auth] correction de la procédure de mot de passe oublié
+* [Communication] manque d'un label sur les groupes ou les utilisateurs dans certains cas
+* [Conversation] correction d'un problème de concurrence dans l'affichage
+* [Conversation] duplication (dans la corbeille) des messages envoyés à soi même
+* [Directory] prémunir neo4j d'un possible deadlock lors de la suppression multiple d'utilisateurs
+* [Directory] invalider le cache quand les visibilitées changent
+* [Portal] correction de l'adapter pour les applications externes
+
 # v1.8.0 (03/09/2014)
 
 ## Archive
