@@ -84,7 +84,7 @@
 	"appregistry.notify.createApp":					"Application créée",
 	"appregistry.notify.modified":					"Modifications enregistrées",
 	"appregistry.notify.deleteApp":					"Application supprimée",
-    "appregistry.notify.createRole":				"Rôle créée",
+    "appregistry.notify.createRole":				"Rôle créé",
     "appregistry.notify.modifyRole":				"Rôle enregistré",
     "appregistry.notify.deleteRole":				"Rôle supprimé",
 	"appregistry.tooltip.selectAll":				"Tout sélectionner",
