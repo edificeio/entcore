@@ -113,6 +113,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		switch (action) {
 			case "manual-create-structure" : manual.createStructure(message);
 				break;
+			case "manual-update-structure" : manual.updateStructure(message);
+				break;
 			case "manual-create-class" : manual.createClass(message);
 				break;
 			case "manual-update-class" : manual.updateClass(message);

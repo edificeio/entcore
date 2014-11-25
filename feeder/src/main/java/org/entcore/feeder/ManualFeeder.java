@@ -872,4 +872,36 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void updateStructure(final Message<JsonObject> message) {
+		JsonObject s = getMandatoryObject("data", message);
+		if (s == null) return;
+		String structureId = getMandatoryString("structureId", message);
+		if (structureId == null) return;
+		final String error = structureValidator.modifiableValidate(s);
+		if (error != null) {
+			logger.error(error);
+			sendError(message, error);
+		} else {
+			String rename = "SET ";
+			if (s.getString("name") != null) {
+				rename =
+						"WITH s, s.name as old " +
+						"OPTIONAL MATCH s<-[:DEPENDS]-(spg:ProfileGroup) " +
+						"OPTIONAL MATCH s<-[:DEPENDS]-(fg:FunctionGroup) " +
+						"SET spg.name = replace(spg.name, old, {name}), fg.name = replace(fg.name, old, {name}), ";
+			}
+			String query =
+					"MATCH (s:`Structure` { id : {structureId}}) " +
+					rename + Neo4j.nodeSetPropertiesFromJson("s", s) +
+					"RETURN DISTINCT s.id as id ";
+			JsonObject params = s.putString("structureId", structureId);
+			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> m) {
+					message.reply(m.body());
+				}
+			});
+		}
+	}
+
 }

@@ -141,4 +141,13 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query.toString(), (JsonObject) null, validResultHandler(results));
 	}
 
+	@Override
+	public void update(String structureId, JsonObject body, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-update-structure")
+				.putString("structureId", structureId)
+				.putObject("data", body);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
 }

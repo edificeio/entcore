@@ -93,5 +93,5 @@
 		"id" : {"generator":"uuid4", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
-	"modifiable" : []
+	"modifiable" : ["name"]
 }

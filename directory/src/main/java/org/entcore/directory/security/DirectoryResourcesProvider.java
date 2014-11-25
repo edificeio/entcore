@@ -109,6 +109,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(StructureController.class.getName().length() + 1);
 			switch (method) {
+				case "update" :
+					isAdminOfStructureOrClass4(request, user, handler);
+					break;
 				case "listAdmin" :
 					isAdmin(user, false, handler);
 					break;
@@ -338,6 +341,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		final String structureId = request.params().get("structureId");
 		if (adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(structureId)) {
 			handler.handle(true);
+			return;
 		}
 		if (adminLocal != null && classId != null && adminLocal.getScope() != null) {
 			String query =

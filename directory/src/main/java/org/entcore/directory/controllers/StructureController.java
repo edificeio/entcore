@@ -36,12 +36,26 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 public class StructureController extends BaseController {
 
 	private SchoolService structureService;
+
+	@Put("/structure/:structureId")
+	@SecuredAction(value = "structure.update", type = ActionType.RESOURCE)
+	public void update(final HttpServerRequest request) {
+		bodyToJson(request, pathPrefix + "updateStructure", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				String structureId = request.params().get("structureId");
+				structureService.update(structureId, body, defaultResponseHandler(request));
+			}
+		});
+	}
 
 	@Put("/structure/:structureId/link/:userId")
 	@SecuredAction("structure.link.user")
