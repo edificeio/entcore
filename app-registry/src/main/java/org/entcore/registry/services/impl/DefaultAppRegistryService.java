@@ -96,13 +96,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		String query;
 		JsonObject params = new JsonObject();
 		if (structureId != null && !structureId.trim().isEmpty()) {
-			String filter = classGroups ? "*1..2" : "";
+			String filter = classGroups ? "<-[:BELONGS*0..1]-()" : "";
 			params.putString("structureId", structureId);
-			query = "MATCH (m:Structure)<-[:DEPENDS" + filter + "]-(n:ProfileGroup) " +
+			query = "MATCH (m:Structure)" + filter + "<-[:DEPENDS]-(n:Group) " +
 					"WHERE m.id = {structureId} " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		} else {
-			query = "MATCH (n:ProfileGroup) " +
+			query = "MATCH (n:Group) " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		}
 		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles " +
@@ -198,7 +198,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		params.putString("groupId", groupId);
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String deleteQuery =
-					"MATCH (m:ProfileGroup)-[r:AUTHORIZED]-() " +
+					"MATCH (m:Group)-[r:AUTHORIZED]-() " +
 					"WHERE m.id = {groupId} " +
 					"DELETE r";
 			if (roleIds == null || roleIds.size() == 0) {
@@ -206,7 +206,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			} else {
 				StatementsBuilder s = new StatementsBuilder().add(deleteQuery, params);
 				String createQuery =
-						"MATCH (n:Role), (m:ProfileGroup) " +
+						"MATCH (n:Role), (m:Group) " +
 						"WHERE m.id = {groupId} AND n.id IN {roles} " +
 						"CREATE UNIQUE m-[:AUTHORIZED]->n";
 				s.add(createQuery, params.copy().putArray("roles", roleIds));
@@ -363,7 +363,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			}
 			String query =
 					"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
-					"<-[:AUTHORIZED]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
+					"<-[:AUTHORIZED]-(pg:Group)<-[:IN]-(u:User) " +
 					"WHERE app.name = {application} " + filter +
 					"RETURN DISTINCT u.id as id";
 			neo.execute(query, params, validResultHandler(handler));
