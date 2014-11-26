@@ -443,6 +443,20 @@ function Collection(obj){
 			this.trigger('push');
 			this.trigger('change');
 		},
+		moveUp: function(item){
+			var itemIndex = this.getIndex(item);
+			var swap = this.all[itemIndex - 1];
+			this.all[itemIndex - 1] = item;
+			this.all[itemIndex] = swap;
+			this.trigger('change');
+		},
+		moveDown: function(item){
+			var itemIndex = this.getIndex(item);
+			var swap = this.all[itemIndex + 1];
+			this.all[itemIndex + 1] = item;
+			this.all[itemIndex] = swap;
+			this.trigger('change');
+		},
 		getIndex: function(item){
 			for(var i = 0; i < this.all.length; i++){
 				if(this.all[i] === item){
@@ -1429,7 +1443,7 @@ var sniplets = {
 		http().get('/resources-applications').done(function(apps) {
 			var apps = _.filter(model.me.apps, function (app) {
 				return _.find(apps, function (match) {
-					return app.address.indexOf(match) !== -1
+					return app.address.indexOf(match) !== -1 && app.target === null
 				});
 			});
 			var all = apps.length;

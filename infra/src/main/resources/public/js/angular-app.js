@@ -2873,7 +2873,10 @@ module.directive('gridDraggable', function($compile){
 				}
 
 				$(window).on('mousemove.drag', function(e){
-					if(element.data('resizing') !== true && (e.clientX !== mouse.x && e.clientY !== mouse.y) && element.data('dragging') !== true){
+					if(e.clientX === mouse.x && e.clientY === mouse.y){
+						return;
+					}
+					if(element.data('resizing') !== true && element.data('dragging') !== true){
 						element.trigger('startDrag');
 
 						var elementDistance = {
@@ -2908,7 +2911,7 @@ module.directive('gridDraggable', function($compile){
 					};
 				});
 
-				$('body').on('mouseup.drag', function(e){
+				$(window).on('mouseup.drag', function(e){
 					element.trigger('stopDrag');
 					$('body').css({
 						'-webkit-user-select': 'initial',
@@ -3251,15 +3254,23 @@ module.directive('sortableElement', function($compile){
 						}
 					});
 
+					if(element.offset().top > sortables.last().offset().top + sortables.last().height()){
+						element.detach().insertAfter(sortables.last());
+					}
+
 					//get new elements order
+					var changed = false;
 					sortables = element.parents('[sortable-list]').find('[sortable-element]');
 					sortables.each(function(index, item){
 						var itemScope = angular.element(item).scope();
-						itemScope.ngModel = index;
-						itemScope.$apply('ngModel');
+						if(index !== itemScope.ngModel){
+							itemScope.ngModel = index;
+							itemScope.$apply('ngModel');
+							changed = true;
+						}
 					});
 
-					if(typeof scope.ngChange === 'function'){
+					if(typeof scope.ngChange === 'function' && changed){
 						scope.ngChange();
 					}
 
@@ -3282,11 +3293,6 @@ module.directive('sortableElement', function($compile){
 						var sortableTopDistance = $(sortable).offset().top - parseInt($(sortable).css('margin-top'));
 						if(element.offset().top + element.height() / 2 > sortableTopDistance &&
 							element.offset().top + element.height() / 2 < sortableTopDistance + $(sortable).height()){
-							$(sortable).css({ 'margin-top': element.height()});
-							moved.push(sortable);
-						}
-						//last widget case
-						if(element.offset().top > sortableTopDistance + $(sortable).height() && index === sortables.length - 1){
 							$(sortable).css({ 'margin-top': element.height()});
 							moved.push(sortable);
 						}
@@ -3571,7 +3577,22 @@ module.directive('alphabetical', function($compile, $parse){
 			}
 		}
 	}
-})
+});
+
+module.directive('completeClick', function($parse){
+	return {
+		compile: function(selement, attributes){
+			var fn = $parse(attributes.completeClick);
+			return function(scope, element, attributes) {
+				element.on('click', function(event) {
+					scope.$apply(function() {
+						fn(scope, {$event:event});
+					});
+				});
+			};
+		}
+	}
+});
 
 $(document).ready(function(){
 	setTimeout(function(){

@@ -249,7 +249,6 @@ ui.extendElement = {
 			if(element.data('lock') === true){
 				return;
 			}
-			e.preventDefault();
 			var interrupt = false;
 			if(element.data('resizing') !== true){
 				if(params && typeof params.mouseDown === 'function'){
@@ -272,8 +271,9 @@ ui.extendElement = {
 					y: mouse.y - element.offset().top,
 					x: mouse.x - element.offset().left
 				};
-				$(window).on('mousemove.drag', function(e){
-					if(e.clientX === mouse.x && e.clientY === mouse.y){
+				$(window).on('mousemove.drag', function(f){
+					e.preventDefault();
+					if(f.clientX === mouse.x && f.clientY === mouse.y){
 						return;
 					}
 					if(!element.data('dragging')){
@@ -282,8 +282,8 @@ ui.extendElement = {
 					element.unbind("click");
 					element.data('dragging', true);
 					mouse = {
-						y: e.clientY,
-						x: e.clientX
+						y: f.clientY,
+						x: f.clientX
 					};
 				});
 
@@ -300,11 +300,10 @@ ui.extendElement = {
 					setTimeout(function(){
 						if(element.data('dragging')){
 							element.trigger('stopDrag');
-						}
-
-						element.data('dragging', false);
-						if(params && typeof params.mouseUp === 'function'){
-							params.mouseUp();
+							element.data('dragging', false);
+							if(params && typeof params.mouseUp === 'function'){
+								params.mouseUp();
+							}
 						}
 					}, 100);
 				});
