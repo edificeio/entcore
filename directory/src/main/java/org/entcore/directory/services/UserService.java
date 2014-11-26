@@ -44,6 +44,9 @@ public interface UserService {
 
 	void list(String profileGroupId, boolean itSelf, String userId, Handler<Either<String, JsonArray>> handler);
 
+	void list(JsonArray groupIds, JsonArray userIds, boolean itSelf, String userId,
+			Handler<Either<String, JsonArray>> handler);
+
 	void listIsolated(String structureId, List<String> profile, Handler<Either<String, JsonArray>> results);
 
 	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,

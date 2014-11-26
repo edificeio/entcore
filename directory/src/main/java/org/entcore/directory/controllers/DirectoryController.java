@@ -440,6 +440,13 @@ public class DirectoryController extends BaseController {
 				String id = message.body().getString("userId");
 				userService.get(id, BusResponseHandler.busResponseHandler(message));
 				break;
+			case "list-users":
+				JsonArray userIds = message.body().getArray("userIds", new JsonArray());
+				JsonArray groupIds = message.body().getArray("groupIds", new JsonArray());
+				boolean itSelf = message.body().getBoolean("itself", false);
+				String excludeId = message.body().getString("excludeUserId");
+				userService.list(groupIds, userIds, itSelf, excludeId, busArrayHandler(message));
+				break;
 			case "list-structures" :
 				schoolService.list(message.body().getArray("fields"), busArrayHandler(message));
 				break;

@@ -325,4 +325,31 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, params, validResultHandler(handler));
 	}
 
+	@Override
+	public void list(JsonArray groupIds, JsonArray userIds, boolean itSelf, String userId,
+			final Handler<Either<String, JsonArray>> handler) {
+		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
+		String query =
+				"MATCH (n:Group)<-[:IN]-(u:User) " +
+				"WHERE n.id IN {groupIds} " + condition +
+				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"RETURN distinct u.id as id, u.login as login," +
+				" u.displayName as username, profile.name as type " +
+				"ORDER BY username " +
+				"UNION " +
+				"MATCH (u:User) " +
+				"WHERE u.id IN {userIds} " + condition +
+				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"RETURN distinct u.id as id, u.login as login," +
+				" u.displayName as username, profile.name as type " +
+				"ORDER BY username ";
+		JsonObject params = new JsonObject();
+		params.putArray("groupIds", groupIds);
+		params.putArray("userIds", userIds);
+		if (!itSelf && userId != null) {
+			params.putString("userId", userId);
+		}
+		neo.execute(query, params, validResultHandler(handler));
+	}
+
 }
