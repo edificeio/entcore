@@ -189,7 +189,8 @@ project(':tests') {
   apply plugin: 'scala'
 
   dependencies {
-    compile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.0-M3a'
+    compile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
+    compile 'net.minidev:json-smart:1.1.1'
   }
 
   task gatling(dependsOn: 'compileTestScala') << {
@@ -208,7 +209,9 @@ project(':tests') {
           javaexec {
             main = 'io.gatling.app.Gatling'
               classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
-              args  '-sbf',
+            args  '-bf',
+            sourceSets.test.output.classesDir,
+            '-rbf',
             sourceSets.test.output.classesDir,
             '-s',
             gatlingScenarioClass,

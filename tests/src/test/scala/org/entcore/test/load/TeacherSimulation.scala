@@ -13,6 +13,6 @@ class TeacherSimulation extends Simulation {
 		.acceptLanguageHeader("fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3")
 		.userAgentHeader("Mozilla/5.0 (X11; Linux i686; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10")
 
-  setUp(TeacherScenario.scn.inject(atOnce(1 user))).protocols(httpProtocol)
+  setUp(TeacherScenario.scn.inject(atOnceUsers(1))).protocols(httpProtocol)
 
 }

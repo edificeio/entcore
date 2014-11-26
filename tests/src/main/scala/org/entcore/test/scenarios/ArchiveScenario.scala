@@ -2,7 +2,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 
 import scala.concurrent.duration._
 

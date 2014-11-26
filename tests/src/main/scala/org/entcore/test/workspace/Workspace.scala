@@ -3,7 +3,7 @@ package org.entcore.test.workspace
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
-import bootstrap._
+
 
 import scala.collection.mutable.ArrayBuffer
 import scala.Some
@@ -64,14 +64,14 @@ object Workspace {
     .get("""/workspace/users/available-rack""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("availableRack")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("availableRack")))
 
   val sharedDocuments =
     exec(http("Liste les documents partagés avec l'utilisateur")
     .get("""/workspace/documents?filter=shared""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$.._id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("sharedDocuments")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("sharedDocuments")))
 
   def downloadDocument(documentId: String) =
     exec(http("Ouverture d'un document")
@@ -89,7 +89,7 @@ object Workspace {
     exec(http("Création d'un répertoire")
     .post("""/workspace/folder""")
     .headers(headers_96)
-    .param("""name""", name))
+    .formParam("""name""", name))
     .pause(4 milliseconds)
     .exec(http("Liste les dossiers de l'utilisateur")
     .get("""/workspace/folders/list?filter=owner""")
@@ -121,7 +121,7 @@ object Workspace {
     .get("""/workspace/share/json/""" + documentId)
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("toShare")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("toShare")))
     .exec{session:Session =>
       session("toShare").asOption[ArrayBuffer[String]].map[Session]{v =>
         if (v.size >= 2) {

@@ -2,7 +2,7 @@ package org.entcore.test.load
 
 import io.gatling.http.Predef._
 import io.gatling.core.Predef._
-import bootstrap._
+
 import java.net.URLEncoder
 import net.minidev.json.{JSONObject, JSONValue}
 import scala.concurrent.duration._
@@ -157,8 +157,8 @@ object StudentScenario {
     .exec(http("log user")
     .post("""/auth/login""")
     .headers(headers_8)
-    .param("""email""", """${login}""")
-    .param("""password""", """${code}${code}""")
+    .formParam("""email""", """${login}""")
+    .formParam("""password""", """${code}${code}""")
     .check(status.is(302)))
     .pause(76 milliseconds)
     .exec(http("get root page (authenticated)")
@@ -279,8 +279,8 @@ object StudentScenario {
     .exec(http("get timeline events")
     .get("""/timeline/lastNotifications?_=1384422780887""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("status").is("ok"),
-    jsonPath("$.results..sender").findAll.transform(_.orElse(Some(Nil))).saveAs("senders")))
+    .check(status.is(200), jsonPath("$.status").is("ok"),
+    jsonPath("$.results..sender").findAll.transformOption(_.orElse(Some(Nil))).saveAs("senders")))
     .exec(http("KGJuneBug.ttf")
     .get("""/assets/themes/panda/fonts/KGJuneBug.ttf""")
     .headers(headers_45))
@@ -288,7 +288,7 @@ object StudentScenario {
     .foreach("${birthdayUsers}", "bUserId") {
     exec(http("get birthday avatar")
       .get("""/userbook/avatar/${bUserId}?thumbnail=48x48""")
-      .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+      .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
       .pause(12 milliseconds)
       .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
       exec(http("get birthday avatar (after redirect)")
@@ -330,7 +330,7 @@ object StudentScenario {
     .foreach("${senders}", "senderId") {
     exec(http("get timeline event avatar")
       .get("""/userbook/avatar/${senderId}?thumbnail=82x82""")
-      .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+      .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
       .pause(12 milliseconds)
       .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
       exec(http("get timeline event avatar (after redirect)")
@@ -412,7 +412,7 @@ object StudentScenario {
     .exec(http("get userbook infos")
     .get("""/userbook/api/person?_=1384422792736""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("status").is("ok"),
+    .check(status.is(200), jsonPath("$.status").is("ok"),
     jsonPath("$.result.0.photo").find.saveAs("meAvatar")))
     .pause(36 milliseconds)
     .exec(http("panda-food-background.jpg")
@@ -522,8 +522,8 @@ object StudentScenario {
     .get("""/blog/list/all?_=1384422796870""")
     .headers(headers_20)
     .check(status.is(200),
-    jsonPath("$.._id").findAll.transform(_.orElse(Some(Nil))).saveAs("blogsIds"),
-    jsonPath("$..thumbnail").findAll.transform(_.orElse(Some(Nil))).saveAs("blogsThumbnails")))
+    jsonPath("$.._id").findAll.transformOption(_.orElse(Some(Nil))).saveAs("blogsIds"),
+    jsonPath("$..thumbnail").findAll.transformOption(_.orElse(Some(Nil))).saveAs("blogsThumbnails")))
     .exec(http("get user theme")
     .get("""/theme?token=0.2530770265949154""")
     .headers(headers_26))
@@ -585,7 +585,7 @@ object StudentScenario {
     exec(http("list posts in blog ${blogId}")
       .get("""/blog/post/list/all/${blogId}?_=1384422796873""")
       .check(status.is(200),
-      jsonPath("$.._id").findAll.transform(_.orElse(Some(Nil))).saveAs("postsIds")))  // TODO parse content in first post to find images
+      jsonPath("$.._id").findAll.transformOption(_.orElse(Some(Nil))).saveAs("postsIds")))  // TODO parse content in first post to find images
       .pause(42 milliseconds)
       .doIf(session => session("postsIds").asOption[List[String]].getOrElse(Nil) != Nil) {
       foreach("${postsIds}", "postId") {
@@ -601,7 +601,7 @@ object StudentScenario {
           .exec(http("add comment in post ${postId}")
           .post("""/blog/comment/${blogId}/${postId}""")
           .headers(headers_188)
-          .param("""comment""", """${encodedCitation}"""))
+          .formParam("""comment""", """${encodedCitation}"""))
           .pause(29 milliseconds)
           .exec(http("get comments in post ${postId}")
           .get("""/blog/comments/${blogId}/${postId}?_=1384422796886""")
@@ -989,7 +989,7 @@ object StudentScenario {
     .exec(http("get shared documents")
     .get("""/workspace/documents?hierarchical=true&filter=shared&_=1384423227871""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("$[0]._id").find.transform(_.orElse(Some(""))).saveAs("sharedDoc0Id")))
+    .check(status.is(200), jsonPath("$[0]._id").find.transformOption(_.orElse(Some(""))).saveAs("sharedDoc0Id")))
     .pause(19 milliseconds)
     .exec(http("get root documents")
     .get("""/workspace/documents?hierarchical=true&filter=owner&_=1384423227873""")
@@ -1202,8 +1202,8 @@ object StudentScenario {
     .exec(http("get class json")
     .get("""/userbook/api/class?_=1384539755984""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("status").is("ok"),
-    jsonPath("$.result").find.transform(_.map{res =>
+    .check(status.is(200), jsonPath("$.status").is("ok"),
+    jsonPath("$.result").find.transformOption(_.map{res =>
       val json = JSONValue.parse(res).asInstanceOf[JSONObject]
       json.values.asScala.foldLeft[List[String]](Nil){(acc, c) =>
         val photo = c.asInstanceOf[JSONObject].get("photo").asInstanceOf[String]
@@ -1214,7 +1214,7 @@ object StudentScenario {
         }
       }
     }).saveAs("classAvatars"),
-    jsonPath("$.result").find.transform(_.map{res =>
+    jsonPath("$.result").find.transformOption(_.map{res =>
       val json = JSONValue.parse(res).asInstanceOf[JSONObject]
       json.values.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
         val id = c.asInstanceOf[JSONObject].get("id").asInstanceOf[String]

@@ -1,14 +1,9 @@
 package org.entcore.test.load
 
 import io.gatling.core.Predef._
-import io.gatling.core.session.Expression
 import io.gatling.http.Predef._
-import io.gatling.jdbc.Predef._
-import io.gatling.http.Headers.Names._
-import io.gatling.http.Headers.Values._
 import scala.concurrent.duration._
-import bootstrap._
-import assertions._
+
 import java.net.URLEncoder
 
 class ConfigureAccountSimulation extends Simulation {
@@ -150,10 +145,10 @@ class ConfigureAccountSimulation extends Simulation {
     .exec(http("post activation")
     .post("""/auth/activation""")
     .headers(headers_17)
-    .param("""login""", """${login}""")
-    .param("""activationCode""", """${code}""")
-    .param("""password""", """${code}${code}""")
-    .param("""confirmPassword""", """${code}${code}""")
+    .formParam("""login""", """${login}""")
+    .formParam("""activationCode""", """${code}""")
+    .formParam("""password""", """${code}${code}""")
+    .formParam("""confirmPassword""", """${code}${code}""")
     .check(status.is(302)))
     .pause(31 milliseconds)
     .exec(http("get login page")
@@ -184,9 +179,9 @@ class ConfigureAccountSimulation extends Simulation {
     .exec(http("log user")
     .post("""/auth/login""")
     .headers(headers_17)
-    .param("""callBack""", """""")
-    .param("""email""", """${login}""")
-    .param("""password""", """${code}${code}""")
+    .formParam("""callBack""", """""")
+    .formParam("""email""", """${login}""")
+    .formParam("""password""", """${code}${code}""")
     .check(status.is(302)))
     .pause(12 milliseconds)
     .exec(http("get root page (authenticated)")
@@ -332,8 +327,8 @@ class ConfigureAccountSimulation extends Simulation {
     .exec(http("timeline lastNotifications json")
     .get("""/timeline/lastNotifications?_=1384351374777""")
     .headers(headers_36)
-    .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.results..sender").findAll.transform(_.orElse(Some(Nil))).saveAs("senders")))
+    .check(status.is(200), jsonPath("$.status").is("ok"),
+      jsonPath("$.results..sender").findAll.transformOption(_.orElse(Some(Nil))).saveAs("senders")))
     .pause(18 milliseconds)
     .exec(http("birthdays-header-fr.png")
     .get("""/assets/themes/panda/img/illustrations/birthdays-header-fr.png""")
@@ -343,7 +338,7 @@ class ConfigureAccountSimulation extends Simulation {
     .get("""/userbook/person/birthday?_=1384351374779""")
     .headers(headers_36)
     .check(status.is(200),
-      jsonPath("$..id").findAll.transform(_.orElse(Some(Nil))).saveAs("birthdayUsers")))
+      jsonPath("$..id").findAll.transformOption(_.orElse(Some(Nil))).saveAs("birthdayUsers")))
     .pause(30 milliseconds)
     .exec(http("desert/thumbnail.png")
     .get("""/assets/themes/panda/desert/thumbnail.png""")
@@ -372,9 +367,9 @@ class ConfigureAccountSimulation extends Simulation {
     .foreach("${senders}", "senderId") {
       exec(http("get timeline event avatar")
         .get("""/userbook/avatar/${senderId}?thumbnail=82x82""")
-        .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+        .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
         .pause(12 milliseconds)
-        .doIf(session => session("avatarUser").asOption.getOrElse("") != "") {
+        .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
           exec(http("get timeline event avatar (after redirect)")
             .get("""${avatarUser}""")
             .headers(headers_76)
@@ -384,7 +379,7 @@ class ConfigureAccountSimulation extends Simulation {
     .foreach("${birthdayUsers}", "bUserId") {
       exec(http("get birthday avatar")
         .get("""/userbook/avatar/${bUserId}?thumbnail=48x48""")
-        .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+        .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
         .pause(12 milliseconds)
         .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
           exec(http("get birthday avatar (after redirect)")
@@ -663,5 +658,5 @@ class ConfigureAccountSimulation extends Simulation {
   val scn = scenario("Active and configure account").exec(
     chain_0, chain_1, chain_2)
 
-  setUp(scn.inject(ramp(9 users) over (10 seconds))).protocols(httpProtocol)
+  setUp(scn.inject(rampUsers(9) over (10 seconds))).protocols(httpProtocol)
 }

@@ -3,7 +3,7 @@ package org.entcore.test.load
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
-import bootstrap._
+
 
 import org.entcore.test.load.Headers._
 import scala.collection.mutable.ArrayBuffer
@@ -48,7 +48,7 @@ object Directory {
     .exec(http("Infos user")
     .get("""/directory/user/${userId}""")
     .headers(headers_3)
-    .check(status.is(200), jsonPath("$").find.transform(_.map{ j =>
+    .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       val json = JSONValue.parse(j).asInstanceOf[JSONObject]
       json.remove("sector")
       json.remove("classes")
@@ -140,7 +140,7 @@ object Directory {
     .get("""/userbook/api/class""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("classMembers")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("classMembers")))
     .exec(http("Détermination de la locale")
     .get("""/locale""")
     .headers(headers_1))

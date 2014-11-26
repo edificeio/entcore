@@ -2,7 +2,7 @@ package org.entcore.test.appregistry
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONArray, JSONObject, JSONValue}
 import scala.collection.JavaConverters._
 import org.entcore.test.auth.Authenticate
@@ -15,7 +15,7 @@ object Role {
     .exec(http("Find workflow habilitations")
       .get("""/appregistry/applications/actions?actionType=WORKFLOW""")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
@@ -43,7 +43,7 @@ object Role {
       .exec(http("Find roles")
       .get("""/appregistry/roles""")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.foldLeft[List[String]](Nil){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
@@ -53,7 +53,7 @@ object Role {
       .exec(http("Find profil groups with roles")
       .get("""/appregistry/groups/roles?structureId=${schoolId}""")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.foldLeft[List[String]](Nil){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]

@@ -2,7 +2,7 @@ package org.entcore.test.load
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONArray, JSONObject, JSONValue}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -22,13 +22,13 @@ class ConfigureSimulation extends Simulation {
 		.pause(1)
     .exec(http("List Schools")
     .get("""/directory/api/ecole""")
-    .check(status.is(200), jsonPath("status").is("ok"),
+    .check(status.is(200), jsonPath("$.status").is("ok"),
       jsonPath("$.result..id").findAll.saveAs("schoolsIds"),
       jsonPath("$.result..name").findAll.saveAs("schoolsNames")))
     .exec(http("Find workflow habilitations")
     .get("""/appregistry/applications/actions?actionType=WORKFLOW""")
     .check(status.is(200),
-      bodyString.find.transform(_.map{res =>
+      bodyString.find.transformOption(_.map{res =>
         val json = JSONValue.parse(res).asInstanceOf[JSONArray]
         json.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
@@ -56,7 +56,7 @@ class ConfigureSimulation extends Simulation {
     .exec(http("Find roles")
     .get("""/appregistry/roles""")
     .check(status.is(200),
-      bodyString.find.transform(_.map{res =>
+      bodyString.find.transformOption(_.map{res =>
         val json = JSONValue.parse(res).asInstanceOf[JSONArray]
         json.asScala.foldLeft[List[String]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
@@ -71,7 +71,7 @@ class ConfigureSimulation extends Simulation {
     .exec(http("Find profile groups with roles")
     .get("""/appregistry/groups/roles?structureId=${schoolId}""")
     .check(status.is(200),
-      bodyString.find.transform(_.map{res =>
+      bodyString.find.transformOption(_.map{res =>
         val json = JSONValue.parse(res).asInstanceOf[JSONArray]
         json.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
@@ -100,5 +100,5 @@ class ConfigureSimulation extends Simulation {
       }
     }
 
-	setUp(scn.inject(atOnce(1 user))).protocols(httpProtocol)
+	setUp(scn.inject(atOnceUsers(1))).protocols(httpProtocol)
 }

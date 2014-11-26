@@ -21,7 +21,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64
 
 object TimelineScenario {
@@ -33,8 +33,8 @@ object TimelineScenario {
         Base64.encode(("MyExternalApp" + AppRegistryScenario.now + ":clientSecret").getBytes("UTF-8")))
       .header("Content-Type", "application/x-www-form-urlencoded")
       .header("Accept", "application/json; charset=UTF-8")
-      .param("""grant_type""", """client_credentials""")
-      .param("""scope""", "org.entcore.timeline.controllers.TimelineController|publish")
+      .formParam("""grant_type""", """client_credentials""")
+      .formParam("""scope""", "org.entcore.timeline.controllers.TimelineController|publish")
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("clientCredentialsToken")))
     .exec(http("MyExternalApp publish on Timeline")
@@ -54,12 +54,12 @@ object TimelineScenario {
       .check(status.is(401)))
     .exec(http("Login teacher")
     .post("""/auth/login""")
-      .param("""email""", """${teacherLogin}""")
-      .param("""password""", """blipblop""")
+      .formParam("""email""", """${teacherLogin}""")
+      .formParam("""password""", """blipblop""")
       .check(status.is(302)))
     .exec(http("MyExternalApp list events on Timeline")
     .get("/timeline/lastNotifications")
-      .check(status.is(200), jsonPath("$results[0].message").find.is("Lorem ipsum")))
+      .check(status.is(200), jsonPath("$.results[0].message").find.is("Lorem ipsum")))
     .exec(http("Logout teacher user")
       .get("""/auth/logout""")
       .check(status.is(302)))

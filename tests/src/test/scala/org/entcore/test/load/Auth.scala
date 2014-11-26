@@ -3,7 +3,7 @@ package org.entcore.test.load
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
-import bootstrap._
+
 
 import org.entcore.test.load.Headers._
 
@@ -36,11 +36,11 @@ object Auth {
     exec(http("Activation du compte")
     .post("""/auth/activation""")
     .headers(headers_9)
-    .param("login", login)
-    .param("activationCode", code)
-    .param("password", password)
-    .param("confirmPassword", password)
-    .param("acceptCGU", acceptCgu))
+    .formParam("login", login)
+    .formParam("activationCode", code)
+    .formParam("password", password)
+    .formParam("confirmPassword", password)
+    .formParam("acceptCGU", acceptCgu))
     .pause(10 milliseconds)
     .exec(http("Détermination du thème")
     .get("/skin")
@@ -50,9 +50,9 @@ object Auth {
     exec(http("Connexion")
     .post("""/auth/login""")
     .headers(headers_17)
-    .param("""callBack""", """""")
-    .param("""email""", login)
-    .param("password", password))
+    .formParam("""callBack""", """""")
+    .formParam("""email""", login)
+    .formParam("password", password))
     .exitHereIfFailed
     .pause(71 milliseconds)
     .exec(http("Détermination de la locale")

@@ -23,7 +23,7 @@ import Auth._
 import org.entcore.test.workspace.Workspace
 import Workspace._
 import io.gatling.core.Predef._
-import bootstrap._
+
 import scala.collection.mutable.ArrayBuffer
 
 object WorkspaceLoadScenario {

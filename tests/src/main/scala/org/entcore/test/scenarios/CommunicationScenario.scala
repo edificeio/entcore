@@ -42,12 +42,12 @@ object CommunicationScenario {
     .exec(http("List manageable groups")
       .get("/directory/group/admin/list")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.toList.filter(_.asInstanceOf[JSONObject].get("name") == "CM2-Teacher")
             .head.asInstanceOf[JSONObject].get("id")
         }).saveAs("com-group-0"),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.toList.filter(_.asInstanceOf[JSONObject].get("name") == "CM1-Relative")
             .head.asInstanceOf[JSONObject].get("id")
@@ -56,7 +56,7 @@ object CommunicationScenario {
     // Group communicate with nothing
     .exec(http("Group communicate with nothing")
       .get("/communication/group/${com-group-0}")
-      .check(status.is(200), bodyString.find.transform(_.map(res => {
+      .check(status.is(200), bodyString.find.transformOption(_.map(res => {
         val json = JSONValue.parse(res).asInstanceOf[JSONObject]
         json.get("communiqueWith").asInstanceOf[JSONArray].size().toString })).is("0")))
 
@@ -112,7 +112,7 @@ object CommunicationScenario {
     // Group communicate with one other group
     .exec(http("Group communicate with")
       .get("/communication/group/${com-group-0}")
-      .check(status.is(200), bodyString.find.transform(_.map(res => {
+      .check(status.is(200), bodyString.find.transformOption(_.map(res => {
         val json = JSONValue.parse(res).asInstanceOf[JSONObject]
         json.get("communiqueWith").asInstanceOf[JSONArray].size().toString })).is("0"),
         jsonPath("$.users").find.is("OUTGOING")))
@@ -134,7 +134,7 @@ object CommunicationScenario {
     // Group communicate with one other group
     .exec(http("Group communicate with")
       .get("/communication/group/${com-group-0}")
-      .check(status.is(200), bodyString.find.transform(_.map(res => {
+      .check(status.is(200), bodyString.find.transformOption(_.map(res => {
       val json = JSONValue.parse(res).asInstanceOf[JSONObject]
       json.get("communiqueWith").asInstanceOf[JSONArray].size().toString })).is("0"),
         jsonPath("$.users").find.notExists))

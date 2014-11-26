@@ -21,7 +21,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONArray, JSONValue}
 import java.net.URLEncoder
 
@@ -33,22 +33,22 @@ object CasScenario {
       header("Location").find.is("/auth/login?callback=/cas/login?service=http%3A%2F%2Fperdu.com")))
     .exec(http("User login for Cas")
     .post("""/auth/login""")
-    .param("""email""", """${teacherLogin}""")
-    .param("""password""", """blipblop""")
-    .param("""callBack""", "%2Fcas%2Flogin%3Fservice%3Dhttp%253A%252F%252Fperdu.com")
+    .formParam("""email""", """${teacherLogin}""")
+    .formParam("""password""", """blipblop""")
+    .formParam("""callBack""", "%2Fcas%2Flogin%3Fservice%3Dhttp%253A%252F%252Fperdu.com")
     .check(status.is(302)))
     .exec(http("Login cas")
     .get("""/cas/login?service=http%3A%2F%2Fperdu.com""")
     .check(status.is(302),
-      header("Location").find.transform(_.map{l => println(l);l.substring(l.indexOf("=")+1)}).exists.saveAs("casTicket")))
+      header("Location").find.transformOption(_.map{l => println(l);l.substring(l.indexOf("=")+1)}).exists.saveAs("casTicket")))
     .exec(http("Validate ticket")
     .get("""/cas/serviceValidate?service=http%3A%2F%2Fperdu.com&ticket=${casTicket}""")
-    .check(status.is(200), bodyString.find.transform(_.map(_.contains("julie.devost"))).is(true)))
+    .check(status.is(200), bodyString.find.transformOption(_.map(_.contains("julie.devost"))).is(true)))
     .exec(http("Logout teacher user")
     .get("""/auth/logout""")
     .check(status.is(302)))
     .exec(http("Validate ticket")
     .get("""/cas/serviceValidate?service=http%3A%2F%2Fperdu.com&ticket=${casTicket}""")
-    .check(status.is(200), bodyString.find.transform(_.map(_.contains("INVALID_TICKET"))).is(true)))
+    .check(status.is(200), bodyString.find.transformOption(_.map(_.contains("INVALID_TICKET"))).is(true)))
 
 }

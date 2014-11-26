@@ -2,7 +2,7 @@ package org.entcore.test.load
 
 import io.gatling.http.Predef._
 import io.gatling.core.Predef._
-import bootstrap._
+
 import java.net.URLEncoder
 import scala.concurrent.duration._
 
@@ -155,8 +155,8 @@ object TeacherScenario {
     .exec(http("log user")
     .post("""/auth/login""")
     .headers(headers_8)
-    .param("""email""", """${login}""")
-    .param("""password""", """${code}${code}""")
+    .formParam("""email""", """${login}""")
+    .formParam("""password""", """${code}${code}""")
     .check(status.is(302)))
     .pause(76 milliseconds)
     .exec(http("get root page (authenticated)")
@@ -277,8 +277,8 @@ object TeacherScenario {
     .exec(http("get timeline events")
     .get("""/timeline/lastNotifications?_=1384422780887""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("status").is("ok"),
-    jsonPath("$.results..sender").findAll.transform(_.orElse(Some(Nil))).saveAs("senders")))
+    .check(status.is(200), jsonPath("$.status").is("ok"),
+    jsonPath("$.results..sender").findAll.transformOption(_.orElse(Some(Nil))).saveAs("senders")))
     .exec(http("KGJuneBug.ttf")
     .get("""/assets/themes/panda/fonts/KGJuneBug.ttf""")
     .headers(headers_45))
@@ -286,7 +286,7 @@ object TeacherScenario {
     .foreach("${birthdayUsers}", "bUserId") {
     exec(http("get birthday avatar")
       .get("""/userbook/avatar/${bUserId}?thumbnail=48x48""")
-      .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+      .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
       .pause(12 milliseconds)
       .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
       exec(http("get birthday avatar (after redirect)")
@@ -328,7 +328,7 @@ object TeacherScenario {
     .foreach("${senders}", "senderId") {
     exec(http("get timeline event avatar")
       .get("""/userbook/avatar/${senderId}?thumbnail=82x82""")
-      .check(status.in(Seq(200, 301)), header("Location").find.transform(_.orElse(Some(""))).saveAs("avatarUser")))
+      .check(status.in(Seq(200, 301)), header("Location").find.transformOption(_.orElse(Some(""))).saveAs("avatarUser")))
       .pause(12 milliseconds)
       .doIf(session => session("avatarUser").asOption[String].getOrElse("") != "") {
       exec(http("get timeline event avatar (after redirect)")
@@ -410,7 +410,7 @@ object TeacherScenario {
     .exec(http("get userbook infos")
     .get("""/userbook/api/person?_=1384422792736""")
     .headers(headers_20)
-    .check(status.is(200), jsonPath("status").is("ok"),
+    .check(status.is(200), jsonPath("$.status").is("ok"),
     jsonPath("$.result.0.photo").find.saveAs("meAvatar")))
     .pause(36 milliseconds)
     .exec(http("panda-food-background.jpg")
@@ -520,8 +520,8 @@ object TeacherScenario {
     .get("""/blog/list/all?_=1384422796870""")
     .headers(headers_20)
     .check(status.is(200),
-    jsonPath("$.._id").findAll.transform(_.orElse(Some(Nil))).saveAs("blogsIds"),
-    jsonPath("$..thumbnail").findAll.transform(_.orElse(Some(Nil))).saveAs("blogsThumbnails")))
+    jsonPath("$.._id").findAll.transformOption(_.orElse(Some(Nil))).saveAs("blogsIds"),
+    jsonPath("$..thumbnail").findAll.transformOption(_.orElse(Some(Nil))).saveAs("blogsThumbnails")))
     .exec(http("get user theme")
     .get("""/theme?token=0.2530770265949154""")
     .headers(headers_26))
@@ -537,7 +537,7 @@ object TeacherScenario {
     exec(http("list posts in blog ${blogId}")
       .get("""/blog/post/list/all/${blogId}?_=1384422796873""")
       .check(status.is(200),
-      jsonPath("$.._id").findAll.transform(_.orElse(Some(Nil))).saveAs("postsIds")))  // TODO parse content in first post to find images
+      jsonPath("$.._id").findAll.transformOption(_.orElse(Some(Nil))).saveAs("postsIds")))  // TODO parse content in first post to find images
       .pause(42 milliseconds)
       .doIf(session => session("postsIds").asOption[List[String]].getOrElse(Nil) != Nil) {
       foreach("${postsIds}", "postId") {
@@ -644,11 +644,11 @@ object TeacherScenario {
     .exec(http("create new blog")
     .post("""/blog""")
     .headers(headers_188)
-    .param("""thumbnail""", """/workspace/document/${newBlogThumb}?thumbnail=100x100""")
-    .param("""comment-type""", """IMMEDIATE""")
-    .param("""publish-type""", """IMMEDIATE""")
-    .param("""description""", """""")
-    .param("""title""", """Le blog de la classe""")
+    .formParam("""thumbnail""", """/workspace/document/${newBlogThumb}?thumbnail=100x100""")
+    .formParam("""comment-type""", """IMMEDIATE""")
+    .formParam("""publish-type""", """IMMEDIATE""")
+    .formParam("""description""", """""")
+    .formParam("""title""", """Le blog de la classe""")
     .check(status.is(200), jsonPath("$._id").find.saveAs("newBlogId")))
     .pause(36 milliseconds)
     .exec(http("list all blogs")
@@ -769,9 +769,9 @@ object TeacherScenario {
     .exec(http("create post in blog ${newBlogId}")
     .post("""/blog/post/${newBlogId}""")
     .headers(headers_188)
-    .param("""state""", """DRAFT""")
-    .param("""title""", """Le premier billet de la classe""")
-    .param("""content""", """<p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam ac quam in leo sodales commodo. Fusce vulputate hendrerit erat non elementum. Mauris aliquam pellentesque quam ut ullamcorper. Maecenas ornare justo eget justo aliquet, quis placerat nisi blandit. Fusce ac sagittis sem, eget auctor turpis. Curabitur libero nunc, mattis quis laoreet in, sagittis ut nibh. Nunc vestibulum sapien nisl. Donec sodales volutpat neque, nec dignissim risus dapibus ac. Praesent eros sapien, dictum eget urna non, accumsan vehicula dui. Vivamus neque nibh, iaculis nec mattis ut, condimentum vitae ligula. Nulla metus erat, tempus id tellus in, porttitor auctor odio. Vivamus dictum aliquet urna id placerat. Praesent a leo sed velit blandit ornare sed nec nulla. Nullam sed risus vitae tortor molestie iaculis nec nec nunc. Nullam interdum nec felis in suscipit.<br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">In tristique cursus sapien, id sollicitudin purus cursus vitae. Nunc dolor libero, rutrum et commodo quis, congue sit amet lorem. Nullam bibendum commodo nunc, eu gravida dolor venenatis id. Etiam consectetur, leo ac vestibulum faucibus, ligula dolor vulputate erat, ut ornare dui tellus ut felis. Praesent vitae faucibus quam, vel aliquam sapien. Aenean semper, arcu a aliquet mollis, augue magna eleifend mauris, sit amet egestas nunc eros vitae ligula. Vestibulum bibendum orci nisi, in consectetur lacus sagittis ac.</p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Sed et turpis accumsan, lobortis lacus eu, lobortis mauris. Maecenas id odio ornare, pretium elit sit amet, lobortis justo. Pellentesque sit amet gravida lacus. Maecenas et eros ut sem elementum lacinia vitae id dolor. Curabitur elementum imperdiet est, ut adipiscing erat pretium a. Integer ut ligula sit amet elit tincidunt hendrerit a in ante. Phasellus rutrum lectus et est sagittis, vitae lacinia ante ultricies. Aliquam malesuada orci nisi, sit amet lacinia ligula auctor et. Fusce eu luctus leo. Integer ac arcu at quam adipiscing ullamcorper. Maecenas ipsum ante, mollis id erat id, blandit posuere urna. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id bibendum turpis.</p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;"><img src="/workspace/document/${imgPost0}"><br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Duis hendrerit malesuada libero, id lobortis felis sollicitudin vestibulum. In hac habitasse platea dictumst. Mauris id libero sed dui condimentum placerat ut quis lectus. Morbi imperdiet laoreet rhoncus. Quisque fermentum, orci sit amet lobortis posuere, est ligula accumsan sem, quis semper erat dolor ut ante. Ut egestas felis id tortor semper, vitae convallis sem vulputate. Ut auctor dui nec tortor pretium suscipit. Morbi tincidunt nunc sit amet erat pretium fermentum. Integer ac velit at metus iaculis tempus non id neque. Nam sodales pretium vulputate. Aliquam mi arcu, tristique at lorem vel, consequat posuere odio.<br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Nam scelerisque, felis nec auctor ultricies, nibh nisl tempus ipsum, ut pellentesque neque eros sed nisi. Cras metus erat, tempus imperdiet pellentesque malesuada, aliquam a turpis. Fusce non mattis ipsum. Etiam vulputate luctus nisl eget pharetra. Ut in adipiscing tellus. Nulla quis est lacinia sem commodo luctus. Curabitur eros dui, consequat euismod sagittis vel, congue eget purus. Vivamus eu pretium mauris. Nam magna urna, condimentum sed euismod eu, ultricies a risus. Nulla risus urna, mollis sed faucibus sed, pretium ut nisi. Vivamus pellentesque auctor tortor, quis venenatis turpis rutrum sit amet. Integer quis lobortis nibh. Phasellus facilisis volutpat lacinia. Nullam adipiscing imperdiet viverra. Pellentesque nec massa tempus, cursus orci ut, tempor turpis.<br></p>""")
+    .formParam("""state""", """DRAFT""")
+    .formParam("""title""", """Le premier billet de la classe""")
+    .formParam("""content""", """<p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam ac quam in leo sodales commodo. Fusce vulputate hendrerit erat non elementum. Mauris aliquam pellentesque quam ut ullamcorper. Maecenas ornare justo eget justo aliquet, quis placerat nisi blandit. Fusce ac sagittis sem, eget auctor turpis. Curabitur libero nunc, mattis quis laoreet in, sagittis ut nibh. Nunc vestibulum sapien nisl. Donec sodales volutpat neque, nec dignissim risus dapibus ac. Praesent eros sapien, dictum eget urna non, accumsan vehicula dui. Vivamus neque nibh, iaculis nec mattis ut, condimentum vitae ligula. Nulla metus erat, tempus id tellus in, porttitor auctor odio. Vivamus dictum aliquet urna id placerat. Praesent a leo sed velit blandit ornare sed nec nulla. Nullam sed risus vitae tortor molestie iaculis nec nec nunc. Nullam interdum nec felis in suscipit.<br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">In tristique cursus sapien, id sollicitudin purus cursus vitae. Nunc dolor libero, rutrum et commodo quis, congue sit amet lorem. Nullam bibendum commodo nunc, eu gravida dolor venenatis id. Etiam consectetur, leo ac vestibulum faucibus, ligula dolor vulputate erat, ut ornare dui tellus ut felis. Praesent vitae faucibus quam, vel aliquam sapien. Aenean semper, arcu a aliquet mollis, augue magna eleifend mauris, sit amet egestas nunc eros vitae ligula. Vestibulum bibendum orci nisi, in consectetur lacus sagittis ac.</p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Sed et turpis accumsan, lobortis lacus eu, lobortis mauris. Maecenas id odio ornare, pretium elit sit amet, lobortis justo. Pellentesque sit amet gravida lacus. Maecenas et eros ut sem elementum lacinia vitae id dolor. Curabitur elementum imperdiet est, ut adipiscing erat pretium a. Integer ut ligula sit amet elit tincidunt hendrerit a in ante. Phasellus rutrum lectus et est sagittis, vitae lacinia ante ultricies. Aliquam malesuada orci nisi, sit amet lacinia ligula auctor et. Fusce eu luctus leo. Integer ac arcu at quam adipiscing ullamcorper. Maecenas ipsum ante, mollis id erat id, blandit posuere urna. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id bibendum turpis.</p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;"><img src="/workspace/document/${imgPost0}"><br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Duis hendrerit malesuada libero, id lobortis felis sollicitudin vestibulum. In hac habitasse platea dictumst. Mauris id libero sed dui condimentum placerat ut quis lectus. Morbi imperdiet laoreet rhoncus. Quisque fermentum, orci sit amet lobortis posuere, est ligula accumsan sem, quis semper erat dolor ut ante. Ut egestas felis id tortor semper, vitae convallis sem vulputate. Ut auctor dui nec tortor pretium suscipit. Morbi tincidunt nunc sit amet erat pretium fermentum. Integer ac velit at metus iaculis tempus non id neque. Nam sodales pretium vulputate. Aliquam mi arcu, tristique at lorem vel, consequat posuere odio.<br></p><p style="text-align: justify; font-size: 10.909090995788574px; line-height: 14px; margin: 0px 0px 14px; padding: 0px; color: rgb(0, 0, 0); font-family: Arial, Helvetica, sans; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Nam scelerisque, felis nec auctor ultricies, nibh nisl tempus ipsum, ut pellentesque neque eros sed nisi. Cras metus erat, tempus imperdiet pellentesque malesuada, aliquam a turpis. Fusce non mattis ipsum. Etiam vulputate luctus nisl eget pharetra. Ut in adipiscing tellus. Nulla quis est lacinia sem commodo luctus. Curabitur eros dui, consequat euismod sagittis vel, congue eget purus. Vivamus eu pretium mauris. Nam magna urna, condimentum sed euismod eu, ultricies a risus. Nulla risus urna, mollis sed faucibus sed, pretium ut nisi. Vivamus pellentesque auctor tortor, quis venenatis turpis rutrum sit amet. Integer quis lobortis nibh. Phasellus facilisis volutpat lacinia. Nullam adipiscing imperdiet viverra. Pellentesque nec massa tempus, cursus orci ut, tempor turpis.<br></p>""")
     .check(status.is(200), jsonPath("$._id").find.saveAs("post0Id")))
     .pause(77 milliseconds)
     .exec(http("submit post ${post0Id} (change state)")
@@ -798,7 +798,7 @@ object TeacherScenario {
     .exec(http("add comment in post ${post0Id}")
     .post("""/blog/comment/${newBlogId}/${post0Id}""")
     .headers(headers_188)
-    .param("""comment""", """${encodedCitation}"""))
+    .formParam("""comment""", """${encodedCitation}"""))
     .pause(29 milliseconds)
     .exec(http("get comments in post ${post0Id}")
     .get("""/blog/comments/${newBlogId}/${post0Id}?_=1384422796886""")
@@ -1290,7 +1290,7 @@ object TeacherScenario {
     .exec(http("add comment to document ${document0Id}")
     .post("""/workspace/document/${document0Id}/comment""")
     .headers(headers_188)
-    .param("""comment""", """Une image de cupcakes."""))
+    .formParam("""comment""", """Une image de cupcakes."""))
     .pause(4)
     .exec(http("get share template")
     .get("""/workspace/public/template/share.html""")

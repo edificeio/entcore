@@ -2,7 +2,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONValue, JSONObject, JSONArray}
 import scala.collection.JavaConverters._
 
@@ -16,7 +16,7 @@ object AppRegistryScenario {
 		.exec(http("Find workflow habilitations")
 			.get("""/appregistry/applications/actions?actionType=WORKFLOW""")
 		.check(status.is(200),
-      bodyString.find.transform(_.map{res =>
+      bodyString.find.transformOption(_.map{res =>
         val json = JSONValue.parse(res).asInstanceOf[JSONArray]
         json.asScala.foldLeft[List[List[String]]](Nil){(acc, c) =>
           val app = c.asInstanceOf[JSONObject]
@@ -77,7 +77,7 @@ object AppRegistryScenario {
     .exec(http("Find roles")
       .get("""/appregistry/roles""")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.foldLeft[List[List[String]]](List(Nil, Nil)){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
@@ -93,13 +93,13 @@ object AppRegistryScenario {
     .exec(http("Find profil groups with roles")
       .get("""/appregistry/groups/roles?structureId=${schoolId}""")
       .check(status.is(200),
-        bodyString.find.transform(_.map{res =>
+        bodyString.find.transformOption(_.map{res =>
           val json = JSONValue.parse(res).asInstanceOf[JSONArray]
           json.asScala.foldLeft[List[String]](List("","")){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
             app.get("name").asInstanceOf[String] match {
-              case "Ecole primaire Emile Zola-Teacher" => List(app.get("id").asInstanceOf[String], acc.last)
-              case "Ecole primaire Emile Zola-Student" => List(acc.head, app.get("id").asInstanceOf[String])
+              case "Ecole primaire Emile Zola-Teacher" | "E.Zola renamed-Teacher" => List(app.get("id").asInstanceOf[String], acc.last)
+              case "Ecole primaire Emile Zola-Student" | "E.Zola renamed-Student" => List(acc.head, app.get("id").asInstanceOf[String])
               case _ => acc
             }
           }

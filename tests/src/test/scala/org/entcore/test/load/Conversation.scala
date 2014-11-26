@@ -3,7 +3,7 @@ package org.entcore.test.load
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
-import bootstrap._
+
 
 import org.entcore.test.load.Headers._
 import scala.collection.mutable.ArrayBuffer
@@ -37,7 +37,7 @@ object Conversation {
     .get("""/conversation/list/INBOX?page=0""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("inbox")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("inbox")))
     .pause(84 milliseconds)
     .exec(http("Affichage du nombre de messages non lus")
     .get("""/conversation/count/INBOX?unread=true""")
@@ -54,7 +54,7 @@ object Conversation {
     .get("""/conversation/visible""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("visible")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("visible")))
 
   def readMessage(messageId: String) =
     exec(http("Ouvrir un message et le lire")
@@ -80,7 +80,7 @@ object Conversation {
     .get("""/conversation/list/OUTBOX?page=0""")
     .headers(headers_3)
     .check(status.is(200), jsonPath("$..id").findAll
-      .transform(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("outbox")))
+      .transformOption(_.orElse(Some(ArrayBuffer.empty[String]))).saveAs("outbox")))
     .exec(http("Affichage de la liste des messages à la corbeille")
     .get("""/conversation/list/DRAFT?page=0""")
     .headers(headers_3))

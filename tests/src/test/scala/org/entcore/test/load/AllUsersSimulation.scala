@@ -15,8 +15,8 @@ class AllUsersSimulation extends Simulation {
 		.userAgentHeader("Mozilla/5.0 (X11; Linux i686; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10")
 
   setUp(
-    TeacherScenario.scn.inject(ramp(30 users) over (600 seconds)),
-    StudentScenario.scn.inject(nothingFor(300 seconds), ramp(600 users) over (600 seconds))
+    TeacherScenario.scn.inject(rampUsers(30) over (600 seconds)),
+    StudentScenario.scn.inject(nothingFor(300 seconds), rampUsers(600) over (600 seconds))
   ).protocols(httpProtocol)
 
 }

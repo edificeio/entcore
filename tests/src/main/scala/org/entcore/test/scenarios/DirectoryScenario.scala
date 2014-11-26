@@ -2,7 +2,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONValue, JSONObject}
 import scala.collection.JavaConverters._
 
@@ -13,52 +13,52 @@ object DirectoryScenario {
 		.check(status.is(302)))
 		.exec(http("Authenticate admin user")
 			.post("""/auth/login""")
-			.param("""callBack""", """http%3A%2F%2Flocalhost%3A8080%2Fadmin""")
-			.param("""email""", """tom.mate""")
-			.param("""password""", """password""")
+			.formParam("""callBack""", """http%3A%2F%2Flocalhost%3A8080%2Fadmin""")
+			.formParam("""email""", """tom.mate""")
+			.formParam("""password""", """password""")
 		.check(status.is(302)))
 		.exec(http("Get admin page")
 			.get("""/directory/admin-console""")
 		.check(status.is(200)))
 		.exec(http("List Schools")
 			.get("""/directory/api/ecole""")
-		.check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result.0.id").find.saveAs("schoolId")))
+		.check(status.is(200), jsonPath("$.status").is("ok"),
+      jsonPath("$.result.*.id").find.saveAs("schoolId")))
 		.exec(http("List classes")
 			.get("""/directory/api/classes?id=${schoolId}""")
-		.check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result.0.classId").find.saveAs("classId")))
+		.check(status.is(200), jsonPath("$.status").is("ok"),
+      jsonPath("$.result.*.classId").find.saveAs("classId")))
     .exec(http("List students in class")
       .get("""/directory/api/personnes?id=${classId}&type=Student""")
-    .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result.0.userId").find.saveAs("childrenId")))
+    .check(status.is(200), jsonPath("$.status").is("ok"),
+      jsonPath("$.result.*.userId").find.saveAs("childrenId")))
 		.exec(http("Create manual teacher")
 			.post("""/directory/api/user""")
-			.param("""classId""", """${classId}""")
-			.param("""lastname""", "Devost")
-			.param("""firstname""", """Julie""")
-			.param("""type""", """Teacher""")
+			.formParam("""classId""", """${classId}""")
+			.formParam("""lastname""", "Devost")
+			.formParam("""firstname""", """Julie""")
+			.formParam("""type""", """Teacher""")
 		.check(status.is(200)))
     .exec(http("Create manual student")
       .post("""/directory/api/user""")
-      .param("""classId""", """${classId}""")
-      .param("""lastname""", "Monjeau")
-      .param("""firstname""", """Lundy""")
-      .param("""birthDate""", """1970-01-01""")
-      .param("""type""", """Student""")
+      .formParam("""classId""", """${classId}""")
+      .formParam("""lastname""", "Monjeau")
+      .formParam("""firstname""", """Lundy""")
+      .formParam("""birthDate""", """1970-01-01""")
+      .formParam("""type""", """Student""")
     .check(status.is(200)))
     .exec(http("Create manual parent")
       .post("""/directory/api/user""")
-      .param("""classId""", """${classId}""")
-      .param("""lastname""", "Bondy")
-      .param("""firstname""", """Astrid""")
-      .param("""type""", """Relative""")
-      .param("""childrenIds""", """${childrenId}""")
+      .formParam("""classId""", """${classId}""")
+      .formParam("""lastname""", "Bondy")
+      .formParam("""firstname""", """Astrid""")
+      .formParam("""type""", """Relative""")
+      .formParam("""childrenIds""", """${childrenId}""")
     .check(status.is(200)))
     .exec(http("List persons in class")
       .get("""/directory/api/personnes?id=${classId}""")
-      .check(status.is(200), jsonPath("status").is("ok"),
-      jsonPath("$.result").find.transform(_.map(res => {
+      .check(status.is(200), jsonPath("$.status").is("ok"),
+      jsonPath("$.result").find.transformOption(_.map(res => {
         val json = JSONValue.parse(res).asInstanceOf[JSONObject]
         json.values.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
           val user = c.asInstanceOf[JSONObject]
@@ -76,14 +76,14 @@ object DirectoryScenario {
     }
     .exec(http("Teacher details")
       .get("""/directory/api/details?id=${teacherId}""")
-      .check(status.is(200), jsonPath("status").is("ok"),
-        jsonPath("$.result.0.login").find.saveAs("teacherLogin"),
-        jsonPath("$.result.0.code").find.saveAs("teacherCode")))
+      .check(status.is(200), jsonPath("$.status").is("ok"),
+        jsonPath("$.result.*.login").find.saveAs("teacherLogin"),
+        jsonPath("$.result.*.code").find.saveAs("teacherCode")))
     .exec(http("Student details")
     .get("""/directory/api/details?id=${studentId}""")
-      .check(status.is(200), jsonPath("status").is("ok"),
-        jsonPath("$.result.0.login").find.saveAs("studentLogin"),
-        jsonPath("$.result.0.code").find.saveAs("studentCode")))
+      .check(status.is(200), jsonPath("$.status").is("ok"),
+        jsonPath("$.result.*.login").find.saveAs("studentLogin"),
+        jsonPath("$.result.*.code").find.saveAs("studentCode")))
 
     // create function
     .exec(http("Create function")

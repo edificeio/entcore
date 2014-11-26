@@ -21,7 +21,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import net.minidev.json.{JSONArray, JSONValue}
 
 object QuotaScenario {
@@ -29,7 +29,7 @@ object QuotaScenario {
 	val scn =
     exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${studentId}""")
-    .check(status.is(200), jsonPath("$.quota").find.transform(_.map(res =>
+    .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
       104857600l == res.toLong || 512144000l == res.toLong)).is(true),
       jsonPath("$.storage").find.is("136725")))
 
@@ -59,19 +59,19 @@ object QuotaScenario {
 
     .exec(http("Login teacher")
     .post("""/auth/login""")
-    .param("""email""", """${teacherLogin}""")
-    .param("""password""", """blipblop""")
+    .formParam("""email""", """${teacherLogin}""")
+    .formParam("""password""", """blipblop""")
     .check(status.is(302)))
 
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${studentId}""")
-    .check(status.is(200), jsonPath("$.quota").find.transform(_.map(res =>
+    .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
     104857600l == res.toLong || 512144000l == res.toLong)).is(true),
       jsonPath("$.storage").find.is("136725")))
 
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${teacherId}""")
-    .check(status.is(200), jsonPath("$.quota").find.transform(_.map(res =>
+    .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
       104857600l == res.toLong || 1073741824l == res.toLong)).is(true),
       jsonPath("$.storage").find.lessThan("1048576")))
 
@@ -93,13 +93,13 @@ object QuotaScenario {
     .put("""/workspace/quota""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"users" : ["${teacherId}","${studentId}"], "quota" : 1073741823}"""))
-    .check(status.is(200), bodyString.find.transform(_.map(res =>
+    .check(status.is(200), bodyString.find.transformOption(_.map(res =>
       JSONValue.parse(res).asInstanceOf[JSONArray].size())).is(2)))
 
     .exec(http("Login Admin")
     .post("""/auth/login""")
-    .param("""email""", """tom.mate""")
-    .param("""password""", """password""")
+    .formParam("""email""", """tom.mate""")
+    .formParam("""password""", """password""")
     .check(status.is(302)))
 
     .exec(http("Get quota and storage")
@@ -136,7 +136,7 @@ object QuotaScenario {
     .put("""/workspace/quota""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"users" : ["${teacherId}","${studentId}"], "quota" : 10073741824}"""))
-    .check(status.is(200), bodyString.find.transform(_.map(res =>
+    .check(status.is(200), bodyString.find.transformOption(_.map(res =>
       JSONValue.parse(res).asInstanceOf[JSONArray].size())).is(1)))
 
 }

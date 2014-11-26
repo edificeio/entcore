@@ -2,23 +2,23 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 
 object ConversationScenario {
 
   val scn = exec(http("Login teacher")
     .post("""/auth/login""")
-    .param("""email""", """${teacherLogin}""")
-    .param("""password""", """blipblop""")
+    .formParam("""email""", """${teacherLogin}""")
+    .formParam("""password""", """blipblop""")
     .check(status.is(302)))
   .exec(http("Get conversation page")
     .get("/conversation/conversation")
     .check(status.is(200)))
   .exec(http("Find visible users or groups")
     .get("/conversation/visible")
-    .check(status.is(200), jsonPath("$.groups.id").findAll.transform(_.orElse(Some(Nil)))
+    .check(status.is(200), jsonPath("$.groups.id").findAll.transformOption(_.orElse(Some(Nil)))
     .saveAs("conversationTeacherVisibleGroupId"),
-    jsonPath("$.users.id").findAll.transform(_.orElse(Some(Nil)))
+    jsonPath("$.users.id").findAll.transformOption(_.orElse(Some(Nil)))
       .saveAs("conversationTeacherVisibleUserId")))
   .exec(http("Create draft message")
     .post("/conversation/draft")
@@ -49,22 +49,22 @@ object ConversationScenario {
   .exec(http("List trash")
     .get("/conversation/list/TRASH")
     .check(status.is(200), jsonPath("$[0].id").find.is("${conversationDraftId}")))
-  .exec(http("Delete message")
-    .delete("/conversation/delete?id=${conversationDraftId}")
-    .check(status.is(204)))
-  .pause(1)
+//  .exec(http("Delete message")
+//    .delete("/conversation/delete?id=${conversationDraftId}")
+//    .check(status.is(204)))
+//  .pause(1)
   .exec(http("Logout teacher user")
     .get("""/auth/logout""")
     .check(status.is(302)))
   .exec(http("Login student")
     .post("""/auth/login""")
-    .param("""email""", """${studentLogin}""")
-    .param("""password""", """blipblop""")
+    .formParam("""email""", """${studentLogin}""")
+    .formParam("""password""", """blipblop""")
     .check(status.is(302)))
   .exec(http("List inbox message before read")
     .get("/conversation/list/INBOX")
     .check(status.is(200), jsonPath("$[0].id").find.saveAs("conversationMessageId"),
-      jsonPath("$[0].unread").find.transform(_.map(u => String.valueOf(u))).is("true")))
+      jsonPath("$[0].unread").find.transformOption(_.map(u => String.valueOf(u))).is("true")))
   .exec(http("Count unread messages")
     .get("/conversation/count/INBOX?unread=true")
     .check(status.is(200), jsonPath("$.count").find.saveAs("unreadMessageNumber")))
@@ -73,11 +73,11 @@ object ConversationScenario {
     .check(status.is(200), jsonPath("$.body").find.exists, jsonPath("$.state").find.is("SENT")))
   .exec(http("Count unread messages")
     .get("/conversation/count/INBOX?unread=true")
-    .check(status.is(200), jsonPath("$.count").find.transform(_.map(c => String.valueOf(Integer.valueOf(c) + 1))).is("${unreadMessageNumber}"),
+    .check(status.is(200), jsonPath("$.count").find.transformOption(_.map(c => String.valueOf(Integer.valueOf(c) + 1))).is("${unreadMessageNumber}"),
       jsonPath("$.count").find.not("${unreadMessageNumber}")))
   .exec(http("List inbox message after read")
     .get("/conversation/list/INBOX")
-    .check(status.is(200), jsonPath("$[0].unread").find.transform(_.map(u => String.valueOf(u))).is("false")))
+    .check(status.is(200), jsonPath("$[0].unread").find.transformOption(_.map(u => String.valueOf(u))).is("false")))
   .exec(http("Student send message to teacher group")
     .post("/conversation/send")
     .header("Content-Type", "application/json")

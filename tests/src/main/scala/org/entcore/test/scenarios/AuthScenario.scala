@@ -2,7 +2,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import bootstrap._
+
 import java.net.URLEncoder
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64
 
@@ -16,19 +16,19 @@ object AuthScenario {
 		.check(status.is(200)))
 		.exec(http("Activate student account")
 			.post("""/auth/activation""")
-			.param("""login""", """${studentLogin}""")
-			.param("""activationCode""", """${studentCode}""")
-			.param("""password""", """blipblop""")
-      .param("""confirmPassword""", """blipblop""")
-      .param("""acceptCGU""", """true""")
+			.formParam("""login""", """${studentLogin}""")
+			.formParam("""activationCode""", """${studentCode}""")
+			.formParam("""password""", """blipblop""")
+      .formParam("""confirmPassword""", """blipblop""")
+      .formParam("""acceptCGU""", """true""")
 		.check(status.is(302)))
     .exec(http("Activate teacher account")
       .post("""/auth/activation""")
-      .param("""login""", """${teacherLogin}""")
-      .param("""activationCode""", """${teacherCode}""")
-      .param("""password""", """blipblop""")
-      .param("""confirmPassword""", """blipblop""")
-      .param("""acceptCGU""", """true""")
+      .formParam("""login""", """${teacherLogin}""")
+      .formParam("""activationCode""", """${teacherCode}""")
+      .formParam("""password""", """blipblop""")
+      .formParam("""confirmPassword""", """blipblop""")
+      .formParam("""acceptCGU""", """true""")
     .check(status.is(302)))
     .exec(http("Get OAuth2 code with disconnected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
@@ -36,9 +36,9 @@ object AuthScenario {
       .check(status.is(200)))
     .exec(http("User login for OAuth2")
       .post("""/auth/login""")
-      .param("""email""", """${teacherLogin}""")
-      .param("""password""", """blipblop""")
-      .param("""callBack""", URLEncoder.encode("http://localhost:8080" +
+      .formParam("""email""", """${teacherLogin}""")
+      .formParam("""password""", """blipblop""")
+      .formParam("""callBack""", URLEncoder.encode("http://localhost:8080" +
         "/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
         AppRegistryScenario.now + "&redirect_uri=http%3A%2F%2Flocalhost%3A1500%2Fcode", "UTF-8"))
       .check(status.is(302)))
@@ -53,7 +53,7 @@ object AuthScenario {
     .exec(http("Get OAuth2 code with connected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
         AppRegistryScenario.now + "&redirect_uri=http%3A%2F%2Flocalhost%3A1500%2Fcode")
-      .check(status.is(302), header("Location").find.transform(_.map(location =>
+      .check(status.is(302), header("Location").find.transformOption(_.map(location =>
           location.substring(location.indexOf("code=") + 5).substring(0, 36)
       )).saveAs("oauth2Code")))
     .exec(http("Logout teacher user")
@@ -65,9 +65,9 @@ object AuthScenario {
           ":clientSecret").getBytes("UTF-8")))
       .header("Content-Type", "application/x-www-form-urlencoded")
       .header("Accept", "application/json; charset=UTF-8")
-      .param("""grant_type""", """authorization_code""")
-      .param("""code""", """${oauth2Code}""")
-      .param("""redirect_uri""", "http://localhost:1500/code")
+      .formParam("""grant_type""", """authorization_code""")
+      .formParam("""code""", """${oauth2Code}""")
+      .formParam("""redirect_uri""", "http://localhost:1500/code")
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("oauth2AccessToken")))
     .exec(http("Get userinfo with access token")

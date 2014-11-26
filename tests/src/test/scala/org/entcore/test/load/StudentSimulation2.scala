@@ -15,9 +15,9 @@ class StudentSimulation2 extends Simulation {
 		.userAgentHeader("Mozilla/5.0 (X11; Linux i686; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10")
 
 	  setUp(
-      TeacherScenario2.scn.inject(atOnce(1 user)),
-      StudentScenario2.scn.inject(atOnce(1 user)),
-      RelativeScenario2.scn.inject(atOnce(1 user))
+      TeacherScenario2.scn.inject(atOnceUsers(1)),
+      StudentScenario2.scn.inject(atOnceUsers(1)),
+      RelativeScenario2.scn.inject(atOnceUsers(1))
     ).protocols(httpProtocol)
 //  setUp(
 //    TeacherScenario2.scn.inject(ramp(4 users) over (1 seconds)),
