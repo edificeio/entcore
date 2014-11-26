@@ -8,7 +8,8 @@
 			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]">
-						<i class="[[application.icon]]"></i>
+						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
+						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
 					</a>
 				</div>
 				<legend>
