@@ -429,16 +429,18 @@ public class DirectoryController extends BaseController {
 	@BusAddress("directory")
 	public void directoryHandler(final Message<JsonObject> message) {
 		String action = message.body().getString("action", "");
+		String userId = message.body().getString("userId");
 		switch (action) {
 			case "usersInProfilGroup":
-				String userId = message.body().getString("userId");
 				boolean itSelf2 = message.body().getBoolean("itself", false);
 				String excludeUserId = message.body().getString("excludeUserId");
 				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
 				break;
 			case "getUser" :
-				String id = message.body().getString("userId");
-				userService.get(id, BusResponseHandler.busResponseHandler(message));
+				userService.get(userId, BusResponseHandler.busResponseHandler(message));
+				break;
+			case "getUserInfos" :
+				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
 				break;
 			case "list-users":
 				JsonArray userIds = message.body().getArray("userIds", new JsonArray());

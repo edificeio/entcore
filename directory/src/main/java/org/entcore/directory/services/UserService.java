@@ -65,4 +65,6 @@ public interface UserService {
 
 	void listAdml(String structureId, Handler<Either<String,JsonArray>> result);
 
+	void getInfos(String userId, Handler<Either<String,JsonObject>> eitherHandler);
+
 }

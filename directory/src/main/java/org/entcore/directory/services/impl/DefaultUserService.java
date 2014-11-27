@@ -307,6 +307,23 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void getInfos(String userId, Handler<Either<String, JsonObject>> result) {
+		String query =
+				"MATCH (n:User {id : {id}}) " +
+				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
+				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
+				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
+				"RETURN distinct " +
+				"n, COLLECT(distinct c) as classes, HEAD(COLLECT(distinct p.name)) as type, " +
+				"COLLECT(distinct s) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
+				"COLLECT(distinct gp) as groups";
+		neo.execute(query, new JsonObject().putString("id", userId),
+				fullNodeMergeHandler("n", result, "structures", "classes","groups"));
+	}
+
+	@Override
 	public void list(String groupId, boolean itSelf, String userId,
 			final Handler<Either<String, JsonArray>> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
