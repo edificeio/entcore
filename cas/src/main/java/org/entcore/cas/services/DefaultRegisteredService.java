@@ -27,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import fr.wseduc.cas.entities.ServiceTicket;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -35,6 +34,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import fr.wseduc.cas.async.Handler;
+import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
 
 public class DefaultRegisteredService implements RegisteredService {
@@ -42,6 +42,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	protected final List<Pattern> patterns = new ArrayList<Pattern>();
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
+	protected String directoryAction = "getUser";
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultRegisteredService.class);
 	protected static final String CONF_PATTERNS = "patterns";
@@ -82,7 +83,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	@Override
 	public void getUser(final String userId, final Handler<User> userHandler) {
 		JsonObject jo = new JsonObject();
-		jo.putString("action", "getUser").putString("userId", userId);
+		jo.putString("action", directoryAction).putString("userId", userId);
 		eb.send("directory", jo, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
