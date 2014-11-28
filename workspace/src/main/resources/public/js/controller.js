@@ -62,7 +62,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		$scope.openFolder($scope.openedFolder.folder);
 	});
 
-	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'rack' }, { name: 'appDocuments' }, { name: 'trash', children: [] }] };
+	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'appDocuments' }, { name: 'trash', children: [] }] };
 	$scope.users = [];
 	$scope.me = model.me;
 
@@ -302,12 +302,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		notify.info('workspace.removed.message');
 	};
 
-	$scope.openSendRackView = function(){
-		ui.showLightbox();
-		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
-		$scope.currentViews.lightbox = $scope.views.lightbox.sendRack;
-	};
-
 	$scope.openMoveFileView = function(action){
 		targetFolders = [$scope.folder.children[0]];
 		$scope.newFolder = { name: '' };
@@ -324,9 +318,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				.done(function(){
 					getQuota();
 				})
-				.e401(function(){
-					http().delete('/workspace/rack/' + document._id)
-				});
 		});
 
 		$scope.selectedFolders().forEach(function(folder){
@@ -344,9 +335,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			});
 
 			http().put('restore/document/' + document._id)
-				.e401(function(){
-					http().put('restore/rack/' + document._id);
-				});
 		});
 
 		$scope.selectedFolders().forEach(function(folder){
@@ -385,9 +373,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		buttons: [
 			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
 				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addDocument'}).length > 0;
-			} },
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
 			} }
 		],
 		contextualButtons: [
@@ -396,21 +381,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } }
 		]
 	}, {
-		name: 'rack',
-		path: 'rack/documents',
-		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
-			} }
-		],
-		contextualButtons: [
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'rack/trash', contextual: true, allow: function(){ return true } }
-		]
-	}, {
 		name: 'trash',
-		path: ['documents/Trash', 'documents', 'rack/documents/Trash'],
-		filter: ['owner', 'protected', ''],
+		path: ['documents/Trash', 'documents'],
+		filter: ['owner', 'protected'],
 		buttons: [],
 		contextualButtons: [
 			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } },
@@ -421,11 +394,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		filter: 'shared',
 		hierarchical: true,
 		path: 'documents',
-		buttons: [
-			{ text: 'workspace.send.rack', action: $scope.openSendRackView, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addRackDocument'}).length > 0;
-			} }
-		],
+		buttons: [],
 		contextualButtons: [
 			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return $scope.selectedDocuments().length > 0 } },
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
@@ -457,7 +426,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		lightbox: {
 			createFile: 'public/template/create-file.html',
 			createFolder: 'public/template/create-folder.html',
-			sendRack: 'public/template/send-rack.html',
 			moveFile: 'public/template/move-files.html',
 			copyFile: 'public/template/copy-files.html',
 			comment: 'public/template/comment.html',
@@ -860,9 +828,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
 		targetFolders.forEach(function(folder){
 			var basePath = 'documents';
-			if($scope.currentTree.name === 'rack'){
-				basePath = 'rack/' + basePath;
-			}
 			basePath += '/copy/' + selectedDocumentsIds;
 			var folderString = folderToString($scope.folder.children[0], folder);
 			if(folderString !== ''){
@@ -887,17 +852,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	};
 
 	updateFolders();
-	if(_.where($scope.me.authorizedActions, {name: 'org.entcore.workspace.service.WorkspaceService|listRackDocuments' }).length === 0){
-		$scope.folder.children = _.reject($scope.folder.children, function(folder){
-			return folder.name === 'rack';
-		});
-		refreshFolders();
-	}
-	else{
-		http().get("users/available-rack").done(function(response){
-			$scope.users = response;
-		});
-	}
 
 	$scope.boxes = { selectAll: false }
 	$scope.switchSelectAll = function(){
@@ -1024,28 +978,6 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		id: ''
 	};
 
-	$scope.sendRackFiles = function(){
-		for(var i = 0; i < $scope.newFile.files.length; i++){
-			var formData = new FormData();
-
-			formData.append('file', $scope.newFile.files[i]);
-
-			var n = $scope.newFile.files.length;
-			var url = 'rack/' + $scope.to.id;
-			$scope.loading = $scope.translate('loading');
-			http().postFile(url + '?thumbnail=120x120',  formData, { requestName: 'file-upload' }).done(function(e){
-				ui.hideLightbox();
-				$scope.loading = '';
-				$scope.openFolder($scope.openedFolder.folder);
-				n--;
-				if(n === 0){
-					notify.info('rack.sent.message');
-				}
-			});
-		}
-	};
-
-
 
 	$scope.editFolder = function(){
 		$scope.newFolder.editing = true;
@@ -1054,4 +986,4 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	$scope.anyTargetFolder = function(){
 		return targetFolders.length > 0;
 	}
-};
+}

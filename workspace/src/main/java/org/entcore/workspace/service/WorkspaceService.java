@@ -51,7 +51,6 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -75,7 +74,6 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.GenericDao;
-import org.entcore.workspace.dao.RackDao;
 
 public class WorkspaceService extends BaseController {
 
@@ -84,7 +82,6 @@ public class WorkspaceService extends BaseController {
 	private String imageResizerAddress;
 	private MongoDb mongo;
 	private DocumentDao documentDao;
-	private RackDao rackDao;
 	private TimelineHelper notification;
 	private ShareService shareService;
 	private FolderService folderService;
@@ -100,16 +97,13 @@ public class WorkspaceService extends BaseController {
 		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);
-		rackDao = new RackDao(mongo);
 		notification = new TimelineHelper(vertx, eb, container);
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
 		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
 		this.threshold = container.config().getInteger("alertStorage", 80);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
-		post("/rack/documents/copy/:ids", "copyRackDocuments");
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
-		get("/rack/:id", "getRackDocument");
 	}
 
 	@Get("/workspace")
@@ -498,69 +492,6 @@ public class WorkspaceService extends BaseController {
 				}
 			});
 		}
-	}
-
-	@Post("/rack/:to")
-	@SecuredAction("workspace.rack.document.add")
-	public void addRackDocument(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(final UserInfos userInfos) {
-				if (userInfos != null) {
-					final String to = request.params().get("to");
-					if (to != null && !to.trim().isEmpty()) {
-						String query =
-								"MATCH (n:User) " +
-								"WHERE n.id = {id} " +
-								"RETURN count(n) as nb, n.displayName as username";
-						Map<String, Object> params = new HashMap<>();
-						params.put("id", to);
-						request.pause();
-						Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
-
-							@Override
-							public void handle(Message<JsonObject> res) {
-								JsonArray result = res.body().getArray("result");
-								if ("ok".equals(res.body().getString("status")) &&
-										1 == result.size() &&
-										1 == result.<JsonObject>get(0).getInteger("nb")) {
-									final JsonObject doc = new JsonObject();
-									doc.putString("to", to);
-									doc.putString("toName", result.<JsonObject>get(0).getString("username"));
-									doc.putString("from", userInfos.getUserId());
-									doc.putString("fromName", userInfos.getUsername());
-									String now = MongoDb.formatDate(new Date());
-									doc.putString("sent", now);
-									quotaService.quotaAndUsage(to, new Handler<Either<String, JsonObject>>() {
-										@Override
-										public void handle(Either<String, JsonObject> r) {
-											request.resume();
-											long emptySize = 0l;
-											if (r.isRight()) {
-												JsonObject j = r.right().getValue();
-												if (j != null) {
-													long quota = j.getLong("quota", 0l);
-													long storage = j.getLong("storage", 0l);
-													emptySize = quota - storage;
-												}
-											}
-											add(request, RackDao.RACKS_COLLECTION, doc, emptySize);
-										}
-									});
-								} else {
-									badRequest(request);
-								}
-							}
-						});
-					} else {
-						badRequest(request);
-					}
-				} else {
-					request.response().setStatusCode(401).end();
-				}
-			}
-		});
 	}
 
 	private void add(final HttpServerRequest request, final String mongoCollection,
@@ -1051,21 +982,6 @@ public class WorkspaceService extends BaseController {
 		getFile(request, documentDao, null);
 	}
 
-	@SecuredAction("workspace.rack.document.get")
-	public void getRackDocument(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					getFile(request, rackDao, user.getUserId());
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
 	private void getFile(final HttpServerRequest request, GenericDao dao, String owner) {
 		dao.findById(request.params().get("id"), owner, new Handler<JsonObject>() {
 			@Override
@@ -1135,22 +1051,6 @@ public class WorkspaceService extends BaseController {
 		deleteFile(request, documentDao, null);
 	}
 
-	@Delete("/rack/:id")
-	@SecuredAction("workspace.rack.document.delete")
-	public void deleteRackDocument(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					deleteFile(request, rackDao, user.getUserId());
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
 	private void deleteFile(final HttpServerRequest request, final GenericDao dao, String owner) {
 		final String id = request.params().get("id");
 		dao.findById(id, owner, new Handler<JsonObject>() {
@@ -1197,22 +1097,6 @@ public class WorkspaceService extends BaseController {
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
 					copyFiles(request, DocumentDao.DOCUMENTS_COLLECTION, null, user);
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	@Post("/rack/documents/copy/:ids/:folder")
-	@SecuredAction("workspace.rack.documents.copy")
-	public void copyRackDocuments(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					copyFiles(request, RackDao.RACKS_COLLECTION, user.getUserId(), user);
 				} else {
 					unauthorized(request);
 				}
@@ -1394,27 +1278,6 @@ public class WorkspaceService extends BaseController {
 						@Override
 						public void handle(Long emptySize) {
 							copyFile(request, documentDao, null, emptySize);
-						}
-					});
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	@Post("/rack/document/copy/:id/:folder")
-	@SecuredAction("workspace.document.copy")
-	public void copyRackDocument(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					emptySize(user, new Handler<Long>() {
-						@Override
-						public void handle(Long emptySize) {
-							copyFile(request, rackDao, user.getUserId(), emptySize);
 						}
 					});
 				} else {
@@ -1636,22 +1499,6 @@ public class WorkspaceService extends BaseController {
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void moveTrash(final HttpServerRequest request) {
 		moveOne(request, "Trash", documentDao, null);
-	}
-
-	@Put("/rack/trash/:id")
-	@SecuredAction("workspace.rack.document.move.trash")
-	public void moveTrashRack(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					moveOne(request, "Trash", rackDao, user.getUserId());
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
 	}
 
 	private void moveOne(final HttpServerRequest request, final String folder,
@@ -1888,106 +1735,10 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
-	@Get("/rack/documents")
-	@SecuredAction("workspace.rack.list.documents")
-	public void listRackDocuments(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					String query = "{ \"to\": \"" + user.getUserId() + "\", "
-							+ "\"file\" : { \"$exists\" : true }, "
-							+ "\"folder\" : { \"$ne\" : \"Trash\" }}";
-					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query),
-							new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> res) {
-							String status = res.body().getString("status");
-							JsonArray results = res.body().getArray("results");
-							if ("ok".equals(status) && results != null) {
-								renderJson(request, results);
-							} else {
-								renderJson(request, new JsonArray());
-							}
-						}
-					});
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	@Get("/rack/documents/Trash")
-	@SecuredAction("workspace.rack.list.trash.documents")
-	public void listRackTrashDocuments(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					String query = "{ \"to\": \"" + user.getUserId() + "\", "
-							+ "\"file\" : { \"$exists\" : true }, \"folder\" : \"Trash\" }";
-					mongo.find(RackDao.RACKS_COLLECTION, new JsonObject(query), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> res) {
-							String status = res.body().getString("status");
-							JsonArray results = res.body().getArray("results");
-							if ("ok".equals(status) && results != null) {
-								renderJson(request, results);
-							} else {
-								renderJson(request, new JsonArray());
-							}
-						}
-					});
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
-	}
-
-	@Get("/users/available-rack")
-	@SecuredAction("workspace.rack.available.users")
-	public void rackAvailableUsers(final HttpServerRequest request) {
-		String customReturn =
-				"MATCH visibles-[:IN]->g-[:AUTHORIZED]->r-[:AUTHORIZE]->a " +
-				"WHERE has(a.name) AND a.name={action} " +
-				"RETURN distinct visibles.id as id, visibles.displayName as username " +
-				"ORDER BY username ";
-		JsonObject params = new JsonObject()
-		.putString("action", "org.entcore.workspace.service.WorkspaceService|listRackDocuments");
-		UserUtils.findVisibleUsers(eb, request, false, customReturn, params,
-				new Handler<JsonArray>() {
-
-			@Override
-			public void handle(JsonArray users) {
-				renderJson(request, users);
-			}
-		});
-	}
-
 	@Put("/restore/document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void restoreTrash(HttpServerRequest request) {
 		restore(request, documentDao, null);
-	}
-
-	@Put("/restore/rack/:id")
-	@SecuredAction("workspace.rack.restore")
-	public void restoreTrashRack(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null && user.getUserId() != null) {
-					restore(request, rackDao, user.getUserId());
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
 	}
 
 	private void restore(final HttpServerRequest request, final GenericDao dao, final String to) {
