@@ -25,14 +25,17 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Controller;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.workspace.service.QuotaService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -96,6 +99,36 @@ public class QuotaController extends BaseController {
 			quotaService.init(userId);
 		}
 	}
+	
+	@BusAddress("org.entcore.workspace.quota")
+	public void quotaEventBusHandler(final Message<JsonObject> message){
+		Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> res) {
+				if (res.isRight()) {
+					message.reply(res.right().getValue());
+				} else {
+					message.reply(new JsonArray());
+				}
+			}
+		};
+		
+		String userId = message.body().getString("userId");
+		
+		switch (message.body().getString("action", "")) {
+			case "getUserQuota" : 
+				quotaService.quotaAndUsage(userId, responseHandler);
+				break;
+			case "updateUserQuota" :
+				long size = message.body().getLong("size");
+				int threshold = message.body().getInteger("threshold");
+				quotaService.incrementStorage(userId, size, threshold, responseHandler);
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
+		}
+	}
+	
 
 	public void setQuotaService(QuotaService quotaService) {
 		this.quotaService = quotaService;
