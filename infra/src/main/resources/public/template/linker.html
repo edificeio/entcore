@@ -22,16 +22,15 @@
 			<div class="row">
 				<div class="twelve cell vertical-spacing">
 					<div class="row">
-						<select ng-model="linker.search.application" ng-options="app.name for app in linker.apps" class="five cell" ng-change="linker.loadApplicationResources()"></select>
-						<input type="text" placeholder="Rechercher" ng-model="linker.search.text" class="six cell right-magnet" ng-change="linker.searchApplication()" />
+            <select ng-model="linker.search.application" ng-options="app.name for app in linker.apps" class="five cell" ng-change="linker.loadApplicationResources()"></select>
+            <input type="text" i18n-placeholder="search" ng-model="linker.search.text" class="six cell right-magnet" ng-change="linker.searchApplication()" />
 					</div>
 				</div>
 			</div>
 			<article class="found-resources" ng-class="{ info: linker.search.text === '' }">
 				<div ng-if="linker.search.text === ''" class="reduce-block-six">
 					<div class="row">
-						Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles
-						à vos lecteurs.
+						<i18n>linker.warning</i18n>
 					</div>
 				</div>
 				<div ng-if="linker.resources.length === 0 && linker.search.text !== ''">
