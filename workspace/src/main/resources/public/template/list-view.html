@@ -42,6 +42,11 @@
 						<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
 					</th>
+					<th scope="col" class="size" ng-click="orderByField('metadata.size')">
+						<span translate content="size"></span>
+						<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
+						<i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
+					</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -62,6 +67,7 @@
 					<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
 					<td></td>
 					<td class="date">[[longDate(folder.created)]]</td>
+					<td></td>
 				</tr>
 				<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
 					<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
@@ -75,10 +81,12 @@
 					<td class="user"><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
 					<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 					<td class="date">[[longDate(document.created)]]</td>
+					<td class="size">
+						[[formatDocumentSize(document.metadata.size)]]
+					</td>
 				</tr>
 				<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="document === selectedDocuments()[0] && document.showComments">
-					<td colspan="6" class="container-cell">
-
+					<td colspan="7" class="container-cell">
 						<section class="row reduce-block-eight" ng-if="document === selectedDocuments()[0] && document.showComments">
 							<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in document.comments">
 								<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>

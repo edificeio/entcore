@@ -882,7 +882,15 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		if($scope.order.field === 'name'){
 			return lang.removeAccents(item[$scope.order.field]);
 		}
-		return item[$scope.order.field];
+		if($scope.order.field.indexOf('.') >= 0){
+			var splitted_field = $scope.order.field.split('.')
+			var sortValue = item
+			for(var i = 0; i < splitted_field.length; i++){
+				sortValue = typeof sortValue === 'undefined' ? undefined : sortValue[splitted_field[i]]
+			}
+			return sortValue
+		} else
+			return item[$scope.order.field];
 	}
 	$scope.orderByField = function(fieldName){
 		if(fieldName === $scope.order.field){
@@ -985,5 +993,31 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	$scope.anyTargetFolder = function(){
 		return targetFolders.length > 0;
+	}
+
+	//Given a data size in bytes, returns a more "user friendly" representation.
+	$scope.getAppropriateDataUnit = function(bytes){
+		var order = 0
+		var orders = {
+			0: lang.translate("byte"),
+			1: "Ko",
+			2: "Mo",
+			3: "Go",
+			4: "To"
+		}
+		var finalNb = bytes
+		while(finalNb >= 1024 && order < 4){
+			finalNb = finalNb / 1024
+			order++
+		}
+		return {
+			nb: finalNb,
+			order: orders[order]
+		}
+	}
+
+	$scope.formatDocumentSize = function(size){
+		var formattedData = $scope.getAppropriateDataUnit(size)
+		return (Math.round(formattedData.nb*100)/100)+" "+formattedData.order
 	}
 }

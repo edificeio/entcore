@@ -44,6 +44,7 @@
     "loading": "Chargement",
     "modified": "Date",
     "name": "Titre",
+    "size": "Taille",
     "nofile": "Aucun fichier",
     "owner": "Propriétaire",
     "rack": "Mon casier",
@@ -106,5 +107,11 @@
 	"workspace.folder.create": "Créer",
     "workspace.folders.warning.title" :"Partage d'un dossier",
     "workspace.folders.warning.content": "<p>Attention, le partage d'un dossier entraîne la modification des partages de tous les fichiers et sous dossiers contenus dans celui-ci.</p><p>De plus, les fichiers et dossiers crées ou déplacés dans ce dossier auront les mêmes droits de partage que ceux attribués sur le dossier.</p>",
-    "workspace.continue": "Continuer"
+    "workspace.continue": "Continuer",
+    "bit": "Bit(s)",
+    "byte": "Octet(s)",
+    "kilobyte": "KiloOctet(s)",
+    "megabyte": "MegaOctet(s)",
+    "gigabyte": "GigaOctet(s)",
+    "terabyte": "TeraOctet(s)"
 }
