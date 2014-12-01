@@ -668,7 +668,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 	var getFolders = function(tree, params){
 		http().get('/workspace/folders/list', params).done(function(folders){
-			folders.forEach(function(folder){
+			_.sortBy(folders, function(folder){ return folder.folder.split("_").length }).forEach(function(folder){
 				setDocumentRights(folder);
 
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
