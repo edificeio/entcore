@@ -134,7 +134,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		document.myRights.document.move = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument');
-		document.myRights.document.share = false;
+		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
 	};
 
 	$scope.documentPath = function(document){

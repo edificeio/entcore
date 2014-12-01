@@ -139,7 +139,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Get("/share/json/:id")
-	@SecuredAction("workspace.share.json")
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void shareJson(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -150,17 +150,7 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					isOwner(DocumentDao.DOCUMENTS_COLLECTION, id, user, new Handler<Boolean>() {
-						@Override
-						public void handle(Boolean event) {
-							if (Boolean.TRUE.equals(event)) {
-								shareService.shareInfos(user.getUserId(), id,
-										I18n.acceptLanguage(request), defaultResponseHandler(request));
-							} else {
-								unauthorized(request);
-							}
-						}
-					});
+					shareService.shareInfos(user.getUserId(), id, I18n.acceptLanguage(request), defaultResponseHandler(request));		
 				} else {
 					unauthorized(request);
 				}
@@ -255,7 +245,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/share/json/:id")
-	@SecuredAction("workspace.share.json")
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void shareJsonSubmit(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -276,33 +266,20 @@ public class WorkspaceService extends BaseController {
 				getUserInfos(eb, request, new Handler<UserInfos>() {
 					@Override
 					public void handle(final UserInfos user) {
-						if (user != null) {
-							isOwner(DocumentDao.DOCUMENTS_COLLECTION, id, user, new Handler<Boolean>() {
-								@Override
-								public void handle(Boolean event) {
-									if (Boolean.TRUE.equals(event)) {
-										mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> event) {
-												if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
-													final boolean isFolder = !event.body().getObject("result").containsField("file");
-													if(isFolder)
-														shareFolderAction(request, id, user, actions, groupId, userId, false);
-													else
-														shareFileAction(request, id, user, actions, groupId, userId, false);
-												} else {
-													unauthorized(request);
-												}
-											}
-										});
-									} else {
-										unauthorized(request);
-									}
+						mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+									final boolean isFolder = !event.body().getObject("result").containsField("file");
+									if(isFolder)
+										shareFolderAction(request, id, user, actions, groupId, userId, false);
+									else
+										shareFileAction(request, id, user, actions, groupId, userId, false);
+								} else {
+									unauthorized(request);
 								}
-							});
-						} else {
-							unauthorized(request);
-						}
+							}
+						});
 					}
 				});
 			}
@@ -310,7 +287,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/share/remove/:id")
-	@SecuredAction("workspace.share.json")
+	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void removeShare(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -329,24 +306,15 @@ public class WorkspaceService extends BaseController {
 					@Override
 					public void handle(final UserInfos user) {
 						if (user != null) {
-							isOwner(DocumentDao.DOCUMENTS_COLLECTION, id, user, new Handler<Boolean>() {
+							mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
 								@Override
-								public void handle(Boolean event) {
-									if (Boolean.TRUE.equals(event)) {
-										mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> event) {
-												if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
-													final boolean isFolder = !event.body().getObject("result").containsField("file");
-													if(isFolder)
-														shareFolderAction(request, id, user, actions, groupId, userId, true);
-													else
-														shareFileAction(request, id, user, actions, groupId, userId, true);
-												} else {
-													unauthorized(request);
-												}
-											}
-										});
+								public void handle(Message<JsonObject> event) {
+									if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+										final boolean isFolder = !event.body().getObject("result").containsField("file");
+										if(isFolder)
+											shareFolderAction(request, id, user, actions, groupId, userId, true);
+										else
+											shareFileAction(request, id, user, actions, groupId, userId, true);
 									} else {
 										unauthorized(request);
 									}
