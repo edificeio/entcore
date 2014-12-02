@@ -3191,7 +3191,7 @@ module.directive('draggable', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
-			if(attributes.draggable == 'false' || attributes.native !== 'true'){
+			if(attributes.draggable == 'false' || attributes.native !== undefined){
 				return;
 			}
 			ui.extendElement.draggable(element, {
