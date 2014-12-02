@@ -833,12 +833,28 @@ textarea {
   display: block;
   position: relative;
   padding: 6px;
+  -o-transition: width 250ms ease;
+  -moz-transition: width 250ms ease;
+  -webkit-transition: width 250ms ease;
+  transition: width 250ms ease;
+  overflow-x: hidden;
+  height: 1000px;
 }
 .widgets img {
   max-width: 100%;
 }
+.widgets.hidden {
+  width: 0;
+}
 .widgets-friend {
   margin-left: 276px;
+  -o-transition: margin-left 250ms ease;
+  -moz-transition: margin-left 250ms ease;
+  -webkit-transition: margin-left 250ms ease;
+  transition: margin-left 250ms ease;
+}
+.widgets-friend.widgets-enemy {
+  margin-left: 15px;
 }
 .upper-title {
   margin-bottom: 0;
@@ -1420,6 +1436,10 @@ a {
   -o-box-sizing: border-box;
   box-sizing: border-box;
 }
+.share.publish table tr td:first-child,
+.share.publish table tr th:first-child {
+  width: 95%;
+}
 .drop-down.hidden {
   max-height: 0px;
 }
@@ -1968,7 +1988,8 @@ article h2:first-child {
 }
 [ng-click],
 [data-ng-click],
-[call] {
+[call],
+[complete-click] {
   cursor: pointer;
 }
 hr {
@@ -3308,7 +3329,7 @@ a.cke_smile img {
 .grid-wrapper .square-menu {
   display: block;
   position: absolute;
-  left: -80px;
+  left: -55px;
 }
 .grid-wrapper .square-menu-actions {
   display: block;
@@ -3326,8 +3347,8 @@ a.cke_smile img {
   min-height: 60px;
 }
 .square-menu {
-  min-width: 50px;
-  width: 50px;
+  min-width: 51px;
+  width: 51px;
   display: table-cell;
 }
 .square-menu button {
@@ -3335,6 +3356,17 @@ a.cke_smile img {
   height: 47px;
   margin: 0;
   float: right;
+  margin-top: 1px;
+}
+.square-menu .buttons-line button {
+  width: 25px;
+  float: left;
+  font-size: 10px;
+  padding: 0;
+  height: 25px;
+}
+.square-menu .buttons-line button:first-child {
+  margin-right: 1px;
 }
 .square-menu ul.menu-items {
   margin: 0;
