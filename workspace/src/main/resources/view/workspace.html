@@ -115,6 +115,16 @@
 						ng-if="selectedFolders()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						ng-class="{ cell: true }">
 				</button>
+				<button ng-click="openRenameView(selectedFolders()[0])"
+						translate key="workspace.folder.rename"
+						ng-if="selectedFolders().length == 1 && workflowRight('renameFolder') && currentTree.name === 'documents'"
+						ng-class="{ cell: true }">
+				</button>
+				<button ng-click="openRenameView(selectedDocuments()[0])"
+						translate key="workspace.file.rename"
+						ng-if="selectedDocuments().length == 1 && workflowRight('renameDocument') && currentTree.name === 'documents'"
+						ng-class="{ cell: true }">
+				</button>
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
 					<button
 						ng-click="button.action(button.url)"

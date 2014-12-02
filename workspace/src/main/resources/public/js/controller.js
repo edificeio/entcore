@@ -231,9 +231,17 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
 	};
 
+	$scope.openRenameView = function(document){
+		$scope.newName = document.name
+		$scope.renameTarget = document
+		ui.showLightbox()
+		$scope.currentViews.lightbox = $scope.views.lightbox.rename
+	}
+
 	$scope.workflowRight = function(name){
 		var workflowRights = {
-			share: 'org.entcore.workspace.service.WorkspaceService|shareJson'
+			renameFolder: 'org.entcore.workspace.service.WorkspaceService|renameFolder',
+			renameDocument: 'org.entcore.workspace.service.WorkspaceService|renameDocument'
 		};
 
 		return _.where($scope.me.authorizedActions, { name: workflowRights[name] }).length > 0;
@@ -432,7 +440,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			share: 'public/template/share.html',
 			shareFolders: 'public/template/share-folders.html',
 			shareFoldersWarning: 'public/template/share-folders-warning.html',
-			confirm: 'public/template/confirm.html'
+			confirm: 'public/template/confirm.html',
+			rename: 'public/template/rename.html'
 		},
 		documents: {
 			list: 'public/template/list-view.html',
@@ -666,7 +675,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	$scope.currentFolderTree = $scope.folder.children[0];
 	$scope.openFolder($scope.folder.children[0]);
 
-	var getFolders = function(tree, params){
+	var getFolders = function(tree, params, hook){
 		http().get('/workspace/folders/list', params).done(function(folders){
 			_.sortBy(folders, function(folder){ return folder.folder.split("_").length }).forEach(function(folder){
 				setDocumentRights(folder);
@@ -749,6 +758,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 
 			}
 
+			if(typeof hook === 'function'){
+				hook()
+			}
 			$scope.$apply()
 		});
 	};
@@ -777,8 +789,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		$scope.selectedFolder.folder = value;
 	};
 
-	function updateFolders(){
-		getFolders($scope.folder.children[0], { filter: 'owner' });
+	function updateFolders(hook){
+		getFolders($scope.folder.children[0], { filter: 'owner' }, hook);
 	}
 
 	function updateSharedFolders(){
@@ -1019,5 +1031,23 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 	$scope.formatDocumentSize = function(size){
 		var formattedData = $scope.getAppropriateDataUnit(size)
 		return (Math.round(formattedData.nb*100)/100)+" "+formattedData.order
+	}
+
+	$scope.rename = function(item, newName){
+		ui.hideLightbox();
+		if(!item.file){
+			//Rename folder
+			http().putJson("/workspace/folder/rename", {id: item._id, name: newName}).done(function(){
+				$scope.openedFolder.folder.children = []
+				updateFolders(function(){
+					$scope.openFolder($scope.currentFolderTree)
+				})
+			})
+		} else {
+			//Rename file
+			http().putJson("/workspace/document/rename", {id: item._id, name: newName}).done(function(){
+				$scope.openFolder($scope.openedFolder.folder)
+			})
+		}
 	}
 }

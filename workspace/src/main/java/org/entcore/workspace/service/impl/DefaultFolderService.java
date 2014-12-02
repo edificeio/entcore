@@ -493,7 +493,7 @@ public class DefaultFolderService implements FolderService {
 		if("shared".equals(filter)){
 			List<DBObject> groups = new ArrayList<>();
 			groups.add(QueryBuilder.start("userId").is(owner.getUserId()).get());
-			for (String gpId: owner.getProfilGroupsIds()) {
+			for (String gpId: owner.getGroupsIds()) {
 				groups.add(QueryBuilder.start("groupId").is(gpId).get());
 			}
 			q.put("shared").elemMatch(new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get());
@@ -635,4 +635,98 @@ public class DefaultFolderService implements FolderService {
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys, folderHandler);			
 	}
 
+	public void rename(String id, final String newName, final UserInfos owner, final Handler<Either<String, JsonObject>> result){
+		if (owner == null) {
+			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
+			return;
+		}
+		if (id == null || id.trim().isEmpty()) {
+			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
+			return;
+		}
+		
+		final QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId()).and("file").exists(false);
+		final JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+
+		Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>(){
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+				final String newFolderPath = folder.lastIndexOf("_") < 0 ? newName : folder.substring(0, folder.lastIndexOf("_") + 1) + newName;
+				
+				//3 - Find & rename children
+				final Handler<Message<JsonObject>> renameChildren = new Handler<Message<JsonObject>>() {
+					public void handle(Message<JsonObject> event) {
+						
+						if (!"ok".equals(event.body().getString("status"))){
+							result.handle(Utils.validResult(event));
+							return;
+						}
+						
+						QueryBuilder targetQuery = QueryBuilder.start("owner").is(owner.getUserId());
+						targetQuery.or(
+								QueryBuilder.start("folder").regex(Pattern.compile("^" + folder + "($|_)")).get(), 
+								QueryBuilder.start("old-folder").regex(Pattern.compile("^" + folder + "($|_)")).get()
+						);
+						
+						mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(targetQuery), new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> d) {
+								JsonArray children = d.body().getArray("results", new JsonArray());
+								if ("ok".equals(d.body().getString("status")) && children.size() > 0) {
+									final AtomicInteger remaining = new AtomicInteger(children.size());
+									final AtomicInteger count = new AtomicInteger(0);
+
+									Handler<Message<JsonObject>> recursiveHandler = new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> res) {
+											count.getAndAdd(res.body().getInteger("number", 0));
+											if (remaining.decrementAndGet() == 0) {
+												res.body().putNumber("number", count.get());
+												result.handle(Utils.validResult(res));
+											}
+										}
+									};
+
+									for (Object o : children) {
+										if (!(o instanceof JsonObject)) {
+											remaining.decrementAndGet();
+											continue;
+										}
+										JsonObject child = (JsonObject) o;
+										
+										String childFolder = child.getString("folder");
+										String childOldFolder = child.getString("old-folder");
+										String id = child.getString("_id");
+										
+										JsonObject updateMatcher = MongoQueryBuilder.build(QueryBuilder.start("_id").is(id));
+										MongoUpdateBuilder updateModifier = new MongoUpdateBuilder();
+										if(childOldFolder != null || childFolder.equals("Trash")){
+											String newPath = childOldFolder.lastIndexOf("_") < 0 ? newName : childOldFolder.replaceFirst(folder, newFolderPath);
+											updateModifier.set("old-folder", newPath);
+										} else {
+											String newPath = childFolder.lastIndexOf("_") < 0 ? newName : childFolder.replaceFirst(folder, newFolderPath);
+											updateModifier.set("folder", newPath);
+										}
+										
+										mongo.update(DOCUMENTS_COLLECTION, updateMatcher, updateModifier.build(), recursiveHandler);
+									}
+									
+								} else {
+									result.handle(Utils.validResult(d));
+								}
+							}
+						});
+					}
+				};
+				
+				//2 - Rename target folder
+				mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), new JsonObject("{ \"$set\": { \"folder\": \""+newFolderPath+"\", \"name\": \""+newName+"\" }}"), renameChildren);
+			}
+		};
+		
+		//1 - Find the folder
+		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys, folderHandler);		
+	}
+	
 }

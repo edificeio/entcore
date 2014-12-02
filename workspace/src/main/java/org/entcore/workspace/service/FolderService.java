@@ -51,4 +51,5 @@ public interface FolderService {
 	void shareFolderAction(String id, UserInfos owner, List<String> actions, String groupId, 
 			String userId, ShareService shareService, boolean remove, Handler<Either<String, JsonObject>> result);
 
+	void rename(String id, String newName, UserInfos owner, Handler<Either<String, JsonObject>> result);
 }

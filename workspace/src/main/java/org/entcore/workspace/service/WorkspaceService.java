@@ -39,22 +39,28 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mongodb.QueryBuilder;
+
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.http.BaseController;
+
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
+
 import fr.wseduc.webutils.*;
+
 import org.entcore.workspace.Workspace;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
@@ -68,10 +74,14 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import fr.wseduc.webutils.http.ETag;
+import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
+
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.GenericDao;
 
@@ -325,18 +335,6 @@ public class WorkspaceService extends BaseController {
 						}
 					}
 				});
-			}
-		});
-	}
-
-	private void isOwner(String collection, String documentId, UserInfos user,
-			final Handler<Boolean> handler) {
-		QueryBuilder query = QueryBuilder.start("_id").is(documentId).put("owner").is(user.getUserId());
-		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body();
-				handler.handle(res != null && "ok".equals(res.getString("status")) && 1 == res.getInteger("count"));
 			}
 		});
 	}
@@ -1815,6 +1813,52 @@ public class WorkspaceService extends BaseController {
 
 	public void setQuotaService(QuotaService quotaService) {
 		this.quotaService = quotaService;
+	}
+	
+	@Put("/folder/rename")
+	@SecuredAction(value = "workspace.folder.rename")
+	public void renameFolder(final HttpServerRequest request){
+		RequestUtils.bodyToJson(request, pathPrefix + "rename", new Handler<JsonObject>() {
+			public void handle(final JsonObject body) {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					public void handle(UserInfos userInfos) {
+						if(userInfos != null){
+							String id = body.getString("id");
+							String name = body.getString("name");
+							folderService.rename(id, name, userInfos, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+		
+	}
+	
+	@Put("/document/rename")
+	@SecuredAction(value = "workspace.document.rename")
+	public void renameDocument(final HttpServerRequest request){
+		RequestUtils.bodyToJson(request, pathPrefix + "rename", new Handler<JsonObject>() {
+			public void handle(final JsonObject body) {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					public void handle(UserInfos userInfos) {
+						if(userInfos != null){
+							String id = body.getString("id");
+							String name = body.getString("name");
+
+							final QueryBuilder matcher = QueryBuilder.start("_id").is(id).put("owner").is(userInfos.getUserId()).and("file").exists(true);
+							MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+							modifier.set("name", name);
+
+							mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(matcher), modifier.build(), MongoDbResult.validResultHandler(defaultResponseHandler(request)));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
 	}
 
 }
