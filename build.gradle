@@ -181,7 +181,7 @@ project(':timeline') {
 project(':cas') {
   dependencies {
     compile project(':common')
-    compile "fr.wseduc:cas-server-async:0.1-SNAPSHOT"
+    compile "fr.wseduc:cas-server-async:$casVersion"
   }
 }
 
