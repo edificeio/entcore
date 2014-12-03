@@ -125,13 +125,22 @@ Behaviours.register('workspace', {
 		}.bind(this));
 	},
 	create: function(file, callback){
+		console.log('creating file');
+		console.log(file);
 		file.loading = true;
 		var splitName = file.file[0].name.split('.');
+		var ext = splitName[splitName.length - 1];
+		if(file.title !== file.file[0].name){
+			file.title += ('.' + ext);
+		}
 		var formData = new FormData();
-		formData.append('file', file.file[0], file.title + '.' + splitName[splitName.length - 1]);
+		formData.append('file', file.file[0], file.title);
+
 		http().postFile('/workspace/document?protected=true&application=media-library', formData).done(function(data){
 			file.loading = false;
-			this.loadResources(callback);
+			this.loadResources(function(resources){
+				callback(resources, data);
+			});
 		}.bind(this));
 	},
 	protectedDuplicate: function(file, callback){

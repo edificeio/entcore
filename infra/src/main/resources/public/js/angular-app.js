@@ -442,6 +442,7 @@ module.directive('linker', function($compile){
 	return {
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
+		scope: true,
 		controller: function($scope){
 			$scope.linker = {
 				me: model.me,
@@ -506,7 +507,7 @@ module.directive('linker', function($compile){
 			http().get('/resources-applications').done(function(apps){
 				scope.linker.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
-						return app.address.indexOf(match) !== -1
+						return app.address.indexOf(match) !== -1 && app.target === null
 					});
 				});
 				var currentApp = _.find(scope.linker.apps, function(app){
@@ -517,11 +518,8 @@ module.directive('linker', function($compile){
 				if(currentApp){
 					scope.linker.search.application = currentApp;
 				}
-				scope.linker.loadApplicationResources(function(){});
 
-				var split = scope.linker.search.application.address.split('/');
-				scope.linker.params.appPrefix = split[split.length - 1];
-				scope.$apply('linker');
+				scope.linker.loadApplicationResources(function(){});
 			});
 
 			scope.linker.loadApplicationResources = function(cb){
@@ -1647,6 +1645,9 @@ var ckeEditorFixedPositionning = function(){
 function createCKEditorInstance(editor, scope, $compile){
 	var ckeInstance;
 	CKEDITOR.on('instanceReady', function(ck){
+		if(!(ck.editor.element.$ === editor[0])){
+			return;
+		}
 		ckeInstance = ck;
 		editor.focus();
 		scope.ngModel.assign(scope, scope.ngModel(scope) || '');
@@ -1840,19 +1841,24 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				createCKEditorInstance(editor, scope, $compile);
 
-				scope.$watch(attributes.ngModel, function(newValue){
-					if(contextEditor.getData() !== newValue){
-						editor.html($compile(newValue)(scope));
-						//weird browser bug with audio tags
-						editor.find('audio').each(function(index, item){
-							var parent = $(item).parent();
-							$(item)
-								.attr("src", item.src)
-								.detach()
-								.appendTo(parent);
-						});
+				scope.$watch(
+					function(){
+						return scope.ngModel(scope);
+					},
+					function(newValue){
+						if(contextEditor.getData() !== newValue){
+							editor.html($compile(newValue)(scope));
+							//weird browser bug with audio tags
+							editor.find('audio').each(function(index, item){
+								var parent = $(item).parent();
+								$(item)
+									.attr("src", item.src)
+									.detach()
+									.appendTo(parent);
+							});
+						}
 					}
-				});
+				);
 
 				element.on('removed', function(){
 					setTimeout(function(){
@@ -2252,6 +2258,7 @@ module.directive('behaviour', function($compile){
 			resource: '='
 		},
 		link: function($scope, $element, $attributes){
+			console.log('This directive is deprecated. Please use "security" instead.');
 			if(!$attributes.name){
 				throw "Behaviour name is required";
 			}
@@ -2265,6 +2272,36 @@ module.directive('behaviour', function($compile){
 				}
 				else{
 					content.show();
+				}
+
+			});
+		}
+	}
+});
+
+module.directive('security', function($compile){
+	return {
+		restrict: 'E',
+		template: '<div ng-transclude></div>',
+		replace: false,
+		transclude: true,
+		scope: {
+			resource: '='
+		},
+		link: function($scope, $element, $attributes){
+			if(!$attributes.name){
+				throw "Right name is required";
+			}
+			var content = $element.children('div');
+			$scope.$watch('resource', function(newVal){
+				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
+					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
+
+				if(hide){
+					content.remove();
+				}
+				else{
+					$element.append(content);
 				}
 
 			});
@@ -3738,6 +3775,9 @@ module.directive('attachments', function($parse){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/attachments.html',
 		controller: function($scope){
+			$scope.linker = {
+				resource: {}
+			}
 			$scope.attachments = {
 				me: model.me,
 				display: {
@@ -3762,8 +3802,7 @@ module.directive('attachments', function($parse){
 				attachmentsList: function(){
 					$scope.list = $scope.ngModel($scope);
 					return $scope.list;
-				},
-				resource: {}
+				}
 			};
 		},
 		link: function(scope, element, attributes){
@@ -3794,7 +3833,7 @@ module.directive('attachments', function($parse){
 			http().get('/resources-applications').done(function(apps){
 				scope.attachments.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
-						return app.address.indexOf(match) !== -1
+						return app.address.indexOf(match) !== -1 && app.target === null
 					}) && _.find(scope.apps, function(match){
 						return app.address.indexOf(match) !== -1
 					});
@@ -3832,18 +3871,25 @@ module.directive('attachments', function($parse){
 						return scope.attachments.display.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.attachments.display.search.text).toLowerCase()) !== -1 ||
 							resource._id === scope.attachments.display.search.text);
 					});
-					scope.attachments.resource.title = scope.attachments.display.search.text;
+					scope.linker.resource.title = scope.attachments.display.search.text;
 				});
 			};
 
-			scope.attachments.createResource = function(){
+			scope.linker.createResource = function(){
 				var split = scope.attachments.display.search.application.address.split('/');
 				var prefix = split[split.length - 1];
 
 				Behaviours.loadBehaviours(prefix, function(appBehaviour){
-					appBehaviour.create(scope.attachments.resource, function(){
-						scope.attachments.searchApplication();
-						scope.attachments.display.search.text = scope.attachments.resource.title;
+					appBehaviour.create(scope.linker.resource, function(resources, newResource){
+						if(!(scope.ngModel(scope) instanceof Array)){
+							scope.ngModel.assign(scope, []);
+						}
+						scope.attachments.display.pickFile = false;
+						var resource = _.find(resources, function(resource){
+							return resource._id === newResource._id;
+						})
+						resource.provider = $scope.attachments.display.search.application;
+						scope.ngModel(scope).push(resource);
 						scope.$apply();
 					});
 				});
