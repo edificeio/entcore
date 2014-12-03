@@ -921,7 +921,7 @@ function Collection(obj){
 
 	Model.prototype.behaviours = function(serviceName){
 		if(this.shared || this.owner){
-			return Behaviours.findBehaviours(serviceName, this);
+			return Behaviours.findRights(serviceName, this);
 		}
 		return {};
 	};
@@ -1223,16 +1223,21 @@ Behaviours = (function(){
 			this.applicationsBehaviours[application] = {};
 			this.applicationsBehaviours[application] = appBehaviours;
 		},
-		findBehaviours: function(serviceName, resource){
+		findRights: function(serviceName, resource){
 			if(this.applicationsBehaviours[serviceName]){
 				if(!resource.myRights){
 					resource.myRights = {};
 				}
 
-				if(typeof this.applicationsBehaviours[serviceName].resource !== 'function' && typeof this.applicationsBehaviours[serviceName].rights === 'object'){
+				if(typeof this.applicationsBehaviours[serviceName].resource === 'function' ){
+					console.log('resource method in behaviours is deprecated, please use rights object or rename to resourceRights');
+					this.applicationsBehaviours[serviceName].resourceRights = this.applicationsBehaviours[serviceName].resource;
+				}
+
+				if(typeof this.applicationsBehaviours[serviceName].resourceRights !== 'function' && typeof this.applicationsBehaviours[serviceName].rights === 'object'){
 					var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
 
-					this.applicationsBehaviours[serviceName].resource = function(element){
+					this.applicationsBehaviours[serviceName].resourceRights = function(element){
 						for(var behaviour in resourceRights){
 							if(model.me.hasRight(element, resourceRights[behaviour]) || (element.owner && model.me.userId === element.owner.userId)){
 								element.myRights[behaviour] = resourceRights[behaviour];
@@ -1240,8 +1245,8 @@ Behaviours = (function(){
 						}
 					}
 				}
-				if(typeof this.applicationsBehaviours[serviceName].resource === 'function'){
-					return this.applicationsBehaviours[serviceName].resource(resource);
+				if(typeof this.applicationsBehaviours[serviceName].resourceRights === 'function'){
+					return this.applicationsBehaviours[serviceName].resourceRights(resource);
 				}
 				else{
 					return {};
@@ -1251,7 +1256,7 @@ Behaviours = (function(){
 			if(serviceName !== '.'){
 				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
 				if(this.applicationsBehaviours[serviceName] && typeof this.applicationsBehaviours[serviceName].resource === 'function'){
-					return this.applicationsBehaviours[serviceName].resource(resource);
+					return this.applicationsBehaviours[serviceName].resourceRights(resource);
 				}
 				else{
 					this.applicationsBehaviours[serviceName] = {};
@@ -1260,6 +1265,10 @@ Behaviours = (function(){
 			}
 
 			return {}
+		},
+		findBehaviours: function(serviceName, resource){
+			console.log('Deprecated, please use findRights');
+			this.findRights(serviceName, resource);
 		},
 		loadBehaviours: function(serviceName, callback){
 			if(this.applicationsBehaviours[serviceName]){

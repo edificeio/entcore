@@ -2279,7 +2279,7 @@ module.directive('behaviour', function($compile){
 	}
 });
 
-module.directive('security', function($compile){
+module.directive('resourceRight', function($compile){
 	return {
 		restrict: 'E',
 		template: '<div ng-transclude></div>',
