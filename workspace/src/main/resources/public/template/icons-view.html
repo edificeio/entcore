@@ -21,7 +21,7 @@
 <article class="icons-view">
 	<header>&nbsp;</header>
 	<div>
-		<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container">
+		<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" dragstart="drag" dragcondition="dragCondition(folder)" dragdrop="drop" dragitem="folder">
 			<a class="container">
 				<i class="folder-large" data-ng-click="openFolder(folder)"></i>
 			</a>
@@ -36,7 +36,7 @@
 			</legend>
 		</div>
 		<section data-ng-repeat-end></section>
-		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }">
+		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag" dragcondition="dragCondition(document)" dragitem="document">
 			<a ng-href="[[documentPath(document)]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>

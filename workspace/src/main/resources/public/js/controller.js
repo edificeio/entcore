@@ -57,7 +57,7 @@ var tools = (function(){
 	}
 }());
 
-function Workspace($scope, date, ui, notify, _, $rootScope){
+function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	$rootScope.$on('share-updated', function(){
 		$scope.openFolder($scope.openedFolder.folder);
 	});
@@ -74,6 +74,8 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		used: 0,
 		unit: 'Mo'
 	};
+
+	$scope.folderTreeTemplate = 'folder-content'
 
 	function getQuota(){
 		http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
@@ -295,7 +297,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			http().put('/workspace/folder/trash/' + folder._id);
 		});
 		$scope.selectedDocuments().forEach(function(document){
-			http().put(url + "/" + document._id);
+			http().put(url + "/" + document._id).done($scope.reloadFolderView)
 		});
 		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
 
@@ -309,6 +311,26 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 		refreshFolders();
 		notify.info('workspace.removed.message');
 	};
+
+	$scope.dragToTrash = function(item){
+
+		if(item.file){
+			http().put('/workspace/document/trash/' + item._id)
+			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc._id === item._id; })
+		} else {
+			http().put('/workspace/folder/trash/' + item._id).done($scope.reloadFolderView)
+			$scope.folder.children[$scope.folder.children.length - 1].children = $scope.folder.children[$scope.folder.children.length - 1].children.concat(
+				_.where($scope.openedFolder.folder.children, { _id: item._id })
+			);
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
+				return folder._id === item._id;
+			});
+		}
+
+		refreshFolders();
+		notify.info('workspace.removed.message');
+
+	}
 
 	$scope.openMoveFileView = function(action){
 		targetFolders = [$scope.folder.children[0]];
@@ -824,7 +846,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			refreshFolders();
 			http().put('/workspace/folder/move/' + folder._id, data)
 				.done(function(){
-					updateFolders();
+					$scope.reloadFolderView()
 				})
 				.e400(function(e){
 					var error = JSON.parse(e.responseText);
@@ -834,6 +856,42 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				});
 		})
 	};
+
+	$scope.dragMove = function(origin, target){
+		ui.hideLightbox();
+		var folderString = folderToString($scope.folder.children[0], target);
+
+		var data = {};
+		if(folderString !== ''){
+			data.path = folderString;
+		}
+
+		if(origin.file){
+			var basePath = 'documents/move/' + origin._id;
+			if(folderString !== ''){
+				basePath += '/' + folderString;
+			}
+
+			http().put(basePath).done(function(){
+				$scope.openFolder($scope.openedFolder.folder);
+			});
+		} else {
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(child){
+				return child._id === origin._id;
+			});
+			refreshFolders();
+			http().put('/workspace/folder/move/' + origin._id, data)
+			.done(function(){
+				$scope.reloadFolderView()
+			})
+			.e400(function(e){
+				var error = JSON.parse(e.responseText);
+				notify.error(error.error);
+				$scope.openedFolder.folder.children.push(origin);
+				refreshFolders();
+			});
+		}
+	}
 
 	$scope.copy = function(){
 		ui.hideLightbox();
@@ -1039,9 +1097,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 			//Rename folder
 			http().putJson("/workspace/folder/rename", {id: item._id, name: newName}).done(function(){
 				$scope.openedFolder.folder.children = []
-				updateFolders(function(){
-					$scope.openFolder($scope.currentFolderTree)
-				})
+				$scope.reloadFolderView()
 			})
 		} else {
 			//Rename file
@@ -1049,5 +1105,73 @@ function Workspace($scope, date, ui, notify, _, $rootScope){
 				$scope.openFolder($scope.openedFolder.folder)
 			})
 		}
+	}
+
+	$scope.drag = function(item, event){
+		try{
+			event.dataTransfer.setData('application/json', JSON.stringify(item));
+		} catch(e) {
+			event.dataTransfer.setData('Text', JSON.stringify(item));
+		}
+
+	}
+	$scope.dragCondition = function(item){
+		return $scope.currentFolderTree.name === 'documents' && item.folder
+	}
+
+	$scope.drop = function(targetItem, event){
+		event.preventDefault()
+
+		var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") === 0 ? "application/json" : //Chrome & Safari
+						event.dataTransfer.types.contains && event.dataTransfer.types.contains("application/json") ? "application/json" : //Firefox
+						event.dataTransfer.types.contains && event.dataTransfer.types.contains("Text") ? "Text" : //IE
+						undefined
+
+		if(!dataField || targetItem.name === 'shared' || targetItem.name === 'appDocuments')
+			return
+
+		var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
+		if(originalItem._id === targetItem._id)
+			return
+
+		if(targetItem.name === 'trash')
+			$scope.dropTrash(originalItem)
+		else
+			$scope.dropMove(originalItem, targetItem)
+	}
+
+	$scope.dropMove = function(originalItem, targetItem){
+		$scope.dragMove(originalItem, targetItem)
+	}
+	$scope.dropTrash = function(originalItem){
+		$scope.dragToTrash(originalItem)
+	}
+
+	$scope.openFolderById = function(folderId){
+		var recursive = function(root){
+			if(root._id === folderId)
+				return $scope.openFolder(root)
+
+			if(!root.children || !root.children.length)
+				return
+
+			for(var i = 0; i < root.children.length; i++){
+				recursive(root.children[i])
+			}
+		}
+		return recursive($scope.currentFolderTree)
+	}
+
+	$scope.reloadFolderView = function(){
+		var backupId = $scope.openedFolder.folder._id
+		updateFolders(function(){
+			$scope.folderTreeTemplate = ''
+			$scope.$apply()
+			$timeout(function(){
+				$scope.folderTreeTemplate = 'folder-content'
+				$scope.openFolderById(backupId)
+			}, 10)
+		})
+
 	}
 }

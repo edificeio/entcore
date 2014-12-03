@@ -29,7 +29,9 @@
 		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 
 		<script type="text/ng-template" id="folder-content">
-			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name">
+			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name"
+			   dragdrop="drop"
+			   dragitem="folder">
 				<i class="arrow" ng-if="folder.children.length"></i> [[translate(folder.name)]]
 			</a>
 			<ul data-ng-class="{ selected: containsCurrentFolder(folder), closed: !containsCurrentFolder(folder) }" ng-if="containsCurrentFolder(folder) && folder.name !== 'trash'">
@@ -55,7 +57,7 @@
 			<section class="four cell">
 				<h1><a data-reload><i class="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
 				<nav class="vertical">
-					<div data-ng-include="'folder-content'"></div>
+					<div data-ng-include="folderTreeTemplate"></div>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
 					<div class="row">
 						<hr class="row" />
