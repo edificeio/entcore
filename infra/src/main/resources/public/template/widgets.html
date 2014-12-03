@@ -18,7 +18,7 @@
  ~
  -->
 
-<div ng-controller="Widgets" sortable-list>
+<div ng-controller="Widgets" sortable-list class="twelve cell">
 	<div class="row widget-container" ng-repeat="widget in widgets.all | orderBy:'index' | filter:allowedWidget" sortable-element
          ng-model="widget.index" ng-change="widgets.savePreferences()">
 		<div class="twelve cell" ng-include="widget.path"></div>
