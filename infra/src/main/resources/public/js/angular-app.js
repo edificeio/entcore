@@ -3276,7 +3276,7 @@ module.directive('sortableElement', function($compile){
 
 					sortables.css({ position: 'relative', top: 0, left: 0, 'margin-top': 0 });
 				},
-				mouseDown: function(){
+				startDrag: function(){
 					sortables = element.parents('[sortable-list]').find('[sortable-element]');
 					sortables.attr('style', '');
 					setTimeout(function(){

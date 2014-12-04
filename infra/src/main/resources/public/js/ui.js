@@ -251,62 +251,14 @@ ui.extendElement = {
 			}
 			var interrupt = false;
 			if(element.data('resizing') !== true){
-				if(params && typeof params.mouseDown === 'function'){
-					params.mouseDown();
-				}
 
-				$('body').css({
-					'-webkit-user-select': 'none',
-					'-moz-user-select': 'none',
-					'user-select' : 'none'
-				});
-				if(element.css('position') === 'relative'){
-					element.css({ top: element.position().top, left: element.position().left });
-				}
-				element.css({
-					'position': 'absolute'
-				});
 				var mouse = { y: e.clientY, x: e.clientX };
 				var elementDistance = {
 					y: mouse.y - element.offset().top,
 					x: mouse.x - element.offset().left
 				};
-				$(window).on('mousemove.drag', function(f){
-					e.preventDefault();
-					if(f.clientX === mouse.x && f.clientY === mouse.y){
-						return;
-					}
-					if(!element.data('dragging')){
-						element.trigger('startDrag');
-					}
-					element.unbind("click");
-					element.data('dragging', true);
-					mouse = {
-						y: f.clientY,
-						x: f.clientX
-					};
-				});
+				var moved = false;
 
-				$('body').on('mouseup.drag', function(e){
-					$('body').css({
-						'-webkit-user-select': 'initial',
-						'-moz-user-select': 'initial',
-						'user-select' : 'initial'
-					});
-					interrupt = true;
-					$('body').unbind('mouseup.drag');
-					$(window).unbind('mousemove.drag');
-
-					setTimeout(function(){
-						if(element.data('dragging')){
-							element.trigger('stopDrag');
-							element.data('dragging', false);
-							if(params && typeof params.mouseUp === 'function'){
-								params.mouseUp();
-							}
-						}
-					}, 100);
-				});
 				var moveElement = function(){
 					var parent = element.parents('.drawing-zone');
 					var parentPosition = parent.offset();
@@ -360,7 +312,61 @@ ui.extendElement = {
 						requestAnimationFrame(moveElement);
 					}
 				};
-				moveElement();
+
+				$(window).on('mousemove.drag', function(f){
+					moved = true;
+					e.preventDefault();
+					if(f.clientX === mouse.x && f.clientY === mouse.y){
+						return;
+					}
+					if(!element.data('dragging')){
+						if(params && typeof params.startDrag === 'function'){
+							params.startDrag();
+						}
+						
+						element.trigger('startDrag');
+						$('body').css({
+							'-webkit-user-select': 'none',
+							'-moz-user-select': 'none',
+							'user-select' : 'none'
+						});
+						if(element.css('position') === 'relative'){
+							element.css({ top: element.position().top, left: element.position().left });
+						}
+						element.css({
+							'position': 'absolute'
+						});
+
+						setTimeout(moveElement, 5);
+					}
+					element.unbind("click");
+					element.data('dragging', true);
+					mouse = {
+						y: f.clientY,
+						x: f.clientX
+					};
+				});
+
+				$('body').on('mouseup.drag', function(e){
+					$('body').css({
+						'-webkit-user-select': 'initial',
+						'-moz-user-select': 'initial',
+						'user-select' : 'initial'
+					});
+					interrupt = true;
+					$('body').unbind('mouseup.drag');
+					$(window).unbind('mousemove.drag');
+
+					setTimeout(function(){
+						if(element.data('dragging')){
+							element.trigger('stopDrag');
+							element.data('dragging', false);
+							if(params && typeof params.mouseUp === 'function' && moved){
+								params.mouseUp();
+							}
+						}
+					}, 100);
+				});
 			}
 		});
 	}
