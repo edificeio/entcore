@@ -169,8 +169,7 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					JsonObject n = event.right().getValue()
-							.getObject("notify-timeline");
+					JsonObject n = event.right().getValue().getObject("notify-timeline");
 					if (n != null) {
 						notifyShare(request, id, user, new JsonArray().add(n));
 					}
@@ -212,7 +211,7 @@ public class WorkspaceService extends BaseController {
 							if (event.isRight()) {
 								JsonObject n = event.right().getValue().getObject("notify-timeline");
 								if (n != null) {
-									notifyShare(request, id, user, new JsonArray().add(n));
+									notifyShare(request, id, user, new JsonArray().add(n), true);
 								} else {
 									n = new JsonObject();
 								}
@@ -335,8 +334,10 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
-	private void notifyShare(final HttpServerRequest request, final String resource,
-				final UserInfos user, JsonArray sharedArray) {
+	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray){
+		notifyShare(request, resource, user, sharedArray, false);
+	}
+	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray, final boolean isFolder) {
 		final List<String> recipients = new ArrayList<>();
 		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
 		for (Object j : sharedArray) {
@@ -361,7 +362,7 @@ public class WorkspaceService extends BaseController {
 								}
 							}
 							if (remaining.decrementAndGet() < 1) {
-								sendNotify(request, resource, user, recipients);
+								sendNotify(request, resource, user, recipients, isFolder);
 							}
 						}
 					});
@@ -369,18 +370,21 @@ public class WorkspaceService extends BaseController {
 			}
 		}
 		if (remaining.get() < 1) {
-			sendNotify(request, resource, user, recipients);
+			sendNotify(request, resource, user, recipients, isFolder);
 		}
 	}
 
-	private void sendNotify(final HttpServerRequest request, final String resource,
-			final UserInfos user, final List<String> recipients) {
+	private void sendNotify(final HttpServerRequest request, final String resource, final UserInfos user, final List<String> recipients, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
 		.putString("uri", container.config().getString("userbook-host") +
 				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 		.putString("username", user.getUsername())
 		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
-				pathPrefix + "/document/" + resource);
+				pathPrefix + "/document/" + resource)
+		.putString("appPrefix", pathPrefix+"/workspace");
+
+		final String template = isFolder ? "notify-share-folder.html" : "notify-share.html";
+
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
 				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
 			@Override
@@ -388,7 +392,7 @@ public class WorkspaceService extends BaseController {
 				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 					params.putString("resourceName", event.body().getObject("result").getString("name", ""));
 					notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-							recipients, resource, "notify-share.html", params);
+							recipients, resource, template, params);
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);
 				}
