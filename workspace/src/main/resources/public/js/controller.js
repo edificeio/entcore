@@ -556,6 +556,9 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	};
 
 	$scope.openFolder = function(folder){
+		if(folder.folder && folder.folder.indexOf('Trash') === 0)
+			return
+
 		if(folder !== $scope.openedFolder.folder){
 			$scope.loadingFiles = [];
 		}
