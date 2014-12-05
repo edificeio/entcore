@@ -58,8 +58,46 @@ var tools = (function(){
 }());
 
 function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
-	$rootScope.$on('share-updated', function(){
-		$scope.openFolder($scope.openedFolder.folder);
+	$rootScope.$on('share-updated', function(event, changes){
+		if($scope.sharedDocuments)
+			//Sharing documents
+			$scope.openFolder($scope.openedFolder.folder)
+		else{
+			//Sharing folders
+			var way = changes.added ? "added" : changes.removed ? "removed" : undefined
+			var idField
+
+			if(way){
+				var actions = changes.added.actions
+				idField = changes.added.groupId ? "groupId" : "userId"
+
+				$scope.sharedFolders.forEach(function(folder){
+					var sharedItem = _.find(folder.shared, function(item){
+						return item[idField] === changes.added[idField]
+					})
+					if(!sharedItem){
+						sharedItem = {}
+						sharedItem[idField] = changes.added[idField]
+						folder.shared.push(sharedItem)
+					}
+					if(way === "added"){
+						_.each(actions, function(action){
+							sharedItem[action] = true
+						})
+					} else {
+						_.each(actions, function(action){
+							delete sharedItem[action]
+						})
+					}
+				})
+			} else {
+				idField = changes.groupId ? "groupId" : "userId"
+				$scope.sharedFolders.forEach(function(folder){
+					folder.shared = _.reject(folder.shared, function(item){ return item[idField] === changes[idField] })
+				})
+			}
+			$scope.openFolder($scope.openedFolder.folder)
+		}
 	});
 
 	$scope.folder = { children: [ { name: 'documents' }, { name: 'shared' }, { name: 'appDocuments' }, { name: 'trash', children: [] }] };
@@ -257,12 +295,14 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	};
 
 	$scope.openShareView = function(){
+		$scope.sharedFolders = undefined
 		$scope.sharedDocuments = $scope.selectedDocuments();
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.share;
 	};
 
 	$scope.openShareFolderView = function(){
+		$scope.sharedDocuments = undefined
 		$scope.sharedFolders = $scope.selectedFolders();
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.shareFoldersWarning;

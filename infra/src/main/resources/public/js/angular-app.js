@@ -3902,7 +3902,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		$scope.resources.forEach(function(resource){
 			var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
 			http().put(path, http().serialize(data)).done(function(){
-				$rootScope.$broadcast('share-updated');
+				$rootScope.$broadcast('share-updated', data);
 			});
 		})
 	}
