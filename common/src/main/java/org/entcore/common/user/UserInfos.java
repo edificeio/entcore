@@ -61,6 +61,8 @@ public class UserInfos {
 		private String icon;
 		private String target;
 		private String displayName;
+		private boolean display;
+		private String prefix;
 
 		public String getName() {
 			return name;
@@ -98,6 +100,21 @@ public class UserInfos {
 
 		public void setDisplayName(String displayName) { this.displayName = displayName; }
 
+		public boolean isDisplay() {
+			return display;
+		}
+
+		public void setDisplay(boolean display) {
+			this.display = display;
+		}
+
+		public String getPrefix() {
+			return prefix;
+		}
+
+		public void setPrefix(String prefix) {
+			this.prefix = prefix;
+		}
 	}
 
 	public static class Function {

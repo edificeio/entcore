@@ -321,7 +321,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
-				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName]) as apps";
+				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix]) as apps";
 		JsonObject params = new JsonObject();
 		params.putString("id", userId);
 		JsonArray statements = new JsonArray()
@@ -357,6 +357,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("icon", (String) a.get(2))
 								.putString("target", (String) a.get(3))
 								.putString("displayName", (String) a.get(4))
+								.putBoolean("display", ((a.get(5) == null) || (boolean) a.get(5)))
+								.putString("prefix", (String) a.get(6))
 						);
 					}
 					for (Object o : j.getArray("functions", new JsonArray())) {
