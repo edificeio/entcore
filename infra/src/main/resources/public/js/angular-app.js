@@ -2136,6 +2136,21 @@ module.directive('workflow', function($compile){
 	}
 });
 
+module.directive('userRole', function($compile){
+	return {
+		restrict: 'A',
+		link: function($scope, $element, $attributes){
+			var auth = $attributes.userRole;
+			if(!model.me.functions[auth]){
+				$element.hide();
+			}
+			else{
+				$element.show();
+			}
+		}
+	}
+});
+
 module.directive('tooltip', function($compile){
 	return {
 		restrict: 'A',
