@@ -838,7 +838,7 @@ textarea {
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
   overflow-x: hidden;
-  height: 1000px;
+  height: 1800px;
 }
 .widgets img {
   max-width: 100%;
@@ -3218,6 +3218,9 @@ a.cke_smile img {
 .viewer .drawing-grid.editor .media {
   outline: 1px dotted black;
 }
+.viewer nav.vertical {
+  padding: 0;
+}
 .editor .viewer .media {
   opacity: 1;
 }
@@ -3306,6 +3309,22 @@ a.cke_smile img {
 .media.height-twelve .media-wrapper .media-container {
   overflow-y: auto;
   height: 100%;
+}
+.media.height-one .media-wrapper .media-container iframe,
+.media.height-two .media-wrapper .media-container iframe,
+.media.height-three .media-wrapper .media-container iframe,
+.media.height-four .media-wrapper .media-container iframe,
+.media.height-five .media-wrapper .media-container iframe,
+.media.height-six .media-wrapper .media-container iframe,
+.media.height-seven .media-wrapper .media-container iframe,
+.media.height-eight .media-wrapper .media-container iframe,
+.media.height-nine .media-wrapper .media-container iframe,
+.media.height-ten .media-wrapper .media-container iframe,
+.media.height-eleven .media-wrapper .media-container iframe,
+.media.height-twelve .media-wrapper .media-container iframe {
+  height: 100%;
+  min-height: 0;
+  position: absolute;
 }
 .sub-grid {
   overflow: visible !important;
@@ -3802,6 +3821,18 @@ i.shared {
   bottom: -87px;
   left: -110px;
 }
+.page-markers .marker:nth-child(3) {
+  border-width: 0 0 190px 191px;
+  z-index: 0;
+}
+.page-markers .marker:nth-child(3) .content {
+  bottom: -121px;
+  left: -174px;
+  width: 190px;
+}
+.page-markers .marker:empty {
+  display: none;
+}
 .blogs-posts-list table {
   table-layout: fixed;
 }
@@ -4137,6 +4168,7 @@ iframe.cke_panel_frame {
 article iframe,
 [contenteditable] iframe {
   min-height: 0;
+  height: 500px;
 }
 .dominos.fallen .item {
   min-width: 295px;
@@ -8808,6 +8840,12 @@ nav.vertical.stamps article {
   box-sizing: border-box;
   float: left;
   vertical-align: middle;
+}
+.drop-down-filters p:first-child,
+.filters p:first-child,
+.drop-down-filters .filters-icons,
+.filters .filters-icons {
+  background: #444;
 }
 .lightbox-window {
   background: #444;
