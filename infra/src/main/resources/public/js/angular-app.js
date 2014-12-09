@@ -649,7 +649,7 @@ module.directive('calendar', function($compile){
 				};
 
 				$scope.updateCalendarWeek = function(){
-					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week() });
+					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
 					refreshCalendar();
 				};
 			};

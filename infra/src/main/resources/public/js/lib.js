@@ -1374,15 +1374,20 @@ var calendar = {
 		}
 	},
 	Calendar: function(data){
+		if(!data.year){
+			data.year = moment().year();
+		}
 		this.week = data.week;
+		this.year = data.year;
 		this.collection(calendar.Day);
 		this.dayForWeek = new Date();
 		function dayOfYear(dayOfWeek){
 			var week = data.week;
+			var year = data.year;
 			if(dayOfWeek === 0){
 				week ++;
 			}
-			return moment().week(week).day(dayOfWeek).dayOfYear();
+			return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
 		}
 
 		this.days.load([{ name: 'monday', index:  dayOfYear(1) },
@@ -1398,7 +1403,7 @@ var calendar = {
 			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
 		}
 
-		this.firstDay = moment().week(this.week).day(1);
+		this.firstDay = moment().year(this.year).week(this.week).day(1);
 		if(moment().day() === 0){
 			this.firstDay = moment().add(-1, 'days').week(this.week).day(1);
 		}
