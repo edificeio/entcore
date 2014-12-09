@@ -1706,7 +1706,7 @@ module.directive('textEditor', function($compile){
 					resizeParent();
 					parentElement.data('lock', false);
 					editor.css({ cursor: '' });
-					scope.ngModel = editor.html();
+					scope.ngModel = instance.getData();
 					scope.$apply('ngModel');
 					if(scope.ngChange){
 						scope.ngChange();
