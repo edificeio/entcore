@@ -63,7 +63,7 @@ public class PronoteRegisteredService extends DefaultRegisteredService {
 				case "Relative" :
 					category = (category == null ? "" : ";") + "National_2";
 					break;
-				case "Staff" :
+				case "Personnel" :
 					category = (category == null ? "" : ";") + "National_4";
 					break;
 				}
