@@ -71,6 +71,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 					isAdmin(user, true, handler);
 					break;
+				case "unlinkUser" :
 				case "linkUser" :
 					isAdminOfStructureOrClass4(request, user, handler);
 					break;

@@ -341,7 +341,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Delete("/class/:classId/unlink/:userId")
-	@SecuredAction("class.unlink.user")
+	@SecuredAction(value = "class.unlink.user", type = ActionType.RESOURCE)
 	public void unlinkUser(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
 		final String userId = request.params().get("userId");
