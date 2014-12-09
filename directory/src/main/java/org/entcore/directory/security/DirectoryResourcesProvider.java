@@ -71,6 +71,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 					isAdmin(user, true, handler);
 					break;
+				case "linkUser" :
+					isAdminOfStructureOrClass4(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(UserController.class.getName())) {
@@ -339,7 +342,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		}
 		final String classId = request.params().get("classId");
 		final String structureId = request.params().get("structureId");
-		if (adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(structureId)) {
+		if (adminLocal != null && adminLocal.getScope() != null &&
+				(adminLocal.getScope().contains(structureId) || adminLocal.getScope().contains(classId))) {
 			handler.handle(true);
 			return;
 		}

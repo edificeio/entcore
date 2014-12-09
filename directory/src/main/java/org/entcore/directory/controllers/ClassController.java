@@ -319,7 +319,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Put("/class/:classId/link/:userId")
-	@SecuredAction("class.link.user")
+	@SecuredAction(value = "class.link.user", type = ActionType.RESOURCE)
 	public void linkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String classId = request.params().get("classId");

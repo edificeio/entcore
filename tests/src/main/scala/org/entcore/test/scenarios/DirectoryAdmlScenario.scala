@@ -66,6 +66,10 @@ object DirectoryAdmlScenario {
     .body(StringBody("""{"name": "E.Zola renamed"}"""))
     .check(status.is(200)))
 
+    .exec(http("unlink user class")
+    .delete("""/directory/class/${classId}/unlink/${childrenId}""")
+    .check(status.is(200)))
+
 //    .exec(http("Remove user from group")
 //      .delete("""/directory/user/group/${teacherId}/${manual-group-id}""")
 //      .header("Content-Length", "0")
