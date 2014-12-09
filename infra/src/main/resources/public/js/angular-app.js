@@ -1615,9 +1615,11 @@ function createCKEditorInstance(editor, scope, $compile){
 	});
 
 	editor.on('blur', function(e) {
-		scope.ngModel.assign(scope, ckeInstance.editor.getData());
-		editor.attr('style', '');
-		scope.$apply();
+		if(ckeInstance.editor.getData() !== scope.ngModel(scope)){
+			scope.ngModel.assign(scope, ckeInstance.editor.getData());
+			editor.attr('style', '');
+			scope.$apply();
+		}
 	});
 
 	return ckeEditorFixedPositionning;
@@ -1658,7 +1660,7 @@ module.directive('textEditor', function($compile){
 				});
 
 				scope.$watch('ngModel', function(newVal){
-					if(newVal !== editor.html()){
+					if(newVal !== instance.getData()){
 						editor.html($compile(scope.ngModel)(scope.$parent));
 						resizeParent();
 					}
@@ -1784,7 +1786,7 @@ module.directive('htmlEditor', function($compile, $parse){
 				createCKEditorInstance(editor, scope, $compile);
 
 				scope.$watch(attributes.ngModel, function(newValue){
-					if(editor.html() !== newValue){
+					if(contextEditor.getData() !== newValue){
 						editor.html($compile(newValue)(scope));
 						//weird browser bug with audio tags
 						editor.find('audio').each(function(index, item){
