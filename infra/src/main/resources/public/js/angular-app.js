@@ -637,8 +637,12 @@ module.directive('calendar', function($compile){
 				$scope.createItem = function(day, timeslot){
 					$scope.display.createItem = true;
 					$scope.newItem = {};
-					$scope.newItem.beginning = moment().utc().dayOfYear(day.index).hour(timeslot.start);
-					$scope.newItem.end = moment().utc().dayOfYear(day.index).hour(timeslot.end);
+					var year = model.calendar.year;
+					if(day.index < model.calendar.firstDay.dayOfYear()){
+						year++;
+					}
+					$scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
+					$scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
 					model.calendar.newItem = $scope.newItem;
 					$scope.onCreateOpen();
 				};

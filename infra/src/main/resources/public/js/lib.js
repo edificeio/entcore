@@ -1387,7 +1387,7 @@ var calendar = {
 			if(dayOfWeek === 0){
 				week ++;
 			}
-			return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
+			return moment().week(week).year(year).day(dayOfWeek).dayOfYear();
 		}
 
 		this.days.load([{ name: 'monday', index:  dayOfYear(1) },
@@ -1403,10 +1403,7 @@ var calendar = {
 			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
 		}
 
-		this.firstDay = moment().year(this.year).week(this.week).day(1);
-		if(moment().day() === 0){
-			this.firstDay = moment().add(-1, 'days').week(this.week).day(1);
-		}
+		this.firstDay = moment().week(this.week).year(this.year).day(1);
 	},
 	startOfDay: 7,
 	endOfDay: 20,
@@ -1420,10 +1417,6 @@ var calendar = {
 calendar.Calendar.prototype.addScheduleItems = function(items){
 	var schedule = this;
 	items.forEach(function(item){
-		if(item.beginning.dayOfYear() > model.calendar.days.last().index || item.end.dayOfYear() < model.calendar.days.first().index){
-			return;
-		}
-
 		var startDay = item.beginning.dayOfYear();
 		var endDay = item.end.dayOfYear();
 
