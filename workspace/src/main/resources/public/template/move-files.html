@@ -21,6 +21,11 @@
 <form>
 	<div class="row">
 		<h2 translate key="workspace.move"></h2>
+		<div class="block" ng-if="selectedDocuments().length > 0">
+			<div class="warning">
+				[[translate('workspace.documents.warning.move')]]
+			</div>
+		</div>
 		<nav class="vertical">
 			<nav class="vertical" ng-init="folder=folder.children[0]">
 				<ul>
