@@ -324,6 +324,15 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void relativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-relative-student")
+				.putString("relativeId", relativeId)
+				.putString("studentId", studentId);
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(0, eitherHandler));
+	}
+
+	@Override
 	public void list(String groupId, boolean itSelf, String userId,
 			final Handler<Either<String, JsonArray>> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";

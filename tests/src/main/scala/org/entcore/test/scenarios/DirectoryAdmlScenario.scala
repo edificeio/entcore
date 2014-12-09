@@ -74,6 +74,11 @@ object DirectoryAdmlScenario {
     .put("""/directory/class/${classId}/link/${childrenId}""")
     .header("Content-Length", "0")
     .check(status.is(200)))
+
+    .exec(http("relative student")
+    .put("""/directory/user/${studentId}/related/${relativeId}""")
+    .header("Content-Length", "0")
+    .check(status.is(200)))
 //    .exec(http("Remove user from group")
 //      .delete("""/directory/user/group/${teacherId}/${manual-group-id}""")
 //      .header("Content-Length", "0")

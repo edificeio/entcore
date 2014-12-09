@@ -28,10 +28,12 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.security.RelativeStudentFilter;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -309,6 +311,35 @@ public class UserController extends BaseController {
 					userService.listAdmin(structureId, classId, groupId, types, user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Put("/user/:studentId/related/:relativeId")
+	@ResourceFilter(RelativeStudentFilter.class)
+	@SecuredAction(value = "user.relative.student", type = ActionType.RESOURCE)
+	public void relativeStudent(final HttpServerRequest request) {
+		final String studentId = request.params().get("studentId");
+		final String relativeId = request.params().get("relativeId");
+		userService.relativeStudent(relativeId, studentId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> res) {
+				if (res.isRight()) {
+					JsonArray structures = res.right().getValue().getArray("structures");
+					JsonObject j = new JsonObject()
+							.putString("action", "setMultipleDefaultCommunicationRules")
+							.putArray("schoolIds", structures);
+					eb.send("wse.communication", j);
+					JsonArray a = new JsonArray().addString(relativeId);
+					ApplicationUtils.publishModifiedUserGroup(eb, a);
+					if (structures == null || structures.size() == 0) {
+						notFound(request, "user.not.found");
+					} else {
+						ok(request);
+					}
+				} else {
+					renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
 				}
 			}
 		});

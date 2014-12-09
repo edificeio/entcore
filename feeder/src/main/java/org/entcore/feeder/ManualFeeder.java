@@ -904,4 +904,14 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
+	public void relativeStudent(Message<JsonObject> message) {
+		final String relativeId = getMandatoryString("relativeId", message);
+		final String studentId = getMandatoryString("studentId", message);
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) throws ValidationException {
+				User.relativeStudent(relativeId, studentId, tx);
+			}
+		});
+	}
 }

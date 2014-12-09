@@ -366,4 +366,20 @@ public class User {
 		transactionHelper.add(query, params);
 	}
 
+
+	public static void relativeStudent(String relativeId, String studentId, TransactionHelper tx) {
+		String query =
+				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"WITH r " +
+				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
+				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
+				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"CREATE UNIQUE s-[:RELATED]->r, r-[:IN]->rspg, r-[:IN]->rcpg " +
+				"RETURN COLLECT(st.id) as structures ";
+		JsonObject params = new JsonObject()
+				.putString("relativeId", relativeId)
+				.putString("studentId", studentId);
+		tx.add(query, params);
+	}
+
 }

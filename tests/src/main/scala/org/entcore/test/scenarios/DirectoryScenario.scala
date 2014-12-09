@@ -63,7 +63,7 @@ object DirectoryScenario {
         json.values.asScala.foldLeft[List[(String, String)]](Nil){(acc, c) =>
           val user = c.asInstanceOf[JSONObject]
           user.get("lastName").asInstanceOf[String] match {
-            case "Devost" | "Monjeau" if user.get("code") != null =>
+            case "Devost" | "Monjeau" | "Bondy" if user.get("code") != null =>
               (user.get("type").asInstanceOf[String], user.get("userId").asInstanceOf[String]) :: acc
             case _ => acc
           }
@@ -72,6 +72,7 @@ object DirectoryScenario {
     .exec{session =>
       val uIds = session("createdUserIds").as[Map[String, String]]
       session.set("teacherId", uIds.get("Teacher").get).set("studentId", uIds.get("Student").get)
+        .set("relativeId", uIds.get("Relative").get)
         .set("now", System.currentTimeMillis())
     }
     .exec(http("Teacher details")
