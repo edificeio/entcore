@@ -2665,7 +2665,7 @@ module.directive('gridResizable', function($compile){
 						return;
 					}
 
-					if(element.find('grid-cell, sniplet').length > 0){
+					if(element.find('grid-cell, sniplet, [vertical-lock]').length > 0){
 						lock.vertical = true;
 					}
 
