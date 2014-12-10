@@ -65,7 +65,7 @@
 						</strong>
 					</td>
 					<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
-					<td></td>
+					<td ng-if="currentTree.name !== 'trash'"></td>
 					<td class="date">[[longDate(folder.created)]]</td>
 					<td></td>
 				</tr>

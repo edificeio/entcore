@@ -19,11 +19,11 @@
 
 package org.entcore.workspace.service;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 import static org.entcore.workspace.dao.DocumentDao.DOCUMENTS_COLLECTION;
-import static fr.wseduc.webutils.Utils.getOrElse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -38,18 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.mongodb.QueryBuilder;
-
-import fr.wseduc.bus.BusAddress;
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
-import fr.wseduc.mongodb.MongoUpdateBuilder;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
-import fr.wseduc.webutils.http.BaseController;
-
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.ActionsUtils;
@@ -58,10 +46,11 @@ import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
-
-import fr.wseduc.webutils.*;
-
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.Workspace;
+import org.entcore.workspace.dao.DocumentDao;
+import org.entcore.workspace.dao.GenericDao;
 import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -73,17 +62,24 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import fr.wseduc.webutils.http.ETag;
-import fr.wseduc.webutils.request.RequestUtils;
+import com.mongodb.QueryBuilder;
 
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.user.UserInfos;
-
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-
-import org.entcore.workspace.dao.DocumentDao;
-import org.entcore.workspace.dao.GenericDao;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.FileUtils;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.ETag;
+import fr.wseduc.webutils.request.RequestUtils;
 
 public class WorkspaceService extends BaseController {
 
@@ -160,21 +156,20 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					shareService.shareInfos(user.getUserId(), id, I18n.acceptLanguage(request), defaultResponseHandler(request));		
+					shareService.shareInfos(user.getUserId(), id, I18n.acceptLanguage(request), defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
 			}
 		});
 	}
-	
+
 	private void shareFileAction(final HttpServerRequest request, final String id, final UserInfos user, final List<String> actions, final String groupId, final String userId, final boolean remove){
 		Handler<Either<String, JsonObject>> r = new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					JsonObject n = event.right().getValue()
-							.getObject("notify-timeline");
+					JsonObject n = event.right().getValue().getObject("notify-timeline");
 					if (n != null) {
 						notifyShare(request, id, user, new JsonArray().add(n));
 					}
@@ -186,7 +181,7 @@ public class WorkspaceService extends BaseController {
 				}
 			}
 		};
-		
+
 		if (groupId != null) {
 			if(remove)
 				shareService.removeGroupShare(groupId, id, actions, defaultResponseHandler(request));
@@ -201,22 +196,22 @@ public class WorkspaceService extends BaseController {
 			badRequest(request);
 		}
 	}
-	
+
 	private void shareFolderAction(final HttpServerRequest request, final String id, final UserInfos user, final List<String> actions, final String groupId, final String userId, final boolean remove){
-		
+
 		Handler<Either<String, JsonObject>> subHandler = new Handler<Either<String, JsonObject>>(){
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					
+
 					final int number = event.right().getValue().getInteger("number");
 					final int errorsNb = event.right().getValue().getInteger("number-errors");
-					
+
 					Handler<Either<String, JsonObject>> finalHandler = new Handler<Either<String, JsonObject>>() {
 						public void handle(Either<String, JsonObject> event) {
 							if (event.isRight()) {
 								JsonObject n = event.right().getValue().getObject("notify-timeline");
 								if (n != null) {
-									notifyShare(request, id, user, new JsonArray().add(n));
+									notifyShare(request, id, user, new JsonArray().add(n), true);
 								} else {
 									n = new JsonObject();
 								}
@@ -228,7 +223,7 @@ public class WorkspaceService extends BaseController {
 							}
 						}
 					};
-					
+
 					if (groupId != null) {
 						if(remove)
 							shareService.removeGroupShare(groupId, id, actions, finalHandler);
@@ -242,16 +237,16 @@ public class WorkspaceService extends BaseController {
 					} else {
 						badRequest(request);
 					}
-					
+
 				} else {
-					JsonObject error = new JsonObject().putString("error", event.left().getValue()); 
+					JsonObject error = new JsonObject().putString("error", event.left().getValue());
 					renderJson(request, error, 400);
 				}
 			}
 		};
-		
+
 		folderService.shareFolderAction(id, user, actions, groupId, userId, shareService, remove, subHandler);
-		
+
 	}
 
 	@Put("/share/json/:id")
@@ -339,8 +334,10 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
-	private void notifyShare(final HttpServerRequest request, final String resource,
-				final UserInfos user, JsonArray sharedArray) {
+	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray){
+		notifyShare(request, resource, user, sharedArray, false);
+	}
+	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray, final boolean isFolder) {
 		final List<String> recipients = new ArrayList<>();
 		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
 		for (Object j : sharedArray) {
@@ -365,7 +362,7 @@ public class WorkspaceService extends BaseController {
 								}
 							}
 							if (remaining.decrementAndGet() < 1) {
-								sendNotify(request, resource, user, recipients);
+								sendNotify(request, resource, user, recipients, isFolder);
 							}
 						}
 					});
@@ -373,18 +370,21 @@ public class WorkspaceService extends BaseController {
 			}
 		}
 		if (remaining.get() < 1) {
-			sendNotify(request, resource, user, recipients);
+			sendNotify(request, resource, user, recipients, isFolder);
 		}
 	}
 
-	private void sendNotify(final HttpServerRequest request, final String resource,
-			final UserInfos user, final List<String> recipients) {
+	private void sendNotify(final HttpServerRequest request, final String resource, final UserInfos user, final List<String> recipients, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
 		.putString("uri", container.config().getString("userbook-host") +
 				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 		.putString("username", user.getUsername())
 		.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
-				pathPrefix + "/document/" + resource);
+				pathPrefix + "/document/" + resource)
+		.putString("appPrefix", pathPrefix+"/workspace");
+
+		final String template = isFolder ? "notify-share-folder.html" : "notify-share.html";
+
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
 				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
 			@Override
@@ -392,7 +392,7 @@ public class WorkspaceService extends BaseController {
 				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 					params.putString("resourceName", event.body().getObject("result").getString("name", ""));
 					notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-							recipients, resource, "notify-share.html", params);
+							recipients, resource, template, params);
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);
 				}
@@ -1139,9 +1139,9 @@ public class WorkspaceService extends BaseController {
 									}
 									insert.add(dest);
 									final String filePath = orig.getString("file");
-									
+
 									if((owner != null || user != null) && folder != null && !folder.trim().isEmpty()){
-										
+
 										//If the document has a new parent folder, replicate sharing rights
 										String parentName, parentFolder;
 										if(folder.lastIndexOf('_') < 0){
@@ -1156,11 +1156,11 @@ public class WorkspaceService extends BaseController {
 											parentName = splittedPath[splittedPath.length - 2];
 											parentFolder = folder.substring(0, folder.lastIndexOf("_"));
 										}
-										
+
 										QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(owner == null ? user.getUserId() : owner)
 												.and("folder").is(parentFolder)
 												.and("name").is(parentName);
-										
+
 										mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
 											@Override
 											public void handle(Message<JsonObject> event) {
@@ -1168,7 +1168,7 @@ public class WorkspaceService extends BaseController {
 													JsonObject parent = event.body().getObject("result");
 													if(parent != null && parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
 														dest.putArray("shared", parent.getArray("shared"));
-													
+
 													if (filePath != null) {
 														FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
 															@Override
@@ -1187,7 +1187,7 @@ public class WorkspaceService extends BaseController {
 												}
 											}
 										});
-									
+
 									} else if (filePath != null) {
 										FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
 
@@ -1504,7 +1504,7 @@ public class WorkspaceService extends BaseController {
 			log.warn(e.getMessage(), e);
 		}
 		final String folder = tempFolder;
-		
+
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 			@Override
@@ -1513,9 +1513,9 @@ public class WorkspaceService extends BaseController {
 					if (ids != null && !ids.trim().isEmpty()) {
 						JsonArray idsArray = new JsonArray(ids.split(","));
 						final String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
-						
+
 						if(folder != null && !folder.trim().isEmpty()){
-							
+
 							//If the document has a parent folder, replicate sharing rights
 							String parentName, parentFolder;
 							if(folder.lastIndexOf('_') < 0){
@@ -1523,14 +1523,14 @@ public class WorkspaceService extends BaseController {
 								parentFolder = folder;
 							} else {
 								String[] splittedPath = folder.split("_");
-								parentName = splittedPath[splittedPath.length - 2];
-								parentFolder = folder.substring(0, folder.lastIndexOf("_"));
+								parentName = splittedPath[splittedPath.length - 1];
+								parentFolder = folder;
 							}
-							
+
 							QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(user.getUserId())
 									.and("folder").is(parentFolder)
 									.and("name").is(parentName);
-							
+
 							mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
 								@Override
 								public void handle(Message<JsonObject> event) {
@@ -1542,7 +1542,7 @@ public class WorkspaceService extends BaseController {
 											obj += ", \"shared\" : "+parent.getArray("shared").toString()+" }}";
 										else
 											obj += "}, \"$unset\" : { \"shared\": 1 }}";
-										
+
 										mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
 												new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
 											@Override
@@ -1560,7 +1560,7 @@ public class WorkspaceService extends BaseController {
 									}
 								}
 							});
-						
+
 						} else {
 							String obj;
 							if (folder != null && !folder.trim().isEmpty()) {
@@ -1814,7 +1814,7 @@ public class WorkspaceService extends BaseController {
 	public void setQuotaService(QuotaService quotaService) {
 		this.quotaService = quotaService;
 	}
-	
+
 	@Put("/folder/rename")
 	@SecuredAction(value = "workspace.folder.rename")
 	public void renameFolder(final HttpServerRequest request){
@@ -1833,9 +1833,9 @@ public class WorkspaceService extends BaseController {
 				});
 			}
 		});
-		
+
 	}
-	
+
 	@Put("/document/rename")
 	@SecuredAction(value = "workspace.document.rename")
 	public void renameDocument(final HttpServerRequest request){

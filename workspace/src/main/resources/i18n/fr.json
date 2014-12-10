@@ -110,6 +110,7 @@
 	"workspace.folder.create": "Créer",
     "workspace.folders.warning.title" :"Partage d'un dossier",
     "workspace.folders.warning.content": "<p>Attention, le partage d'un dossier entraîne la modification des partages de tous les fichiers et sous dossiers contenus dans celui-ci.</p><p>De plus, les fichiers et dossiers crées ou déplacés dans ce dossier auront les mêmes droits de partage que ceux attribués sur le dossier.</p>",
+    "workspace.documents.warning.move": "Le déplacement d'un fichier supprimera tous les partages attribués au fichier et lui réattribuera les droits du dossier de destination.",
     "workspace.continue": "Continuer",
     "bit": "Bit(s)",
     "byte": "Octet(s)",

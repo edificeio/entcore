@@ -3615,6 +3615,45 @@ module.directive('completeClick', function($parse){
 	}
 });
 
+module.directive('dragstart', function(){
+    return {
+        restrict: 'A',
+        link: function(scope, element, attributes){
+            if(attributes.dragcondition !== undefined && scope.$eval(attributes.dragcondition) === false){
+                element.attr("draggable", "false")
+                return
+            }
+
+            element.attr("draggable", "true")
+            element.attr("native", "")
+
+            element.on("dragstart", function(event){
+                scope.$eval(attributes.dragstart)(scope.$eval(attributes.dragitem), event.originalEvent)
+            })
+
+            element.on('$destroy', function() {
+                element.off()
+            })
+        }
+    }
+})
+
+module.directive('dragdrop', function(){
+    return {
+        restrict: 'A',
+        link: function(scope, element, attributes){
+            element.attr("ondragover", "event.preventDefault()")
+            element.on("drop", function(event){
+                scope.$eval(attributes.dragdrop)(scope.$eval(attributes.dragitem), event.originalEvent)
+            })
+
+            element.on('$destroy', function() {
+                element.off()
+            })
+        }
+    }
+})
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
@@ -3884,7 +3923,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		$scope.resources.forEach(function(resource){
 			var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
 			http().put(path, http().serialize(data)).done(function(){
-				$rootScope.$broadcast('share-updated');
+				$rootScope.$broadcast('share-updated', data);
 			});
 		})
 	}
