@@ -2206,10 +2206,10 @@ module.directive('behaviour', function($compile){
 					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
 
 				if(hide){
-					content.remove();
+					content.hide();
 				}
 				else{
-					$element.append(content);
+					content.show();
 				}
 
 			});
