@@ -348,7 +348,7 @@ module.directive('lightbox', function($compile){
 					scope.$parent.$apply();
 				}
 			});
-			element.find('.lightbox-view').on('mousedown', function(e){
+			element.find('.lightbox-view, .lightbox-background').on('mousedown', function(e){
 				e.stopPropagation();
 			});
 
@@ -657,7 +657,14 @@ module.directive('calendar', function($compile){
 				};
 
 				$scope.updateCalendarWeek = function(){
-					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+					//annoying new year workaround
+					if(moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7){
+						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() + 1 });
+					}
+					else{
+						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+					}
+
 					refreshCalendar();
 				};
 			};
