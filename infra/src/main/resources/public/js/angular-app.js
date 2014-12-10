@@ -348,6 +348,10 @@ module.directive('lightbox', function($compile){
 					scope.$parent.$apply();
 				}
 			});
+			element.find('.lightbox-view').on('mousedown', function(e){
+				e.stopPropagation();
+			});
+
 			scope.$watch('show', function(newVal){
 				if(newVal){
 					var lightboxWindow = element.find('.lightbox-view');
@@ -480,7 +484,7 @@ module.directive('linker', function($compile){
 					});
 				});
 				var currentApp = _.find(scope.linker.apps, function(app){
-					return app.address.indexOf(appPrefix) !== -1;
+					return app.address.indexOf(appPrefix) !== -1 && app.icon.indexOf('/') === -1;
 				});
 
 				scope.linker.search.application = scope.linker.apps[0];
