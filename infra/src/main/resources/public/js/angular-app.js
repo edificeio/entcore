@@ -3295,7 +3295,7 @@ module.directive('sortableElement', function($compile){
 						scope.ngChange();
 					}
 
-					sortables.css({ position: 'relative', top: 0, left: 0, 'margin-top': 0 });
+					sortables.attr('style', '');
 				},
 				startDrag: function(){
 					sortables = element.parents('[sortable-list]').find('[sortable-element]');
@@ -4051,8 +4051,9 @@ function WidgetModel(){
 function Widgets($scope, model, lang, date){
 	if(!model.widgets){
 		WidgetModel();
+		model.widgets.sync();
 	}
-	model.widgets.sync();
+
 	$scope.widgets = model.widgets;
 
 	$scope.allowedWidget = function(widget){
