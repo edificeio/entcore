@@ -43,88 +43,85 @@ CKEDITOR.addTemplates(
 			image:"images.gif",
 			description:"Des vignettes contenant une image et sa description",
 			html:'<div class="row">' +
-					'<div class="text-container cell six">' +
+					'<div class="reduce-block-eight cell six">' +
 						'<div class="fixed-block height-five">' +
 							'<article class="twelve cell absolute clip">' +
-								'<div class="fluid cell six avatar">' +
-									'<img src="' + imagesPath + 'filler-image.png" />' +
+								'<div class="absolute cell six avatar">' +
+									'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
 								'</div>' +
-								'<div class="fluid cell six text-container right-magnet">' +
+								'<div class="fluid cell six reduce-block-six right-magnet">' +
 									'<h2>Description</h2>' +
 									'<p>Description de l\'image</p>' +
 								'</div>' +
 							'</article>' +
 						'</div>' +
 					'</div>' +
-					'<div class="cell six text-container">' +
-						'<div class="fixed-block height-five">' +
-							'<article class="twelve cell absolute clip">' +
-								'<div class="fluid cell six avatar">' +
-								'<img src="' + imagesPath + 'filler-image.png" />' +
-								'</div>' +
-								'<div class="fluid cell six text-container right-magnet">' +
-									'<h2>Description</h2>' +
-									'<p>Description de l\'image</p>' +
-								'</div>' +
-							'</article>' +
-						'</div>' +
-					'</div>' +
-				'</div>' +
+			'<div class="reduce-block-eight cell six">' +
+			'<div class="fixed-block height-five">' +
+			'<article class="twelve cell absolute clip">' +
+			'<div class="absolute cell six avatar">' +
+			'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
+			'</div>' +
+			'<div class="fluid cell six reduce-block-six right-magnet">' +
+			'<h2>Description</h2>' +
+			'<p>Description de l\'image</p>' +
+			'</div>' +
+			'</article>' +
+			'</div>' +
+			'</div>' +
 				'<div class="row">' +
-					'<div class="text-container cell six">' +
-						'<div class="fixed-block height-five">' +
-								'<article class="twelve cell absolute clip">' +
-									'<div class="fluid cell six avatar">' +
-									'<img src="' + imagesPath + 'filler-image.png" />' +
-									'</div>' +
-									'<div class="fluid cell six text-container right-magnet">' +
-										'<h2>Description</h2>' +
-										'<p>Description de l\'image</p>' +
-									'</div>' +
-								'</article>' +
-							'</div>' +
-						'</div>' +
-						'<div class="text-container cell six">' +
-							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell absolute clip">' +
-									'<div class="fluid cell six avatar">' +
-									'<img src="' + imagesPath + 'filler-image.png" />' +
-									'</div>' +
-									'<div class="fluid cell six text-container right-magnet">' +
-										'<h2>Description</h2>' +
-										'<p>Description de l\'image</p>' +
-									'</div>' +
-								'</article>' +
-							'</div>' +
-						'</div>' +
-					'</div>' +
+			'<div class="reduce-block-eight cell six">' +
+			'<div class="fixed-block height-five">' +
+			'<article class="twelve cell absolute clip">' +
+			'<div class="absolute cell six avatar">' +
+			'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
+			'</div>' +
+			'<div class="fluid cell six reduce-block-six right-magnet">' +
+			'<h2>Description</h2>' +
+			'<p>Description de l\'image</p>' +
+			'</div>' +
+			'</article>' +
+			'</div>' +
+			'</div>' +
+			'<div class="reduce-block-eight cell six">' +
+			'<div class="fixed-block height-five">' +
+			'<article class="twelve cell absolute clip">' +
+			'<div class="absolute cell six avatar">' +
+			'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
+			'</div>' +
+			'<div class="fluid cell six reduce-block-six right-magnet">' +
+			'<h2>Description</h2>' +
+			'<p>Description de l\'image</p>' +
+			'</div>' +
+			'</article>' +
+			'</div>' +
+			'</div>' +
 					'<div class="row">' +
-						'<div class="text-container cell six">' +
-							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell absolute clip">' +
-									'<div class="fluid cell six avatar">' +
-										'<img src="' + imagesPath + 'filler-image.png" />' +
-									'</div>' +
-									'<div class="fluid cell six text-container right-magnet">' +
-										'<h2>Description</h2>' +
-										'<p>Description de l\'image</p>' +
-									'</div>' +
-								'</article>' +
-							'</div>' +
-						'</div>' +
-						'<div class="text-container cell six">' +
-							'<div class="fixed-block height-five">' +
-								'<article class="twelve cell absolute clip">' +
-									'<div class="fluid cell six avatar">' +
-										'<img src="' + imagesPath + 'filler-image.png" />' +
-									'</div>' +
-									'<div class="fluid cell six text-container right-magnet">' +
-										'<h2>Description</h2>' +
-										'<p>Description de l\'image</p>' +
-									'</div>' +
-								'</article>' +
-							'</div>' +
-						'</div>' +
-					'</div>'
+			'<div class="reduce-block-eight cell six">' +
+			'<div class="fixed-block height-five">' +
+			'<article class="twelve cell absolute clip">' +
+			'<div class="absolute cell six avatar">' +
+			'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
+			'</div>' +
+			'<div class="fluid cell six reduce-block-six right-magnet">' +
+			'<h2>Description</h2>' +
+			'<p>Description de l\'image</p>' +
+			'</div>' +
+			'</article>' +
+			'</div>' +
+			'</div>' +
+			'<div class="reduce-block-eight cell six">' +
+			'<div class="fixed-block height-five">' +
+			'<article class="twelve cell absolute clip">' +
+			'<div class="absolute cell six avatar">' +
+			'<img src="' + imagesPath + 'filler-image.png" class="absolute" />' +
+			'</div>' +
+			'<div class="fluid cell six reduce-block-six right-magnet">' +
+			'<h2>Description</h2>' +
+			'<p>Description de l\'image</p>' +
+			'</div>' +
+			'</article>' +
+			'</div>' +
+			'</div>'
 		}]
 	});
