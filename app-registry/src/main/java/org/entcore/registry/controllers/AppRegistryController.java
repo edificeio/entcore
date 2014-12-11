@@ -27,9 +27,11 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.LinkRoleGroupFilter;
 import org.entcore.registry.filters.RoleFilter;
@@ -194,7 +196,18 @@ public class AppRegistryController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listGroupsWithRoles(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
-		appRegistryService.listGroupsWithRoles(structureId, true, arrayResponseHandler(request));
+		appRegistryService.listGroupsWithRoles(structureId, true, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> r) {
+				if (r.isRight()) {
+					JsonArray res = r.right().getValue();
+					UserUtils.translateGroupsNames(res, I18n.acceptLanguage(request));
+					renderJson(request, res);
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	@Get("/application/conf/:id")

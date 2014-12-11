@@ -48,5 +48,18 @@
     "workspace.rack.list.trash.documents": "Espace documentaire : afficher les documents du casier dans la corbeille",
     "workspace.rack.restore": "Espace documentaire : restaurer les fichiers du casier dans la corbeille",
     "workspace.share.json": "Espace documentaire : partager un document",
-    "workspace.view": "Espace documentaire : accéder à l'espace documentaire"
+    "workspace.view": "Espace documentaire : accéder à l'espace documentaire",
+    "group.Personnel": "Tous les personnels du groupe {0}.",
+    "group.Relative": "Tous les parents du groupe {0}.",
+    "group.Student": "Tous les élèves du groupe {0}.",
+    "group.Teacher": "Tous les enseignants du groupe {0}.",
+    "group.class.Personnel": "Tous les personnels de la classe {0}.",
+    "group.class.Relative": "Tous les parents de la classe {0}.",
+    "group.class.Student": "Tous les élèves de la classe {0}.",
+    "group.class.Teacher": "Tous les enseignants de la classe {0}.",
+    "group.school.Personnel": "Tous les personnels de l'{0}.",
+    "group.school.Relative": "Tous les parents de l'{0}.",
+    "group.school.Student": "Tous les élèves de l'{0}.",
+    "group.school.Teacher": "Tous les enseignants de l'{0}.",
+    "group.AdminLocal": "Tous les admins locaux de {0}."
 }

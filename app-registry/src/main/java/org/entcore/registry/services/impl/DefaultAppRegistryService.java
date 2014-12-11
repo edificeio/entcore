@@ -105,7 +105,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			query = "MATCH (n:Group) " +
 					"OPTIONAL MATCH n-[r:AUTHORIZED]->a ";
 		}
-		query += "RETURN distinct n.id as id, n.name as name, COLLECT(a.id) as roles " +
+		query += "RETURN distinct n.id as id, n.name as name, n.groupDisplayName as groupDisplayName, " +
+				"COLLECT(a.id) as roles " +
 				"ORDER BY name ASC ";
 		neo.execute(query, params, validResultHandler(handler));
 	}
