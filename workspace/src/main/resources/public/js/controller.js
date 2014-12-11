@@ -38,6 +38,12 @@ var tools = (function(){
 				},
 				'audio': function(type){
 					return type.indexOf('audio') !== -1;
+				},
+				'zip': function(type){
+					return 	type.indexOf('zip') !== -1 ||
+							type.indexOf('rar') !== -1 ||
+							type.indexOf('tar') !== -1 ||
+							type.indexOf('7z') !== -1;
 				}
 			};
 

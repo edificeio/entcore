@@ -113,17 +113,17 @@
 						ng-class="{ cell: true }">
 				</button>
 				<button ng-click="openShareFolderView(selectedFolders()[0])"
-						translate key="workspace.shareFolder"
+						translate key="workspace.share"
 						ng-if="selectedDocuments().length === 0 && selectedFolders()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						ng-class="{ cell: true }">
 				</button>
 				<button ng-click="openRenameView(selectedFolders()[0])"
-						translate key="workspace.folder.rename"
+						translate key="workspace.rename"
 						ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && workflowRight('renameFolder') && currentTree.name === 'documents'"
 						ng-class="{ cell: true }">
 				</button>
 				<button ng-click="openRenameView(selectedDocuments()[0])"
-						translate key="workspace.file.rename"
+						translate key="workspace.rename"
 						ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && workflowRight('renameDocument') && currentTree.name === 'documents'"
 						ng-class="{ cell: true }">
 				</button>
