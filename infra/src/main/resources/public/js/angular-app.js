@@ -616,6 +616,7 @@ module.directive('linker', function($compile){
 module.directive('calendar', function($compile){
 	return {
 		restrict: 'E',
+		scope: true,
 		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
 		controller: function($scope, $timeout){
 			var refreshCalendar = function(){
@@ -639,6 +640,9 @@ module.directive('calendar', function($compile){
 				};
 
 				$scope.createItem = function(day, timeslot){
+					if(!$scope.$parent.display.createTemplate){
+						return;
+					}
 					$scope.display.createItem = true;
 					$scope.newItem = {};
 					var year = model.calendar.year;
@@ -677,6 +681,11 @@ module.directive('calendar', function($compile){
 		link: function(scope, element, attributes){
 			template.open('schedule-display-template', attributes.displayTemplate);
 			template.open('schedule-create-template', attributes.createTemplate);
+
+			attributes.$observe('createTemplate', function(){
+				scope.display.displayTemplate = attributes.displayTemplate;
+				scope.display.createTemplate = attributes.createTemplate;
+			});
 
 			scope.items = scope.$eval(attributes.items);
 			scope.onCreateOpen = function(){
@@ -1468,7 +1477,7 @@ module.directive('autocomplete', function($compile){
 		},
 		template: '' +
 			'<div class="row">' +
-				'<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" />' +
+				'<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />' +
 				'<div data-drop-down class="drop-down">' +
 					'<div>' +
 						'<ul class="ten cell right-magnet">' +
@@ -1478,6 +1487,9 @@ module.directive('autocomplete', function($compile){
 				'</div>' +
 			'</div>',
 		link: function(scope, element, attributes){
+			if(attributes.autocomplete === 'off'){
+				return;
+			}
 			var dropDownContainer = element.find('[data-drop-down]');
 			var linkedInput = element.find('input');
 			scope.match = [];
@@ -1519,6 +1531,11 @@ module.directive('autocomplete', function($compile){
 
 			element.parent().on('remove', function(){
 				dropDownContainer.remove();
+			});
+			element.find('input').on('blur', function(){
+				setTimeout(function(){
+					scope.search = '';
+				}, 200);
 			});
 			dropDownContainer.detach().appendTo('body');
 
