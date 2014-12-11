@@ -12,5 +12,8 @@
     "timeline.nothingnew": "Nothing new yet!",
     "timeline.title": "Timeline",
     "userbook": "Userbook",
-    "workspace": "Workspace"
+    "workspace": "Workspace",
+    "rack": "Rack",
+    "support": "Help",
+    "panel.widgets": "My widgets"
 }
