@@ -195,7 +195,7 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
         }
         return 100
     }
-    $scope.userOrdering = ['displayName', $scope.typeOrdering]
+    $scope.userOrdering = ['lastName', $scope.typeOrdering]
 
     $scope.switchOrdering = function(){
         var temp = $scope.userOrdering[0]

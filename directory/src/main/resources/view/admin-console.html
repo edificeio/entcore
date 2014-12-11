@@ -322,7 +322,7 @@
                                 <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; margin: 0">
                                     <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
                                     <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                                        <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'displayName'"
+                                        <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'lastName'"
                                             ng-click="addChild(child, createdUser)"
                                             style="padding-left: 0">
                                             <span>[[child.displayName]]</span>
@@ -485,7 +485,7 @@
                                 </select>
                                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
                                 <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 400px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                                    <li ng-repeat="user in groupUsersStructure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'displayName' | limitTo: usersLimit"
+                                    <li ng-repeat="user in groupUsersStructure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'lastName' | limitTo: usersLimit"
                                         ng-click="addUserToGroup(user, groupSelected)"
                                         style="padding-left: 0">
                                         <span ng-class="userStyle(user)">[[user.displayName]]</span>
@@ -541,10 +541,10 @@
                     <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
                         <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
                             <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 86%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
-                            <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; background: #AAA; width: 25; height: 25; border: none;" value="✓">
+                            <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; width: 25; height: 25; border: none;" value="✓">
                         </form>
                     </div>
-                    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction | limitTo: usersLimit"
+                    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction | orderBy: 'lastName' | limitTo: usersLimit"
                         ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
                         [[user.displayName]]
                     </li>
