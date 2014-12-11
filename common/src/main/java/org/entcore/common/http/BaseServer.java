@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
+import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ActionFilter;
 import org.entcore.common.http.filter.HttpActionFilter;
@@ -92,6 +93,8 @@ public abstract class BaseServer extends Server {
 		vertx.eventBus().registerHandler("user.repository", repositoryHandler);
 
 		loadI18nAssetsFiles();
+
+		addController(new RightsController());
 	}
 
 	private void loadI18nAssetsFiles() {
