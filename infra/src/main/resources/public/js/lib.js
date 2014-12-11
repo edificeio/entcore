@@ -1441,7 +1441,7 @@ var sniplets = {
 		http().get('/resources-applications').done(function(apps) {
 			var apps = _.filter(model.me.apps, function (app) {
 				return _.find(apps, function (match) {
-					return app.address.indexOf(match) !== -1 && app.icon.indexOf('/') === -1
+					return app.address.indexOf(match) !== -1 && app.icon.indexOf('?') === -1
 				});
 			});
 			var all = apps.length;

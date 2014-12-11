@@ -171,7 +171,7 @@ Behaviours.register('workspace', {
 					}.bind(this))
 				},
 				addDocument: function(document){
-					this.display.selectSnipletDocument = false;
+					this.display.isLoading = true;
 					Behaviours.applicationsBehaviours.workspace.protectedDuplicate(document, function(file){
 						Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
 							var resource = _.findWhere(resources, { '_id': file._id });
@@ -180,6 +180,8 @@ Behaviours.register('workspace', {
 							this.source.documents.push(resource);
 							if(typeof this.snipletResource.save === 'function'){
 								this.snipletResource.save();
+								this.display.isLoading = false;
+								this.display.selectSnipletDocument = false;
 							}
 							this.$apply();
 						}.bind(this));
