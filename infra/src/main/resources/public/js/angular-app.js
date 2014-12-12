@@ -3898,6 +3898,83 @@ module.directive('attachments', function($parse){
 	}
 });
 
+module.directive('wizard', function(){
+	return {
+		restrict: 'E',
+		templateUrl: '/infra/public/template/wizard.html',
+		scope: {
+			onCancel: '&',
+			onFinish: '&'
+		},
+		transclude: true,
+		link: function(scope, element, attributes){
+			$('div.steps').hide();
+			scope.currentStep = 0;
+
+			var currentStepContent;
+			var steps = element.find('div.steps step');
+			scope.nbSteps = steps.length;
+
+			var nav = element.find('nav.steps');
+			nav.append('<ul></ul>');
+			steps.each(function(index, item){
+				nav.children('ul').append('<li>' + $(item).find('h1').html() + '</li>');
+			});
+
+			function displayCurrentStep(){
+				currentStepContent = $(steps[scope.currentStep]);
+				element
+					.find('.current-step .step-content')
+					.html('')
+					.append(currentStepContent.html());
+				$('nav.steps li').removeClass('active');
+				$(element.find('nav.steps li')[scope.currentStep]).addClass('active');
+
+			}
+
+			scope.nextStep = function(){
+				var stepScope = angular.element(currentStepContent[0]).scope();
+				stepScope.onNext();
+				scope.currentStep++;
+				displayCurrentStep();
+			};
+
+			scope.previousStep = function(){
+				var stepScope = angular.element(currentStepContent[0]).scope();
+				stepScope.onPrevious();
+				scope.currentStep--;
+				displayCurrentStep();
+			};
+
+			scope.cancel = function(){
+				scope.currentStep = 0;
+				displayCurrentStep();
+				scope.onCancel();
+			};
+
+			scope.finish = function(){
+				scope.currentStep = 0;
+				displayCurrentStep();
+				scope.onFinish();
+			};
+
+			displayCurrentStep();
+		}
+	}
+});
+
+module.directive('step', function(){
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+			onNext: '&',
+			onPrevious: '&'
+		},
+		template: '<div class="step" ng-transclude></div>'
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
