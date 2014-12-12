@@ -459,7 +459,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
 			params.putString("schoolId", structureId);
 		} else {
-			String l = (myGroup) ? "" : " AND length(p) >= 2";
+			String l = (myGroup) ? " AND (length(p) >= 2 OR m.users <> 'INCOMING')" : " AND length(p) >= 2";
 			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..1]->ipg" +
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
 			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
@@ -530,8 +530,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
 		params.putString("userId", userId);
 		String query =
-				"MATCH (n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
-				"WHERE n.id = {userId} " +
+				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
+				"WHERE n.id = {userId} AND (length(p) > 1 OR gp.users <> 'INCOMING') " +
 				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				r;
 		neo4j.execute(query, params, validResultHandler(handler));
