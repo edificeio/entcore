@@ -521,7 +521,7 @@ public class AuthController extends BaseController {
 	}
 
 	@Post("/sendResetPassword")
-	@SecuredAction( value = "auth.send.reset.password", type = ActionType.RESOURCE)
+	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	public void sendResetPassword(final HttpServerRequest request) {
 		String login = request.formAttributes().get("login");
 		String email = request.formAttributes().get("email");
@@ -542,7 +542,7 @@ public class AuthController extends BaseController {
 	}
 
 	@Put("/block/:userId")
-	@SecuredAction( value = "auth.block.user", type = ActionType.RESOURCE)
+	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	public void blockUser(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
 			@Override

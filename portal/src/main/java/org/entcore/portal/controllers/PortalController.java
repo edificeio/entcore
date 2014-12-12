@@ -269,7 +269,7 @@ public class PortalController extends BaseController {
 	}
 
 	@Get("/admin")
-	@SecuredAction(value = "admin.view", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void admin(HttpServerRequest request) {
 		redirectPermanent(request, "/directory/admin-console");

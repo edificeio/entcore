@@ -19,6 +19,9 @@
 
 package org.entcore.common.processor;
 
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import org.entcore.common.controller.RightsController;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 
@@ -85,6 +88,20 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 			pw.close();
 		} catch (IOException e) {
 			error("Failed to write META-INF/services/" + service);
+		}
+	}
+
+	@Override
+	protected void checkRights(SecuredAction annotation, TypeElement clazz) {
+		super.checkRights(annotation, clazz);
+		if (ActionType.RESOURCE.equals(annotation.type())) {
+			if (annotation.value().isEmpty()) {
+				return;
+			}
+			String sharingType = annotation.value().substring(annotation.value().lastIndexOf('.') + 1);
+			if (!RightsController.allowedSharingRights.contains(sharingType)) {
+				throw new RuntimeException("Invalid sharing type : " + annotation.value());
+			}
 		}
 	}
 

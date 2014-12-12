@@ -46,7 +46,7 @@ public class StructureController extends BaseController {
 	private SchoolService structureService;
 
 	@Put("/structure/:structureId")
-	@SecuredAction(value = "structure.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "updateStructure", new Handler<JsonObject>() {
 			@Override
@@ -97,7 +97,7 @@ public class StructureController extends BaseController {
 	}
 
 	@Get("/structure/admin/list")
-	@SecuredAction(value = "structure.list.admin", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

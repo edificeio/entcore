@@ -55,14 +55,14 @@ public class AppRegistryController extends BaseController {
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 
 	@Get("/admin-console")
-	@SecuredAction(value = "app-registry.adminConsole", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void staticAdmin(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Get("/app-preview")
-	@SecuredAction(value = "app-registry.adminConsole", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void appPreview(final HttpServerRequest request) {
 		renderView(request);
@@ -76,7 +76,7 @@ public class AppRegistryController extends BaseController {
 	}
 
 	@Get("/application/:name")
-	@SecuredAction(value = "app-registry.list.actions", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void listApplicationActions(HttpServerRequest request) {
 		String name = request.params().get("name");

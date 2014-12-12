@@ -44,7 +44,7 @@ public class GroupController extends BaseController {
 	private GroupService groupService;
 
 	@Get("/group/admin/list")
-	@SecuredAction(value = "group.list.admin", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -61,7 +61,7 @@ public class GroupController extends BaseController {
 	}
 
 	@Post("/group")
-	@SecuredAction(value = "group.create", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void create(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createManualGroup", new Handler<JsonObject>() {
 			@Override
@@ -76,7 +76,7 @@ public class GroupController extends BaseController {
 	}
 
 	@Put("/group/:groupId")
-	@SecuredAction(value = "group.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
@@ -93,7 +93,7 @@ public class GroupController extends BaseController {
 	}
 
 	@Delete("/group/:groupId")
-	@SecuredAction(value = "group.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {

@@ -74,7 +74,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/admin-console")
-	@SecuredAction(value = "directory.adminConsole", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void adminConsole(HttpServerRequest request) {
 		renderView(request, new JsonObject());
@@ -275,7 +275,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Post("/api/user")
-	@SecuredAction(value = "directory.create.user", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void createUser(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
@@ -356,7 +356,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/api/export")
-	@SecuredAction(value = "directory.export", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void export(final HttpServerRequest request) {
 		String neoRequest = "";
 		Map<String, Object> params = new HashMap<>();

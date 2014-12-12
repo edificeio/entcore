@@ -57,7 +57,7 @@ public class UserController extends BaseController {
 	private TimelineHelper notification;
 
 	@Put("/user/:userId")
-	@SecuredAction(value = "user.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -70,7 +70,7 @@ public class UserController extends BaseController {
 	}
 
 	@Put("/userbook/:userId")
-	@SecuredAction(value = "user.update.userbook", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void updateUserBook(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -102,21 +102,21 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/:userId")
-	@SecuredAction(value = "user.get", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userService.get(userId, notEmptyResponseHandler(request));
 	}
 
 	@Get("/userbook/:userId")
-	@SecuredAction(value = "user.get.userbook", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getUserBook(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		userBookService.get(userId, notEmptyResponseHandler(request));
 	}
 
 	@Put("/avatar/:userId")
-	@SecuredAction(value = "user.update.avatar", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void updateAvatar(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, new Handler<JsonObject>() {
@@ -180,7 +180,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/list/isolated")
-	@SecuredAction(value = "user.list.isolated", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listIsolated(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final List<String> expectedProfile = request.params().getAll("profile");
@@ -188,14 +188,14 @@ public class UserController extends BaseController {
 	}
 
 	@Delete("/user")
-	@SecuredAction(value = "user.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
 		List<String> users = request.params().getAll("userId");
 		userService.delete(users, defaultResponseHandler(request));
 	}
 
 	@Get("/export/users")
-	@SecuredAction(value = "user.export", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void export(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -262,7 +262,7 @@ public class UserController extends BaseController {
 	}
 
 	@Post("/user/group/:userId/:groupId")
-	@SecuredAction(value = "user.add.group", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
@@ -285,7 +285,7 @@ public class UserController extends BaseController {
 	}
 
 	@Delete("/user/group/:userId/:groupId")
-	@SecuredAction(value = "user.remove.group", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeGroup(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String groupId = request.params().get("groupId");
@@ -293,7 +293,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/group/:groupId")
-	@SecuredAction(value = "user.list.group", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listGroup(final HttpServerRequest request) {
 		final String groupId = request.params().get("groupId");
 		userService.list(groupId, true, null, arrayResponseHandler(request));
@@ -307,7 +307,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/admin/list")
-	@SecuredAction(value = "user.list.admin", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -327,7 +327,7 @@ public class UserController extends BaseController {
 
 	@Put("/user/:studentId/related/:relativeId")
 	@ResourceFilter(RelativeStudentFilter.class)
-	@SecuredAction(value = "user.relative.student", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void relativeStudent(final HttpServerRequest request) {
 		final String studentId = request.params().get("studentId");
 		final String relativeId = request.params().get("relativeId");

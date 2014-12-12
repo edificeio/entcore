@@ -60,14 +60,14 @@ public class ClassController extends BaseController {
 			"text/anytext", "text/plain");
 
 	@Get("/class/:classId")
-	@SecuredAction(value = "class.get", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String classId = request.params().get("classId");
 		classService.get(classId, notEmptyResponseHandler(request));
 	}
 
 	@Put("/class/:classId")
-	@SecuredAction(value = "class.update", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -79,7 +79,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Post("/class/:classId/user")
-	@SecuredAction(value = "class.user.create", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void createUser(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -118,7 +118,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Get("/class/:classId/users")
-	@SecuredAction(value = "class.user.find", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
 		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
@@ -164,7 +164,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Post("/csv/:userType/class/:classId")
-	@SecuredAction(value = "class.csv", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void csv(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		final String classId = request.params().get("classId");
@@ -230,7 +230,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Put("/class/:classId/add/:userId")
-	@SecuredAction(value = "class.add.user", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addUser(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -263,7 +263,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Put("/class/:classId/apply")
-	@SecuredAction(value = "class.apply.rules", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void applyComRulesAndRegistryEvent(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -319,7 +319,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Put("/class/:classId/link/:userId")
-	@SecuredAction(value = "class.link.user", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void linkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String classId = request.params().get("classId");
@@ -341,7 +341,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Delete("/class/:classId/unlink/:userId")
-	@SecuredAction(value = "class.unlink.user", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void unlinkUser(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
 		final String userId = request.params().get("userId");
@@ -349,7 +349,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Get("/class/admin/list")
-	@SecuredAction(value = "class.list.admin", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

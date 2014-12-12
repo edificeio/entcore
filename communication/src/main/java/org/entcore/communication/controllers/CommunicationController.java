@@ -52,14 +52,14 @@ public class CommunicationController extends BaseController {
 	private final CommunicationService communicationService = new DefaultCommunicationService();
 
 	@Get("/admin-console")
-	@SecuredAction(value = "communication.view", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void adminConsole(final HttpServerRequest request) {
 		renderView(request);
 	}
 
 	@Post("/group/:startGroupId/communique/:endGroupId")
-	@SecuredAction(value = "communication.group.add", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -68,7 +68,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Delete("/group/:startGroupId/communique/:endGroupId")
-	@SecuredAction(value = "communication.group.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -77,7 +77,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Post("/group/:groupId")
-	@SecuredAction(value = "communication.group.users.add", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -86,7 +86,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Delete("/group/:groupId")
-	@SecuredAction(value = "communication.group.users.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -95,7 +95,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Get("/group/:groupId")
-	@SecuredAction(value = "communication.group.get", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void communiqueWith(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -103,7 +103,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Post("/relative/:groupId")
-	@SecuredAction(value = "communication.relative.student.add", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -112,7 +112,7 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Delete("/relative/:groupId")
-	@SecuredAction(value = "communication.relative.student.delete", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -215,7 +215,7 @@ public class CommunicationController extends BaseController {
 	 * @param request Incoming request.
 	 */
 	@Get("/rules")
-	@SecuredAction(value = "communication.get.default.rules", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getDefaultCommunicationRules(final HttpServerRequest request) {
 		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");

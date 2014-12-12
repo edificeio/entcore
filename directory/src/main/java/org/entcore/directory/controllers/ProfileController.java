@@ -40,7 +40,7 @@ public class ProfileController extends BaseController {
 	private ProfileService profileService;
 
 	@Get("/functions")
-	@SecuredAction(value = "profile.list.functions", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listFunctions(final HttpServerRequest request) {
 		profileService.listFunctions(arrayResponseHandler(request));
 	}

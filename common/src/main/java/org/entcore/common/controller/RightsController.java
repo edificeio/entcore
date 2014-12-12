@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class RightsController extends BaseController {
 
-	private static final List<String> allowedSharingRights = Arrays
+	public static final List<String> allowedSharingRights = Arrays
 			.asList("read", "contrib", "manager", "publish", "comment");
 	private JsonObject rights;
 
