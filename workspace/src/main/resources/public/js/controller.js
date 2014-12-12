@@ -1171,7 +1171,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	$scope.drop = function(targetItem, event){
 		event.preventDefault()
 
-		var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") === 0 ? "application/json" : //Chrome & Safari
+		var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") > -1 ? "application/json" : //Chrome & Safari
 						event.dataTransfer.types.contains && event.dataTransfer.types.contains("application/json") ? "application/json" : //Firefox
 						event.dataTransfer.types.contains && event.dataTransfer.types.contains("Text") ? "Text" : //IE
 						undefined
