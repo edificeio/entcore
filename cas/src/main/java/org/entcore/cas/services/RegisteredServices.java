@@ -19,16 +19,16 @@
 
 package org.entcore.cas.services;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class RegisteredServices {
 
-	private final Set<RegisteredService> services = new HashSet<>();
+	private final Set<RegisteredService> services = new LinkedHashSet<>();
 
 	public void add(RegisteredService service) {
 		services.add(service);
