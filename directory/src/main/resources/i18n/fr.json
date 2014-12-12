@@ -278,7 +278,7 @@
     "directory.admin.remove.local-admin":       "Supprimer la fonction pour tous les établissements",
 
     "tooltip.users.filtersTooltip": 			"Afficher/Cacher les filtres",
-    "tooltip.users.switchOrdering": 			"Ordonner par prénom / rôle",
+    "tooltip.users.switchOrdering": 			"Ordonner par nom / rôle",
     "directory.tooltip.selectAll":				"Tout sélectionner",
     "directory.tooltip.deselectAll":			"Tout désélectionner",
     "directory.tooltip.creationTooltip":        "Créer un utilisateur",
