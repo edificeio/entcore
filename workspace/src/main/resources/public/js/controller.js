@@ -84,6 +84,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 					if(!sharedItem){
 						sharedItem = {}
 						sharedItem[idField] = changes.added[idField]
+						folder.shared = folder.shared ? folder.shared : []
 						folder.shared.push(sharedItem)
 					}
 					if(way === "added"){
