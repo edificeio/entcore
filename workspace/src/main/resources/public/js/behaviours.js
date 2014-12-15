@@ -198,6 +198,11 @@ Behaviours.register('workspace', {
 				},
 				copyRights: function(snipletResource, source){
 				},
+				getReferencedResources: function(source){
+					return _.map(source.documents, function(doc){
+						return doc._id;
+					});
+				},
 				documentIcon: function(doc){
 					if(doc.metadata['content-type'].indexOf('image') !== -1){
 						return '/workspace/document/' + doc._id + '?thumbnail=150x150';
