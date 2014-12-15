@@ -55,6 +55,7 @@ import org.entcore.workspace.service.impl.DefaultFolderService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -1913,10 +1914,21 @@ public class WorkspaceService extends BaseController {
 				break;
 			case "updateDocument" : updateDocument(message);
 				break;
+			case "getDocument" : getDocument(message);
+				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error")
 						.putString("message", "invalid.action"));
 		}
+	}
+
+	private void getDocument(final Message<JsonObject> message) {
+		documentDao.findById(message.body().getString("id"), new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject res) {
+				message.reply(res);
+			}
+		});
 	}
 
 	private void addDocument(final Message<JsonObject> message) {

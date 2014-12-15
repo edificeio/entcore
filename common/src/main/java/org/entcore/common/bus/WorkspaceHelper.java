@@ -24,6 +24,7 @@ import fr.wseduc.webutils.FileUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -139,6 +140,65 @@ public class WorkspaceHelper {
 	public void updateDocument(final HttpServerRequest request, final String id, final String name,
 			final JsonArray thumbs, final Handler<Message<JsonObject>> handler) {
 		uploadDocument(request, id, name, null, false, thumbs, handler);
+	}
+
+	public void getDocument(String id, Handler<Message<JsonObject>> handler) {
+		JsonObject m = new JsonObject()
+				.putString("action", "getDocument")
+				.putString("id", id);
+		eb.send(WORKSPACE_ADDRESS, m, handler);
+	}
+
+	public void readFile(String id, Handler<Buffer> handler) {
+		FileUtils.gridfsReadFile(id, eb, gridfsAddress, handler);
+	}
+
+	public void readDocument(String documentId, final Handler<Document> handler) {
+		getDocument(documentId, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonObject res = event.body();
+				String status = res.getString("status");
+				final JsonObject result = res.getObject("result");
+				if ("ok".equals(status) && result != null) {
+					String file = result.getString("file");
+					if (file != null && !file.trim().isEmpty()) {
+						readFile(file, new Handler<Buffer>() {
+							@Override
+							public void handle(Buffer event) {
+								if (event != null) {
+									handler.handle(new Document(result, event));
+								} else {
+									handler.handle(null);
+								}
+							}
+						});
+					} else {
+						handler.handle(null);
+					}
+				} else {
+					handler.handle(null);
+				}
+			}
+		});
+	}
+
+	public static class Document {
+		private final JsonObject document;
+		private final Buffer data;
+
+		public Document(JsonObject document, Buffer data) {
+			this.document = document;
+			this.data = data;
+		}
+
+		public Buffer getData() {
+			return data;
+		}
+
+		public JsonObject getDocument() {
+			return document;
+		}
 	}
 
 }
