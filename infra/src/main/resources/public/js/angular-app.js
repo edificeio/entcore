@@ -3888,7 +3888,7 @@ module.directive('attachments', function($parse){
 						var resource = _.find(resources, function(resource){
 							return resource._id === newResource._id;
 						})
-						resource.provider = $scope.attachments.display.search.application;
+						resource.provider = scope.attachments.display.search.application;
 						scope.ngModel(scope).push(resource);
 						scope.$apply();
 					});
