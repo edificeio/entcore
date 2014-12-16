@@ -1177,47 +1177,65 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 
 Behaviours = (function(){
 	return {
-		copyRights: function(rightsProvider, resource, viewRights, appPrefix){
-			if(resource._id && rightsProvider){
-				if(rightsProvider.shared){
-					rightsProvider.shared.forEach(function(share){
-						var data = { actions: viewRights };
+		copyRights: function(params){
+			http().get('/' + params.provider.application + '/rights/sharing').done(function(providerSharing){
+				http().get('/' + params.target.application + '/rights/sharing').done(function(targetSharing){
+					params.provider.resource.shared.forEach(function(share){
+						if(share.userId === model.me.userId){
+							return;
+						}
+						var data = {  };
 						if(share.groupId){
 							data.groupId = share.groupId;
 						}
 						else{
 							data.userId = share.userId;
 						}
-						http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
-					});
-				}
-				else{
-					var data = {};
-					if(rightsProvider.added){
-						if(rightsProvider.added.userId){
-							data.userId = rightsProvider.added.userId;
-						}
-						else{
-							data.groupId = rightsProvider.added.groupId;
-						}
-						data.actions = viewRights;
 
-						http().put('/' + appPrefix + '/share/json/' + resource._id, http().serialize(data));
-					}
-					if(rightsProvider.removed){
-						if(rightsProvider.removed.userId){
-							data.userId = rightsProvider.removed.userId;
+						var bundles = { read: false, contrib: false, publish: false, comment: false, manager: false };
+						for(var property in share){
+							for(var bundle in providerSharing){
+								if(providerSharing[bundle].indexOf(property) !== -1){
+									var bundleSplit = bundle.split('.');
+									bundles[bundleSplit[bundleSplit.length - 1]] = true;
+								}
+							}
 						}
+
+						function addRights(targetResource){
+							data.actions = [];
+							for(var bundle in bundles){
+								if(!bundles[bundle]){
+									continue;
+								}
+								for(var targetBundle in targetSharing){
+									var targetBundleSplit = targetBundle.split('.');
+									if(targetBundleSplit[targetBundleSplit.length - 1].indexOf(bundle) !== -1){
+										targetSharing[targetBundle].forEach(function(right){
+											data.actions.push(right);
+										});
+									}
+								}
+							}
+
+							http().put('/' + params.target.application + '/share/json/' + targetResource, http().serialize(data));
+						}
+
+						//drop rights if I'm not part of the group
+						if(model.me.groupsIds.indexOf(share.groupId) === -1){
+							params.target.resources.forEach(function(targetResource){
+								http().put('/' + params.target.application + '/share/remove/' + targetResource, data).done(function(){
+									addRights(targetResource);
+								})
+							})
+						}
+						//simply add rights bundles (don't want to remove my own manager right)
 						else{
-							data.groupId = rightsProvider.removed.groupId;
+							params.target.resources.forEach(addRights);
 						}
-						data.actions = viewRights;
-						if(_.find(rightsProvider.removed.actions, function(action, name){ return name.indexOf('.read') !== -1 })){
-							http().put('/' + appPrefix + '/share/remove/' + resource._id, http().serialize(data));
-						}
-					}
-				}
-			}
+					});
+				});
+			});
 		},
 		register: function(application, appBehaviours){
 			this.applicationsBehaviours[application] = {};

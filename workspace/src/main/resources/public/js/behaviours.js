@@ -196,8 +196,6 @@ Behaviours.register('workspace', {
 						}.bind(this));
 					}.bind(this));
 				},
-				copyRights: function(snipletResource, source){
-				},
 				getReferencedResources: function(source){
 					return _.map(source.documents, function(doc){
 						return doc._id;
