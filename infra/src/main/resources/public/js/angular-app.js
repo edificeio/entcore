@@ -2258,7 +2258,7 @@ module.directive('behaviour', function($compile){
 			resource: '='
 		},
 		link: function($scope, $element, $attributes){
-			console.log('This directive is deprecated. Please use "security" instead.');
+			console.log('This directive is deprecated. Please use "resource-right" instead.');
 			if(!$attributes.name){
 				throw "Behaviour name is required";
 			}
