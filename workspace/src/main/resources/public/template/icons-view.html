@@ -21,9 +21,9 @@
 <article class="icons-view">
 	<header>&nbsp;</header>
 	<div>
-		<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" dragstart="drag" dragcondition="dragCondition(folder)" dragdrop="drop" dragitem="folder">
-			<a class="container">
-				<i class="folder-large" data-ng-click="openFolder(folder)"></i>
+		<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" >
+			<a class="container" draggable="false">
+				<i class="folder-large" data-ng-click="openFolder(folder)" dragstart="drag(folder)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)"></i>
 			</a>
 			<input type="checkbox" data-ng-model="folder.selected" />
 
@@ -36,13 +36,13 @@
 			</legend>
 		</div>
 		<section data-ng-repeat-end></section>
-		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag" dragcondition="dragCondition(document)" dragitem="document">
+		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
 			<a ng-href="[[documentPath(document)]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'" class="twelve cell height-twelve">
 					<div class="clip absolute">
-						<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail" />
+						<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail"/>
 					</div>
 				</div>
 			</a>

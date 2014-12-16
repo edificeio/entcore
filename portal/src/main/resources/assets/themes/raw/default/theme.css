@@ -1510,6 +1510,7 @@ a {
   -moz-transition: width 250ms ease;
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
+  z-index: 5;
 }
 .toggle-panel h1,
 .toggle-panel h2 {
@@ -4522,6 +4523,45 @@ ul.thought-out-actions li p {
   -moz-transition: margin-top 250ms ease;
   -webkit-transition: margin-top 250ms ease;
   transition: margin-top 250ms ease;
+}
+.wizard {
+  display: table;
+  width: 100%;
+  min-height: 350px;
+}
+.wizard nav.steps {
+  display: table-cell;
+  vertical-align: top;
+  min-width: 200px;
+  margin: 0;
+  height: 100%;
+}
+.wizard nav.steps ul {
+  padding: 0;
+  margin: 0;
+}
+.wizard nav.steps ul li {
+  list-style-type: none;
+  padding: 7px;
+}
+.wizard nav.steps ul li.active {
+  font-weight: bold;
+}
+.wizard .current-step {
+  vertical-align: top;
+  padding-left: 20px;
+  padding-bottom: 60px;
+  padding-top: 15px;
+  display: table-cell;
+  width: 100%;
+}
+.wizard .current-step h1:first-child {
+  margin-top: 0;
+}
+.wizard .current-step nav {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 html,
 body {
@@ -8079,4 +8119,8 @@ input[type=text][disabled] {
 .illustrated-article .small.illustration .image {
   width: 100px;
   height: 100px;
+}
+.folder-large.droptarget,
+.folder-list-item.droptarget {
+  background-color: #266881;
 }

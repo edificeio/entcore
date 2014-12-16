@@ -3656,7 +3656,7 @@ module.directive('dragstart', function(){
             element.attr("native", "")
 
             element.on("dragstart", function(event){
-                scope.$eval(attributes.dragstart)(scope.$eval(attributes.dragitem), event.originalEvent)
+                scope.$eval(attributes.dragstart)(event.originalEvent)
             })
 
             element.on('$destroy', function() {
@@ -3670,9 +3670,32 @@ module.directive('dragdrop', function(){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
-            element.attr("ondragover", "event.preventDefault()")
+            if(attributes.dropcondition !== undefined){
+                element.on("dragover", function(event){
+                    if(scope.$eval(attributes.dropcondition)(event.originalEvent)){
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                })
+            } else {
+                element.attr("ondragover", "event.preventDefault()")
+            }
+
+            element.on("dragenter", function(event){
+                if(attributes.dropcondition === undefined || scope.$eval(attributes.dropcondition)(event.originalEvent)){
+                   event.preventDefault()
+                   event.stopPropagation()
+                   element.addClass("droptarget")
+                }
+            })
+            element.on("dragleave", function(event){
+                event.preventDefault()
+                event.stopPropagation()
+                element.removeClass("droptarget")
+            })
             element.on("drop", function(event){
-                scope.$eval(attributes.dragdrop)(scope.$eval(attributes.dragitem), event.originalEvent)
+                element.removeClass("droptarget")
+                scope.$eval(attributes.dragdrop)(event.originalEvent)
             })
 
             element.on('$destroy', function() {

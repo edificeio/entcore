@@ -1158,36 +1158,46 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	}
 
 	$scope.drag = function(item, event){
-		try{
-			event.dataTransfer.setData('application/json', JSON.stringify(item));
-		} catch(e) {
-			event.dataTransfer.setData('Text', JSON.stringify(item));
+		return function(event){
+			try{
+				event.dataTransfer.setData('application/json', JSON.stringify(item));
+			} catch(e) {
+				event.dataTransfer.setData('Text', JSON.stringify(item));
+			}
 		}
-
 	}
 	$scope.dragCondition = function(item){
 		return $scope.currentFolderTree.name === 'documents' && item.folder
 	}
+	$scope.dropCondition = function(targetItem){
+		return function(event){
+			var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") > -1 ? "application/json" : //Chrome & Safari
+							event.dataTransfer.types.contains && event.dataTransfer.types.contains("application/json") ? "application/json" : //Firefox
+							event.dataTransfer.types.contains && event.dataTransfer.types.contains("Text") ? "Text" : //IE
+							undefined
 
-	$scope.drop = function(targetItem, event){
-		event.preventDefault()
+			if(!dataField || targetItem.name === 'shared' || targetItem.name === 'appDocuments')
+				return false
 
-		var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") > -1 ? "application/json" : //Chrome & Safari
-						event.dataTransfer.types.contains && event.dataTransfer.types.contains("application/json") ? "application/json" : //Firefox
-						event.dataTransfer.types.contains && event.dataTransfer.types.contains("Text") ? "Text" : //IE
-						undefined
+			return dataField
+		}
+	}
 
-		if(!dataField || targetItem.name === 'shared' || targetItem.name === 'appDocuments')
-			return
+	$scope.dropTo = function(targetItem){
+		return function(event){
+			event.preventDefault()
 
-		var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
-		if(originalItem._id === targetItem._id)
-			return
+			var dataField = $scope.dropCondition(targetItem)(event)
+			var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
 
-		if(targetItem.name === 'trash')
-			$scope.dropTrash(originalItem)
-		else
-			$scope.dropMove(originalItem, targetItem)
+			if(originalItem._id === targetItem._id)
+				return
+
+			if(targetItem.name === 'trash')
+				$scope.dropTrash(originalItem)
+			else
+				$scope.dropMove(originalItem, targetItem)
+		}
 	}
 
 	$scope.dropMove = function(originalItem, targetItem){
