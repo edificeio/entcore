@@ -1510,7 +1510,6 @@ a {
   -moz-transition: width 250ms ease;
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
-  z-index: 5;
 }
 .toggle-panel h1,
 .toggle-panel h2 {
@@ -3194,9 +3193,6 @@ a.cke_smile img {
 }
 .media .media-container {
   overflow: visible;
-}
-.media sniplet img {
-  width: auto;
 }
 .media.cell {
   background: transparent;
