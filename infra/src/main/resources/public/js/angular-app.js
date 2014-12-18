@@ -14,111 +14,8 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-var protoApp = {
-  scope : '#main',
-			init : function() {
-			var that = this;
-			that.i18n.load();
-			$('body').delegate(that.scope, 'click',function(event) {
-					if (!event.target.getAttribute('call')) return;
-					event.preventDefault();
-					if(event.target.getAttribute('disabled') !== null){
-							return;
-						}
-					var call = event.target.getAttribute('call');
-					that.action[call]({url : event.target.getAttribute('href'), target: event.target});
-					event.stopPropagation();
-				});
-		},
-	action : {
-		},
-	template : {
-			getAndRender : function (pathUrl, templateName, elem, dataExtractor){
-					var that = this;
-					if (_.isUndefined(dataExtractor)) {
-								dataExtractor = function (d) { return {list : _.values(d.result)}; };
-						}
-					$.get(pathUrl)
-						.done(function(data) {
-								$(elem).html(that.render(templateName, dataExtractor(data)));
-							})
-					.error(function(data) {
-								protoApp.notify.error(data);
-							});
-				},
-			render : function (name, data) {
-					_.extend(data, {
-								'i18n' : protoApp.i18n.i18n,
-								'formatDate' : function() {
-								return function(str) {
-										var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
-										return dt;
-									};
-							},
-						'formatDateTime' : function() {
-								return function(str) {
-										var dt = new Date(Mustache.render(str, this).replace('CEST', 'EST')).toShortString();
-										return dt;
-									};
-							},
-						longDate: function(){
-								return function(date) {
-										var momentDate = moment(Mustache.render(date, this).replace('CEST', 'EST'));
-										if(momentDate !== null){
-												return momentDate.format('D MMMM YYYY');
-											}
-									};
-							},
-						longDay: function(){
-							return function(date) {
-										var momentDate = moment(Mustache.render(date, this).replace('CEST', 'EST'));
-										if(momentDate !== null){
-												return momentDate.format('D MMMM');
-											}
-									};
-							}
-					});
-				return Mustache.render(this[name] === undefined ? name : this[name], data);
-			}
-	},
-	notify : {
-			done : function (msg) { this.instance('success')(msg);},
-			error : function (msg) { this.instance('error')(msg); },
-			warn : function (msg) {},
-			info : function (msg) { this.instance('info')(msg); },
-			instance : function(level) {
-					return humane.spawn({ addnCls: 'humane-original-' + level });
-				}
-		},
-	i18n : {
-			load : function () {
-					var that = this;
-					$.ajax({url: 'i18n', async: false})
-						.done(function(data){
-									that.bundle = data;
-							})
-				},
-			bundle : {},
-			i18n : function() {
-					return function(key) {
-								key = Mustache.render(key, this);
-							return protoApp.i18n.bundle[key] === undefined ? key : protoApp.i18n.bundle[key];
-						};
-				},
-			translate: function(key){
-					return this.i18n()(key);
-				}
-		},
-	define : function (o) {
-			var props = { template : {}, action:{}};
-			for (prop in props) {
-					for (key in o[prop]) {
-								props[[prop]][key] = {'value' : o[[prop]][key]};
-						}
-					Object.defineProperties(this[prop], props[[prop]]);
-				}
-		}
-};
+
+var lang = window.idiom;
 
 var template = {
 	viewPath: '/' + appPrefix + '/public/template/',
@@ -1153,106 +1050,6 @@ module.directive('iconsSelect', function($compile) {
 				</div>\
 				</div>\
 			</div>'
-	};
-});
-
-module.directive('translate', function($compile) {
-	return {
-		restrict: 'A',
-		replace: true,
-		link: function (scope, element, attributes) {
-			if(attributes.params){
-				var params = scope.$eval(attributes.params);
-				for(var i = 0; i < params.length; i++){
-					scope[i] = params[i];
-				}
-			}
-
-			attributes.$observe('content', function(val) {
-				if(!attributes.content){
-					return;
-				}
-				element.html($compile('<span class="no-style">' + lang.translate(attributes.content) + '</span>')(scope));
-			});
-
-			attributes.$observe('attr', function(val) {
-				if(!attributes.attr){
-					return;
-				}
-				var compiled = $compile('<span>' + lang.translate(attributes[attributes.attr]) + '</span>')(scope);
-				setTimeout(function(){
-					element.attr(attributes.attr, compiled.text());
-				}, 10);
-			});
-
-			attributes.$observe('attributes', function(val){
-				if(!attributes.attributes){
-					return;
-				}
-				var attrObj = scope.$eval(attributes.attributes);
-				for(var prop in attrObj){
-					var compiled = $compile('<span>' + lang.translate(attrObj[prop]) + '</span>')(scope);
-					setTimeout(function(){
-						element.attr(prop, compiled.text());
-					}, 0);
-				}
-			})
-
-			attributes.$observe('key', function(val) {
-				if(!attributes.key){
-					return;
-				}
-				element.html($compile('<span class="no-style">' + lang.translate(attributes.key) + '</span>')(scope));
-			});
-		}
-	};
-});
-
-module.directive('i18n', function($compile){
-	return {
-		restrict: 'E',
-		link: function(scope, element, attributes){
-			element.html($compile('<span class="no-style">' + lang.translate(element.text()) + '</span>')(scope));
-		}
-	}
-});
-
-module.directive('i18nPlaceholder', function($compile){
-	return {
-		link: function(scope, element, attributes){
-			attributes.$observe('i18nPlaceholder', function(val) {
-				var compiled = $compile('<span>' + lang.translate(attributes.i18nPlaceholder) + '</span>')(scope);
-				setTimeout(function(){
-					element.attr('placeholder', compiled.text());
-				}, 10);
-			});
-		}
-	}
-});
-
-module.directive('i18nValue', function($compile){
-	return {
-		link: function(scope, element, attributes){
-			attributes.$observe('i18nValue', function(val) {
-				var compiled = $compile('<span>' + lang.translate(attributes.i18nValue) + '</span>')(scope);
-				setTimeout(function(){
-					element.attr('value', compiled.text());
-				}, 10);
-			});
-		}
-	}
-});
-
-//Deprecated
-module.directive('translateAttr', function($compile) {
-	return {
-		restrict: 'A',
-		link: function compile($scope, $element, $attributes) {
-			var compiled = $compile('<span>' + lang.translate($attributes[$attributes.translateAttr]) + '</span>')($scope);
-			setTimeout(function(){
-				$element.attr($attributes.translateAttr, compiled.text());
-			}, 10);
-		}
 	};
 });
 
@@ -3980,7 +3777,13 @@ $(document).ready(function(){
 		bootstrap(function(){
 			model.build();
 			model.sync();
-			angular.bootstrap($('html'), ['app']);
+
+			lang.addDirectives(module);
+			lang.addBundle('/i18n', function(){
+				lang.addBundle('/' + appPrefix + '/i18n', function(){
+					angular.bootstrap($('html'), ['app']);
+				});
+			});
 		});
 	}, 10);
 });
