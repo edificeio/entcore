@@ -402,21 +402,35 @@ module.directive('linker', function($compile){
 			}, true);
 
 			http().get('/resources-applications').done(function(apps){
-				scope.linker.apps = _.filter(model.me.apps, function(app){
-					return _.find(apps, function(match){
-						return app.address.indexOf(match) !== -1 && app.target === null
-					});
-				});
-				var currentApp = _.find(scope.linker.apps, function(app){
-					return app.address.indexOf(appPrefix) !== -1 && app.icon.indexOf('/') === -1;
-				});
+				scope.linker.apps = [];
+				var n = model.me.apps.length;
+				model.me.apps.forEach(function(app){
+					var prefix = _.find(apps, function(a){ return app.address.indexOf(a) !== -1 && app.icon &&  app.icon.indexOf('/') === -1 });
+					if(prefix){
+						app.prefix = prefix;
+						Behaviours.loadBehaviours(app.prefix, function(behaviours){
+							n--;
+							if(behaviours.loadResources){
+								scope.linker.apps.push(app);
+							}
+							if(n === 0){
+								var currentApp = _.find(scope.linker.apps, function(app){
+									return app.address.indexOf(appPrefix) !== -1 && app.icon.indexOf('/') === -1;
+								});
 
-				scope.linker.search.application = scope.linker.apps[0];
-				if(currentApp){
-					scope.linker.search.application = currentApp;
-				}
+								scope.linker.search.application = scope.linker.apps[0];
+								if(currentApp){
+									scope.linker.search.application = currentApp;
+								}
 
-				scope.linker.loadApplicationResources(function(){});
+								scope.linker.loadApplicationResources(function(){});
+							}
+						});
+					}
+					else{
+						n--;
+					}
+				});
 			});
 
 			scope.linker.loadApplicationResources = function(cb){
@@ -429,11 +443,8 @@ module.directive('linker', function($compile){
 						scope.$apply('linker');
 					};
 				}
-
-				Behaviours.loadBehaviours(prefix, function(appBehaviour){
-					appBehaviour.loadResources(cb);
-					scope.linker.addResource = appBehaviour.create;
-				});
+				Behaviours.applicationsBehaviours[prefix].loadResources(cb);
+				scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
 			};
 
 			scope.linker.searchApplication = function(){
