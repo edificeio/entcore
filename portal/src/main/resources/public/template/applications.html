@@ -6,13 +6,13 @@
 	<nav class="list icons-view">
 		<div class="list icons-view apps">
 			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
-				<div class="container">
+				<div class="container" ng-if="application.display">
 					<a href="[[application.address]]" target="[[application.target]]">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
 						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
 					</a>
 				</div>
-				<legend>
+				<legend ng-if="application.display">
 					<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]"></a>
 				</legend>
 			</div>
