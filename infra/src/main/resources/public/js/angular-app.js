@@ -355,8 +355,8 @@ module.directive('linker', function($compile){
 			};
 			var linkNode = $('<a />');
 			var appendText = '';
-			scope.$watch('display', function(newVal){
-				if(newVal.chooseLink){
+			scope.$watch(function(){ return scope.display.chooseLink}, function(newVal){
+				if(newVal){
 					if(!scope.linker.editor){
 						scope.linker.editor = scope.$eval(attributes.editor);
 					}
@@ -1649,13 +1649,10 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				createCKEditorInstance(editor, scope, $compile);
 
-				scope.$watch(
-					function(){
-						return scope.ngModel(scope);
-					},
+				scope.$watch('ngModel',
 					function(newValue){
-						if(contextEditor.getData() !== newValue){
-							editor.html($compile(newValue)(scope));
+						if(contextEditor.getData() !== newValue(scope)){
+							editor.html($compile(newValue(scope))(scope));
 							//weird browser bug with audio tags
 							editor.find('audio').each(function(index, item){
 								var parent = $(item).parent();
@@ -1741,15 +1738,11 @@ module.directive('htmlEditor', function($compile, $parse){
 					scope.selectFiles = false;
 				};
 
-				if(!attributes.watchCollections){
-					return;
+				var replace = function(){
+					ckeEditorFixedPositionning();
+					setTimeout(replace, 100);
 				}
-
-				scope.$eval(attributes.watchCollections).forEach(function(col){
-					scope.$watchCollection(col, function(){
-						setTimeout(ckeEditorFixedPositionning, 200);
-					});
-				});
+				replace();
 			}
 		}
 	}
@@ -2967,6 +2960,7 @@ module.directive('gridDraggable', function($compile){
 module.directive('sniplet', function($parse, $timeout){
 	return {
 		restrict: 'E',
+		scope: true,
 		controller: function($scope, $timeout){
 			$timeout(function(){
 				Behaviours.loadBehaviours($scope.application, function(behaviours){
@@ -2992,6 +2986,7 @@ module.directive('sniplet', function($parse, $timeout){
 module.directive('snipletSource', function($parse, $timeout){
 	return {
 		restrict: 'E',
+		scope: true,
 		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-source-' + template + '.html'\"></div>",
 		controller: function($scope, $timeout){
 			$scope.setSnipletSource = function(source){

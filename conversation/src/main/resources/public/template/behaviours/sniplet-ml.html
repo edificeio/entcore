@@ -1,22 +1,19 @@
-<div class="row">
+<div class="row ml-sniplet">
 	<div class="row">
 		<h1><i18n>sniplet.ml.title</i18n></h1>
-
-		<p class="info"><i18n>sniplet.ml.info</i18n></p>
-
-		<div class="row">
-			<div class="three cell">
-				<i18n>sniplet.ml.subject.placeholder</i18n>
-			</div>
-			<input type="text" ng-model="message.subject" required class="nine cell" />
-
-		</div>
-		<div class="row">
-			<textarea ng-model="message.body" i18n-placeholder="sniplet.ml.content.placeholder"></textarea>
-		</div>
 	</div>
-
-
+	<div class="row">
+		<p class="info"><i18n>sniplet.ml.info</i18n></p>
+	</div>
+	<div class="row">
+		<div class="three cell">
+			<i18n>sniplet.ml.subject.placeholder</i18n>
+		</div>
+		<input type="text" ng-model="message.subject" required class="nine cell" />
+	</div>
+	<article class="row">
+		<html-editor ng-model="message.body" i18n-placeholder="sniplet.ml.content.placeholder"></html-editor>
+	</article>
 	<div class="row">
 		<input type="button" ng-click="send()" class="right-magnet" i18n-value="send" />
 	</div>
