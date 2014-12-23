@@ -1,6 +1,6 @@
-<behaviour name="update" resource="snipletResource">
+<resource-right name="update" resource="snipletResource">
 	<button ng-click="display.selectSnipletDocument = true">Ajouter un document</button>
-</behaviour>
+</resource-right>
 
 <article class="list icons-view">
 	<header>&nbsp;</header>
@@ -18,6 +18,9 @@
 				[[document.title]]
 			</a>
 			<a ng-href="/userbook/annuaire#[[document.owner.id]]"><strong>[[document.owner.name]]</strong></a>
+			<resource-right name="update" resource="snipletResource">
+				<i class="close" ng-click="removeDocument(document)"></i>
+			</resource-right>
 		</legend>
 	</div>
 </article>

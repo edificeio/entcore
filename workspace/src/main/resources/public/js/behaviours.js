@@ -196,6 +196,14 @@ Behaviours.register('workspace', {
 						}.bind(this));
 					}.bind(this));
 				},
+				removeDocument: function(document){
+					this.source.documents = _.reject(this.source.documents, function(doc){
+						return doc._id === document._id;
+					});
+					if(typeof this.snipletResource.save === 'function'){
+						this.snipletResource.save();
+					}
+				},
 				getReferencedResources: function(source){
 					return _.map(source.documents, function(doc){
 						return doc._id;
