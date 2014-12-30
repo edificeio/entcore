@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .browser a{
+            display: inline-block;
+        }
+        .update {
+            text-align: center;
+        }
+        .update img{
+            height: 100px;
+            width: 100px;
+        }
+        img{
+            border: none;
+        }
+        .download {
+            text-align: center;
+        }
+        .download img{
+            height: 60px;
+            width: 60px;
+        }
+        body{
+            font-family: Arial;
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+<div ng-if="browser && browser.outdated" class="browser">
+    <h1>Votre navigateur n'est pas à jour</h1>
+    <p>Afin de pouvoir utiliser l'ENT, vous devez mettre votre navigateur à jour : </p>
+    <p class="update">
+        <a href="https://www.google.fr/chrome/browser/desktop/" target="_blank">
+            <img src="/auth/public/img/chrome_logo.png" />
+        </a>
+        <a href="https://www.mozilla.org/fr/firefox/new/" target="_blank">
+            <img src="/auth/public/img/firefox_logo.png" />
+        </a>
+        <a href="http://windows.microsoft.com/fr-fr/internet-explorer/download-ie" target="_blank">
+            <img src="/auth/public/img/msie_logo.png" />
+        </a>
+        <a href="https://www.apple.com/fr/safari/" target="_blank">
+            <img src="/auth/public/img/safari_logo.png" />
+        </a>
+    </p>
+</div>
+</body>
+</html>

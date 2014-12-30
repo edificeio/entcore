@@ -1,6 +1,52 @@
 <div class="centered container row">
 	<section class="main">
 		<div class="panel">
+			<div ng-if="!browser" class="browser">
+				<h1><i18n>browser.not.supported.title</i18n></h1>
+				<p><i18n>browser.not.supported.download</i18n></p>
+				<p class="download">
+					<a href="https://www.google.fr/chrome/browser/desktop/" target="_blank">
+						<img src="/auth/public/img/chrome_logo.png" />
+					</a>
+					<a href="https://www.mozilla.org/fr/firefox/new/" target="_blank">
+						<img src="/auth/public/img/firefox_logo.png" />
+					</a>
+					<a href="http://windows.microsoft.com/fr-fr/internet-explorer/download-ie" target="_blank">
+						<img src="/auth/public/img/msie_logo.png" />
+					</a>
+				</p>
+			</div>
+
+			<div ng-if="browser && browser.outdated" class="browser">
+				<h1><i18n>browser.outdated.title</i18n></h1>
+				<p><i18n>browser.outdated.update</i18n></p>
+				<p class="update">
+					<a href="https://www.google.fr/chrome/browser/desktop/" target="_blank" ng-if="browser.browser === 'Chrome'">
+						<img src="/auth/public/img/chrome_logo.png" />
+					</a>
+					<a href="https://www.mozilla.org/fr/firefox/new/" target="_blank" ng-if="browser.browser === 'Firefox'">
+						<img src="/auth/public/img/firefox_logo.png" />
+					</a>
+					<a href="http://windows.microsoft.com/fr-fr/internet-explorer/download-ie" target="_blank" ng-if="browser.browser === 'MSIE'">
+						<img src="/auth/public/img/msie_logo.png" />
+					</a>
+					<a href="https://www.apple.com/fr/safari/" target="_blank" ng-if="browser.browser === 'Safari'">
+						<img src="/auth/public/img/safari_logo.png" />
+					</a>
+				</p>
+				<p><i18n>browser.outdated.download</i18n></p>
+				<p class="download">
+					<a href="https://www.google.fr/chrome/browser/desktop/" target="_blank" ng-if="browser.browser !== 'Chrome'">
+						<img src="/auth/public/img/chrome_logo.png" />
+					</a>
+					<a href="https://www.mozilla.org/fr/firefox/new/" target="_blank" ng-if="browser.browser !== 'Firefox'">
+						<img src="/auth/public/img/firefox_logo.png" />
+					</a>
+					<a href="http://windows.microsoft.com/fr-fr/internet-explorer/download-ie" target="_blank" ng-if="browser.browser !== 'MSIE'">
+						<img src="/auth/public/img/msie_logo.png" />
+					</a>
+				</p>
+			</div>
 			<h1 translate content="auth.header"></h1>
 			<p class="warning" translate content="[[error]]" ng-if="error"></p>
 			<form method="post" ng-submit="connect()">

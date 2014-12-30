@@ -474,6 +474,11 @@ public class AuthController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/upgrade")
+    	public void upgrade(HttpServerRequest request) {
+    		renderView(request);
+    	}
+
 	@Post("/forgot")
 	public void forgotPasswordSubmit(final HttpServerRequest request) {
 		request.expectMultiPart(true);

@@ -33,10 +33,33 @@ var currentLanguage = '';
 		if(request.status === 200){
 			currentLanguage = JSON.parse(request.responseText).locale;
 		}
-	}
+	};
 	request.send(null);
 }());
 
+if(document.addEventListener){
+	document.addEventListener('DOMContentLoaded', function(){
+		document.getElementsByTagName('body')[0].style.display = 'none';
+	});
+}
+
+var routes = {
+	define: function(routing){
+		this.routing = routing;
+	}
+};
+
+if(!Array.prototype.forEach){
+	window.location.href = "/auth/upgrade";
+}
+
+function Model(data){
+	if(typeof this.updateData === 'function'){
+		this.updateData(data, false);
+	}
+}
+Model.prototype.build = function(){};
+var model = new Model();
 
 var loader = (function(){
 	var configurations = {
@@ -67,16 +90,29 @@ var loader = (function(){
 
 	var loadScript = function(script, completePath){
 		var element = document.createElement('script');
+		element.type = "text/javascript";
 
-		element.async = false;
-		if(!completePath){
-			element.src = basePath + '/' + script;
+		var xhr = new XMLHttpRequest();
+		var src = '';
+		if(completePath){
+			src = script;
+			element.async = false;
+			element.src = src;
 		}
 		else{
-			element.src = script;
+			src = basePath + '/' + script;
+			if(element.async){
+				element.async = false;
+				element.src = src;
+			}
+			else{
+				xhr.open('GET', src, false);
+				xhr.send('');
+
+				element.text = xhr.responseText;
+			}
 		}
 
-		element.type = 'text/javascript';
 		document.getElementsByTagName('head')[0].appendChild(element);
 	};
 
@@ -114,9 +150,9 @@ var loader = (function(){
 				}
 				loadedScripts[path] = lib;
 			}
-		}
+		};
 		request.send(null);
-	}
+	};
 
 	var load = function(script){
 		loadScript(script.path, script.completePath);
@@ -155,22 +191,4 @@ var loader = (function(){
 			}
 		}
 	}
-}())
-
-document.addEventListener('DOMContentLoaded', function(){
-	document.getElementsByTagName('body')[0].style.display = 'none';
-});
-
-var routes = {
-	define: function(routing){
-		this.routing = routing;
-	}
-};
-
-function Model(data){
-	if(typeof this.updateData === 'function'){
-		this.updateData(data, false);
-	}
-}
-Model.prototype.build = function(){};
-var model = new Model();
+}());

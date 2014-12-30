@@ -119,6 +119,9 @@ var ui = (function(){
 	};
 
 	$(document).ready(function(){
+		if(!document.createEvent){
+			return;
+		}
 		var evt = document.createEvent("Event");
 		evt.initEvent("ui-ready", true, false);
 		window.dispatchEvent(evt);

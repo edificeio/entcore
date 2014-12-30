@@ -5,6 +5,52 @@ function LoginController($scope, template){
 	$scope.template.open('main', 'login-form');
 	$scope.user = {};
 
+	var browser = function(userAgent){
+		var version;
+		if(userAgent.indexOf('Chrome') !== -1){
+			version = parseInt(userAgent.split('Chrome/')[1].split('.')[0]);
+			return {
+				browser: 'Chrome',
+				version: version,
+				outdated: version < 39
+			}
+		}
+		else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
+			version = parseInt(userAgent.split('Version/')[1].split('.')[0]);
+			return {
+				browser: 'Safari',
+				version: version,
+				outdated: version < 7
+			}
+		}
+		else if(userAgent.indexOf('Firefox') !== -1){
+			version = parseInt(userAgent.split('Firefox/')[1].split('.')[0]);
+			return {
+				browser: 'Firefox',
+				version: version,
+				outdated: version < 34
+			}
+		}
+		else if(userAgent.indexOf('MSIE') !== -1){
+			version = parseInt(userAgent.split('MSIE ')[1].split(';')[0]);
+			return {
+				browser: 'MSIE',
+				version: version,
+				outdated: version < 10
+			}
+		}
+		else if(userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1){
+			version = parseInt(userAgent.split('rv:')[1].split('.')[0]);
+			return {
+				browser: 'MSIE',
+				version: version,
+				outdated: version < 10
+			}
+		}
+	};
+
+	$scope.browser = browser(navigator.userAgent);
+
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
 			$scope.login = window.location.href.split('login=')[1].split('&')[0];
@@ -45,7 +91,9 @@ function LoginController($scope, template){
 	};
 
 	for(var i = 0; i < 10; i++){
-		history.pushState('', {});
+		if(history.pushState){
+			history.pushState('', {});
+		}
 	}
 }
 
