@@ -81,15 +81,18 @@
 					</div>
 					<div class="display-buttons">
 						<i class="show-list"
-						   ng-class="{ selected: currentViews.documents === views.documents.list }"
-						   ng-click="switchView('documents', 'list')"></i>
+						   ng-class="{ selected: template.contains('documents', 'list') }"
+						   ng-click="template.open('documents', 'list')"></i>
 						<i class="show-icons"
-							ng-class="{ selected: currentViews.documents === views.documents.icons }"
-							ng-click="switchView('documents', 'icons')"></i>
+							ng-class="{ selected: template.contains('documents', 'icons') }"
+							ng-click="template.open('documents', 'icons')"></i>
+						<i class="show-carousel"
+						   ng-class="{ selected: template.contains('documents', 'carousel') }"
+						   ng-click="template.open('documents', 'carousel')"></i>
 					</div>
 				</nav>
 
-				<div data-ng-include="currentViews.documents" class="row toggle-buttons-spacer"></div>
+				<div ng-include="template.containers.documents" class="row toggle-buttons-spacer"></div>
 			</section>
 		</div>
 		<div class="clear"></div>

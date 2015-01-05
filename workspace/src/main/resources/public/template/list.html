@@ -77,7 +77,7 @@
 							<i ng-if="document.shared.length > 0" class="shared"></i>
 						</div>
 					</td>
-					<td class="content"><a href="[[documentPath(document)]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
+					<td class="content"><a href="[[document.link]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 					<td class="user"><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
 					<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 					<td class="date">[[shortDate(document.created)]]</td>

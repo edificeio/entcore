@@ -3778,6 +3778,65 @@ module.directive('step', function(){
 	}
 });
 
+module.directive('carousel', function(){
+	return {
+		scope: {
+			items: '=',
+			transition: '@'
+		},
+		restrict: 'E',
+		templateUrl: '/infra/public/template/carousel.html',
+		link: function(scope, element, attributes){
+			element.addClass(attributes.transition);
+			scope.current = {
+				image: scope.items[0],
+				index: 0
+			};
+			scope.images = _.filter(scope.items, function(item){
+				return item.icon !== undefined;
+			});
+			scope.$watchCollection('items', function(newVal){
+				scope.images = _.filter(scope.items, function(item){
+					return item.icon !== undefined;
+				});
+				scope.current = {
+					image: scope.items[0],
+					index: 0
+				};
+			});
+			scope.openCurrentImage = function(){
+				window.location.href = scope.current.image.link;
+			};
+			scope.openSelectImage = function(item, index){
+				if(scope.current.image === item){
+					scope.openCurrentImage();
+				}
+				else{
+					scope.current.image = item;
+					scope.current.index = index;
+				}
+			};
+			scope.getPilePosition = function(index){
+				if(index < scope.current.index){
+					return 100 + index;
+				}
+				else{
+					return 100 - index;
+				}
+			};
+			var infiniteRun = function(){
+				scope.current.index ++;
+				if(scope.current.index === scope.items.length){
+					scope.current.index = 0;
+				}
+				scope.$apply('current');
+				setTimeout(infiniteRun, 4000);
+			};
+			infiniteRun();
+		}
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){

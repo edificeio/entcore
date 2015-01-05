@@ -64,63 +64,67 @@ var tools = (function(){
 }());
 
 routes.define(function($routeProvider) {
-	$routeProvider
-	.when('/folder/:folderId', {
-		action: 'viewFolder'
-	})
-	.when('/shared/folder/:folderId', {
-		action: 'viewSharedFolder'
-	})
-	.when('/shared', {
-		action: 'openShared'
-	})
-	.otherwise({
-		redirectTo: '/'
-	})
+  $routeProvider
+  .when('/folder/:folderId', {
+    action: 'viewFolder'
+  })
+.when('/shared/folder/:folderId', {
+  action: 'viewSharedFolder'
+})
+.when('/shared', {
+  action: 'openShared'
+})
+.otherwise({
+  redirectTo: '/'
+})
 })
 
-function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
-	route({
-		viewFolder: function(params){
-			if($scope.lastRoute === window.location.href)
-				return
-			$scope.lastRoute = window.location.href
-			if($scope.initSequence && $scope.initSequence.executed){
-				$scope.openFolderById(params.folderId)
-			} else {
-				$scope.initSequence = {
-					executed: false,
-					type: 'openFolder',
-					folderId: params.folderId
-				}
-			}
-		},
-		viewSharedFolder: function(params){
-			if($scope.lastRoute === window.location.href)
-				return
-			$scope.lastRoute = window.location.href
-			$scope.currentTree = trees[1]
-			$scope.currentFolderTree = $scope.folder.children[1]
-			$scope.openFolder($scope.folder.children[1])
-			if($scope.initSequence && $scope.initSequence.executed){
-				$scope.openFolderById(params.folderId)
-			} else {
-				$scope.initSequence = {
-					executed: false,
-					type: 'openSharedFolder',
-					folderId: params.folderId
-				}
-			}
-		},
-		openShared: function(params){
-			if($scope.lastRoute === window.location.href)
-				return
-			$scope.lastRoute = window.location.href
-			$scope.currentTree = trees[1]
-			$scope.currentFolderTree = $scope.folder.children[1]
-			$scope.openFolder($scope.folder.children[1])
-		}
-	})
+function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template){
+
+  route({
+    viewFolder: function(params){
+      if($scope.lastRoute === window.location.href)
+    return
+    $scope.lastRoute = window.location.href
+    if($scope.initSequence && $scope.initSequence.executed){
+      $scope.openFolderById(params.folderId)
+    } else {
+      $scope.initSequence = {
+        executed: false,
+  type: 'openFolder',
+  folderId: params.folderId
+      }
+    }
+    },
+    viewSharedFolder: function(params){
+      if($scope.lastRoute === window.location.href)
+    return
+    $scope.lastRoute = window.location.href
+    $scope.currentTree = trees[1]
+    $scope.currentFolderTree = $scope.folder.children[1]
+    $scope.openFolder($scope.folder.children[1])
+    if($scope.initSequence && $scope.initSequence.executed){
+      $scope.openFolderById(params.folderId)
+    } else {
+      $scope.initSequence = {
+        executed: false,
+        type: 'openSharedFolder',
+        folderId: params.folderId
+      }
+    }
+    },
+    openShared: function(params){
+      if($scope.lastRoute === window.location.href)
+        return
+          $scope.lastRoute = window.location.href
+          $scope.currentTree = trees[1]
+          $scope.currentFolderTree = $scope.folder.children[1]
+          $scope.openFolder($scope.folder.children[1])
+    }
+  })
+
+  $scope.template = template;
+  template.open('documents', 'icons');
 
 	$rootScope.$on('share-updated', function(event, changes){
 		if($scope.sharedDocuments)
@@ -242,15 +246,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
 	};
 
-	$scope.documentPath = function(document){
-		if($scope.currentTree.name === 'rack'){
-			return '/workspace/rack/' + document._id;
-		}
-		else{
-			return '/workspace/document/' + document._id;
-		}
-	};
-
 	function formatDocuments(documents, callback){
 		documents = _.filter(documents, function(doc){
 			return doc.metadata['content-type'] !== 'application/json' &&
@@ -263,7 +258,18 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			else{
 				item.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
 			}
+
 			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
+			if($scope.currentTree.name === 'rack'){
+				item.link = '/workspace/rack/' + item._id;
+			}
+			else{
+				item.link = '/workspace/document/' + item._id;
+			}
+			if(item.metadata.contentType === 'img'){
+				item.icon = item.link;
+			}
+
 			var fileNameSplit = item.metadata.filename.split('.');
 			item.metadata.extension = '';
 			if(item.name.split('.').length > 1){
@@ -576,16 +582,11 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			shareFoldersWarning: 'public/template/share-folders-warning.html',
 			confirm: 'public/template/confirm.html',
 			rename: 'public/template/rename.html'
-		},
-		documents: {
-			list: 'public/template/list-view.html',
-			icons: 'public/template/icons-view.html'
 		}
 	};
 
 	$scope.currentViews = {
-		lightbox: '',
-		documents: $scope.views.documents.icons
+		lightbox: ''
 	};
 
 	$scope.switchView = function(view, value){
@@ -715,7 +716,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			}
 
 			var url = 'document';
-			var request = http().postFile(url + '?thumbnail=120x120',  formData, {
+			var request = http().postFile(url + '?thumbnail=120x120&thumbnail=290x290',  formData, {
 				requestName: 'file-upload-' + file.file.name + '-' + index
 			})
 				.done(function(e){

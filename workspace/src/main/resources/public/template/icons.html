@@ -37,19 +37,19 @@
 		</div>
 		<section data-ng-repeat-end></section>
 		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
-			<a ng-href="[[documentPath(document)]]" class="[[document.metadata.contentType]] container cell">
+			<a ng-href="[[document.link]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'" class="twelve cell height-twelve">
 					<div class="clip absolute">
-						<img ng-src="[[documentPath(document)]]?thumbnail=120x120" alt="thumbnail"/>
+						<img ng-src="[[document.icon]]?thumbnail=120x120" alt="thumbnail" />
 					</div>
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
 
 			<legend>
-				<a ng-href="[[documentPath(document)]]">
+				<a ng-href="[[document.link]]">
 					<i ng-if="document.shared.length > 0" class="shared inline"></i>
 					<span class="badge" ng-if="document.comments.length > 0 &&  currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 					[[document.name]]

@@ -855,6 +855,9 @@ textarea {
 .widgets-friend.widgets-enemy {
   margin-left: 15px;
 }
+.widget-container {
+  width: 259px;
+}
 .upper-title {
   margin-bottom: 0;
 }
@@ -880,6 +883,23 @@ p i {
 }
 .welcome-text {
   display: none;
+}
+.browser a {
+  display: inline-block;
+}
+.browser .update {
+  text-align: center;
+}
+.browser .update img {
+  height: 150px;
+  width: 150px;
+}
+.browser .download {
+  text-align: center;
+}
+.browser .download img {
+  height: 60px;
+  width: 60px;
 }
 .birthday {
   -webkit-box-sizing: border-box;
@@ -1510,6 +1530,7 @@ a {
   -moz-transition: width 250ms ease;
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
+  z-index: 5;
 }
 .toggle-panel h1,
 .toggle-panel h2 {
@@ -1857,7 +1878,7 @@ section .contextual-buttons .action-buttons {
   float: left;
   display: block;
   position: relative;
-  width: 83.33333333%;
+  width: 75%;
   margin-bottom: 10px;
 }
 section .contextual-buttons .action-buttons img {
@@ -3152,6 +3173,9 @@ a.cke_smile img {
   top: 5px;
   background-size: 60%;
 }
+.media .icons-view i.close {
+  right: 11px;
+}
 .media img {
   width: 100%;
   cursor: inherit !important;
@@ -3194,6 +3218,9 @@ a.cke_smile img {
 .media .media-container {
   overflow: visible;
 }
+.media sniplet img {
+  width: auto;
+}
 .media.cell {
   background: transparent;
 }
@@ -3219,6 +3246,14 @@ a.cke_smile img {
 }
 .viewer nav.vertical {
   padding: 0;
+}
+.viewer {
+  box-sizing: content-box;
+  width: 100%;
+  margin-left: -80px;
+}
+.viewer .viewer {
+  margin-left: 0;
 }
 .editor .viewer .media {
   opacity: 1;
@@ -4558,6 +4593,118 @@ ul.thought-out-actions li p {
   position: absolute;
   bottom: 10px;
   right: 10px;
+}
+.media .ml-sniplet [contenteditable],
+.media .ml-sniplet [contenteditable] {
+  min-height: 300px;
+  position: relative;
+  border: 1px solid #eee;
+}
+carousel .images {
+  width: 100%;
+  position: relative;
+  height: 326px;
+}
+carousel .images .image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  -o-transition: all 250ms ease;
+  -moz-transition: all 250ms ease;
+  -webkit-transition: all 250ms ease;
+  transition: all 250ms ease;
+  text-align: center;
+  display: none;
+  overflow: hidden;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  box-sizing: border-box;
+}
+carousel .images .image img {
+  display: inline-block;
+}
+carousel .images .image .image-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+carousel nav ul {
+  padding: 0;
+  margin-top: 10px;
+  text-align: center;
+}
+carousel nav ul li {
+  display: inline-block;
+}
+carousel nav ul li::after {
+  content: "\2022";
+  font-size: 80px;
+}
+carousel.squares nav ul li::after {
+  content: "\2024";
+}
+carousel.triangles nav ul li::after {
+  content: "\2023";
+}
+carousel.slide .image.previous {
+  display: block;
+  width: 30%;
+  height: 150px;
+  margin-left: 0;
+  top: 88px;
+}
+carousel.slide .image.previous .image-container {
+  line-height: 132px;
+}
+carousel.slide .image.previous .image-container img {
+  vertical-align: middle;
+}
+carousel.slide .image.next {
+  display: block;
+  width: 30%;
+  height: 150px;
+  margin-left: 70%;
+  top: 88px;
+}
+carousel.slide .image.next .image-container {
+  line-height: 132px;
+}
+carousel.slide .image.next .image-container img {
+  vertical-align: middle;
+}
+carousel.slide .image.current {
+  display: block;
+  height: 326px;
+  width: 70%;
+  margin-left: 15%;
+  z-index: 200 !important;
+}
+carousel.slide .image.current .image-container {
+  line-height: 308px;
+}
+carousel.slide .image.current .image-container img {
+  vertical-align: middle;
+}
+carousel.fade .image {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  display: block;
+}
+carousel.fade .image.current {
+  opacity: 1;
+}
+carousel.triplets .image {
+  display: block;
+  width: 30%;
+  height: 100%;
+}
+carousel.triplets .image.current {
+  margin-left: 33%;
+}
+carousel.triplets .image.next {
+  margin-left: 66%;
 }
 html,
 body {
