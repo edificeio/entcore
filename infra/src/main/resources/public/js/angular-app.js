@@ -2045,6 +2045,11 @@ module.directive('tooltip', function($compile){
 				});
 			});
 
+			scope.$on("$destroy", function() {
+				element.trigger('mouseout')
+				element.off()
+			});
+
 		}
 	}
 });
