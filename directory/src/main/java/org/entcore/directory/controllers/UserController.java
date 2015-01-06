@@ -241,7 +241,7 @@ public class UserController extends BaseController {
 	}
 
 	@Post("/user/function/:userId")
-	@SecuredAction("user.add.function")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addFunction", new Handler<JsonObject>() {
@@ -254,7 +254,7 @@ public class UserController extends BaseController {
 	}
 
 	@Delete("/user/function/:userId/:function")
-	@SecuredAction("user.remove.function")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String function = request.params().get("function");

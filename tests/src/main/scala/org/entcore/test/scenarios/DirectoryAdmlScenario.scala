@@ -79,6 +79,12 @@ object DirectoryAdmlScenario {
     .put("""/directory/user/${studentId}/related/${relativeId}""")
     .header("Content-Length", "0")
     .check(status.is(200)))
+
+    .exec(http("User add function ")
+    .post("""/directory/user/function/${childrenId}""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "scope": ["${schoolId}"], "inherit":true}"""))
+    .check(status.is(200)))
 //    .exec(http("Remove user from group")
 //      .delete("""/directory/user/group/${teacherId}/${manual-group-id}""")
 //      .header("Content-Length", "0")
