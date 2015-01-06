@@ -35,7 +35,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		parse(handler, new StudentImportProcessing(path, vertx));
+		parse(handler, new PersonnelImportProcessing2(path, vertx));
 	}
 
 	@Override

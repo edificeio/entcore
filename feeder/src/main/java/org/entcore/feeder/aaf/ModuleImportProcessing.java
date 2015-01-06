@@ -38,14 +38,14 @@ public class ModuleImportProcessing extends BaseImportProcessing {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if ("ok".equals(message.body().getString("status"))) {
-						parse(handler, new UserImportProcessing(path, vertx));
+						parse(handler, new StudentImportProcessing(path, vertx));
 					} else {
 						error(message, handler);
 					}
 				}
 			});
 		} else {
-			parse(handler, new UserImportProcessing(path, vertx));
+			parse(handler, new StudentImportProcessing(path, vertx));
 		}
 	}
 

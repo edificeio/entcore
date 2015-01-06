@@ -263,7 +263,7 @@ public class FeederTest extends TestVerticle {
 					public void handle(Message<JsonObject> event) {
 						assertEquals("ok", event.body().getString("status"));
 						JsonObject r = event.body().getArray("result").get(0);
-						assertEquals(15290, (int) r.getInteger("nbUsers", 0));
+						assertEquals(13295, (int) r.getInteger("nbUsers", 0));
 						assertEquals(10, (int) r.getInteger("nbStructures", 0));
 						assertEquals(177, (int) r.getInteger("nbClasses", 0));
 						assertEquals(177, (int) r.getInteger("nbFunctionalGroups", 0));
@@ -283,14 +283,14 @@ public class FeederTest extends TestVerticle {
 				switch (action) {
 					case "delete-users":
 						JsonArray users = message.body().getArray("old-users", new JsonArray());
-						assertEquals(3972 + 698, users.size());
+						assertEquals(11769, users.size());
 						String countQuery = "MATCH (:User) RETURN count(*) as nbUsers ";
 						neo4j.execute(countQuery, new JsonObject(), new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								assertEquals("ok", event.body().getString("status"));
 								JsonObject r = event.body().getArray("result").get(0);
-								assertEquals(15290 - 3972 - 698 + 1, (int) r.getInteger("nbUsers", 0));
+								assertEquals(13295 - 11769 + 1, (int) r.getInteger("nbUsers", 0));
 								handler.handle(null);
 							}
 						});
@@ -317,7 +317,7 @@ public class FeederTest extends TestVerticle {
 										public void handle(Message<JsonObject> event) {
 											assertEquals("ok", event.body().getString("status"));
 											JsonObject r = event.body().getArray("result").get(0);
-											assertEquals(3972 + 698, (int) r.getInteger("nbUsers", 0));
+											assertEquals(11769, (int) r.getInteger("nbUsers", 0));
 										}
 									});
 								}

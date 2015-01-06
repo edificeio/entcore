@@ -27,15 +27,33 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class StudentImportProcessing extends BaseImportProcessing {
 
+	protected Set<String> resp = new HashSet<>();
 	protected StudentImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
 	}
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		parse(handler, new PersonnelImportProcessing2(path, vertx));
+		if (importer.isFirstImport()) {
+			importer.moduleConstraints();
+			importer.persist(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					if ("ok".equals(message.body().getString("status"))) {
+						parse(handler, new UserImportProcessing(path, vertx, resp));
+					} else {
+						error(message, handler);
+					}
+				}
+			});
+		} else {
+			parse(handler, new UserImportProcessing(path, vertx, resp));
+		}
 	}
 
 	@Override
@@ -47,6 +65,10 @@ public class StudentImportProcessing extends BaseImportProcessing {
 	public void process(JsonObject object) {
 		createClasses(object.getArray("classes"));
 		createGroups(object.getArray("groups"));
+		JsonArray r = parseRelativeField(object.getArray("relative"));
+		if (r != null) {
+			resp.addAll(r.toList());
+		}
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
 				null, null, null, null, null, true, false);
 	}
@@ -58,7 +80,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 			for (Object o : relative) {
 				if (!(o instanceof String)) continue;
 				String [] r = ((String) o).split("\\$");
-				if (r.length > 2) {
+				if (r.length == 6 && !"0".equals(r[3])) {
 					res.add(r[0]);
 				}
 			}

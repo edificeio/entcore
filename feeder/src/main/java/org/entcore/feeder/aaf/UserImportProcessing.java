@@ -25,31 +25,21 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.Set;
+
 public class UserImportProcessing extends BaseImportProcessing {
 
 	private final Importer importer = Importer.getInstance();
+	private final Set<String> resp;
 
-	protected UserImportProcessing(String path, Vertx vertx) {
+	protected UserImportProcessing(String path, Vertx vertx, Set<String> resp) {
 		super(path, vertx);
+		this.resp = resp;
 	}
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		if (importer.isFirstImport()) {
-			importer.moduleConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						parse(handler, new PersonnelImportProcessing(path, vertx));
-					} else {
-						error(message, handler);
-					}
-				}
-			});
-		} else {
 			parse(handler, new PersonnelImportProcessing(path, vertx));
-		}
 	}
 
 	@Override
@@ -59,7 +49,9 @@ public class UserImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		importer.createOrUpdateUser(object);
+		if (resp.contains(object.getString("externalId"))) {
+			importer.createOrUpdateUser(object);
+		}
 	}
 
 	@Override
