@@ -236,7 +236,7 @@ module.directive('lightbox', function($compile){
 					'</section>'+
 				'</div>',
 		link: function(scope, element, attributes){
-			element.find('.lightbox-background, i').on('click', function(){
+			element.find('.lightbox-background, i.close-2x').on('click', function(){
 				element.find('.lightbox-view').first().fadeOut();
 				element.find('.lightbox-background').first().fadeOut();
 
