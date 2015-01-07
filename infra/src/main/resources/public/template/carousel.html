@@ -14,7 +14,7 @@
     <nav>
         <ul>
             <li ng-repeat="item in images"
-                ng-click="current.image = item; current.index = $index"
+                ng-click="openSelectImage(item, $index)"
                 ng-class="{ current: $index === current.index }"></li>
         </ul>
     </nav>

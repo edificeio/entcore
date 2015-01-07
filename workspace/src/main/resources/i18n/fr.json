@@ -120,5 +120,10 @@
     "workspace.trash.error": "Erreur lors de la mise à la corbeille",
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
-    "workspace.valid": "Appliquer"
+    "workspace.valid": "Appliquer",
+    "workspace.sniplet.documents.title": "Documents",
+    "workspace.sniplet.documents.description": "Il vous permet d'ajouter des documents que vos visiteurs pourront télécharger",
+    "workspace.sniplet.carousel.title": "Carrousel",
+    "workspace.sniplet.carousel.description": "Affiche des images dans un slider",
+    "workspace.sniplet.carousel.add": "Ajouter une image"
 }

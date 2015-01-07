@@ -1,0 +1,23 @@
+<h2><i18n>workspace.sniplet.carousel.title</i18n></h2>
+
+<div class="twelve cell">
+	<label class="three cell">Type de carousel</label>
+	<select ng-model="carousel.transition" class="nine cell">
+		<option value="fade">Fondu</option>
+		<option value="slide">Avec aperçu</option>
+		<option value="triplets">Trois images</option>
+	</select>
+</div>
+
+<div class="twelve cell">
+	<label class="three cell">Forme des boutons</label>
+	<select ng-model="carousel.buttons" class="nine cell">
+		<option value="circles">Ronds</option>
+		<option value="squares">Carrés</option>
+		<option value="triangles">Triangles</option>
+	</select>
+</div>
+
+<div class="twelve cell">
+	<input type="button" i18n-value="create" class="right-magnet cell" ng-click="setSource()" />
+</div>

@@ -99,6 +99,10 @@ Behaviours.register('workspace', {
 	loadResources: function(callback){
 		http().get('/workspace/documents').done(function(documents){
 			http().get('/workspace/documents?filter=protected').done(function(protectedDocuments){
+				protectedDocuments = _.map(protectedDocuments, function(d){
+					d.protected = true;
+					return d;
+				});
 				this.resources = _.map(documents.concat(protectedDocuments), function(doc){
 					if(doc.metadata['content-type'].indexOf('image') !== -1){
 						doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
@@ -165,8 +169,8 @@ Behaviours.register('workspace', {
 	},
 	sniplets: {
 		documents: {
-			title: 'Documents',
-			description: 'Il vous permet d\'ajouter des documents que vos visiteurs pourront télécharger',
+			title: 'workspace.sniplet.documents.title',
+			description: 'workspace.sniplet.documents.description',
 			controller: {
 				initSource: function(){
 					this.setSnipletSource({
@@ -216,6 +220,58 @@ Behaviours.register('workspace', {
 					else{
 						return '/img/icons/unknown-large.png';
 					}
+				}
+			}
+		},
+		carousel: {
+			title: 'workspace.sniplet.carousel.title',
+			description: 'workspace.sniplet.carousel.description',
+			controller: {
+				initSource: function () {
+					this.carousel = {
+						documents: []
+					};
+				},
+				init: function () {
+					http().get('/workspace/documents', { filter: 'owner' }).done(function (data) {
+						this.documents = data;
+						this.$apply();
+					}.bind(this))
+				},
+				setSource: function(){
+					this.setSnipletSource(this.carousel);
+				},
+				addDocument: function (document) {
+					this.display.isLoading = true;
+					Behaviours.applicationsBehaviours.workspace.protectedDuplicate(document, function (file) {
+						Behaviours.applicationsBehaviours.workspace.loadResources(function (resources) {
+							var resource = _.findWhere(resources, { '_id': file._id });
+							console.log('adding resource to sniplet');
+							console.log(resource);
+							resource.icon = '/workspace/document/' + resource._id;
+							resource.link = '/workspace/document/' + resource._id;
+							this.source.documents.push(resource);
+							if (typeof this.snipletResource.save === 'function') {
+								this.snipletResource.save();
+								this.display.isLoading = false;
+								this.display.selectSnipletDocument = false;
+							}
+							this.$apply();
+						}.bind(this));
+					}.bind(this));
+				},
+				removeDocument: function (document) {
+					this.source.documents = _.reject(this.source.documents, function (doc) {
+						return doc._id === document._id;
+					});
+					if (typeof this.snipletResource.save === 'function') {
+						this.snipletResource.save();
+					}
+				},
+				getReferencedResources: function (source) {
+					return _.map(source.documents, function (doc) {
+						return doc._id;
+					});
 				}
 			}
 		}

@@ -293,6 +293,10 @@ i.show-list{
 	background-size: 100% 93%;
 }
 
+i.show-carousel{
+	.icon(show-carousel, 37px);
+}
+
 i.show-icons.selected{
 	opacity: 1;
 }
@@ -303,6 +307,10 @@ i.show-details.selected{
 
 i.show-list.selected{
 	opacity: 1;
+}
+
+i.show-carousel.selected{
+	.icon(show-carousel-selected, 37px);
 }
 
 i.show-admin.selected{
@@ -2579,5 +2587,22 @@ select{
 .folder-large, .folder-list-item{
 	&.droptarget{
 		background-color: @dark-blue;
+	}
+}
+
+carousel{
+	nav{
+		ul{
+			li{
+				color: @dark-blue;
+				.run-transition(color);
+			}
+			li.current{
+				color: @bright-blue;
+			}
+			li:hover{
+				color: @bright-blue;
+			}
+		}
 	}
 }

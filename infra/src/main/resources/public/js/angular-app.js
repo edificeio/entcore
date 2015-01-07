@@ -3786,13 +3786,19 @@ module.directive('step', function(){
 module.directive('carousel', function(){
 	return {
 		scope: {
-			items: '=',
-			transition: '@'
+			items: '='
 		},
 		restrict: 'E',
 		templateUrl: '/infra/public/template/carousel.html',
 		link: function(scope, element, attributes){
-			element.addClass(attributes.transition);
+			var interrupt = 0;
+			if(attributes.transition){
+				element.addClass(scope.$parent.$eval(attributes.transition));
+			}
+			if(attributes.buttons){
+				element.addClass(scope.$parent.$eval(attributes.buttons));
+			}
+
 			scope.current = {
 				image: scope.items[0],
 				index: 0
@@ -3810,7 +3816,7 @@ module.directive('carousel', function(){
 				};
 			});
 			scope.openCurrentImage = function(){
-				window.location.href = scope.current.image.link;
+				window.location = scope.current.image.link;
 			};
 			scope.openSelectImage = function(item, index){
 				if(scope.current.image === item){
@@ -3820,6 +3826,8 @@ module.directive('carousel', function(){
 					scope.current.image = item;
 					scope.current.index = index;
 				}
+				interrupt --;
+				setTimeout(infiniteRun, 5000);
 			};
 			scope.getPilePosition = function(index){
 				if(index < scope.current.index){
@@ -3830,10 +3838,15 @@ module.directive('carousel', function(){
 				}
 			};
 			var infiniteRun = function(){
+				if(interrupt < 0){
+					interrupt ++;
+					return;
+				}
 				scope.current.index ++;
 				if(scope.current.index === scope.items.length){
 					scope.current.index = 0;
 				}
+				scope.current.image = scope.items[scope.current.index];
 				scope.$apply('current');
 				setTimeout(infiniteRun, 4000);
 			};

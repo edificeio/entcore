@@ -5692,6 +5692,20 @@ i.show-list {
   opacity: 0.5;
   background-size: 100% 93%;
 }
+i.show-carousel {
+  height: 37px;
+  width: 37px;
+  background-image: url("../img/icons/show-carousel.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
+}
 i.show-icons.selected {
   opacity: 1;
 }
@@ -5700,6 +5714,20 @@ i.show-details.selected {
 }
 i.show-list.selected {
   opacity: 1;
+}
+i.show-carousel.selected {
+  height: 37px;
+  width: 37px;
+  background-image: url("../img/icons/show-carousel-selected.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  vertical-align: middle;
 }
 i.show-admin.selected {
   opacity: 1;
@@ -8419,6 +8447,19 @@ input[type=text][disabled] {
 .folder-large.droptarget,
 .folder-list-item.droptarget {
   background-color: #266881;
+}
+carousel nav ul li {
+  color: #266881;
+  -o-transition: color 250ms ease;
+  -moz-transition: color 250ms ease;
+  -webkit-transition: color 250ms ease;
+  transition: color 250ms ease;
+}
+carousel nav ul li.current {
+  color: #23a9aa;
+}
+carousel nav ul li:hover {
+  color: #23a9aa;
 }
 html,
 body {
