@@ -22,7 +22,11 @@ package org.entcore.feeder.aaf;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 
@@ -60,7 +64,18 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	public void process(JsonObject object) {
 		String[][] classes = createClasses(object.getArray("classes"));
 		String[][] groups = createGroups(object.getArray("groups"));
-		importer.createOrUpdatePersonnel(object, detectProfile(object), classes, groups, false, true);
+		JsonArray functions = object.getArray("functions");
+		JsonArray structuresByFunctions = null;
+		if (functions != null) {
+			Set<String> s = new HashSet<>();
+			for (Object o: functions) {
+				if (!(o instanceof String) || !o.toString().contains("$")) continue;
+				s.add(o.toString().substring(0, o.toString().indexOf('$')));
+			}
+			structuresByFunctions = new JsonArray(s.toArray());
+		}
+		importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,
+				classes, groups, false, true);
 	}
 
 }

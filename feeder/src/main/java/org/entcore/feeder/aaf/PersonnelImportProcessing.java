@@ -51,7 +51,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		linkClassesFieldOfStudy(object.getArray("classesFieldOfStudy"));
 		linkGroupsFieldOfStudy(object.getArray("groupsFieldOfStudy"));
 		String profile = detectProfile(object);
-		importer.createOrUpdatePersonnel(object, profile, null, null, true, false);
+		importer.createOrUpdatePersonnel(object, profile, null, null, null, true, false);
 	}
 
 	protected String detectProfile(JsonObject object) {

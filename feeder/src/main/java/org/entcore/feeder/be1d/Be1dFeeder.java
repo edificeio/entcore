@@ -239,7 +239,8 @@ public class Be1dFeeder implements Feed {
 				if (externalId == null || externalId.trim().isEmpty()) {
 					generateUserExternalId(props, String.valueOf(rowIdx), structure, seed);
 				}
-				importer.createOrUpdatePersonnel(props, TEACHER_PROFILE_EXTERNAL_ID, cs, null, true, true);
+				importer.createOrUpdatePersonnel(props, TEACHER_PROFILE_EXTERNAL_ID,
+						props.getArray("structures"), cs, null, true, true);
 			}
 		});
 	}

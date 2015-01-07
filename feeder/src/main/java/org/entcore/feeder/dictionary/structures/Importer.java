@@ -320,8 +320,8 @@ public class Importer {
 		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.externalId IS UNIQUE;", j);
 	}
 
-	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, String[][] linkClasses,
-			String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
+	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
+			String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
 		if (error != null) {
 			log.warn(error);
@@ -351,6 +351,26 @@ public class Importer {
 					String query;
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
 					if (structures.size() == 1) {
+						query = "MATCH (s:Structure), (u:User) " +
+								"USING INDEX s:Structure(externalId) " +
+								"USING INDEX u:User(externalId) " +
+								"WHERE s.externalId = {structureAdmin} AND u.externalId = {userExternalId} " +
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
+						p.putString("structureAdmin", (String) structures.get(0));
+					} else {
+						query = "MATCH (s:Structure), (u:User) " +
+								"USING INDEX s:Structure(externalId) " +
+								"USING INDEX u:User(externalId) " +
+								"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
+								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
+						p.putArray("structuresAdmin", structures);
+					}
+					transactionHelper.add(query, p);
+				}
+				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0) {
+					String query;
+					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					if (structuresByFunctions.size() == 1) {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 								"(u:User) " +
 								"USING INDEX s:Structure(externalId) " +
@@ -358,10 +378,8 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId = {structureAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-								"WITH u, g " +
 								"MERGE u-[:IN]->g";
-						p.putString("structureAdmin", (String) structures.get(0))
+						p.putString("structureAdmin", (String) structuresByFunctions.get(0))
 								.putString("profileExternalId", profileExternalId);
 					} else {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
@@ -371,10 +389,8 @@ public class Importer {
 								"USING INDEX p:Profile(externalId) " +
 								"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
 								"AND p.externalId = {profileExternalId} " +
-								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-								"WITH u, g " +
-								"MERGE u-[:IN]->g";
-						p.putArray("structuresAdmin", structures)
+								"MERGE u-[:IN]->g ";
+						p.putArray("structuresAdmin", structuresByFunctions)
 								.putString("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
@@ -390,7 +406,7 @@ public class Importer {
 									"USING INDEX p:Profile(externalId) " +
 									"WHERE s.externalId = {structure} AND c.externalId = {class} " +
 									"AND u.externalId = {userExternalId} AND p.externalId = {profileExternalId} " +
-									"CREATE UNIQUE u-[:IN]->g";
+									"MERGE u-[:IN]->g";
 							JsonObject p = new JsonObject()
 									.putString("userExternalId", externalId)
 									.putString("profileExternalId", profileExternalId)
@@ -410,7 +426,7 @@ public class Importer {
 									"USING INDEX s:Structure(externalId) " +
 									"USING INDEX u:User(externalId) " +
 									"WHERE s.externalId = {structure} AND g.externalId = {group} AND u.externalId = {userExternalId} " +
-									"CREATE UNIQUE u-[:IN]->g";
+									"MERGE u-[:IN]->g";
 							JsonObject p = new JsonObject()
 									.putString("userExternalId", externalId)
 									.putString("structure", structGroup[0])
