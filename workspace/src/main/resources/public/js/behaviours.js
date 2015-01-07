@@ -99,10 +99,6 @@ Behaviours.register('workspace', {
 	loadResources: function(callback){
 		http().get('/workspace/documents').done(function(documents){
 			http().get('/workspace/documents?filter=protected').done(function(protectedDocuments){
-				protectedDocuments = _.map(protectedDocuments, function(d){
-					d.protected = true;
-					return d;
-				});
 				this.resources = _.map(documents.concat(protectedDocuments), function(doc){
 					if(doc.metadata['content-type'].indexOf('image') !== -1){
 						doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
@@ -119,7 +115,8 @@ Behaviours.register('workspace', {
 						icon: doc.icon,
 						path: '/workspace/document/' + doc._id,
 						_id: doc._id,
-						metadata: doc.metadata
+						metadata: doc.metadata,
+						protected: doc.protected
 					};
 				});
 				if(typeof callback === 'function'){
