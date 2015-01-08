@@ -383,6 +383,14 @@ public class WorkspaceService extends BaseController {
 				pathPrefix + "/document/" + resource)
 		.putString("appPrefix", pathPrefix+"/workspace");
 
+		if(isFolder){
+			params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+					pathPrefix + "/workspace#/shared/folder/" + resource);
+		} else {
+			params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+					pathPrefix + "/document/" + resource);
+		}
+
 		final String template = isFolder ? "notify-share-folder.html" : "notify-share.html";
 
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),

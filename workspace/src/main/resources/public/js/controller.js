@@ -63,7 +63,37 @@ var tools = (function(){
 	}
 }());
 
-function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
+routes.define(function($routeProvider) {
+	$routeProvider
+	.when('/shared/folder/:folderId', {
+		action: 'viewFolder'
+	})
+	.otherwise({
+		redirectTo: '/'
+	})
+})
+
+function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
+	route({
+		viewFolder: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+			$scope.currentTree = trees[1];
+			$scope.currentFolderTree = $scope.folder.children[1];
+			$scope.openFolder($scope.folder.children[1]);
+			if($scope.initSequence && $scope.initSequence.executed){
+				$scope.openFolderById(params.folderId)
+			} else {
+				$scope.initSequence = {
+					executed: false,
+					type: 'openSharedFolder',
+					folderId: params.folderId
+				}
+			}
+		}
+	})
+
 	$rootScope.$on('share-updated', function(event, changes){
 		if($scope.sharedDocuments)
 			//Sharing documents
@@ -747,6 +777,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 
 		return $scope.currentTree;
 	}
+
 	$scope.currentTree = trees[0];
 	$scope.currentFolderTree = $scope.folder.children[0];
 	$scope.openFolder($scope.folder.children[0]);
@@ -777,6 +808,11 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 					}
 
 					cursor.children.push(folder)
+
+					if($scope.initSequence && !$scope.initSequence.executed && $scope.initSequence.type === 'openSharedFolder' && folder._id === $scope.initSequence.folderId){
+						$scope.openFolder(folder)
+						$scope.initSequence.executed = true
+					}
 
 				} else {
 
