@@ -92,6 +92,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					isUserOrTeacherOf(request, user, handler);
 					break;
 				case "listAdmin" :
+				case "export" :
 					isAdmin(user, true, handler);
 					break;
 				case "addGroup" :
@@ -103,9 +104,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "listIsolated" :
 					isAdminOfStructure(request, user, handler);
-					break;
-				case "export" :
-					isAdminOfStructureOrClass4(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}
