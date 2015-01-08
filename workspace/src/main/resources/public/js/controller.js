@@ -454,6 +454,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		updateFolders();
 	};
 
+	$scope.emptyTrash = function(){
+		$scope.boxes.selectAll = true
+		$scope.switchSelectAll()
+		$scope.boxes.selectAll = false
+		$scope.remove()
+	}
+
 	$scope.sendComment = function(){
 		ui.hideLightbox();
 		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + $scope.targetDocument.comment).done(function(){
