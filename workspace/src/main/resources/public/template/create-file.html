@@ -48,7 +48,11 @@
 	</div>
 	<div class="row lightbox-buttons">
 		<div class="twelve cell block-container">
-			<button ng-click="addLoadingFiles()" class="right-magnet" translate key="import.file"></button>
+            <div ng-if="newFile.blockIdentical">
+                <div class="warning" translate content="files.warning.identical"></div>
+            </div>
+            <button ng-if="newFile.blockIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
+			<button ng-click="addLoadingFiles()" class="right-magnet" translate key="import.file" ng-disabled="newFile.blockIdentical"></button>
 			<button class="cancel right-magnet" translate content="terminate"></button>
 		</div>
 	</div>

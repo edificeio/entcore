@@ -672,7 +672,11 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 				request: request
 			});
 		});
+		$scope.newFile.blockIdentical = true;
 
+	}
+	$scope.confirmIdentical = function(){
+		$scope.newFile.blockIdentical = false;
 	}
 
 	$scope.translate = function(key){
@@ -1028,6 +1032,16 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 	$scope.setFilesName = function(){
 		$scope.newFile.name = '';
 		$scope.newFile.chosenFiles = [];
+		$scope.newFile.blockIdentical = false;
+		var checkAlreadyLoaded = function(newFile){
+			_.forEach($scope.loadingFiles, function(loadedFile){
+				var fileName = loadedFile.file.name
+				var fileSize = loadedFile.file.size
+				if(newFile.file.name === fileName && newFile.file.size === fileSize)
+					$scope.newFile.blockIdentical = true
+			})
+		}
+
 		for(var i = 0; i < $scope.newFile.files.length ; i++){
 			var file = $scope.newFile.files[i];
 			var splitList = file.name.split('.');
@@ -1045,6 +1059,7 @@ function Workspace($scope, date, ui, notify, _, $rootScope, $timeout){
 				newFile.extension = '';
 			}
 			$scope.newFile.chosenFiles.push(newFile);
+			checkAlreadyLoaded(newFile)
 		}
 	};
 
