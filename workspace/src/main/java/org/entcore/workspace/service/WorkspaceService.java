@@ -1844,7 +1844,7 @@ public class WorkspaceService extends BaseController {
 
 	}
 
-	@Put("/document/rename")
+	@Put("/rename/document")
 	@SecuredAction(value = "workspace.document.rename")
 	public void renameDocument(final HttpServerRequest request){
 		RequestUtils.bodyToJson(request, pathPrefix + "rename", new Handler<JsonObject>() {

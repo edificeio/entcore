@@ -1,4 +1,5 @@
 {
+    "workspace.name": "Nom",
     "appDocuments": "Documents ajoutés dans les applis",
     "cancel": "Annuler",
     "terminate": "Terminer",
@@ -108,6 +109,7 @@
     "workspace.valid": "Appliquer",
     "rack.sent.message": "Votre document a bien été envoyé",
 	"workspace.folder.create": "Créer",
+    "workspace.folder.invalid.name" : "Le nom d'un dossier ne doit pas contenir le caractère _",
     "workspace.folders.warning.title" :"Partage d'un dossier",
     "workspace.folders.warning.content": "<p>Attention, le partage d'un dossier entraîne la modification des partages de tous les fichiers et sous dossiers contenus dans celui-ci.</p><p>De plus, les fichiers et dossiers crées ou déplacés dans ce dossier auront les mêmes droits de partage que ceux attribués sur le dossier.</p>",
     "workspace.documents.warning.move": "Le déplacement d'un fichier supprimera tous les partages attribués au fichier et lui réattribuera les droits du dossier de destination.",

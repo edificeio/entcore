@@ -1202,7 +1202,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			})
 		} else {
 			//Rename file
-			http().putJson("/workspace/document/rename", {id: item._id, name: newName}).done(function(){
+			http().putJson("/workspace/rename/document", {id: item._id, name: newName}).done(function(){
 				$scope.openFolder($scope.openedFolder.folder)
 			})
 		}
