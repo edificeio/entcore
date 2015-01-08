@@ -384,7 +384,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	}
 
 	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, final Handler<Boolean> handler) {
-		Set<String> ids = prevalidateAndGetIds(user, handler);
+		Set<String> ids = getIds(user);
 		if (ids == null) return;
 		String query =
 				"MATCH (u:User {id : {userId}})-[:IN]->()-[:DEPENDS]->()-[:BELONGS*0..1]->s2 " +
@@ -436,8 +436,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		Set<String> ids = prevalidateAndGetIds(user, handler);
-		if (ids == null) return;
+		Set<String> ids = getIds(user);
 		String query =
 				"MATCH (c:Class {id : {classId}})-[:BELONGS]->s2 " +
 				"WHERE s2.id IN {ids} " +
@@ -467,6 +466,22 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				}
 			}
 		});
+	}
+
+	private Set<String> getIds(UserInfos user) {
+		Set<String> ids = new HashSet<>();
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions != null && !functions.isEmpty()) {
+			UserInfos.Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+			UserInfos.Function classAdmin = functions.get(DefaultFunctions.CLASS_ADMIN);
+			if (adminLocal != null && adminLocal.getScope() != null) {
+				ids.addAll(adminLocal.getScope());
+			}
+			if (classAdmin != null && classAdmin.getScope() != null) {
+				ids.addAll(classAdmin.getScope());
+			}
+		}
+		return ids;
 	}
 
 }
