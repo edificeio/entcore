@@ -714,6 +714,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 	}
 	$scope.confirmIdentical = function(){
 		$scope.newFile.blockIdentical = false;
+		$scope.newFile.warnIdentical = false;
 	}
 
 	$scope.translate = function(key){
@@ -1076,12 +1077,15 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		$scope.newFile.name = '';
 		$scope.newFile.chosenFiles = [];
 		$scope.newFile.blockIdentical = false;
+		$scope.newFile.warnIdentical = false;
 		var checkAlreadyLoaded = function(newFile){
 			_.forEach($scope.loadingFiles, function(loadedFile){
 				var fileName = loadedFile.file.name
 				var fileSize = loadedFile.file.size
-				if(newFile.file.name === fileName && newFile.file.size === fileSize)
+				if(newFile.file.name === fileName && newFile.file.size === fileSize){
+					$scope.newFile.warnIdentical = true
 					$scope.newFile.blockIdentical = true
+				}
 			})
 		}
 

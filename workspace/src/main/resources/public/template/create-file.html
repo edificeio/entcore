@@ -36,7 +36,7 @@
 
 <hr class="solid row" />
 <form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
-	<div class="row fixed-block height-three">
+	<div class="row fixed-block">
 		<h2 translate key="files.select" class="subtitle"></h2>
 		<div class="eight cell select-file block-container input-block">
 			<div class="hidden-content">
@@ -46,12 +46,12 @@
 			<input type="text" data-ng-model="newFile.name" data-display-file />
 		</div>
 	</div>
-	<div class="row lightbox-buttons">
+	<div class="row">
 		<div class="twelve cell block-container">
-            <div ng-if="newFile.blockIdentical">
+            <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
                 <div class="warning" translate content="files.warning.identical"></div>
             </div>
-            <button ng-if="newFile.blockIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
+            <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
 			<button ng-click="addLoadingFiles()" class="right-magnet" translate key="import.file" ng-disabled="newFile.blockIdentical"></button>
 			<button class="cancel right-magnet" translate content="terminate"></button>
 		</div>
