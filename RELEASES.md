@@ -1,6 +1,63 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.11.0 (14/01/2015)
+
+## App-Registry
+
+* Pouvoir utiliser tous les types de groupes pour affecter les roles
+* Ajouter pour les adml le droit d'affecter les roles généraux
+
+## Cas
+
+* Ajout des services :
+** Universalis
+** Lesite.tv
+** Kne
+* Correction du service Pronote pour les personnels
+
+## Directory
+
+* Ajout de méthodes pour les utilisateurs dans l'api bus
+* Ajout de droits pour les adml dans la console d'admin
+* Lier manuellement les parents aux enfants
+* Export de toutes les structures d'un adml
+
+## Feeder
+
+* Ajouter ou supprimer des utilisateurs dans les groupes manuels
+* Pouvoir mettre à jour une structure
+
+## Portal
+
+* Message d'avertissement pour les navigateurs antiques
+
+## Timeline
+
+* Classement des widgets
+* Activation ou désactivation des widgets
+
+## Workspace
+
+* Partage des dossiers
+* Suppression des commentaires lors de la copie d'un document
+* Suppression du casier
+* Correction de la duplication de l'affichage des dossiers dans certains cas
+* Affichage de la taille des documents
+* Ajout du droit de partage pour les contributeurs
+* Renommage des fichiers et dossiers
+* Drag'n'drop des fichiers et des dossiers
+* Message d'avertissement lors de l'upload multiple d'un même fichier
+* Ajout d'un lien pour vider la corbeille
+
+## Framework
+
+* Ajout d'une directive pour le drag'n'drop
+
+## Évolutions techniques
+
+* Mise à jour de la version de gatling (2.0.3)
+
 # v1.10.0 (24/11/2014)
 
 ## App-Registry
