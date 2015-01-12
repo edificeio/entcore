@@ -54,7 +54,7 @@
 	</head>
 	<body data-ng-controller="Workspace">
 	<portal>
-		<div class="row">
+		<div class="row rigid-grid">
 			<section class="four cell">
 				<h1><a data-reload><i class="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
 				<nav class="vertical">
@@ -70,8 +70,8 @@
 
 
 			</section>
-			<section class="eight cell">
-				<nav class="contextual-buttons row">
+			<section class="margin-four">
+				<nav class="contextual-buttons twelve cell">
 					<div class="action-buttons">
 						<div class="cell" ng-repeat="button in currentTree.buttons"><button
 								ng-click="button.action(button.url)"
@@ -92,7 +92,7 @@
 					</div>
 				</nav>
 
-				<div ng-include="template.containers.documents" class="row toggle-buttons-spacer"></div>
+				<div ng-include="template.containers.documents" class="twelve cell toggle-buttons-spacer"></div>
 			</section>
 		</div>
 		<div class="clear"></div>
