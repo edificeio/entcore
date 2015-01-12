@@ -44,6 +44,8 @@ model.build = function (){
 			http().get('/timeline/lastNotifications',params).done(function(response){
 				that.load(response.results);
 			});
+
+			http().putJson('/userbook/preference/timeline', params);
 		}
 	});
 
@@ -51,10 +53,18 @@ model.build = function (){
 		sync: function(){
 			http().get('/timeline/types').done(function(data){
 				this.load(data);
-				this.forEach(function(t){
-					t.selected = true;
-				});
-				model.notifications.sync();
+
+				var that = this
+				http().get('/userbook/preference/timeline').done(function(data){
+					var pref = data.preference ? JSON.parse(data.preference) : null
+					var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
+					that.forEach(function(t){
+						if(myFilters === null || myFilters.indexOf(t.data) >= 0){
+							t.selected = true
+						}
+					});
+					model.notifications.sync();
+				})
 			}.bind(this));
 		},
 		removeFilter: function(){
@@ -72,6 +82,3 @@ model.build = function (){
 		}
 	});
 };
-
-
-
