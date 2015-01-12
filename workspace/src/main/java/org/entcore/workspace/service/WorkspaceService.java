@@ -1415,6 +1415,116 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
+	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user) {
+		final JsonObject params = new JsonObject()
+			.putString("userUri", container.config().getString("userbook-host") + "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+			.putString("userName", user.getUsername())
+			.putString("appPrefix", pathPrefix+"/workspace");
+
+		final String template = "notify-comment.html";
+
+		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+					final JsonObject document = event.body().getObject("result");
+
+					final Handler<String> folderIdHandler = new Handler<String>() {
+						public void handle(final String folderId) {
+							Handler<List<String>> finalHandler = new Handler<List<String>>() {
+								public void handle(List<String> recipients) {
+									params.putString("resourceName", document.getString("name", ""));
+
+									if(folderId != null){
+										params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace#/shared/folder/" + folderId);
+									} else {
+										params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace");
+									}
+
+									notification.notifyTimeline(
+											request,
+											user,
+											WORKSPACE_NAME,
+											WORKSPACE_NAME + "_SHARE",
+											recipients,
+											id,
+											template,
+											params);
+								}
+							};
+
+							flattenShareIds(document.getArray("shared", new JsonArray()), user, finalHandler);
+						}
+					};
+
+					Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>() {
+						public void handle(Message<JsonObject> event) {
+							if(!"ok".equals(event.body().getString("status")) || event.body().getObject("result") == null){
+								log.error("Unable to send timeline notification : invalid parent folder on resource " + id);
+								return;
+							}
+
+							final JsonObject folder = event.body().getObject("result");
+							final String folderId = folder.getString("_id");
+
+							folderIdHandler.handle(folderId);
+						}
+					};
+
+					if(!document.containsField("folder")){
+						folderIdHandler.handle(null);
+					} else {
+						QueryBuilder query = QueryBuilder
+								.start("folder").is(document.getString("folder"))
+								.and("file").exists(false)
+								.and("owner").is(document.getString("owner"));
+
+						mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), folderHandler);
+					}
+
+
+				} else {
+					log.error("Unable to send timeline notification : missing name on resource " + id);
+				}
+			}
+		});
+	}
+
+	private void flattenShareIds(final JsonArray sharedArray, final UserInfos user, final Handler<List<String>> resultHandler){
+		final List<String> recipients = new ArrayList<>();
+		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
+		for (Object j : sharedArray) {
+			JsonObject json = (JsonObject) j;
+			String userId = json.getString("userId");
+			if (userId != null) {
+				recipients.add(userId);
+				remaining.getAndDecrement();
+			} else {
+				String groupId = json.getString("groupId");
+				if (groupId != null) {
+					UserUtils.findUsersInProfilsGroups(groupId, eb, user.getUserId(), false, new Handler<JsonArray>() {
+						public void handle(JsonArray event) {
+							if (event != null) {
+								for(Object o: event) {
+									if (!(o instanceof JsonObject)) continue;
+									JsonObject j = (JsonObject) o;
+									String id = j.getString("id");
+									recipients.add(id);
+								}
+							}
+							if (remaining.decrementAndGet() < 1) {
+								resultHandler.handle(recipients);
+							}
+						}
+					});
+				}
+			}
+		}
+		if (remaining.get() < 1) {
+			resultHandler.handle(recipients);
+		}
+	}
+
 	@Post("/document/:id/comment")
 	@SecuredAction(value = "workspace.comment", type = ActionType.RESOURCE)
 	public void commentDocument(final HttpServerRequest request) {
@@ -1439,6 +1549,7 @@ public class WorkspaceService extends BaseController {
 									@Override
 									public void handle(JsonObject res) {
 										if ("ok".equals(res.getString("status"))) {
+											notifyComment(request, request.params().get("id"), user);
 											renderJson(request, res);
 										} else {
 											renderError(request, res);
