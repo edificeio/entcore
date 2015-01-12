@@ -18,7 +18,7 @@
  ~
  -->
 
-<div class="cell absolute four reduce-block-six">
+<div class="cell four height-four reduce-block-six">
 	<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
 		<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
 	</div>
@@ -27,7 +27,7 @@
 		<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
 	</div>
 </div>
-<div class="eight cell absolute right-magnet reduce-block-six">
+<div class="margin-four height-four reduce-block-six user-infos">
 	<article class="fluid cell twelve small-text">
 		<h2>[[account.displayName]]</h2>
 		<div class="row">

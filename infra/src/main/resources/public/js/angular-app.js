@@ -1046,21 +1046,21 @@ module.directive('iconsSelect', function($compile) {
 				element.unbind('change');
 			})
 		},
-		template: '\
-			<div>\
-				<div class="current fixed cell twelve" data-selected="[[current.id]]">\
-					<i class="[[current.icon]]"></i>\
-					<span>[[current.text]]</span>\
-				</div>\
-				<div class="options-list icons-view">\
-				<div class="wrapper"> \
-					<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">\
-						<i class="[[option.icon]]"></i>\
-						<span>[[option.text]]</span>\
-					</div>\
-				</div>\
-				</div>\
-			</div>'
+		template: '' +
+			'<div>' +
+				'<div class="current fixed cell twelve" data-selected="[[current.id]]">' +
+					'<i class="[[current.icon]]"></i>' +
+					'<span translate content="[[current.text]]"></span>' +
+				'</div>' +
+				'<div class="options-list icons-view">' +
+				'<div class="wrapper">' +
+					'<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">' +
+						'<i class="[[option.icon]]"></i>' +
+						'<span translate content="[[option.text]]"></span>' +
+					'</div>' +
+				'</div>' +
+				'</div>' +
+			'</div>'
 	};
 });
 
