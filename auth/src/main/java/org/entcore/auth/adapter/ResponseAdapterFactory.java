@@ -29,6 +29,8 @@ public class ResponseAdapterFactory {
 		switch (version) {
 			case "v1.0":
 				return new UserInfoAdapterV1_0Json();
+			case "v2.0":
+				return new UserInfoAdapterV2_0Json();
 			default:
 				return new UserInfoAdapterV1_0Json();
 		}
