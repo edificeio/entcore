@@ -29,15 +29,15 @@
 
 	   </tr>
 	   <tr ng-if="loadingFiles.length === 0">
-		   <td colspan="2" translate key="files.select.please"></td>
+		   <td colspan="2"><i18n>files.select.please</i18n></td>
 	   </tr>
    </table>
 </div>
 
 <hr class="solid row" />
 <form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
-	<div class="row fixed-block">
-		<h2 translate key="files.select" class="subtitle"></h2>
+  <div class="row fixed-block">
+    <h2 class="subtitle"><i18n>files.select</i18n></h2>
 		<div class="eight cell select-file block-container input-block">
 			<div class="hidden-content">
 				<input type="file" multiple  files-input-change="setFilesName()" ng-model="newFile.files" />
@@ -47,12 +47,12 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="twelve cell block-container">
-            <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
-                <div class="warning" translate content="files.warning.identical"></div>
-            </div>
-            <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
-			<button ng-click="addLoadingFiles()" class="right-magnet" translate key="import.file" ng-disabled="newFile.blockIdentical"></button>
+    <div class="twelve cell block-container">
+      <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
+        <div class="warning" translate content="files.warning.identical"></div>
+      </div>
+      <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
+      <button ng-click="addLoadingFiles()" class="right-magnet" ng-disabled="newFile.blockIdentical"><i18n>import.file</i18n></button>
 			<button class="cancel right-magnet" translate content="terminate"></button>
 		</div>
 	</div>
