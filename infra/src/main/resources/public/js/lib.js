@@ -15,13 +15,12 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+function Http(){
+	this.statusCallbacks = {};
+}
+
 var http = (function(){
 	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400', 'e413'];
-
-
-	function Http(){
-		this.statusCallbacks = {};
-	}
 
 	Http.prototype = {
 		serialize: function(obj){

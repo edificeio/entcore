@@ -1122,6 +1122,9 @@ module.directive('portal', function($compile){
 		compile: function(element, attributes, transclude){
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
+			Http.prototype.bind('disconnected', function(){
+				window.location.href = '/';
+			})
 		}
 	}
 });
