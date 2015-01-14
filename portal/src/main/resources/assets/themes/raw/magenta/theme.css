@@ -1800,6 +1800,7 @@ ul.icons-tabs li i {
   margin-left: auto;
   margin-right: auto;
   float: none;
+  box-sizing: border-box;
 }
 .icons-view .element .img.container {
   border: 1px solid #ccc;
@@ -4646,19 +4647,9 @@ ul.thought-out-actions li p {
   max-width: 100%;
 }
 .patchwork .content {
-  width: 58.33333333%;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  float: left;
-  display: block;
-  position: relative;
+  width: 75%;
   float: right !important;
   overflow: hidden;
-}
-.patchwork .content img {
-  max-width: 100%;
 }
 [sortable-element] {
   cursor: move;
@@ -5924,12 +5915,15 @@ i.tools {
 .birthday .content {
   border: none;
 }
+filters {
+  height: 40px;
+}
 nav.vertical.stamps {
   padding: 0;
   padding-right: 50px;
 }
 nav.vertical.stamps article {
-  background: #d9f1f1;
+  background: #eee;
   border-radius: 0;
   margin-top: 10px;
   margin-bottom: 10px;
