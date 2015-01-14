@@ -38,6 +38,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 		t.put("Student", "ELEVE");
 		t.put("Relative", "PERSRELELEVE");
 		t.put("SuperAdmin", "SUPERADMIN");
+		t.put("Personnel", "PERSEDUCNAT");
 		types = Collections.unmodifiableMap(t);
 	}
 
