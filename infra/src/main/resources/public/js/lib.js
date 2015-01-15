@@ -1045,6 +1045,9 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 Behaviours = (function(){
 	return {
 		copyRights: function(params){
+			if(!params.provider.resource.shared){
+				return;
+			}
 			http().get('/' + params.provider.application + '/rights/sharing').done(function(providerSharing){
 				http().get('/' + params.target.application + '/rights/sharing').done(function(targetSharing){
 					params.provider.resource.shared.forEach(function(share){
