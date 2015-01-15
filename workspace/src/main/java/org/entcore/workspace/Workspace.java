@@ -27,6 +27,8 @@ import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
 import org.vertx.java.core.http.HttpClient;
 
 import java.net.URI;
@@ -38,6 +40,8 @@ public class Workspace extends BaseServer {
 	public void start() {
 		setResourceProvider(new WorkspaceResourcesProvider());
 		super.start();
+
+		Storage storage = new StorageFactory(vertx, config).getStorage();
 		WorkspaceService service = new WorkspaceService();
 
 		String neo4jPluginUri = container.config().getString("neo4jPluginUri");
@@ -56,12 +60,12 @@ public class Workspace extends BaseServer {
 		}
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
-		String gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		vertx.eventBus().registerHandler("user.repository",
-				new RepositoryHandler(new WorkspaceRepositoryEvents(vertx, gridfsAddress,
+				new RepositoryHandler(new WorkspaceRepositoryEvents(vertx, storage,
 						config.getBoolean("share-old-groups-to-users", false))));
 
 		service.setQuotaService(quotaService);
+		service.setStorage(storage);
 		addController(service);
 
 		QuotaController quotaController = new QuotaController();

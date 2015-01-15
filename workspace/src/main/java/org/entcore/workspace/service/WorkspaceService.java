@@ -52,10 +52,10 @@ import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.GenericDao;
 import org.entcore.workspace.service.impl.DefaultFolderService;
+import org.entcore.common.storage.Storage;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -76,7 +76,6 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.ETag;
@@ -85,7 +84,6 @@ import fr.wseduc.webutils.request.RequestUtils;
 public class WorkspaceService extends BaseController {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
-	private String gridfsAddress;
 	private String imageResizerAddress;
 	private MongoDb mongo;
 	private DocumentDao documentDao;
@@ -96,21 +94,27 @@ public class WorkspaceService extends BaseController {
 	private int threshold;
 	private EventStore eventStore;
 	private enum WokspaceEvent { ACCESS, GET_RESOURCE }
+	private Storage storage;
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		mongo = MongoDb.getInstance();
-		gridfsAddress = container.config().getString("gridfs-address", "wse.gridfs.persistor");
 		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);
 		notification = new TimelineHelper(vertx, eb, container);
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);
-		this.folderService = new DefaultFolderService(eb, mongo, gridfsAddress);
+		this.folderService = new DefaultFolderService(mongo, storage);
 		this.threshold = container.config().getInteger("alertStorage", 80);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
+//		try {
+//			swiftClient = new SwiftClient(vertx, new URI("http://172.17.0.25:8080"));
+//			swiftClient.authenticate("test:tester", "testing");
+//		} catch (URISyntaxException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@Get("/workspace")
@@ -317,7 +321,7 @@ public class WorkspaceService extends BaseController {
 								public void handle(Message<JsonObject> event) {
 									if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 										final boolean isFolder = !event.body().getObject("result").containsField("file");
-										if(isFolder)
+										if (isFolder)
 											shareFolderAction(request, id, user, actions, groupId, userId, true);
 										else
 											shareFileAction(request, id, user, actions, groupId, userId, true);
@@ -396,17 +400,17 @@ public class WorkspaceService extends BaseController {
 
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
 				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
-					params.putString("resourceName", event.body().getObject("result").getString("name", ""));
-					notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-							recipients, resource, template, params);
-				} else {
-					log.error("Unable to send timeline notification : missing name on resource " + resource);
-				}
-			}
-		});
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
+							params.putString("resourceName", event.body().getObject("result").getString("name", ""));
+							notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
+									recipients, resource, template, params);
+						} else {
+							log.error("Unable to send timeline notification : missing name on resource " + resource);
+						}
+					}
+				});
 	}
 
 	@Post("/document")
@@ -471,23 +475,45 @@ public class WorkspaceService extends BaseController {
 
 	private void add(final HttpServerRequest request, final String mongoCollection,
 			final JsonObject doc, long allowedSize) {
-		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, allowedSize, new Handler<JsonObject>() {
+//		swiftClient.uploadFile(request, new Handler<JsonObject>() {
+//			@Override
+//			public void handle(final JsonObject uploaded) {
+//				if ("ok".equals(uploaded.getString("status"))) {
+//					addAfterUpload(uploaded, doc, request
+//									.params().get("name"), request.params().get("application"),
+//							request.params().getAll("thumbnail"),
+//							mongoCollection, new Handler<Message<JsonObject>>() {
+//								@Override
+//								public void handle(Message<JsonObject> res) {
+//									if ("ok".equals(res.body().getString("status"))) {
+//										renderJson(request, res.body(), 201);
+//									} else {
+//										renderError(request, res.body());
+//									}
+//								}
+//							});
+//				} else {
+//					badRequest(request, uploaded.getString("message"));
+//				}
+//			}
+//		});
+		storage.writeUploadFile(request, allowedSize, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject uploaded) {
 				if ("ok".equals(uploaded.getString("status"))) {
 					addAfterUpload(uploaded, doc, request
-							.params().get("name"), request.params().get("application"),
+									.params().get("name"), request.params().get("application"),
 							request.params().getAll("thumbnail"),
 							mongoCollection, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> res) {
-							if ("ok".equals(res.body().getString("status"))) {
-								renderJson(request, res.body(), 201);
-							} else {
-								renderError(request, res.body());
-							}
-						}
-					});
+								@Override
+								public void handle(Message<JsonObject> res) {
+									if ("ok".equals(res.body().getString("status"))) {
+										renderJson(request, res.body(), 201);
+									} else {
+										renderError(request, res.body());
+									}
+								}
+							});
 				} else {
 					badRequest(request, uploaded.getString("message"));
 				}
@@ -502,6 +528,7 @@ public class WorkspaceService extends BaseController {
 		doc.putObject("metadata", uploaded.getObject("metadata"));
 		doc.putString("file", uploaded.getString("_id"));
 		doc.putString("application", getOrElse(application, WORKSPACE_NAME)); // TODO check if application name is valid
+		log.debug(doc.encodePrettily());
 		mongo.save(mongoCollection, doc, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -813,7 +840,8 @@ public class WorkspaceService extends BaseController {
 						int width = Integer.parseInt(m.group(1));
 						int height = Integer.parseInt(m.group(2));
 						if (width == 0 && height == 0) continue;
-						JsonObject j = new JsonObject().putString("dest", "gridfs://fs");
+						JsonObject j = new JsonObject().putString("dest",
+								storage.getProtocol() + "://" + storage.getBucket());
 						if (width != 0) {
 							j.putNumber("width", width);
 						}
@@ -829,7 +857,8 @@ public class WorkspaceService extends BaseController {
 			if (outputs.size() > 0) {
 				JsonObject json = new JsonObject()
 						.putString("action", "resizeMultiple")
-						.putString("src", "gridfs://fs:" + srcFile.getString("_id"))
+						.putString("src", storage.getProtocol() + "://" + storage.getBucket() + ":"
+								+ srcFile.getString("_id"))
 						.putArray("destinations", outputs);
 				eb.send(imageResizerAddress, json, new Handler<Message<JsonObject>>() {
 					@Override
@@ -846,7 +875,7 @@ public class WorkspaceService extends BaseController {
 		}
 		if (oldThumbnail != null) {
 			for (String attr: oldThumbnail.getFieldNames()) {
-				FileUtils.gridfsRemoveFile(oldThumbnail.getString(attr), eb, gridfsAddress, null);
+				storage.removeFile(oldThumbnail.getString(attr), null);
 			}
 		}
 	}
@@ -863,29 +892,29 @@ public class WorkspaceService extends BaseController {
 						@Override
 						public void handle(Long emptySize) {
 							request.resume();
-							FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, emptySize,
+							storage.writeUploadFile(request, emptySize,
 									new Handler<JsonObject>() {
-								@Override
-								public void handle(final JsonObject uploaded) {
-									if ("ok".equals(uploaded.getString("status"))) {
-										updateAfterUpload(request.params().get("id"), request.params().get("name"),
-												uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> res) {
-												if (res == null) {
-													request.response().setStatusCode(404).end();
-												} else if ("ok".equals(res.body().getString("status"))) {
-													renderJson(request, res.body());
-												} else {
-													renderError(request, res.body());
-												}
+										@Override
+										public void handle(final JsonObject uploaded) {
+											if ("ok".equals(uploaded.getString("status"))) {
+												updateAfterUpload(request.params().get("id"), request.params().get("name"),
+														uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
+															@Override
+															public void handle(Message<JsonObject> res) {
+																if (res == null) {
+																	request.response().setStatusCode(404).end();
+																} else if ("ok".equals(res.body().getString("status"))) {
+																	renderJson(request, res.body());
+																} else {
+																	renderError(request, res.body());
+																}
+															}
+														});
+											} else {
+												badRequest(request, uploaded.getString("message"));
 											}
-										});
-									} else {
-										badRequest(request, uploaded.getString("message"));
-									}
-								}
-							});
+										}
+									});
 						}
 					});
 				} else {
@@ -918,32 +947,32 @@ public class WorkspaceService extends BaseController {
 					set.putObject("$set", doc);
 					mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
 							new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(final Message<JsonObject> res) {
-							String status = res.body().getString("status");
-							JsonObject result = old.getObject("result");
-							if ("ok".equals(status) && result != null) {
-								updateStorage(doc, old);
-								FileUtils.gridfsRemoveFile(
-										result.getString("file"), eb, gridfsAddress,
-										new Handler<JsonObject>() {
+								@Override
+								public void handle(final Message<JsonObject> res) {
+									String status = res.body().getString("status");
+									JsonObject result = old.getObject("result");
+									if ("ok".equals(status) && result != null) {
+										updateStorage(doc, old);
+										storage.removeFile(
+												result.getString("file"),
+												new Handler<JsonObject>() {
 
-											@Override
-											public void handle(JsonObject event) {
-												if (handler != null) {
-													handler.handle(res);
-												}
-											}
-										});
-								createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
-										uploaded, id, thumbs, t);
-							} else {
-								if (handler != null) {
-									handler.handle(res);
+													@Override
+													public void handle(JsonObject event) {
+														if (handler != null) {
+															handler.handle(res);
+														}
+													}
+												});
+										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
+												uploaded, id, thumbs, t);
+									} else {
+										if (handler != null) {
+											handler.handle(res);
+										}
+									}
 								}
-							}
-						}
-					});
+							});
 				} else if (handler != null) {
 					handler.handle(null);
 				}
@@ -977,8 +1006,7 @@ public class WorkspaceService extends BaseController {
 						if (inline && ETag.check(request, file)) {
 							notModified(request, file);
 						} else {
-							FileUtils.gridfsSendFile(file,
-									result.getString("name"), eb, gridfsAddress, request.response(),
+							storage.sendFile(file, result.getString("name"), request,
 									inline, result.getObject("metadata"));
 						}
 						eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
@@ -1034,28 +1062,28 @@ public class WorkspaceService extends BaseController {
 				String status = res.getString("status");
 				final JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
-					FileUtils.gridfsRemoveFile(result.getString("file"), eb, gridfsAddress,
+					storage.removeFile(result.getString("file"),
 							new Handler<JsonObject>() {
 
-						@Override
-						public void handle(JsonObject event) {
-							if (event != null && "ok".equals(event.getString("status"))) {
-								dao.delete(id, new Handler<JsonObject>() {
-									@Override
-									public void handle(JsonObject result2) {
-										if ("ok".equals(result2.getString("status"))) {
-											decrementStorage(result);
-											renderJson(request, result2, 204);
-										} else {
-											renderError(request, result2);
-										}
+								@Override
+								public void handle(JsonObject event) {
+									if (event != null && "ok".equals(event.getString("status"))) {
+										dao.delete(id, new Handler<JsonObject>() {
+											@Override
+											public void handle(JsonObject result2) {
+												if ("ok".equals(result2.getString("status"))) {
+													decrementStorage(result);
+													renderJson(request, result2, 204);
+												} else {
+													renderError(request, result2);
+												}
+											}
+										});
+									} else {
+										renderError(request, event);
 									}
-								});
-							} else {
-								renderError(request, event);
-							}
-						}
-					});
+								}
+							});
 				} else {
 					request.response().setStatusCode(404).end();
 				}
@@ -1179,7 +1207,7 @@ public class WorkspaceService extends BaseController {
 														dest.putArray("shared", parent.getArray("shared"));
 
 													if (filePath != null) {
-														FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
+														storage.copyFile(filePath, new Handler<JsonObject>() {
 															@Override
 															public void handle(JsonObject event) {
 																if (event != null && "ok".equals(event.getString("status"))) {
@@ -1198,7 +1226,7 @@ public class WorkspaceService extends BaseController {
 										});
 
 									} else if (filePath != null) {
-										FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
+										storage.copyFile(filePath, new Handler<JsonObject>() {
 
 											@Override
 											public void handle(JsonObject event) {
@@ -1298,7 +1326,7 @@ public class WorkspaceService extends BaseController {
 					dest.putString("folder", folder);
 					String filePath = orig.getString("file");
 					if (filePath != null) {
-						FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress, new Handler<JsonObject>() {
+						storage.copyFile(filePath, new Handler<JsonObject>() {
 
 							@Override
 							public void handle(JsonObject event) {
@@ -1358,7 +1386,7 @@ public class WorkspaceService extends BaseController {
 					} catch (UnsupportedEncodingException | NullPointerException e) {
 						relativePath2 = request.params().get("folder");
 					}
-					final  String relativePath = relativePath2;
+					final String relativePath = relativePath2;
 					String filter = request.params().get("filter");
 					String query = "{ ";
 					if ("owner".equals(filter)) {
@@ -1376,39 +1404,39 @@ public class WorkspaceService extends BaseController {
 					}
 					mongo.distinct(DocumentDao.DOCUMENTS_COLLECTION, "folder", new JsonObject(query),
 							new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> res) {
-							if ("ok".equals(res.body().getString("status"))) {
-								JsonArray values = res.body().getArray("values", new JsonArray("[]"));
-								JsonArray out = values;
-								if (hierarchical != null) {
-									Set<String> folders = new HashSet<String>();
-									for (Object value: values) {
-										String v = (String) value;
-										if (relativePath != null) {
-											if (v != null && v.contains("_") &&
-													v.indexOf("_", relativePath.length() + 1) != -1 &&
-													v.substring(v.indexOf("_", relativePath.length() + 1)).contains("_")) {
-												folders.add(v.substring(0, v.indexOf("_", relativePath.length() + 1)));
-											} else {
-												folders.add(v);
+								@Override
+								public void handle(Message<JsonObject> res) {
+									if ("ok".equals(res.body().getString("status"))) {
+										JsonArray values = res.body().getArray("values", new JsonArray("[]"));
+										JsonArray out = values;
+										if (hierarchical != null) {
+											Set<String> folders = new HashSet<String>();
+											for (Object value : values) {
+												String v = (String) value;
+												if (relativePath != null) {
+													if (v != null && v.contains("_") &&
+															v.indexOf("_", relativePath.length() + 1) != -1 &&
+															v.substring(v.indexOf("_", relativePath.length() + 1)).contains("_")) {
+														folders.add(v.substring(0, v.indexOf("_", relativePath.length() + 1)));
+													} else {
+														folders.add(v);
+													}
+												} else {
+													if (v != null && v.contains("_")) {
+														folders.add(v.substring(0, v.indexOf("_")));
+													} else {
+														folders.add(v);
+													}
+												}
 											}
-										} else {
-											if (v != null && v.contains("_")) {
-												folders.add(v.substring(0, v.indexOf("_")));
-											} else {
-												folders.add(v);
-											}
+											out = new JsonArray(folders.toArray());
 										}
+										renderJson(request, out);
+									} else {
+										renderJson(request, new JsonArray());
 									}
-									out = new JsonArray(folders.toArray());
 								}
-								renderJson(request, out);
-							} else {
-								renderJson(request, new JsonArray());
-							}
-						}
-					});
+							});
 				} else {
 					unauthorized(request);
 				}
@@ -1678,11 +1706,11 @@ public class WorkspaceService extends BaseController {
 						JsonArray idsArray = new JsonArray(ids.split(","));
 						final String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
 
-						if(folder != null && !folder.trim().isEmpty()){
+						if (folder != null && !folder.trim().isEmpty()) {
 
 							//If the document has a parent folder, replicate sharing rights
 							String parentName, parentFolder;
-							if(folder.lastIndexOf('_') < 0){
+							if (folder.lastIndexOf('_') < 0) {
 								parentName = folder;
 								parentFolder = folder;
 							} else {
@@ -1695,10 +1723,10 @@ public class WorkspaceService extends BaseController {
 									.and("folder").is(parentFolder)
 									.and("name").is(parentName);
 
-							mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
+							mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> event) {
-									if ("ok".equals(event.body().getString("status"))){
+									if ("ok".equals(event.body().getString("status"))) {
 										JsonObject parent = event.body().getObject("result");
 										String obj = "{ \"$set\" : { \"folder\": \"" + cleanedFolder +
 													"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"";
@@ -1709,16 +1737,16 @@ public class WorkspaceService extends BaseController {
 
 										mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
 												new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> r) {
-												JsonObject res = r.body();
-												if ("ok".equals(res.getString("status"))) {
-													renderJson(request, res);
-												} else {
-													renderJson(request, res, 404);
-												}
-											}
-										});
+													@Override
+													public void handle(Message<JsonObject> r) {
+														JsonObject res = r.body();
+														if ("ok".equals(res.getString("status"))) {
+															renderJson(request, res);
+														} else {
+															renderJson(request, res, 404);
+														}
+													}
+												});
 									} else {
 										renderJson(request, event.body(), 404);
 									}
@@ -1731,16 +1759,16 @@ public class WorkspaceService extends BaseController {
 
 							mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
 									new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> r) {
-									JsonObject res = r.body();
-									if ("ok".equals(res.getString("status"))) {
-										renderJson(request, res);
-									} else {
-										renderJson(request, res, 404);
-									}
-								}
-							});
+										@Override
+										public void handle(Message<JsonObject> r) {
+											JsonObject res = r.body();
+											if ("ok".equals(res.getString("status"))) {
+												renderJson(request, res);
+											} else {
+												renderJson(request, res, 404);
+											}
+										}
+									});
 						}
 					} else {
 						badRequest(request);
@@ -2029,6 +2057,10 @@ public class WorkspaceService extends BaseController {
 				});
 			}
 		});
+	}
+
+	public void setStorage(Storage storage) {
+		this.storage = storage;
 	}
 
 }

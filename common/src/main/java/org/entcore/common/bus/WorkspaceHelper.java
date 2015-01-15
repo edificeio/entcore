@@ -20,7 +20,7 @@
 package org.entcore.common.bus;
 
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.FileUtils;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -36,11 +36,11 @@ import java.util.Date;
 public class WorkspaceHelper {
 
 	private static final String WORKSPACE_ADDRESS = "org.entcore.workspace";
-	private final String gridfsAddress;
 	private final EventBus eb;
+	private final Storage storage;
 
-	public WorkspaceHelper(String gridfsAddress, EventBus eb) {
-		this.gridfsAddress = gridfsAddress;
+	public WorkspaceHelper(EventBus eb, Storage storage) {
+		this.storage = storage;
 		this.eb = eb;
 	}
 
@@ -96,7 +96,7 @@ public class WorkspaceHelper {
 			public void handle(final UserInfos userInfos) {
 				if (userInfos != null) {
 					request.resume();
-					FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, new Handler<JsonObject>() {
+					storage.writeUploadFile(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(final JsonObject up) {
 							if (up != null && !"error".equals(up.getString("status"))) {
@@ -104,7 +104,7 @@ public class WorkspaceHelper {
 									@Override
 									public void handle(Message<JsonObject> message) {
 										if (!"ok".equals(message.body().getString("status"))) {
-											FileUtils.gridfsRemoveFile(up.getString("_id"), eb, gridfsAddress, null);
+											storage.removeFile(up.getString("_id"), null);
 										}
 										if (handler != null) {
 											handler.handle(message);
@@ -150,7 +150,7 @@ public class WorkspaceHelper {
 	}
 
 	public void readFile(String id, Handler<Buffer> handler) {
-		FileUtils.gridfsReadFile(id, eb, gridfsAddress, handler);
+		storage.readFile(id, handler);
 	}
 
 	public void readDocument(String documentId, final Handler<Document> handler) {

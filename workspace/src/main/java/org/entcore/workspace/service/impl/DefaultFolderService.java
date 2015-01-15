@@ -35,8 +35,8 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.service.FolderService;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.common.storage.Storage;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -50,21 +50,18 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.Utils;
 
 public class DefaultFolderService implements FolderService {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultFolderService.class);
 	private final MongoDb mongo;
-	private final EventBus eb;
-	private final String gridfsAddress;
+	private final Storage storage;
 	private final DateFormat format;
 
-	public DefaultFolderService(EventBus eb, MongoDb mongo, String gridfsAddress) {
+	public DefaultFolderService(MongoDb mongo, Storage storage) {
 		this.mongo = mongo;
-		this.eb = eb;
-		this.gridfsAddress = gridfsAddress;
+		this.storage = storage;
 		this.format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 	}
 
@@ -324,7 +321,7 @@ public class DefaultFolderService implements FolderService {
 											insert.add(dest);
 											String filePath = orig.getString("file");
 											if (filePath != null) {
-												FileUtils.gridfsCopyFile(filePath, eb, gridfsAddress,
+												storage.copyFile(filePath,
 														new Handler<JsonObject>() {
 													@Override
 													public void handle(JsonObject event) {
@@ -453,7 +450,7 @@ public class DefaultFolderService implements FolderService {
 												}
 											}
 											if (filesIds.size() > 0) {
-												FileUtils.gridfsRemoveFiles(filesIds, eb, gridfsAddress,
+												storage.removeFiles(filesIds,
 														new Handler<JsonObject>() {
 													@Override
 													public void handle(JsonObject jsonObject) {

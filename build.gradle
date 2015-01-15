@@ -91,6 +91,7 @@ project(':common') {
   dependencies {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
   }
 }
 

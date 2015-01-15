@@ -24,12 +24,12 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.RackDao;
+import org.entcore.common.storage.Storage;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -49,14 +49,14 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(WorkspaceRepositoryEvents.class);
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final EventBus eb;
-	private final String gridfsAddress;
+	private final Storage storage;
 	private final Vertx vertx;
 	private final boolean shareOldGroupsToUsers;
 
-	public WorkspaceRepositoryEvents(Vertx vertx, String gridfsAddress, boolean shareOldGroupsToUsers) {
+	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers) {
 		this.shareOldGroupsToUsers = shareOldGroupsToUsers;
 		this.eb = Server.getEventBus(vertx);
-		this.gridfsAddress = gridfsAddress;
+		this.storage = storage;
 		this.vertx = vertx;
 	}
 
@@ -131,23 +131,14 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			@Override
 			public void handle(String path) {
 				if (path != null) {
-					QueryBuilder q = QueryBuilder.start("_id").in(ids);
-					JsonObject e = new JsonObject()
-							.putString("action", "write")
-							.putString("path", path)
-							.putObject("alias", alias)
-							.putObject("query", MongoQueryBuilder.build(q));
-					if (log.isDebugEnabled()) {
-						log.debug(e.encode());
-					}
-					eb.send(gridfsAddress + ".json", e, new Handler<Message<JsonObject>>() {
+					storage.writeToFileSystem(ids, path, alias, new Handler<JsonObject>() {
 						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
+						public void handle(JsonObject event) {
+							if ("ok".equals(event.getString("status"))) {
 								exported.putString("status", "ok");
 								eb.publish("entcore.export", exported);
 							} else {
-								log.error(event.body().getString("message"));
+								log.error(event.getString("message"));
 								eb.publish("entcore.export", exported);
 							}
 						}
@@ -241,7 +232,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					for (Object o : results) {
 						if (!(o instanceof JsonObject)) continue;
 						final String file = ((JsonObject) o).getString("file");
-						FileUtils.gridfsRemoveFile(file, eb, gridfsAddress,
+						storage.removeFile(file,
 								new Handler<JsonObject>() {
 
 									@Override
