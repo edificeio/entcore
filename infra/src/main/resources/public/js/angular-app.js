@@ -2074,7 +2074,7 @@ module.directive('behaviour', function($compile){
 			var content = $element.children('div');
 			$scope.$watch('resource', function(newVal){
 				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
-					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
+					($scope.resource instanceof Model && (!$scope.resource.myRights || $scope.resource.myRights[$attributes.name] === undefined));
 
 				if(hide){
 					content.hide();
@@ -2104,7 +2104,7 @@ module.directive('resourceRight', function($compile){
 			var content = $element.children('div');
 			$scope.$watch('resource', function(newVal){
 				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
-					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
+					($scope.resource instanceof Model && (!$scope.resource.myRights || $scope.resource.myRights[$attributes.name] === undefined));
 
 				if(hide){
 					content.remove();
