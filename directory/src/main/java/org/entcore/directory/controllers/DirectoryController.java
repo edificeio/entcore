@@ -169,7 +169,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/school/:id")
-	@SecuredAction("directory.school.get")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getSchool(final HttpServerRequest request) {
 		String schoolId = request.params().get("id");
 		schoolService.get(schoolId, notEmptyResponseHandler(request));

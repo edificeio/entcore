@@ -60,6 +60,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					.substring(ClassController.class.getName().length() + 1);
 			switch (method) {
 				case "get":
+					isClassMember(request, user, handler);
+					break;
 				case "applyComRulesAndRegistryEvent" :
 				case "addUser":
 				case "csv" :
@@ -139,6 +141,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(DirectoryController.class.getName().length() + 1);
 			switch (method) {
+				case "getSchool" :
+					isSchoolMember(request, user, handler);
+					break;
 				case "createUser" :
 					isAdminOfStructureOrClass2(request, user, handler);
 					break;
@@ -412,7 +417,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 
 	private void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
 		List<String> userIds = request.params().getAll("userId");
-		if (userIds == null || userIds.isEmpty() || userIds.contains(user.getUserId())) {
+		if (userIds == null || userIds.isEmpty() || userIds.contains(user.getUserId()) ||
+				(!"Teacher".equals(user.getType()) && !"Personnel".equals(user.getType()))) {
 			handler.handle(false);
 			return;
 		}
@@ -430,6 +436,47 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	}
 
 	private void isClassTeacher(final HttpServerRequest request, final UserInfos user,
+								final Handler<Boolean> handler) {
+		final String classId = request.params().get("classId");
+		if (classId == null || classId.trim().isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		Set<String> ids = getIds(user);
+		String query =
+				"MATCH (c:Class {id : {classId}})-[:BELONGS]->s2 " +
+						"WHERE s2.id IN {ids} " +
+						"RETURN count(*) > 0 as exists";
+		JsonObject params = new JsonObject()
+				.putString("classId", classId)
+				.putString("userId", request.params().get("userId"))
+				.putArray("ids", new JsonArray(ids.toArray()));
+		request.pause();
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				request.resume();
+				JsonArray res = r.body().getArray("result");
+				if ("ok".equals(r.body().getString("status")) &&
+						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+					handler.handle(true);
+				} else if ("Teacher".equals(user.getType()) || "Personnel".equals(user.getType())) {
+					String query =
+							"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
+									"RETURN count(*) = 1 as exists ";
+					JsonObject params = new JsonObject()
+							.putString("classId", classId)
+							.putString("teacherId", user.getUserId());
+					validateQuery(request, handler, query, params);
+				} else {
+					handler.handle(false);
+				}
+			}
+		});
+	}
+
+	private void isClassMember(final HttpServerRequest request, final UserInfos user,
 			final Handler<Boolean> handler) {
 		final String classId = request.params().get("classId");
 		if (classId == null || classId.trim().isEmpty()) {
@@ -458,7 +505,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					String query =
 							"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
-									"RETURN count(*) = 1 as exists ";
+									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
 							.putString("teacherId", user.getUserId());
@@ -468,7 +515,33 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
+	private void isSchoolMember(final HttpServerRequest request, final UserInfos user,
+							   final Handler<Boolean> handler) {
+		final String structureId = request.params().get("id");
+		if (structureId == null || structureId.trim().isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		Set<String> ids = getIds(user, true);
+		if (ids.contains(structureId)) {
+			handler.handle(true);
+			return;
+		}
+		String query =
+				"MATCH (c:`Structure` { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+						"<-[:IN]-(t:`User` { id : {teacherId}}) " +
+						"RETURN count(*) > 0 as exists ";
+		JsonObject params = new JsonObject()
+				.putString("structureId", structureId)
+				.putString("teacherId", user.getUserId());
+		validateQuery(request, handler, query, params);
+	}
+
 	private Set<String> getIds(UserInfos user) {
+		return getIds(user, false);
+	}
+
+	private Set<String> getIds(UserInfos user, boolean structuresOnly) {
 		Set<String> ids = new HashSet<>();
 		Map<String, UserInfos.Function> functions = user.getFunctions();
 		if (functions != null && !functions.isEmpty()) {
@@ -477,7 +550,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			if (adminLocal != null && adminLocal.getScope() != null) {
 				ids.addAll(adminLocal.getScope());
 			}
-			if (classAdmin != null && classAdmin.getScope() != null) {
+			if (!structuresOnly && classAdmin != null && classAdmin.getScope() != null) {
 				ids.addAll(classAdmin.getScope());
 			}
 		}
