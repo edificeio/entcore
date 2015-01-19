@@ -1,8 +1,9 @@
 @import "../../../../../../../../../css-lib/app";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,700);
 
-@dark-blue: #104356;
-@bright-blue: #4caaec;
+@dark-blue: #013b4d;
+@light-blue: #1bbdec;
+@light-grey: #f6f6f6;
 @black: #2A2829;
 @shiny-blue: #51CCF5;
 @blue-background: #D9F1F1;
@@ -117,7 +118,7 @@ i.notes{
 .tabs{
 	header{
 		font-family: Lato;
-		color: @bright-blue;
+		color: @light-blue;
 		font-size: 14px;
 		.border-radius-top(6px);
 	}
@@ -135,7 +136,7 @@ i.notes{
 		background: transparent;
 		.element{
 			.img.container{
-				background: @bright-blue;
+				background: @light-blue;
 				border-color: transparent;
 			}
 			legend{
@@ -145,7 +146,7 @@ i.notes{
 		}
 		.element.selected{
 			.img.container{
-				background: @bright-blue;
+				background: @light-blue;
 			}
 		}
 	}
@@ -161,7 +162,7 @@ i.notes{
 		margin-top: 10px;
 		section{
 			border-bottom: 7px solid;
-			border-color: @bright-blue;
+			border-color: @light-blue;
 		}
 		header{
 			margin-left: -2px;
@@ -171,9 +172,9 @@ i.notes{
 			margin-left: 0px;
 		}
 		header.selected{
-			border-color: @bright-blue;
+			border-color: @light-blue;
 			border-bottom: 1px solid #fff;
-			color: @bright-blue;
+			color: @light-blue;
 		}
 	}
 }
@@ -545,7 +546,7 @@ ul.thought-out-actions{
 		}
 	}
 	li:hover{
-		background: @bright-blue;
+		background: @light-blue;
 	}
 }
 
@@ -599,7 +600,7 @@ ul.thought-out-actions{
 }
 
 a{
-	color: @bright-blue;
+	color: @light-blue;
 	text-decoration: none;
 }
 
@@ -624,7 +625,7 @@ a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:h
 
 .drawing-zone{
 	article.media{
-		border: 1px dashed @bright-blue;
+		border: 1px dashed @light-blue;
 		img{
 			display: block;
 		}
@@ -690,7 +691,7 @@ button.cancel, input[type=button].cancel{
 			height: 100px;
 		}
 		legend{
-			background: @bright-blue;
+			background: @light-blue;
 			color: #fff;
 			padding: 0;
 			padding-left: 5px;
@@ -795,16 +796,12 @@ input[type=text], input[type=search]{
 
 .badge{
 	line-height: 16px;
-	background: @bright-blue;
+	background: @light-blue;
 	color: #fff;
 }
 
 .label-badge:hover{
 	background: @dark-blue;
-}
-
-h3, h4, h5{
-	color: @bright-blue;
 }
 
 //weird chrome hack for background color in prefilled inputs
@@ -867,7 +864,7 @@ input:-webkit-autofill {
 
 .loading-panel{
 	background: #fff;
-	border: 1px solid @bright-blue;
+	border: 1px solid @light-blue;
 	img{
 		display: none;
 	}
@@ -888,7 +885,7 @@ input:-webkit-autofill {
 }
 
 button, input[type=button], a.button, input[type=submit]{
-	background: @bright-blue;
+	background: @light-blue;
 	padding: 4px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -911,7 +908,7 @@ nav.horizontal{
 		margin-right: 5px;
 	}
 	a:hover{
-		color: @bright-blue;
+		color: @light-blue;
 	}
 }
 
@@ -945,7 +942,7 @@ nav.vertical{
 		font-family: Arial;
 		font-weight: normal;
 		font-variant: small-caps;
-		color: @bright-blue;
+		color: @light-blue;
 		margin-top: 20px;
 	}
 	ul{
@@ -974,11 +971,11 @@ nav.vertical{
 					content: "▸";
 					font-size: 16px;
 					line-height: 13px;
-					color: @bright-blue;
+					color: @light-blue;
 				}
 			}
 			a.selected{
-				border-right: 4px solid @bright-blue;
+				border-right: 4px solid @light-blue;
 				background: #eee;
 				i.arrow::before{
 					margin-top: 4px;
@@ -986,7 +983,7 @@ nav.vertical{
 				}
 			}
 			a:hover{
-				color: @bright-blue;
+				color: @light-blue;
 			}
 			a.opened{
 				i.arrow::before{
@@ -1062,7 +1059,7 @@ nav.vertical{
 		display: block;
 		padding: 5px;
 		padding-left: 11px;
-		background: @bright-blue;
+		background: @light-blue;
 		color: #fff;
 		font-family: Lato;
 		font-weight: 300;
@@ -1096,34 +1093,53 @@ nav.horizontal{
 }
 
 h1, h2, h3, h4, h5{
-	a{
-		color: #333;
-	}
-	color: #333;
-	font-weight: 300;
 	font-family: Lato;
 	margin-top: 10px;
 	margin-bottom: 10px;
-	line-height: 30px;
+	line-height: normal;
+}
+
+h1, h2{
+	text-transform: uppercase;
+	font-weight: normal;
+	text-align: center;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+h2{
+	font-size: 30px;
+	max-width: 930px;
+	margin-left: auto;
+	margin-right: auto;
+	strong{
+		color: @light-blue;
+	}
 }
 
 h1{
-	font-size: 2em;
-	margin-bottom: 20px;
+	color: @light-blue;
+	font-size: 48px;
 }
 
 h1:first-child{
 	margin-top: 0px;
 }
 
-h2{
-	font-size: 20px;
-	font-family: Arial;
+h3{
+	color: @light-blue;
+	text-align: left;
+	font-size: 22px;
 }
 
-h3{
-	font-size: 1.4em;
-	font-style: italic;
+h4{
+	text-align: center;
+}
+
+h5{
+	text-align: center;
+	font-size: 16px;
+	margin: 0;
 }
 
 table{
@@ -1155,7 +1171,7 @@ table{
 			font-family: Lato;
 			font-weight: 700;
 			font-size: 1.3em;
-			border-bottom: 4px solid @bright-blue;
+			border-bottom: 4px solid @light-blue;
 		}
 		tr:hover{
 			background: #fff;
@@ -1165,7 +1181,7 @@ table{
 
 .notification {
 	background: @blue-background;
-	border-left: 10px solid @bright-blue;
+	border-left: 10px solid @light-blue;
 	article {
 		margin-left: 0px;
 	}
@@ -1217,7 +1233,7 @@ article{
 				color: #fff;
 			}
 			a.selected{
-				color: @bright-blue;
+				color: @light-blue;
 			}
 		}
 	}
@@ -1233,10 +1249,10 @@ article{
 			box-sizing: content-box;
 			margin-top: 35px;
 			.day.today{
-				background: @bright-blue;
+				background: @light-blue;
 			}
 			h2{
-				color: @bright-blue;
+				color: @light-blue;
 			}
 		}
 	}
@@ -1256,7 +1272,7 @@ article{
 			li {
 				list-style-type: none;
 				padding-left: 7px;
-				border-left: 5px solid @bright-blue;
+				border-left: 5px solid @light-blue;
 				line-height: 22px;
 				a {
 					font-size: 14px;
@@ -1291,7 +1307,7 @@ article{
 		.element.selected{
 			.container{
 				border: none;
-				background: @bright-blue;
+				background: @light-blue;
 			}
 		}
 	}
@@ -1344,7 +1360,7 @@ filters{
 		color: #888;
 	}
 	button:hover{
-		color: @bright-blue;
+		color: @light-blue;
 		background: #333;
 	}
 	button[disabled]:hover, button.disabled:hover{
@@ -1362,7 +1378,7 @@ filters{
 	}
 	.contextual-link{
 		a{
-			color: @bright-blue
+			color: @light-blue
 		}
 	}
 }
@@ -1415,7 +1431,7 @@ textarea{
 
 	.info{
 		.message;
-		border-left: 10px solid @bright-blue;
+		border-left: 10px solid @light-blue;
 	}
 
 
@@ -1467,7 +1483,7 @@ textarea{
 }
 
 article.selected{
-	background: @bright-blue;
+	background: @light-blue;
 	color: #fff;
 	a{
 		color: #fff;
@@ -1517,7 +1533,7 @@ i.zip-large{
 			tr{
 				background: @dark-blue;
 				th:hover{
-					background: @bright-blue;
+					background: @light-blue;
 				}
 			}
 		}
@@ -1556,8 +1572,8 @@ i.zip-large{
 	margin-bottom: 15px;
 	.accordion{
 		h2{
-			background: @bright-blue;
 			border: 1px solid #ddd;
+			background: @light-blue;
 			border-bottom: 0;
 			font-size: 20px;
 			color: #fff;
@@ -1572,7 +1588,7 @@ i.zip-large{
 			.content{
 				h3{
 					font-weight: normal;
-					color: @bright-blue;
+					color: @light-blue;
 					font-size: 16px;
 				}
 				select, input[type=text], textarea{
@@ -1592,8 +1608,8 @@ i.zip-large{
 		h2{
 			border: 1px solid #ddd;
 			border-bottom: 0;
-			color: @bright-blue;
 			background: #eee;
+			color: @light-blue;
 		}
 		.toggle{
 			height: 350px;
@@ -1619,7 +1635,7 @@ select{
 		}
 
 		li.selected{
-			background: @bright-blue;
+			background: @light-blue;
 			color: #fff;
 		}
 	}
@@ -1629,7 +1645,7 @@ select{
 			li{
 				color: #fff;
 				background: @dark-blue;
-				border-color: @bright-blue;
+				border-color: @light-blue;
 				border-right: none;
 			}
 			li:first-child{
@@ -1639,12 +1655,12 @@ select{
 				border-bottom-left-radius: 5px
 			}
 			li.selected:first-child{
-				border-top: 1px solid @bright-blue;
+				border-top: 1px solid @light-blue;
 			}
 			li.selected{
 				color: @black;
 				background: #FCFCFC;
-				border-color: @bright-blue;
+				border-color: @light-blue;
 				border-right: none;
 				border-top: none;
 				border-bottom: none;
@@ -1654,7 +1670,7 @@ select{
 
 	.side-tabs-content{
 		.border-radius(0);
-		border-color: @bright-blue;
+		border-color: @light-blue;
 	}
 
 	.humane-original-success{
@@ -1663,10 +1679,10 @@ select{
 
 	.progress-bar{
 		.filled{
-			background: @bright-blue;
+			background: @light-blue;
 		}
 		.filled.small{
-			color: @bright-blue;
+			color: @light-blue;
 		}
 	}
 
@@ -1684,7 +1700,7 @@ select{
 		.illustrated-text{
 			border-top: 1px dashed #ccc;
 			background: #f5f5f5;
-			border-right: 7px solid @bright-blue;
+			border-right: 7px solid @light-blue;
 			border-radius: 0;
 			padding: 8px;
 		}
@@ -1698,7 +1714,7 @@ select{
 			min-height: 30px;
 			line-height: 30px;
 			list-style-type: none;
-			color: @bright-blue;
+			color: @light-blue;
 			cursor: pointer !important;
 		}
 		li:hover{
@@ -1736,7 +1752,7 @@ select{
 			background-position: 4px !important;
 			padding-left: 29px;
 			font-family: Arial;
-			color: @bright-blue;
+			color: @light-blue;
 			background-size: 19px;
 			background-color: transparent;
 			border: none;
@@ -1756,13 +1772,13 @@ select{
 			color: #fff;
 		}
 		button:hover{
-			background: @bright-blue;
+			background: @light-blue;
 		}
 
 	}
 
 	.grid-media{
-		outline: 1px solid @bright-blue;
+		outline: 1px solid @light-blue;
 	}
 
 	.editor.drawing-grid{
@@ -1771,7 +1787,7 @@ select{
 			border-radius: 0;
 		}
 		.grid-add-row:hover{
-			background: @bright-blue;
+			background: @light-blue;
 		}
 	}
 
@@ -1803,7 +1819,7 @@ select{
 		background: @green;
 	}
 	button.blue{
-		background: @bright-blue;
+		background: @light-blue;
 	}
 	button.black{
 		background: @dark-blue;
@@ -1832,7 +1848,7 @@ select{
 	.run-transition(background);
 }
 .media-container.blue{
-	background: @bright-blue;
+	background: @light-blue;
 	.run-transition(background);
 	color: #fff;
 	h1,h2,h3{
@@ -2000,7 +2016,7 @@ select{
 	}
 	.autocomplete > em{
 		border: none;
-		border-left: 8px solid @bright-blue;
+		border-left: 8px solid @light-blue;
 		background: @blue-background;
 		color: #666;
 	}
@@ -2145,7 +2161,7 @@ select{
 	}
 
 	.theme-preview.default{
-		background: @bright-blue;
+		background: @light-blue;
 	}
 
 	.drop-down-button{
@@ -2203,7 +2219,7 @@ select{
 	.drop-down-button.hidden{
 		label{
 			border-radius: 3px;
-			background: @bright-blue;
+			background: @light-blue;
 			color: #fff;
 			border: 1px solid transparent;
 		}
@@ -2212,7 +2228,7 @@ select{
 		}
 		label:hover{
 			background: #fff;
-			border: 1px solid @bright-blue;
+			border: 1px solid @light-blue;
 			color: #000;
 		}
 	}
@@ -2239,14 +2255,14 @@ select{
 				text-align: center;
 				font-family: Lato;
 				font-size: 35px;
-				background: @bright-blue;
+				background: @light-blue;
 				color: #fff;
 				margin-bottom: 1px;
 				.run-transition(background);
 			}
 			h2:hover{
 				background: #fff;
-				color: @bright-blue;
+				color: @light-blue;
 			}
 			h2.disabled{
 				background: #666;
@@ -2259,7 +2275,7 @@ select{
 	h1.letter-picker{
 		height: 50px;
 		width: 50px;
-		background: @bright-blue;
+		background: @light-blue;
 		color: #fff;
 		line-height: 50px;
 		text-align: center;
@@ -2351,7 +2367,7 @@ select{
 				list-style-type: none;
 				display: table;
 				margin-bottom: 12px;
-				border-bottom: 8px solid @bright-blue;
+				border-bottom: 8px solid @light-blue;
 
 				.illustration{
 					display: table-cell;
@@ -2408,7 +2424,7 @@ select{
 			opacity: 1
 		}
 		.grid-media{
-			outline: 1px solid @bright-blue;
+			outline: 1px solid @light-blue;
 			pointer-events: all;
 		}
 		.square-menu button, .grid-add-row{
@@ -2440,7 +2456,7 @@ select{
 				opacity: 1
 			}
 			.grid-media{
-				outline: 1px solid @bright-blue;
+				outline: 1px solid @light-blue;
 				pointer-events: all;
 			}
 			.square-menu button, .grid-add-row{
@@ -2460,7 +2476,7 @@ select{
 		}
 		.marker:nth-child(2){
 			color: #fff;
-			border-color: transparent transparent @bright-blue transparent;
+			border-color: transparent transparent @light-blue transparent;
 			a{
 				color: #fff;
 			}
@@ -2516,7 +2532,7 @@ select{
 	}
 
 		.row.selected, .row:nth-child(2n).selected{
-			background: @bright-blue;
+			background: @light-blue;
 			color: #fff;
 			h3{
 				color: #fff;
@@ -2547,10 +2563,10 @@ carousel{
 				.run-transition(color);
 			}
 			li.current{
-				color: @bright-blue;
+				color: @light-blue;
 			}
 			li:hover{
-				color: @bright-blue;
+				color: @light-blue;
 			}
 		}
 	}
