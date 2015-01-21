@@ -3644,7 +3644,7 @@ module.directive('attachments', function($parse){
 			http().get('/resources-applications').done(function(apps){
 				scope.attachments.apps = _.filter(model.me.apps, function(app){
 					return _.find(apps, function(match){
-						return app.address.indexOf(match) !== -1 && app.target === null
+						return app.address.indexOf(match) !== -1 && app.icon
 					}) && _.find(scope.apps, function(match){
 						return app.address.indexOf(match) !== -1
 					});
