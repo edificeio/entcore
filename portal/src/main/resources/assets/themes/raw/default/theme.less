@@ -857,6 +857,7 @@ input:-webkit-autofill {
 	.content{
 		background: @dark-blue;
 		color: #fff;
+		border-radius: 0;
 	}
 	.arrow{
 		color: @dark-blue;
@@ -1556,7 +1557,7 @@ i.zip-large{
 	.accordion{
 		h2{
 			background: @bright-blue;
-			border: 1px solid #fff;
+			border: 1px solid #ddd;
 			border-bottom: 0;
 			font-size: 20px;
 			color: #fff;
@@ -1567,9 +1568,8 @@ i.zip-large{
 		}
 		.toggle{
 			border: 0;
-			background: @blue-background;
+			background: #eee;
 			.content{
-				color: #666;
 				h3{
 					font-weight: normal;
 					color: @bright-blue;
@@ -1590,14 +1590,14 @@ i.zip-large{
 
 	.accordion.opened{
 		h2{
-			border: 1px solid #fff;
+			border: 1px solid #ddd;
 			border-bottom: 0;
 			color: @bright-blue;
-			background: @blue-background;
+			background: #eee;
 		}
 		.toggle{
 			height: 350px;
-			border: 1px solid #fff;
+			border: 1px solid #ddd;
 			border-top: 0;
 			padding: 10px;
 			overflow: auto;
@@ -1615,7 +1615,7 @@ select{
 
 	.selectable-list{
 		li{
-			border: 1px solid @bright-blue;
+			background: #eee;
 		}
 
 		li.selected{
@@ -2505,21 +2505,9 @@ select{
 }
 
 .patchwork{
-	color: #fff;
 	.items{
 		.row{
-			background: @bright-blue;
-			h1{
-				color: #fff;
-				font-size: 18px;
-			}
-			button{
-				background: #555;
-			}
-			button:hover{
-				background: #fff;
-				color: #444;
-			}
+			background: #eee;
 			img{
 				height: 130px;
 				width: 130px;
@@ -2528,21 +2516,10 @@ select{
 	}
 
 		.row.selected, .row:nth-child(2n).selected{
-			h1{
-				border-bottom: 1px dashed;
-			}
-		}
-		.row:nth-child(2n){
-			background: @dark-blue;
-			.bottom-locked{
-				right: 8px;
-			}
-			button{
-				background: #444;
-			}
-			button:hover{
-				background: #fff;
-				color: #444;
+			background: @bright-blue;
+			color: #fff;
+			h3{
+				color: #fff;
 			}
 		}
 	}
