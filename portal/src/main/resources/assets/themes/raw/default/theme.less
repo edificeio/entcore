@@ -377,24 +377,20 @@ filters{
 	height: 40px;
 }
 
-nav.vertical.stamps{
-	padding: 0;
-	padding-right: 50px;
+nav.stamps{
 	article{
 		background: #eee;
 		border-radius: 0;
-		margin-top: 10px;
-		margin-bottom: 10px;
-		line-height: 20px;
-		color: #666;
+		color: @dark-blue;
 		.run-transition(background);
-		h3{
+
+		h4{
 			font-size: 18px;
 			border: 0;
-			color: #666;
 			line-height: 20px;
 			font-style: normal;
 			margin: 0;
+			text-align: left;
 		}
 		a{
 			margin: 0;
@@ -407,7 +403,7 @@ nav.vertical.stamps{
 		}
 	}
 	article.selected{
-		background: @dark-blue;
+		background: @light-blue;
 		color: #fff;
 		i.send-mail{
 			.icon(glyphicons_010_envelope_white, 24px);
@@ -434,13 +430,19 @@ nav.vertical.stamps{
 		.domino{
 			border: 0;
 			.bottom{
-				background: @dark-blue;
-				color: #fff;
-				div.content{
-					padding: 8px;
+				color: @dark-blue;
+				background: #eee;
+
+				.content{
+					padding: 0;
+					text-align: center;
+					.bottom-locked{
+						width: 100%;
+					}
 				}
-				a:hover{
-					color: #fff;
+				h4{
+					margin: 0;
+					font-size: 18px;
 				}
 				.mood{
 					top: 53px;
@@ -528,25 +530,28 @@ ul.thought-out-actions{
 	padding: 0;
 	margin: 0;
 	li{
-		background: @dark-blue;
+		background: #eee;
 		margin-bottom: 1px;
 		list-style-type: none;
 		padding: 8px;
 		.run-transition(background);
 		h2{
-			color: #fff;
+			color: @dark-blue;
 			margin: 0;
 			font-size: 20px;
-			font-variant: small-caps;
+			text-align: left;
 		}
 		p{
 			margin: 0;
 			font-size: 12px;
-			color: #ccc;
+			color: @dark-blue;
 		}
 	}
 	li:hover{
 		background: @light-blue;
+		h2, p{
+			color: #fff;
+		}
 	}
 }
 
@@ -1296,12 +1301,15 @@ article{
 				padding: 10px;
 			}
 			.img.container{
-				border: 1px solid #008cba;
-				background: #fff;
+				border: 1px solid #ddd;
+				background: #eee;
 				.run-transition(background)
 			}
 			legend{
 				text-align: center;
+				a{
+					color: @dark-blue
+				}
 			}
 		}
 		.element.selected{

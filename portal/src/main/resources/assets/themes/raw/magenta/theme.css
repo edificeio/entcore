@@ -5946,34 +5946,27 @@ i.tools {
 filters {
   height: 40px;
 }
-nav.vertical.stamps {
-  padding: 0;
-  padding-right: 50px;
-}
-nav.vertical.stamps article {
+nav.stamps article {
   background: #eee;
   border-radius: 0;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  line-height: 20px;
-  color: #666;
+  color: #013b4d;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
-nav.vertical.stamps article h3 {
+nav.stamps article h4 {
   font-size: 18px;
   border: 0;
-  color: #666;
   line-height: 20px;
   font-style: normal;
   margin: 0;
+  text-align: left;
 }
-nav.vertical.stamps article a {
+nav.stamps article a {
   margin: 0;
 }
-nav.vertical.stamps article:hover i.send-mail {
+nav.stamps article:hover i.send-mail {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_010_envelope_white.png");
@@ -5988,11 +5981,11 @@ nav.vertical.stamps article:hover i.send-mail {
   vertical-align: middle;
   margin: 7px;
 }
-nav.vertical.stamps article.selected {
-  background: #013b4d;
+nav.stamps article.selected {
+  background: #1bbdec;
   color: #fff;
 }
-nav.vertical.stamps article.selected i.send-mail {
+nav.stamps article.selected i.send-mail {
   height: 24px;
   width: 24px;
   background-image: url("../img/icons/glyphicons_010_envelope_white.png");
@@ -6007,10 +6000,10 @@ nav.vertical.stamps article.selected i.send-mail {
   vertical-align: middle;
   margin: 7px;
 }
-nav.vertical.stamps article.selected h3 {
+nav.stamps article.selected h3 {
   color: #fff;
 }
-nav.vertical.stamps article.selected a {
+nav.stamps article.selected a {
   color: #fff;
 }
 .dominos .item {
@@ -6025,14 +6018,19 @@ nav.vertical.stamps article.selected a {
   border: 0;
 }
 .dominos .item .domino .bottom {
-  background: #013b4d;
-  color: #fff;
+  color: #013b4d;
+  background: #eee;
 }
-.dominos .item .domino .bottom div.content {
-  padding: 8px;
+.dominos .item .domino .bottom .content {
+  padding: 0;
+  text-align: center;
 }
-.dominos .item .domino .bottom a:hover {
-  color: #fff;
+.dominos .item .domino .bottom .content .bottom-locked {
+  width: 100%;
+}
+.dominos .item .domino .bottom h4 {
+  margin: 0;
+  font-size: 18px;
 }
 .dominos .item .domino .bottom .mood {
   top: 53px;
@@ -6155,7 +6153,7 @@ ul.thought-out-actions {
   margin: 0;
 }
 ul.thought-out-actions li {
-  background: #013b4d;
+  background: #eee;
   margin-bottom: 1px;
   list-style-type: none;
   padding: 8px;
@@ -6165,18 +6163,22 @@ ul.thought-out-actions li {
   transition: background 250ms ease;
 }
 ul.thought-out-actions li h2 {
-  color: #fff;
+  color: #013b4d;
   margin: 0;
   font-size: 20px;
-  font-variant: small-caps;
+  text-align: left;
 }
 ul.thought-out-actions li p {
   margin: 0;
   font-size: 12px;
-  color: #ccc;
+  color: #013b4d;
 }
 ul.thought-out-actions li:hover {
   background: #1bbdec;
+}
+ul.thought-out-actions li:hover h2,
+ul.thought-out-actions li:hover p {
+  color: #fff;
 }
 .calendar.widget {
   padding-bottom: 35% !important;
@@ -6947,8 +6949,8 @@ header {
   padding: 10px;
 }
 .icons-view .element .img.container {
-  border: 1px solid #008cba;
-  background: #fff;
+  border: 1px solid #ddd;
+  background: #eee;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -6956,6 +6958,9 @@ header {
 }
 .icons-view .element legend {
   text-align: center;
+}
+.icons-view .element legend a {
+  color: #013b4d;
 }
 .icons-view .element.selected .container {
   border: none;
