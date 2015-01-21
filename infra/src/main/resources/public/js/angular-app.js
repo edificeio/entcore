@@ -763,42 +763,6 @@ module.directive('scheduleItem', function($compile){
 	}
 });
 
-function serializeScope(scope){
-	var result = {};
-	for(var prop in scope){
-		if(prop[0] !== '$' && prop !== 'h' && typeof scope[prop] !== 'function' && prop !== 'this' && scope[prop] !== undefined && prop !== 'callbacks'){
-			result[prop] = JSON.parse(JSON.stringify(scope[prop]));
-		}
-	}
-
-	if(scope.$parent === null){
-		return result;
-	}
-	return {
-		parent: serializeScope(scope.$parent),
-		scope: result
-	}
-}
-
-function applyScope(input, scope){
-	if(!input || !scope){
-		return;
-	}
-	for(var prop in input.scope){
-		if(scope[prop] instanceof Collection){
-			scope[prop].load(input.scope[prop]);
-		}
-		if(scope[prop] instanceof Model){
-			scope[prop].updateData(input.scope[prop]);
-		}
-		if(!(scope[prop] instanceof Model) && !(scope[prop] instanceof Collection)){
-			scope[prop] = input.scope[prop];
-		}
-	}
-	scope.$apply();
-	applyScope(input.parent, scope.$parent);
-}
-
 module.directive('container', function($compile){
 	return {
 		restrict: 'E',
@@ -852,7 +816,7 @@ module.directive('colorSelect', function($compile){
 			});
 		}
 	}
-})
+});
 
 module.directive('imageSelect', function($compile){
 	return {
@@ -3319,7 +3283,7 @@ module.directive('progressBar', function($compile){
 			});
 		}
 	}
-})
+});
 
 module.directive('datePicker', function($compile){
 	return {
