@@ -3833,12 +3833,12 @@ $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
 			model.build();
-			model.sync();
 
 			lang.addDirectives(module);
 			lang.addBundle('/i18n', function(){
 				lang.addBundle('/' + appPrefix + '/i18n', function(){
 					angular.bootstrap($('html'), ['app']);
+					model.sync();
 				});
 			});
 		});
