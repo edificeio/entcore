@@ -30,7 +30,9 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public void add(JsonObject event, final Handler<JsonObject> result) {
 		JsonObject doc = validAndGet(event);
 		if (doc != null) {
-			doc.putObject("date", MongoDb.now());
+			if (!doc.containsField("date")) {
+				doc.putObject("date", MongoDb.now());
+			}
 			mongo.save(TIMELINE_COLLECTION, doc, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -54,7 +56,8 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		final String recipient = user.getUserId();
 		final String externalId = user.getExternalId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
-			final JsonObject query = new JsonObject();
+			final JsonObject query = new JsonObject()
+					.putObject("date", new JsonObject().putObject("$lt", MongoDb.now()));
 			if (externalId == null || externalId.trim().isEmpty()) {
 				query.putString("recipients.userId", recipient);
 			} else {

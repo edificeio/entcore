@@ -82,6 +82,11 @@ public class TimelineHelper {
 		if (subResource != null && !subResource.trim().isEmpty()) {
 			event.putString("sub-resource", subResource);
 		}
+		Long date = params.getLong("timeline-publish-date");
+		if (date != null) {
+			event.putObject("date", new JsonObject().putNumber("$date", date));
+			params.removeField("timeline-publish-date");
+		}
 		render.processTemplate(request, template, params, new Handler<String>() {
 			@Override
 			public void handle(String message) {
