@@ -20,7 +20,7 @@
     "conversation": "Messagerie",
     "create": "Créer",
     "directory.user": "Annuaire",
-    "e400": "Le client a rencontré une erreur",
+    "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
     "e401.page": "Vous n'avez pas le droit d'accéder à ce fichier.",
     "e403": "Le serveur a refusé votre requête",

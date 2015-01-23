@@ -2,7 +2,7 @@
     "archive.info": "Vous pouvez télécharger tous vos documents en cliquant sur le lien ci-dessous :",
     "archive.title": "Export",
     "archive.waiting": "Le téléchargement va démarrer automatiquement dans peu de temps.",
-    "e400": "Le client a rencontré une erreur",
+    "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
     "e403": "Le serveur a refusé votre requête",
     "e404": "Adresse introuvable",

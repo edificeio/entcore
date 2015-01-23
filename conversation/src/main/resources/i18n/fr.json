@@ -8,7 +8,7 @@
     "draft": "Brouillons",
     "draft.empty": "Le brouillon est vide",
     "draft.saved": "Brouillon enregistré",
-    "e400": "Le client a rencontré une erreur",
+    "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
     "e403": "Le serveur a refusé votre requête",
     "e404": "Adresse introuvable",
