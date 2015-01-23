@@ -65,8 +65,14 @@ var tools = (function(){
 
 routes.define(function($routeProvider) {
 	$routeProvider
-	.when('/shared/folder/:folderId', {
+	.when('/folder/:folderId', {
 		action: 'viewFolder'
+	})
+	.when('/shared/folder/:folderId', {
+		action: 'viewSharedFolder'
+	})
+	.when('/shared', {
+		action: 'openShared'
 	})
 	.otherwise({
 		redirectTo: '/'
@@ -79,9 +85,23 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			if($scope.lastRoute === window.location.href)
 				return
 			$scope.lastRoute = window.location.href
-			$scope.currentTree = trees[1];
-			$scope.currentFolderTree = $scope.folder.children[1];
-			$scope.openFolder($scope.folder.children[1]);
+			if($scope.initSequence && $scope.initSequence.executed){
+				$scope.openFolderById(params.folderId)
+			} else {
+				$scope.initSequence = {
+					executed: false,
+					type: 'openFolder',
+					folderId: params.folderId
+				}
+			}
+		},
+		viewSharedFolder: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+			$scope.currentTree = trees[1]
+			$scope.currentFolderTree = $scope.folder.children[1]
+			$scope.openFolder($scope.folder.children[1])
 			if($scope.initSequence && $scope.initSequence.executed){
 				$scope.openFolderById(params.folderId)
 			} else {
@@ -91,6 +111,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 					folderId: params.folderId
 				}
 			}
+		},
+		openShared: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+			$scope.currentTree = trees[1]
+			$scope.currentFolderTree = $scope.folder.children[1]
+			$scope.openFolder($scope.folder.children[1])
 		}
 	})
 
@@ -836,6 +864,11 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 						}
 						cursor = _.findWhere(cursor.children, { name: subFolder });
 					})
+
+					if($scope.initSequence && !$scope.initSequence.executed && $scope.initSequence.type === 'openFolder' && folder._id === $scope.initSequence.folderId){
+						$scope.openFolder(folder)
+						$scope.initSequence.executed = true
+					}
 				}
 			});
 

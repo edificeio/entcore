@@ -1423,22 +1423,27 @@ public class WorkspaceService extends BaseController {
 
 		final String template = "notify-comment.html";
 
+		//Retrieve the document from DB
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 					final JsonObject document = event.body().getObject("result");
+					params.putString("resourceName", document.getString("name", ""));
 
+					//Handle the parent folder id (null if document is at root level)
 					final Handler<String> folderIdHandler = new Handler<String>() {
 						public void handle(final String folderId) {
-							Handler<List<String>> finalHandler = new Handler<List<String>>() {
+
+							//Send the notification to the shared network
+							Handler<List<String>> shareNotificationHandler = new Handler<List<String>>() {
 								public void handle(List<String> recipients) {
-									params.putString("resourceName", document.getString("name", ""));
+									JsonObject sharedNotifParams = params.copy();
 
 									if(folderId != null){
-										params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace#/shared/folder/" + folderId);
+										sharedNotifParams.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace#/shared/folder/" + folderId);
 									} else {
-										params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace");
+										sharedNotifParams.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace#/shared");
 									}
 
 									notification.notifyTimeline(
@@ -1449,14 +1454,40 @@ public class WorkspaceService extends BaseController {
 											recipients,
 											id,
 											template,
-											params);
+											sharedNotifParams);
 								}
 							};
 
-							flattenShareIds(document.getArray("shared", new JsonArray()), user, finalHandler);
+							//'Flatten' the share users & group into a user id list (excluding the current user)
+							flattenShareIds(document.getArray("shared", new JsonArray()), user, shareNotificationHandler);
+
+							//If the user commenting is not the owner, send a notification to the owner
+							if(!document.getString("owner").equals(user.getUserId())){
+								JsonObject ownerNotif = params.copy();
+								ArrayList<String> ownerList = new ArrayList<>();
+								ownerList.add(document.getString("owner"));
+
+								if(folderId != null){
+									ownerNotif.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace#/folder/" + folderId);
+								} else {
+									ownerNotif.putString("resourceUri", container.config().getString("host", "http://localhost:8011") + pathPrefix + "/workspace");
+								}
+
+								notification.notifyTimeline(
+										request,
+										user,
+										WORKSPACE_NAME,
+										WORKSPACE_NAME + "_SHARE",
+										ownerList,
+										id,
+										template,
+										ownerNotif);
+							}
+
 						}
 					};
 
+					//Handle the parent folder result from DB
 					Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>() {
 						public void handle(Message<JsonObject> event) {
 							if(!"ok".equals(event.body().getString("status")) || event.body().getObject("result") == null){
@@ -1471,14 +1502,17 @@ public class WorkspaceService extends BaseController {
 						}
 					};
 
+					//If the document does not have a parent folder
 					if(!document.containsField("folder")){
 						folderIdHandler.handle(null);
 					} else {
+						//If the document has a parent folder
 						QueryBuilder query = QueryBuilder
 								.start("folder").is(document.getString("folder"))
 								.and("file").exists(false)
 								.and("owner").is(document.getString("owner"));
 
+						//Retrieve the parent folder from DB
 						mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), folderHandler);
 					}
 
@@ -1497,7 +1531,8 @@ public class WorkspaceService extends BaseController {
 			JsonObject json = (JsonObject) j;
 			String userId = json.getString("userId");
 			if (userId != null) {
-				recipients.add(userId);
+				if(!userId.equals(user.getUserId()))
+					recipients.add(userId);
 				remaining.getAndDecrement();
 			} else {
 				String groupId = json.getString("groupId");
@@ -1509,7 +1544,8 @@ public class WorkspaceService extends BaseController {
 									if (!(o instanceof JsonObject)) continue;
 									JsonObject j = (JsonObject) o;
 									String id = j.getString("id");
-									recipients.add(id);
+									if(!id.equals(user.getUserId()))
+										recipients.add(id);
 								}
 							}
 							if (remaining.decrementAndGet() < 1) {
