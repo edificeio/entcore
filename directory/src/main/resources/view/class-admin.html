@@ -158,9 +158,6 @@
 											for="relative">
 									</drop-down>
 								</td>
-								<td colspan="2"><input type="submit" class="button right-magnet"
-													   translate attr="value"
-													   value="directory.add" /></td>
 							</tr>
 							<tr ng-class="{ checked: user.selected, disabled: user.blocked }"
 								ng-repeat="user in users.where({ type: display.show }) | limitTo:display.limit">
