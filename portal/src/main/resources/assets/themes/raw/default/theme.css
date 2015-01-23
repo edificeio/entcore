@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,700);
+@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 .row {
   width: 100%;
   position: relative;
@@ -3690,6 +3690,12 @@ a.cke_smile img {
   margin-bottom: 10px;
   color: #000;
 }
+.drop-down-filters .filters-icons::after,
+.filters .filters-icons::after {
+  content: " ";
+  width: 100%;
+  clear: both;
+}
 .drop-down-filters ul,
 .filters ul {
   margin-top: 0;
@@ -6438,11 +6444,8 @@ input[type=button],
 a.button,
 input[type=submit] {
   background: #1bbdec;
-  padding: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 9px 18px;
   color: #fff;
-  border-radius: 3px;
   font-size: 15px;
   border: 1px solid transparent;
   -o-transition: background 250ms ease;
@@ -8237,17 +8240,21 @@ nav.illustrated-links ul li .content {
   background: #fff;
 }
 nav.illustrated-links ul li .content h1 {
-  margin: 0px;
+  margin: 0;
   font-size: 22px;
+  text-align: left;
+  text-transform: none;
+  font-weight: bold;
+  color: #013b4d;
 }
 nav.illustrated-links ul li .content em,
 nav.illustrated-links ul li .content strong {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: normal;
 }
 nav.illustrated-links ul li .content p {
   color: #666;
-  font-size: 12px;
+  font-size: 16px;
   margin: 0;
 }
 nav.illustrated-links ul li .content em {
