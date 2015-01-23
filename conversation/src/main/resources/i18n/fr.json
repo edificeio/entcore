@@ -10,12 +10,14 @@
     "draft.saved": "Brouillon enregistré",
     "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
+    "e401.page": "Vous n'avez pas le droit d'envoyer un message à cette personne.",
     "e403": "Le serveur a refusé votre requête",
     "e404": "Adresse introuvable",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
     "e500": "Le serveur a rencontré une erreur",
     "folder.empty": "Ce dossier est vide",
     "from": "De",
+    "group.AdminLocal": "Tous les administrateurs locaux",
     "group.Personnel": "Tous les personnels du groupe {0}.",
     "group.Relative": "Tous les parents du groupe {0}.",
     "group.Student": "Tous les élèves du groupe {0}.",
@@ -28,7 +30,6 @@
     "group.school.Relative": "Tous les parents de l'{0}.",
     "group.school.Student": "Tous les élèves de l'{0}.",
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
-	"group.AdminLocal": "Tous les administrateurs locaux",
     "inbox": "Boîte de réception",
     "invalid": " recevra le message après avoir activé son compte",
     "mail.sent": "Message envoyé",
@@ -57,6 +58,5 @@
     "undelivered": " n'a pas accès à la messagerie",
     "updating": "Mise à jour...",
     "widget.empty": "Vous n'avez aucun message",
-    "widget.title": "messages",
-	"e401.page": "Vous n'avez pas le droit d'envoyer un message à cette personne."
+    "widget.title": "messages"
 }

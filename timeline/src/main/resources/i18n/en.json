@@ -8,12 +8,12 @@
     "homeworks": "Homeworks notebooks",
     "panel.themes": "My themes",
     "panel.title": "Customization",
+    "panel.widgets": "My widgets",
+    "rack": "Rack",
+    "support": "Help",
     "timeline.header": "Timeline",
     "timeline.nothingnew": "Nothing new yet!",
     "timeline.title": "Timeline",
     "userbook": "Userbook",
-    "workspace": "Workspace",
-    "rack": "Rack",
-    "support": "Help",
-    "panel.widgets": "My widgets"
+    "workspace": "Workspace"
 }
