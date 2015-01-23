@@ -3694,7 +3694,7 @@ a.cke_smile img {
 .filters .filters-icons::after {
   content: " ";
   width: 100%;
-  clear: both;
+  float: left;
 }
 .drop-down-filters ul,
 .filters ul {
