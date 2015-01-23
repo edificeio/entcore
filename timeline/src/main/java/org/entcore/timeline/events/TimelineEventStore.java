@@ -11,7 +11,7 @@ import org.vertx.java.core.json.JsonObject;
 public interface TimelineEventStore {
 
 	List<String> FIELDS = Arrays.asList("resource", "sender", "message", "type",
-			"recipients", "comments", "add-comment", "sub-resource", "event-type");
+			"recipients", "comments", "add-comment", "sub-resource", "event-type", "date");
 
 	List<String> REQUIRED_FIELDS = Arrays.asList("message", "recipients", "type");
 
