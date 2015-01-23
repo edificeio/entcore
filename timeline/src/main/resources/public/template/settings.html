@@ -1,16 +1,27 @@
 <div ng-controller="Personalization">
 	<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
 		<div class="toggle cell">
-			<h1 translate content="panel.title"></h1>
+			<h1><i18n>panel.title</i18n></h1>
 			<div class="row">
 				<div class="twelve cell">
-					<h2 translate content="panel.themes"></h2>
+					<h2><i18n>panel.themes</i18n></h2>
 					<div class="twelve cell">
 						<div class="six cell reduce-block-four" ng-repeat="skin in skins.all" ng-click="saveTheme(skin, $event)" class="element">
 							<div class="twelve cell photo-preview">
 								<img ng-src="[[skin.path]]thumbnail.png" />
 							</div>
 							<em ng-click="saveTheme(skin, $event)" class="medium-importance centered twelve cell">[[lang.translate(skin.displayName)]]</em>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="twelve cell" ng-controller="Widgets">
+					<h2><i18n>panel.widgets</i18n></h2>
+					<div class="row">
+						<div ng-repeat="widget in widgets.all" ng-click="switchHide(widget, $event)" class="three cell" ng-class="{ inactive: widget.hide }">
+							<i class="[[widget.name]]-icon" ng-class="{ selected: !widget.hide }"></i>
+							<em class="medium-importance">[[lang.translate(widget.name)]]</em>
 						</div>
 					</div>
 				</div>
