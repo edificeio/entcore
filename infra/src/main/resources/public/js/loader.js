@@ -89,7 +89,7 @@ var loader = (function(){
 	basePath.length = basePath.length - 1;
 	basePath = basePath.join('/');
 
-	var loadScript = function(script, completePath){
+	var loadScript = function(script, completePath, async, callback){
 		var element = document.createElement('script');
 		element.type = "text/javascript";
 
@@ -98,6 +98,10 @@ var loader = (function(){
 		if(completePath){
 			src = script;
 			element.async = false;
+			if(async === true){
+				element.async = true;
+				element.onload = callback;
+			}
 			element.src = src;
 		}
 		else{
@@ -188,6 +192,24 @@ var loader = (function(){
 			} else {
 				if(typeof callback === 'function'){
 					callback();
+				}
+			}
+		},
+		openFile: function(params){
+			if(params.async){
+				if(params.ajax){
+					asyncLoadScript(params.url, params.success);
+				}
+				else{
+					loadScript(params.url, true, true, params.success);
+				}
+			}
+			else{
+				if(params.ajax){
+					syncLoadScript(params.url, true);
+				}
+				else{
+					loadScript(params.url, true);
 				}
 			}
 		}

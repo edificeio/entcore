@@ -1102,6 +1102,9 @@ h2{
 	strong{
 		color: @light;
 	}
+	a{
+		color: @dark;
+	}
 }
 
 h1{
@@ -1562,9 +1565,8 @@ i.zip-large{
 	margin-bottom: 15px;
 	.accordion{
 		h2{
-			border: 1px solid #ddd;
+			border: none;
 			background: @light;
-			border-bottom: 0;
 			font-size: 20px;
 			color: #fff;
 			font-family: Lato;
@@ -1573,7 +1575,7 @@ i.zip-large{
 			background: @dark;
 		}
 		.toggle{
-			border: 0;
+			border: none;
 			background: #eee;
 			.content{
 				h3{
@@ -1590,23 +1592,22 @@ i.zip-large{
 
 	.accordion:last-child{
 		h2{
-			border-bottom: 1px solid #fff;
+			border-bottom: none;
 		}
 	}
 
 	.accordion.opened{
 		h2{
-			border: 1px solid #ddd;
-			border-bottom: 0;
+			border: none;
 			background: #eee;
 			color: @light;
 		}
 		.toggle{
 			height: 350px;
-			border: 1px solid #ddd;
-			border-top: 0;
+			border: none;
 			padding: 10px;
 			overflow: auto;
+			margin-top: -1px;
 		}
 	}
 }

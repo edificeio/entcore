@@ -4962,7 +4962,7 @@ html.print body section {
   background: transparent;
 }
 .lightbox-view .icons-view .element .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
   border-color: transparent;
 }
 .lightbox-view .icons-view .element legend {
@@ -4970,7 +4970,7 @@ html.print body section {
   text-align: center;
 }
 .lightbox-view .icons-view .element.selected .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .lightbox-view nav.vertical li {
   padding-left: 10px;
@@ -4984,7 +4984,7 @@ html.print body section {
 }
 .lightbox-view .tabs section {
   border-bottom: 7px solid;
-  border-color: #1bbdec;
+  border-color: #23a9aa;
 }
 .lightbox-view .tabs header {
   margin-left: -2px;
@@ -4994,9 +4994,9 @@ html.print body section {
   margin-left: 0px;
 }
 .lightbox-view .tabs header.selected {
-  border-color: #1bbdec;
+  border-color: #23a9aa;
   border-bottom: 1px solid #fff;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .lightbox-view h2:first-of-type {
   margin-top: 0;
@@ -5385,7 +5385,7 @@ i.notes {
 }
 .tabs header {
   font-family: Lato;
-  color: #1bbdec;
+  color: #23a9aa;
   font-size: 14px;
   -webkit-border-top-left-radius: 6px;
   -webkit-border-top-right-radius: 6px;
@@ -5401,7 +5401,7 @@ i.notes {
 .tabs header.selected {
   border-color: #D9F1F1;
   border-bottom-color: #fff;
-  color: #013b4d;
+  color: #266881;
 }
 .lightbox-window {
   padding: 10px;
@@ -5411,7 +5411,7 @@ i.notes {
   background: transparent;
 }
 .lightbox-window .icons-view .element .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
   border-color: transparent;
 }
 .lightbox-window .icons-view .element legend {
@@ -5419,7 +5419,7 @@ i.notes {
   text-align: center;
 }
 .lightbox-window .icons-view .element.selected .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .lightbox-window nav.vertical li {
   padding-left: 10px;
@@ -5433,7 +5433,7 @@ i.notes {
 }
 .lightbox-window .tabs section {
   border-bottom: 7px solid;
-  border-color: #1bbdec;
+  border-color: #23a9aa;
 }
 .lightbox-window .tabs header {
   margin-left: -2px;
@@ -5443,9 +5443,9 @@ i.notes {
   margin-left: 0px;
 }
 .lightbox-window .tabs header.selected {
-  border-color: #1bbdec;
+  border-color: #23a9aa;
   border-bottom: 1px solid #fff;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .select-file input[type=text] {
   height: 29px;
@@ -5879,7 +5879,7 @@ filters {
 nav.stamps article {
   background: #eee;
   border-radius: 0;
-  color: #013b4d;
+  color: #266881;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -5912,7 +5912,7 @@ nav.stamps article:hover i.send-mail {
   margin: 7px;
 }
 nav.stamps article.selected {
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
 }
 nav.stamps article.selected i.send-mail {
@@ -5948,7 +5948,7 @@ nav.stamps article.selected a {
   border: 0;
 }
 .dominos .item .domino .bottom {
-  color: #013b4d;
+  color: #266881;
   background: #eee;
 }
 .dominos .item .domino .bottom .content {
@@ -6049,7 +6049,7 @@ nav.stamps article.selected a {
   color: #fff;
 }
 .grey {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
 }
 .grey a,
@@ -6059,7 +6059,7 @@ nav.stamps article.selected a {
   color: #fff;
 }
 .actions-list {
-  background: #013b4d;
+  background: #266881;
 }
 .actions-list a:hover {
   color: #FFF;
@@ -6093,7 +6093,7 @@ ul.thought-out-actions li {
   transition: background 250ms ease;
 }
 ul.thought-out-actions li h2 {
-  color: #013b4d;
+  color: #266881;
   margin: 0;
   font-size: 20px;
   text-align: left;
@@ -6101,10 +6101,10 @@ ul.thought-out-actions li h2 {
 ul.thought-out-actions li p {
   margin: 0;
   font-size: 12px;
-  color: #013b4d;
+  color: #266881;
 }
 ul.thought-out-actions li:hover {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 ul.thought-out-actions li:hover h2,
 ul.thought-out-actions li:hover p {
@@ -6158,7 +6158,7 @@ ul.thought-out-actions li:hover p {
   padding-top: 6px;
 }
 a {
-  color: #1bbdec;
+  color: #23a9aa;
   text-decoration: none;
 }
 ul.icons-tabs {
@@ -6187,13 +6187,13 @@ input[type=submit][disabled]:hover {
   box-sizing: border-box;
 }
 .drawing-zone article.media {
-  border: 1px dashed #1bbdec;
+  border: 1px dashed #23a9aa;
 }
 .drawing-zone article.media img {
   display: block;
 }
 .navbar {
-  background: #013b4d;
+  background: #266881;
   width: 100%;
 }
 .navbar .welcome-message {
@@ -6247,7 +6247,7 @@ input[type=button].cancel {
   height: 100px;
 }
 .icons-view.apps .element legend {
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
   padding: 0;
   padding-left: 5px;
@@ -6269,7 +6269,7 @@ input[type=button].cancel {
   color: #ffffff;
 }
 .icons-view.apps .element:hover legend {
-  background: #013b4d;
+  background: #266881;
 }
 .small-text a,
 .small-text em,
@@ -6308,12 +6308,12 @@ input[type=button].cancel {
   margin-right: 8px;
 }
 .icons-select .current.editing {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   padding-left: 68px;
 }
 .icons-select .options-list {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   font-size: 14px;
   -webkit-border-bottom-left-radius: 3px;
@@ -6368,11 +6368,11 @@ input[type=search] {
 }
 .badge {
   line-height: 16px;
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
 }
 .label-badge:hover {
-  background: #013b4d;
+  background: #266881;
 }
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0px 1000px #f3f3f3 inset;
@@ -6411,16 +6411,16 @@ input:-webkit-autofill {
   }
 }
 .tooltip .content {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   border-radius: 0;
 }
 .tooltip .arrow {
-  color: #013b4d;
+  color: #266881;
 }
 .loading-panel {
   background: #fff;
-  border: 1px solid #1bbdec;
+  border: 1px solid #23a9aa;
 }
 .loading-panel img {
   display: none;
@@ -6443,7 +6443,7 @@ button,
 input[type=button],
 a.button,
 input[type=submit] {
-  background: #1bbdec;
+  background: #23a9aa;
   padding: 9px 18px;
   color: #fff;
   font-size: 15px;
@@ -6464,7 +6464,7 @@ nav.horizontal a {
   margin-right: 5px;
 }
 nav.horizontal a:hover {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 @media screen and (max-width: 550px) {
   nav.horizontal {
@@ -6484,7 +6484,7 @@ button:hover,
 input[type=button]:hover,
 a.button:hover,
 input[type=submit]:hover {
-  background: #013b4d;
+  background: #266881;
 }
 button.cancel:hover,
 input[type=button].cancel:hover,
@@ -6500,7 +6500,7 @@ nav.vertical h2 {
   font-family: Arial;
   font-weight: normal;
   font-variant: small-caps;
-  color: #1bbdec;
+  color: #23a9aa;
   margin-top: 20px;
 }
 nav.vertical ul {
@@ -6538,10 +6538,10 @@ nav.vertical ul li a i.arrow::before {
   content: "▸";
   font-size: 16px;
   line-height: 13px;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 nav.vertical ul li a.selected {
-  border-right: 4px solid #1bbdec;
+  border-right: 4px solid #23a9aa;
   background: #eee;
 }
 nav.vertical ul li a.selected i.arrow::before {
@@ -6549,7 +6549,7 @@ nav.vertical ul li a.selected i.arrow::before {
   color: #666;
 }
 nav.vertical ul li a:hover {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 nav.vertical ul li a.opened i.arrow::before {
   content: "▾";
@@ -6568,7 +6568,7 @@ nav.vertical ul.green li a.green {
   background: none;
 }
 nav.vertical ul.green li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical ul.orange {
   background: none;
@@ -6579,7 +6579,7 @@ nav.vertical ul.orange li a.orange {
   background: none;
 }
 nav.vertical ul.orange li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical ul.pink {
   background: none;
@@ -6590,7 +6590,7 @@ nav.vertical ul.pink li a.pink {
   background: none;
 }
 nav.vertical ul.pink li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical ul.cyan {
   background: none;
@@ -6601,7 +6601,7 @@ nav.vertical ul.cyan li a.cyan {
   background: none;
 }
 nav.vertical ul.cyan li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical ul.purple {
   background: none;
@@ -6612,7 +6612,7 @@ nav.vertical ul.purple li a.purple {
   background: none;
 }
 nav.vertical ul.purple li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical ul.yellow {
   background: none;
@@ -6623,13 +6623,13 @@ nav.vertical ul.yellow li a.yellow {
   background: none;
 }
 nav.vertical ul.yellow li a.selected {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical a.classic-link {
   display: block;
   padding: 5px;
   padding-left: 11px;
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
   font-family: Lato;
   font-weight: 300;
@@ -6646,7 +6646,7 @@ nav.vertical a.classic-link {
   border: 1px solid transparent;
 }
 nav.vertical a.classic-link:hover {
-  background: #013b4d;
+  background: #266881;
 }
 nav.vertical a.green i.arrow::before,
 nav.vertical a.orange i.arrow::before,
@@ -6677,14 +6677,6 @@ h5 {
   margin-bottom: 10px;
   line-height: normal;
 }
-h1,
-h2 {
-  text-transform: uppercase;
-  font-weight: normal;
-  text-align: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
 h2 {
   font-size: 30px;
   max-width: 930px;
@@ -6692,17 +6684,17 @@ h2 {
   margin-right: auto;
 }
 h2 strong {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 h1 {
-  color: #1bbdec;
+  color: #23a9aa;
   font-size: 48px;
 }
 h1:first-child {
   margin-top: 0px;
 }
 h3 {
-  color: #1bbdec;
+  color: #23a9aa;
   text-align: left;
   font-size: 22px;
 }
@@ -6727,12 +6719,12 @@ table tr.underline {
   transition: background 250ms ease;
 }
 table tr.checked {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   border-color: #333;
 }
 table tr.checked a:hover {
-  color: #51ccf5;
+  color: #23a9aa;
 }
 table tr.checked:hover {
   background: #333;
@@ -6745,20 +6737,20 @@ table thead tr {
   font-family: Lato;
   font-weight: 700;
   font-size: 1.3em;
-  border-bottom: 4px solid #1bbdec;
+  border-bottom: 4px solid #23a9aa;
 }
 table thead tr:hover {
   background: #fff;
 }
 .notification {
-  background: #d9f1f1;
-  border-left: 10px solid #1bbdec;
+  background: #eeeeee;
+  border-left: 10px solid #23a9aa;
 }
 .notification article {
   margin-left: 0px;
 }
 .toggle-panel {
-  background: #013b4d;
+  background: #266881;
   padding: 20px;
   color: #fff;
   -o-transition: opacity 250ms ease;
@@ -6809,7 +6801,7 @@ thead th a {
   color: #fff;
 }
 thead th a.selected {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 header {
   background: transparent;
@@ -6823,10 +6815,10 @@ header {
   margin-top: 35px;
 }
 .calendar.widget .content .day.today {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .calendar.widget .content h2 {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .last-mails-widget,
 .pages-widget {
@@ -6852,7 +6844,7 @@ header {
 .pages-widget ul li {
   list-style-type: none;
   padding-left: 7px;
-  border-left: 5px solid #1bbdec;
+  border-left: 5px solid #23a9aa;
   line-height: 22px;
 }
 .last-mails-widget ul li a,
@@ -6887,11 +6879,11 @@ header {
   text-align: center;
 }
 .icons-view .element legend a {
-  color: #013b4d;
+  color: #266881;
 }
 .icons-view .element.selected .container {
   border: none;
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .tabs section {
   background: #fff;
@@ -6920,7 +6912,7 @@ filters p:first-child i {
   width: 100%;
   left: 0;
   margin-left: 0;
-  background: #013b4d;
+  background: #266881;
   height: 40px;
 }
 .toggle-buttons button {
@@ -6941,7 +6933,7 @@ filters p:first-child i {
   color: #888;
 }
 .toggle-buttons button:hover {
-  color: #1bbdec;
+  color: #23a9aa;
   background: #333;
 }
 .toggle-buttons button[disabled]:hover,
@@ -6966,7 +6958,7 @@ filters p:first-child i {
   color: #fff;
 }
 .toggle-buttons .contextual-link a {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .toggle-panel.hide {
   width: 300px;
@@ -7030,7 +7022,7 @@ textarea {
   -ms-border-radius: 0px;
   -o-border-radius: 0px;
   border-radius: 0px;
-  border-left: 10px solid #1bbdec;
+  border-left: 10px solid #23a9aa;
 }
 .success {
   background: #D9F1F1;
@@ -7083,11 +7075,11 @@ textarea {
   color: #008cba;
 }
 .comment {
-  background: #d9f1f1;
+  background: #eeeeee;
   color: #666;
 }
 article.selected {
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
 }
 article.selected a {
@@ -7173,10 +7165,10 @@ i.zip-large {
   padding: 0;
 }
 .datepicker table thead tr {
-  background: #013b4d;
+  background: #266881;
 }
 .datepicker table thead tr th:hover {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .datepicker table tr {
   background: #fff;
@@ -7221,7 +7213,7 @@ i.zip-large {
   background: transparent;
 }
 .lightbox-view .icons-view .element .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
   border-color: transparent;
 }
 .lightbox-view .icons-view .element legend {
@@ -7229,7 +7221,7 @@ i.zip-large {
   text-align: center;
 }
 .lightbox-view .icons-view .element.selected .img.container {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .lightbox-view nav.vertical li {
   padding-left: 10px;
@@ -7243,7 +7235,7 @@ i.zip-large {
 }
 .lightbox-view .tabs section {
   border-bottom: 7px solid;
-  border-color: #1bbdec;
+  border-color: #23a9aa;
 }
 .lightbox-view .tabs header {
   margin-left: -2px;
@@ -7253,9 +7245,9 @@ i.zip-large {
   margin-left: 0px;
 }
 .lightbox-view .tabs header.selected {
-  border-color: #1bbdec;
+  border-color: #23a9aa;
   border-bottom: 1px solid #fff;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .lightbox-view h2:first-of-type {
   margin-top: 0;
@@ -7292,14 +7284,14 @@ i.zip-large {
 }
 .accordions .accordion h2 {
   border: 1px solid #ddd;
-  background: #1bbdec;
+  background: #23a9aa;
   border-bottom: 0;
   font-size: 20px;
   color: #fff;
   font-family: Lato;
 }
 .accordions .accordion h2:hover {
-  background: #013b4d;
+  background: #266881;
 }
 .accordions .accordion .toggle {
   border: 0;
@@ -7307,7 +7299,7 @@ i.zip-large {
 }
 .accordions .accordion .toggle .content h3 {
   font-weight: normal;
-  color: #1bbdec;
+  color: #23a9aa;
   font-size: 16px;
 }
 .accordions .accordion .toggle .content select,
@@ -7322,7 +7314,7 @@ i.zip-large {
   border: 1px solid #ddd;
   border-bottom: 0;
   background: #eee;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .accordions .accordion.opened .toggle {
   height: 350px;
@@ -7342,13 +7334,13 @@ select {
   background: #eee;
 }
 .selectable-list li.selected {
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
 }
 .side-tabs ul li {
   color: #fff;
-  background: #013b4d;
-  border-color: #1bbdec;
+  background: #266881;
+  border-color: #23a9aa;
   border-right: none;
 }
 .side-tabs ul li:first-child {
@@ -7358,12 +7350,12 @@ select {
   border-bottom-left-radius: 5px;
 }
 .side-tabs ul li.selected:first-child {
-  border-top: 1px solid #1bbdec;
+  border-top: 1px solid #23a9aa;
 }
 .side-tabs ul li.selected {
   color: #2a2829;
   background: #FCFCFC;
-  border-color: #1bbdec;
+  border-color: #23a9aa;
   border-right: none;
   border-top: none;
   border-bottom: none;
@@ -7374,19 +7366,19 @@ select {
   -ms-border-radius: 0;
   -o-border-radius: 0;
   border-radius: 0;
-  border-color: #1bbdec;
+  border-color: #23a9aa;
 }
 .humane-original-success {
   background: #b2d663;
 }
 .progress-bar .filled {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .progress-bar .filled.small {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .illustrated-article .illustration legend {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   margin: 0;
 }
@@ -7396,7 +7388,7 @@ select {
 .illustrated-article .illustrated-text {
   border-top: 1px dashed #ccc;
   background: #f5f5f5;
-  border-right: 7px solid #1bbdec;
+  border-right: 7px solid #23a9aa;
   border-radius: 0;
   padding: 8px;
 }
@@ -7409,7 +7401,7 @@ select {
   min-height: 30px;
   line-height: 30px;
   list-style-type: none;
-  color: #1bbdec;
+  color: #23a9aa;
   cursor: pointer !important;
 }
 .menu-items li:hover {
@@ -7515,7 +7507,7 @@ select {
   background-position: 4px !important;
   padding-left: 29px;
   font-family: Arial;
-  color: #1bbdec;
+  color: #23a9aa;
   background-size: 19px;
   background-color: transparent;
   border: none;
@@ -7527,22 +7519,22 @@ select {
   color: #000;
 }
 .square-menu button {
-  background: #013b4d;
+  background: #266881;
   border-radius: 0;
   color: #fff;
 }
 .square-menu button:hover {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .grid-media {
-  outline: 1px solid #1bbdec;
+  outline: 1px solid #23a9aa;
 }
 .editor.drawing-grid .grid-add-row {
-  background: #013b4d;
+  background: #266881;
   border-radius: 0;
 }
 .editor.drawing-grid .grid-add-row:hover {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .color-picker {
   right: 42px;
@@ -7584,10 +7576,10 @@ select {
   background: #b2d663;
 }
 .color-picker button.blue {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .color-picker button.black {
-  background: #013b4d;
+  background: #266881;
 }
 .media-container.pink {
   background: #db6087;
@@ -7626,7 +7618,7 @@ select {
   transition: background 250ms ease;
 }
 .media-container.blue {
-  background: #1bbdec;
+  background: #23a9aa;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
   -webkit-transition: background 250ms ease;
@@ -7639,7 +7631,7 @@ select {
   color: #fff;
 }
 .media-container.black {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -7843,12 +7835,12 @@ select {
 }
 .share .autocomplete > em {
   border: none;
-  border-left: 8px solid #1bbdec;
-  background: #d9f1f1;
+  border-left: 8px solid #23a9aa;
+  background: #eeeeee;
   color: #666;
 }
 .share .autocomplete > em:hover {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
 }
 .share tr {
@@ -7918,11 +7910,11 @@ select {
 }
 .drop-down-filters p:first-child:hover,
 .filters p:first-child:hover {
-  background: #013b4d;
+  background: #266881;
 }
 .drop-down-filters .wrapper,
 .filters .wrapper {
-  background: #013b4d;
+  background: #266881;
   box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
   width: 100%;
 }
@@ -8027,7 +8019,7 @@ select {
   background: #db6087;
 }
 .theme-preview.default {
-  background: #1bbdec;
+  background: #23a9aa;
 }
 .drop-down-button {
   position: absolute;
@@ -8050,7 +8042,7 @@ select {
   border-top-right-radius: 3px;
   font-size: 15px;
   background: #fff;
-  border: 1px solid #013b4d;
+  border: 1px solid #266881;
   color: #000;
   -o-transition: background 250ms ease;
   -moz-transition: background 250ms ease;
@@ -8063,7 +8055,7 @@ select {
   padding: 0;
   margin: 0;
   background: #fff;
-  border: 1px solid #013b4d;
+  border: 1px solid #266881;
   border-top: 0;
   position: absolute;
   width: 100%;
@@ -8086,12 +8078,12 @@ select {
   color: #444;
 }
 .drop-down-button .options ul li:hover {
-  background: #013b4d;
+  background: #266881;
   color: #fff;
 }
 .drop-down-button.hidden label {
   border-radius: 3px;
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
   border: 1px solid transparent;
 }
@@ -8100,7 +8092,7 @@ select {
 }
 .drop-down-button.hidden label:hover {
   background: #fff;
-  border: 1px solid #1bbdec;
+  border: 1px solid #23a9aa;
   color: #000;
 }
 .select-file input[type=text],
@@ -8119,7 +8111,7 @@ select {
   text-align: center;
   font-family: Lato;
   font-size: 35px;
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
   margin-bottom: 1px;
   -o-transition: background 250ms ease;
@@ -8129,7 +8121,7 @@ select {
 }
 .letter-picker .lightbox-view h2:hover {
   background: #fff;
-  color: #1bbdec;
+  color: #23a9aa;
 }
 .letter-picker .lightbox-view h2.disabled {
   background: #666;
@@ -8139,7 +8131,7 @@ select {
 h1.letter-picker {
   height: 50px;
   width: 50px;
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
   line-height: 50px;
   text-align: center;
@@ -8157,7 +8149,7 @@ h1.letter-picker:first-child {
   margin-top: 15px;
 }
 h1.letter-picker:hover {
-  background: #013b4d;
+  background: #266881;
 }
 hr.line {
   border-bottom: 1px dashed #ddd;
@@ -8196,7 +8188,7 @@ ul.toc li a {
   display: block;
 }
 .lightbox-view .tabs.linker .illustrated-list li.selected {
-  background: #013b4d;
+  background: #266881;
 }
 .lightbox-view .tabs.linker .illustrated-list li.selected a {
   color: #fff;
@@ -8219,7 +8211,7 @@ nav.illustrated-links ul li {
   list-style-type: none;
   display: table;
   margin-bottom: 12px;
-  border-bottom: 8px solid #1bbdec;
+  border-bottom: 8px solid #23a9aa;
 }
 nav.illustrated-links ul li .illustration {
   display: table-cell;
@@ -8245,7 +8237,7 @@ nav.illustrated-links ul li .content h1 {
   text-align: left;
   text-transform: none;
   font-weight: bold;
-  color: #013b4d;
+  color: #266881;
 }
 nav.illustrated-links ul li .content em,
 nav.illustrated-links ul li .content strong {
@@ -8273,7 +8265,7 @@ nav.illustrated-links ul li .content em {
   opacity: 1;
 }
 .edit-grid .grid-media {
-  outline: 1px solid #1bbdec;
+  outline: 1px solid #23a9aa;
   pointer-events: all;
 }
 .edit-grid .square-menu button,
@@ -8307,7 +8299,7 @@ nav.illustrated-links ul li .content em {
   opacity: 1;
 }
 .blur-grid .edit-grid .grid-media {
-  outline: 1px solid #1bbdec;
+  outline: 1px solid #23a9aa;
   pointer-events: all;
 }
 .blur-grid .edit-grid .square-menu button,
@@ -8315,7 +8307,7 @@ nav.illustrated-links ul li .content em {
   display: block;
 }
 .page-markers .marker {
-  border-color: transparent transparent #013b4d transparent;
+  border-color: transparent transparent #266881 transparent;
   color: #fff;
   font-family: Lato;
 }
@@ -8324,7 +8316,7 @@ nav.illustrated-links ul li .content em {
 }
 .page-markers .marker:nth-child(2) {
   color: #fff;
-  border-color: transparent transparent #1bbdec transparent;
+  border-color: transparent transparent #23a9aa transparent;
 }
 .page-markers .marker:nth-child(2) a {
   color: #fff;
@@ -8366,7 +8358,7 @@ input[type=text][disabled] {
 }
 .patchwork .row.selected,
 .patchwork .row:nth-child(2n).selected {
-  background: #1bbdec;
+  background: #23a9aa;
   color: #fff;
 }
 .patchwork .row.selected h3,
@@ -8393,18 +8385,18 @@ input[type=text][disabled] {
 }
 .folder-large.droptarget,
 .folder-list-item.droptarget {
-  background-color: #013b4d;
+  background-color: #266881;
 }
 carousel nav ul li {
-  color: #013b4d;
+  color: #266881;
   -o-transition: color 250ms ease;
   -moz-transition: color 250ms ease;
   -webkit-transition: color 250ms ease;
   transition: color 250ms ease;
 }
 carousel nav ul li.current {
-  color: #1bbdec;
+  color: #23a9aa;
 }
 carousel nav ul li:hover {
-  color: #1bbdec;
+  color: #23a9aa;
 }

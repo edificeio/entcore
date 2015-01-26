@@ -76,6 +76,9 @@ var notify = {
 	},
 	info: function(message){
 		this.message('info', message)
+	},
+	success: function(message){
+		this.message('success', message);
 	}
 };
 
