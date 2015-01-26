@@ -73,34 +73,61 @@ public class Starter extends BaseServer {
 		addController(eventStoreController);
 	}
 
-	private void deployPreRequiredModules(JsonArray array, final VoidHandler handler) {
+	private void deployPreRequiredModules(final JsonArray array, final VoidHandler handler) {
 		if (array == null || array.size() == 0) {
 			handler.handle(null);
 			return;
 		}
-		final AtomicInteger nb = new AtomicInteger(array.size());
-		boolean notDeploy = true;
-		for (Object o : array) {
-			if (o instanceof JsonObject) {
-				notDeploy = false;
-				deployModule((JsonObject) o, false, new Handler<AsyncResult<String>>() {
-					@Override
-					public void handle(AsyncResult<String> ar) {
-						if (ar.failed()) {
-							log.error("Error loading module.", ar.cause());
-						}
-						if (nb.decrementAndGet() == 0) {
-							handler.handle(null);
-						}
-					}
-				});
-			} else {
-				nb.decrementAndGet();
+		final Handler [] handlers = new Handler[array.size() + 1];
+		handlers[handlers.length - 1] = new Handler<AsyncResult<String>>() {
+
+			@Override
+			public void handle(AsyncResult<String> event) {
+				if (event.succeeded()) {
+					handler.handle(null);
+				} else {
+					log.error("Error deploying pre-required module.", event.cause());
+					vertx.stop();
+				}
 			}
+		};
+		for (int i = array.size() - 1; i >= 0; i--) {
+			final int j = i;
+			handlers[i] = new Handler<AsyncResult<String>>() {
+
+				@Override
+				public void handle(AsyncResult<String> event) {
+					if (event.succeeded()) {
+						deployModule(array.<JsonObject>get(j), false, handlers[j + 1]);
+					} else {
+						log.error("Error deploying pre-required module.", event.cause());
+						vertx.stop();
+					}
+				}
+			};
+
 		}
-		if (notDeploy) {
-			handler.handle(null);
-		}
+		handlers[0].handle(new AsyncResult<String>() {
+			@Override
+			public String result() {
+				return null;
+			}
+
+			@Override
+			public Throwable cause() {
+				return null;
+			}
+
+			@Override
+			public boolean succeeded() {
+				return true;
+			}
+
+			@Override
+			public boolean failed() {
+				return false;
+			}
+		});
 	}
 
 	private void deployModule(JsonObject module, boolean internal, Handler<AsyncResult<String>> handler) {
