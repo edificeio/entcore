@@ -159,9 +159,9 @@
 									</drop-down>
 								</td>
 							</tr>
-							<tr ng-class="{ checked: user.selected, disabled: user.blocked }"
+							<tr ng-class="{ checked: user.selected, disabled: user.blocked || user.id === me.userId }"
 								ng-repeat="user in users.where({ type: display.show }) | limitTo:display.limit">
-								<td><input type="checkbox" ng-model="user.selected" /></td>
+								<td><input type="checkbox" ng-model="user.selected" ng-if="user.id !== me.userId"/></td>
 								<td class="action-cell centered">
 									<img class="eight" ng-src="/userbook/avatar/[[user.id]]?thumbnail=48x48" />
 								</td>
