@@ -757,6 +757,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		return date.format(dateString.split(' ')[0], 'D MMMM YYYY')
 	}
 
+	$scope.shortDate = function(dateString){
+		if(!dateString){
+			return moment().format('L');
+		}
+
+		return date.format(dateString.split(' ')[0], 'L')
+	}
+
 	$scope.toggleComments = function(document){
 		document.showComments = !document.showComments;
 	};
