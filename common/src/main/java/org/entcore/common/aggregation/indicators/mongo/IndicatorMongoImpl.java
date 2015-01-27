@@ -61,12 +61,20 @@ public class IndicatorMongoImpl extends Indicator{
 	/* WRITE TO DB */
 
 	/**
-	 * Changes the key used when writing the aggregated amount in the mongo statistics collection.
+	 * Changes the key used when writing the aggregated amount in the Mongo collection.
 	 * If left unchanged the indicator key will be used.
 	 * @param key : The new key
 	 */
 	public void setWriteKey(String key){
 		this.writtenIndicatorKey = key;
+	}
+
+	/**
+	 * Returns the key used when writing the aggregated amount in the Mongo collection.
+	 * @return : String key
+	 */
+	public String getWriteKey(){
+		return this.writtenIndicatorKey;
 	}
 
 	//Callback to the writeStats function
