@@ -354,7 +354,27 @@ module.directive('lightbox', function($compile){
 
 			scope.$watch('show', function(newVal){
 				if(newVal){
-					var lightboxWindow = element.find('.lightbox-view');
+                    var lightboxWindow = element.find('.lightbox-view');
+                    var backdrop = element.find('.lightbox-background');
+
+                    //Backup overflow hidden elements + z-index of parents
+                    var parentElements = backdrop.parents()
+
+                    scope.backup = {
+                        overflowX: _.filter(parentElements, function(parent){ return $(parent).css('overflow-x') == 'hidden' }),
+                        overflowY: _.filter(parentElements, function(parent){ return $(parent).css('overflow-y') == 'hidden' }),
+                        zIndex: _.chain(parentElements)
+                            .map(function(parent){ return {element: $(parent), index: parseInt($(parent).css('z-index'))}})
+                            .filter(function(parentObj){ return parentObj.index > 0 }).value()
+                    }
+
+                    //Removing overflow properties
+                    _.forEach(scope.backup.overflowX, function(element){ $(element).css('overflow-x', 'visible') })
+                    _.forEach(scope.backup.overflowY, function(element){ $(element).css('overflow-y', 'visible') })
+
+                    //Ensuring proper z-index
+                    _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', 9999) })
+
 					//delay to account for templates loading inside the lightbox
 					setTimeout(function(){
 						lightboxWindow.fadeIn();
@@ -362,14 +382,20 @@ module.directive('lightbox', function($compile){
 						lightboxWindow.css({
 							top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
 						});
-					}, 10);
+					}, 100);
 
-					var backdrop = element.find('.lightbox-background');
 					setTimeout(function(){
 						backdrop.fadeIn();
 					}, 0);
 				}
 				else{
+                    if(scope.backup){
+                        //Restoring stored elements properties
+                        _.forEach(scope.backup.overflowX, function(element){ $(element).css('overflow-x', 'hidden') })
+                        _.forEach(scope.backup.overflowY, function(element){ $(element).css('overflow-y', 'hidden') })
+                        _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', elementObj.index) })
+                    }
+
 					element.find('.lightbox-view').fadeOut();
 					element.find('.lightbox-background').fadeOut();
 				}
