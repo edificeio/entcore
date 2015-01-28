@@ -7,7 +7,7 @@
     "e403": "Le serveur a refusé votre requête",
     "e404": "Adresse introuvable",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
-    "e500": "Le serveur a rencontré une erreur",
+    "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "export": "Télécharger mes données",
     "export.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "export.download": "ici.",

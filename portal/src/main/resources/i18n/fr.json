@@ -30,7 +30,7 @@
     "e404.page": "Ce fichier n'existe pas.",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
     "e413": "Ce fichier est trop gros",
-    "e500": "Le serveur a rencontré une erreur",
+    "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "edit": "Modifier",
     "forum": "Forum",
     "friday": "vendredi",

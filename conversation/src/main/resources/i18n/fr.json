@@ -14,7 +14,7 @@
     "e403": "Le serveur a refusé votre requête",
     "e404": "Adresse introuvable",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
-    "e500": "Le serveur a rencontré une erreur",
+    "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "folder.empty": "Ce dossier est vide",
     "from": "De",
     "group.AdminLocal": "Tous les administrateurs locaux",
