@@ -103,7 +103,7 @@ User.prototype.saveAccount = function(cb){
 			return user.id;
 		});
 	}
-	http().postJson('/directory/class/' + model.me.classes[0] + '/user', accountData).done(function(data){
+	http().postJson('/directory/class/' + model.me.preferences.selectedClass + '/user', accountData).done(function(data){
 		this.updateData(data);
 		if(typeof cb === 'function'){
 			cb();
