@@ -310,7 +310,7 @@ public class ManualFeeder extends BusModBase {
 				.putString("classId", classId)
 				.putString("profile", profile)
 				.putObject("props", user);
-		if (childrenIds != null) {
+		if (childrenIds != null && childrenIds.size() > 0) {
 			related =
 					"WITH u " +
 					"MATCH (student:User) " +
