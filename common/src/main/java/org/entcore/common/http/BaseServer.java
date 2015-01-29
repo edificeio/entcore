@@ -33,6 +33,7 @@ import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
+import org.entcore.common.utils.Config;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
@@ -55,6 +56,7 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
+		Config.getInstance().setConfig(config);
 		if (config.getBoolean("neo4j", true)) {
 			Neo4j.getInstance().init(getEventBus(vertx),
 					config.getString("neo4j-address", "wse.neo4j.persistor"));
