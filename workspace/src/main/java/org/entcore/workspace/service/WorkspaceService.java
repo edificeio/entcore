@@ -1659,6 +1659,7 @@ public class WorkspaceService extends BaseController {
 			log.warn(e.getMessage(), e);
 		}
 		final String folder = tempFolder;
+		final String cleanedFolder = folder.replaceAll(Pattern.quote("\\"), Matcher.quoteReplacement ("\\\\")).replaceAll(Pattern.quote("\""), Matcher.quoteReplacement ("\\\""));
 
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -1691,7 +1692,7 @@ public class WorkspaceService extends BaseController {
 								public void handle(Message<JsonObject> event) {
 									if ("ok".equals(event.body().getString("status"))){
 										JsonObject parent = event.body().getObject("result");
-										String obj = "{ \"$set\" : { \"folder\": \"" + folder +
+										String obj = "{ \"$set\" : { \"folder\": \"" + cleanedFolder +
 													"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"";
 										if(parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
 											obj += ", \"shared\" : "+parent.getArray("shared").toString()+" }}";
@@ -1717,15 +1718,9 @@ public class WorkspaceService extends BaseController {
 							});
 
 						} else {
-							String obj;
-							if (folder != null && !folder.trim().isEmpty()) {
-								obj = "{ \"$set\" : { \"folder\": \"" + folder +
-										"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
-										" \"$unset\" : { \"shared\": 1 }}";
-							} else {
-								obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
-										" \"$unset\" : { \"folder\" : 1, \"shared\": 1 }}";
-							}
+							String obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
+									" \"$unset\" : { \"folder\" : 1, \"shared\": 1 }}";
+
 							mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
 									new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
 								@Override
@@ -1824,6 +1819,7 @@ public class WorkspaceService extends BaseController {
 					String folder = getOrElse(request.params().get("folder"), "");
 					try {
 						folder = URLDecoder.decode(folder, "UTF-8");
+						folder = folder.replaceAll(Pattern.quote("\\"), Matcher.quoteReplacement ("\\\\")).replaceAll(Pattern.quote("\""), Matcher.quoteReplacement ("\\\""));
 					} catch (UnsupportedEncodingException e) {
 						log.warn(e.getMessage(), e);
 					}

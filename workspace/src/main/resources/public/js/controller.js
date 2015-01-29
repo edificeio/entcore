@@ -613,7 +613,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		}
 
 		if(folderString !== ''){
-			path += '/' + folderString;
+			path += '/' + encodeURIComponent(folderString);
 		}
 
 		http().get(path, params).done(function(documents){
@@ -971,7 +971,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
 			var basePath = 'documents/move/' + selectedDocumentsIds;
 			if(folderString !== ''){
-				basePath += '/' + folderString;
+				basePath += '/' + encodeURIComponent(folderString);
 			}
 
 			http().put(basePath).done(function(){
@@ -1008,7 +1008,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 		if(origin.file){
 			var basePath = 'documents/move/' + origin._id;
 			if(folderString !== ''){
-				basePath += '/' + folderString;
+				basePath += '/' + encodeURIComponent(folderString);
 			}
 
 			http().put(basePath).done(function(){
@@ -1040,7 +1040,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout){
 			basePath += '/copy/' + selectedDocumentsIds;
 			var folderString = folderToString($scope.folder.children[0], folder);
 			if(folderString !== ''){
-				basePath += '/' + folderString;
+				basePath += '/' + encodeURIComponent(folderString);
 			}
 
 			if(selectedDocumentsIds.length > 0){

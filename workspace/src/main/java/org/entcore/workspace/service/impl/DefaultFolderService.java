@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.entcore.common.share.ShareService;
@@ -207,7 +208,7 @@ public class DefaultFolderService implements FolderService {
 				final String path, final Handler<Either<String, JsonObject>> result) {
 		final String folderAttr = "Trash".equals(path) ? "old-folder" : "folder";
 		QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
-				.regex(Pattern.compile("^" + folder + "($|_)"));
+				.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 		mongo.distinct(DOCUMENTS_COLLECTION, folderAttr, MongoQueryBuilder.build(q),
 				new Handler<Message<JsonObject>>() {
 					@Override
@@ -228,7 +229,7 @@ public class DefaultFolderService implements FolderService {
 								QueryBuilder qf = QueryBuilder.start("owner").is(owner.getUserId())
 										.put(folderAttr).is(dir);
 								MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-								modifier.set("folder", dir.replaceFirst("^" + folder, dest));
+								modifier.set("folder", dir.replaceFirst("^" + Pattern.quote(folder), Matcher.quoteReplacement(dest)));
 								mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(qf),
 										modifier.build(), false, true, new Handler<Message<JsonObject>>() {
 									@Override
@@ -271,7 +272,7 @@ public class DefaultFolderService implements FolderService {
 						folder != null && !folder.trim().isEmpty() && n1 != null && !n1.trim().isEmpty()) {
 					final String folderAttr = "folder";
 					QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
-							.regex(Pattern.compile("^" + folder + "($|_)"));
+							.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 					mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
 							new Handler<Message<JsonObject>>() {
 						@Override
@@ -317,7 +318,7 @@ public class DefaultFolderService implements FolderService {
 											dest.putString("created", now);
 											dest.putString("modified", now);
 											dest.putString("folder", dest.getString("folder", "")
-													.replaceFirst("^" + folder, destFolder));
+													.replaceFirst("^" + Pattern.quote(folder),  Matcher.quoteReplacement(destFolder)));
 											insert.add(dest);
 											String filePath = orig.getString("file");
 											if (filePath != null) {
@@ -387,7 +388,7 @@ public class DefaultFolderService implements FolderService {
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty()) {
 							QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
-									.regex(Pattern.compile("^" + folder + "($|_)"));
+									.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 							MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 							modifier.rename("folder", "old-folder");
 							mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
@@ -427,7 +428,7 @@ public class DefaultFolderService implements FolderService {
 				String folder = event.body().getObject("result", new JsonObject()).getString("folder");
 				if ("ok".equals(event.body().getString("status")) && folder != null && !folder.trim().isEmpty()) {
 					QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
-							.regex(Pattern.compile("^" + folder + "($|_)"));
+							.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 					JsonObject keys = new JsonObject().putNumber("metadata", 1)
 							.putNumber("owner", 1).putNumber("name", 1).putNumber("file", 1);
 					final JsonObject query = MongoQueryBuilder.build(q);
@@ -507,9 +508,9 @@ public class DefaultFolderService implements FolderService {
 
 		if (path != null && !path.trim().isEmpty()) {
 			if (hierarchical) {
-				q = q.put("folder").regex(Pattern.compile("^" + path + "_[^_]+$"));
+				q = q.put("folder").regex(Pattern.compile("^" + Pattern.quote(path) + "_[^_]+$"));
 			} else {
-				q = q.put("folder").regex(Pattern.compile("^" + path + "_"));
+				q = q.put("folder").regex(Pattern.compile("^" + Pattern.quote(path) + "_"));
 			}
 		} else if (hierarchical) {
 			q = q.put("folder").regex(Pattern.compile("^[^_]+$"));
@@ -542,7 +543,7 @@ public class DefaultFolderService implements FolderService {
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty()) {
 							QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
-									.regex(Pattern.compile("^" + folder + "($|_)")).put("old-folder").exists(true);
+									.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)")).put("old-folder").exists(true);
 							MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 							modifier.rename("old-folder", "folder");
 							mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
@@ -580,7 +581,7 @@ public class DefaultFolderService implements FolderService {
 				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
 
 				QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId())
-						.put("folder").regex(Pattern.compile("^" + folder + "($|_)"))
+						.put("folder").regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"))
 						.put("_id").notEquals(id);
 
 				mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q), new Handler<Message<JsonObject>>() {
@@ -676,8 +677,8 @@ public class DefaultFolderService implements FolderService {
 
 						QueryBuilder targetQuery = QueryBuilder.start("owner").is(owner.getUserId());
 						targetQuery.or(
-								QueryBuilder.start("folder").regex(Pattern.compile("^" + folder + "($|_)")).get(),
-								QueryBuilder.start("old-folder").regex(Pattern.compile("^" + folder + "($|_)")).get()
+								QueryBuilder.start("folder").regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)")).get(),
+								QueryBuilder.start("old-folder").regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)")).get()
 								);
 
 						mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(targetQuery), new Handler<Message<JsonObject>>() {
@@ -713,10 +714,10 @@ public class DefaultFolderService implements FolderService {
 										JsonObject updateMatcher = MongoQueryBuilder.build(QueryBuilder.start("_id").is(id));
 										MongoUpdateBuilder updateModifier = new MongoUpdateBuilder();
 										if(childOldFolder != null || childFolder.equals("Trash")){
-											String newPath = childOldFolder.lastIndexOf("_") < 0 ? newName : childOldFolder.replaceFirst(folder, newFolderPath);
+											String newPath = childOldFolder.lastIndexOf("_") < 0 ? newName : childOldFolder.replaceFirst(Pattern.quote(folder), Matcher.quoteReplacement(newFolderPath));
 											updateModifier.set("old-folder", newPath);
 										} else {
-											String newPath = childFolder.lastIndexOf("_") < 0 ? newName : childFolder.replaceFirst(folder, newFolderPath);
+											String newPath = childFolder.lastIndexOf("_") < 0 ? newName : childFolder.replaceFirst(Pattern.quote(folder), Matcher.quoteReplacement(newFolderPath));
 											updateModifier.set("folder", newPath);
 										}
 
