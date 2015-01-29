@@ -36,7 +36,8 @@ public class SqlResult {
 			if (values != null && values.size() == 1) {
 				JsonArray row = values.get(0);
 				if (row != null && row.size() == 1) {
-					return row.get(0);
+					Number number = row.get(0);
+					return number != null ? number.longValue() : null;
 				}
 			}
 		}
