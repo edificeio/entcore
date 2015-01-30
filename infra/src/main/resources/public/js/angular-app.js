@@ -1407,10 +1407,6 @@ var ckeEditorFixedPositionning = function(){
 		}
 
 		toolbox.width(editableElement.width() + 2 + parseInt(editableElement.css('padding') || 4) * 2);
-		toolbox.offset({
-			top: editableElement.offset().top - toolbox.height(),
-			left: editableElement.offset().left
-		});
 		$('<style ckestyle="' + CKEDITOR.instances[instance].name + '"></style>').text('#cke_' + CKEDITOR.instances[instance].name + '{' +
 			'top:' + (editableElement.offset().top - toolbox.height()) + 'px !important;' +
 			'left:' + editableElement.offset().left + 'px !important;' +

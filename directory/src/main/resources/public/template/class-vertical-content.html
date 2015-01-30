@@ -3,12 +3,12 @@
 	<div class="row height-four vertical-spacing-twice" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
 		<div class="fixed twelve cell">
 			<article class="twelve cell clip fluid" ng-class="{ selected: user === currentUser }" ng-click="selectUser(user)">
-				<div class="four cell fluid">
+				<div>
 					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100" class="fluid cell" />
 					<div class="banner" ng-class="colorFromType(user.type)"></div>
 				</div>
 
-				<div class="eight fluid cell right-magnet">
+				<div>
 					<a class="nine cell reduce-block-six">[[user.displayName]]</a>
 					<div class="three cell right-magnet reduce-block-two">
 						<i class="liquid [[user.mood]]"></i>
