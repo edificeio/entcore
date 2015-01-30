@@ -230,6 +230,8 @@ public class DefaultFolderService implements FolderService {
 										.put(folderAttr).is(dir);
 								MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 								modifier.set("folder", dir.replaceFirst("^" + Pattern.quote(folder), Matcher.quoteReplacement(dest)));
+								if("Trash".equals(path))
+									modifier.unset("shared");
 								mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(qf),
 										modifier.build(), false, true, new Handler<Message<JsonObject>>() {
 									@Override

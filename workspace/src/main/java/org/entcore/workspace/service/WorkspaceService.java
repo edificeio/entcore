@@ -1629,8 +1629,15 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(JsonObject res) {
 				if ("ok".equals(res.getString("status"))) {
-					String obj2 = "{ \"$set\" : { \"folder\": \"" + folder +
-							"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+					String obj2 = "";
+					if("Trash".equals(folder)){
+						obj2 = "{ \"$set\" : { \"folder\": \"" + folder +"\", "
+								+ "\"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"}, "
+								+ "\"$unset\": { \"shared\": true }}";
+					} else {
+						obj2 = "{ \"$set\" : { \"folder\": \"" + folder +
+								"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }}";
+					}
 					dao.update(request.params().get("id"), new JsonObject(obj2), owner, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject res) {
