@@ -135,6 +135,7 @@
 								<td colspan="2">
 									<input type="submit" class="button right-magnet"
 										   translate attr="value"
+										   ng-disabled="!newUser.lastName || !newUser.firstName || (display.show === 'Relative' && newUser.relatives.length === 0)"
 										   value="directory.add" />
 								</td>
 							</tr>
