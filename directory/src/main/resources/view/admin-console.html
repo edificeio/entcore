@@ -235,6 +235,7 @@
                             </div>
                             <hr class="separator">
                             <div class="twelve cell">
+                                <!-- Link to structures & classes -->
                                 <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                                 <div class="twelve cell">
                                     <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
@@ -250,7 +251,7 @@
                                     <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
                                 </div>
                             </div>
-                            <div ng-if="!isAdminLocal()">
+                            <div ng-if="!isSelf(structureUser)">
                                 <hr class="separator">
                                 <h3 style="margin-top: 0;">[[lang.translate("directory.localAdminAttribution")]]</h3>
                                 <!-- Local admin attribution -->

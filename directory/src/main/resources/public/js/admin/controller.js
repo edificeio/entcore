@@ -103,6 +103,10 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 		return _.findWhere(model.me.functions, {code: "ADMIN_LOCAL"}) !== undefined
 	}
 
+	$scope.isSelf = function(user){
+		return user.id === model.me.userId
+	}
+
 	//// TOP MENU
 	$scope.filterLeafMenuItems = function(item, index){
 		return typeof item.showCondition !== "function" || item.showCondition()
