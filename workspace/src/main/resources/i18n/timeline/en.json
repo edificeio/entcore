@@ -1,7 +1,7 @@
 {
-    "timeline.workspace.comment.document": "a commenté le document",
+    "timeline.workspace.comment.document": "comment the document",
     "timeline.workspace.shared.document": "shared with you the document",
-    "timeline.workspace.shared.folder": "a partagé avec vous le dossier",
-    "timeline.workspace.shared.scrapbook": "a partagé avec vous le cahier multimédia",
-    "timeline.workspace.storage.size.alert": "Votre espace de stockage est bientôt plein."
+    "timeline.workspace.shared.folder": "share with you the folder",
+    "timeline.workspace.shared.scrapbook": "share with you the multimedia notebook",
+    "timeline.workspace.storage.size.alert": "Your storage quota is almost reached."
 }
