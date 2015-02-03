@@ -1,6 +1,31 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.11.1 (04/02/2015)
+
+## Workspace
+
+* Le commentaire d'un document envoi maintenant une notification
+* Suppression des partages lors de la mise à la corbeille d'un document ou d'un dossier. Attention, la restauration ne restaure pas les partages.
+
+## Timeline
+
+* Sauvegarde des préférences
+
+## Framework
+
+* Ajout d'un titre à la fenêtre du linker
+* Mise à jour des traductions en anglais et portuguais
+
+## Anomalies corrigées
+
+* Correction de l'affichage de l'avatar par défaut
+* Correction des règles de communications vers un groupe quand la longueur du chemin est égal à 1
+* Suppression du double envoi de la requête lors de la procédure de mot de passe oublié
+* Echappement de certains caractères dans les noms de dossiers
+* Correction de l'initialisation d'un parent sans enfant après la création
+* Correction du chemin vers l'admin de la classe
+
 # v1.11.0 (14/01/2015)
 
 ## App-Registry
