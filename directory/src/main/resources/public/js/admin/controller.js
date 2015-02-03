@@ -100,6 +100,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
         return d ? date.create(d).format('LLLL') : ""
     }
 
+	$scope.formatUserFunctions = function(user){
+		return _.chain(user.functions).map(function(f){ return f[0]}).uniq().map(function(f){ return lang.translate(f) }).value().join(", ")
+	}
+
 	$scope.isAdminLocal = function(){
 		return _.findWhere(model.me.functions, {code: "ADMIN_LOCAL"}) !== undefined
 	}

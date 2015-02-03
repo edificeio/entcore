@@ -135,6 +135,7 @@
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+structureUser.type)]]</div>
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[structureUser.login]]</div>
             <div class="twelve cell" ng-show="structureUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[structureUser.code]]</div>
+            <div class="twelve cell" ng-show="structureUser.functions && structureUser.functions[0][0]"><strong class="four cell">[[lang.translate("directory.functions")]]</strong> [[formatUserFunctions(structureUser)]]</div>
             <hr style="border: 1px solid black; margin: 15 0 15 0;"/>
             <div class="twelve cell">
                 <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
