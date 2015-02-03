@@ -67,7 +67,6 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			if (uai != null && uai.size() > 0) {
 				filteredInfos.putString("uai", uai.<String>get(0));
 			}
-			filteredInfos.removeField("userId");
 			filteredInfos.removeField("functions");
 			filteredInfos.removeField("groupsIds");
 			filteredInfos.removeField("structures");
