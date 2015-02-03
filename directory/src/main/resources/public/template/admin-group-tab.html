@@ -1,0 +1,89 @@
+<!--
+    |||||||||||||||||||||
+    |||  GROUPS OPS   |||
+    |||||||||||||||||||||
+-->
+
+<!-- Structure selection menu -->
+<nav class="side-tabs three cell">
+    <ul style="max-height: 750px; overflow-y: scroll;">
+        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
+            [[structure.name]]
+        </li>
+    </ul>
+</nav>
+
+<article class="side-tabs-content nine cell" ng-if="structure">
+    <!-- Group selection menu -->
+    <nav class="vertical cell search-container-left">
+
+        <!-- Creation button -->
+        <button ng-click="showWhat = 'showGroupCreation'" tooltip="directory.tooltip.createGroup"
+                class="directory-list-glyph-button plus-icon" style="margin-top: 20">
+        </button>
+
+        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
+        <ul style="height: 640px; padding-top: 10;">
+            <li ng-repeat="group in structure.manualGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; $parent.showWhat = 'showCurrentGroup'" style="padding-left: 0">
+                [[group.name]]
+            </li>
+        </ul>
+    </nav>
+
+    <!-- New group -->
+    <div ng-if="showWhat === 'showGroupCreation'" ng-init="createdGroup = initGroup()" class="search-container-view">
+        <div style="width: 97%">
+            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdGroup.name ? createdGroup.name : lang.translate('directory.lastName')]]</h1></div>
+            <hr class="separator">
+            <div style="text-align:center">
+                <button ng-click="saveGroup(createdGroup)" ng-disabled="!createdGroup.name">[[lang.translate("directory.admin.create")]]</button>
+            </div>
+            <hr class="separator">
+            <div class="twelve cell">
+                <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+                <input type="text" ng-model="createdGroup.name" placeholder="[[lang.translate('directory.groupName')]]"/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group details -->
+    <div ng-if="groupSelected && showWhat === 'showCurrentGroup'" class="search-container-view">
+        <div style="width: 97%">
+            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[groupSelected.name]]</h1></div>
+            <hr class="separator">
+            <div style="text-align:center">
+                <button ng-click="updateGroup(groupSelected)">[[lang.translate("directory.save")]]</button>
+                <button ng-click="deleteGroup(groupSelected)">[[lang.translate("directory.delete")]]</button>
+            </div>
+            <hr class="separator">
+            <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
+            <div class="twelve cell">
+                <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+                <input type="text" ng-model="groupSelected.name"/>
+            </div>
+            <hr class="separator">
+            <nav class="vertical cell search-container-left" style="width: 40%; height: 490px; margin: 0">
+                <select style="width: 95%"
+                        ng-model="groupUsersStructure"
+                        ng-init="groupUsersStructure = structure"
+                        ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
+                        ng-change="usersLimit = SCROLL_INCREMENT; groupUsersStructure.loadStructure(refreshScope, refreshScope)">
+                </select>
+                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
+                <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 400px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
+                    <li ng-repeat="user in groupUsersStructure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'lastName' | limitTo: usersLimit"
+                        ng-click="addUserToGroup(user, groupSelected)"
+                        style="padding-left: 0">
+                        <span ng-class="userStyle(user)">[[user.displayName]]</span>
+                    </li>
+                </ul>
+            </nav>
+            <div style="width:60%; float: left">
+                <h3 style="text-align: center">[[lang.translate("directory.groupUsers")]]</h3>
+                <ul style="list-style-type: decimal; font-family: Lato;">
+                    <li ng-repeat="user in groupSelected.data.users" ng-click="removeUserFromGroup(user, groupSelected)">[[user.username]]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</article>

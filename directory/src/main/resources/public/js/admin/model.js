@@ -137,6 +137,22 @@ User.prototype.sendResetPassword = function(mail){
     })
 }
 
+User.prototype.block = function(hook){
+    var user = this
+    http().putJson('/auth/block/' + user.id, { block: true }).done(function(){
+        user.blocked = true
+        hookCheck(hook)
+    })
+}
+
+User.prototype.unblock = function(hook){
+    var user = this
+    http().putJson('/auth/block/' + user.id, { block: false }).done(function(){
+        user.blocked = false
+        hookCheck(hook)
+    })
+}
+
 function Classe(){
     this.sync = function(hook){
         var that = this

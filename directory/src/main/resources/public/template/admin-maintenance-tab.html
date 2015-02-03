@@ -1,0 +1,25 @@
+<!--
+    |||||||||||||||||||||
+    |||  MAINTENANCE  |||
+    |||||||||||||||||||||
+-->
+
+<div class="row" ng-if="!isAdminLocal()">
+    <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
+    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">[[lang.translate("directory.import")]]</button>
+</div>
+<div class="row">
+    <label class="five cell"><span>[[lang.translate("directory.launchUserExport")]]</span></label>
+    <button class="three cell" ng-click="openExport(export_mode, $root.export_id)">[[lang.translate("directory.export")]]</button>
+</div>
+<div class="row">
+    <select ng-model="export_mode" class="two cell directory-top-padded" style="margin-left: 0">
+        <option value="all">[[lang.translate("directory.all")]]</option>
+        <option value="structureId">[[lang.translate("directory.structureById")]]</option>
+        <option value="classId">[[lang.translate("directory.classById")]]</option>
+    </select>
+    <div class="cell" style="width: 10px;">&nbsp;</div>
+    <div ng-if="export_mode !== 'all'">
+        <input class="two cell directory-top-padded" type="text" ng-model="$root.export_id" placeholder="[[lang.translate('directory.id')]]"/>
+    </div>
+</div>

@@ -11,17 +11,17 @@ routes.define(function($routeProvider){
 		})
 })
 
-function AdminDirectoryController($scope, $rootScope, $http, model, date, route){
+function AdminDirectoryController($scope, $rootScope, $http, template, model, date, route){
 
     route({
         viewStructureUser: function(params){
-			if($scope.selected !== undefined)
+			if(template.contains('body', 'admin-user-tab'))
 				return
 
             var userId = params.userId
             var structureId = params.structureId
 
-            $scope.selected = 0
+			template.open('body', 'admin-user-tab')
 			$scope.showWhat = 'showStructureUser'
 
 			$scope.structures.sync(function(){
@@ -32,13 +32,13 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 			})
         },
         viewClass: function(params){
-			if($scope.selected !== undefined)
+			if(template.contains('body', 'admin-class-tab'))
 				return
 
             var classId = params.classId
             var structureId = params.structureId
 
-            $scope.selected = 1
+			template.open('body', 'admin-class-tab')
 
 			$scope.structures.sync(function(){
 				$scope.structure = $scope.structures.find(function(structure){
@@ -52,13 +52,13 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 			})
         },
 		viewClassUsers: function(params){
-			if($scope.selected !== undefined)
+			if(template.contains('body', 'admin-user-tab'))
 				return
 
 			var classId = params.classId
 			var structureId = params.structureId
 
-			$scope.selected = 0
+			template.open('body', 'admin-user-tab')
 			$scope.showWhat = 'showStructureUser'
 
 			$scope.structures.sync(function(){
@@ -82,6 +82,7 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 		}
 	})
 
+	$scope.template = template
     $rootScope.export_id = ""
     $scope.export_mode = "all"
     $scope.structures = model.structures
@@ -115,24 +116,29 @@ function AdminDirectoryController($scope, $rootScope, $http, model, date, route)
 	$scope.leafMenu = [
 		{
 			text: lang.translate("directory.userOps"),
+			templateName: 'admin-user-tab',
 			onClick: function(){ },
 			requestName : "user-requests"
 		},
 		{
 			text: lang.translate("directory.classOps"),
+			templateName: 'admin-class-tab',
 			onClick: function(){ }
 		},
 		{
 			text: lang.translate("directory.groupOps"),
+			templateName: 'admin-group-tab',
 			onClick: function(){ },
 			requestName : "groups-requests"
 		},
 		{
 			text: lang.translate("directory.feeding"),
+			templateName: 'admin-maintenance-tab',
 			onClick: function(){ }
 		},
 		{
 			text: lang.translate("directory.isolatedUsers"),
+			templateName: 'admin-isolated-tab',
 			onClick: function(){ $scope.refreshIsolated() },
 			requestName : "isolated-request",
 			showCondition: function(){ return !$scope.isAdminLocal() }

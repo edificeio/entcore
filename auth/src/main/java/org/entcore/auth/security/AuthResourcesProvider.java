@@ -74,13 +74,13 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		
+
 		String query = "";
 		if (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
 			query =
 					"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->(s:Structure)" +
 					"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
-					"WHERE fg.name = \".*AdminLocal.*\"" +
+					"WHERE fg.name =~ \".*AdminLocal.*\"" +
 					"RETURN count(*) >= 1 as exists ";
 		} else {
 			query =
