@@ -235,8 +235,8 @@
                 </div>
             </div>
             <hr class="separator">
+            <!-- Link to structures & classes -->
             <div class="twelve cell">
-                <!-- Link to structures & classes -->
                 <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
                 <div class="twelve cell">
                     <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
@@ -252,10 +252,20 @@
                     <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
                 </div>
             </div>
+            <!-- Function management -->
             <div ng-if="!isSelf(structureUser)">
                 <hr class="separator">
-                <h3 style="margin-top: 0;">[[lang.translate("directory.localAdminAttribution")]]</h3>
+                <h3 style="margin-top: 0;">[[lang.translate("directory.functionsManagement")]]</h3>
+                <!-- Central admin attribution -->
+                <div ng-if="isCentralAdmin()">
+                    <h5>[[lang.translate("directory.centralAdmin")]]</h5>
+                    <div style="text-align: center; margin: 10px 0px">
+                        <button ng-click="structureUser.setCentralAdmin()" class="text-flow">[[lang.translate("directory.set")]]</button>
+                        <button ng-click="structureUser.removeCentralAdmin()" class="text-flow">[[lang.translate("directory.delete")]]</button>
+                    </div>
+                </div>
                 <!-- Local admin attribution -->
+                <h5>[[lang.translate("directory.localAdmin")]]</h5>
                 <div>
                     <label class="eight text-flow">[[lang.translate("directory.admin.local-admin.school")]]</label>
                     <button ng-click="structureUser.setLocalAdmin(structure)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.set")]]</button>

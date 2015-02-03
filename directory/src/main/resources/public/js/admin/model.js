@@ -123,6 +123,25 @@ User.prototype.removeLocalAdmin = function(){
     })
 }
 
+User.prototype.setCentralAdmin = function(structure){
+        var that = this
+        http().postJson("/directory/user/function/"+that.id, {
+            functionCode: "SUPER_ADMIN",
+            scope: []
+        }).done(function(){
+            notify.info(lang.translate("directory.notify.setCentralAdmin"))
+            that.get()
+        })
+}
+
+User.prototype.removeCentralAdmin = function(){
+    var that = this
+    http().delete("/directory/user/function/"+that.id+"/SUPER_ADMIN").done(function(){
+        notify.info(lang.translate("directory.notify.removeCentralAdmin"))
+        that.get()
+    })
+}
+
 //Send an email containing a new activation code.
 //An error will be thrown server side if the code is not empty (neo4j side)
 User.prototype.sendResetPassword = function(mail){

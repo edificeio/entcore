@@ -1,4 +1,7 @@
 {
+    "ADMIN_LOCAL": "Administrateur local",
+    "SUPER_ADMIN": "Administrateur central",
+
     "Relative": "Parent",
     "Student": "Élève",
     "Teacher": "Enseignant",
@@ -294,5 +297,13 @@
     "welcome.info": "Bienvenue dans votre ENT !",
     "welcome.regards": "Bonne découverte !",
     "welcome.signature": "L'équipe Ent-Core",
-    "welcome.subject": "Bienvenue dans l'ENT"
+    "welcome.subject": "Bienvenue dans l'ENT",
+    "directory.admin.setFunction":              "Attribuer la fonction",
+    "directory.admin.removeFunction":           "Supprimer la fonction",
+    "directory.functionsManagement":            "Gestion des fonctions",
+    "directory.localAdmin":                     "Administrateur local",
+    "directory.centralAdmin":                   "Administrateur central",
+    "directory.functions":                      "Fonctions",
+    "directory.notify.setCentralAdmin":         "Rôle d'admin. central attribué",
+    "directory.notify.removeCentralAdmin":      "Rôle d'admin. central supprimé"
 }

@@ -104,6 +104,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 		return _.findWhere(model.me.functions, {code: "ADMIN_LOCAL"}) !== undefined
 	}
 
+	$scope.isCentralAdmin = function(){
+		return _.findWhere(model.me.functions, {code: "SUPER_ADMIN"}) !== undefined
+	}
+
 	$scope.isSelf = function(user){
 		return user.id === model.me.userId
 	}
