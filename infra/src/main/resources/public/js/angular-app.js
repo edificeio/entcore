@@ -1363,12 +1363,10 @@ module.directive('dropDownButton', function(){
 		template: '<div class="drop-down-button hidden"><div ng-transclude></div></div>',
 		link: function(scope, element, attributes){
 			element.on('click', '.opener', function(){
-				if(!element.find('.drop-down-button').hasClass('hidden')){
+				element.find('.drop-down-button').removeClass('hidden');
+				$(document).one('mousedown', function(e){
 					element.find('.drop-down-button').addClass('hidden');
-				}
-				else{
-					element.find('.drop-down-button').removeClass('hidden');
-				}
+				});
 			});
 		}
 	}
