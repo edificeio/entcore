@@ -1,0 +1,28 @@
+<!--
+    |||||||||||||||||||||||
+    |||  STRUCTURE OPS  |||
+    |||||||||||||||||||||||
+-->
+
+<!-- Structure selection menu -->
+<nav class="side-tabs three cell">
+    <ul style="max-height: 750px; overflow-y: scroll;">
+        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
+            [[structure.name]]
+        </li>
+    </ul>
+</nav>
+
+<article class="side-tabs-content nine cell" ng-if="structure">
+    <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
+    <hr class="separator">
+    <div style="text-align:center">
+        <button ng-click="structure.update()">[[lang.translate("directory.save")]]</button>
+    </div>
+    <hr class="separator">
+    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
+    <div class="twelve cell">
+        <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+        <input class="eight cell" type="text" ng-model="structure.name"/>
+    </div>
+</article>

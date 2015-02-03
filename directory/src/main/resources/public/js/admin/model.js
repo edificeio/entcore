@@ -279,82 +279,92 @@ function Structure(){
             })
         }
     })
+}
 
-    this.linkUser = function(user, hook){
-        http().put("structure/"+this.id+"/link/"+user.id).done(function(){
-            hookCheck(hook)
-        })
-    }
+Structure.prototype.update = function(hook){
+    var that = this
+    http().putJson("structure/"+that.id, {
+        name: that.name,
+    }).done(function(){
+        notify.info(lang.translate("directory.notify.structureUpdate"))
+        hookCheck(hook)
+    })
+}
 
-    this.unlinkUser = function(user, hook){
-        http().delete("structure/"+this.id+"/unlink/"+user.id).done(function(){
-            hookCheck(hook)
-        })
-    }
+Structure.prototype.linkUser = function(user, hook){
+    http().put("structure/"+this.id+"/link/"+user.id).done(function(){
+        hookCheck(hook)
+    })
+}
 
-    this.loadStructure = function(periodicHook, endHook){
-        var structure = this
+Structure.prototype.unlinkUser = function(user, hook){
+    http().delete("structure/"+this.id+"/unlink/"+user.id).done(function(){
+        hookCheck(hook)
+    })
+}
 
-        structure.classes.sync(function(){
-            structure.users.removeAll()
+Structure.prototype.loadStructure = function(periodicHook, endHook){
+    var structure = this
 
-            //Add isolated users
-            http().get("list/isolated", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
-                _.forEach(data, function(u){
-                    var user = new User(u)
-                    u.isolated = true
-                    structure.users.all.push(new User(u))
-                })
+    structure.classes.sync(function(){
+        structure.users.removeAll()
 
-                var endHookLauncher = new Launcher(structure.classes.length() + 1, endHook)
-                endHookLauncher.exec()
-
-                //For each class, flag users.
-                structure.classes.forEach(function(classe){
-                    structure.addClassUsers(classe, [periodicHook, endHookLauncher.exec], true)
-                })
-            })
-        })
-    }
-
-    //Used when filtering the user list, adds in arrays which classes a user belongs to.
-    this.addClassUsers = function(classe, hookArray, initClasses){
-        var structure = this
-        http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
+        //Add isolated users
+        http().get("list/isolated", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
             _.forEach(data, function(u){
-                var existing = _.findWhere(structure.users.all, {id: u.id})
-                if(existing){
-                    existing.classesList    = !existing.classesList  ? [] : existing.classesList
-                    existing.totalClasses   = !existing.totalClasses ? [] : existing.totalClasses
-                    existing.classesList.push(classe)
-                    if(initClasses)
-                        existing.totalClasses.push(classe)
-                } else {
-                    u.classesList = [ classe ]
-                    if(initClasses)
-                        u.totalClasses = [ classe ]
-                    structure.users.all.push(new User(u))
-                }
+                var user = new User(u)
+                u.isolated = true
+                structure.users.all.push(new User(u))
             })
-            _.forEach(hookArray, function(h){
-                hookCheck(h)
-            })
-        })
-    }
 
-    //Used in conjunction with addClassUsers when filtering the user list, removes from the array the class associated with the users.
-    this.removeClassUsers = function(classe, hook){
-        var structure = this
-        http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
-            _.forEach(data, function(u){
-                var existingUser = _.findWhere(structure.users.all, { id: u.id })
-                if(existingUser){
-                    existingUser.classesList = _.reject(existingUser.classesList, function(c){ return classe.id === c.id })
-                }
+            var endHookLauncher = new Launcher(structure.classes.length() + 1, endHook)
+            endHookLauncher.exec()
+
+            //For each class, flag users.
+            structure.classes.forEach(function(classe){
+                structure.addClassUsers(classe, [periodicHook, endHookLauncher.exec], true)
             })
-            hookCheck(hook)
         })
-    }
+    })
+}
+
+//Used when filtering the user list, adds in arrays which classes a user belongs to.
+Structure.prototype.addClassUsers = function(classe, hookArray, initClasses){
+    var structure = this
+    http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
+        _.forEach(data, function(u){
+            var existing = _.findWhere(structure.users.all, {id: u.id})
+            if(existing){
+                existing.classesList    = !existing.classesList  ? [] : existing.classesList
+                existing.totalClasses   = !existing.totalClasses ? [] : existing.totalClasses
+                existing.classesList.push(classe)
+                if(initClasses)
+                    existing.totalClasses.push(classe)
+            } else {
+                u.classesList = [ classe ]
+                if(initClasses)
+                    u.totalClasses = [ classe ]
+                structure.users.all.push(new User(u))
+            }
+        })
+        _.forEach(hookArray, function(h){
+            hookCheck(h)
+        })
+    })
+}
+
+//Used in conjunction with addClassUsers when filtering the user list, removes from the array the class associated with the users.
+Structure.prototype.removeClassUsers = function(classe, hook){
+    var structure = this
+    http().get("user/admin/list", { classId: classe.id }, { requestName: 'user-requests' }).done(function(data){
+        _.forEach(data, function(u){
+            var existingUser = _.findWhere(structure.users.all, { id: u.id })
+            if(existingUser){
+                existingUser.classesList = _.reject(existingUser.classesList, function(c){ return classe.id === c.id })
+            }
+        })
+        hookCheck(hook)
+    })
 }
 
 //Collection of users with no relation to classes or structures

@@ -129,6 +129,11 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			requestName : "user-requests"
 		},
 		{
+			text: lang.translate("directory.structureOps"),
+			templateName: 'admin-structure-tab',
+			onClick: function(){ }
+		},
+		{
 			text: lang.translate("directory.classOps"),
 			templateName: 'admin-class-tab',
 			onClick: function(){ }

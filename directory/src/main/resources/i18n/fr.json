@@ -304,6 +304,8 @@
     "directory.localAdmin":                     "Administrateur local",
     "directory.centralAdmin":                   "Administrateur central",
     "directory.functions":                      "Fonctions",
+    "directory.structureOps":         "Opérations sur les structures",
+    "directory.notify.structureUpdate":     "Structure mise à jour",
     "directory.notify.setCentralAdmin":         "Rôle d'admin. central attribué",
     "directory.notify.removeCentralAdmin":      "Rôle d'admin. central supprimé"
 }
