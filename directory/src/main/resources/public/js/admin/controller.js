@@ -227,6 +227,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
         $scope.userOrdering[1] = temp
     }
 
+	$scope.fairInclusion = function(anyString, challenger){
+		return lang.removeAccents(anyString.toLowerCase()).indexOf(lang.removeAccents(challenger.toLowerCase())) >= 0
+	}
+
 	//Show by default
     $scope.showIsolated 	= true
 	$scope.showInactive 	= true
@@ -236,7 +240,7 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 	$scope.showStudents		= true
     $scope.structureUserFilteringFunction = function(user){
 		var filterByClass	 = user.classesList && user.classesList.length > 0
-		var filterByInput 	 = $rootScope.filterStructureUsers ? lang.removeAccents(user.displayName.toLowerCase()).indexOf(lang.removeAccents($rootScope.filterStructureUsers.toLowerCase())) >= 0 : true
+		var filterByInput 	 = $rootScope.filterStructureUsers ? fairInclusion(user.displayName, $rootScope.filterStructureUsers) : true
 		var filterIsolated 	 = $scope.showIsolated 	&& user.isolated
 		var filterInactive	 = user.code 				 ? $scope.showInactive  : true
 		var filterTeachers 	 = user.type === 'Teacher' 	 ? $scope.showTeachers 	: true
@@ -247,7 +251,14 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
         return filterByInput && (filterByClass || filterIsolated) && filterInactive && filterTeachers && filterPersonnel && filterRelative && filterStudents
 	}
 	$scope.isolatedUserFilteringFunction = function(user){
-		return ($scope.filterIsolatedUsers && user.displayName) ? lang.removeAccents(user.displayName.toLowerCase()).indexOf(lang.removeAccents($scope.filterIsolatedUsers.toLowerCase())) >= 0  : true
+		return ($scope.filterIsolatedUsers && user.displayName) ? fairInclusion(user.displayName, $scope.filterIsolatedUsers) : true
+	}
+	$scope.groupUserFilteringFunction = function(input, classObj){
+		return function(user){
+			var filterByInput = input ? fairInclusion(user, input) : true
+			var filterByClass = classObj ? _.find(user.totalClasses, function(classe){ return classe.id === classObj.id }) : true
+			return filterByInput && filterByClass
+		}
 	}
     ////////
 

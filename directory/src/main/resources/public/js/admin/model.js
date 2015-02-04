@@ -209,10 +209,16 @@ function ManualGroup(){}
 ManualGroup.prototype = {
     save: function(structure, hook){
         var that = this
-        http().postJson("group", {
-            name: that.name,
-            structureId: structure.id
-        }).done(function(){
+
+        var postData = {
+            name: that.name
+        }
+        if(that.classId)
+            postData.classId = that.classId.id
+        else
+            postData.structureId = structure.id
+
+        http().postJson("group", postData).done(function(){
             notify.info(lang.translate("directory.notify.groupUpdate"))
             hookCheck(hook)
         })

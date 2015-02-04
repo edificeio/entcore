@@ -59,7 +59,7 @@ public class Group {
 							"CREATE UNIQUE s<-[:DEPENDS]-g";
 					JsonObject ps = new JsonObject()
 							.putString("groupId", id)
-							.putString("classId", structureId);
+							.putString("classId", classId);
 					transactionHelper.add(qs, ps);
 				}
 			}

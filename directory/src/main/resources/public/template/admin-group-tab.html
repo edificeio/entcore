@@ -45,6 +45,11 @@
                 <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
                 <input type="text" ng-model="createdGroup.name" placeholder="[[lang.translate('directory.groupName')]]"/>
             </div>
+            <div class="twelve cell" ng-if="structure && structure.classes && structure.classes.length() > 0">
+                <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
+                <select ng-model="createdGroup.classId" class="five cell" ng-options="class as class.name for class in structure.classes.all | orderBy: 'name'">
+                </select>
+            </div>
         </div>
     </div>
 
@@ -52,6 +57,10 @@
     <div ng-if="groupSelected && showWhat === 'showCurrentGroup'" class="search-container-view">
         <div style="width: 97%">
             <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[groupSelected.name]]</h1></div>
+            <div class="row" style="text-align:center">
+                <h5 ng-if="!groupSelected.classes"><i18n>directory.admin.structureGroup</i18n></h5>
+                <h5 ng-if="groupSelected.classes"><i18n>directory.admin.classGroup</i18n> ([[groupSelected.classes[0].name]])</h5>
+            </div>
             <hr class="separator">
             <div style="text-align:center">
                 <button ng-click="updateGroup(groupSelected)">[[lang.translate("directory.save")]]</button>
@@ -64,16 +73,23 @@
                 <input type="text" ng-model="groupSelected.name"/>
             </div>
             <hr class="separator">
-            <nav class="vertical cell search-container-left" style="width: 40%; height: 490px; margin: 0">
+            <nav class="vertical cell search-container-left" style="width: 40%; height: 480px; margin: 0">
                 <select style="width: 95%"
                         ng-model="groupUsersStructure"
                         ng-init="groupUsersStructure = structure"
                         ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
                         ng-change="usersLimit = SCROLL_INCREMENT; groupUsersStructure.loadStructure(refreshScope, refreshScope)">
                 </select>
+                <select style="width: 95%"
+                        ng-model="groupUsersClass"
+                        ng-init="groupUsersClass = groupSelected.classes ? structure.classes.findWhere({id: groupSelected.classes[0].id}) : null"
+                        ng-options="class as class.name for class in groupUsersStructure.classes.all | orderBy: 'name'"
+                        ng-change="usersLimit = SCROLL_INCREMENT">
+                        <option value=""><i18n>directory.allClasses</i18n></option>
+                </select>
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
-                <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 400px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                    <li ng-repeat="user in groupUsersStructure.users.all | filter: { 'displayName': filterGroupUsers } | orderBy: 'lastName' | limitTo: usersLimit"
+                <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 355px; padding-top: 10; border-bottom: none">
+                    <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: usersLimit"
                         ng-click="addUserToGroup(user, groupSelected)"
                         style="padding-left: 0">
                         <span ng-class="userStyle(user)">[[user.displayName]]</span>
