@@ -5,24 +5,49 @@
 -->
 
 <!-- Structure selection menu -->
-<nav class="side-tabs three cell">
+<nav class="side-tabs three cell" ng-init="showWhat = 'showCurrentStructure'">
     <ul style="max-height: 750px; overflow-y: scroll;">
-        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
+        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure); $parent.showWhat = 'showCurrentStructure'" ng-class="{ selected: $parent.structure === structure }">
             [[structure.name]]
         </li>
     </ul>
+    <div class="vertical_buttons_container" style="right: -34px; top: 5px;">
+        <!-- Creation button -->
+        <button ng-click="showWhat = 'showStructureCreation'; initStructure()" tooltip="directory.tooltip.createStructure"
+                class="directory-list-glyph-button plus-icon">
+        </button>
+    </div>
 </nav>
 
-<article class="side-tabs-content nine cell" ng-if="structure">
-    <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
-    <hr class="separator">
-    <div style="text-align:center">
-        <button ng-click="structure.update()">[[lang.translate("directory.save")]]</button>
+<article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
+
+    <!-- Structure details -->
+    <div ng-if="structure && showWhat === 'showCurrentStructure'">
+        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
+        <hr class="separator">
+        <div style="text-align:center">
+            <button ng-click="structure.update()">[[lang.translate("directory.save")]]</button>
+        </div>
+        <hr class="separator">
+        <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
+        <div class="twelve cell">
+            <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+            <input class="eight cell" type="text" ng-model="structure.name"/>
+        </div>
     </div>
-    <hr class="separator">
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
-    <div class="twelve cell">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
-        <input class="eight cell" type="text" ng-model="structure.name"/>
+
+    <!-- Structure creation -->
+    <div ng-if="showWhat === 'showStructureCreation'">
+        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdStructure.name ? createdStructure.name : lang.translate("directory.structure")]]</h1></div>
+        <hr class="separator">
+        <div style="text-align:center">
+            <button ng-click="createdStructure.create(refreshStructures)">[[lang.translate("directory.admin.create")]]</button>
+        </div>
+        <hr class="separator">
+        <div class="twelve cell">
+            <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+            <input class="eight cell" type="text" ng-model="createdStructure.name"/>
+        </div>
     </div>
+
 </article>

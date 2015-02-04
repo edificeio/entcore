@@ -17,25 +17,31 @@
     <!-- User selection menu -->
     <nav class="vertical cell search-container-left">
 
-        <!-- Filter toggle button -->
-        <button ng-click="showWhat = showWhat === 'showFilters' ? 'showStructureUser' : 'showFilters'" tooltip="tooltip.users.filtersTooltip"
-                class="directory-list-glyph-button filter-icon">
-        </button>
+        <div class="vertical_buttons_container">
+            <!-- Filter toggle button -->
+            <button ng-click="showWhat = showWhat === 'showFilters' ? 'showStructureUser' : 'showFilters'"
+                    tooltip="tooltip.users.filtersTooltip"
+                    class="directory-list-glyph-button filter-icon">
+            </button>
 
-        <!-- Order toggle button -->
-        <button ng-click="switchOrdering()" tooltip="tooltip.users.switchOrdering"
-                class="directory-list-sort-button">
-        </button>
+            <!-- Order toggle button -->
+            <button ng-click="switchOrdering()"
+                    tooltip="tooltip.users.switchOrdering"
+                    class="directory-list-sort-button">
+            </button>
 
-        <!-- Creation button -->
-        <button ng-click="showWhat = 'showCreatedUser'" tooltip="directory.tooltip.creationTooltip"
-                class="directory-list-glyph-button silhouette-icon" style="margin-top: 94">
-        </button>
+            <!-- Creation button -->
+            <button ng-click="showWhat = 'showCreatedUser'"
+                    tooltip="directory.tooltip.creationTooltip"
+                    class="directory-list-glyph-button silhouette-icon">
+            </button>
 
-        <!-- Legend button -->
-        <button ng-click="showWhat = 'showLegend'" tooltip="directory.tooltip.legend"
-                class="directory-list-glyph-button question-mark-icon" style="margin-top: 141">
-        </button>
+            <!-- Legend button -->
+            <button ng-click="showWhat = 'showLegend'"
+                    tooltip="directory.tooltip.legend"
+                    class="directory-list-glyph-button question-mark-icon">
+            </button>
+        </div>
 
         <!-- User list -->
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
@@ -136,7 +142,7 @@
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[structureUser.login]]</div>
             <div class="twelve cell" ng-show="structureUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[structureUser.code]]</div>
             <div class="twelve cell" ng-show="structureUser.functions && structureUser.functions[0][0]"><strong class="four cell">[[lang.translate("directory.functions")]]</strong> [[formatUserFunctions(structureUser)]]</div>
-            <hr style="border: 1px solid black; margin: 15 0 15 0;"/>
+            <hr class="separator cell"/>
             <div class="twelve cell">
                 <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
                 <input type="text" ng-model="structureUser.firstName"/>
@@ -209,7 +215,7 @@
             -->
             <div ng-if="!structureUser.code" class="twelve cell">
                 <!-- Quota -->
-                <hr class="separator">
+                <hr class="separator cell">
                 <h3 style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
                 <div style="text-align: center; margin-bottom: 10">
                     <div style="width: 250px; border: 1px solid black; display: inline-block;">
@@ -235,7 +241,7 @@
                     </form>
                 </div>
             </div>
-            <hr class="separator">
+            <hr class="separator cell">
             <!-- Link to structures & classes -->
             <div class="twelve cell">
                 <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
@@ -248,32 +254,28 @@
                     <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
                     </select>
                 </div>
-                <div style="text-align: center">
+                <div style="text-align: center; margin-bottom: 10px">
                     <button ng-if="linkStructure" ng-click="linkStructure.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" style="margin-top: 5px">[[lang.translate("directory.linkToSchool")]]</button>
                     <button ng-if="linkClass" ng-click="linkClass.linkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))">[[lang.translate("directory.linkToClass")]]</button>
                 </div>
             </div>
             <!-- Function management -->
-            <div ng-if="!isSelf(structureUser)">
-                <hr class="separator">
+            <div ng-if="!isSelf(structureUser)" class="twelve cell">
+                <hr class="separator cell">
                 <h3 style="margin-top: 0;">[[lang.translate("directory.functionsManagement")]]</h3>
                 <!-- Central admin attribution -->
                 <div ng-if="isCentralAdmin()">
                     <h5>[[lang.translate("directory.centralAdmin")]]</h5>
                     <div style="text-align: center; margin: 10px 0px">
-                        <button ng-click="structureUser.setCentralAdmin()" class="text-flow">[[lang.translate("directory.set")]]</button>
-                        <button ng-click="structureUser.removeCentralAdmin()" class="text-flow">[[lang.translate("directory.delete")]]</button>
+                        <button ng-click="structureUser.setCentralAdmin()" class="text-flow small">[[lang.translate("directory.set")]]</button>
+                        <button ng-click="structureUser.removeCentralAdmin()" class="text-flow small">[[lang.translate("directory.delete")]]</button>
                     </div>
                 </div>
                 <!-- Local admin attribution -->
                 <h5>[[lang.translate("directory.localAdmin")]]</h5>
-                <div>
-                    <label class="eight text-flow">[[lang.translate("directory.admin.local-admin.school")]]</label>
-                    <button ng-click="structureUser.setLocalAdmin(structure)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.set")]]</button>
-                </div>
-                <div>
-                    <label class="eight text-flow">[[lang.translate("directory.admin.remove.local-admin")]]</label>
-                    <button ng-click="structureUser.removeLocalAdmin()" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.delete")]]</button>
+                <div style="text-align: center; margin: 10px 0px">
+                    <button ng-click="structureUser.setLocalAdmin(structure)" class="text-flow small" style="margin-bottom:5px">[[lang.translate("directory.setLocalAdmin")]]</button>
+                    <button ng-click="structureUser.removeLocalAdmin()" class="text-flow small" style="margin-bottom:5px">[[lang.translate("directory.deleteLocalAdmin")]]</button>
                 </div>
             </div>
         </div>
@@ -285,14 +287,14 @@
             <div class="row">
                 <h1 style="margin-bottom: 0; text-align:center;">[[(createdUser.firstName || createdUser.lastName) ? createdUser.firstName+" "+createdUser.lastName : "Nom"]]</h1>
             </div>
-            <hr class="separator">
+            <hr class="separator cell">
             <div style="text-align:center">
                 <button ng-click="createUser(createdUser)"
                     ng-disabled="!createdUser.firstName || !createdUser.lastName || (!createdUser.birthDate && createdUser.type === 'Student')">
                     [[lang.translate("directory.admin.create")]]
                 </button>
             </div>
-            <hr class="separator">
+            <hr class="separator cell">
             <div class="twelve cell">
                 <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
                 <input  class="four cell directory-top-padded" type="text" ng-model="createdUser.firstName"/>
@@ -331,7 +333,7 @@
                 </select>
             </div>
             <div ng-if="createdUser.type === 'Relative'">
-                <hr class="separator">
+                <hr class="separator cell">
                 <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; margin: 0">
                     <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
                     <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">

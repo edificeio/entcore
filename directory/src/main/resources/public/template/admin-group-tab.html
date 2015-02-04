@@ -17,10 +17,12 @@
     <!-- Group selection menu -->
     <nav class="vertical cell search-container-left">
 
-        <!-- Creation button -->
-        <button ng-click="showWhat = 'showGroupCreation'" tooltip="directory.tooltip.createGroup"
-                class="directory-list-glyph-button plus-icon" style="margin-top: 20">
-        </button>
+        <div class="vertical_buttons_container">
+            <!-- Creation button -->
+            <button ng-click="showWhat = 'showGroupCreation'" tooltip="directory.tooltip.createGroup"
+                    class="directory-list-glyph-button plus-icon">
+            </button>
+        </div>
 
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
         <ul style="height: 640px; padding-top: 10;">

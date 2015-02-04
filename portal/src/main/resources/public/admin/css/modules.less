@@ -1,7 +1,10 @@
 @import "../../../assets/themes/raw/magenta/theme";
-@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic);
 
 @nav-width: 300px;
+
+*{
+	font-weight: 300;
+}
 
 header.navbar{
 	background: #444;
@@ -80,6 +83,17 @@ article{
 	max-width: 1300px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+button, input[type=submit], input[type="button"]{
+	padding: 5px 10px;
+	border-radius: 3px;
+	box-shadow: 0px 0px 1px rgba(0, 0 ,0, 0.7);
+
+	&.small{
+		padding: 2px 5px;
+		font-size: 14px;
+	}
 }
 
 nav.left{
@@ -272,43 +286,48 @@ hr.separator{
 	margin: 15 0 15 0;
 }
 
-button.directory-list-glyph-button{
+div.vertical_buttons_container{
 	position: absolute;
-	margin-left: 93.5%;
-	margin-top: 0;
-	z-index: 100;
+	right: -15px;
+	top: 0px;
 	width: 30px;
-	height: 30px;
-	padding: 0;
-	background-image: url(/public/img/glyphicons-halflings.png);
-	background-repeat: no-repeat;
-
-	&.filter-icon{
-		background-position: 91% 104%;
-	}
-	&.silhouette-icon{
-		background-position: 36.5% -5%;
-	}
-	&.question-mark-icon{
-		background-position: 20% 67.5%;
-	}
-	&.plus-icon{
-		background-position: -1.5% 68%;
-	}
-}
-
-button.directory-list-sort-button{
-	position: absolute;
-	margin-left: 93.5%;
-	margin-top: 47;
 	z-index: 100;
-	width: 30px;
-	height: 30px;
-	padding: 0;
-	background-image: url(/public/img/glyphicons_409_sort-by-attributes-alt.png);
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 15px 15px;
+
+	button{
+		margin: 0px;
+		margin-bottom: 15px;
+	}
+
+	button.directory-list-glyph-button{
+		width: 30px;
+		height: 30px;
+		padding: 0;
+		background-image: url(/public/img/glyphicons-halflings.png);
+		background-repeat: no-repeat;
+
+		&.filter-icon{
+			background-position: 91% 104%;
+		}
+		&.silhouette-icon{
+			background-position: 36.5% -5%;
+		}
+		&.question-mark-icon{
+			background-position: 20% 67.5%;
+		}
+		&.plus-icon{
+			background-position: -1.5% 68%;
+		}
+	}
+
+	button.directory-list-sort-button{
+		width: 30px;
+		height: 30px;
+		padding: 0;
+		background-image: url(/public/img/glyphicons_409_sort-by-attributes-alt.png);
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 15px 15px;
+	}
 }
 
 button.directory-direct-link-button{
@@ -434,18 +453,20 @@ label.legend-label{
 }
 
 nav.admin-bar {
-    max-height: 25px;
+    max-height: 35px;
     overflow-y: hidden;
     transition: max-height 250ms ease;
-    margin-top: 30px; padding: 10px;
+    margin-top: 43px;
+	padding: 0px;
+	border: none;
     position: absolute;
-    width: 99%;
+    width: 100%;
     z-index: 10;
     background-color: #EEE
 }
 
 nav.admin-bar:hover {
-    max-height: 100px;
+    max-height: 120px;
     border-bottom: 1px solid #444;
 }
 

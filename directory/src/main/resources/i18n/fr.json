@@ -305,6 +305,11 @@
     "directory.centralAdmin":                   "Administrateur central",
     "directory.functions":                      "Fonctions",
     "directory.structureOps":         "Opérations sur les structures",
+    "directory.setLocalAdmin":                  "Attribuer (pour cette structure)",
+    "directory.deleteLocalAdmin":               "Supprimer (toutes structures)",
+    "directory.structure":                      "Structure",
+    "directory.tooltip.createStructure":      "Créer une structure",
+    "directory.notify.structureCreated":    "Structure créée",
     "directory.notify.structureUpdate":     "Structure mise à jour",
     "directory.notify.setCentralAdmin":         "Rôle d'admin. central attribué",
     "directory.notify.removeCentralAdmin":      "Rôle d'admin. central supprimé"

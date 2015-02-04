@@ -281,6 +281,16 @@ function Structure(){
     })
 }
 
+Structure.prototype.create = function(hook){
+    var that = this
+    http().postJson("school", {
+        name: that.name,
+    }).done(function(){
+        notify.info(lang.translate("directory.notify.structureCreated"))
+        hookCheck(hook)
+    })
+}
+
 Structure.prototype.update = function(hook){
     var that = this
     http().putJson("structure/"+that.id, {

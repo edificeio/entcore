@@ -131,7 +131,8 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 		{
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
-			onClick: function(){ }
+			onClick: function(){ },
+			showCondition: function(){ return !$scope.isAdminLocal() }
 		},
 		{
 			text: lang.translate("directory.classOps"),
@@ -263,6 +264,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
         model.isolatedUsers.sync()
         delete $scope.isolatedUser
     }
+
+	$scope.refreshStructures = function(){
+		$scope.structures.sync($scope.refreshScope)
+	}
 
     $scope.getUserDetails = function(user){
         user.get(function(){
@@ -406,5 +411,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 		group.removeUser(user, function(){
 			group.getUsers($scope.refreshScope)
 		})
+	}
+
+	//Structures
+	$scope.initStructure = function(){
+		$scope.createdStructure = new Structure()
 	}
 }
