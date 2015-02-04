@@ -1365,7 +1365,9 @@ module.directive('dropDownButton', function(){
 			element.on('click', '.opener', function(){
 				element.find('.drop-down-button').removeClass('hidden');
 				$(document).one('mousedown', function(e){
-					element.find('.drop-down-button').addClass('hidden');
+					setTimeout(function() {
+						element.find('.drop-down-button').addClass('hidden');
+					}, 200);
 				});
 			});
 		}
