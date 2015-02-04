@@ -239,6 +239,7 @@ public class Be1dFeeder implements Feed {
 				if (externalId == null || externalId.trim().isEmpty()) {
 					generateUserExternalId(props, String.valueOf(rowIdx), structure, seed);
 				}
+				props.putArray("profiles", new JsonArray().add("Teacher"));
 				importer.createOrUpdatePersonnel(props, TEACHER_PROFILE_EXTERNAL_ID,
 						props.getArray("structures"), cs, null, true, true);
 			}
@@ -292,6 +293,7 @@ public class Be1dFeeder implements Feed {
 				if (externalId == null || externalId.trim().isEmpty()) {
 					generateUserExternalId(props, String.valueOf(rowIdx), structure, seed);
 				}
+				props.putArray("profiles", new JsonArray().add("Relative"));
 				importer.createOrUpdateUser(props, linkStudents);
 			}
 		});
@@ -349,6 +351,7 @@ public class Be1dFeeder implements Feed {
 				if (externalId == null || externalId.trim().isEmpty()) {
 					generateUserExternalId(props, c, structure, seed);
 				}
+				props.putArray("profiles", new JsonArray().add("Student"));
 				importer.createOrUpdateStudent(props, STUDENT_PROFILE_EXTERNAL_ID, null, null, cs,
 						null, null, true, true);
 			}

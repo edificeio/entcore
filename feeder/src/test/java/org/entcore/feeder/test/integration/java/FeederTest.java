@@ -35,9 +35,7 @@ import org.vertx.testtools.TestVerticle;
 import java.io.File;
 import java.io.IOException;
 
-import static org.vertx.testtools.VertxAssert.assertEquals;
-import static org.vertx.testtools.VertxAssert.fail;
-import static org.vertx.testtools.VertxAssert.testComplete;
+import static org.vertx.testtools.VertxAssert.*;
 
 public class FeederTest extends TestVerticle {
 
@@ -284,6 +282,10 @@ public class FeederTest extends TestVerticle {
 					case "delete-users":
 						JsonArray users = message.body().getArray("old-users", new JsonArray());
 						assertEquals(11769, users.size());
+						String type = users.<JsonObject>get(0).getString("type");
+						assertNotNull(type);
+						assertTrue("Personnel".equals(type) || "Teacher".equals(type) ||
+								"Student".equals(type) || "Relative".equals(type));
 						String countQuery = "MATCH (:User) RETURN count(*) as nbUsers ";
 						neo4j.execute(countQuery, new JsonObject(), new Handler<Message<JsonObject>>() {
 							@Override

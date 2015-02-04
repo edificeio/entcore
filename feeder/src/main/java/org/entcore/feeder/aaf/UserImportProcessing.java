@@ -23,6 +23,7 @@ import org.entcore.feeder.dictionary.structures.Importer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.Set;
@@ -50,6 +51,7 @@ public class UserImportProcessing extends BaseImportProcessing {
 	@Override
 	public void process(JsonObject object) {
 		if (resp.contains(object.getString("externalId"))) {
+			object.putArray("profiles", new JsonArray().add("Relative"));
 			importer.createOrUpdateUser(object);
 		}
 	}

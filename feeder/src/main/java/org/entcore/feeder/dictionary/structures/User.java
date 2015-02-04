@@ -216,7 +216,7 @@ public class User {
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
-				"RETURN u.id as id, u.externalId as externalId, u.displayName as displayName ";
+				"RETURN u.id as id, u.externalId as externalId, u.displayName as displayName, HEAD(u.profiles) as type ";
 		transactionHelper.add(query, params);
 		query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +

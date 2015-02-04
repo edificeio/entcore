@@ -69,6 +69,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 		if (r != null) {
 			resp.addAll(r.toList());
 		}
+		object.putArray("profiles", new JsonArray().add("Student"));
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
 				null, null, null, null, null, true, false);
 	}
