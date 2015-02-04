@@ -1,5 +1,5 @@
 <resource-right name="update" resource="snipletResource">
-	<button ng-click="display.selectSnipletDocument = true">Ajouter un document</button>
+	<media-select ng-model="source.document" ng-change="addDocument(source.document)" label="workspace.sniplet.documents.add" file-format="'any'" class="right-magnet"></media-select>
 </resource-right>
 
 <article class="list icons-view">
@@ -24,25 +24,3 @@
 		</legend>
 	</div>
 </article>
-
-
-<lightbox show="display.selectSnipletDocument" on-close="display.selectSnipletDocument = false;">
-	<h2>Rechercher un document</h2>
-
-	<p class="info" ng-if="display.isLoading">Copie du document vers le site en cours...<loading-icon></loading-icon></p>
-
-	<div class="row">
-		<input type="text" ng-model="searchText" i18n-placeholder="search" class="twelve cell" />
-	</div>
-
-	<div class="row" ng-if="searchText">
-		<ul class="illustrated-list">
-			<li ng-repeat="document in documents | filter:searchText | limitTo:6" ng-click="addDocument(document)">
-				<img skin-src="[[documentIcon(document)]]" class="illustration" />
-				<a class="name">[[document.name]]</a>
-				<em class="owner">[[document.ownerName]]</em>
-			</li>
-		</ul>
-	</div>
-
-</lightbox>

@@ -4257,6 +4257,10 @@ i.shared {
   padding-right: 8px;
   box-sizing: border-box;
 }
+drop-down-button {
+  width: 223px;
+  height: 38px;
+}
 .drop-down-button {
   position: absolute;
   z-index: 650;
@@ -4268,14 +4272,10 @@ i.shared {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  width: 100%;
-  padding: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+  width: 223px;
+  display: block;
+  padding: 4px 10px;
+  border-radius: 3px 3px 0 0;
   font-size: 15px;
   background: #fff;
   border: 1px solid #444;

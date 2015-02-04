@@ -196,9 +196,33 @@ var loader = (function(){
 			}
 		},
 		openFile: function(params){
-			if(params.async){
-				if(params.ajax){
-					asyncLoadScript(params.url, params.success);
+			if(params.async !== false){
+				if(params.ajax !== false){
+					var request = new XMLHttpRequest();
+					request.open('GET', params.url);
+					request.onload = function(){
+						if(request.status === 200){
+							var lib = new Function(request.responseText);
+							lib.name = params.url;
+							lib();
+
+							if(typeof params.success === 'function'){
+								params.success();
+							}
+							loadedScripts[params.url] = lib;
+						}
+						if(request.status === 404){
+							if(typeof params.error === 'function'){
+								params.error();
+							}
+						}
+					};
+					request.onerror = function(){
+						if(typeof params.error === 'function'){
+							params.error();
+						}
+					};
+					request.send(null);
 				}
 				else{
 					loadScript(params.url, true, true, params.success);

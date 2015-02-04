@@ -4500,7 +4500,7 @@ function MediaLibrary($scope){
 
 	function filteredDocuments(source){
 		return source.documents.filter(function(doc){
-			return doc.role() === $scope.fileFormat &&
+			return (doc.role() === $scope.fileFormat || $scope.fileFormat === 'any') &&
 				lang.removeAccents(doc.metadata.filename.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
 		});
 	}

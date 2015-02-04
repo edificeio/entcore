@@ -14,6 +14,9 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+console.log('workspace behaviours loaded');
+
 var workspaceBehaviours = {
 	resources: {
 		comment: {
@@ -175,26 +178,21 @@ Behaviours.register('workspace', {
 					});
 				},
 				init: function(){
+					this.source.document = {};
 					http().get('/workspace/documents', { filter: 'owner' }).done(function(data){
 						this.documents = data;
 						this.$apply();
 					}.bind(this))
 				},
 				addDocument: function(document){
-					this.display.isLoading = true;
-					Behaviours.applicationsBehaviours.workspace.protectedDuplicate(document, function(file){
-						Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
-							var resource = _.findWhere(resources, { '_id': file._id });
-							console.log('adding resource to sniplet');
-							console.log(resource);
-							this.source.documents.push(resource);
-							if(typeof this.snipletResource.save === 'function'){
-								this.snipletResource.save();
-								this.display.isLoading = false;
-								this.display.selectSnipletDocument = false;
-							}
-							this.$apply();
-						}.bind(this));
+					console.log('adding ' + document + ' in documents');
+					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
+						document = _.findWhere(resources, { _id: document.split('/document/')[1] });
+						this.source.documents.push(document);
+						if (typeof this.snipletResource.save === 'function') {
+							this.snipletResource.save();
+						}
+						this.$apply();
 					}.bind(this));
 				},
 				removeDocument: function(document){
@@ -239,23 +237,15 @@ Behaviours.register('workspace', {
 					this.setSnipletSource(this.carousel);
 				},
 				addDocument: function (document) {
+					console.log('adding ' + document + ' in carousel');
 					this.display.isLoading = true;
-					Behaviours.applicationsBehaviours.workspace.protectedDuplicate(document, function (file) {
-						Behaviours.applicationsBehaviours.workspace.loadResources(function (resources) {
-							var resource = _.findWhere(resources, { '_id': file._id });
-							console.log('adding resource to sniplet');
-							console.log(resource);
-							resource.icon = '/workspace/document/' + resource._id;
-							resource.link = '/workspace/document/' + resource._id;
-							this.source.documents.push(resource);
-							if (typeof this.snipletResource.save === 'function') {
-								this.snipletResource.save();
-								this.display.isLoading = false;
-								this.display.selectSnipletDocument = false;
-							}
-							this.$apply();
-						}.bind(this));
-					}.bind(this));
+					this.source.documents.push({
+						icon: document,
+						link: document
+					});
+					if (typeof this.snipletResource.save === 'function') {
+						this.snipletResource.save();
+					}
 				},
 				removeDocument: function (document) {
 					this.source.documents = _.reject(this.source.documents, function (doc) {

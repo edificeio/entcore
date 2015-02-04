@@ -1,27 +1,4 @@
 <carousel items="source.documents" transition="source.transition" buttons="source.buttons"></carousel>
 <resource-right name="update" resource="snipletResource">
-	<button ng-click="display.selectSnipletDocument = true" class="right-magnet" style="margin-top: -65px;"
-			><i18n>workspace.sniplet.carousel.add</i18n>
-	</button>
+	<media-select ng-model="document" ng-change="addDocument(document)" label="workspace.sniplet.carousel.add" file-format="'img'" class="right-magnet"></media-select>
 </resource-right>
-
-<lightbox show="display.selectSnipletDocument" on-close="display.selectSnipletDocument = false;">
-	<h2>Rechercher un document</h2>
-
-	<p class="info" ng-if="display.isLoading">Copie du document vers le site en cours...<loading-icon></loading-icon></p>
-
-	<div class="row">
-		<input type="text" ng-model="searchText" i18n-placeholder="search" class="twelve cell" />
-	</div>
-
-	<div class="row" ng-if="searchText">
-		<ul class="illustrated-list">
-			<li ng-repeat="document in documents | filter:searchText | limitTo:6" ng-click="addDocument(document)">
-				<img skin-src="/workspace/document/[[document._id]]?thumbnail=150x150" class="illustration" />
-				<a class="name">[[document.name]]</a>
-				<em class="owner">[[document.ownerName]]</em>
-			</li>
-		</ul>
-	</div>
-
-</lightbox>

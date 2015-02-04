@@ -1159,18 +1159,35 @@ Behaviours = (function(){
 			this.findRights(serviceName, resource);
 		},
 		loadBehaviours: function(serviceName, callback){
+			var actions = {
+				error: function(cb){
+					err = cb;
+				}
+			};
+
+			var err = undefined;
 			if(this.applicationsBehaviours[serviceName]){
 				callback(this.applicationsBehaviours[serviceName]);
-				return;
+				return actions;
 			}
 
 			if(serviceName === '.') {
-				return;
+				return actions;
 			}
 
-			loader.asyncLoad('/' + serviceName + '/public/js/behaviours.js', function(){
-				callback(this.applicationsBehaviours[serviceName])
-			}.bind(this));
+			loader.openFile({
+				url: '/' + serviceName + '/public/js/behaviours.js',
+				success: function(){
+					callback(this.applicationsBehaviours[serviceName])
+				}.bind(this),
+				error: function(){
+					if(typeof err === 'function'){
+						err();
+					}
+				}
+			});
+
+			return actions;
 		},
 		findWorkflow: function(serviceName){
 			var returnWorkflows = function(){
@@ -1353,6 +1370,9 @@ var sniplets = {
 					if(typeof callback === 'function' && all === 0){
 						callback();
 					}
+				})
+				.error(function(){
+					all --;
 				});
 			});
 		})
