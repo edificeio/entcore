@@ -50,7 +50,7 @@ public class DefaultConversationService implements ConversationService {
 
 	public DefaultConversationService(Vertx vertx, String applicationName) {
 		eb = Server.getEventBus(vertx);
-		neo = new Neo(eb, LoggerFactory.getLogger(Neo.class));
+		neo = new Neo(vertx, eb, LoggerFactory.getLogger(Neo.class));
 		this.applicationName = applicationName;
 	}
 

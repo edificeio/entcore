@@ -118,13 +118,13 @@ public class CommunicationTest extends TestVerticle {
 		container.config().putObject("initDefaultCommunicationRules", new JsonObject(json));
 		communicationController = new CommunicationController();
 		communicationController.init(vertx, container, null, null);
-		vertx.eventBus().registerHandler(ENTCORE_COMMUNICATION, new Handler<Message<JsonObject>>() {
+		vertx.eventBus().registerLocalHandler(ENTCORE_COMMUNICATION, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				communicationController.communicationEventBusHandler(message);
 			}
 		});
-		vertx.eventBus().registerHandler(ENTCORE_COMMUNICATION_USERS, new Handler<Message<JsonObject>>() {
+		vertx.eventBus().registerLocalHandler(ENTCORE_COMMUNICATION_USERS, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				communicationController.visibleUsers(message);

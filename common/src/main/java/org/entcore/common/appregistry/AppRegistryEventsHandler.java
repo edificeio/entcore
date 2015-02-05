@@ -32,7 +32,7 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 
 	public AppRegistryEventsHandler(Vertx vertx, AppRegistryEventsService service) {
 		appRegistryEventsService = service;
-		vertx.eventBus().registerHandler(APP_REGISTRY_PUBLISH_ADDRESS, this);
+		vertx.eventBus().registerLocalHandler(APP_REGISTRY_PUBLISH_ADDRESS, this);
 	}
 
 	@Override

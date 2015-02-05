@@ -50,11 +50,14 @@ public class EliotExporter implements Exporter {
 	private final Vertx vertx;
 	private static final DateFormat datetime = new SimpleDateFormat("yyyyMMddHHmmss");
 	private static final DateFormat date = new SimpleDateFormat("yyyyMMdd");
+	private final String node;
 
 	public EliotExporter(String exportPath, String exportDestination, Vertx vertx) {
 		this.exportBasePath = exportPath;
 		this.exportDestination = exportDestination;
 		this.vertx = vertx;
+		String n = (String) vertx.sharedData().getMap("server").get("node");
+		this.node = (n != null) ? n : "";
 	}
 
 	@Override
@@ -153,7 +156,7 @@ public class EliotExporter implements Exporter {
 				.putString("uri", exportDestination +
 						file.substring(file.lastIndexOf(File.separator) + 1))
 				.putString("file", file);
-		eb.send(WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
+		eb.send(node + WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {

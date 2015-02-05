@@ -65,7 +65,7 @@ public class UserBookController extends BaseController {
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		pathPrefix = "/userbook";
 		super.init(vertx, container, rm, securedActions);
-		this.neo = new Neo(Server.getEventBus(vertx),log);
+		this.neo = new Neo(vertx, Server.getEventBus(vertx),log);
 		this.config = container.config();
 		userBookData= config.getObject("user-book-data");
 		client = vertx.createHttpClient()

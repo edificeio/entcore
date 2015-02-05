@@ -43,7 +43,7 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 
 	public ConversationServiceManager(Vertx vertx, String applicationName) {
 		eb = vertx.eventBus();
-		neo = new Neo(eb, LoggerFactory.getLogger(Neo.class));
+		neo = new Neo(vertx, eb, LoggerFactory.getLogger(Neo.class));
 		this.applicationName = applicationName;
 	}
 

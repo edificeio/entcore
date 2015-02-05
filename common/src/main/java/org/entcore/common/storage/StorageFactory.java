@@ -53,7 +53,7 @@ public class StorageFactory {
 			}
 		} else {
 			String gridfsAddress = config.getString("gridfs-address", "wse.gridfs.persistor");
-			storage = new GridfsStorage(Server.getEventBus(vertx), gridfsAddress);
+			storage = new GridfsStorage(vertx, Server.getEventBus(vertx), gridfsAddress);
 		}
 		return storage;
 	}

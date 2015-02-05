@@ -19,6 +19,7 @@
 
 package org.entcore.infra;
 
+import fr.wseduc.mongodb.MongoDb;
 import org.entcore.common.http.BaseServer;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.services.EventStoreService;
@@ -30,12 +31,15 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Starter extends BaseServer {
 
 	String developerId = "";
+	private String node;
+	private boolean cluster;
 
 	@Override
 	public void start() {
@@ -47,13 +51,17 @@ public class Starter extends BaseServer {
 				config = getConfig("", "mod.json");
 			}
 			super.start();
-			vertx.sharedData().getMap("server").put("signKey",
-					config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+			final ConcurrentSharedMap<Object, Object> serverMap = vertx.sharedData().getMap("server");
+			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+			cluster = config.getBoolean("cluster", false);
+			serverMap.put("cluster", cluster);
+			node = config.getString("node", "");
+			serverMap.put("node", node);
 			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
 				protected void handle() {
 					loadCypherScript(); // only in dev mode with embedded neo4j
-					deployModule(config.getObject("app-registry"), false, new Handler<AsyncResult<String>>() {
+					deployModule(config.getObject("app-registry"), false, false, new Handler<AsyncResult<String>>() {
 						@Override
 						public void handle(AsyncResult<String> event) {
 							if (event.succeeded()) {
@@ -67,6 +75,8 @@ public class Starter extends BaseServer {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
+		MongoDb.getInstance().init(getEventBus(vertx), node +
+				config.getString("mongo-address", "wse.mongodb.persistor"));
 		EventStoreService eventStoreService = new MongoDbEventStore();
 		EventStoreController eventStoreController = new EventStoreController();
 		eventStoreController.setEventStoreService(eventStoreService);
@@ -98,7 +108,7 @@ public class Starter extends BaseServer {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.succeeded()) {
-						deployModule(array.<JsonObject>get(j), false, handlers[j + 1]);
+						deployModule(array.<JsonObject>get(j), false, cluster, handlers[j + 1]);
 					} else {
 						log.error("Error deploying pre-required module.", event.cause());
 						vertx.stop();
@@ -130,7 +140,8 @@ public class Starter extends BaseServer {
 		});
 	}
 
-	private void deployModule(JsonObject module, boolean internal, Handler<AsyncResult<String>> handler) {
+	private void deployModule(JsonObject module, boolean internal, boolean overideBusAddress,
+			Handler<AsyncResult<String>> handler) {
 		if (module.getString("name") == null) {
 			return;
 		}
@@ -144,6 +155,10 @@ public class Starter extends BaseServer {
 			}
 		}
 		conf = conf.mergeIn(module.getObject("config", new JsonObject()));
+		String address = conf.getString("address");
+		if (overideBusAddress && !node.isEmpty() && address != null) {
+			conf.putString("address", node + address);
+		}
 		container.deployModule(module.getString("name"),
 				conf, module.getInteger("instances", 1), handler);
 	}

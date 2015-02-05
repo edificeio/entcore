@@ -22,6 +22,7 @@ package org.entcore.common.neo4j;
 import java.util.Map;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerResponse;
@@ -34,10 +35,14 @@ public class Neo  {
 	private String address;
 	private Logger log;
 
-	public Neo (EventBus eb, Logger log) {
+	public Neo (Vertx vertx, EventBus eb, Logger log) {
 		this.eb = eb;
 		this. log = log;
-		this.address = "wse.neo4j.persistor";
+		String node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		this.address = node + "wse.neo4j.persistor";
 	}
 
 	@Deprecated

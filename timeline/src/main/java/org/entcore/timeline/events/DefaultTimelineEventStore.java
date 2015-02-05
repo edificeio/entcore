@@ -18,13 +18,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 	private static final String TIMELINE_COLLECTION = "timeline";
 
-	private MongoDb mongo;
-
-	public DefaultTimelineEventStore(Vertx vertx, Container container) {
-		mongo = MongoDb.getInstance();
-		mongo.init(Server.getEventBus(vertx), container.config()
-				.getString("mongodb-address", "wse.mongodb.persistor"));
-	}
+	private MongoDb mongo = MongoDb.getInstance();
 
 	@Override
 	public void add(JsonObject event, final Handler<JsonObject> result) {

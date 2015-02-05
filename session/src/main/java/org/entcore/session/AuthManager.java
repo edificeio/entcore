@@ -25,6 +25,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.Serializable;
@@ -40,6 +41,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 
 	private long sessionTimeout;
+	private String neo4jAddress;
 
 	private static final class LoginInfo implements Serializable {
 		final long timerId;
@@ -53,8 +55,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	public void start() {
 		super.start();
-
-		if (getOptionalBooleanConfig("cluster", false)) {
+		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		Boolean cluster = (Boolean) server.get("cluster");
+		String node = (String) server.get("node");
+		neo4jAddress = node + "wse.neo4j.persistor";
+		if (Boolean.TRUE.equals(cluster)) {
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
@@ -74,7 +79,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			this.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
 		}
 
-		eb.registerHandler(address, this);
+		eb.registerLocalHandler(address, this);
 	}
 
 	@Override
@@ -393,7 +398,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		if (transactionId != null) {
 			jo.putNumber("transactionId", transactionId);
 		}
-		eb.send("wse.neo4j.persistor", jo, handler);
+		eb.send(neo4jAddress, jo, handler);
 	}
 
 }

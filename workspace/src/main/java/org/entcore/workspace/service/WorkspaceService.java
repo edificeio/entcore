@@ -100,7 +100,11 @@ public class WorkspaceService extends BaseController {
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		mongo = MongoDb.getInstance();
-		imageResizerAddress = container.config().getString("image-resizer-address", "wse.image.resizer");
+		String node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		imageResizerAddress = node + container.config().getString("image-resizer-address", "wse.image.resizer");
 		documentDao = new DocumentDao(mongo);
 		notification = new TimelineHelper(vertx, eb, container);
 		this.shareService = new MongoDbShareService(eb, mongo, "documents", securedActions, null);

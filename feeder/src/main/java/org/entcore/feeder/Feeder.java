@@ -58,7 +58,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			logger.fatal("Missing neo4j address.");
 			return;
 		}
-		neo4j = new Neo4j(vertx.eventBus(), neo4jAddress);
+		String node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		neo4j = new Neo4j(vertx.eventBus(), node + neo4jAddress);
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		EventStoreFactory factory = EventStoreFactory.getFactory();
 		factory.setVertx(vertx);
@@ -82,7 +86,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
-		vertx.eventBus().registerHandler(
+		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
 		switch (container.config().getString("feeder", "")) {
 			case "AAF" :

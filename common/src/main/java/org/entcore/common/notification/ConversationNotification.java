@@ -48,7 +48,7 @@ public class ConversationNotification {
 
 	public ConversationNotification(Vertx vertx, EventBus eb, Container container) {
 		this.render = new Renders(vertx, container);
-		this.neo = new Neo(eb, log);
+		this.neo = new Neo(vertx, eb, log);
 		this.eb = eb;
 		this.host = container.config().getString("host", "http://localhost:8009");
 	}

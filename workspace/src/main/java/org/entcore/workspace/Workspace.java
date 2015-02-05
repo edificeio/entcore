@@ -20,7 +20,6 @@
 package org.entcore.workspace;
 
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.user.RepositoryHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.QuotaService;
@@ -60,9 +59,8 @@ public class Workspace extends BaseServer {
 		}
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
-		vertx.eventBus().registerHandler("user.repository",
-				new RepositoryHandler(new WorkspaceRepositoryEvents(vertx, storage,
-						config.getBoolean("share-old-groups-to-users", false))));
+		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
+						config.getBoolean("share-old-groups-to-users", false)));
 
 		service.setQuotaService(quotaService);
 		service.setStorage(storage);

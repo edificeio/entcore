@@ -21,7 +21,6 @@ package org.entcore.conversation;
 
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.user.RepositoryHandler;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
 import org.entcore.conversation.service.impl.ConversationServiceManager;
@@ -33,8 +32,7 @@ public class Conversation extends BaseServer {
 		super.start();
 		addController(new ConversationController());
 
-		vertx.eventBus().registerHandler("user.repository",
-				new RepositoryHandler(new ConversationRepositoryEvents()));
+		setRepositoryEvents(new ConversationRepositoryEvents());
 
 		new AppRegistryEventsHandler(vertx, new ConversationServiceManager(vertx,
 				config.getString("app-name", Conversation.class.getSimpleName())));

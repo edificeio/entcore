@@ -23,6 +23,7 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -38,13 +39,17 @@ public class GridfsStorage implements Storage {
 	private final String gridfsAddress;
 	private final String bucket;
 
-	public GridfsStorage(EventBus eb, String gridfsAddress) {
-		this(eb, gridfsAddress, "fs");
+	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
+		this(vertx, eb, gridfsAddress, "fs");
 	}
 
-	public GridfsStorage(EventBus eb, String gridfsAddress, String bucket) {
+	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress, String bucket) {
 		this.eb = eb;
-		this.gridfsAddress = gridfsAddress;
+		String node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		this.gridfsAddress = node + gridfsAddress;
 		this.bucket = bucket;
 	}
 

@@ -68,7 +68,7 @@ public class DirectoryController extends BaseController {
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
-		this.neo = new Neo(eb,log);
+		this.neo = new Neo(vertx, eb,log);
 		this.config = container.config();
 		this.admin = new JsonObject(vertx.fileSystem().readFileSync("super-admin.json").toString());
 	}

@@ -35,7 +35,7 @@ public class TimelineController extends BaseController {
 	public void init(Vertx vertx, Container container,
 			RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
-		store = new DefaultTimelineEventStore(vertx, container);
+		store = new DefaultTimelineEventStore();
 		eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
 	}
 

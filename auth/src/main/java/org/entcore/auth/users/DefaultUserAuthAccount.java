@@ -46,7 +46,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	public DefaultUserAuthAccount(Vertx vertx, Container container) {
 		EventBus eb = Server.getEventBus(vertx);
-		this.neo = new Neo(eb, container.logger());
+		this.neo = new Neo(vertx, eb, container.logger());
 		this.vertx = vertx;
 		this.container = container;
 		notification = new NotificationHelper(vertx, eb, container);

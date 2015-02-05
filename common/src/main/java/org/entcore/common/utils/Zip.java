@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2015
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,30 +15,41 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
-package org.entcore.archive;
+package org.entcore.common.utils;
 
-import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+public class Zip {
 
-public class Exporter extends BusModBase implements Handler<Message<JsonObject>> {
+	private EventBus eb;
+	private String address;
 
-	@Override
-	public void start() {
-		super.start();
-		vertx.eventBus().registerLocalHandler(
-				container.config().getString("address", "entcore.exporter"), this);
+	private Zip() {}
+
+	private static class ZipHolder {
+		private static final Zip instance = new Zip();
 	}
 
+	public static Zip getInstance() {
+		return ZipHolder.instance;
+	}
 
-	@Override
-	public void handle(Message<JsonObject> event) {
+	public void init(EventBus eb, String address) {
+		this.eb = eb;
+		this.address = address;
+	}
 
+	public void zipFolder(String path, String zipPath, boolean deletePath, Handler<Message<JsonObject>> handler) {
+		JsonObject j = new JsonObject()
+				.putString("path", path)
+				.putString("zipFile", zipPath)
+				.putBoolean("deletePath", deletePath);
+		eb.send(address, j, handler);
 	}
 
 }

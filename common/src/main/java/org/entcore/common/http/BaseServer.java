@@ -35,6 +35,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.utils.Config;
+import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
@@ -57,17 +58,26 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
+		String node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+
 		Config.getInstance().setConfig(config);
 		if (config.getBoolean("neo4j", true)) {
-			Neo4j.getInstance().init(getEventBus(vertx),
+			Neo4j.getInstance().init(getEventBus(vertx), node +
 					config.getString("neo4j-address", "wse.neo4j.persistor"));
 		}
 		if (config.getBoolean("mongodb", true)) {
-			MongoDb.getInstance().init(getEventBus(vertx),
+			MongoDb.getInstance().init(getEventBus(vertx), node +
 					config.getString("mongo-address", "wse.mongodb.persistor"));
 		}
+		if (config.getBoolean("zip", true)) {
+			Zip.getInstance().init(getEventBus(vertx), node +
+					config.getString("zip-address", "entcore.zipper"));
+		}
 		if (config.getBoolean("sql", false)) {
-			Sql.getInstance().init(getEventBus(vertx),
+			Sql.getInstance().init(getEventBus(vertx), node +
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
 			if ("dev".equals(config.getString("mode"))) {
@@ -78,7 +88,7 @@ public abstract class BaseServer extends Server {
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
 		validator.setEventBus(getEventBus(vertx));
-		validator.setAddress("json.schema.validator");
+		validator.setAddress(node + "json.schema.validator");
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
@@ -90,7 +100,7 @@ public abstract class BaseServer extends Server {
 		} else {
 			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
 		}
-		vertx.eventBus().registerHandler("user.repository", repositoryHandler);
+		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
 
 		loadI18nAssetsFiles();
 

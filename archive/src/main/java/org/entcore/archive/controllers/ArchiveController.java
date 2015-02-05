@@ -135,7 +135,7 @@ public class ArchiveController extends BaseController {
 			public void handle(Boolean event) {
 				if (Boolean.TRUE.equals(event)) {
 					final String address = "export." + exportId;
-					eb.registerHandler(address, new Handler<Message<JsonObject>>() {
+					eb.registerLocalHandler(address, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							String path = event.body().getString("destZip");

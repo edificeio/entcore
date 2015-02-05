@@ -34,7 +34,7 @@ public class Auth extends BaseServer {
 		final EventBus eb = getEventBus(vertx);
 		SecurityHandler.clearFilters();
 		SecurityHandler.addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
-		setResourceProvider( new AuthResourcesProvider(new Neo(eb, container.logger())));
+		setResourceProvider( new AuthResourcesProvider(new Neo(vertx, eb, container.logger())));
 		super.start();
 		addController(new AuthController());
 	}

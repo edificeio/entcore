@@ -26,6 +26,7 @@ import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -188,11 +189,8 @@ public class FileSystemExportService implements ExportService {
 			public void handle(AsyncResult<String[]> event) {
 				if (event.succeeded()) {
 					if (event.result().length == expectedExports.size()) {
-						JsonObject j = new JsonObject()
-								.putString("path", exportDirectory)
-								.putString("zipFile", exportDirectory + ".zip")
-								.putBoolean("deletePath", true);
-						eb.send("entcore.zipper", j, new Handler<Message<JsonObject>>() {
+						Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
+								new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
