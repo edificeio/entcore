@@ -872,6 +872,17 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void structureDetachment(Message<JsonObject> message) {
+		final String structureId = getMandatoryString("structureId", message);
+		final String parentStructureId = getMandatoryString("parentStructureId", message);
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) throws ValidationException {
+				Structure.removeAttachment(structureId, parentStructureId, tx);
+			}
+		});
+	}
+
 	public void updateStructure(final Message<JsonObject> message) {
 		JsonObject s = getMandatoryObject("data", message);
 		if (s == null) return;

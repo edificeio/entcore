@@ -19,7 +19,7 @@
     </div>
 </nav>
 
-<article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
+<article class="side-tabs-content ten cell" ng-if="structure || createdStructure">
 
     <!-- Structure details -->
     <div ng-if="structure && showWhat === 'showCurrentStructure'">
@@ -34,6 +34,38 @@
             <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
             <input class="eight cell" type="text" ng-model="structure.name"/>
         </div>
+        <div class="twelve cell" ng-if="structure.parents">
+            <strong class="four cell directory-top-padded">[[lang.translate("directory.structure.parents")]]</strong>
+            <nav class="eight cell">
+                <ul class="angle-list small" style="margin: 0">
+                    <li ng-repeat="parent in structure.parents">[[parent.name]] <button class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button></li>
+                </ul>
+            </nav>
+        </div>
+        <hr class="separator cell">
+        <div class="twelve cell">
+            <h3><i18n>directory.admin.attachChildStructures</i18n></h3>
+            <nav class="vertical search-container-left three cell" style="height: 380px">
+                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructures"/>
+                <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
+                    <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | orderBy: 'name'"
+                        ng-click="potentialChild.attachParent(structure, refreshScope)"
+                        style="padding-left: 0">
+                        <span>[[potentialChild.name]]</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="eight cell">
+                <h5 style="text-align: center">[[lang.translate("directory.structure.children")]]</h5>
+                <ul class="angle-list small" style="padding-left: 20px">
+                    <li ng-repeat="child in structures.all | filter: filterOnlyChildStructures | orderBy: 'name'">
+                        [[child.name]]
+                        <button class="close right-magnet" ng-click="child.detachParent(structure, refreshScope)"></button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 
     <!-- Structure creation -->

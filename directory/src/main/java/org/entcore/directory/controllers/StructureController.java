@@ -37,9 +37,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class StructureController extends BaseController {
 
@@ -117,6 +115,14 @@ public class StructureController extends BaseController {
 		final String parentStructureId = request.params().get("parentStructureId");
 		final String structureId = request.params().get("structureId");
 		structureService.defineParent(structureId, parentStructureId, notEmptyResponseHandler(request));
+	}
+
+	@Delete("/structure/:structureId/parent/:parentStructureId")
+	@SecuredAction("structure.remove.parent")
+	public void removeParent(final HttpServerRequest request) {
+		final String parentStructureId = request.params().get("parentStructureId");
+		final String structureId = request.params().get("structureId");
+		structureService.removeParent(structureId, parentStructureId, defaultResponseHandler(request));
 	}
 
 	public void setStructureService(SchoolService structureService) {

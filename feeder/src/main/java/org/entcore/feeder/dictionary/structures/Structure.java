@@ -309,4 +309,14 @@ public class Structure {
 		);
 	}
 
+	public static void removeAttachment(String structureId, String parentStructureId,
+			TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (s:Structure { id : {structureId}})-[r:HAS_ATTACHMENT]->(ps:Structure { id : {parentStructureId}}) " +
+				"DELETE r";
+		transactionHelper.add(query, new JsonObject()
+				.putString("structureId", structureId)
+				.putString("parentStructureId", parentStructureId));
+	}
+
 }

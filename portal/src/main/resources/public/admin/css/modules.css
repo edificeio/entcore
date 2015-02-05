@@ -4257,10 +4257,6 @@ i.shared {
   padding-right: 8px;
   box-sizing: border-box;
 }
-drop-down-button {
-  width: 223px;
-  height: 38px;
-}
 .drop-down-button {
   position: absolute;
   z-index: 650;
@@ -4272,10 +4268,14 @@ drop-down-button {
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  width: 223px;
-  display: block;
-  padding: 4px 10px;
-  border-radius: 3px 3px 0 0;
+  width: 100%;
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
   font-size: 15px;
   background: #fff;
   border: 1px solid #444;
@@ -9959,14 +9959,23 @@ ul.angle-list > li {
   padding-top: 5px;
 }
 ul.angle-list > li button.close {
-  font-size: 11pt;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  font-size: 14px;
+  padding: 0px 1px 1px 0px;
+  width: 16px;
+  height: 16px;
+  line-height: 0px;
 }
 ul.angle-list > li button.close::after {
   content: 'X';
+}
+ul.angle-list.small {
+  padding-left: 0px;
+}
+ul.angle-list.small > li {
+  font-size: 15px;
+  padding-left: 10px;
+  padding-bottom: 2px;
+  padding-top: 0px;
 }
 div.leaf-menu-container {
   margin-bottom: 15px;

@@ -160,14 +160,25 @@ ul.angle-list{
 		padding-top: 5px;
 
 		button.close{
-			font-size: 11pt;
-			padding: 0;
-			width: 20px;
-			height: 20px;
-			border-radius: 10px;
+			font-size: 14px;
+			padding: 0px 1px 1px 0px;
+			width: 16px;
+			height: 16px;
+			line-height: 0px;
 		}
 		button.close::after{
 			content: 'X'
+		}
+	}
+
+	&.small{
+		padding-left: 0px;
+
+		> li{
+			font-size: 15px;
+			padding-left: 10px;
+			padding-bottom: 2px;
+			padding-top: 0px;
 		}
 	}
 }

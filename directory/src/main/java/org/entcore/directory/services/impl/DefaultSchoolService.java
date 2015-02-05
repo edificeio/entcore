@@ -22,7 +22,6 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
@@ -32,8 +31,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
@@ -96,7 +94,10 @@ public class DefaultSchoolService implements SchoolService {
 		}
 		String query =
 				"MATCH (s:Structure) " + condition +
-				"RETURN s.id as id, s.UAI as UAI, s.name as name ";
+				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
+				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
+				"RETURN s.id as id, s.UAI as UAI, s.name as name, CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
+
 		neo.execute(query, params, validResultHandler(results));
 	}
 
@@ -125,6 +126,15 @@ public class DefaultSchoolService implements SchoolService {
 				.putString("structureId", structureId)
 				.putString("parentStructureId", parentStructureId);
 		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(0, handler));
+	}
+
+	@Override
+	public void removeParent(String structureId, String parentStructureId, Handler<Either<String, JsonObject>> handler) {
+		JsonObject action = new JsonObject()
+			.putString("action", "manual-structure-detachment")
+			.putString("structureId", structureId)
+			.putString("parentStructureId", parentStructureId);
+		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(handler));
 	}
 
 	@Override

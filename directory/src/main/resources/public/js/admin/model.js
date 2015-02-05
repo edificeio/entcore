@@ -383,6 +383,24 @@ Structure.prototype.removeClassUsers = function(classe, hook){
     })
 }
 
+Structure.prototype.attachParent = function(parent, hook){
+    var structure = this
+    http().put("structure/"+structure.id+"/parent/"+parent.id).done(function(){
+        if(!structure.parents)
+            structure.parents = []
+        structure.parents.push({id: parent.id, name: parent.name})
+        hookCheck(hook)
+    })
+}
+
+Structure.prototype.detachParent = function(parent, hook){
+    var structure = this
+    http().delete("structure/"+structure.id+"/parent/"+parent.id).done(function(){
+        structure.parents = _.filter(structure.parents, function(p){ return p.id !== parent.id })
+        hookCheck(hook)
+    })
+}
+
 //Collection of users with no relation to classes or structures
 function IsolatedUsers(){
     this.collection(User, {
