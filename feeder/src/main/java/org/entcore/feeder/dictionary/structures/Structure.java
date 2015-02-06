@@ -206,7 +206,7 @@ public class Structure {
 		final TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
-				"<-[:DEPENDS]-(cpg:ProfileGroup)<-[:IN]-(u:User) " +
+				"<-[:DEPENDS]-(cpg:Group)<-[:IN]-(u:User) " +
 				"OPTIONAL MATCH s<-[:DEPENDS]-(fg:FunctionalGroup) " +
 				"RETURN collect(distinct u.id) as users, collect(distinct cpg.id) as profileGroups, " +
 				"collect(distinct fg.id) as functionalGroups";
@@ -243,7 +243,7 @@ public class Structure {
 		final JsonObject params = new JsonObject().putString("id", id);
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
-				"<-[:DEPENDS]-(cpg:ProfileGroup) " +
+				"<-[:DEPENDS]-(cpg:Group) " +
 				"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
 				"RETURN cpg.id as group, cpg.name as groupName, collect(u.id) as users " +
 				"UNION " +
@@ -258,7 +258,7 @@ public class Structure {
 		JsonObject params = new JsonObject().putString("id", id);
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[r:BELONGS]-(c:Class)" +
-				"<-[r1:DEPENDS]-(cpg:ProfileGroup)-[r2]-() " +
+				"<-[r1:DEPENDS]-(cpg:Group)-[r2]-() " +
 				"DELETE r, r1, r2, c, cpg ";
 		tx.add(query, params);
 		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
