@@ -115,12 +115,6 @@ public class WorkspaceService extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(Workspace.class.getSimpleName());
 		post("/documents/copy/:ids", "copyDocuments");
 		put("/documents/move/:ids", "moveDocuments");
-//		try {
-//			swiftClient = new SwiftClient(vertx, new URI("http://172.17.0.25:8080"));
-//			swiftClient.authenticate("test:tester", "testing");
-//		} catch (URISyntaxException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	@Get("/workspace")
@@ -481,28 +475,6 @@ public class WorkspaceService extends BaseController {
 
 	private void add(final HttpServerRequest request, final String mongoCollection,
 			final JsonObject doc, long allowedSize) {
-//		swiftClient.uploadFile(request, new Handler<JsonObject>() {
-//			@Override
-//			public void handle(final JsonObject uploaded) {
-//				if ("ok".equals(uploaded.getString("status"))) {
-//					addAfterUpload(uploaded, doc, request
-//									.params().get("name"), request.params().get("application"),
-//							request.params().getAll("thumbnail"),
-//							mongoCollection, new Handler<Message<JsonObject>>() {
-//								@Override
-//								public void handle(Message<JsonObject> res) {
-//									if ("ok".equals(res.body().getString("status"))) {
-//										renderJson(request, res.body(), 201);
-//									} else {
-//										renderError(request, res.body());
-//									}
-//								}
-//							});
-//				} else {
-//					badRequest(request, uploaded.getString("message"));
-//				}
-//			}
-//		});
 		storage.writeUploadFile(request, allowedSize, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject uploaded) {
