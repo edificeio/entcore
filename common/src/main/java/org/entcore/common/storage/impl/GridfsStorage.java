@@ -65,7 +65,7 @@ public class GridfsStorage implements Storage {
 
 	@Override
 	public void writeBuffer(Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-		gridfsWriteBuffer(buff, contentType, filename, eb, handler);
+		gridfsWriteBuffer(buff, contentType, filename, eb, handler, gridfsAddress);
 	}
 
 	@Override
