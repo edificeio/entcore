@@ -1249,13 +1249,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		ui.hideLightbox();
 		if(!item.file){
 			//Rename folder
-			http().putJson("/workspace/folder/rename", {id: item._id, name: newName}).done(function(){
+			http().putJson("/workspace/folder/rename/" + item._id, {name: newName}).done(function(){
 				$scope.openedFolder.folder.children = []
 				$scope.reloadFolderView()
 			})
 		} else {
 			//Rename file
-			http().putJson("/workspace/rename/document", {id: item._id, name: newName}).done(function(){
+			http().putJson("/workspace/rename/document/" + item._id, {name: newName}).done(function(){
 				$scope.openFolder($scope.openedFolder.folder)
 			})
 		}

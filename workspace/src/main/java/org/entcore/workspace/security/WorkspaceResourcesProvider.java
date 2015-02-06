@@ -69,6 +69,10 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "copyDocuments":
 				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
 				break;
+			case "renameDocument":
+			case "renameFolder":
+				authorizeOwner(request, user, binding.getServiceMethod(), handler);
+				break;
 			default:
 				handler.handle(false);
 			}
@@ -231,6 +235,17 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user, serviceMethod) + "}}]}";
+			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
+		} else {
+			handler.handle(false);
+		}
+	}
+
+	private void authorizeOwner(HttpServerRequest request,
+			UserInfos user, String serviceMethod, Handler<Boolean> handler) {
+		String id = request.params().get("id");
+		if (id != null && !id.trim().isEmpty()) {
+			String query = "{ \"_id\": \"" + id + "\", \"owner\": \"" + user.getUserId() + "\" }";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {
 			handler.handle(false);

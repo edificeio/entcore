@@ -40,6 +40,8 @@ import java.util.regex.Pattern;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.OwnerOnly;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mongodb.MongoDbResult;
@@ -2017,16 +2019,16 @@ public class WorkspaceService extends BaseController {
 		this.quotaService = quotaService;
 	}
 
-	@Put("/folder/rename")
-	@SecuredAction(value = "workspace.folder.rename")
+	@Put("/folder/rename/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void renameFolder(final HttpServerRequest request){
 		RequestUtils.bodyToJson(request, pathPrefix + "rename", new Handler<JsonObject>() {
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos userInfos) {
 						if(userInfos != null){
-							String id = body.getString("id");
 							String name = body.getString("name");
+							String id = request.params().get("id");
 							folderService.rename(id, name, userInfos, defaultResponseHandler(request));
 						} else {
 							unauthorized(request);
@@ -2038,15 +2040,15 @@ public class WorkspaceService extends BaseController {
 
 	}
 
-	@Put("/rename/document")
-	@SecuredAction(value = "workspace.document.rename")
+	@Put("/rename/document/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void renameDocument(final HttpServerRequest request){
 		RequestUtils.bodyToJson(request, pathPrefix + "rename", new Handler<JsonObject>() {
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos userInfos) {
 						if(userInfos != null){
-							String id = body.getString("id");
+							String id = request.params().get("id");
 							String name = body.getString("name");
 
 							final QueryBuilder matcher = QueryBuilder.start("_id").is(id).put("owner").is(userInfos.getUserId()).and("file").exists(true);
