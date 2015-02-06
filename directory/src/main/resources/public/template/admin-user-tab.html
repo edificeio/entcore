@@ -5,21 +5,16 @@
 -->
 
 <!-- Structure selection menu -->
-<nav class="side-tabs three cell">
-    <ul style="max-height: 750px; overflow-y: scroll;">
-        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
-            [[structure.name]]
-        </li>
-    </ul>
-</nav>
-<article class="side-tabs-content nine cell" ng-if="structure" style="position: relative">
+<div ng-include="'structure-tree'"></div>
+
+<article class="side-tabs-content nine cell" ng-if="structure">
 
     <!-- User selection menu -->
     <nav class="vertical cell search-container-left">
 
         <div class="vertical_buttons_container">
             <!-- Filter toggle button -->
-            <button ng-click="showWhat = showWhat === 'showFilters' ? 'showStructureUser' : 'showFilters'"
+            <button ng-click="showWhat === 'showFilters' ? setShowWhat('showStructureUser') : setShowWhat('showFilters')"
                     tooltip="tooltip.users.filtersTooltip"
                     class="directory-list-glyph-button filter-icon">
             </button>
@@ -31,13 +26,13 @@
             </button>
 
             <!-- Creation button -->
-            <button ng-click="showWhat = 'showCreatedUser'"
+            <button ng-click="setShowWhat('showCreatedUser')"
                     tooltip="directory.tooltip.creationTooltip"
                     class="directory-list-glyph-button silhouette-icon">
             </button>
 
             <!-- Legend button -->
-            <button ng-click="showWhat = 'showLegend'"
+            <button ng-click="setShowWhat('showLegend')"
                     tooltip="directory.tooltip.legend"
                     class="directory-list-glyph-button question-mark-icon">
             </button>
@@ -45,8 +40,8 @@
 
         <!-- User list -->
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
-        <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 640px; padding-top: 10;">
-            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: usersLimit" ng-click="$root.structureUser = user; $parent.showWhat = 'showStructureUser'; getUserDetails(user);" style="padding-left: 0">
+        <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT">
+            <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: usersLimit" ng-click="$root.structureUser = user; setShowWhat('showStructureUser'); getUserDetails(user);" style="padding-left: 0">
                 <span ng-class="userStyle(user)">[[user.displayName]]</span>
             </li>
         </ul>
@@ -184,8 +179,8 @@
                 <hr class="separator">
                 <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.classes")]]</h3>
                 <div class="row">
-                    <ul class="angle-list" style="padding-left: 5%">
-                        <li ng-repeat="classe in structureUser.totalClasses | orderBy: 'name'" style="font-size: 15px; padding: 0 0 0 10;">
+                    <ul class="angle-list small" style="padding-left: 5%">
+                        <li ng-repeat="classe in structureUser.totalClasses | orderBy: 'name'">
                             <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classe.id]]" target="_blank">[[classe.name]]</a>
                             <button ng-click="classe.unlinkUser(structureUser, reloadStructureAndRetrieveUser(structureUser))" class="right-magnet close"></button>
                         </li>

@@ -5,21 +5,19 @@
 -->
 
 <!-- Structure selection menu -->
-<nav class="side-tabs three cell" ng-init="showWhat = 'showCurrentStructure'">
-    <ul style="max-height: 750px; overflow-y: scroll;">
-        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure); $parent.showWhat = 'showCurrentStructure'" ng-class="{ selected: $parent.structure === structure }">
-            [[structure.name]]
-        </li>
-    </ul>
-    <div class="vertical_buttons_container" style="right: -34px; top: 5px;">
-        <!-- Creation button -->
-        <button ng-click="showWhat = 'showStructureCreation'; initStructure()" tooltip="directory.tooltip.createStructure"
-                class="directory-list-glyph-button plus-icon">
-        </button>
+<div>
+    <div ng-include="'structure-tree'"></div>
+    <div class="three" style="position: relative;">
+        <div class="vertical_buttons_container" style="right: -36px; top: 17px;">
+            <!-- Creation button -->
+            <button ng-click="showWhat('showStructureCreation'); initStructure()" tooltip="directory.tooltip.createStructure"
+                    class="directory-list-glyph-button plus-icon">
+            </button>
+        </div>
     </div>
-</nav>
+</div>
 
-<article class="side-tabs-content ten cell" ng-if="structure || createdStructure">
+<article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
 
     <!-- Structure details -->
     <div ng-if="structure && showWhat === 'showCurrentStructure'">
@@ -38,7 +36,7 @@
             <strong class="four cell directory-top-padded">[[lang.translate("directory.structure.parents")]]</strong>
             <nav class="eight cell">
                 <ul class="angle-list small" style="margin: 0">
-                    <li ng-repeat="parent in structure.parents">[[parent.name]] <button class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button></li>
+                    <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name'">[[parent.name]] <button class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button></li>
                 </ul>
             </nav>
         </div>

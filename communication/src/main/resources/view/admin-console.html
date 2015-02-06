@@ -15,11 +15,37 @@
             <div class="twelve leaf-menu-container">
                 <div class="leaf-menu" ng-class="{ selected: selected === 0 }">
                     <a ng-click="selected=0">[[lang.translate("communication.customRules")]]</a>
+                    <loading-icon request="load-group-comm" only-loading-icon class="directory-inline-middle"></loading-icon>
                 </div>
                 <div class="leaf-menu" ng-class="{ selected: selected === 1 }">
                     <a ng-click="selected=1">[[lang.translate("communication.defaultRules")]]</a>
                 </div>
             </div>
+
+            <script type="text/ng-template" id="structure-tree">
+                <nav class="side-tabs three cell recursive-list">
+                    <input type="text" placeholder="[[lang.translate('communication.search')]]" ng-model="structureFilteringInput" />
+                    <ul ng-if="!structureFilteringInput">
+                        <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'" ng-click="viewStructure(struct); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+                            [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+                            <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+                        </li>
+                    </ul>
+                    <ul ng-if="structureFilteringInput">
+                        <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'" ng-click="viewStructure(struct); selectOnly(struct, allStructures)" ng-class="{ selected: struct.selected }">
+                            [[struct.name]]
+                        </li>
+                    </ul>
+                </nav>
+            </script>
+            <script type="text/ng-template" id="structure-tree-sub-levels">
+                <ul ng-if="struct.children">
+                    <li ng-repeat="struct in levelStructures = struct.children | orderBy: 'name'" ng-click="$event.stopPropagation(); viewStructure(struct); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+                        [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+                        <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+                    </li>
+                </ul>
+            </script>
 
             <!--
                 |||||||||||||||||||||
@@ -29,13 +55,7 @@
             <div ng-if="selected === 0" class="twelve">
 
                 <!-- Left side menu : structures -->
-                <nav class="side-tabs three cell">
-                    <ul style="max-height: 750px; overflow-y: scroll;">
-                        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
-                            [[structure.name]]
-                        </li>
-                    </ul>
-                </nav>
+                <div ng-include="'structure-tree'"></div>
 
                 <!-- Right side container -->
                 <article class="side-tabs-content nine cell" ng-if="structure">
@@ -43,7 +63,7 @@
                     <!-- Group selection menu -->
                     <nav class="vertical cell search-container-left">
                         <input type="text" placeholder="[[lang.translate('communication.search')]]" ng-model="$parent.filterGroups"/>
-                        <ul style="height: 640px; padding-top: 10;">
+                        <ul>
                             <li ng-repeat="group in structure.groups.all | filter: filterGroupsFunction(filterGroups) | orderBy: 'name'" ng-click="group.sync(); $root.group = group;" style="padding-left: 0">
                                 <span>[[group.name]]</span>
                             </li>
@@ -63,7 +83,7 @@
 
                                 <!-- Group users -->
                                 <article class="accordion" ng-class="{ opened: section === 1 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(1)" style="font-size: 16px; font-weight: bold; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                    <h2 ng-click="accordionClick(1)">
                                         [[lang.translate("communication.accordion.groupUsers")+" ("+group.users.length()+")"]]
                                     </h2>
                                     <div class="toggle">
@@ -79,7 +99,7 @@
 
                                 <!-- Custom group communication rules -->
                                 <article class="accordion" ng-class="{ opened: section === 2 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(2)" style="font-size: 16px; font-weight: bold; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                    <h2 ng-click="accordionClick(2)">
                                         [[lang.translate("communication.accordion.customRules")]]
                                     </h2>
                                     <div class="toggle">
@@ -105,7 +125,7 @@
 
                                 <!-- Intra group policy -->
                                 <article class="accordion" ng-class="{ opened: section === 3 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(3)" style="font-size: 16px; font-weight: bold; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                    <h2 ng-click="accordionClick(3)">
                                         [[lang.translate("communication.accordion.groupPolicy")]]
                                     </h2>
                                     <div class="toggle">
@@ -159,36 +179,35 @@
             -->
             <div ng-if="selected === 1" class="twelve">
 
-                <h2 style="width: 100%; text-align: center;font-family: Lato">[[ lang.translate("communication.table.title") ]]</h2>
+                <h2 style="width: 100%; text-align: center;font-family: Lato; font-size: 20px;">[[ lang.translate("communication.table.title") ]]</h2>
 
-                <table style="table-layout: fixed">
-                    <thead style="font-size:12; font-weight:bold">
-                        <tr style="border-bottom-width: 2px; border-top: none; border-right: 2px solid #ff0b75; border-left: none">
-                            <th style="background-color: rgb(238, 238, 238);"><!--Name--></th>
-                            <th style="border-top: 3px solid rgb(255, 11, 117); border-left: 2px solid #ff0b75;">[[lang.translate("communication.innerRelationships")]]</th>
-                            <th style="border-right: 1px solid #444; border-top: 3px solid rgb(255, 11, 117);">[[lang.translate("communication.relativesRelationships")]]</th>
-                            <th ng-repeat="header in defaultRules" style="border-top: 3px solid rgb(255, 11, 117);">[[header.name]]</th>
+                <table class="comm-table">
+                    <thead>
+                        <tr>
+                            <th><!--Name--></th>
+                            <th>[[ lang.translate("communication.innerRelationships") ]]</th>
+                            <th>[[ lang.translate("communication.relativesRelationships") ]]</th>
+                            <th ng-repeat="header in defaultRules">[[ header.name ]]</th>
                         </tr>
                     </thead>
-                    <tbody style="font-size:12; font-family: Lato;">
-                        <tr ng-repeat="line in defaultRules" style="border-right: 2px solid #ff0b75; border-left: 2px solid #ff0b75;">
-                            <td style="font-weight:bold; background-color: white; border-right: 2px solid #ff0b75;">
-                                [[line.name]]
+                    <tbody>
+                        <tr ng-repeat="line in defaultRules">
+                            <td>
+                                [[ line.name ]]
                             </td>
-                            <td style="text-align: center; border: 1px solid #DDD;">
+                            <td>
                                 [[ line.users ? lang.translate("communication.table."+line.users.toLowerCase()) : "" ]]
                             </td>
-                            <td style="text-align: center; border: 1px solid #DDD; border-right: 1px solid #444;">
+                            <td>
                                 [[ getRelativeStudentProp(line) ? lang.translate("communication.table.parents."+getRelativeStudentProp(line).toLowerCase()) : "" ]]
                             </td>
-                            <td ng-repeat="column in defaultRules" style="border: 1px solid #DDD" ng-style="column.name === line.name ? { 'background-color': '#444' } : commStyling(line, column)">
-                            </td>
+                            <td ng-repeat="column in defaultRules" ng-style="column.name === line.name ? { 'background-color': '#444' } : commStyling(line, column)"></td>
                         </tr>
                     </tbody>
                 </table>
 
                 <div>
-                    <h3>Légende</h3>
+                    <h3><i18n>communication.legend</i18n></h3>
                     <div style="width:100%">
                         <div style="background-color: crimson; width:30px; height: 30px; display: inline-block; vertical-align: middle"></div>
                         <label style="display: inline-block; vertical-align: middle; font-family: Lato">Le groupe peut communiquer avec le groupe cible, mais la réciproque n'est pas valable.</label>

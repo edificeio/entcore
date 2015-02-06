@@ -92,7 +92,7 @@ function Structure(){
     this.collection(Group, {
         sync: function(){
             var that = this
-            http().get('/directory/group/admin/list', { structureId: that.model.id }).done(function(data){
+            http().get('/directory/group/admin/list', { structureId: that.model.id }, { requestName: 'load-group-comm' }).done(function(data){
                 that.load(data)
                 that.forEach(function(group){
                     group.getCommunication()
@@ -110,7 +110,15 @@ model.build = function(){
             var that = this
             http().get('/directory/structure/admin/list').done(function(data){
                 that.load(data)
-                if(model.scope) model.scope.$apply()
+                _.forEach(that.all, function(struct){
+                    _.forEach(struct.parents, function(parent){
+                        var parentMatch = _.findWhere(that.all, {id: parent.id})
+                        parentMatch.children = parentMatch.children ? parentMatch.children : []
+                        parentMatch.children.push(struct)
+                    })
+                })
+                if(model.scope)
+                    model.scope.$apply()
             })
         }
     })

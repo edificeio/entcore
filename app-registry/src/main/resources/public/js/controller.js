@@ -51,6 +51,16 @@ function AppRegistry($scope, $sce, model){
 	});
 
 	$scope.schools = model.schools;
+	$scope.setSchool = function(school){
+		$scope.school = school
+	}
+	$scope.filterTopStructures = function(structure){
+		return !structure.parents
+	}
+	$scope.selectOnly = function(structure, structureList){
+		_.forEach(structure.children, function(s){ s.selected = false })
+		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
+	}
 
 	$scope.viewApplication = function(application){
 		$scope.role = undefined;

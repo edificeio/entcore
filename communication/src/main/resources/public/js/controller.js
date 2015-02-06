@@ -30,6 +30,15 @@ function CommunicationAdminController($scope, $http){
 		structure.groups.sync()
 	}
 
+	$scope.filterTopStructures = function(structure){
+		return !structure.parents
+	}
+
+	$scope.selectOnly = function(structure, structureList){
+		_.forEach(structure.children, function(s){ s.selected = false })
+		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
+	}
+
 	$scope.viewGroup = function(group){
 		group.getCommunication()
 	}

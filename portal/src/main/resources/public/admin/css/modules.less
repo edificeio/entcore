@@ -37,6 +37,16 @@ i.nok{
 	.icon(glyphicons_207_remove_2, 31px);
 }
 
+i.folded-icon{
+	transition: background .25s ease-in-out;
+
+	.icon(glyphicons_223_chevron-bottom, 22px);
+
+	&.folded{
+		.icon(glyphicons_223_chevron-right, 22px);
+	}
+}
+
 .preview{
 	padding-top: 15px;
 	padding-bottom: 15px;
@@ -96,6 +106,99 @@ button, input[type=submit], input[type="button"]{
 	}
 }
 
+input[type=text], select, label{
+	height: 25px;
+	line-height: 25px;
+}
+
+input[type=text]{
+	.border-radius(5px);
+	background: #fff;
+	border: none;
+	padding-left: 5px;
+}
+
+nav.side-tabs{
+	font-size: 12px;
+	width: 25%;
+
+	> ul{
+		max-height: 550px;
+		overflow-y: scroll;
+	}
+
+	&.recursive-list{
+
+		input[type=text]{
+			width: 100%;
+			background: #444;
+			height: 29px;
+			color: white;
+		}
+
+		i.folded-icon{
+			transition: all .25s ease-in-out;
+			margin-right: 10px;
+			background-size: contain;
+			height: 14px;
+			width: 14px;
+			-webkit-filter: invert(0);
+			filter: invert(0);
+
+			&.folded{
+				-webkit-filter: invert(1);
+				filter: invert(1);
+			}
+		}
+
+		li{
+			transition: all .25s ease-in-out;
+			padding-right: 0px;
+
+			&:hover{
+				background: whitesmoke;
+				color: @magenta;
+
+				> i.folded-icon{
+					-webkit-filter: invert(0);
+					filter: invert(0);
+				}
+			}
+
+			&.selected{
+
+				&:hover{
+					background: white;
+					color: @magenta;
+				}
+
+				ul{
+					box-shadow: 0px 0px 3px;
+
+					li{
+						border-radius: 0px !important;
+					}
+				}
+			}
+		}
+
+		> ul {
+			ul {
+				li:first-child{
+					//border-top: 4px solid @magenta;
+				}
+
+				li.selected{
+					border: none;
+					background: @magenta;
+					color: white;
+					box-shadow: 0px 0px 3px;
+				}
+			}
+		}
+	}
+}
+
 nav.left{
 	z-index: 1;
 	position: fixed;
@@ -121,18 +224,6 @@ nav.vertical{
 	padding: 0px;
 	padding-top: 80px;
 	margin: 0px;
-}
-
-input[type=text], select, label{
-	height: 25px;
-	line-height: 25px;
-}
-
-input[type=text]{
-	.border-radius(5px);
-	background: #fff;
-	border: none;
-	padding-left: 5px;
 }
 
 .preview iframe{
@@ -257,10 +348,10 @@ nav.search-container{
 }
 
 nav.search-container-left{
-	width: 28%;
 	list-style: none;
 	font-family: Lato;
-	height: 702px;
+	height: 552px;
+	width: 25%;
 	padding: 0;
 	margin-bottom: 14;
 	margin-top: 14;
@@ -279,6 +370,7 @@ nav.search-container-left{
 	}
 
 	> ul{
+		height: 500px;
 		overflow-y: scroll;
 	}
 }
@@ -286,11 +378,8 @@ nav.search-container-left{
 div.search-container-view{
 	overflow-y: scroll;
 	overflow-x: hidden;
-	width: 67%;
 	padding: 10 0 0 4%;
-	height: 704px;
-	position: absolute;
-	margin-left: 26%;
+	height: 554px;
 }
 
 hr.separator{
@@ -353,7 +442,7 @@ button.directory-direct-link-button{
 	float: left;
 	border-bottom: 2px ridge @magenta;
 	padding: 20 0 0 4%;
-	height: 694px;
+	height: 544px;
 	overflow-y: scroll
 }
 
@@ -459,7 +548,33 @@ label.legend-label{
 	}
 
 	.accordion.opened .toggle{
-		height: 450px;
+		height: 330px;
+	}
+
+	article:first-child{
+		h2{
+			border-top-left-radius: 10px;
+			border-top-right-radius: 10px;
+		}
+	}
+	article:last-child{
+		h2{
+			border-bottom-left-radius: 10px;
+			border-bottom-right-radius: 10px;
+		}
+	}
+	article h2{
+		font-size: 18px !important;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	.content{
+		a:hover{
+			color: white;
+		}
 	}
 }
 
@@ -489,4 +604,64 @@ nav.admin-bar:hover {
 		display: inline-block;
 	}
 
+}
+
+table.comm-table{
+	table-layout: fixed;
+
+	thead{
+		font-size: 12px;
+		font-weight:bold;
+
+		tr{
+			border-bottom-width: 2px;
+			border-top: none;
+			border-right: 2px solid @magenta;
+			border-left: none;
+			color: white;
+
+			th:first-child{
+				background-color: rgb(238, 238, 238);
+				border-top: none;
+			}
+			th:nth-child(2){
+				border-top: 3px solid @magenta;
+				border-left: 2px solid @magenta;
+			}
+			th:nth-child(3){
+				border-right: 1px solid #444;
+				border-top: 3px solid @magenta;
+			}
+			th{
+				border-top: 3px solid @magenta;
+			}
+		}
+	}
+
+	tbody{
+		font-size: 12px;
+		font-family: Lato;
+
+		tr{
+			border-right: 2px solid @magenta;
+			border-left: 2px solid @magenta;
+
+			td:first-child{
+				background-color: white;
+				border-right: 2px solid @magenta;
+			}
+			td:nth-child(2){
+				text-align: center;
+				border: 1px solid #DDD;
+			}
+			td:nth-child(3){
+				text-align: center;
+				border: 1px solid #DDD;
+				border-right: 1px solid #444;
+			}
+			td{
+				border: 1px solid #DDD;
+			}
+		}
+	}
 }

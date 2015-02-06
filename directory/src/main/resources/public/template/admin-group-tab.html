@@ -5,13 +5,7 @@
 -->
 
 <!-- Structure selection menu -->
-<nav class="side-tabs three cell">
-    <ul style="max-height: 750px; overflow-y: scroll;">
-        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
-            [[structure.name]]
-        </li>
-    </ul>
-</nav>
+<div ng-include="'structure-tree'"></div>
 
 <article class="side-tabs-content nine cell" ng-if="structure">
     <!-- Group selection menu -->
@@ -19,14 +13,14 @@
 
         <div class="vertical_buttons_container">
             <!-- Creation button -->
-            <button ng-click="showWhat = 'showGroupCreation'" tooltip="directory.tooltip.createGroup"
+            <button ng-click="setShowWhat('showGroupCreation')" tooltip="directory.tooltip.createGroup"
                     class="directory-list-glyph-button plus-icon">
             </button>
         </div>
 
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
-        <ul style="height: 640px; padding-top: 10;">
-            <li ng-repeat="group in structure.manualGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; $parent.showWhat = 'showCurrentGroup'" style="padding-left: 0">
+        <ul>
+            <li ng-repeat="group in structure.manualGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
                 [[group.name]]
             </li>
         </ul>

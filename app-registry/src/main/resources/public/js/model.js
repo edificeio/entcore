@@ -286,9 +286,17 @@ model.build = function(){
 
 	this.collection(School, {
 		sync: function(){
+			var that = this
 			http().get('/directory/structure/admin/list').done(function(data){
-				this.load(data)
+				that.load(data)
 				//this.forEach(function(school){ school.sync() })
+				_.forEach(that.all, function(struct){
+					_.forEach(struct.parents, function(parent){
+						var parentMatch = _.findWhere(that.all, {id: parent.id})
+						parentMatch.children = parentMatch.children ? parentMatch.children : []
+						parentMatch.children.push(struct)
+					})
+				})
 			}.bind(this));
 		}
 	});

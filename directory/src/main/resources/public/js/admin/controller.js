@@ -227,6 +227,10 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
         $scope.userOrdering[1] = temp
     }
 
+	$scope.setShowWhat = function(what){
+		$scope.showWhat = what
+	}
+
 	$scope.fairInclusion = function(anyString, challenger){
 		return lang.removeAccents(anyString.toLowerCase()).indexOf(lang.removeAccents(challenger.toLowerCase())) >= 0
 	}
@@ -267,8 +271,21 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			return excludeCurrent && filterByInput
 		}
 	}
+	$scope.filterOnlyParentStructures = function(structure){
+		return  _.find(structure.children, function(c){ return c.id === $scope.structure.id })
+	}
 	$scope.filterOnlyChildStructures = function(structure){
 		return  _.find(structure.parents, function(p){ return p.id === $scope.structure.id })
+	}
+	$scope.filterTopStructures = function(structure){
+		return !structure.parents
+	}
+	$scope.filterCyclicChildren = function(structure){
+		return !$scope.struct.parents.findWhere({id: structure.id})
+	}
+	$scope.selectOnly = function(structure, structureList){
+		_.forEach(structure.children, function(s){ s.selected = false })
+		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
 	}
     ////////
 

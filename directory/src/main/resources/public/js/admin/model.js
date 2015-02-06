@@ -389,6 +389,11 @@ Structure.prototype.attachParent = function(parent, hook){
         if(!structure.parents)
             structure.parents = []
         structure.parents.push({id: parent.id, name: parent.name})
+
+        if(!parent.children)
+            parent.children = []
+        parent.children.push(structure)
+
         hookCheck(hook)
     })
 }
@@ -397,6 +402,8 @@ Structure.prototype.detachParent = function(parent, hook){
     var structure = this
     http().delete("structure/"+structure.id+"/parent/"+parent.id).done(function(){
         structure.parents = _.filter(structure.parents, function(p){ return p.id !== parent.id })
+        parent.children = _.filter(parent.children, function(c){ return c.id !== structure.id })
+
         hookCheck(hook)
     })
 }
@@ -421,6 +428,15 @@ model.build = function(){
             var that = this
             http().get('structure/admin/list').done(function(data){
                 that.load(data)
+
+                _.forEach(that.all, function(struct){
+                    _.forEach(struct.parents, function(parent){
+                        var parentMatch = _.findWhere(that.all, {id: parent.id})
+                        parentMatch.children = parentMatch.children ? parentMatch.children : []
+                        parentMatch.children.push(struct)
+                    })
+                })
+
                 hookCheck(hook)
             })
         }

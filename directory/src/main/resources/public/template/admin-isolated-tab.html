@@ -4,8 +4,8 @@
     |||||||||||||||||||||||||||
 -->
 
-<ul bottom-scroll-action="incrementUsersLimit()" style="width: 25%; float:left; list-style: none; font-family: Lato; height: 700px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
-    <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 15px;">
+<ul bottom-scroll-action="incrementUsersLimit()" class="three cell" style="list-style: none; font-family: Lato; height: 550px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
+    <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 5px;">
         <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
             <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 86%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
             <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; width: 25; height: 25; border: none;" value="✓">
@@ -16,7 +16,7 @@
         [[user.displayName]]
     </li>
 </ul>
-<div style="width: 62%; float: left; border-bottom: 2px ridge #ff0b75; padding: 20 0 0 20; height: 694px; padding-right: 20px; overflow-y: scroll" ng-if="isolatedUser">
+<div class="nine cell" style="border-bottom: 2px ridge #ff0b75; padding: 20 0 0 20; height: 564px; overflow-y: scroll" ng-if="isolatedUser">
     <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[isolatedUser.firstName+" "+isolatedUser.lastName]]</h1></div>
     <hr class="separator">
     <div style="text-align:center">

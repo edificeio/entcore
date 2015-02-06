@@ -5,19 +5,13 @@
 -->
 
 <!-- Structure selection menu -->
-<nav class="side-tabs three cell">
-    <ul style="max-height: 750px; overflow-y: scroll;">
-        <li ng-repeat="structure in structures.all | orderBy: 'name'" ng-click="viewStructure(structure)" ng-class="{ selected: $parent.structure === structure }">
-            [[structure.name]]
-        </li>
-    </ul>
-</nav>
+<div ng-include="'structure-tree'"></div>
 
 <article class="side-tabs-content nine cell" ng-if="structure">
     <!-- Class selection menu -->
     <nav class="vertical cell search-container-left">
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureClasses"/>
-        <ul style="height: 640px; padding-top: 10;">
+        <ul>
             <li ng-repeat="class in structure.classes.all | filter: filterStructureClasses | orderBy: 'name'" ng-click="$parent.classSelected = class" style="padding-left: 0">
                 [[class.name]]
             </li>
@@ -28,24 +22,24 @@
     <div ng-if="classSelected" class="search-container-view">
         <div style="width: 97%">
             <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[classSelected.name]]</h1></div>
-            <hr class="separator">
+            <hr class="separator cell">
             <div style="text-align:center">
                 <button ng-click="classSelected.update()">[[lang.translate("directory.save")]]</button>
                 <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classSelected.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
                     <button class="directory-direct-link-button"></button>
                 </a>
             </div>
-            <hr class="separator">
+            <hr class="separator cell">
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[classSelected.id]]</div>
             <div class="twelve cell">
                 <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
                 <input type="text" ng-model="classSelected.name"/>
             </div>
             <a href="[['/directory/admin-console#/classUsers/'+structure.id+'/'+classSelected.id]]" target="_blank">[[lang.translate("directory.classUsers")]]</a>
-            <hr class="separator">
+            <hr class="separator cell">
             <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportClass")]]</strong>
             <button class="two cell" ng-click="openExport('classId', classSelected.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
-            <hr class="separator">
+            <hr class="separator cell">
             <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
             <div class="twelve cell">
                 <select class="three cell" ng-model="quotaProfile" ng-init="quotaProfile = 'Teacher'" style="margin-right: 10px;">
