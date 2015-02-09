@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.mongodb.MongoDb;
@@ -94,6 +95,7 @@ public class AuthController extends BaseController {
 	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
 	private enum AuthEvent { ACTIVATION, LOGIN }
+	private Pattern passwordPattern;
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -113,6 +115,7 @@ public class AuthController extends BaseController {
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		userAuthAccount = new DefaultUserAuthAccount(vertx, container);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
+		passwordPattern = Pattern.compile(container.config().getString("passwordRegex", ".{8}.*"));
 	}
 
 	@Get("/oauth2/auth")
@@ -423,7 +426,8 @@ public class AuthController extends BaseController {
 					renderJson(request, error);
 				} else if (login == null || activationCode == null|| password == null ||
 						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
-						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+						password.trim().isEmpty() || !password.equals(confirmPassword) ||
+						!passwordPattern.matcher(password).matches()) {
 					trace.info("Echec de l'activation du compte utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
@@ -606,7 +610,8 @@ public class AuthController extends BaseController {
 				if (login == null || ((resetCode == null || resetCode.trim().isEmpty()) &&
 						(oldPassword == null || oldPassword.trim().isEmpty())) ||
 						password == null || login.trim().isEmpty() ||
-						password.trim().isEmpty() || !password.equals(confirmPassword)) {
+						password.trim().isEmpty() || !password.equals(confirmPassword) ||
+						!passwordPattern.matcher(password).matches()) {
 					trace.info("Erreur lors de la réinitialisation "
 							+ "du mot de passe de l'utilisateur " + login);
 					JsonObject error = new JsonObject()
