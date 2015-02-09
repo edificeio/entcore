@@ -44,10 +44,14 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
+import org.vertx.java.core.spi.cluster.ClusterManager;
 import org.vertx.java.platform.Container;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,11 +76,20 @@ public class ArchiveController extends BaseController {
 				expectedExports.add((String) o);
 			}
 		}
+		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		Boolean cluster = (Boolean) server.get("cluster");
+		Map<String, Boolean> userExport;
+		if (Boolean.TRUE.equals(cluster)) {
+			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+			userExport = cm.getSyncMap("archives");
+		} else {
+			userExport = new HashMap<>();
+		}
 		NotificationHelper notification = container.config().getBoolean("send.export.email", false) ?
 				new NotificationHelper(vertx, eb, container) : null;
 		storage = new StorageFactory(vertx, container.config()).getStorage();
 		exportService = new FileSystemExportService(vertx.fileSystem(),
-				eb, exportPath, expectedExports, notification, storage);
+				eb, exportPath, expectedExports, notification, storage, userExport);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 	}
 
@@ -122,12 +135,14 @@ public class ArchiveController extends BaseController {
 			@Override
 			public void handle(Boolean event) {
 				if (Boolean.TRUE.equals(event)) {
+					log.debug("waiting export true");
 					final String address = "export." + exportId;
-					eb.registerLocalHandler(address, new Handler<Message<JsonObject>>() {
+					eb.registerHandler(address, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							String path = event.body().getString("destZip");
 							if ("ok".equals(event.body().getString("status")) && path != null) {
+								log.debug("Download export " + exportId);
 								downloadExport(request, exportId);
 							} else {
 								renderError(request, event.body());
@@ -136,17 +151,18 @@ public class ArchiveController extends BaseController {
 						}
 					});
 				} else {
+					log.debug("waiting export false");
 					downloadExport(request, exportId);
 				}
 			}
 		});
 	}
 
-	private void downloadExport(HttpServerRequest request, final String exportId) {
+	private void downloadExport(final HttpServerRequest request, final String exportId) {
 		storage.sendFile(exportId, exportId + ".zip", request, false, null, new AsyncResultHandler<Void>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
+				if (event.succeeded() && request.response().getStatusCode() == 200) {
 					exportService.deleteExport(exportId);
 				}
 			}
@@ -164,6 +180,7 @@ public class ArchiveController extends BaseController {
 						message.body().getString("locale", "fr")
 						);
 				break;
+			default: log.error("Archive : invalid action " + action);
 		}
 	}
 

@@ -43,6 +43,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class FileSystemExportService implements ExportService {
@@ -54,15 +55,17 @@ public class FileSystemExportService implements ExportService {
 	private final NotificationHelper notification;
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
+	private final Map<String, Boolean> userExportInProgress;
 
-	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath,
-			Set<String> expectedExports, NotificationHelper notification, Storage storage) {
+	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath, Set<String> expectedExports,
+			NotificationHelper notification, Storage storage, Map<String, Boolean> userExportInProgress) {
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
 		this.expectedExports = expectedExports;
 		this.notification = notification;
 		this.storage = storage;
+		this.userExportInProgress = userExportInProgress;
 	}
 
 	@Override
@@ -72,6 +75,7 @@ public class FileSystemExportService implements ExportService {
 			public void handle(Boolean event) {
 				if (Boolean.FALSE.equals(event)) {
 					final String exportId = System.currentTimeMillis() + "_" +user.getUserId();
+					userExportInProgress.put(user.getUserId(), true);
 					final String exportDirectory = exportPath + File.separator + exportId;
 					fs.mkdir(exportDirectory, true, new Handler<AsyncResult<Void>>() {
 						@Override
@@ -109,52 +113,12 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void userExportExists(UserInfos user, final Handler<Boolean> handler) {
-		fs.readDir(exportPath, "^[0-9]+_" + user.getUserId(),
-				new Handler<AsyncResult<String[]>>() {
-					@Override
-					public void handle(AsyncResult<String[]> event) {
-						if (event.succeeded()) {
-							if (event.result().length == 0) {
-								handler.handle(false);
-							} else {
-								handler.handle(true);
-							}
-						} else {
-							handler.handle(true);
-							log.error("Error listing directory.", event.cause());
-						}
-					}
-				});
+		handler.handle(userExportInProgress.containsKey(user.getUserId()));
 	}
 
 	@Override
 	public void waitingExport(String exportId, final Handler<Boolean> handler) {
-		final String path = exportPath + File.separator + exportId;
-		fs.exists(path, new Handler<AsyncResult<Boolean>>() {
-			@Override
-			public void handle(AsyncResult<Boolean> event) {
-				if (event.succeeded()) {
-					if (event.result()) {
-						handler.handle(event.result());
-					} else {
-						fs.exists(path + ".zip", new Handler<AsyncResult<Boolean>>() {
-							@Override
-							public void handle(AsyncResult<Boolean> event) {
-								if (event.succeeded()) {
-										handler.handle(event.result());
-								} else {
-									log.error("Check waiting export error.", event.cause());
-									handler.handle(false);
-								}
-							}
-						});
-					}
-				} else {
-					log.error("Check waiting export error.", event.cause());
-					handler.handle(false);
-				}
-			}
-		});
+		handler.handle(userExportInProgress.get(getUserId(exportId)));
 	}
 
 	@Override
@@ -179,12 +143,14 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void exported(final String exportId, String status, final String locale) {
+		log.debug("Exported method");
 		if (exportId == null) {
 			log.error("Export receive event without exportId ");
 			return;
 		}
 		final String exportDirectory = exportPath + File.separator + exportId;
 		if (!"ok".equals(status)) {
+			log.error("Error in export " + exportId);
 			JsonObject j = new JsonObject()
 					.putString("status", "error")
 					.putString("message", "export.error");
@@ -197,6 +163,7 @@ public class FileSystemExportService implements ExportService {
 					}
 				}
 			});
+			userExportInProgress.remove(getUserId(exportId));
 			if (notification != null) {
 				sendExportEmail(exportId, locale, status);
 			}
@@ -235,6 +202,9 @@ public class FileSystemExportService implements ExportService {
 														log.error("Zip storage " + exportId + " error : "
 																+ res.getString("message"));
 														event.body().putString("message", "zip.saving.error");
+														userExportInProgress.remove(getUserId(exportId));
+													} else {
+														userExportInProgress.put(getUserId(exportId), false);
 													}
 													deleteTempZip(exportId);
 													publish(event);
@@ -286,6 +256,12 @@ public class FileSystemExportService implements ExportService {
 				}
 			}
 		});
+		String userId = getUserId(exportId);
+		userExportInProgress.remove(userId);
+	}
+
+	private String getUserId(String exportId) {
+		return exportId.substring(exportId.indexOf('_') + 1);
 	}
 
 	private void sendExportEmail(final String exportId, final String locale, final String status) {
