@@ -49,25 +49,20 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 
 	@Override
 	public void authorizedActionsUpdated(final JsonArray groups) {
-		ApplicationUtils.applicationAllowedUsers(eb, applicationName, null, groups, new Handler<JsonArray>() {
-			@Override
-			public void handle(JsonArray users) {
-				final Set<String> userIds = new HashSet<>();
-				for (Object o: users) {
-					if (!(o instanceof JsonObject)) continue;
-					userIds.add(((JsonObject) o).getString("id"));
-				}
-				if (groups != null) {
-					usersInGroups(groups, new Handler<JsonArray>(){
+		usersInGroups(groups, new Handler<JsonArray>(){
+			public void handle(final JsonArray groupUsers) {
+				ApplicationUtils.applicationAllowedUsers(eb, applicationName, groupUsers, new Handler<JsonArray>() {
+					public void handle(final JsonArray authUsers) {
 
-						@Override
-						public void handle(JsonArray uig) {
-							manageConversationNodes(userIds, uig);
+						final Set<String> authUserIds = new HashSet<>();
+						for (Object o: authUsers) {
+							if (!(o instanceof JsonObject)) continue;
+							authUserIds.add(((JsonObject) o).getString("id"));
 						}
-					});
-				} else {
-					manageConversationNodes(userIds, null);
-				}
+
+						manageConversationNodes(authUserIds, groupUsers);
+					}
+				});
 			}
 		});
 	}
