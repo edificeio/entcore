@@ -20,8 +20,11 @@
 package org.entcore.portal.controllers;
 
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
@@ -57,7 +60,7 @@ public class PortalController extends BaseController {
 
 	private ConcurrentMap<String, String> staticRessources;
 	private boolean dev;
-	private List<String> themes;
+	private Map<String,List<String>> skins;
 	private String themesPrefix;
 	private String assetsPath;
 	private EventStore eventStore;
@@ -70,14 +73,21 @@ public class PortalController extends BaseController {
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
 		assetsPath = container.config().getString("assets-path", ".");
-		themesPrefix = "/assets/themes/" + container.config().getString("skin");
-		ThemeUtils.availableThemes(vertx, assetsPath + themesPrefix, false, new Handler<List<String>>() {
+		themesPrefix = "/assets/themes/" + currentSkin(null);
+		ThemeUtils.availableSkins(vertx, assetsPath + "/assets/themes/", new Handler<Map<String, List<String>>>() {
 			@Override
-			public void handle(List<String> event) {
-				themes = event;
+			public void handle(Map<String, List<String>> event) {
+				skins = event;
 			}
-		});
-		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
+		});eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
+	}
+
+	private String currentSkin(HttpServerRequest request) {
+		String skin = container.config().getString("skin");
+		if (request != null && CookieHelper.get("customSkin", request) != null) {
+			skin = CookieHelper.get("customSkin", request);
+		}
+		return skin;
 	}
 
 	@Get("/welcome")
@@ -187,6 +197,7 @@ public class PortalController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
+					themesPrefix = "/assets/themes/" + currentSkin(request);
 					Object t = user.getAttribute(THEME_ATTRIBUTE);
 					if (t != null) {
 						renderJson(request, new JsonObject(t.toString()));
@@ -209,7 +220,7 @@ public class PortalController extends BaseController {
 								JsonArray result = event.body().getArray("result");
 								String userTheme = (result != null && result.size() == 1) ?
 										result.<JsonObject>get(0).getString("theme") : null;
-								if (userTheme != null && themes.contains(userTheme)) {
+								if (userTheme != null && skins.get(currentSkin(request)).contains(userTheme)) {
 									theme.putString("skin", themesPrefix + "/" + userTheme + "/");
 								} else {
 									theme.putString("skin", themesPrefix + "/default/");
@@ -230,7 +241,27 @@ public class PortalController extends BaseController {
 
 	@Get("/skin")
 	public void getSkin(final HttpServerRequest request) {
-		renderJson(request, new JsonObject().putString("skin", container.config().getString("skin")));
+		renderJson(request, new JsonObject().putString("skin", currentSkin(request)));
+	}
+
+	@Get("/skins")
+	public void getSkins(final  HttpServerRequest request) {
+		JsonArray joa = new JsonArray();
+		for (String s : skins.keySet()) {
+			joa.addString(s);
+		}
+		renderJson(request, new JsonObject().putArray("skins", joa), 200);
+	}
+
+	@Put("skin")
+	public void putSkin(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject jo) {
+				CookieHelper.set("customSkin", jo.getString("skin"), request.response());
+				renderJson(request, new JsonObject(), 200);
+			}
+		});
 	}
 
 	@Get("/locale")
@@ -265,7 +296,14 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		renderJson(request, container.config().getArray("themes", new JsonArray()));
+		JsonArray currentSkinThemes = new JsonArray();
+		for (String theme: skins.get(currentSkin(request))) {
+			currentSkinThemes.addObject(new JsonObject()
+					.putString("_id", theme)
+					.putString("displayName", theme)
+					.putString("path", themesPrefix + "/" + theme + "/"));
+		}
+		renderJson(request, container.config().getArray("themes", currentSkinThemes));
 	}
 
 	@Get("/admin")

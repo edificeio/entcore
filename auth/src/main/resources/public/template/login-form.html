@@ -1,3 +1,10 @@
+<div ng-if="skins.length > 1" class="row">
+	<select ng-model="selectedSkin"
+			ng-options="s.id as s.label for s in skins"
+			ng-change="switchSkin()">
+	</select>[[selectedSkin]]
+</div>
+
 <div class="centered container row">
 	<section class="main">
 		<div class="panel">

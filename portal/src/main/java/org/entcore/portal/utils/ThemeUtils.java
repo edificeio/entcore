@@ -24,10 +24,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ThemeUtils {
 
@@ -49,13 +46,39 @@ public class ThemeUtils {
 							if (idx > -1 && file.length() > idx + 1) {
 								file = file.substring(idx + 1);
 							}
-							if ("css".equals(file) || "fonts".equals(file) || "img".equals(file)) continue;
+							if (Arrays.asList("css","font","fonts","img","template","i18n","portal.html").contains(file)) continue;
 							t.add(file);
 						}
 						themes.handle(t);
 					}
 				} else {
 					themes.handle(Collections.<String>emptyList());
+				}
+			}
+		});
+	}
+
+	public static void availableSkins(final Vertx vertx, final String themesDir, final Handler<Map<String,List<String>>> skins) {
+		vertx.fileSystem().readDir(themesDir, new Handler<AsyncResult<String[]>>() {
+			@Override
+			public void handle(AsyncResult<String[]> event) {
+			if (event.succeeded() && event.result().length > 0) {
+					final String[] files = event.result();
+					final Map<String,List<String>> skinsAsMap = new HashMap<>();
+					for (int i = 0; i < files.length; i++) {
+						final String skin = new File(files[i]).getName();
+						availableThemes(vertx, themesDir + skin, false, new Handler<List<String>>() {
+							@Override
+							public void handle(List<String> event) {
+								skinsAsMap.put(skin, event);
+								if (skinsAsMap.size() == files.length) {
+									skins.handle(skinsAsMap);
+								}
+							}
+						});
+					}
+				} else {
+					skins.handle(Collections.<String, List<String>>emptyMap());
 				}
 			}
 		});
