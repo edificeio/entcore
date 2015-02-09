@@ -22,6 +22,7 @@ package org.entcore.common.storage.impl;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import org.entcore.common.storage.Storage;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -69,6 +70,11 @@ public class GridfsStorage implements Storage {
 	}
 
 	@Override
+	public void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
+		gridfsWriteBuffer(id, buff, contentType, filename, eb, handler, gridfsAddress);
+	}
+
+	@Override
 	public void readFile(String id, Handler<Buffer> handler) {
 		gridfsReadFile(id, eb, gridfsAddress, handler);
 	}
@@ -76,6 +82,12 @@ public class GridfsStorage implements Storage {
 	@Override
 	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata) {
 		gridfsSendFile(id, downloadName, eb, gridfsAddress, request.response(), inline, metadata);
+	}
+
+	@Override
+	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata,
+			Handler<AsyncResult<Void>> resultHandler) {
+		gridfsSendFile(id, downloadName, eb, gridfsAddress, request.response(), inline, metadata, resultHandler);
 	}
 
 	@Override

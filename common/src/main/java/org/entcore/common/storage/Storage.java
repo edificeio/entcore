@@ -19,6 +19,7 @@
 
 package org.entcore.common.storage;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -33,9 +34,14 @@ public interface Storage {
 
 	void writeBuffer(Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
 
+	void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler);
+
 	void readFile(String id, Handler<Buffer> handler);
 
 	void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata);
+
+	void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata,
+			Handler<AsyncResult<Void>> resultHandler);
 
 	void removeFile(String id, Handler<JsonObject> handler);
 

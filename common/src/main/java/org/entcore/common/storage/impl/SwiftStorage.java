@@ -66,6 +66,17 @@ public class SwiftStorage implements Storage {
 	@Override
 	public void writeBuffer(Buffer buff, String contentType, String filename, final Handler<JsonObject> handler) {
 		StorageObject o = new StorageObject(buff, filename, contentType);
+		writeStorageObject(handler, o);
+	}
+
+	@Override
+	public void writeBuffer(String id, Buffer buff, String contentType, String filename,
+			final Handler<JsonObject> handler) {
+		StorageObject o = new StorageObject(id, buff, filename, contentType);
+		writeStorageObject(handler, o);
+	}
+
+	private void writeStorageObject(final Handler<JsonObject> handler, StorageObject o) {
 		swiftClient.writeFile(o, new AsyncResultHandler<String>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
@@ -97,6 +108,12 @@ public class SwiftStorage implements Storage {
 	@Override
 	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata) {
 		swiftClient.downloadFile(id, request, inline, downloadName, metadata, id);
+	}
+
+	@Override
+	public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata,
+			Handler<AsyncResult<Void>> resultHandler) {
+		swiftClient.downloadFile(id, request, inline, downloadName, metadata, id, resultHandler);
 	}
 
 	@Override

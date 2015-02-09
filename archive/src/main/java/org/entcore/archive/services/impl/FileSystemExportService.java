@@ -25,10 +25,13 @@ import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.FileSystem;
@@ -49,15 +52,17 @@ public class FileSystemExportService implements ExportService {
 	private final String exportPath;
 	private final Set<String> expectedExports;
 	private final NotificationHelper notification;
+	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
 
 	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath,
-			Set<String> expectedExports, NotificationHelper notification) {
+			Set<String> expectedExports, NotificationHelper notification, Storage storage) {
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
 		this.expectedExports = expectedExports;
 		this.notification = notification;
+		this.storage = storage;
 	}
 
 	@Override
@@ -129,7 +134,21 @@ public class FileSystemExportService implements ExportService {
 			@Override
 			public void handle(AsyncResult<Boolean> event) {
 				if (event.succeeded()) {
+					if (event.result()) {
 						handler.handle(event.result());
+					} else {
+						fs.exists(path + ".zip", new Handler<AsyncResult<Boolean>>() {
+							@Override
+							public void handle(AsyncResult<Boolean> event) {
+								if (event.succeeded()) {
+										handler.handle(event.result());
+								} else {
+									log.error("Check waiting export error.", event.cause());
+									handler.handle(false);
+								}
+							}
+						});
+					}
 				} else {
 					log.error("Check waiting export error.", event.cause());
 					handler.handle(false);
@@ -192,12 +211,57 @@ public class FileSystemExportService implements ExportService {
 						Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
 								new Handler<Message<JsonObject>>() {
 							@Override
-							public void handle(Message<JsonObject> event) {
+							public void handle(final Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
 									log.error("Zip export " + exportId + " error : " +
 											event.body().getString("message"));
 									event.body().putString("message", "zip.export.error");
+									publish(event);
+								} else {
+									storeZip(event);
 								}
+							}
+
+							private void storeZip(final Message<JsonObject> event) {
+								fs.readFile(exportDirectory + ".zip", new AsyncResultHandler<Buffer>() {
+									@Override
+									public void handle(AsyncResult<Buffer> eventFile) {
+										if (eventFile.succeeded()) {
+											storage.writeBuffer(exportId, eventFile.result(), "application/zip",
+													exportId + ".zip", new Handler<JsonObject>() {
+												@Override
+												public void handle(JsonObject res) {
+													if (!"ok".equals(res.getString("status"))) {
+														log.error("Zip storage " + exportId + " error : "
+																+ res.getString("message"));
+														event.body().putString("message", "zip.saving.error");
+													}
+													deleteTempZip(exportId);
+													publish(event);
+												}
+											});
+										} else {
+											log.error("Zip saving " + exportId + " error.", eventFile.cause());
+											event.body().putString("message", "zip.saving.error");
+											publish(event);
+										}
+									}
+								});
+							}
+
+							public void deleteTempZip(final String exportId) {
+								final String path = exportPath + File.separator + exportId + ".zip";
+								fs.delete(path, new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error("Error deleting temp zip export " + exportId, event.cause());
+										}
+									}
+								});
+							}
+
+							private void publish(Message<JsonObject> event) {
 								eb.publish("export." + exportId, event.body());
 								if (notification != null) {
 									sendExportEmail(exportId, locale, event.body().getString("status"));
@@ -214,12 +278,11 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void deleteExport(final String exportId) {
-		final String path = exportPath + File.separator + exportId + ".zip";
-		fs.delete(path, new Handler<AsyncResult<Void>>() {
+		storage.removeFile(exportId, new Handler<JsonObject>() {
 			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.failed()) {
-					log.error("Error deleting export " + exportId, event.cause());
+			public void handle(JsonObject event) {
+				if (!"ok".equals(event.getString("status"))) {
+					log.error("Error deleting export " + exportId  + ". - " + event.getString("message"));
 				}
 			}
 		});

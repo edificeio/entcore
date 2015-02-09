@@ -27,17 +27,18 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.NotificationHelper;
-import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.response.DefaultResponseHandler;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -55,6 +56,7 @@ public class ArchiveController extends BaseController {
 
 	private ExportService exportService;
 	private EventStore eventStore;
+	private Storage storage;
 	private enum ArchiveEvent { ACCESS }
 
 	@Override
@@ -72,8 +74,9 @@ public class ArchiveController extends BaseController {
 		}
 		NotificationHelper notification = container.config().getBoolean("send.export.email", false) ?
 				new NotificationHelper(vertx, eb, container) : null;
+		storage = new StorageFactory(vertx, container.config()).getStorage();
 		exportService = new FileSystemExportService(vertx.fileSystem(),
-				eb, exportPath, expectedExports, notification);
+				eb, exportPath, expectedExports, notification, storage);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 	}
 
@@ -115,21 +118,6 @@ public class ArchiveController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void downloadExport(final HttpServerRequest request) {
 		final String exportId = request.params().get("exportId");
-		exportService.exportPath(exportId, new Handler<Either<String, String>>() {
-			@Override
-			public void handle(Either<String, String> e) {
-				if (e.isRight() && e.right().getValue() != null) {
-					request.response().sendFile(e.right().getValue(), deleteHandler(exportId));
-				} else if (e.isRight()) {
-					waitingExport(request, exportId);
-				} else {
-					DefaultResponseHandler.leftToResponse(request, e.left());
-				}
-			}
-		});
-	}
-
-	private void waitingExport(final HttpServerRequest request, final String exportId) {
 		exportService.waitingExport(exportId, new Handler<Boolean>() {
 			@Override
 			public void handle(Boolean event) {
@@ -140,7 +128,7 @@ public class ArchiveController extends BaseController {
 						public void handle(Message<JsonObject> event) {
 							String path = event.body().getString("destZip");
 							if ("ok".equals(event.body().getString("status")) && path != null) {
-								request.response().sendFile(path, deleteHandler(exportId));
+								downloadExport(request, exportId);
 							} else {
 								renderError(request, event.body());
 							}
@@ -148,21 +136,21 @@ public class ArchiveController extends BaseController {
 						}
 					});
 				} else {
-					notFound(request, "exportId.not.found");
+					downloadExport(request, exportId);
 				}
 			}
 		});
 	}
 
-	private Handler<AsyncResult<Void>> deleteHandler(final String exportId) {
-		return new Handler<AsyncResult<Void>>() {
+	private void downloadExport(HttpServerRequest request, final String exportId) {
+		storage.sendFile(exportId, exportId + ".zip", request, false, null, new AsyncResultHandler<Void>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
 					exportService.deleteExport(exportId);
 				}
 			}
-		};
+		});
 	}
 
 	@BusAddress("entcore.export")
