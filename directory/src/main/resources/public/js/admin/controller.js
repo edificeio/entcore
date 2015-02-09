@@ -309,6 +309,11 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 
     $scope.getUserDetails = function(user){
         user.get(function(){
+			if(user.type === 'Relative'){
+				user.children = $scope.structure.users.filter(function(u){
+					return _.findWhere(user.children, {id: u.id})
+				})
+			}
             $rootScope.quotaSize = user.quota
             $rootScope.quotaUnit = 1
             $scope.refreshScope()
@@ -411,13 +416,23 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
     }
 
 	$scope.addChild = function(child, user){
-		if(user.children.indexOf(child) < 0)
+		if(user.children.indexOf(child) < 0){
 			user.children.push(child)
+			user.linkChild(child).error(function(){
+				var index = user.children.indexOf(child)
+				if(index >= 0)
+					user.children.splice(index, 1)
+		    })
+		}
 	}
 	$scope.removeChild = function(child, user){
 		var index = user.children.indexOf(child)
-		if(index >= 0)
+		if(index >= 0){
 			user.children.splice(index, 1)
+			user.unlinkChild(child).error(function(){
+				user.children.push(child)
+			})
+		}
 	}
 
 	//Groups

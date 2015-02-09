@@ -137,7 +137,8 @@ public class DefaultUserService implements UserService {
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-				"RETURN DISTINCT COLLECT(p.name) as type, COLLECT(distinct [f.externalId, rf.scope]) as functions, u";
+				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
+				"RETURN DISTINCT COLLECT(p.name) as type, COLLECT(distinct [f.externalId, rf.scope]) as functions, COLLECT({id: child.id, displayName: child.displayName}) as children, u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}
 
@@ -330,6 +331,15 @@ public class DefaultUserService implements UserService {
 				.putString("relativeId", relativeId)
 				.putString("studentId", studentId);
 		eb.send(Directory.FEEDER, action, validUniqueResultHandler(0, eitherHandler));
+	}
+
+	@Override
+	public void unlinkRelativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-unlink-relative-student")
+				.putString("relativeId", relativeId)
+				.putString("studentId", studentId);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(eitherHandler));
 	}
 
 	@Override

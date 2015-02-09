@@ -382,4 +382,18 @@ public class User {
 		tx.add(query, params);
 	}
 
+	public static void unlinkRelativeStudent(String relativeId, String studentId, TransactionHelper tx){
+		String query =
+				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"WITH r " +
+				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
+				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
+				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"MATCH s-[relations]-r DELETE relations";
+		JsonObject params = new JsonObject()
+			.putString("relativeId", relativeId)
+			.putString("studentId", studentId);
+		tx.add(query, params);
+	}
+
 }

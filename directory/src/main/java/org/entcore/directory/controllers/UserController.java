@@ -354,6 +354,15 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Delete("/user/:studentId/related/:relativeId")
+	@ResourceFilter(RelativeStudentFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void unlinkRelativeStudent(final HttpServerRequest request) {
+		final String studentId = request.params().get("studentId");
+		final String relativeId = request.params().get("relativeId");
+		userService.unlinkRelativeStudent(relativeId, studentId, defaultResponseHandler(request));
+	}
+
 	public void setUserService(UserService userService) {
 		this.userService = userService;
 	}

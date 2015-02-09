@@ -172,6 +172,20 @@ User.prototype.unblock = function(hook){
     })
 }
 
+User.prototype.linkChild = function(child, hook){
+    var parent = this
+    return http().put("user/"+child.id+"/related/"+parent.id).done(function(){
+        hookCheck(hook)
+    })
+}
+
+User.prototype.unlinkChild = function (child, hook){
+    var parent = this
+    return http().delete("user/"+child.id+"/related/"+parent.id).done(function(){
+        hookCheck(hook)
+    })
+}
+
 function Classe(){
     this.sync = function(hook){
         var that = this

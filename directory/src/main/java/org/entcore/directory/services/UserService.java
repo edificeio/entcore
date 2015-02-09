@@ -20,6 +20,7 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -68,5 +69,7 @@ public interface UserService {
 	void getInfos(String userId, Handler<Either<String,JsonObject>> eitherHandler);
 
 	void relativeStudent(String relativeId, String studentId, Handler<Either<String,JsonObject>> eitherHandler);
+
+	void unlinkRelativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler);
 
 }

@@ -187,7 +187,7 @@
                     </ul>
                 </div>
             </div>
-            <!-- Relatives & children ->
+            <!-- Relatives & children -->
             <div ng-if="structureUser.type === 'Relative'" class="twelve cell">
                 <hr class="separator">
                 <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; margin: 0">
@@ -202,12 +202,11 @@
                 </nav>
                 <div style="width:60%; float: left">
                     <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
-                    <ul style="list-style-type: decimal; font-family: Lato;">
+                    <ul style="list-style-type: none; font-family: Lato;">
                         <li ng-repeat="child in structureUser.children" ng-click="removeChild(child, structureUser)">[[child.displayName]]</li>
                     </ul>
                 </div>
             </div>
-            -->
             <div ng-if="!structureUser.code" class="twelve cell">
                 <!-- Quota -->
                 <hr class="separator cell">
