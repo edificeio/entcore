@@ -84,7 +84,7 @@ public class PortalController extends BaseController {
 
 	private String currentSkin(HttpServerRequest request) {
 		String skin = container.config().getString("skin");
-		if (request != null && CookieHelper.get("customSkin", request) != null) {
+		if (dev && request != null && CookieHelper.get("customSkin", request) != null) {
 			skin = CookieHelper.get("customSkin", request);
 		}
 		return skin;
@@ -246,11 +246,15 @@ public class PortalController extends BaseController {
 
 	@Get("/skins")
 	public void getSkins(final  HttpServerRequest request) {
-		JsonArray joa = new JsonArray();
-		for (String s : skins.keySet()) {
-			joa.addString(s);
+		if (!dev) {
+			renderJson(request, new JsonObject().putArray("skins", new JsonArray()), 200);
+		} else {
+			JsonArray joa = new JsonArray();
+			for (String s : skins.keySet()) {
+				joa.addString(s);
+			}
+			renderJson(request, new JsonObject().putArray("skins", joa), 200);
 		}
-		renderJson(request, new JsonObject().putArray("skins", joa), 200);
 	}
 
 	@Put("skin")
@@ -296,14 +300,18 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		JsonArray currentSkinThemes = new JsonArray();
-		for (String theme: skins.get(currentSkin(request))) {
-			currentSkinThemes.addObject(new JsonObject()
-					.putString("_id", theme)
-					.putString("displayName", theme)
-					.putString("path", themesPrefix + "/" + theme + "/"));
+		if (!dev){
+			renderJson(request, container.config().getArray("themes"));
+		} else {
+			JsonArray currentSkinThemes = new JsonArray();
+			for (String theme : skins.get(currentSkin(request))) {
+				currentSkinThemes.addObject(new JsonObject()
+						.putString("_id", theme)
+						.putString("displayName", theme)
+						.putString("path", themesPrefix + "/" + theme + "/"));
+			}
+			renderJson(request, currentSkinThemes);
 		}
-		renderJson(request, container.config().getArray("themes", currentSkinThemes));
 	}
 
 	@Get("/admin")
