@@ -255,6 +255,14 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void restore(List<String> users, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-restore-user")
+				.putArray("users", new JsonArray(users.toArray()));
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
 	public void addFunction(String id, String functionCode, JsonArray scope, boolean inherit,
 			Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()

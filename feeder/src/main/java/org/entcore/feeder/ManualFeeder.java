@@ -439,6 +439,22 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	public void restoreUser(final Message<JsonObject> message) {
+		final JsonArray users = message.body().getArray("users");
+		if (users == null || users.size() == 0) {
+			sendError(message, "Missing users.");
+			return;
+		}
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				for (Object o : users) {
+					User.restorePreDeleted(o.toString(), tx);
+				}
+			}
+		});
+	}
+
 	public void csvClassStudent(final Message<JsonObject> message) {
 		final String classId = message.body().getString("classId");
 		if (classId == null || classId.trim().isEmpty()) {

@@ -194,6 +194,13 @@ public class UserController extends BaseController {
 		userService.delete(users, defaultResponseHandler(request));
 	}
 
+	@Put("/restore/user")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void restore(final HttpServerRequest request) {
+		List<String> users = request.params().getAll("userId");
+		userService.restore(users, defaultResponseHandler(request));
+	}
+
 	@Get("/export/users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void export(final HttpServerRequest request) {

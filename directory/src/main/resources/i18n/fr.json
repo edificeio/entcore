@@ -161,6 +161,7 @@
     "directory.null": "",
     "directory.personnel": "Personnel",
     "directory.personnels": "Personnels",
+    "directory.admin.restore": "Restaurer l'utilisateur",
     "directory.predeletionDate": "Date de pré-suppression :",
     "directory.quota": "Quota de stockage",
     "directory.quotaShort": "Quota :",

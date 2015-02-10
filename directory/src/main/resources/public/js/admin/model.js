@@ -36,6 +36,23 @@ User.prototype.create = function(hook){
 
 }
 
+User.prototype.get = function(hook, getQuota){
+    var that = this
+    http().get("user/" + that.id).done(function(data){
+        for(var prop in data){
+            if(prop === 'type'){
+                if(data[prop].length > 0)
+                    that[prop] = data[prop][0]
+            } else
+                that[prop] = data[prop]
+        }
+        if(getQuota && !that.code)
+            that.getQuota(hook)
+        else
+            hookCheck(hook)
+    })
+}
+
 User.prototype.update = function(hook){
     var that = this
     http().putJson("user/"+that.id, {
@@ -59,20 +76,10 @@ User.prototype.delete = function(hook){
     })
 }
 
-User.prototype.get = function(hook, getQuota){
+User.prototype.restore = function(hook){
     var that = this
-    http().get("user/" + that.id).done(function(data){
-        for(var prop in data){
-            if(prop === 'type'){
-                if(data[prop].length > 0)
-                    that[prop] = data[prop][0]
-            } else
-                that[prop] = data[prop]
-        }
-        if(getQuota && !that.code)
-            that.getQuota(hook)
-        else
-            hookCheck(hook)
+    http().put("restore/user?userId="+that.id).done(function(){
+        hookCheck(hook)
     })
 }
 

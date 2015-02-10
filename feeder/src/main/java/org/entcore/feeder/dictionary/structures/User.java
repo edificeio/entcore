@@ -194,8 +194,22 @@ public class User {
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED]-() " +
 				"SET u.deleteDate = timestamp() " +
-				"CREATE UNIQUE dg<-[:IN]-u " +
-				"DELETE r ";
+				"DELETE r " +
+				"CREATE UNIQUE dg<-[:IN]-u";
+		transaction.add(query, params);
+	}
+
+	public static void restorePreDeleted(String userId, TransactionHelper transaction){
+		JsonObject params = new JsonObject().putString("userId", userId);
+		String query =
+			"MATCH (u:User {id: {userId}})-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"REMOVE u.disappearanceDate, u.deleteDate WITH r, r2, b, u MATCH (g:Group) " +
+			"WHERE g.id IN b.IN_OUTGOING " +
+			"CREATE UNIQUE u-[:IN]->g WITH r, r2, b, u MATCH (g:Group) " +
+			"WHERE g.id IN b.COMMUNIQUE_OUTGOING " +
+			"CREATE UNIQUE u-[:COMMUNIQUE]->g WITH r, r2, b, u MATCH (g:Group) " +
+			"WHERE g.id IN b.COMMUNIQUE_INCOMING " +
+			"CREATE UNIQUE u<-[:COMMUNIQUE]-g DELETE r, r2, b ";
 		transaction.add(query, params);
 	}
 
