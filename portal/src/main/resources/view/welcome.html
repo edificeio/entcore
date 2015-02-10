@@ -33,7 +33,9 @@
 			template.open('main', 'applications');
 			$scope.template = template;
 			http().get('/applications-list').done(function(app){
-				$scope.applications = app.apps;
+				$scope.applications = _.filter(app.apps, function(app){
+					return app.display !== false;
+				});
 				$scope.$apply();
 			});
 		}
