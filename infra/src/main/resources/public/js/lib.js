@@ -1105,7 +1105,7 @@ Behaviours = (function(){
 								}
 							}
 
-							http().put('/' + params.target.application + '/share/json/' + targetResource, http().serialize(data));
+							http().put('/' + params.target.application + '/share/json/' + targetResource, http().serialize(data)).e401(function(){});
 						}
 
 						//drop rights if I'm not part of the group
@@ -1113,7 +1113,7 @@ Behaviours = (function(){
 							params.target.resources.forEach(function(targetResource){
 								http().put('/' + params.target.application + '/share/remove/' + targetResource, data).done(function(){
 									addRights(targetResource);
-								})
+								}).e401(function(){});
 							})
 						}
 						//simply add rights bundles (don't want to remove my own manager right)
