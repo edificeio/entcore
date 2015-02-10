@@ -48,6 +48,19 @@ var http = (function(){
 		bind: function(eventName, handler){
 			Http.prototype.events[eventName] = handler;
 		},
+		parseUrl: function (path, item){
+			var matchParams = new RegExp(':[a-zA-Z0-9_]+', ["g"]);
+			var params = path.match(matchParams);
+			if(!params){
+				params = [];
+			}
+			params.forEach(function(param){
+				var prop = param.split(':')[1];
+				var data = item[prop] || col[prop] || col.model[prop] || '';
+				path = path.replace(param, data);
+			});
+			return path;
+		},
 		request: function(url, params){
 			var that = this;
 			params.url = url;
@@ -390,18 +403,9 @@ function Collection(obj){
 		},
 		request: function(method, path, cb){
 			var col = this;
-			function parseUrl(path, item){
-				var matchParams = new RegExp(':[a-zA-Z0-9_]+', ["g"]);
-				var params = path.match(matchParams);
-				params.forEach(function(param){
-					var prop = param.split(':')[1];
-					var data = item[prop] || col[prop] || col.model[prop] || '';
-					path = path.replace(param, data);
-				});
-				return path;
-			}
+
 			this.selection().forEach(function(item){
-				http()[method](parseUrl(path, item), {}).done(function(data){
+				http()[method](http().parseUrl(path, item), {}).done(function(data){
 					if(typeof cb === 'function'){
 						cb(data);
 					}
@@ -493,7 +497,20 @@ function Collection(obj){
 		this[pluralizeName(obj)] = col;
 
 		for(var method in methods){
-			col[method] = methods[method];
+			if(method === 'sync' && typeof methods[method] === 'string'){
+				(function(){
+					var path = methods[method];
+					col[method] = function(){
+						http().get(http().parseUrl(path)).done(function(data){
+							this.load(data);
+						}.bind(this));
+					}
+				}());
+			}
+			else{
+				col[method] = methods[method];
+			}
+
 		}
 
 		col.model = this;
