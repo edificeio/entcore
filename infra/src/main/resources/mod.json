@@ -131,12 +131,13 @@
   ],
   "external-modules": [
     {
-      "name": "io.vertx~mod-mongo-persistor~2.0.2-final-WSE",
+      "name": "io.vertx~mod-mongo-persistor~2.1.2-WSE",
       "config": {
         "address": "wse.mongodb.persistor",
         "host": "localhost",
         "port": 27017,
         "db_name": "one_tests",
+        "use_mongo_types": true,
         "pool_size": 10
       }
     },
