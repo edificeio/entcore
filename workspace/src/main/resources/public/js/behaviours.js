@@ -205,7 +205,8 @@ Behaviours.register('workspace', {
 				},
 				getReferencedResources: function(source){
 					return _.map(source.documents, function(doc){
-						return doc._id;
+						var spl = doc.icon.split('/');
+						return spl[spl.length - 1];
 					});
 				},
 				documentIcon: function(doc){
@@ -257,7 +258,8 @@ Behaviours.register('workspace', {
 				},
 				getReferencedResources: function (source) {
 					return _.map(source.documents, function (doc) {
-						return doc._id;
+						var spl = doc.icon.split('/');
+						return spl[spl.length - 1];
 					});
 				}
 			}
