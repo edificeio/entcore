@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.Deflater;
 
 public class FileSystemExportService implements ExportService {
 
@@ -181,7 +182,7 @@ public class FileSystemExportService implements ExportService {
 					}
 					if (event.result().length == expectedExports.size()) {
 						Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
-								new Handler<Message<JsonObject>>() {
+								Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(final Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {

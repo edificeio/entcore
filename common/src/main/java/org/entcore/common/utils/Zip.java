@@ -26,6 +26,8 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.util.zip.Deflater;
+
 public class Zip {
 
 	private EventBus eb;
@@ -48,10 +50,15 @@ public class Zip {
 	}
 
 	public void zipFolder(String path, String zipPath, boolean deletePath, Handler<Message<JsonObject>> handler) {
+		zipFolder(path, zipPath, deletePath, Deflater.DEFAULT_COMPRESSION, handler);
+	}
+
+	public void zipFolder(String path, String zipPath, boolean deletePath, int level, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.putString("path", path)
 				.putString("zipFile", zipPath)
-				.putBoolean("deletePath", deletePath);
+				.putBoolean("deletePath", deletePath)
+				.putNumber("level", level);
 		eb.send(address, j, handler);
 	}
 
