@@ -170,10 +170,15 @@ public class FileSystemExportService implements ExportService {
 			return;
 		}
 
+		log.debug("Read export directory");
 		fs.readDir(exportDirectory, new Handler<AsyncResult<String[]>>() {
 			@Override
 			public void handle(AsyncResult<String[]> event) {
 				if (event.succeeded()) {
+					if (log.isDebugEnabled()) {
+						log.debug("read export directory : ok - Result length : "
+								+ event.result().length + ", expected " + expectedExports.size());
+					}
 					if (event.result().length == expectedExports.size()) {
 						Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
 								new Handler<Message<JsonObject>>() {
