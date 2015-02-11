@@ -179,6 +179,10 @@ public class SwiftStorage implements Storage {
 		final AtomicInteger count = new AtomicInteger(ids.length);
 		final JsonArray errors = new JsonArray();
 		for (final String id: ids) {
+			if (id == null || id.isEmpty()) {
+				count.decrementAndGet();
+				continue;
+			}
 			String d = destinationPath + File.separator + id + "_" + alias.getString(id, "");
 			swiftClient.writeToFileSystem(id, d, new AsyncResultHandler<String>() {
 				@Override
@@ -192,7 +196,8 @@ public class SwiftStorage implements Storage {
 						if (errors.size() == 0) {
 							handler.handle(j.putString("status", "ok"));
 						} else {
-							handler.handle(j.putString("status", "error").putArray("errors", errors));
+							handler.handle(j.putString("status", "error").putArray("errors", errors)
+									.putString("message", errors.encode()));
 						}
 					}
 				}
