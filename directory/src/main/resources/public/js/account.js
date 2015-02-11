@@ -22,8 +22,11 @@ routes.define(function($routeProvider){
 		.when('/edit-user-infos/:id', {
 			action: 'editUserInfos'
 		})
-		.otherwise({
+		.when('/edit-me', {
 			action: 'editMe'
+		})
+		.otherwise({
+			redirectTo: 'edit-me'
 		});
 });
 

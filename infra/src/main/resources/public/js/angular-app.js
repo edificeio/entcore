@@ -840,6 +840,31 @@ module.directive('imageSelect', function($compile){
 		link: function(scope, element, attributes){
 			scope.selectedFile = { file: {}};
 
+			element.on('dragenter', function(e){
+				e.preventDefault();
+			});
+
+			element.on('dragover', function(e){
+				element.addClass('droptarget');
+				e.preventDefault();
+			});
+
+			element.on('dragleave', function(){
+				element.removeClass('droptarget');
+			});
+
+			element.on('drop', function(e){
+				element.removeClass('droptarget');
+				e.preventDefault();
+				var files = e.originalEvent.dataTransfer.files;
+				for(var i = 0; i < files.length; i++){
+					workspace.Document.prototype.upload(files[i], 'file-upload-' + files[i].name + '-' + i, function(doc){
+						scope.selectedFile.file = doc;
+						scope.updateDocument();
+					});
+				}
+			});
+
 			scope.$watch('thumbnails', function(thumbs){
 				var evaledThumbs = scope.$eval(thumbs);
 				if(!evaledThumbs){
@@ -1637,6 +1662,38 @@ module.directive('htmlEditor', function($compile, $parse){
 					}, 0);
 				});
 
+				element.on('dragover', function(e){
+					e.preventDefault();
+					element.addClass('droptarget');
+				});
+
+				element.on('dragleave', function(){
+					element.removeClass('droptarget');
+				});
+
+				element.on('drop', function(e){
+					e.preventDefault();
+					element.removeClass('droptarget');
+					var files = e.originalEvent.dataTransfer.files;
+					for(var i = 0; i < files.length; i++){
+						(function(){
+							var name = files[i].name;
+							workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
+								scope.selected.files = [doc];
+								if(name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1){
+									scope.format = 'audio';
+								}
+								else{
+									scope.format = 'img';
+								}
+
+								scope.addContent();
+							});
+						}())
+
+					}
+				});
+
 				$('body').on('click', '.cke_button__upload', function(){
 					var resize = editor.width();
 					if(workspace.thumbnails.indexOf(resize) === -1){
@@ -2259,7 +2316,7 @@ module.directive('resizableElement', function(){
 
 		}
 	}
-})
+});
 
 module.directive('resizable', function(){
 	return {
@@ -3542,6 +3599,26 @@ module.directive('dragdrop', function(){
         }
     }
 });
+
+module.directive('dropFiles', function($parse){
+	return {
+		link: function(scope, element, attributes){
+			var ngModel = $parse(attributes.ngModel);
+			element.on('dragover', function(){
+				element.addClass('droptarget');
+			});
+
+			element.on('dragleave', function(){
+				element.removeClass('droptarget');
+			});
+
+			element.on('drop', function(){
+				element.removeClass('droptarget');
+
+			});
+		}
+	}
+})
 
 module.directive('attachments', function($parse){
 	return {
