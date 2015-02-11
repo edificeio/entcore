@@ -21,7 +21,7 @@
 <article class="icons-view">
 	<header>&nbsp;</header>
 	<div>
-		<div data-ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" >
+		<div ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)">
 			<a class="container" draggable="false">
 				<i class="folder-large" data-ng-click="openFolder(folder)" dragstart="drag(folder)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)"></i>
 			</a>
@@ -30,12 +30,21 @@
 			<legend>
 				<a data-ng-click="openFolder(value)">
 					<i ng-if="folder.shared.length > 0" class="shared inline"></i>
+					<span class="badge" ng-if="folder.comments.length > 0 &&  currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 					[[folder.name]]
 				</a>
 				<a ng-href="/userbook/annuaire#[[folder.owner]]"><strong>[[folder.ownerName]]</strong></a>
 			</legend>
 		</div>
-		<section data-ng-repeat-end></section>
+		<section ng-repeat-end>
+			<section class="row reduce-block-eight" ng-if="selectedDocuments().length === 0 && ($index + 1) % 4 === 0 || ($index === nbFolders() - 1) && currentFolderTree.children.indexOf(selectedFolders()[0]) - $index < 4 && selectedFolders()[0].showComments">
+				<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in selectedFolders()[0].comments">
+					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+					<em>[[longDate(comment.posted)]]</em>
+					<p>[[comment.comment]]</p>
+				</article>
+			</section>
+		</section>
 		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
 			<a ng-href="[[document.link]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
@@ -59,7 +68,7 @@
 		</div>
 		<section ng-repeat-end>
 			<section class="row reduce-block-eight" ng-if="((($index + nbFolders() + 1) % 4 === 0 && inInterval(selectedDocuments()[0], $index - 3, $index)) ||
-		($index === openedFolder.content.length - 1 && inInterval(selectedDocuments()[0], $index - (($index + nbFolders()) % 4), $index))) && selectedDocuments()[0].showComments">
+		($index === openedFolder.content.length - 1 && inInterval(selectedDocuments()[0], $index - (($index + nbFolders()) % 4), $index))) && selectedFolders().length === 0 && selectedDocuments()[0].showComments">
 				<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in selectedDocuments()[0].comments">
 					<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 					<em>[[longDate(comment.posted)]]</em>

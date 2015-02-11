@@ -50,7 +50,7 @@
 				</tr>
 				</thead>
 				<tbody>
-				<tr data-ng-repeat="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
+				<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }">
 					<td class="icon"><input type="checkbox" data-ng-model="folder.selected" /></td>
 					<td class="icon">
 						<div class="twelve cell">
@@ -65,9 +65,22 @@
 						</strong>
 					</td>
 					<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
-					<td ng-if="currentTree.name !== 'trash'"></td>
+					<td ng-if="currentTree.name !== 'trash'">
+						<span class="badge" ng-if="folder.comments.length > 0" translate-attr="title" title="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
+					</td>
 					<td class="date">[[shortDate(folder.created)]]</td>
 					<td></td>
+				</tr>
+				<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="folder === selectedFolders()[0] && folder.showComments">
+					<td colspan="7" class="container-cell">
+						<section class="row reduce-block-eight" ng-if="folder === selectedFolders()[0] && folder.showComments">
+							<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in folder.comments">
+								<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+								<em>[[longDate(comment.posted)]]</em>
+								<p>[[comment.comment]]</p>
+							</article>
+						</section>
+					</td>
 				</tr>
 				<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
 					<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>

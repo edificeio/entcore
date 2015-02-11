@@ -112,6 +112,11 @@
 						translate key="workspace.document.comment"
 						ng-class="{ cell: true }">
 				</button>
+				<button ng-click="openCommentFolderView(selectedFolders()[0])"
+						ng-if="selectedDocuments().length === 0 && selectedFolders().length === 1 && selectedFolders()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+						translate key="workspace.document.comment"
+						ng-class="{ cell: true }">
+				</button>
 				<button ng-click="openShareView(selectedDocuments()[0])"
 						translate key="workspace.share"
 						ng-if="selectedFolders().length === 0 && selectedDocuments()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"

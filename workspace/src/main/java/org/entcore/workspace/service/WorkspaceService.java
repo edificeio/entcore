@@ -1422,13 +1422,13 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
-	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user) {
+	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
 			.putString("userUri", container.config().getString("userbook-host") + "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
 
-		final String template = "notify-comment.html";
+		final String template = isFolder ? "notify-comment-folder.html" : "notify-comment.html";
 
 		//Retrieve the document from DB
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
@@ -1510,12 +1510,17 @@ public class WorkspaceService extends BaseController {
 					};
 
 					//If the document does not have a parent folder
-					if(!document.containsField("folder")){
+					if(!isFolder && !document.containsField("folder") || isFolder && document.getString("folder").equals(document.getString("name"))){
 						folderIdHandler.handle(null);
 					} else {
 						//If the document has a parent folder
+						String parentFolderPath = document.getString("folder");
+						if(isFolder){
+							parentFolderPath = parentFolderPath.substring(0, parentFolderPath.lastIndexOf("_"));
+						}
+
 						QueryBuilder query = QueryBuilder
-								.start("folder").is(document.getString("folder"))
+								.start("folder").is(parentFolderPath)
 								.and("file").exists(false)
 								.and("owner").is(document.getString("owner"));
 
@@ -1592,7 +1597,49 @@ public class WorkspaceService extends BaseController {
 									@Override
 									public void handle(JsonObject res) {
 										if ("ok".equals(res.getString("status"))) {
-											notifyComment(request, request.params().get("id"), user);
+											notifyComment(request, request.params().get("id"), user, false);
+											renderJson(request, res);
+										} else {
+											renderError(request, res);
+										}
+									}
+								});
+							} else {
+								badRequest(request);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Post("/folder/:id/comment")
+	@SecuredAction(value = "workspace.comment", type = ActionType.RESOURCE)
+	public void commentFolder(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					request.expectMultiPart(true);
+					request.endHandler(new VoidHandler() {
+						@Override
+						protected void handle() {
+							String comment = request.formAttributes().get("comment");
+							if (comment != null && !comment.trim().isEmpty()) {
+								String query = "{ \"$push\" : { \"comments\":" +
+										" {\"author\" : \"" + user.getUserId() + "\", " +
+										"\"authorName\" : \"" + user.getUsername() +
+										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
+										"\", \"comment\": \"" + comment + "\" }}}";
+								documentDao.update(request.params().get("id"), new JsonObject(query),
+										new Handler<JsonObject>() {
+									@Override
+									public void handle(JsonObject res) {
+										if ("ok".equals(res.getString("status"))) {
+											notifyComment(request, request.params().get("id"), user, true);
 											renderJson(request, res);
 										} else {
 											renderError(request, res);

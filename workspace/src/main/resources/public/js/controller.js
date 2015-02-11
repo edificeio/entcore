@@ -64,67 +64,67 @@ var tools = (function(){
 }());
 
 routes.define(function($routeProvider) {
-  $routeProvider
-  .when('/folder/:folderId', {
-    action: 'viewFolder'
-  })
-.when('/shared/folder/:folderId', {
-  action: 'viewSharedFolder'
-})
-.when('/shared', {
-  action: 'openShared'
-})
-.otherwise({
-  redirectTo: '/'
-})
+	$routeProvider
+		.when('/folder/:folderId', {
+			action: 'viewFolder'
+		})
+		.when('/shared/folder/:folderId', {
+	  		action: 'viewSharedFolder'
+		})
+		.when('/shared', {
+		  	action: 'openShared'
+		})
+		.otherwise({
+		  	redirectTo: '/'
+		})
 })
 
 function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template){
 
-  route({
-    viewFolder: function(params){
-      if($scope.lastRoute === window.location.href)
-    return
-    $scope.lastRoute = window.location.href
-    if($scope.initSequence && $scope.initSequence.executed){
-      $scope.openFolderById(params.folderId)
-    } else {
-      $scope.initSequence = {
-        executed: false,
-  type: 'openFolder',
-  folderId: params.folderId
-      }
-    }
-    },
-    viewSharedFolder: function(params){
-      if($scope.lastRoute === window.location.href)
-    return
-    $scope.lastRoute = window.location.href
-    $scope.currentTree = trees[1]
-    $scope.currentFolderTree = $scope.folder.children[1]
-    $scope.openFolder($scope.folder.children[1])
-    if($scope.initSequence && $scope.initSequence.executed){
-      $scope.openFolderById(params.folderId)
-    } else {
-      $scope.initSequence = {
-        executed: false,
-        type: 'openSharedFolder',
-        folderId: params.folderId
-      }
-    }
-    },
-    openShared: function(params){
-      if($scope.lastRoute === window.location.href)
-        return
-          $scope.lastRoute = window.location.href
-          $scope.currentTree = trees[1]
-          $scope.currentFolderTree = $scope.folder.children[1]
-          $scope.openFolder($scope.folder.children[1])
-    }
-  })
+	route({
+		viewFolder: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+			if($scope.initSequence && $scope.initSequence.executed){
+		  		$scope.openFolderById(params.folderId)
+			} else {
+		  		$scope.initSequence = {
+		        	executed: false,
+		  			type: 'openFolder',
+		  			folderId: params.folderId
+		  		}
+			}
+		},
+		viewSharedFolder: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+		    $scope.currentTree = trees[1]
+		    $scope.currentFolderTree = $scope.folder.children[1]
+		    $scope.openFolder($scope.folder.children[1])
+		    if($scope.initSequence && $scope.initSequence.executed){
+				$scope.openFolderById(params.folderId)
+		    } else {
+				$scope.initSequence = {
+					executed: false,
+					type: 'openSharedFolder',
+		        	folderId: params.folderId
+				}
+			}
+		},
+		openShared: function(params){
+			if($scope.lastRoute === window.location.href)
+				return
+			$scope.lastRoute = window.location.href
+			$scope.currentTree = trees[1]
+			$scope.currentFolderTree = $scope.folder.children[1]
+			$scope.openFolder($scope.folder.children[1])
+		}
+	})
 
-  $scope.template = template;
-  template.open('documents', 'icons');
+	$scope.template = template;
+	template.open('documents', 'icons');
 
 	$rootScope.$on('share-updated', function(event, changes){
 		if($scope.sharedDocuments)
@@ -242,7 +242,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		document.myRights.document.moveTrash = setRight('org-entcore-workspace-service-WorkspaceService|moveTrash');
 		document.myRights.document.move = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
-		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument');
+		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument') || setRight('org-entcore-workspace-service-WorkspaceService|commentFolder');
 		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
 	};
 
@@ -340,6 +340,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.targetDocument = document;
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
+	};
+
+	$scope.targetFolder = {};
+	$scope.openCommentFolderView = function(folder){
+		$scope.targetFolder = folder;
+		ui.showLightbox();
+		$scope.currentViews.lightbox = $scope.views.lightbox.commentFolder;
 	};
 
 	$scope.openRenameView = function(document){
@@ -513,6 +520,24 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		});
 	};
 
+	$scope.sendFolderComment = function(){
+		ui.hideLightbox();
+		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + $scope.targetFolder.comment).done(function(){
+			if(!$scope.targetFolder.comments){
+				$scope.targetFolder.comments = [];
+			}
+			$scope.targetFolder.comments.push({
+				author: $scope.me.userId,
+				authorName: $scope.me.username,
+				comment: $scope.targetFolder.comment,
+				posted: undefined
+			});
+			$scope.folderComment = $scope.targetFolder;
+			$scope.targetFolder.comment = "";
+			$scope.$apply();
+		});
+	}
+
 	var trees = [{
 		name: 'documents',
 		path: 'documents',
@@ -577,6 +602,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			moveFile: 'public/template/move-files.html',
 			copyFile: 'public/template/copy-files.html',
 			comment: 'public/template/comment.html',
+			commentFolder: 'public/template/comment-folder.html',
 			share: 'public/template/share.html',
 			shareFolders: 'public/template/share-folders.html',
 			shareFoldersWarning: 'public/template/share-folders-warning.html',
@@ -770,6 +796,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		document.showComments = !document.showComments;
 	};
 
+	$scope.toggleFolderComments = function(folder){
+		folder.showComments = !folder.showComments;
+	};
+
 	$scope.showComments = function(document, $event){
 		if($event){
 			$event.preventDefault();
@@ -778,15 +808,37 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			document.selected = false;
 			document.showComments = false;
 		});
+		$scope.selectedFolders().forEach(function(folder){
+			folder.selected = false;
+			folder.showComments = false;
+		});
 
 		document.selected = true;
 		document.showComments = true;
-
 	}
 
+	$scope.showFolderComments = function(folder, $event){
+		if($event){
+			$event.preventDefault();
+		}
+		$scope.selectedFolders().forEach(function(folder){
+			folder.selected = false;
+			folder.showComments = false;
+		});
+		$scope.selectedDocuments().forEach(function(document){
+			document.selected = false;
+			document.showComments = false;
+		});
+
+		folder.selected = true;
+		folder.showComments = true;
+	}
+
+	/*
 	$scope.$watch('targetDocument', function(newVal){
 		console.log(newVal);
 	})
+	*/
 
 	$scope.containsFolder = function(container, child){
 		var checkSubFolders = function(currentFolder){

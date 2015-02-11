@@ -54,6 +54,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "commentDocument":
+			case "commentFolder":
 			case "updateDocument":
 			case "moveDocument":
 			case "moveTrash":

@@ -1,5 +1,6 @@
 {
     "timeline.workspace.comment.document": "a commenté le document",
+    "timeline.workspace.comment.folder": "a commenté le dossier",
     "timeline.workspace.shared.document": "a partagé avec vous le document",
     "timeline.workspace.shared.folder": "a partagé avec vous le dossier",
     "timeline.workspace.shared.scrapbook": "a partagé avec vous le cahier multimédia",
