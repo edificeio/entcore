@@ -6,7 +6,7 @@
 	<header>&nbsp;</header>
 	<div ng-repeat="document in source.documents" class="element" ng-class="{ selected: document.selected }">
 		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
-			<div class="twelve cell height-twelve">
+			<div class="twelve cell">
 				<div class="clip absolute">
 					<img skin-src="[[documentIcon(document)]]" alt="thumbnail" />
 				</div>
