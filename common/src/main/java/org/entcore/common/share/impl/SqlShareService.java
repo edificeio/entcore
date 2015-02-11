@@ -64,34 +64,28 @@ public class SqlShareService extends GenericShareService {
 			return;
 		}
 		final JsonArray actions = getResoureActions(securedActions);
-		String query = "SELECT member_id, action FROM " + shareTable + " WHERE resource_id = ?";
+		String query = "SELECT s.member_id, s.action, m.group_id FROM " + shareTable + " AS s " +
+				"JOIN " + schema + "members AS m ON s.member_id = m.id WHERE resource_id = ?";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
-					JsonArray f = message.body().getArray("fields");
-					int memberIdx, actionIdx;
-					if ("member_id".equals(f.get(0))) {
-						memberIdx = 0;
-						actionIdx = 1;
-					} else {
-						memberIdx = 1;
-						actionIdx = 0;
-					}
 					JsonArray r = message.body().getArray("results");
-					JsonObject checkedActions = new JsonObject();
+					JsonObject groupCheckedActions = new JsonObject();
+					JsonObject userCheckedActions = new JsonObject();
 					for (Object o : r) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray row = (JsonArray) o;
-						String memberId = row.get(memberIdx);
+						final String memberId = row.get(0);
+						final JsonObject checkedActions = (row.get(2) != null) ? groupCheckedActions : userCheckedActions;
 						JsonArray m = checkedActions.getArray(memberId);
 						if (m == null) {
 							m = new JsonArray();
 							checkedActions.putArray(memberId, m);
 						}
-						m.add(row.get(actionIdx));
+						m.add(row.get(1));
 					}
-					getShareInfos(userId, actions, checkedActions, acceptLanguage, new Handler<JsonObject>() {
+					getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
 							if (event != null && event.size() == 3) {
@@ -108,30 +102,61 @@ public class SqlShareService extends GenericShareService {
 	}
 
 	@Override
-	public void groupShare(String userId, final String groupShareId, final String resourceId,
+	public void groupShare(final String userId, final String groupShareId, final String resourceId,
 			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
+		inShare(resourceId, groupShareId, new Handler<Boolean>() {
+
 			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if (event.isRight()) {
+			public void handle(Boolean event) {
+				if (Boolean.TRUE.equals(event)) {
 					share(resourceId, groupShareId, actions, "groups", handler);
 				} else {
-					handler.handle(event);
+					groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								share(resourceId, groupShareId, actions, "groups", handler);
+							} else {
+								handler.handle(event);
+							}
+						}
+					});
 				}
 			}
 		});
 	}
 
-	@Override
-	public void userShare(String userId, final String userShareId, final String resourceId,
-			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
+	private void inShare(String resourceId, String shareId, final Handler<Boolean> handler) {
+		String query = "SELECT count(*) FROM " + shareTable + " WHERE resource_id = ? AND member_id = ?";
+		JsonArray params = new JsonArray().add(Sql.parseId(resourceId)).add(shareId);
+		sql.prepared(query, params, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if (event.isRight()) {
+			public void handle(Message<JsonObject> message) {
+				Long count = SqlResult.countResult(message);
+				handler.handle(count != null && count > 0);
+			}
+		});
+	}
+
+	@Override
+	public void userShare(final String userId, final String userShareId, final String resourceId,
+			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
+		inShare(resourceId, userShareId, new Handler<Boolean>() {
+			@Override
+			public void handle(Boolean event) {
+				if (Boolean.TRUE.equals(event)) {
 					share(resourceId, userShareId, actions, "users", handler);
 				} else {
-					handler.handle(event);
+					userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								share(resourceId, userShareId, actions, "users", handler);
+							} else {
+								handler.handle(event);
+							}
+						}
+					});
 				}
 			}
 		});

@@ -68,12 +68,11 @@ public class MongoDbShareService extends GenericShareService {
 					if ("ok".equals(event.body().getString("status"))) {
 						JsonArray shared = event.body().getObject("result", new JsonObject())
 								.getArray("shared", new JsonArray());
-						JsonObject s = new JsonObject();
+						JsonObject gs = new JsonObject();
+						JsonObject us = new JsonObject();
 						for (Object o : shared) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject userShared = (JsonObject) o;
-							String userOrGroupId = userShared.getString("groupId",
-									userShared.getString("userId"));
 							JsonArray a = new JsonArray();
 							for (String attrName : userShared.getFieldNames()) {
 								if ("userId".equals(attrName) || "groupId".equals(attrName)) {
@@ -87,9 +86,15 @@ public class MongoDbShareService extends GenericShareService {
 									a.addString(attrName);
 								}
 							}
-							s.putArray(userOrGroupId, a);
+							final String g = userShared.getString("groupId");
+							String u;
+							if (g != null) {
+								gs.putArray(g, a);
+							} else if ((u = userShared.getString("userId")) != null){
+								us.putArray(u, a);
+							}
 						}
-						getShareInfos(userId, actions, s, acceptLanguage, new Handler<JsonObject>() {
+						getShareInfos(userId, actions, gs, us, acceptLanguage, new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject event) {
 								if (event != null && event.size() == 3) {
@@ -109,16 +114,42 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	public void groupShare(String userId, final String groupShareId, final String resourceId,
+	public void groupShare(final String userId, final String groupShareId, final String resourceId,
 			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
+		inShare(resourceId, groupShareId, true, new Handler<Boolean>() {
+
 			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if (event.isRight()) {
+			public void handle(Boolean event) {
+				if (Boolean.TRUE.equals(event)) {
 					share(resourceId, groupShareId, actions, true, handler);
 				} else {
-					handler.handle(event);
+					groupShareValidation(userId, groupShareId, actions, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								share(resourceId, groupShareId, actions, true, handler);
+							} else {
+								handler.handle(event);
+							}
+						}
+					});
 				}
+			}
+		});
+	}
+
+	private void inShare(String resourceId, String shareId, boolean group, final Handler<Boolean> handler) {
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId)
+				.put("shared").elemMatch(QueryBuilder.start(group ? "groupId" : "userId").is(shareId).get());
+		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonObject res = event.body();
+				handler.handle(
+						res != null &&
+						"ok".equals(res.getString("status")) &&
+						1 == res.getInteger("count")
+				);
 			}
 		});
 	}
@@ -191,15 +222,25 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	public void userShare(String userId, final String userShareId, final String resourceId,
+	public void userShare(final String userId, final String userShareId, final String resourceId,
 			final List<String> actions, final Handler<Either<String, JsonObject>> handler) {
-		userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
+		inShare(resourceId, userShareId, false, new Handler<Boolean>() {
+
 			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if (event.isRight()) {
+			public void handle(Boolean event) {
+				if (Boolean.TRUE.equals(event)) {
 					share(resourceId, userShareId, actions, false, handler);
 				} else {
-					handler.handle(event);
+					userShareValidation(userId, userShareId, actions, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								share(resourceId, userShareId, actions, false, handler);
+							} else {
+								handler.handle(event);
+							}
+						}
+					});
 				}
 			}
 		});

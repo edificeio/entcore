@@ -74,44 +74,46 @@ public abstract class GenericShareService implements ShareService {
 	}
 
 	protected void getShareInfos(final String userId, final JsonArray actions,
-			final JsonObject checkedActions, final String acceptLanguage, final Handler<JsonObject> handler) {
-		UserUtils.findVisibleProfilsGroups(eb, userId, new Handler<JsonArray>() {
+			final JsonObject groupCheckedActions, final JsonObject userCheckedActions,
+			final String acceptLanguage, final Handler<JsonObject> handler) {
+		final String q =
+				"RETURN distinct profileGroup.id as id, profileGroup.name as name, " +
+				"profileGroup.groupDisplayName as groupDisplayName " +
+				"ORDER BY name " +
+				"UNION " +
+				"MATCH (g:Group) WHERE g.id in {groupIds} " +
+				"RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName " +
+				"ORDER BY name ";
+		final JsonObject params = new JsonObject().putArray("groupIds",
+				new JsonArray(groupCheckedActions.getFieldNames().toArray()));
+		final String q2 =
+				"RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, " +
+				"visibles.lastName as lastName, visibles.firstName as firstName " +
+				"ORDER BY username " +
+				"UNION " +
+				"MATCH (u:User) WHERE u.id in {userIds} " +
+				"RETURN distinct u.id as id, u.login as login, u.displayName as username, " +
+				"u.lastName as lastName, u.firstName as firstName " +
+				"ORDER BY username ";
+		final JsonObject params2 = new JsonObject().putArray("userIds",
+				new JsonArray(userCheckedActions.getFieldNames().toArray()));
+		UserUtils.findVisibleProfilsGroups(eb, userId, q, params, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibleGroups) {
 				final JsonObject groups = new JsonObject();
-				JsonObject checked = new JsonObject();
 				groups.putArray("visibles", visibleGroups);
-				groups.putObject("checked", checked);
+				groups.putObject("checked", groupCheckedActions);
 				for (Object u : visibleGroups) {
 					if (!(u instanceof JsonObject)) continue;
 					JsonObject group = (JsonObject) u;
 					UserUtils.groupDisplayName(group, acceptLanguage);
-					String groupId = group.getString("id");
-					if (groupId != null) {
-						JsonArray a = checkedActions.getArray(groupId);
-						if (a != null) {
-							checked.putArray(groupId, a);
-						}
-					}
 				}
-				findVisibleUsers(eb, userId, false, new Handler<JsonArray>() {
+				findVisibleUsers(eb, userId, false, q2, params2, new Handler<JsonArray>() {
 					@Override
 					public void handle(JsonArray visibleUsers) {
 						JsonObject users = new JsonObject();
-						JsonObject userChecked = new JsonObject();
 						users.putArray("visibles", visibleUsers);
-						users.putObject("checked", userChecked);
-						for (Object u : visibleUsers) {
-							if (!(u instanceof JsonObject)) continue;
-							JsonObject user = (JsonObject) u;
-							String userId = user.getString("id");
-							if (userId != null) {
-								JsonArray a = checkedActions.getArray(userId);
-								if (a != null) {
-									userChecked.putArray(userId, a);
-								}
-							}
-						}
+						users.putObject("checked", userCheckedActions);
 						JsonObject share = new JsonObject()
 								.putArray("actions", actions)
 								.putObject("groups", groups)
