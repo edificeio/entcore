@@ -218,27 +218,32 @@ public class DefaultUserService implements UserService {
 			params.putString("groupId", groupId);
 		}
 		String condition = "";
+		String functionMatch = "WITH u MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
 				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
 			results.handle(new Either.Left<String, JsonArray>("forbidden"));
 			return;
-		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL) ||
-				userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
-				condition = "AND (s.id IN {scope} OR c.id IN {scope}) ";
+				condition = "AND s.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				functionMatch = "WITH u MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
+				condition = "AND c.id IN {scope} ";
 				params.putArray("scope", new JsonArray(scope.toArray()));
 			}
 		}
 
 		String query =
 				"MATCH " + filter + "(u:User) " +
-				"WITH u " +
-				"MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-				"(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->pg, u-[:IN]->pg " +
-				filterProfile + condition +
+				functionMatch + filterProfile + condition +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
 				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName " +
