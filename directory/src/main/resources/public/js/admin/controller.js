@@ -132,7 +132,7 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
 			onClick: function(){ },
-			showCondition: function(){ return !$scope.isAdminLocal() }
+			showCondition: function(){ return $scope.isCentralAdmin() }
 		},
 		{
 			text: lang.translate("directory.classOps"),
@@ -155,7 +155,7 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			templateName: 'admin-isolated-tab',
 			onClick: function(){ $scope.refreshIsolated() },
 			requestName : "isolated-request",
-			showCondition: function(){ return !$scope.isAdminLocal() }
+			showCondition: function(){ return $scope.isCentralAdmin() }
 		}
 	]
 
