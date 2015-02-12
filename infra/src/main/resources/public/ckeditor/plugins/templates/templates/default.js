@@ -18,12 +18,12 @@ CKEDITOR.addTemplates(
 			title:"Deux colonnes",
 			image:"two-cols.gif",
 			description:"Deux colonnes et un titre.",
-			html:'<h2 class="text-container">Titre</h2>' +
+			html:'<h2>Titre</h2>' +
 				'<div class="row">' +
-				'<div class="six cell text-container" style="text-align: justify">' +
+				'<div class="six cell" style="text-align: justify">' +
 				'<h3>Titre</h3>' +
 				'<p>Colonne de gauche</p></div>' +
-				'<div class="six cell text-container" style="text-align: justify">' +
+				'<div class="six cell" style="text-align: justify">' +
 				'<h3>Titre</h3>' +
 				'<p>Colonne de droite</p>' +
 				'</div>' +

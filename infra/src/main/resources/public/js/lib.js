@@ -510,7 +510,6 @@ function Collection(obj){
 			else{
 				col[method] = methods[method];
 			}
-
 		}
 
 		col.model = this;
