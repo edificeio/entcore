@@ -325,7 +325,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
-		$scope.loadingFiles = [];
 		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
 		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
 	};
@@ -734,6 +733,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.newFile.chosenFiles.forEach(function(file, i){
 			var formData = new FormData();
 			var index = $scope.loadingFiles.length;
+			var loadingFile = {
+				file: file.file,
+				loading: true
+			};
 
 			if(chosenNames[i]){
 				formData.append('file', file.file, chosenNames[i] + '.' + file.extension);
@@ -744,9 +747,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 			var url = 'document';
 			var request = http().postFile(url + '?thumbnail=120x120&thumbnail=290x290',  formData, {
-				requestName: 'file-upload-' + file.file.name + '-' + index
-			})
+					requestName: 'file-upload-' + file.file.name + '-' + index
+				})
 				.done(function(e){
+					loadingFile.loading = false;
 					var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 					if(path !== ''){
 						http().put("documents/move/" + e._id + '/' + path).done(function(){
@@ -760,10 +764,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					getQuota();
 				}).xhr;
 
-			$scope.loadingFiles.push({
-				file: file.file,
-				request: request
-			});
+			loadingFile.request = request;
+			$scope.loadingFiles.push(loadingFile);
 		});
 		$scope.newFile.blockIdentical = true;
 

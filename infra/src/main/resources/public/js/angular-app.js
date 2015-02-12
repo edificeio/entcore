@@ -855,14 +855,14 @@ module.directive('imageSelect', function($compile){
 
 			element.on('drop', function(e){
 				element.removeClass('droptarget');
+				element.addClass('loading-panel');
 				e.preventDefault();
-				var files = e.originalEvent.dataTransfer.files;
-				for(var i = 0; i < files.length; i++){
-					workspace.Document.prototype.upload(files[i], 'file-upload-' + files[i].name + '-' + i, function(doc){
-						scope.selectedFile.file = doc;
-						scope.updateDocument();
-					});
-				}
+				var file = e.originalEvent.dataTransfer.files[0];
+				workspace.Document.prototype.upload(file, 'file-upload-' + file.name + '-0', function(doc){
+					scope.selectedFile.file = doc;
+					scope.updateDocument();
+					element.removeClass('loading-panel');
+				});
 			});
 
 			scope.$watch('thumbnails', function(thumbs){

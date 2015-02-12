@@ -18,14 +18,16 @@
  ~
  -->
 
-		<article class="list-view" drop-files="newFile.files" on-change="setFilesName();addLoadingFiles();">
+		<article class="list-view" drop-files="newFile.files" on-drop="setFilesName();addLoadingFiles();">
 			<table class="list-view">
 				<thead>
 				<tr>
 					<th scope="col" class="icon">
 						<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
 					</th>
-					<th scope="col" class="icon"></th>
+					<th scope="col" class="icon">
+
+					</th>
 					<th scope="col" class="content" ng-click="orderByField('name')">
 						<span translate content="name"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
@@ -82,11 +84,11 @@
 						</section>
 					</td>
 				</tr>
-				<tr ng-repeat="file in loadingFiles">
+				<tr ng-repeat="file in loadingFiles | filter:{loading:true}">
 					<td class="icon"></td>
 					<td class="icon">
 						<div class="twelve cell">
-							<i class="unknown"></i>
+							<loading-icon default="loading"></loading-icon>
 						</div>
 					</td>
 					<td class="content"><a>[[file.file.name]]</a></td>
