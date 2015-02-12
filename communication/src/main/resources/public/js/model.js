@@ -113,8 +113,11 @@ model.build = function(){
                 _.forEach(that.all, function(struct){
                     _.forEach(struct.parents, function(parent){
                         var parentMatch = _.findWhere(that.all, {id: parent.id})
-                        parentMatch.children = parentMatch.children ? parentMatch.children : []
-                        parentMatch.children.push(struct)
+                        if(parentMatch){
+                            parentMatch.children = parentMatch.children ? parentMatch.children : []
+                            parentMatch.children.push(struct)
+                        } else
+                            delete struct.parents
                     })
                 })
                 if(model.scope)
