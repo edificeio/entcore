@@ -121,8 +121,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.currentFolderTree = $scope.folder.children[1]
 			$scope.openFolder($scope.folder.children[1])
 		}
-	})
+	});
 
+	$scope.newFile = { name: lang.translate('nofile'), chosenFiles: [] };
 	$scope.template = template;
 	template.open('documents', 'icons');
 

@@ -18,7 +18,7 @@
  ~
  -->
 
-<article class="icons-view">
+<article class="icons-view" drop-files="newFile.files" on-drag="setFilesName();" on-drop="addLoadingFiles();">
 	<header>&nbsp;</header>
 	<div>
 		<div ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)">
@@ -45,6 +45,17 @@
 				</article>
 			</section>
 		</section>
+		<div ng-repeat-start="file in loadingFiles" class="element loading">
+			<a class="container cell">
+				<i class="unknown-large"></i>
+			</a>
+
+			<legend>
+				<a ng-href="[[file.file.name]]">
+				</a>
+				<a><strong>[[me.username]]</strong></a>
+			</legend>
+		</div>
 		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
 			<a ng-href="[[document.link]]" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">

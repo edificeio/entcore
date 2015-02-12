@@ -3604,22 +3604,29 @@ module.directive('dragdrop', function(){
 module.directive('dropFiles', function($parse){
 	return {
 		link: function(scope, element, attributes){
-			var ngModel = $parse(attributes.ngModel);
-			element.on('dragover', function(){
+			var ngModel = $parse(attributes.dropFiles);
+			element.on('dragover', function(e){
+				e.preventDefault();
+				scope.$eval(attributes.onDrag);
 				element.addClass('droptarget');
 			});
 
-			element.on('dragleave', function(){
+			element.on('dragleave', function(e){
+				e.preventDefault();
+				scope.$eval(attributes.onLeave);
 				element.removeClass('droptarget');
 			});
 
-			element.on('drop', function(){
+			element.on('drop', function(e){
+				e.preventDefault();
+				ngModel.assign(scope, e.originalEvent.dataTransfer.files);
+				scope.$eval(attributes.onDrop);
+				scope.$apply();
 				element.removeClass('droptarget');
-
 			});
 		}
 	}
-})
+});
 
 module.directive('attachments', function($parse){
 	return {

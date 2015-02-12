@@ -18,7 +18,7 @@
  ~
  -->
 
-		<article class="list-view">
+		<article class="list-view" drop-files="newFile.files" on-change="setFilesName();addLoadingFiles();">
 			<table class="list-view">
 				<thead>
 				<tr>
@@ -81,6 +81,19 @@
 							</article>
 						</section>
 					</td>
+				</tr>
+				<tr ng-repeat="file in loadingFiles">
+					<td class="icon"></td>
+					<td class="icon">
+						<div class="twelve cell">
+							<i class="unknown"></i>
+						</div>
+					</td>
+					<td class="content"><a>[[file.file.name]]</a></td>
+					<td class="user"><a>[[me.username]]</a></td>
+					<td></td>
+					<td class="date"></td>
+					<td class="size"></td>
 				</tr>
 				<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
 					<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
