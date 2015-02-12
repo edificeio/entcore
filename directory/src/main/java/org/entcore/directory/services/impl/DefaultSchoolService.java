@@ -84,7 +84,7 @@ public class DefaultSchoolService implements SchoolService {
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) && !userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			results.handle(new Either.Left<String, JsonArray>("forbidden"));
 			return;
-		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+		} else if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) && userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
