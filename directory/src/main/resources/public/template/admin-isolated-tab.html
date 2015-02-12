@@ -21,7 +21,7 @@
     <hr class="separator">
     <div style="text-align:center">
         <button ng-click="isolatedUser.update(refreshIsolated())">[[lang.translate("directory.save")]]</button>
-        <button ng-click="isolatedUser.delete(refreshIsolated())">[[lang.translate("directory.delete")]]</button>
+        <button ng-if="!isolatedUser.deleteDate" ng-click="isolatedUser.delete(refreshIsolated())">[[lang.translate("directory.predelete")]]</button>
         <button ng-click="isolatedUser.restore(refreshIsolated())" ng-if="isolatedUser.deleteDate">[[lang.translate("directory.admin.restore")]]</button>
     </div>
     <hr class="separator">

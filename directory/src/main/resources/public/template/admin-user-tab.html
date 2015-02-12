@@ -126,7 +126,7 @@
                 </a>
                 <button ng-click="structureUser.update(reloadStructureAndRetrieveUser(structureUser))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.save")]]</button>
                 <button ng-click="structure.unlinkUser(structureUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button>
-                <button ng-click="structureUser.delete(reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.delete")]]</button>
+                <button ng-click="structureUser.delete(reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
                 <button ng-if="!structureUser.blocked" ng-click="structureUser.block(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.block")]]</button>
                 <button ng-if="structureUser.blocked" ng-click="structureUser.unblock(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.unblock")]]</button>
             </div>

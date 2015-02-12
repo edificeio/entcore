@@ -115,6 +115,7 @@
     "directory.classeLess": "Sans classe",
     "directory.classes": "Classes",
     "directory.delete": "Supprimer",
+    "directory.predelete": "Pré-supprimer",
     "directory.deleteDate": "Supprimer la date",
     "directory.directlink": "Lien direct",
     "directory.explaination": "Cette fonctionnalité vous permet de rechercher une personne dans l'annuaire de l'école ou des écoles auxquelles vous avez accès.<br>Saisissez quelques caractères et cliquez sur OK pour afficher les résultats.",
