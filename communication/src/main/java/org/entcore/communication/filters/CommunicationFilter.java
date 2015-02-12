@@ -60,7 +60,7 @@ public class CommunicationFilter implements ResourcesProvider {
 		params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String query =
-					"MATCH (s:Structure)<-[:DEPENDS*1..2]-(:Group {id : {groupId}}) " +
+					"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {groupId}}) " +
 					"WHERE s.id IN {structures} " +
 					"RETURN count(*) > 0 as exists ";
 			params.putString("groupId", groupId);
@@ -68,8 +68,8 @@ public class CommunicationFilter implements ResourcesProvider {
 		} else if (startGroupId != null && endGroupId != null &&
 				!startGroupId.trim().isEmpty() && !endGroupId.trim().isEmpty()) {
 			String query =
-					"MATCH (s1:Structure)-[:DEPENDS*1..2]-(:Group {id : {startGroupId}}), " +
-					"(s2:Structure)<-[:DEPENDS*1..2]-(:Group {id : {endGroupId}}) " +
+					"MATCH (s1:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {startGroupId}}), " +
+					"(s2:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {endGroupId}}) " +
 					"WHERE s1.id IN {structures} AND s2.id IN {structures} " +
 					"RETURN count(*) > 0 as exists ";
 			params.putString("startGroupId", startGroupId);
