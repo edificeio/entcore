@@ -66,6 +66,7 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			final Handler<Boolean> handler) {
 		request.pause();
 		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
+			request.resume();
 			handler.handle(true);
 			return;
 		}
