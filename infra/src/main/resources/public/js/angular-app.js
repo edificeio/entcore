@@ -1421,7 +1421,7 @@ var ckeEditorFixedPositionning = function(){
 		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
 		var el = $('body').find(CKEDITOR.instances[instance].element.$);
 		toolbox = $('#cke_' + CKEDITOR.instances[instance].name);
-		if(!el){
+		if(!el.length){
 			toolbox.remove();
 			CKEDITOR.instances[instance].destroy();
 			continue;
