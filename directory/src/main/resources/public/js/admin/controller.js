@@ -259,7 +259,7 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 	}
 	$scope.groupUserFilteringFunction = function(input, classObj){
 		return function(user){
-			var filterByInput = input ? $scope.fairInclusion(user, input) : true
+			var filterByInput = input ? $scope.fairInclusion(user.displayName, input) : true
 			var filterByClass = classObj ? _.find(user.totalClasses, function(classe){ return classe.id === classObj.id }) : true
 			return filterByInput && filterByClass
 		}

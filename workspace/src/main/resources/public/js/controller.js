@@ -802,7 +802,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			return moment().format('L');
 		}
 
-		return date.format(dateString.split(' ')[0], 'L')
+		return date.format(dateString.toString().split(' ')[0], 'L')
 	}
 
 	$scope.toggleComments = function(document){
