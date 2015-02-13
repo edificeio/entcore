@@ -14,6 +14,7 @@
     "communication.incoming": "Communication sortante",
     "communication.innerGroupRule": "Règle de communication personnalisée utilisateurs vers groupe :",
     "communication.innerRelationships": "Règles internes",
+    "communication.legend": "Légende",
     "communication.modify": "Modifier",
     "communication.notify.groupLinkAdded": "Lien avec le groupe ajouté",
     "communication.notify.groupLinkRemoved": "Lien avec le groupe supprimé",

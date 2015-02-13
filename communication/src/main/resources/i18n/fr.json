@@ -14,6 +14,7 @@
     "communication.incoming": "Communication sortante",
     "communication.innerGroupRule": "Règle de communication personnalisée utilisateurs vers groupe :",
     "communication.innerRelationships": "Règles internes",
+    "communication.legend": "Légende",
     "communication.modify": "Modifier",
     "communication.notify.groupLinkAdded": "Lien avec le groupe ajouté",
     "communication.notify.groupLinkRemoved": "Lien avec le groupe supprimé",
@@ -34,6 +35,5 @@
     "communication.table.parents.incoming": "Enfant(s) ->  Parent(s)",
     "communication.table.parents.outgoing": "Enfant(s) <-  Parent(s)",
     "communication.table.title": "Tableau de visualisation des règles par défaut",
-    "communication.title": "Communication",
-    "communication.legend": "Légende"
+    "communication.title": "Communication"
 }

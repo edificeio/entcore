@@ -47,6 +47,7 @@
     "library.upload.import": "Fazer upload",
     "library.upload.title": "Selecionar arquivos",
     "linker.notfound": "Votre recherche ne retourne aucun résultat !",
+    "linker.warning": "Recherchez des documents dans vos applications pour créer un lien. N'oubliez pas de les partager pour les rendre accessibles à vos lecteurs.",
     "lock": "Bloquear",
     "maxicours": "Maxicours",
     "messagerie": "Mensagens",
