@@ -19,6 +19,7 @@
 
 package org.entcore.session;
 
+import fr.wseduc.mongodb.MongoDb;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -39,9 +40,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	protected Map<String, LoginInfo> logins;
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
+	private static final String SESSIONS_COLLECTION = "sessions";
 
 	private long sessionTimeout;
 	private String neo4jAddress;
+	private MongoDb mongo;
 
 	private static final class LoginInfo implements Serializable {
 		final long timerId;
@@ -59,6 +62,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		Boolean cluster = (Boolean) server.get("cluster");
 		String node = (String) server.get("node");
 		neo4jAddress = node + "wse.neo4j.persistor";
+		mongo = MongoDb.getInstance();
+		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 		if (Boolean.TRUE.equals(cluster)) {
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			sessions = cm.getSyncMap("sessions");
@@ -104,6 +109,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "drop":
 			doDrop(message);
 			break;
+		case "dropPermanentSessions" :
+			doDropPermanentSessions(message);
+			break;
 		case "addAttribute":
 			doAddAttribute(message);
 			break;
@@ -113,6 +121,30 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		default:
 			sendError(message, "Invalid action: " + action);
 		}
+	}
+
+	private void doDropPermanentSessions(final Message<JsonObject> message) {
+		String userId = message.body().getString("userId");
+		String currentSessionId = message.body().getString("currentSessionId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "Invalid userId.");
+			return;
+		}
+
+		JsonObject query = new JsonObject().putString("userId", userId);
+		if (currentSessionId != null) {
+			query.putObject("_id", new JsonObject().putString("$ne", currentSessionId));
+		}
+		mongo.delete(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					sendOK(message);
+				} else {
+					sendError(message, event.body().getString("message"));
+				}
+			}
+		});
 	}
 
 	private void doFindByUserId(final Message<JsonObject> message) {
@@ -156,8 +188,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		return null;
 	}
 
-	private void doFind(Message<JsonObject> message) {
-		String sessionId = message.body().getString("sessionId");
+	private void doFind(final Message<JsonObject> message) {
+		final String sessionId = message.body().getString("sessionId");
 		if (sessionId == null || sessionId.trim().isEmpty()) {
 			sendError(message, "Invalid sessionId.");
 			return;
@@ -165,10 +197,38 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		JsonObject session =  unmarshal(sessions.get(sessionId));
 		if (session == null) {
-			sendError(message, "Session not found.");
-			return;
+			final JsonObject query = new JsonObject().putString("_id", sessionId);
+			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonObject res = event.body().getObject("result");
+					String userId;
+					if ("ok".equals(event.body().getString("status")) && res != null &&
+							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
+						createSession(userId, sessionId, new Handler<String>() {
+							@Override
+							public void handle(String sId) {
+								if (sId != null) {
+									JsonObject s =  unmarshal(sessions.get(sId));
+									if (s != null) {
+										sendOK(message, new JsonObject().putString("status", "ok")
+												.putObject("session", s));
+									} else {
+										sendError(message, "Session not found.");
+									}
+								} else {
+									sendError(message, "Session not found.");
+								}
+							}
+						});
+					} else {
+						sendError(message, "Session not found.");
+					}
+				}
+			});
+		} else {
+			sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
 		}
-		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
 	}
 
 	private void doCreate(final Message<JsonObject> message) {
@@ -178,12 +238,27 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
+		createSession(userId, null, new Handler<String>() {
+			@Override
+			public void handle(String sessionId) {
+				if (sessionId != null) {
+					sendOK(message, new JsonObject()
+							.putString("status", "ok")
+							.putString("sessionId", sessionId));
+				} else {
+					sendError(message, "Invalid userId : " + userId);
+				}
+			}
+		});
+	}
+
+	private void createSession(final String userId, final String sId, final Handler<String> handler) {
+		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
-					final String sessionId = UUID.randomUUID().toString();
 					long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
 						public void handle(Long timerId) {
 							sessions.remove(sessionId);
@@ -192,11 +267,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					});
 					sessions.put(sessionId, infos.encode());
 					logins.put(userId, new LoginInfo(timerId, sessionId));
-					sendOK(message, new JsonObject()
-					.putString("status", "ok")
-					.putString("sessionId", sessionId));
+					final JsonObject now = MongoDb.now();
+					if (sId == null) {
+						mongo.save(SESSIONS_COLLECTION, new JsonObject()
+								.putString("_id", sessionId).putString("userId", userId)
+								.putObject("created", now).putObject("lastUsed",now));
+					} else {
+						mongo.update(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId),
+								new JsonObject().putObject("$set", new JsonObject().putObject("lastUsed", now)));
+					}
+					handler.handle(sessionId);
 				} else {
-					sendError(message, "Invalid userId : " + userId);
+					handler.handle(null);
 				}
 			}
 		});
@@ -209,6 +291,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
+		mongo.delete(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId));
 		JsonObject session =  unmarshal(sessions.get(sessionId));
 		if (session == null) {
 			sendError(message, "Session not found.");
@@ -307,7 +390,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void generateSessionInfos(final String userId, final Handler<JsonObject> handler) {
-		String query =
+		final String query =
 				"MATCH (n:User {id : {id}}) " +
 				"WHERE HAS(n.login) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
@@ -322,7 +405,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
 				"COLLECT(distinct gp.id) as groupsIds";
-		String query2 =
+		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
@@ -283,9 +284,10 @@ public class AuthController extends BaseController {
 					@Override
 					public void handle(String sessionId) {
 						if (sessionId != null && !sessionId.trim().isEmpty()) {
-							CookieHelper.getInstance().setSigned("oneSessionId", sessionId,
-									container.config().getLong("cookie_timeout", 1800L),
-									request);
+							boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
+							long timeout = rememberMe ? 3600l * 24 * 365 : container.config()
+									.getLong("cookie_timeout", Long.MIN_VALUE);
+							CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 							redirect(request, callBack, "");
 						} else {
 							loginResult(request, "auth.error.authenticationFailed", callBack);
@@ -672,6 +674,32 @@ public class AuthController extends BaseController {
 	@Get("/cgu")
 	public void cgu(final HttpServerRequest request) {
 		renderView(request);
+	}
+
+	@Delete("/sessions")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void deletePermanentSessions(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+					UserUtils.deletePermanentSession(eb, user.getUserId(), sessionId,
+							new org.vertx.java.core.Handler<Boolean>() {
+						@Override
+						public void handle(Boolean event) {
+							if (event) {
+								ok(request);
+							} else {
+								renderError(request);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 }

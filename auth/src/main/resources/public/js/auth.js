@@ -72,6 +72,7 @@ function LoginController($scope, template){
 		http().post('/auth/login', http().serialize({
 			email: $('#email').val(),
 			password: $('#password').val(),
+			rememberMe: $scope.user.rememberMe,
 			callBack: $scope.callBack
 		}))
 			.done(function(data){

@@ -340,6 +340,23 @@ public class UserUtils {
 		});
 	}
 
+	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
+			final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "dropPermanentSessions")
+				.putString("userId", userId)
+				.putString("currentSessionId", currentSessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
 	public static void addSessionAttribute(EventBus eb, String userId,
 			String key, Object value, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()

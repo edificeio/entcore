@@ -186,6 +186,12 @@ project(':cas') {
   }
 }
 
+project(':session') {
+  dependencies {
+    compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+  }
+}
+
 project(':tests') {
   apply plugin: 'scala'
 
