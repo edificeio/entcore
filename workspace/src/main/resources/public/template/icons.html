@@ -28,10 +28,10 @@
 			<input type="checkbox" data-ng-model="folder.selected" />
 
 			<legend>
-				<a data-ng-click="openFolder(value)">
+				<a>
 					<i ng-if="folder.shared.length > 0" class="shared inline"></i>
-					<span class="badge" ng-if="folder.comments.length > 0 &&  currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
-					[[folder.name]]
+					<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
+					<span ng-click="openFolder(folder)">[[folder.name]]</span>
 				</a>
 				<a ng-href="/userbook/annuaire#[[folder.owner]]"><strong>[[folder.ownerName]]</strong></a>
 			</legend>
@@ -67,11 +67,12 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
+			<i class="history" ng-if="currentTree.name === 'documents' || (currentTree.name === 'shared' && document.myRights.document.showRevisions)" tooltip="workspace.show.versions" ng-click="openHistory(document)"></i>
 
 			<legend>
 				<a ng-href="[[document.link]]">
 					<i ng-if="document.shared.length > 0" class="shared inline"></i>
-					<span class="badge" ng-if="document.comments.length > 0 &&  currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+					<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 					[[document.name]]
 				</a>
 				<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>

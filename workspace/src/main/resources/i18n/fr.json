@@ -129,5 +129,12 @@
     "workspace.trash.error": "Erreur lors de la mise à la corbeille",
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
-    "workspace.valid": "Appliquer"
+    "workspace.valid": "Appliquer",
+    "workspace.show.versions": "Voir les versions archivées",
+    "workspace.versions.list": "Versions du document",
+    "workspace.return": "Retour",
+    "workspace.add.version": "Nouvelle version",
+    "workspace.delete.version": "Supprimer la version",
+    "workspace.manager": "Gérer",
+    "user": "Utilisateur"
 }

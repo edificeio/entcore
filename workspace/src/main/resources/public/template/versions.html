@@ -1,0 +1,78 @@
+<article class="list-view">
+    <h1>
+        <i18n>workspace.versions.list</i18n>
+        <button class="right-magnet" ng-click="closeHistory()" translate content="workspace.return"></button>
+        <div class="right-magnet" ng-if="targetDocument.myRights.document.postRevision">
+            <div class="select-file">
+                <div class="hidden-content">
+                    <input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
+                </div>
+                <button translate content="workspace.add.version" ng-disabled="revisionInProgress.pending"></button>
+            </div>
+        </div>
+    </h1>
+    <table>
+        <thead>
+            <tr>
+                <th scope="col" class="icon"></th>
+                <th scope="col" class="content" ng-click="orderByField('name')">
+                    <span translate content="name"></span>
+                    <i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
+                    <i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
+                </th>
+                <th scope="col" class="user" ng-click="orderByField('userName')">
+                    <span translate content="user"></span>
+                    <i class="arrow-bottom" ng-if="order.field === 'userName' && !order.desc"></i>
+                    <i class="arrow-top" ng-if="order.field === 'userName' && order.desc"></i>
+                </th>
+                <th scope="col" class="date" ng-click="orderByField('date.$date')">
+                    <span translate content="modified"></span>
+                    <i class="arrow-bottom" ng-if="order.field === 'date.$date' && !order.desc"></i>
+                    <i class="arrow-top" ng-if="order.field === 'date.$date' && order.desc"></i>
+                </th>
+                <th scope="col" class="size" ng-click="orderByField('metadata.size')">
+                    <span translate content="size"></span>
+                    <i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
+                    <i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
+                </th>
+                <th scope="col" class="icon" ng-if="targetDocument.myRights.document.manageRevisions"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="revisionInProgress.pending">
+                <td>
+                    <div class="twelve cell">
+                        <loading-icon default="loading"></loading-icon>
+                    </div>
+                </td>
+                <td class="content" colspan="3">
+                    [[revisionInProgress.file.name]]
+                </td>
+                <td class="size" colspan="2">
+                    [[formatDocumentSize(revisionInProgress.file.size)]]
+                </td>
+            </tr>
+            <tr ng-repeat="revision in targetDocument.revisions | orderBy: order.order:order.desc">
+                <td></td>
+                <td class="content">
+                    <a ng-href="document/[[targetDocument._id]]/revision/[[revision._id]]">[[revision.name]]</a>
+                </td>
+                <td class="user">
+                    <a ng-href="/userbook/annuaire#[[revision.userId]]">[[revision.userName]]</a>
+                </td>
+                <td class="date">
+                    [[shortDate(revision.date.$date)]]
+                </td>
+                <td class="size">
+                    [[formatDocumentSize(revision.metadata.size)]]
+                </td>
+                <td>
+                    <i class="close-2x"
+                       ng-click="deleteRevision(revision)"
+                       tooltip="workspace.delete.version"
+                       ng-if="targetDocument.myRights.document.manageRevisions && revision.file !== targetDocument.file"></i>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</article>

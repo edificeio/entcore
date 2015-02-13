@@ -18,7 +18,7 @@
  ~
  -->
 
-		<article class="list-view" drop-files="newFile.files" on-drop="setFilesName();addLoadingFiles();">
+		<article class="list-view" drop-files="newFile.files" on-drop="setFilesName(); addLoadingFiles();">
 			<table class="list-view">
 				<thead>
 				<tr>
@@ -44,6 +44,7 @@
 						<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
 						<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
 					</th>
+					<th ng-if="currentTree.name === 'documents' || currentTree.name === 'shared'"></th>
 					<th scope="col" class="size" ng-click="orderByField('metadata.size')">
 						<span translate content="size"></span>
 						<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
@@ -70,7 +71,8 @@
 					<td ng-if="currentTree.name !== 'trash'">
 						<span class="badge" ng-if="folder.comments.length > 0" translate-attr="title" title="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 					</td>
-					<td class="date">[[shortDate(folder.created)]]</td>
+					<td class="date small-font">[[shortDate(folder.created)]]</td>
+					<td></td>
 					<td></td>
 				</tr>
 				<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="folder === selectedFolders()[0] && folder.showComments">
@@ -95,6 +97,7 @@
 					<td class="user"><a>[[me.username]]</a></td>
 					<td></td>
 					<td class="date"></td>
+					<td></td>
 					<td class="size"></td>
 				</tr>
 				<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }">
@@ -108,8 +111,11 @@
 					<td class="content"><a href="[[document.link]]">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 					<td class="user"><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
 					<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
-					<td class="date">[[shortDate(document.created)]]</td>
-					<td class="size">
+					<td class="date small-font">[[shortDate(document.created)]]</td>
+					<td ng-if="currentTree.name === 'documents' || currentTree.name === 'shared'">
+						<i class="history" tooltip="workspace.show.versions" ng-click="openHistory(document)" ng-if="document.myRights.document.showRevisions"></i>
+					</td>
+					<td class="size small-font">
 						[[formatDocumentSize(document.metadata.size)]]
 					</td>
 				</tr>

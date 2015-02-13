@@ -216,7 +216,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				move: true,
 				copy: true,
 				moveTrash: true,
-				share: true
+				share: true,
+				showRevisions: true,
+				postRevision: true,
+				manageRevisions: true
 			},
 			comment: {
 				post: true
@@ -245,6 +248,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument') || setRight('org-entcore-workspace-service-WorkspaceService|commentFolder');
 		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
+		document.myRights.document.showRevisions = setRight('org-entcore-workspace-service-WorkspaceService|listRevisions');
+		document.myRights.document.postRevision = setRight('org-entcore-workspace-service-WorkspaceService|updateDocument');
+		document.myRights.document.manageRevisions = setRight('org-entcore-workspace-service-WorkspaceService|deleteRevision');
 	};
 
 	function formatDocuments(documents, callback){
@@ -607,7 +613,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			shareFolders: 'public/template/share-folders.html',
 			shareFoldersWarning: 'public/template/share-folders-warning.html',
 			confirm: 'public/template/confirm.html',
-			rename: 'public/template/rename.html'
+			rename: 'public/template/rename.html',
+			versions: 'public/template/versions.html'
 		}
 	};
 
@@ -695,6 +702,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.openFolder = function(folder){
+		if(template.contains('documents' ,'versions'))
+			template.containers.documents = $scope.backupDocTemplate
+
 		if(folder.folder && folder.folder.indexOf('Trash') === 0)
 			return
 
@@ -1297,7 +1307,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.formatDocumentSize = function(size){
 		var formattedData = $scope.getAppropriateDataUnit(size)
-		return (Math.round(formattedData.nb*100)/100)+" "+formattedData.order
+		return (Math.round(formattedData.nb*10)/10)+" "+formattedData.order
 	}
 
 	$scope.rename = function(item, newName){
@@ -1391,6 +1401,52 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				$scope.openFolderById(backupId)
 			}, 10)
 		})
+	}
 
+	$scope.openHistory = function(document){
+		$scope.targetDocument = document
+		http().get("document/"+document._id+"/revisions").done(function(revisions){
+			document.revisions = revisions
+			if(!template.contains('documents' ,'versions'))
+				$scope.backupDocTemplate = template.containers.documents
+			$scope.orderByField('date.$date');
+			$scope.order.desc = true;
+			template.open('documents', 'versions');
+			$scope.$apply()
+		})
+	}
+
+	$scope.closeHistory = function(){
+		if(template.contains('documents' ,'versions'))
+			template.containers.documents = $scope.backupDocTemplate
+	}
+
+	$scope.revisionInProgress = {}
+	$scope.createRevision = function(newFiles){
+		if(newFiles.length < 1)
+			return
+
+		var data = new FormData()
+		data.append("file", newFiles[0])
+
+		http().bind('request-started.add-revision', function(){
+			$scope.revisionInProgress.pending = true
+			$scope.revisionInProgress.file = newFiles[0]
+		});
+		http().bind('request-ended.add-revision', function(){
+			$scope.revisionInProgress = {}
+		});
+
+		http().putFile("document/"+$scope.targetDocument._id+"?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
+			//$scope.openHistory($scope.targetDocument)
+			$scope.openFolder($scope.openedFolder.folder)
+		})
+	}
+
+	$scope.deleteRevision = function(revision){
+		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(function(){
+			$('.tooltip').remove()
+			$scope.openHistory($scope.targetDocument)
+		})
 	}
 }

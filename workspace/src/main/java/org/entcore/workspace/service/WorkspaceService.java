@@ -34,14 +34,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.OwnerOnly;
-import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mongodb.MongoDbResult;
@@ -86,6 +86,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 public class WorkspaceService extends BaseController {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
+	public static final String DOCUMENT_REVISION_COLLECTION = "documentsRevisions";
 	private String imageResizerAddress;
 	private MongoDb mongo;
 	private DocumentDao documentDao;
@@ -473,6 +474,25 @@ public class WorkspaceService extends BaseController {
 		}
 	}
 
+	private void emptySize(final String userId, final Handler<Long> emptySizeHandler) {
+		quotaService.quotaAndUsage(userId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> r) {
+				if (r.isRight()) {
+					JsonObject j = r.right().getValue();
+					if (j != null) {
+						long quota = j.getLong("quota", 0l);
+						long storage = j.getLong("storage", 0l);
+						for (String attr : j.getFieldNames()) {
+							UserUtils.addSessionAttribute(eb, userId, attr, j.getLong(attr), null);
+						}
+						emptySizeHandler.handle(quota - storage);
+					}
+				}
+			}
+		});
+	}
+
 	private void add(final HttpServerRequest request, final String mongoCollection,
 			final JsonObject doc, long allowedSize) {
 		storage.writeUploadFile(request, allowedSize, new Handler<JsonObject>() {
@@ -512,6 +532,7 @@ public class WorkspaceService extends BaseController {
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
 					incrementStorage(doc);
+					createRevision(res.body().getString("_id"), uploaded.getString("_id"), doc.getString("name"), doc.getString("owner"), doc.getString("owner"), doc.getString("ownerName"), doc.getObject("metadata"));
 					createThumbnailIfNeeded(mongoCollection, uploaded,
 							res.body().getString("_id"), null, thumbs);
 				}
@@ -858,57 +879,68 @@ public class WorkspaceService extends BaseController {
 		}
 	}
 
-	@Put("document/:id")
+	@Put("/document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
+		final String documentId = request.params().get("id");
+
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
 				if (user != null) {
 					request.pause();
-					emptySize(user, new Handler<Long>() {
-						@Override
-						public void handle(Long emptySize) {
-							request.resume();
-							storage.writeUploadFile(request, emptySize,
-									new Handler<JsonObject>() {
-										@Override
-										public void handle(final JsonObject uploaded) {
-											if ("ok".equals(uploaded.getString("status"))) {
-												updateAfterUpload(request.params().get("id"), request.params().get("name"),
-														uploaded, request.params().getAll("thumbnail"), new Handler<Message<JsonObject>>() {
-															@Override
-															public void handle(Message<JsonObject> res) {
-																if (res == null) {
-																	request.response().setStatusCode(404).end();
-																} else if ("ok".equals(res.body().getString("status"))) {
-																	renderJson(request, res.body());
-																} else {
-																	renderError(request, res.body());
+					documentDao.findById(documentId, new Handler<JsonObject>() {
+						public void handle(JsonObject event) {
+							if (!"ok".equals(event.getString("status"))) {
+								notFound(request);
+								return;
+							}
+
+							final String userId = event.getObject("result").getString("owner");
+
+							emptySize(userId, new Handler<Long>() {
+								@Override
+								public void handle(Long emptySize) {
+									request.resume();
+									storage.writeUploadFile(request, emptySize,
+										new Handler<JsonObject>() {
+											@Override
+											public void handle(final JsonObject uploaded) {
+												if ("ok".equals(uploaded.getString("status"))) {
+													updateAfterUpload(documentId, request.params().get("name"),
+															uploaded, request.params().getAll("thumbnail"), user, new Handler<Message<JsonObject>>() {
+																@Override
+																public void handle(Message<JsonObject> res) {
+																	if (res == null) {
+																		request.response().setStatusCode(404).end();
+																	} else if ("ok".equals(res.body().getString("status"))) {
+																		renderJson(request, res.body());
+																	} else {
+																		renderError(request, res.body());
+																	}
 																}
-															}
-														});
-											} else {
-												badRequest(request, uploaded.getString("message"));
+															});
+												} else {
+													badRequest(request, uploaded.getString("message"));
+												}
 											}
-										}
 									});
+								}
+							});
 						}
 					});
-				} else {
-					unauthorized(request);
 				}
 			}
 		});
 	}
 
 	private void updateAfterUpload(final String id, final String name, final JsonObject uploaded,
-			final List<String> t, final Handler<Message<JsonObject>> handler) {
+			final List<String> t, final UserInfos user, final Handler<Message<JsonObject>> handler) {
 		documentDao.findById(id, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject old) {
 				if ("ok".equals(old.getString("status"))) {
-					JsonObject metadata = uploaded.getObject("metadata");
+					final JsonObject metadata = uploaded.getObject("metadata");
 					JsonObject set = new JsonObject();
 					final JsonObject doc = new JsonObject();
 					doc.putString("name", getOrElse(name, metadata.getString("filename")));
@@ -918,9 +950,7 @@ public class WorkspaceService extends BaseController {
 					doc.putString("file", uploaded.getString("_id"));
 					final JsonObject thumbs = old.getObject("result", new JsonObject())
 							.getObject("thumbnails");
-					if (thumbs != null) {
-						doc.putObject("thumbnails", new JsonObject());
-					}
+
 					String query = "{ \"_id\": \"" + id + "\"}";
 					set.putObject("$set", doc);
 					mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
@@ -930,24 +960,18 @@ public class WorkspaceService extends BaseController {
 									String status = res.body().getString("status");
 									JsonObject result = old.getObject("result");
 									if ("ok".equals(status) && result != null) {
-										updateStorage(doc, old);
-										storage.removeFile(
-												result.getString("file"),
-												new Handler<JsonObject>() {
-
-													@Override
-													public void handle(JsonObject event) {
-														if (handler != null) {
-															handler.handle(res);
-														}
-													}
-												});
+										String userId = user != null ? user.getUserId() : result.getString("owner");
+										String userName = user != null ? user.getUsername() : result.getString("ownerName");
+										doc.putString("owner", result.getString("owner"));
+										incrementStorage(doc);
+										createRevision(id, doc.getString("file"), doc.getString("name"), result.getString("owner"), userId, userName, metadata);
 										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
 												uploaded, id, thumbs, t);
-									} else {
-										if (handler != null) {
-											handler.handle(res);
-										}
+
+									}
+
+									if (handler != null) {
+										handler.handle(res);
 									}
 								}
 							});
@@ -1040,9 +1064,15 @@ public class WorkspaceService extends BaseController {
 				String status = res.getString("status");
 				final JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
-					storage.removeFile(result.getString("file"),
-							new Handler<JsonObject>() {
 
+					String file = result.getString("file");
+					Set<Entry<String, Object>> thumbnails = new HashSet<Entry<String, Object>>();
+					if(result.containsField("thumbnails")){
+						thumbnails = result.getObject("thumbnails").toMap().entrySet();
+					}
+
+					storage.removeFile(result.getString(file),
+							new Handler<JsonObject>() {
 								@Override
 								public void handle(JsonObject event) {
 									if (event != null && "ok".equals(event.getString("status"))) {
@@ -1051,6 +1081,7 @@ public class WorkspaceService extends BaseController {
 											public void handle(JsonObject result2) {
 												if ("ok".equals(result2.getString("status"))) {
 													decrementStorage(result);
+													deleteAllRevisions(id);
 													renderJson(request, result2, 204);
 												} else {
 													renderError(request, result2);
@@ -1062,6 +1093,17 @@ public class WorkspaceService extends BaseController {
 									}
 								}
 							});
+
+					//Delete thumbnails
+					for(final Entry<String, Object> thumbnail : thumbnails){
+						storage.removeFile(thumbnail.getValue().toString(), new Handler<JsonObject>(){
+							public void handle(JsonObject event) {
+								if (event == null || !"ok".equals(event.getString("status"))) {
+									log.error("Error while deleting thumbnail "+thumbnail);
+								}
+							}
+						});
+					}
 				} else {
 					request.response().setStatusCode(404).end();
 				}
@@ -1145,6 +1187,7 @@ public class WorkspaceService extends BaseController {
 										dest.putString("ownerName", user.getUsername());
 										dest.putArray("shared", new JsonArray());
 									}
+									dest.putString("_id", UUID.randomUUID().toString());
 									dest.putString("created", now);
 									dest.putString("modified", now);
 									if (folder != null && !folder.trim().isEmpty()) {
@@ -1232,6 +1275,17 @@ public class WorkspaceService extends BaseController {
 							public void handle(Message<JsonObject> inserted) {
 								if ("ok".equals(inserted.body().getString("status"))){
 									incrementStorage(insert);
+									for(Object obj : insert){
+										JsonObject json = (JsonObject) obj;
+										createRevision(
+												json.getString("_id"),
+												json.getString("file"),
+												json.getString("name"),
+												json.getString("owner"),
+												json.getString("owner"),
+												json.getString("ownerName"),
+												json.getObject("metadata"));
+									}
 									renderJson(request, inserted.body());
 								} else {
 									renderError(request, inserted.body());
@@ -2024,7 +2078,7 @@ public class WorkspaceService extends BaseController {
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add((String) t.get(i));
 		}
-		updateAfterUpload(id, name, uploaded, thumbs, new Handler<Message<JsonObject>>() {
+		updateAfterUpload(id, name, uploaded, thumbs, null, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				if (m != null) {
@@ -2086,6 +2140,154 @@ public class WorkspaceService extends BaseController {
 
 	public void setStorage(Storage storage) {
 		this.storage = storage;
+	}
+
+	@Get("/document/:id/revisions")
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
+	public void listRevisions(HttpServerRequest request) {
+		String id = request.params().get("id");
+		final QueryBuilder builder = QueryBuilder.start("documentId").is(id);
+		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultsHandler(arrayResponseHandler(request)));
+	}
+
+	@Get("/document/:id/revision/:revisionId")
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
+	public void getRevision(HttpServerRequest request) {
+		getRevisionFile(request, request.params().get("id"), request.params().get("revisionId"));
+	}
+
+	private void getRevisionFile(final HttpServerRequest request, final String documentId, final String revisionId) {
+		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
+
+		//Find revision
+		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isLeft()){
+					notFound(request);
+					return;
+				}
+				JsonObject result = event.right().getValue();
+				String file = result.getString("file");
+				if (file != null && !file.trim().isEmpty()) {
+					if (ETag.check(request, file)) {
+						notModified(request, file);
+					} else {
+						storage.sendFile(file, result.getString("name"), request, false, result.getObject("metadata"));
+					}
+					eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+							new JsonObject().putString("resource", documentId));
+				} else {
+					notFound(request);
+				}
+			}
+		}));
+	}
+
+	private void createRevision(final String id, final String file, final String name, String ownerId, String userId, String userName, JsonObject metadata){
+		JsonObject document = new JsonObject();
+		document
+			.putString("documentId", id)
+			.putString("file", file)
+			.putString("name", name)
+			.putString("owner", ownerId)
+			.putString("userId", userId)
+			.putString("userName", userName)
+			.putObject("date", MongoDb.now())
+			.putObject("metadata", metadata);
+
+		mongo.save(DOCUMENT_REVISION_COLLECTION, document, MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isLeft()) {
+					log.error("[Rack] Error creating revision " + id + "/" + file + " - " + event.left().getValue());
+				}
+			}
+		}));
+	}
+
+	@Delete("/document/:id/revision/:revisionId")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void deleteRevision(final HttpServerRequest request){
+		final String id = request.params().get("id");
+		final String revisionId = request.params().get("revisionId");
+		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(id);
+
+		//Find revision
+		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					final JsonObject result = event.right().getValue();
+					final String file = result.getString("file");
+					//Delete file in storage
+					storage.removeFile(file, new Handler<JsonObject>(){
+						public void handle(JsonObject event) {
+							if(event != null && "ok".equals(event.getString("status"))){
+								//Delete revision
+								mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isLeft()) {
+											log.error("[Rack] Error deleting revision " + revisionId + " - " + event.left().getValue());
+											badRequest(request, event.left().getValue());
+										} else {
+											decrementStorage(result);
+											renderJson(request, event.right().getValue());
+										}
+									}
+								}));
+							} else {
+								log.error("[Rack] Error deleting revision storage file " + revisionId + " ["+file+"] - " + event.getString("message"));
+								badRequest(request, event.getString("message"));
+							}
+						}
+					});
+				} else {
+					log.error("[Rack] Error finding revision storage file " + revisionId + " - " + event.left().getValue());
+					notFound(request, event.left().getValue());
+				}
+			}
+		}));
+	}
+
+	private void deleteAllRevisions(final String documentId){
+		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		JsonObject keys = new JsonObject();
+
+		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), new JsonObject(), keys, MongoDbResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isRight()) {
+					final JsonArray results = event.right().getValue();
+					final JsonArray ids = new JsonArray();
+					for(Object obj : results){
+						JsonObject json = (JsonObject) obj;
+						ids.addString(json.getString("file"));
+					}
+					storage.removeFiles(ids, new Handler<JsonObject>() {
+						public void handle(JsonObject event) {
+							if(event != null && "ok".equals(event.getString("status"))){
+								//Delete revisions
+								mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isLeft()) {
+											log.error("[Rack] Error deleting revisions for document " + documentId + " - " + event.left().getValue());
+										} else {
+											for(Object obj : results){
+												JsonObject result = (JsonObject) obj;
+												decrementStorage(result);
+											}
+										}
+									}
+								}));
+							} else {
+								log.error("[Rack] Error deleting revision storage files for document " + documentId + " "+ids+" - " + event.getString("message"));
+							}
+						}
+					});
+				} else {
+					log.error("[Rack] Error finding revision for document " + documentId + " - " + event.left().getValue());
+				}
+			}
+		}));
 	}
 
 }
