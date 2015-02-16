@@ -1418,7 +1418,6 @@ var ckeEditorFixedPositionning = function(){
 	var toolbox;
 
 	for(var instance in CKEDITOR.instances){
-		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
 		var el = $('body').find(CKEDITOR.instances[instance].element.$);
 		toolbox = $('#cke_' + CKEDITOR.instances[instance].name);
 		if(!el.length){
@@ -1426,7 +1425,10 @@ var ckeEditorFixedPositionning = function(){
 			CKEDITOR.instances[instance].destroy();
 			continue;
 		}
-
+		if(!el.height()){
+			continue;
+		}
+		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
 		editableElement = $(CKEDITOR.instances[instance].element.$);
 		if(editableElement.hasClass('contextual-editor')){
 			continue;
@@ -1764,8 +1766,8 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				var replace = function(){
 					ckeEditorFixedPositionning();
-					setTimeout(replace, 100);
-				}
+					setTimeout(replace, 500);
+				};
 				replace();
 			}
 		}
