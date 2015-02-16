@@ -97,9 +97,7 @@ var loader = (function(){
 		var src = '';
 		if(completePath){
 			src = script;
-			element.async = false;
 			if(async === true){
-				element.async = true;
 				element.onload = callback;
 			}
 			element.src = src;
@@ -163,7 +161,9 @@ var loader = (function(){
 		loadScript(script.path, script.completePath);
 	};
 
-	configurations.portal.forEach(load);
+	setTimeout(function(){
+		configurations.portal.forEach(load);
+	}, 10);
 
 	return {
 		load: function(library){

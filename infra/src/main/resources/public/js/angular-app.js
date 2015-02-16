@@ -105,12 +105,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 
 		return function(setRoutes){
 			routes = setRoutes;
-			// refreshing in case routechangeevent already fired
-			// an amusing quirk of FF is that routing is refreshed before being analyzed, thus we push it
-			// at the end of the execution thread
-			setTimeout(function(){
-				$route.reload();
-			}, 1);
 		}
 	})
 	.factory('template', function(){
