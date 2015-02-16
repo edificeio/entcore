@@ -161,9 +161,11 @@ var loader = (function(){
 		loadScript(script.path, script.completePath);
 	};
 
-	setTimeout(function(){
-		configurations.portal.forEach(load);
-	}, 10);
+	if(document.addEventListener){
+		document.addEventListener('DOMContentLoaded', function(){
+			configurations.portal.forEach(load);
+		});
+	}
 
 	return {
 		load: function(library){
