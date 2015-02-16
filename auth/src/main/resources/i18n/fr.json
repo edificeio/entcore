@@ -1,11 +1,11 @@
 {
-    "activation.error": "Erreur lors de l'activation",
+    "activation.error": "Erreur lors de l'activation, veuillez vérifier votre identifiant et votre code d'activation.",
     "auth.activate": "Activer",
     "auth.activateAccount": "Activer mon compte",
     "auth.activation.code": "Code d'activation",
     "auth.activation.confirm.password": "Confirmation du nouveau mot de passe",
     "auth.activation.header": "Activer mon compte",
-    "auth.activation.invalid.argument": "Le formulaire contient des erreurs",
+    "auth.activation.invalid.argument": "Le formulaire contient des erreurs, veuillez vérifier que les deux mots de passe concordent et respectent les contraintes de sécurité.",
     "auth.activation.password": "Nouveau mot de passe",
     "auth.activation.title": "Activation de votre compte",
     "auth.cancel": "Retour",
