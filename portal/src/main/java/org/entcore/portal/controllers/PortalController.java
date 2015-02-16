@@ -262,7 +262,7 @@ public class PortalController extends BaseController {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject jo) {
-				CookieHelper.set("customSkin", jo.getString("skin"), request.response());
+				CookieHelper.set("customSkin", jo.getString("skin"), request);
 				renderJson(request, new JsonObject(), 200);
 			}
 		});

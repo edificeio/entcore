@@ -285,7 +285,7 @@ public class AuthController extends BaseController {
 						if (sessionId != null && !sessionId.trim().isEmpty()) {
 							CookieHelper.getInstance().setSigned("oneSessionId", sessionId,
 									container.config().getLong("cookie_timeout", 1800L),
-									request.response());
+									request);
 							redirect(request, callBack, "");
 						} else {
 							loginResult(request, "auth.error.authenticationFailed", callBack);
@@ -318,7 +318,7 @@ public class AuthController extends BaseController {
 				@Override
 				public void handle(Boolean deleted) {
 					if (Boolean.TRUE.equals(deleted)) {
-						CookieHelper.set("oneSessionId", "", 0l, request.response());
+						CookieHelper.set("oneSessionId", "", 0l, request);
 					}
 					redirect(request, callback.toString(), "");
 				}
