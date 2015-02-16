@@ -170,7 +170,7 @@ public class PortalController extends BaseController {
 		if (staticRessources.containsKey(request.uri())) {
 			StaticResource.serveRessource(request,
 					path,
-					staticRessources.get(request.uri()));
+					staticRessources.get(request.uri()), dev);
 		} else {
 			vertx.fileSystem().props(path,
 					new Handler<AsyncResult<FileProps>>(){
@@ -181,7 +181,7 @@ public class PortalController extends BaseController {
 						staticRessources.put(request.uri(), lastModified);
 						StaticResource.serveRessource(request,
 								path,
-								lastModified);
+								lastModified, dev);
 					} else {
 						request.response().sendFile(path);
 					}
