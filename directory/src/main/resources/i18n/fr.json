@@ -137,6 +137,7 @@
     "directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
     "directory.inactive": "Personnes non activées.",
     "directory.isolatedUsers": "Personnes non rattachées",
+	"directory.isolatedUsersInStructure": "Personnes sans classe",
     "directory.kilobyte": "KiloOctet(s)",
     "directory.lastName": "Nom",
     "directory.launchImport": "Lancer l'import des fichiers.",
