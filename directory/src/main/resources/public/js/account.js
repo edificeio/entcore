@@ -127,7 +127,7 @@ function MyAccount($scope, lang, date, notify, route){
 			})
 			.done(function(response){
 				if(response.error){
-					notify.error('Le formulaire contient des erreurs');
+					notify.error('userbook.renewpassword.error');
 				}
 				else{
 					$scope.resetErrors = false;
