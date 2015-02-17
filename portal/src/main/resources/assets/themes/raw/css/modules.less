@@ -18,94 +18,90 @@ body {
 	overflow-x: hidden;
 }
 
-i.workspace-large{
-	.icon(workspace-large, 100px);
-	.run-transition(background);
-}
+.icons-view.apps{
+	margin-top: 12px;
+	.element{
+		&:hover{
+			background: transparent !important;
+			a{
+				color: @yellow;
+			}
+		}
+		padding: 0;
+		height: 120px;
+		width: 120px;
+		background: @yellow;
+		transition: background .50s ease;
+		&:nth-child(6n){
+			background: @green;
+			&:hover a{
+				color: @green;
+			}
+		}
+		&:nth-child(6n + 1){
+			background: @cyan;
+			&:hover a{
+				color: @cyan;
+			}
+		}
+		&:nth-child(6n + 2){
+			background: @purple;
+			&:hover a{
+				color: @purple;
+			}
+		}
+		&:nth-child(6n + 3){
+			background: @pink;
+			&:hover a{
+				color: @pink;
+			}
+		}
+		&:nth-child(6n + 4){
+			background: @red;
+			&:hover a{
+				color: @red;
+			}
+		}
+		a{
+			color: #fff;
+			font-weight: bold;
+			i{
+				display: none;
+			}
+		}
+		.container{
+			width: 120px;
+			height: 120px;
+			padding: 0;
+		}
+		legend{
+			padding: 0;
+			.border-box;
+			margin-left: 1px;
+			top: 0;
+			height: 120px;
+			width: 120px;
+			text-transform: uppercase;
+			background: none;
+			display: table;
+			a{
+				white-space: normal;
+				overflow: hidden;
+				word-wrap: break-word;
+				max-width: 120px;
+				width: 120px;
+				height: 120px;
+				display: table-cell;
+				vertical-align: middle;
+				text-align: center;
+				padding: 5px;
+				font-size: 26px;
+                line-height: 22px;
+                box-sizing: border-box;
+			}
 
-i.blog-large{
-	.icon(blog-large, 100px);
-	.run-transition(background);
-}
-
-i.wiki-large{
-	.icon(wiki, 100px);
-	.run-transition(background);
-}
-
-i.forum-large{
-	.icon(forum-neon, 100px);
-	.run-transition(background);
-}
-
-i.pages-large{
-	.icon(page, 100px);
-	.run-transition(background);
-}
-
-i.userbook-large{
-	.icon(userbook-large-neon, 100px);
-	.run-transition(background);
-}
-
-i.rbs-large{
-	.icon(rbs-large, 100px);
-	.run-transition(background);
-}
-
-i.conversation-large, i.messagerie{
-	.icon(conversation-large-neon, 100px);
-	.run-transition(background);
-}
-
-i.actualites-large{
-	.icon(actualites-large, 100px);
-	.run-transition(background);
-}
-
-i.archive-large{
-	.icon(archive-large, 100px);
-	.run-transition(background);
-}
-
-i.residence-artiste-large{
-	.icon(residence-artiste-large, 100px);
-	.run-transition(background);
-}
-
-i.emploi-temps{
-	.icon(emploi-temps, 100px);
-	.run-transition(background);
-}
-
-i.cahier-textes{
-	.icon(cahier-textes, 100px);
-	.run-transition(background);
-}
-
-i.scolarite{
-	.icon(scolarite, 100px);
-	.run-transition(background);
-}
-
-i.agenda{
-	.icon(agenda, 100px);
-	.run-transition(background);
-}
-
-i.td-base{
-	.icon(td-base, 100px);
-	.run-transition(background);
-}
-
-i.absences{
-	.icon(absences, 100px);
-	.run-transition(background);
-}
-
-i.notes{
-	.icon(notes, 100px);
-	.run-transition(background);
+		}
+	}
 }
 
 .tabs{
@@ -2032,16 +2028,12 @@ select{
 }
 
 .drop-down-filters, .filters {
-	label{
-		padding: 0;
-	}
-	i.rbs{
-		.icon(rbs-large, 99px);
-		cursor: pointer;
-	}
 	p:first-child, .filters-icons {
 		font-size: 16px;
-		background: #fff;
+		padding: 10px;
+		border-left: 5px solid @accent;
+		color: #fff;
+		.run-transition(background);
 		i.mine{
 			background-size: 100% auto;
 		}
@@ -2056,13 +2048,55 @@ select{
 		i.selected{
 			opacity: 1;
 		}
+		li{
+			label{
+				position: relative;
+				overflow: hidden;
+				span{
+					position: absolute;
+					color: #fff;
+					visibility: hidden;
+					left: 6px;
+                    top: 4px;
+                    font-size: 22px;
+                    span:hover{
+                    	cursor: pointer;
+                    }
+				}
+				span:first-letter{
+					visibility: visible;
+				}
+
+			}
+			i.type{
+				background: @yellow;
+			}
+
+			&:nth-child(6n){
+				i.type{
+					background: @green;
+				}
+			}
+			&:nth-child(6n + 1){
+				i.type{ background: @cyan; }
+			}
+			i.type:nth-child(6n + 2){
+				i.type{ background: @purple; }
+			}
+			&:nth-child(6n + 3){
+				i.type{ background: @pink; }
+			}
+			&:nth-child(6n + 4){
+				i.type{ background: @red; }
+			}
+		}
 
 	}
 	p:first-child:hover {
-		background: @dark;
+		background: @primary;
 	}
 	.wrapper {
-		background: @dark;
+		background: @primary;
 		box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.6);
 		width: 100%;
 		ul {
@@ -2082,18 +2116,17 @@ select{
 		opacity: 0.5;
 	}
 	.filters-icons{
-		margin-top: 0;
+		padding: 0 0 0 2px;
 		ul{
 			height: 40px;
 			padding: 0;
 			li{
 				padding: 0;
 				label{
-					padding: 0;
+					padding: 0 1px;
 					width: auto;
 					i{
 						background-size: 100% auto;
-						border-radius: 0;
 					}
 				}
 			}

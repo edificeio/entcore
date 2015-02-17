@@ -3,6 +3,7 @@
 @pink: #FD4A98;
 @cyan: #00A3D8;
 @orange: #FFB400;
+@red: #dd2828;
 
 @magenta: #FD4A98;
 @light: @magenta;
@@ -16,66 +17,26 @@ html, body{
 	background-color: #eee
 }
 
-i.workspace-large{
-	.icon(workspace-large-neon, 100px);
-}
-
-i.blog-large{
-	.icon(blog-large-neon, 100px);
-}
-
-i.wiki-large{
-	.icon(wiki-neon, 100px);
-}
-
-i.forum-large{
-	.icon(forum-neon, 100px);
-}
-
-i.pages-large{
-	.icon(page-neon, 100px);
-}
-
-i.userbook-large{
-	.icon(userbook-large-neon, 100px);
-}
-
-i.rbs-large{
-	.icon(rbs-large-neon, 100px);
-}
-
-i.conversation-large, i.messagerie{
-	.icon(conversation-large-neon, 100px);
-}
-
-i.actualites-large{
-	.icon(actualites-large-neon, 100px);
-}
-
-i.residence-artiste-large{
-	.icon(residence-artiste-large-neon, 100px);
-}
-
 nav.horizontal{
 	a:hover{
-		color: @magenta;
+		color: @light;
 	}
 }
 
 .calendar .content .day.today {
-	background: @magenta;
+	background: @light;
 }
 
 .calendar .content h2 {
-	color: @magenta;
+	color: @light;
 }
 
 .last-mails-widget ul li {
-	border-left: 5px solid @magenta;
+	border-left: 5px solid @light;
 }
 
 button, input[type=button], input[type=submit], a.button{
-	background: @magenta;
+	background: @light;
 }
 
 button:hover, input[type=button]:hover, input[type=submit]:hover, a.button:hover{
@@ -94,13 +55,13 @@ nav.vertical{
 
 			}
 			a:hover, a.selected{
-				border-color: @magenta;
+				border-color: @light;
 			}
 			a.selected{
 				color: #FFF;
 			}
 			a:hover, a.selected:hover{
-				color: @magenta;
+				color: @light;
 			}
 		}
 	}
@@ -160,7 +121,7 @@ nav.vertical{
 		}
 	}
 	a.classic-link{
-		background: @magenta;
+		background: @light;
 	}
 	a.classic-link:hover{
 		background: #444;
@@ -168,60 +129,60 @@ nav.vertical{
 }
 
 nav.vertical.stamps article.selected{
-	background: @magenta;
+	background: @light;
 }
 
 table{
 	thead{
 		tr{
-			border-bottom-color: @magenta;
-			border-top-color: @magenta;
+			border-bottom-color: @light;
+			border-top-color: @light;
 			th{
 				a.selected{
-					color: @magenta
+					color: @light
 				}
 			}
 		}
 	}
-	border-bottom: 2px solid @magenta;
+	border-bottom: 2px solid @light;
 }
 
 .icons-view .element .img.container{
-	border-color: @magenta;
+	border-color: @light;
 }
 
 .label-badge{
-	background: @magenta;
+	background: @light;
 }
 
 .label-badge:hover{
-	color: @magenta;
+	color: @light;
 }
 
 [data-drop-down] ul{
-	background: @magenta;
+	background: @light;
 }
 
 .loading-panel{
-	border-color: @magenta;
+	border-color: @light;
 	h1{
-		color: @magenta;
+		color: @light;
 	}
 }
 
 .tooltip{
 	.content{
-		background: @magenta;
+		background: @light;
 	}
 	.arrow{
-		color: @magenta;
+		color: @light;
 	}
 
 }
 
 .drawing-zone{
 	article.media{
-		border-color: @magenta;
+		border-color: @light;
 	}
 }
 
@@ -238,7 +199,7 @@ table{
 		border: none;
 		.border-radius(0);
 		background: #444;
-		border-left: 10px solid @magenta;
+		border-left: 10px solid @light;
 		color: #aaa;
 	}
 }
@@ -246,34 +207,34 @@ table{
 .side-tabs{
 	ul{
 		li{
-			border-color: @magenta;
+			border-color: @light;
 			color: #ccc;
 			background: #444;
 		}
 		li:hover{
-			color: @magenta;
+			color: @light;
 		}
 		li.selected{
-			border-color: @magenta;
+			border-color: @light;
 		}
 		li.selected:first-child{
-			border-top: 1px solid @magenta;
+			border-top: 1px solid @light;
 			.border-radius(0);
 		}
 		li.selected:last-child{
-			border-bottom: 1px solid @magenta;
+			border-bottom: 1px solid @light;
 			.border-radius(0);
 		}
 	}
 }
 
 .side-tabs-content{
-	border-color: @magenta;
+	border-color: @light;
 }
 
 .toggle-buttons{
 	button:hover{
-		color: @magenta;
+		color: @light;
 	}
 }
 
@@ -282,17 +243,17 @@ table{
 		color: #777;
 		border: 1px solid #555;
 		background: #393939;
-		border-bottom: 1px solid @magenta;
+		border-bottom: 1px solid @light;
 	}
 	header.selected {
 		background: #393939;
-		border-color: @magenta;
-		color: @magenta;
+		border-color: @light;
+		color: @light;
 		border-bottom: 1px solid #393939;
 	}
 
 	section {
-		border-color: @magenta;
+		border-color: @light;
 		background: #393939;
 	}
 }
@@ -301,14 +262,14 @@ table{
 ul.angle-list{
 
 	> li{
-		border-bottom: 1px solid @magenta;
-		border-left: 3px solid @magenta;
+		border-bottom: 1px solid @light;
+		border-left: 3px solid @light;
 		color: black;
 	}
 }
 
 div.leaf-menu-container{
-	border-bottom: 3px solid @magenta;
+	border-bottom: 3px solid @light;
 }
 div.leaf-menu:hover {
 	background-color: pink;
@@ -320,34 +281,34 @@ div.leaf-menu.selected{
 div.angle-container{
 	background: #444;
 	color: white;
-	border-left: 5px solid @magenta;
-	border-bottom: 5px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 5px solid @light;
 }
 
 input[type=text].angle-container-header{
 	color: #333;
-	border-left: 5px solid @magenta;
-	border-bottom: 2px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 2px solid @light;
 }
 
 div.angle-container-header{
 	color: #333;
-	border-left: 5px solid @magenta;
-	border-bottom: 2px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 2px solid @light;
 }
 
 button.instantButtons{
-	background-color: crimson;
+	background-color: @light;
 }
 
 nav.search-container{
-	border-right: 2px ridge @magenta;
-	border-bottom: 2px ridge @magenta;
+	border-right: 2px ridge @light;
+	border-bottom: 2px ridge @light;
 }
 
 nav.search-container-left{
-	border-right: 2px ridge @magenta;
-	border-bottom: 2px ridge @magenta;
+	border-right: 2px ridge @light;
+	border-bottom: 2px ridge @light;
 }
 
 nav.search-container,
@@ -358,7 +319,7 @@ nav.search-container-left{
 }
 
 div.search-container-view{
-	border-bottom: 2px ridge @magenta;
+	border-bottom: 2px ridge @light;
 }
 
 hr.separator{
@@ -368,7 +329,7 @@ hr.separator{
 .accordions{
 	.accordion.opened{
 		h2{
-			color: @magenta
+			color: @light
 		}
 	}
 }
@@ -377,8 +338,8 @@ ul.angle-list{
 	list-style-type: none;
 
 	> li{
-		border-bottom: 1px solid @magenta;
-		border-left: 3px solid @magenta;
+		border-bottom: 1px solid @light;
+		border-left: 3px solid @light;
 		color: black;
 	}
 }
@@ -386,37 +347,37 @@ ul.angle-list{
 div.angle-container{
 	background: #444;
 	color: white;
-	border-left: 5px solid @magenta;
-	border-bottom: 5px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 5px solid @light;
 }
 
 button.instantButtons{
-	background-color: crimson;
+	background-color: @light;
 }
 
 input[type=text].angle-container-header{
 	color: #333;
-	border-left: 5px solid @magenta;
-	border-bottom: 2px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 2px solid @light;
 }
 
 nav.search-container-left{
-	border-right: 2px ridge @magenta;
-	border-bottom: 2px ridge @magenta;
+	border-right: 2px ridge @light;
+	border-bottom: 2px ridge @light;
 }
 
 div.angle-container-header{
 	color: #333;
-	border-left: 5px solid @magenta;
-	border-bottom: 2px solid @magenta;
+	border-left: 5px solid @light;
+	border-bottom: 2px solid @light;
 }
 
 .progress-bar{
 	.filled{
-		background: @magenta;
+		background: @light;
 	}
 	.filled.small{
-		color: @magenta;
+		color: @light;
 	}
 }
 
@@ -430,11 +391,11 @@ div.angle-container-header{
 }
 
 .icons-view .element.selected .container {
-	background: @magenta;
+	background: @light;
 }
 
 nav.vertical ul li a.selected {
-	border-right: 8px solid @magenta;
+	border-right: 8px solid @light;
 	background: #444;
 }
 
@@ -462,7 +423,7 @@ nav.vertical ul li a:hover {
 }
 
 .pink{
-	background: @magenta;
+	background: @light;
 }
 
 .purple{
@@ -479,33 +440,6 @@ nav.vertical ul li a:hover {
 
 nav.vertical.stamps article{
 	background: #444;
-}
-
-.drop-down-filters, .filters{
-	i.blog{
-		.icon(blog-large-neon, 99px);
-	}
-	i.userbook{
-		.icon(userbook-large-neon, 99px);
-	}
-	i.workspace{
-		.icon(workspace-large-neon, 99px);
-	}
-	i.conversation, i.messagerie{
-		.icon(conversation-large-neon, 99px);
-	}
-	i.rbs{
-		.icon(rbs-large-neon, 99px);
-	}
-	i.wiki{
-		.icon(wiki-neon, 99px);
-	}
-	i.forum{
-		.icon(forum-neon, 99px);
-	}
-	i.news{
-		.icon(actualites-large-neon, 99px);
-	}
 }
 
 .drop-down-filters p:first-child, .filters p:first-child, .drop-down-filters .filters-icons, .filters .filters-icons{
@@ -536,10 +470,10 @@ nav.vertical.stamps article{
 
 table thead tr{
 	background: #444;
-	border-top: 5px solid @magenta;
-	border-bottom: 1px solid @magenta;
-	border-left: 1px solid @magenta;
-	border-right: 1px solid @magenta;
+	border-top: 5px solid @light;
+	border-bottom: 1px solid @light;
+	border-left: 1px solid @light;
+	border-right: 1px solid @light;
 }
 
 .datepicker table thead tr {
@@ -578,24 +512,6 @@ table tr.checked{
 
 nav.vertical h2{
 	color: #444;
-}
-
-.drop-down-filters, .filters{
-	i.blog{
-		.icon(blog-large-neon, 100px);
-	}
-	i.userbook{
-		.icon(userbook-large-neon, 100px);
-	}
-	i.workspace{
-		.icon(workspace-large-neon, 100px);
-	}
-	i.conversation, i.messagerie{
-		.icon(conversation-large-neon, 100px);
-	}
-	i.rbs{
-		.icon(rbs-large-neon, 100px);
-	}
 }
 
 .drop-down-filters p:first-child, .filters{
@@ -716,7 +632,7 @@ table thead tr:hover{
 	}
 	.element:hover{
 		legend{
-			background: @magenta;
+			background: @light;
 			a{
 				color: #fff;
 			}
@@ -726,7 +642,7 @@ table thead tr:hover{
 
 .notes-widget{
 	textarea{
-		background: @magenta;
+		background: @light;
 		color: #fff;
 	}
 }
@@ -734,25 +650,25 @@ table thead tr:hover{
 .calendar.widget{
 	.content{
 		.day.today{
-			background: @magenta;
+			background: @light;
 		}
 		h2{
-			color: @magenta;
+			color: @light;
 		}
 	}
 }
 
 .calendar.widget {
-	border: 1px solid @magenta;
+	border: 1px solid @light;
 
 	.content {
-		border: 1px solid @magenta;
+		border: 1px solid @light;
 		border-top: none;
 	}
 }
 
 .notification {
-	border-left: 10px solid @magenta;
+	border-left: 10px solid @light;
 	background: #f6f6f6;
 }
 
@@ -763,12 +679,12 @@ table thead tr:hover{
 		}
 	}
 	.illustrated-text{
-		border-right: 8px solid @magenta;
+		border-right: 8px solid @light;
 	}
 }
 
 nav.illustrated-links ul li{
-	border-right: 8px solid @magenta;
+	border-right: 8px solid @light;
 	.content{
 		background: #ddd;
 	}
@@ -783,17 +699,17 @@ nav.illustrated-links ul li{
 }
 
 .badge{
-	background: @magenta;
+	background: @light;
 }
 
 .share{
 	.autocomplete > em{
 		border: none;
-		border-left: 8px solid @magenta;
+		border-left: 8px solid @light;
 		background: #393939;
 	}
 	.autocomplete > em:hover{
-		background: @magenta;
+		background: @light;
 		color: #fff;
 	}
 }
@@ -806,7 +722,7 @@ select{
 }
 
 .editor.drawing-grid .grid-add-row{
-	background: @magenta;
+	background: @light;
 }
 
 .editor.drawing-grid .grid-add-row:hover{
@@ -847,7 +763,7 @@ hr.separator{
 			.content{
 				color: #999;
 				h3{
-					color: @magenta;
+					color: @light;
 				}
 				input[type=text], textarea, select{
 					background: #2C2C2C;
@@ -869,7 +785,7 @@ hr.separator{
 	.accordion.opened{
 		h2{
 			border: 1px solid #555;
-			color: @magenta;
+			color: @light;
 			border-bottom: none;
 			background: #333;
 
@@ -883,7 +799,7 @@ hr.separator{
 
 .drop-down-button{
 	label{
-		border: 1px solid @magenta;
+		border: 1px solid @light;
 		color: #000;
 		.run-transition(background);
 		font-family: Lato;
@@ -892,9 +808,9 @@ hr.separator{
 
 	.options{
 		ul{
-			border: 1px solid @magenta;
+			border: 1px solid @light;
 			li:hover{
-				background: @magenta;
+				background: @light;
 			}
 		}
 	}
@@ -902,19 +818,19 @@ hr.separator{
 
 .drop-down-button.hidden{
 	label{
-		background: @magenta;
+		background: @light;
 	}
 	label:hover{
-		border: 1px solid @magenta;
+		border: 1px solid @light;
 	}
 }
 
 h1.letter-picker{
-	background: @magenta;
+	background: @light;
 }
 h1.letter-picker:hover{
 	background: #fff;
-	color: @magenta;
+	color: @light;
 }
 
 .lightbox-view .icons-view .element .img.container{
@@ -926,11 +842,11 @@ h1.letter-picker:hover{
 }
 
 .letter-picker .lightbox-view h2{
-	background: @magenta;
+	background: @light;
 }
 
 .letter-picker .lightbox-view h2:hover{
-	color: @magenta;
+	color: @light;
 }
 
 ul.thought-out-actions li{
@@ -938,15 +854,15 @@ ul.thought-out-actions li{
 }
 
 ul.thought-out-actions li:hover{
-	background: @magenta;
+	background: @light;
 }
 
 .page-markers .marker:nth-child(2){
-	border-color: transparent transparent @magenta transparent
+	border-color: transparent transparent @light transparent
 }
 
 .square-menu button{
-	background: @magenta;
+	background: @light;
 }
 
 .square-menu button:hover{
@@ -954,7 +870,7 @@ ul.thought-out-actions li:hover{
 }
 
 .menu-items li{
-	color: @magenta
+	color: @light
 }
 
 .patchwork{
@@ -965,7 +881,7 @@ ul.thought-out-actions li:hover{
 			color: #aaa;
 		}
 		button{
-			background: @magenta;
+			background: @light;
 		}
 	}
 	.row.selected, .row:nth-child(2n).selected{
@@ -980,39 +896,9 @@ ul.thought-out-actions li:hover{
 			color: #bbb;
 		}
 		button{
-			background: @magenta;
+			background: @light;
 		}
 	}
-}
-
-i.emploi-temps{
-	.icon(emploi-temps-neon, 100px);
-	.run-transition(background);
-}
-
-i.cahier-textes{
-	.icon(cahier-textes-neon, 100px);
-	.run-transition(background);
-}
-
-i.agenda{
-	.icon(agenda-neon, 100px);
-	.run-transition(background);
-}
-
-i.td-base{
-	.icon(td-base-neon, 100px);
-	.run-transition(background);
-}
-
-i.notes{
-	.icon(notes-neon, 100px);
-	.run-transition(background);
-}
-
-i.scolarite{
-	.icon(scolarite-neon, 100px);
-	.run-transition(background);
 }
 
 a.button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled],
@@ -1030,6 +916,6 @@ a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:h
 
 .folder-large, .folder-list-item{
 	&.droptarget{
-		background-color: @magenta;
+		background-color: @light;
 	}
 }
