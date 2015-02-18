@@ -138,7 +138,12 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
-				"RETURN DISTINCT COLLECT(p.name) as type, COLLECT(distinct [f.externalId, rf.scope]) as functions, COLLECT({id: child.id, displayName: child.displayName}) as children, u";
+				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
+				"RETURN DISTINCT COLLECT(p.name) as type, " +
+				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
+				"COLLECT({id: child.id, displayName: child.displayName}) as children, " +
+				"COLLECT({id: parent.id, displayName: parent.displayName}) as parents, " +
+				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}
 

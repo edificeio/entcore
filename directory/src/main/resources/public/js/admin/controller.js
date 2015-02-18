@@ -11,13 +11,10 @@ routes.define(function($routeProvider){
 		})
 })
 
-function AdminDirectoryController($scope, $rootScope, $http, template, model, date, route){
+function AdminDirectoryController($scope, $rootScope, $http, $route, template, model, date, route){
 
     route({
         viewStructureUser: function(params){
-			if(template.contains('body', 'admin-user-tab'))
-				return
-
             var userId = params.userId
             var structureId = params.structureId
 
@@ -32,9 +29,6 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			})
         },
         viewClass: function(params){
-			if(template.contains('body', 'admin-class-tab'))
-				return
-
             var classId = params.classId
             var structureId = params.structureId
 
@@ -52,9 +46,6 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 			})
         },
 		viewClassUsers: function(params){
-			if(template.contains('body', 'admin-user-tab'))
-				return
-
 			var classId = params.classId
 			var structureId = params.structureId
 
@@ -82,6 +73,7 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 		}
 	})
 
+	$route.reload()
 	$scope.template = template
     $rootScope.export_id = ""
     $scope.export_mode = "all"

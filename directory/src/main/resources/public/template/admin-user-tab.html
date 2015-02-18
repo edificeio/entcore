@@ -175,6 +175,7 @@
                 <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
                 <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="structureUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
             </div>
+            <!-- Classes list -->
             <div class="twelve cell" ng-if="structureUser.totalClasses && structureUser.totalClasses.length > 0">
                 <hr class="separator">
                 <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.classes")]]</h3>
@@ -204,6 +205,18 @@
                     <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
                     <ul style="list-style-type: none; font-family: Lato;">
                         <li ng-repeat="child in structureUser.children" ng-click="removeChild(child, structureUser)">[[child.displayName]]</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Parents -->
+            <div ng-if="structureUser.type === 'Student'" class="twelve cell">
+                <hr class="separator">
+                <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.relatives")]]</h3>
+                <div class="row">
+                    <ul class="angle-list small" style="padding-left: 5%">
+                        <li ng-repeat="relative in structureUser.parents | orderBy: 'displayName'">
+                            <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+relative.id]]" target="_blank">[[relative.displayName]]</a>
+                        </li>
                     </ul>
                 </div>
             </div>
