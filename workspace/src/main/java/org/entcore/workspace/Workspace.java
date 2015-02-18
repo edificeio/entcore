@@ -43,20 +43,7 @@ public class Workspace extends BaseServer {
 		Storage storage = new StorageFactory(vertx, config).getStorage();
 		WorkspaceService service = new WorkspaceService();
 
-		String neo4jPluginUri = container.config().getString("neo4jPluginUri");
-		HttpClient neo4jPlugin = null;
-		if (neo4jPluginUri != null && !neo4jPluginUri.trim().isEmpty()) {
-			try {
-				URI uri = new URI(neo4jPluginUri);
-				neo4jPlugin =  vertx.createHttpClient()
-						.setHost(uri.getHost())
-						.setPort(uri.getPort())
-						.setMaxPoolSize(16)
-						.setKeepAlive(false);
-			} catch (URISyntaxException e) {
-				log.error(e.getMessage(), e);
-			}
-		}
+		final boolean neo4jPlugin = container.config().getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
 		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,

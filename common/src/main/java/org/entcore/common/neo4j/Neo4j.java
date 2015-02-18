@@ -128,4 +128,15 @@ public class Neo4j {
 		eb.send(address, jo, handler);
 	}
 
+	public void unmanagedExtension(String method, String uri, String body, Handler<Message<JsonObject>> handler) {
+		JsonObject jo = new JsonObject();
+		jo.putString("action", "unmanagedExtension");
+		jo.putString("method", method);
+		jo.putString("uri", uri);
+		if (body != null) {
+			jo.putString("body", body);
+		}
+		eb.send(address, jo, handler);
+	}
+
 }

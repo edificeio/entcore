@@ -24,11 +24,7 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.workspace.service.QuotaService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientRequest;
-import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -44,9 +40,9 @@ public class DefaultQuotaService implements QuotaService {
 
 	private final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultQuotaService.class);
-	private final HttpClient neo4jPlugin;
+	private final boolean neo4jPlugin;
 
-	public DefaultQuotaService(HttpClient neo4jPlugin) {
+	public DefaultQuotaService(boolean neo4jPlugin) {
 		this.neo4jPlugin = neo4jPlugin;
 	}
 
@@ -56,7 +52,7 @@ public class DefaultQuotaService implements QuotaService {
 		JsonObject params = new JsonObject()
 				.putNumber("size", size)
 				.putNumber("threshold", threshold);
-		if (neo4jPlugin == null) {
+		if (!neo4jPlugin) {
 			String query =
 					"MATCH (u:UserBook { userid : {userId}}) " +
 					"SET u.storage = u.storage + {size} " +
@@ -66,35 +62,18 @@ public class DefaultQuotaService implements QuotaService {
 			params.putString("userId", userId);
 			neo4j.execute(query, params, validUniqueResultHandler(handler));
 		} else {
-			HttpClientRequest req = neo4jPlugin.put("/entcore/quota/storage/" + userId, new Handler<HttpClientResponse>() {
+			neo4j.unmanagedExtension("put", "/entcore/quota/storage/" + userId, params.encode(),
+					new Handler<Message<JsonObject>>() {
 				@Override
-				public void handle(final HttpClientResponse response) {
-					if (response.statusCode() == 200) {
-						response.bodyHandler(new Handler<Buffer>() {
-							@Override
-							public void handle(Buffer buffer) {
-								try {
-									handler.handle(new Either.Right<String, JsonObject>(
-											new JsonObject(buffer.toString())));
-								} catch (Exception e) {
-									log.error(e.getMessage(), e);
-									handler.handle(new Either.Left<String, JsonObject>(e.getMessage()));
-								}
-							}
-						});
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						handler.handle(new Either.Right<String, JsonObject>(
+								new JsonObject(event.body().getString("result"))));
 					} else {
-						response.bodyHandler(new Handler<Buffer>() {
-							@Override
-							public void handle(Buffer buffer) {
-								handler.handle(new Either.Left<String, JsonObject>(
-										response.statusMessage() + " : " + buffer.toString()));
-							}
-						});
-
+						handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message")));
 					}
 				}
 			});
-			req.end(params.encode());
 		}
 	}
 
