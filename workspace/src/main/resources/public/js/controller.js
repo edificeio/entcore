@@ -799,12 +799,18 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		return date.format(dateString.split(' ')[0], 'D MMMM YYYY')
 	}
 
-	$scope.shortDate = function(dateString){
-		if(!dateString){
+	$scope.shortDate = function(dateItem){
+		if(!dateItem){
 			return moment().format('L');
 		}
 
-		return date.format(dateString.toString().split(' ')[0], 'L')
+		if(typeof dateItem === "number")
+			return date.format(dateItem, 'L')
+
+		if(typeof dateItem === "string")
+			return date.format(dateItem.split(' ')[0], 'L')
+
+		return moment().format('L');
 	}
 
 	$scope.toggleComments = function(document){
