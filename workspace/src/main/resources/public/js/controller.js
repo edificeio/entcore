@@ -217,6 +217,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				copy: true,
 				moveTrash: true,
 				share: true,
+				rename: true,
 				showRevisions: true,
 				postRevision: true,
 				manageRevisions: true
@@ -248,7 +249,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
 		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument') || setRight('org-entcore-workspace-service-WorkspaceService|commentFolder');
 		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
-		document.myRights.document.showRevisions = setRight('org-entcore-workspace-service-WorkspaceService|listRevisions');
+		document.myRights.document.rename = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
+		document.myRights.document.showRevisions = setRight('org-entcore-workspace-service-WorkspaceService|renameDocument') || setRight('org-entcore-workspace-service-WorkspaceService|renameFolder');
 		document.myRights.document.postRevision = setRight('org-entcore-workspace-service-WorkspaceService|updateDocument');
 		document.myRights.document.manageRevisions = setRight('org-entcore-workspace-service-WorkspaceService|deleteRevision');
 	};

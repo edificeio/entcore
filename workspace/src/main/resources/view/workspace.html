@@ -129,12 +129,12 @@
 				</button>
 				<button ng-click="openRenameView(selectedFolders()[0])"
 						translate key="workspace.rename"
-						ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && workflowRight('renameFolder') && currentTree.name === 'documents'"
+						ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && selectedFolders()[0].myRights.document.rename && currentTree.name === 'documents'"
 						ng-class="{ cell: true }">
 				</button>
 				<button ng-click="openRenameView(selectedDocuments()[0])"
 						translate key="workspace.rename"
-						ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && workflowRight('renameDocument') && currentTree.name === 'documents'"
+						ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].myRights.document.rename && currentTree.name === 'documents'"
 						ng-class="{ cell: true }">
 				</button>
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
