@@ -21,6 +21,11 @@
 <section class="row media-library" ng-controller="MediaLibrary">
 	<h2 translate content="library.title"></h2>
 	<section class="twelve cell tabs row">
+		<header ng-class="{ selected: display.show === 'record' }"
+				ng-click="show('record')"
+				workflow="workspace.documents.create"
+				translate content="library.header.record">
+		</header>
 		<header ng-class="{ selected: display.show === 'upload' }"
 				ng-click="show('upload')"
 				workflow="workspace.documents.create"

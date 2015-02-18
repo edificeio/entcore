@@ -1291,6 +1291,53 @@ module.directive('pullDownContent', function($compile, $timeout){
 	}
 });
 
+module.directive('recorder', function(){
+	return {
+		restrict: 'E',
+		scope: {
+			ngModel: '=',
+			format: '@',
+			onUpload: '&'
+		},
+		templateUrl: '/infra/public/template/recorder.html',
+		link: function(scope, element, attributes){
+			scope.recorder = recorder;
+			if(attributes.protected !== undefined){
+				recorder.protected = true;
+			}
+			recorder.state(function(){
+				scope.$apply('recorder');
+			});
+			scope.switchRecord = function(){
+				if(recorder.status === 'recording'){
+					recorder.pause();
+				}
+				else{
+					recorder.record();
+				}
+			};
+			scope.time = function(){
+				return parseInt(recorder.elapsedTime);
+			};
+			scope.switchPlay = function(){
+				if(recorder.status === 'playing'){
+					recorder.pause();
+				}
+				else{
+					recorder.play();
+				}
+			};
+			scope.saveRecord = function(){
+				recorder.save(function(doc){
+					scope.ngModel = doc;
+					scope.onUpload();
+					scope.$apply();
+				});
+			};
+		}
+	}
+});
+
 module.directive('dropDown', function($compile, $timeout){
 	return {
 		restrict: 'E',
@@ -4635,6 +4682,10 @@ function MediaLibrary($scope){
 			return;
 		}
 
+		if(newVal === 'audio'){
+			$scope.display.show = 'record';
+		}
+
 		if(model.me.workflow.workspace.documents.create){
 			$scope.listFrom('appDocuments')
 		}
@@ -4663,6 +4714,12 @@ function MediaLibrary($scope){
 		$scope.openedFolder = $scope.folder;
 		$scope.$apply('documents');
 	});
+
+	$scope.insertRecord = function(){
+		model.mediaLibrary.appDocuments.documents.sync();
+		$scope.display.show = 'browse';
+		$scope.listFrom('appDocuments');
+	};
 
 	$scope.selectDocument = function(document){
 		if($scope.folder === model.mediaLibrary.appDocuments){

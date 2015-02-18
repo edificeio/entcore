@@ -45,6 +45,7 @@
     "library.file.choose": "Parcourir",
     "library.header.browse": "Parcourir mon espace personnel",
     "library.header.upload": "Charger un document",
+    "library.header.record": "Enregistrer un son",
     "library.title": "Recherche de documents",
     "library.upload.import": "Importer",
     "library.upload.title": "Sélectionner les fichiers",
@@ -115,5 +116,15 @@
     "workspace.sharedDocuments": "Documents partagés avec moi",
 	"file.light": "Fichier léger",
 	"file.heavy": "Fichier lourd",
-	"quality": "Qualité"
+	"quality": "Qualité",
+    "recorder.widget": "dictaphone",
+    "recorder.playing": "Ecoute du morceau",
+    "recorder.recording": "Enregistrement",
+    "recorder.paused": "Pause",
+    "recorder.idle": "En attente",
+    "recorder.encoding": "Création du fichier...",
+    "recorder.uploading": "Chargement...",
+    "recorder.saved": "Votre bande son a été enregistrée",
+    "record": "Enregistrement audio",
+    "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio"
 }
