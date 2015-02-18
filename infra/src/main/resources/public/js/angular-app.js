@@ -3562,18 +3562,7 @@ module.directive('dragdrop', function(){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
-            if(attributes.dropcondition !== undefined){
-                element.on("dragover", function(event){
-                    if(scope.$eval(attributes.dropcondition)(event.originalEvent)){
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                })
-            } else {
-                element.attr("ondragover", "event.preventDefault()")
-            }
-
-            element.on("dragenter", function(event){
+            element.on("dragover", function(event){
                 if(attributes.dropcondition === undefined || scope.$eval(attributes.dropcondition)(event.originalEvent)){
                    event.preventDefault()
                    event.stopPropagation()
