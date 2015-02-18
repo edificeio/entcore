@@ -227,26 +227,35 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	//Show by default
-    $scope.showIsolated 	= true
-	$scope.showInactive 	= true
-	$scope.showTeachers		= true
-	$scope.showPersonnel	= true
-	$scope.showRelative		= true
-	$scope.showStudents		= true
+	$scope.userFilters = {
+		showIsolated : true,
+		showInactive : true,
+		showTeachers : true,
+		showPersonnel : true,
+		showRelative : true,
+		showStudents : true
+	}
+
+	$scope.toggleFilter = function(filterName){
+		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
+	}
+
     $scope.structureUserFilteringFunction = function(user){
 		var filterByClass	 = user.classesList && user.classesList.length > 0
 		var filterByInput 	 = $rootScope.filterStructureUsers ? $scope.fairInclusion(user.displayName, $rootScope.filterStructureUsers) : true
-		var filterIsolated 	 = $scope.showIsolated 	&& user.isolated
-		var filterInactive	 = user.code 				 ? $scope.showInactive  : true
-		var filterTeachers 	 = user.type === 'Teacher' 	 ? $scope.showTeachers 	: true
-		var filterPersonnel  = user.type === 'Personnel' ? $scope.showPersonnel : true
-		var filterRelative 	 = user.type === 'Relative'  ? $scope.showRelative 	: true
-		var filterStudents 	 = user.type === 'Student' 	 ? $scope.showStudents 	: true
+		var filterIsolated 	 = $scope.userFilters.showIsolated 	&& user.isolated
+		var filterInactive	 = user.code 				 ? $scope.userFilters.showInactive  : true
+		var filterTeachers 	 = user.type === 'Teacher' 	 ? $scope.userFilters.showTeachers 	: true
+		var filterPersonnel  = user.type === 'Personnel' ? $scope.userFilters.showPersonnel : true
+		var filterRelative 	 = user.type === 'Relative'  ? $scope.userFilters.showRelative 	: true
+		var filterStudents 	 = user.type === 'Student' 	 ? $scope.userFilters.showStudents 	: true
 
         return filterByInput && (filterByClass || filterIsolated) && filterInactive && filterTeachers && filterPersonnel && filterRelative && filterStudents
 	}
-	$scope.isolatedUserFilteringFunction = function(user){
-		return ($scope.filterIsolatedUsers && user.displayName) ? $scope.fairInclusion(user.displayName, $scope.filterIsolatedUsers) : true
+	$scope.isolatedUserFilteringFunction = function(input){
+		return function(user){
+			return (input && user.displayName) ? $scope.fairInclusion(user.displayName, input) : true
+		}
 	}
 	$scope.groupUserFilteringFunction = function(input, classObj){
 		return function(user){

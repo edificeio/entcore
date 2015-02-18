@@ -11,7 +11,7 @@
             <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; width: 25; height: 25; border: none;" value="✓">
         </form>
     </div>
-    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction | orderBy: 'lastName' | limitTo: usersLimit"
+    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction(filterIsolatedUsers) | orderBy: 'lastName' | limitTo: usersLimit"
         ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
         [[user.displayName]]
     </li>

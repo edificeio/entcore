@@ -67,22 +67,22 @@
         </div>
 
         <ul class="selectable-list">
-            <li ng-class="{selected : $parent.$parent.$parent.showIsolated}" ng-click="$parent.$parent.$parent.showIsolated = !$parent.$parent.$parent.showIsolated">
+            <li ng-class="{selected : userFilters.showIsolated}" ng-click="toggleFilter('showIsolated')">
                 [[lang.translate("directory.admin.showIsolated")]]
             </li>
-            <li ng-class="{selected : $parent.$parent.$parent.showInactive}" ng-click="$parent.$parent.$parent.showInactive = !$parent.$parent.$parent.showInactive">
+            <li ng-class="{selected : userFilters.showInactive}" ng-click="toggleFilter('showInactive')">
                 [[lang.translate("directory.admin.showInactive")]]
             </li>
-            <li ng-class="{selected : $parent.$parent.$parent.showTeachers}" ng-click="$parent.$parent.$parent.showTeachers = !$parent.$parent.$parent.showTeachers">
+            <li ng-class="{selected : userFilters.showTeachers}" ng-click="toggleFilter('showTeachers')">
                 [[lang.translate("directory.admin.showTeachers")]]
             </li>
-            <li ng-class="{selected : $parent.$parent.$parent.showPersonnel}" ng-click="$parent.$parent.$parent.showPersonnel = !$parent.$parent.$parent.showPersonnel">
+            <li ng-class="{selected : userFilters.showPersonnel}" ng-click="toggleFilter('showPersonnel')">
                 [[lang.translate("directory.admin.showPersonnel")]]
             </li>
-            <li ng-class="{selected : $parent.$parent.$parent.showRelative}" ng-click="$parent.$parent.$parent.showRelative = !$parent.$parent.$parent.showRelative">
+            <li ng-class="{selected : userFilters.showRelative}" ng-click="toggleFilter('showRelative')">
                 [[lang.translate("directory.admin.showRelative")]]
             </li>
-            <li ng-class="{selected : $parent.$parent.$parent.showStudents}" ng-click="$parent.$parent.$parent.showStudents = !$parent.$parent.$parent.showStudents">
+            <li ng-class="{selected :userFilters.showStudents}" ng-click="toggleFilter('showStudents')">
                 [[lang.translate("directory.admin.showStudents")]]
             </li>
         </ul>
@@ -203,8 +203,11 @@
                 </nav>
                 <div style="width:60%; float: left">
                     <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
-                    <ul style="list-style-type: none; font-family: Lato;">
-                        <li ng-repeat="child in structureUser.children" ng-click="removeChild(child, structureUser)">[[child.displayName]]</li>
+                    <ul class="angle-list small">
+                        <li ng-repeat="child in structureUser.children" style="margin-left: 10px">
+                            <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+child.id]]" target="_blank">[[child.displayName]]</a>
+                            <button ng-click="removeChild(child, structureUser)" class="right-magnet close"></button>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -115,6 +115,7 @@ User.prototype.setLocalAdmin = function(structure){
         }
         http().postJson("/directory/user/function/"+that.id, {
             functionCode: "ADMIN_LOCAL",
+            inherit: true,
             scope: structureIds
         }).done(function(){
             notify.info(lang.translate("directory.notify.setLocalAdmin"))
@@ -347,7 +348,7 @@ Structure.prototype.loadStructure = function(periodicHook, endHook){
         structure.users.removeAll()
 
         //Add isolated users
-        http().get("list/isolated", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
+        http().get("user/admin/list", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
             _.forEach(data, function(u){
                 var user = new User(u)
                 u.isolated = true
