@@ -73,7 +73,6 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		}
 	})
 
-	$route.reload()
 	$scope.template = template
     $rootScope.export_id = ""
     $scope.export_mode = "all"

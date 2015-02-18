@@ -7,9 +7,9 @@
         <script src="{{#static}}js/admin/controller.js{{/static}}" type="text/javascript"></script>
     </head>
 </html>
-<body>
+<body ng-controller="AdminDirectoryController" >
     <admin-portal>
-        <article ng-controller="AdminDirectoryController" class="twelve cell list-view">
+        <article class="twelve cell list-view">
 
             <div class="twelve leaf-menu-container">
                 <div ng-repeat="menuItem in leafMenu | filter: filterLeafMenuItems" class="leaf-menu" ng-class="{ selected: template.contains('body', menuItem.templateName) }">
