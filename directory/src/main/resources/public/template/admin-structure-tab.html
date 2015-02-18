@@ -46,7 +46,7 @@
             <nav class="vertical search-container-left three cell" style="height: 380px">
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructures"/>
                 <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                    <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | orderBy: 'name'"
+                    <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | filter: filterExcludeDoubles(structure.children) | orderBy: 'name'"
                         ng-click="potentialChild.attachParent(structure, refreshScope)"
                         style="padding-left: 0">
                         <span>[[potentialChild.name]]</span>

@@ -283,6 +283,11 @@ function AdminDirectoryController($scope, $rootScope, $http, template, model, da
 	$scope.filterCyclicChildren = function(structure){
 		return !$scope.struct.parents.findWhere({id: structure.id})
 	}
+	$scope.filterExcludeDoubles = function(list){
+		return function(item){
+			return !_.contains(list, item)
+		}
+	}
 	$scope.selectOnly = function(structure, structureList){
 		_.forEach(structure.children, function(s){ s.selected = false })
 		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
