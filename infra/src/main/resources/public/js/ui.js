@@ -282,8 +282,8 @@ ui.extendElement = {
 					}
 
 					var newOffset = {
-						top: mouse.y - elementDistance.y,
-						left: mouse.x - elementDistance.x
+						top: parseInt(mouse.y - elementDistance.y),
+						left: parseInt(mouse.x - elementDistance.x)
 					};
 
 					if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){

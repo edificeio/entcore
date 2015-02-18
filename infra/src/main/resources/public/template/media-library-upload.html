@@ -18,7 +18,7 @@
  ~
  -->
 
-<h2 translate content="library.upload.title"></h2>
+
 
 <div class="twelve cell vertical-spacing-twice" ng-if="upload.loading.length">
 	<table class="twelve unstyled">
@@ -35,7 +35,14 @@
 	</table>
 </div>
 
-<div class="twelve cell select-file input-block vertical-spacing-twice">
+		<div class="row" ng-if="fileFormat === 'img'">
+			<h2><i18n>quality</i18n></h2>
+			<slider max="100" min="1" default="80" ng-model="upload.quality" min-legend="file.light" max-legend="file.heavy"></slider>
+		</div>
+
+
+<div class="row select-file input-block">
+	<h2><i18n>library.upload.title</i18n></h2>
 	<div class="hidden-content">
 		<input type="file" multiple files-input-change="setFilesName()" ng-model="upload.files" />
 	</div>
@@ -43,6 +50,6 @@
 	<input type="text" ng-model="upload.names" data-display-file />
 </div>
 <div class="row">
-	<input type="button" class="right-magnet" ng-click="importFiles()" translate attr="value" value="library.upload.import" />
+	<input type="button" class="right-magnet" ng-click="importFiles()" i18n-value="library.upload.import" />
 </div>
 <div class="row"></div>

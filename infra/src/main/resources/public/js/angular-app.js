@@ -298,6 +298,66 @@ module.directive('lightbox', function($compile){
 	}
 });
 
+module.directive('slider', function($compile, $parse){
+	return {
+		restrict: 'E',
+		scope: true,
+		template: '<div class="bar"></div><div class="filled"></div><div class="cursor"></div><legend class="min"></legend><legend class="max"></legend>',
+		link: function(scope, element, attributes){
+			element.addClass('drawing-zone');
+			var cursor = element.children('.cursor');
+			var max = parseInt(attributes.max);
+			var min = parseInt(attributes.min);
+
+			var ngModel = $parse(attributes.ngModel);
+
+			var applyValue = function(newVal){
+				var pos = parseInt((newVal - min) * element.children('.bar').width() / (max - min));
+				cursor.css({
+					left: pos + 'px',
+					position: 'absolute'
+				});
+				element.children('.filled').width(cursor.position().left);
+			};
+
+			scope.$watch(function(){
+				return ngModel(scope);
+			}, applyValue);
+
+			if(typeof ngModel(scope) !== 'number'){
+				ngModel.assign(scope, parseInt(attributes.default));
+				applyValue(ngModel(scope));
+			}
+
+			element.children('legend.min').html(idiom.translate(attributes.minLegend));
+			element.children('legend.max').html(idiom.translate(attributes.maxLegend));
+
+			element.children('.bar, .filled').on('click', function(e){
+				var newPos = e.clientX - element.children('.bar').offset().left;
+				var newVal = (newPos * (max - min) / element.children('.bar').width()) + min;
+				ngModel.assign(scope, newVal);
+				scope.$apply();
+			});
+
+			ui.extendElement.draggable(cursor, {
+				lock: {
+					vertical: true
+				},
+				mouseUp: function(){
+					var cursorPosition = cursor.position().left;
+					var newVal = (cursorPosition * (max - min) / element.children('.bar').width()) + min;
+					ngModel.assign(scope, newVal);
+					scope.$apply();
+				},
+				tick: function(){
+					var cursorPosition = cursor.position().left;
+					element.children('.filled').width(cursorPosition);
+				}
+			});
+		}
+	}
+});
+
 module.directive('mediaLibrary', function($compile){
 	return {
 		restrict: 'E',
@@ -1241,21 +1301,21 @@ module.directive('dropDown', function($compile, $timeout){
 			ngChange: '&',
 			ngModel: '='
 		},
-		template: '<div data-drop-down class="drop-down">\
-						<div>\
-							<ul class="ten cell right-magnet">\
-								<li ng-repeat="option in options | limitTo:10" ng-model="option">[[option.toString()]]</li>\
-							</ul>\
-						</div>\
-			</div>',
-		link: function($scope, $element, $attributes){
-			$scope.$watchCollection('options', function(newValue){
-				if(!$scope.options || $scope.options.length === 0){
-					$element.addClass('hidden');
+		template: '<div data-drop-down class="drop-down">' +
+						'<div>' +
+							'<ul class="ten cell right-magnet">' +
+								'<li ng-repeat="option in options | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
+							'</ul>' +
+						'</div>' +
+					'</div>',
+		link: function(scope, element, attributes){
+			scope.$watchCollection('options', function(newValue){
+				if(!scope.options || scope.options.length === 0){
+					element.addClass('hidden');
 					return;
 				}
-				$element.removeClass('hidden');
-				var linkedInput = $('#' + $attributes.for);
+				element.removeClass('hidden');
+				var linkedInput = $('#' + attributes.for);
 				var pos = linkedInput.offset();
 				var width = linkedInput.width() +
 					parseInt(linkedInput.css('padding-right')) +
@@ -1267,23 +1327,23 @@ module.directive('dropDown', function($compile, $timeout){
 					parseInt(linkedInput.css('border-height') || 1) * 2;
 
 				pos.top = pos.top + height;
-				$element.offset(pos);
-				$element.width(width);
+				element.offset(pos);
+				element.width(width);
 			})
-			$element.parent().on('remove', function(){
-				$element.remove();
+			element.parent().on('remove', function(){
+				element.remove();
 			})
-			$element.detach().appendTo('body');
+			element.detach().appendTo('body');
 
 
-			$element.on('click', 'li', function(e){
-				$scope.current = $(this).scope().option;
-				$scope.ngModel = $(this).scope().option;
-				$scope.$apply('ngModel');
-				$scope.$eval($scope.ngChange);
-				$scope.$apply('ngModel');
+			element.on('click', 'li', function(e){
+				scope.current = $(this).scope().option;
+				scope.ngModel = $(this).scope().option;
+				scope.$apply('ngModel');
+				scope.$eval(scope.ngChange);
+				scope.$apply('ngModel');
 			});
-			$element.attr('data-opened-drop-down', true);
+			element.attr('data-opened-drop-down', true);
 
 		}
 	}
@@ -4516,7 +4576,7 @@ var workspace = {
 workspace.Document.prototype.upload = function(file, requestName, callback){
 	var formData = new FormData();
 	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
+	http().postFile('/workspace/document?protected=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
 		if(typeof callback === 'function'){
 			callback(data);
 		}
@@ -4660,6 +4720,7 @@ function MediaLibrary($scope){
 	};
 
 	$scope.importFiles = function(){
+		workspace.quality = $scope.upload.quality / 100;
 		var waitNumber = $scope.upload.files.length;
 		for(var i = 0; i < $scope.upload.files.length; i++){
 			$scope.upload.loading.push($scope.upload.files[i]);

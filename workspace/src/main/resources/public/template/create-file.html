@@ -35,6 +35,10 @@
 </div>
 
 <hr class="solid row" />
+<div class="row" ng-if="isUploadedImage()">
+	<h2><i18n>quality</i18n></h2>
+	<slider max="100" min="1" default="80" ng-model="newFile.quality" min-legend="file.light" max-legend="file.heavy"></slider>
+</div>
 <form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell share">
   <div class="row fixed-block">
     <h2 class="subtitle"><i18n>files.select</i18n></h2>
@@ -42,7 +46,7 @@
 			<div class="hidden-content">
 				<input type="file" multiple  files-input-change="setFilesName()" ng-model="newFile.files" />
 			</div>
-			<button class="file-button" translate key="choose"></button>
+			<button class="file-button"><i18n>choose</i18n></button>
 			<input type="text" data-ng-model="newFile.name" data-display-file />
 		</div>
 	</div>
@@ -51,7 +55,7 @@
       <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
         <div class="warning" translate content="files.warning.identical"></div>
       </div>
-      <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()" translate key="confirm"></button>
+      <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()"><i18n>confirm</i18n></button>
       <button ng-click="addLoadingFiles()" class="right-magnet" ng-disabled="newFile.blockIdentical"><i18n>import.file</i18n></button>
 			<button class="cancel right-magnet" translate content="terminate"></button>
 		</div>

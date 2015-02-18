@@ -112,5 +112,8 @@
     "workspace": "Espace documentaire",
     "workspace.appDocuments": "Documents ajoutés dans les applis",
     "workspace.myDocuments": "Mes documents",
-    "workspace.sharedDocuments": "Documents partagés avec moi"
+    "workspace.sharedDocuments": "Documents partagés avec moi",
+	"file.light": "Fichier léger",
+	"file.heavy": "Fichier lourd",
+	"quality": "Qualité"
 }

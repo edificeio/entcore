@@ -362,7 +362,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.renameTarget = document
 		ui.showLightbox()
 		$scope.currentViews.lightbox = $scope.views.lightbox.rename
-	}
+	};
 
 	$scope.workflowRight = function(name){
 		var workflowRights = {
@@ -392,7 +392,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.sharedFolders = $scope.selectedFolders();
 		ui.showLightbox();
 		$scope.currentViews.lightbox = $scope.views.lightbox.shareFoldersWarning;
-	}
+	};
 
 	var refreshFolders = function(){
 		var folder = $scope.openedFolder;
@@ -448,8 +448,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 		refreshFolders();
 		notify.info('workspace.removed.message');
-
-	}
+	};
 
 	$scope.openMoveFileView = function(action){
 		targetFolders = [$scope.folder.children[0]];
@@ -500,7 +499,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.switchSelectAll()
 		$scope.boxes.selectAll = false
 		$scope.remove()
-	}
+	};
 
 	$scope.sendComment = function(){
 		ui.hideLightbox();
@@ -536,7 +535,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.targetFolder.comment = "";
 			$scope.$apply();
 		});
-	}
+	};
 
 	var trees = [{
 		name: 'documents',
@@ -691,8 +690,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				});
 				$scope.$apply();
 			});
-
-		})
+		});
 	};
 
 	$scope.openFolder = function(folder){
@@ -732,6 +730,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.cancelRequest = function(file){
 		file.request.abort();
 	};
+
+	$scope.isUploadedImage = function(){
+		return _.find($scope.newFile.chosenFiles, function(file){
+			return file.extension === 'png' || file.extension === 'jpg' ||
+				file.extension === 'jpeg' || file.extension === 'bmp';
+		}) !== undefined;
+	};
+
 	$scope.addLoadingFiles = function(){
 		var chosenNames = $scope.newFile.name.split(', ');
 		$scope.newFile.chosenFiles.forEach(function(file, i){
@@ -749,8 +755,11 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				formData.append('file', file.file);
 			}
 
-			var url = 'document';
-			var request = http().postFile(url + '?thumbnail=120x120&thumbnail=290x290',  formData, {
+			var url = 'document?thumbnail=120x120&thumbnail=290x290';
+			if($scope.newFile.quality > 0){
+				url += '&quality=' + $scope.newFile.quality;
+			}
+			var request = http().postFile(url,  formData, {
 					requestName: 'file-upload-' + file.file.name + '-' + index
 				}).done(function(e){
 					loadingFile.loading = false;
