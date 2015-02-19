@@ -10,7 +10,7 @@ function Note(){
 	model.makePermanent(Note);
 
 	var Notes = model.widgets.findWidget('notes');
-	model.notes.mine.on('sync', function(){
+	model.notes.mine.one('sync', function(){
 		Notes.note = model.notes.mine.first() || new Note();
 		if(Notes.note._id){
 			Notes.note.open();
