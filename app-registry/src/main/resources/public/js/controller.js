@@ -118,6 +118,10 @@ function AppRegistry($scope, $sce, model){
 		}
 	};
 
+	$scope.setCrossRoles = function(roles){
+		$scope.crossRoles = roles
+	}
+
 	$scope.newRole = function(placeholder_name){
 		$scope.role = new Role()
 		$scope.role.appRoles = []
