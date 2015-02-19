@@ -80,6 +80,9 @@ public class TransactionHelper {
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}
 		if (query != null && !query.trim().isEmpty()) {
+			if (log.isDebugEnabled()) {
+				log.debug("query : " + query + " - params : " + (params != null ? params.encode() : "{}"));
+			}
 			JsonObject statement = new JsonObject().putString("statement", query);
 			if (params != null) {
 				statement.putObject("parameters", params);
