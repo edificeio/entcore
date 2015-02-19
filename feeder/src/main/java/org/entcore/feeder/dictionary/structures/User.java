@@ -289,9 +289,9 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->(f) " +
 				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-				"WITH r.structures as structures, r.classes as classes, r, u, f " +
+				"WITH r.scope as scope, r, u, f " +
 				"DELETE r " +
-				"WITH (coalesce(structures, []) + coalesce(classes, [])) as ids, u, f " +
+				"WITH coalesce(scope, []) as ids, u, f " +
 				"UNWIND ids as s " +
 				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN]-u " +
 				"DELETE r";
