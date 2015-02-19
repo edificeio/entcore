@@ -1445,13 +1445,8 @@ function createCKEditorInstance(editor, scope, $compile){
 			return;
 		}
 		ckeInstance = ck;
-		editor.focus();
-		scope.ngModel.assign(scope, scope.ngModel(scope) || '');
-		editor.html($compile(scope.ngModel(scope))(scope));
+		editor.html($compile((scope.ngModel(scope) || ''))(scope));
 		scope.$apply();
-		setTimeout(function(){
-			$('input').first().focus();
-		}, 500);
 
 		if(scope.ngModel(scope) && scope.ngModel(scope).indexOf('<img') !== -1){
 			$('img').on('load', ckeEditorFixedPositionning);
@@ -1637,10 +1632,12 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				createCKEditorInstance(editor, scope, $compile);
 
-				scope.$watch('ngModel',
+				scope.$watch(function(){
+						return scope.ngModel(scope);
+					},
 					function(newValue){
-						if(contextEditor.getData() !== newValue(scope)){
-							editor.html($compile(newValue(scope))(scope));
+						if(contextEditor.getData() !== newValue){
+							editor.html($compile(newValue)(scope));
 							//weird browser bug with audio tags
 							editor.find('audio').each(function(index, item){
 								var parent = $(item).parent();
