@@ -263,16 +263,19 @@
                             <div style="margin-bottom: 10px; border-bottom: 2px solid #ff0b75; text-align: center;">
                                 <div class="leaf-menu" ng-class="{ selected: roleMode === 0 }"><a ng-click="roleMode=0">[[lang.translate("appregistry.crossRoles")]]</a></div>
                                 <div class="leaf-menu" ng-class="{ selected: roleMode === 1 }"><a ng-click="roleMode=1">[[lang.translate("appregistry.appRoles")]]</a></div>
+                                <div style="border-top: 2px solid crimson;">
+                                    <h4><i18n>app.registry.role.explanation</i18n></h4>
+                                </div>
                             </div>
-                            <div ng-if="roleMode === 0" style="height:100%; overflow-y: scroll; padding: 10">
+                            <div ng-if="roleMode === 0" style="height:415px; overflow-y: scroll; padding: 10">
                                 <li ng-repeat="crossrole in $parent.crossRoles | orderBy: 'name'"
                                     ng-click="switchGroupRole($parent.group, crossrole)"
                                     ng-class="{ selected: groupContains($parent.group, crossrole) }">
                                     [[crossrole.name]]
                                 </li>
                             </div>
-                            <div ng-if="roleMode === 1" style="height: 460px; overflow-y: scroll; padding: 10">
-                                <div style="text-align:center; background: #444; padding: 5; border-radius: 30px; border: 2px solid crimson; z-index: 10; width: 100px; margin-left: auto">
+                            <div ng-if="roleMode === 1" style="height: 415px; overflow-y: scroll; padding: 10">
+                                <div style="text-align:center; background: #444; padding: 5; border-radius: 30px; border: 2px solid crimson; width: 100px; position: absolute; right: 0px;">
                                     <button ng-click="selectAllGroupRoles(group)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll" style="margin-left: 10;width: 30px; height: 25px;"></button>
                                     <button ng-click="deselectAllGroupRoles(group)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll" style=" width: 30px; height: 25px;"></button>
                                 </div>

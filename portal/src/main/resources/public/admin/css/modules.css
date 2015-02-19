@@ -1618,24 +1618,25 @@ a {
   width: 95%;
 }
 .drop-down.hidden {
-  max-height: 0px;
+  height: 0;
+}
+.drop-down.expanded {
+  overflow: visible;
 }
 .drop-down {
   overflow: hidden;
   position: absolute;
   z-index: 8000;
-  max-height: 260px;
+  height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: max-height 200ms ease-in-out;
-  -moz-transition: max-height 200ms ease-in-out;
-  -webkit-transition: max-height 200ms ease-in-out;
-  transition: max-height 200ms ease-in-out;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
 }
 .drop-down ul {
-  padding: 0px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px 0;
   margin: 0px;
   background: #eee;
   width: 100%;
@@ -1648,20 +1649,18 @@ a {
   overflow: hidden;
   position: absolute;
   z-index: 8000;
-  max-height: 260px;
+  height: 260px;
   background: #eee;
   cursor: pointer;
-  -o-transition: max-height 200ms ease-in-out;
-  -moz-transition: max-height 200ms ease-in-out;
-  -webkit-transition: max-height 200ms ease-in-out;
-  transition: max-height 200ms ease-in-out;
+  -o-transition: height 250ms ease;
+  -moz-transition: height 250ms ease;
+  -webkit-transition: height 250ms ease;
+  transition: height 250ms ease;
   height: auto;
   padding: 6px;
 }
 .dropdown-menu ul {
-  padding: 0px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px 0;
   margin: 0px;
   background: #eee;
   width: 100%;
@@ -1911,6 +1910,10 @@ ul.icons-tabs li i {
 .icons-view.absolute {
   position: absolute;
 }
+.select-file {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 .select-file input[type=text] {
   float: left;
   margin-right: 0;
@@ -2117,9 +2120,6 @@ hr {
 .media .lightbox-view,
 .media .lightbox-window {
   cursor: pointer;
-}
-.lightbox-window form {
-  padding: 10px;
 }
 .lightbox-window form input,
 .lightbox-window form label {
@@ -4709,6 +4709,9 @@ ul.thought-out-actions > li p {
   -webkit-transition: margin-top 250ms ease;
   transition: margin-top 250ms ease;
 }
+table {
+  margin-bottom: 20px;
+}
 .wizard {
   display: table;
   width: 100%;
@@ -4866,6 +4869,58 @@ carousel.triplets .image.next {
 }
 image-select.loading-panel img {
   visibility: hidden;
+}
+slider,
+slider.drawing-zone {
+  overflow: visible;
+  height: 15px;
+  margin-left: -12px;
+  display: block;
+  position: relative;
+  width: 100%;
+  margin-top: 35px;
+  margin-bottom: 20px;
+}
+slider .bar,
+slider.drawing-zone .bar {
+  width: 100%;
+  height: 15px;
+  background: #ddd;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1) inset;
+  margin-left: 12px;
+}
+slider .cursor,
+slider.drawing-zone .cursor {
+  width: 0;
+  height: 0;
+  border-top: 20px solid #666;
+  border-right: 13px solid transparent;
+  border-left: 13px solid transparent;
+  margin-top: -26px;
+  z-index: 1;
+  cursor: pointer;
+}
+slider .filled,
+slider.drawing-zone .filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 15px;
+  background: #666;
+  margin-left: 12px;
+}
+slider legend,
+slider.drawing-zone legend {
+  position: absolute;
+  top: -23px;
+}
+slider legend.min,
+slider.drawing-zone legend.min {
+  left: 0;
+}
+slider legend.max,
+slider.drawing-zone legend.max {
+  right: -25px;
 }
 html,
 body {
@@ -10053,7 +10108,7 @@ ul.angle-list > li {
 }
 ul.angle-list > li button.close {
   font-size: 14px;
-  padding: 0px 0px 0px 1px;
+  padding: 0px;
   width: 16px;
   height: 16px;
   line-height: 0px;

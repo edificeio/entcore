@@ -22,6 +22,7 @@
     "app.registry.title": "Registre d'applications",
     "app.registry.unselect.all": "Aucun",
     "app.registry.valid": "Valider",
+    "app.registry.role.explanation": "Les permissions accordées par les rôles se cumulent, dans le cas où plusieurs rôles transverses ou applicatifs seraient affectée à un groupe.",
     "appregistry.adaptor": "Adaptateur",
     "appregistry.advancedParams": "Paramètres avancés",
     "appregistry.appParam": "Paramétrage des applications",
