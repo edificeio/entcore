@@ -1071,7 +1071,7 @@ public class WorkspaceService extends BaseController {
 						thumbnails = result.getObject("thumbnails").toMap().entrySet();
 					}
 
-					storage.removeFile(result.getString(file),
+					storage.removeFile(file,
 							new Handler<JsonObject>() {
 								@Override
 								public void handle(JsonObject event) {
