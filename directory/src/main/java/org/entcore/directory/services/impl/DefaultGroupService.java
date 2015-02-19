@@ -92,6 +92,7 @@ public class DefaultGroupService implements GroupService {
 	@Override
 	public void createOrUpdateManual(JsonObject group, String structureId, String classId,
 			Handler<Either<String, JsonObject>> result) {
+		group.putString("groupDisplayName", group.getString("name"));
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-create-group")
 				.putString("structureId", structureId)
