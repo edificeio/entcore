@@ -183,7 +183,7 @@ object CommunicationScenario {
     .exec(http("User add function ")
       .post("""/directory/user/function/${teacherId}""")
       .header("Content-Type", "application/json")
-      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "scope": ["${parent-structure-id}"], "inherit":true}"""))
+      .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "scope": ["${parent-structure-id}"], "inherit":"sc"}"""))
       .check(status.is(200)))
 
     .exec(Authenticate.logout)

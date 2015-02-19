@@ -273,13 +273,13 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void addFunction(String id, String functionCode, JsonArray scope, boolean inherit,
+	public void addFunction(String id, String functionCode, JsonArray scope, String inherit,
 			Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-add-user-function")
 				.putString("userId", id)
 				.putString("function", functionCode)
-				.putBoolean("inherit", inherit)
+				.putString("inherit", inherit)
 				.putArray("scope", scope);
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}

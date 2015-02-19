@@ -13,8 +13,7 @@
       }
     },
     "inherit" : {
-      "type": "boolean",
-      "default": false
+      "type": "string"
     }
   },
   "required": [

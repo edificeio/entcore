@@ -57,7 +57,7 @@ public interface UserService {
 
 	void restore(List<String> users, Handler<Either<String, JsonObject>> result);
 
-	void addFunction(String id, String functionCode, JsonArray scope, boolean inherit,
+	void addFunction(String id, String functionCode, JsonArray scope, String inherit,
 			Handler<Either<String, JsonObject>> result);
 
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);

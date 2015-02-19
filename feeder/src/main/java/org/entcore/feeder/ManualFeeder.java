@@ -770,12 +770,18 @@ public class ManualFeeder extends BusModBase {
 		final String function = message.body().getString("function");
 		if (userId == null || function == null) return;
 		final JsonArray scope = message.body().getArray("scope");
-		if (scope != null && message.body().getBoolean("inherit", false)) {
-			String query =
-					"MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(:Structure)<-[:BELONGS*0..1]-(scope) " +
-					"WHERE s.id IN {scope} " +
-					"RETURN COLLECT(scope.id) as ids ";
-
+		String inherit =  message.body().getString("inherit", "");
+		if (scope != null && ("s".equals(inherit) || "sc".equals(inherit))) {
+			String query;
+			if ("sc".equals(inherit)) {
+				query = "MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(:Structure)<-[:BELONGS*0..1]-(scope) " +
+						"WHERE s.id IN {scope} " +
+						"RETURN COLLECT(scope.id) as ids ";
+			} else {
+				query = "MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(scope:Structure) " +
+						"WHERE s.id IN {scope} " +
+						"RETURN COLLECT(scope.id) as ids ";
+			}
 			neo4j.execute(query, new JsonObject().putArray("scope", scope), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {

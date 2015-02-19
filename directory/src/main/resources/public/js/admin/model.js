@@ -115,7 +115,7 @@ User.prototype.setLocalAdmin = function(structure){
         }
         http().postJson("/directory/user/function/"+that.id, {
             functionCode: "ADMIN_LOCAL",
-            inherit: true,
+            inherit: "s",
             scope: structureIds
         }).done(function(){
             notify.info(lang.translate("directory.notify.setLocalAdmin"))
