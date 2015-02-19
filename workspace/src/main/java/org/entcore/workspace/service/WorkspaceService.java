@@ -1065,7 +1065,7 @@ public class WorkspaceService extends BaseController {
 				final JsonObject result = res.getObject("result");
 				if ("ok".equals(status) && result != null && result.getString("file") != null) {
 
-					String file = result.getString("file");
+					final String file = result.getString("file");
 					Set<Entry<String, Object>> thumbnails = new HashSet<Entry<String, Object>>();
 					if(result.containsField("thumbnails")){
 						thumbnails = result.getObject("thumbnails").toMap().entrySet();
@@ -1081,7 +1081,7 @@ public class WorkspaceService extends BaseController {
 											public void handle(JsonObject result2) {
 												if ("ok".equals(result2.getString("status"))) {
 													decrementStorage(result);
-													deleteAllRevisions(id);
+													deleteAllRevisions(id, new JsonArray().add(file));
 													renderJson(request, result2, 204);
 												} else {
 													renderError(request, result2);
@@ -2199,7 +2199,7 @@ public class WorkspaceService extends BaseController {
 		mongo.save(DOCUMENT_REVISION_COLLECTION, document, MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isLeft()) {
-					log.error("[Rack] Error creating revision " + id + "/" + file + " - " + event.left().getValue());
+					log.error("[Workspace] Error creating revision " + id + "/" + file + " - " + event.left().getValue());
 				}
 			}
 		}));
@@ -2227,7 +2227,7 @@ public class WorkspaceService extends BaseController {
 								mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
 									public void handle(Either<String, JsonObject> event) {
 										if (event.isLeft()) {
-											log.error("[Rack] Error deleting revision " + revisionId + " - " + event.left().getValue());
+											log.error("[Workspace] Error deleting revision " + revisionId + " - " + event.left().getValue());
 											badRequest(request, event.left().getValue());
 										} else {
 											decrementStorage(result);
@@ -2236,20 +2236,20 @@ public class WorkspaceService extends BaseController {
 									}
 								}));
 							} else {
-								log.error("[Rack] Error deleting revision storage file " + revisionId + " ["+file+"] - " + event.getString("message"));
+								log.error("[Workspace] Error deleting revision storage file " + revisionId + " ["+file+"] - " + event.getString("message"));
 								badRequest(request, event.getString("message"));
 							}
 						}
 					});
 				} else {
-					log.error("[Rack] Error finding revision storage file " + revisionId + " - " + event.left().getValue());
+					log.error("[Workspace] Error finding revision storage file " + revisionId + " - " + event.left().getValue());
 					notFound(request, event.left().getValue());
 				}
 			}
 		}));
 	}
 
-	private void deleteAllRevisions(final String documentId){
+	private void deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted){
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		JsonObject keys = new JsonObject();
 
@@ -2260,7 +2260,10 @@ public class WorkspaceService extends BaseController {
 					final JsonArray ids = new JsonArray();
 					for(Object obj : results){
 						JsonObject json = (JsonObject) obj;
-						ids.addString(json.getString("file"));
+						String id = json.getString("file");
+						if (id != null && !alreadyDeleted.contains(id)) {
+							ids.addString(id);
+						}
 					}
 					storage.removeFiles(ids, new Handler<JsonObject>() {
 						public void handle(JsonObject event) {
@@ -2269,7 +2272,7 @@ public class WorkspaceService extends BaseController {
 								mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String,JsonObject>>() {
 									public void handle(Either<String, JsonObject> event) {
 										if (event.isLeft()) {
-											log.error("[Rack] Error deleting revisions for document " + documentId + " - " + event.left().getValue());
+											log.error("[Workspace] Error deleting revisions for document " + documentId + " - " + event.left().getValue());
 										} else {
 											for(Object obj : results){
 												JsonObject result = (JsonObject) obj;
@@ -2279,12 +2282,12 @@ public class WorkspaceService extends BaseController {
 									}
 								}));
 							} else {
-								log.error("[Rack] Error deleting revision storage files for document " + documentId + " "+ids+" - " + event.getString("message"));
+								log.error("[Workspace] Error deleting revision storage files for document " + documentId + " "+ids+" - " + event.getString("message"));
 							}
 						}
 					});
 				} else {
-					log.error("[Rack] Error finding revision for document " + documentId + " - " + event.left().getValue());
+					log.error("[Workspace] Error finding revision for document " + documentId + " - " + event.left().getValue());
 				}
 			}
 		}));
