@@ -88,7 +88,7 @@
     "directory.admin.send": "envoyer",
     "directory.admin.setFunction": "Attribuer la fonction",
     "directory.admin.showInactive": "Afficher les personnes dont le compte n'a pas été activé",
-    "directory.admin.showIsolated": "Afficher les personnes rattachées à la structure",
+    "directory.admin.showIsolated": "Afficher les personnes non rattachées à une classe",
     "directory.admin.showPersonnel": "Afficher le personnel",
     "directory.admin.showRelative": "Afficher les parents",
     "directory.admin.showStudents": "Afficher les élèves",

@@ -347,7 +347,7 @@ Structure.prototype.loadStructure = function(periodicHook, endHook){
     structure.classes.sync(function(){
         structure.users.removeAll()
 
-        //Add isolated users
+        //Add all users
         http().get("user/admin/list", { structureId: structure.id }, { requestName: 'user-requests' }).done(function(data){
             _.forEach(data, function(u){
                 var user = new User(u)
@@ -375,11 +375,13 @@ Structure.prototype.addClassUsers = function(classe, hookArray, initClasses){
             if(existing){
                 existing.classesList    = !existing.classesList  ? [] : existing.classesList
                 existing.totalClasses   = !existing.totalClasses ? [] : existing.totalClasses
+                existing.isolated = false
                 existing.classesList.push(classe)
                 if(initClasses)
                     existing.totalClasses.push(classe)
             } else {
                 u.classesList = [ classe ]
+                u.isolated = false
                 if(initClasses)
                     u.totalClasses = [ classe ]
                 structure.users.all.push(new User(u))
