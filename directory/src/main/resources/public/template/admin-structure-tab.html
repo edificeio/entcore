@@ -22,11 +22,11 @@
     <!-- Structure details -->
     <div ng-if="structure && showWhat === 'showCurrentStructure'">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
-        <hr class="separator">
+        <hr class="separator cell">
         <div style="text-align:center">
             <button ng-click="structure.update()">[[lang.translate("directory.save")]]</button>
         </div>
-        <hr class="separator">
+        <hr class="separator cell">
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
         <div class="twelve cell">
             <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
@@ -40,6 +40,9 @@
                 </ul>
             </nav>
         </div>
+        <hr class="separator cell">
+        <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportStructure")]]</strong>
+        <button class="two cell" ng-click="openExport('structureId', structure.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
         <hr class="separator cell">
         <div class="twelve cell">
             <h3><i18n>directory.admin.attachChildStructures</i18n></h3>
