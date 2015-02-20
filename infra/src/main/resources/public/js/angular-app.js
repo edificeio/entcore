@@ -1684,6 +1684,7 @@ module.directive('htmlEditor', function($compile, $parse){
 								}
 
 								scope.addContent();
+								scope.selected.files = [];
 							});
 						}())
 
