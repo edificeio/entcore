@@ -122,6 +122,7 @@
       } else {
         if (this.hour <= this.minHour) {
           this.hour = this.maxHour;
+          this.minute = 0;
         } else {
           this.hour--;
         }
@@ -138,8 +139,8 @@
       }
 
       if (newVal < 0) {
-        this.decrementHour();
         this.minute = newVal + 60;
+        this.decrementHour();
       } else {
         this.minute = newVal;
       }
@@ -515,15 +516,22 @@
           this.hour = 0;
         }
       }
+      this.hour++;
       if (this.hour === this.maxHour) {
+        this.minute = 0;
+      }
+      else if (this.hour > this.maxHour) {
         this.hour = this.minHour;
-
         return;
       }
-      this.hour++;
     },
 
     incrementMinute: function(step) {
+      if (this.hour === this.maxHour && this.minute === 0) {
+        this.hour = this.minHour;
+        return;
+      }
+
       var newVal;
 
       if (step) {
@@ -813,8 +821,10 @@
         } else {
           if (hour >= this.maxHour) {
             hour = this.maxHour;
+            minute = 0;
           } else if (hour < this.minHour) {
             hour = this.minHour;
+            minute = 0;
           }
           if (hour < 13 && meridian === 'PM') {
             hour = hour + 12;
