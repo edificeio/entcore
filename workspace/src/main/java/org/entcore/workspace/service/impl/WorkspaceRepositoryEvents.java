@@ -42,7 +42,9 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
@@ -100,17 +102,28 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						public void handle(Message<JsonObject> event) {
 							JsonArray racks = event.body().getArray("results");
 							if ("ok".equals(event.body().getString("status")) && racks != null) {
+								final Set<String> usedFileName = new HashSet<>();
 								final JsonObject alias = new JsonObject();
 								final String [] ids = new String[racks.size() + documents.size()];
 								for (int i = 0; i < documents.size(); i++) {
 									JsonObject j = documents.get(i);
 									ids[i] = j.getString("file");
-									alias.putString(ids[i], j.getString("name"));
+									String fileName = j.getString("name");
+									if (usedFileName.add(fileName)) {
+										alias.putString(ids[i], fileName);
+									} else {
+										alias.putString(ids[i], ids[i] + "_" + fileName);
+									}
 								}
 								for (int i = 0; i < racks.size(); i++) {
 									JsonObject j = racks.get(i);
 									ids[i] = j.getString("file");
-									alias.putString(ids[i], j.getString("name"));
+									String fileName = j.getString("name");
+									if (usedFileName.add(fileName)) {
+										alias.putString(ids[i], fileName);
+									} else {
+										alias.putString(ids[i], ids[i] + "_" + fileName);
+									}
 								}
 								exportFiles(alias, ids, exportPath, locale, exported);
 							} else {

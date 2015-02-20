@@ -183,7 +183,7 @@ public class SwiftStorage implements Storage {
 				count.decrementAndGet();
 				continue;
 			}
-			String d = destinationPath + File.separator + id + "_" + alias.getString(id, "");
+			String d = destinationPath + File.separator + alias.getString(id, id);
 			swiftClient.writeToFileSystem(id, d, new AsyncResultHandler<String>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
