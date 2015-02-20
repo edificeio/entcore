@@ -79,7 +79,7 @@
                         ng-init="groupUsersClass = groupSelected.classes ? structure.classes.findWhere({id: groupSelected.classes[0].id}) : null"
                         ng-options="class as class.name for class in groupUsersStructure.classes.all | orderBy: 'name'"
                         ng-change="usersLimit = SCROLL_INCREMENT">
-                        <option value=""><i18n>directory.allClasses</i18n></option>
+                        <option value="">[[lang.translate("directory.allClasses")]]</option>
                 </select>
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
                 <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 355px; padding-top: 10; border-bottom: none">
