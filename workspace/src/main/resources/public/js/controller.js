@@ -445,9 +445,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc._id === item._id; })
 		} else {
 			http().put('/workspace/folder/trash/' + item._id).done($scope.reloadFolderView)
-			$scope.folder.children[$scope.folder.children.length - 1].children = $scope.folder.children[$scope.folder.children.length - 1].children.concat(
-				_.where($scope.openedFolder.folder.children, { _id: item._id })
-			);
 			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
 				return folder._id === item._id;
 			});
@@ -498,9 +495,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				return item === folder;
 			});
 
-			http().put('/workspace/folder/restore/' + folder._id);
+			http().put('/workspace/folder/restore/' + folder._id).done($scope.reloadFolderView);
 		});
-		updateFolders();
 	};
 
 	$scope.emptyTrash = function(){
