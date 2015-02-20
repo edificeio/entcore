@@ -329,7 +329,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.viewStructure = function(structure){
         $scope.structure = structure
 		structure.manualGroups.sync($scope.refreshScope)
-        structure.loadStructure($scope.refreshScope)
+        structure.loadStructure($scope.refreshScope, $scope.refreshScope)
     }
 
     $scope.reloadStructureAndRetrieveUser = function(user){
