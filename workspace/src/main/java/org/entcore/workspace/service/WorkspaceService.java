@@ -2283,7 +2283,8 @@ public class WorkspaceService extends BaseController {
 										} else {
 											for(Object obj : results){
 												JsonObject result = (JsonObject) obj;
-												decrementStorage(result);
+												if(!alreadyDeleted.contains(result.getString("file")))
+													decrementStorage(result);
 											}
 										}
 									}
