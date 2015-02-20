@@ -558,10 +558,8 @@ module.directive('calendar', function($compile){
 				model.calendar.addScheduleItems($scope.items);
 				$scope.calendar = model.calendar;
 				$scope.moment = moment;
-				$scope.display = {
-					editItem: false,
-					createItem: false
-				};
+				$scope.display.editItem = false;
+				$scope.display.createItem = false;
 
 				$scope.editItem = function(item){
 					$scope.calendarEditItem = item;
@@ -569,10 +567,6 @@ module.directive('calendar', function($compile){
 				};
 
 				$scope.createItem = function(day, timeslot){
-					if(!$scope.$parent.display.createTemplate){
-						return;
-					}
-					$scope.display.createItem = true;
 					$scope.newItem = {};
 					var year = model.calendar.year;
 					if(day.index < model.calendar.firstDay.dayOfYear()){
@@ -608,17 +602,25 @@ module.directive('calendar', function($compile){
 			$scope.refreshCalendar = refreshCalendar;
 		},
 		link: function(scope, element, attributes){
-			template.open('schedule-display-template', attributes.displayTemplate);
-			template.open('schedule-create-template', attributes.createTemplate);
-
+			var allowCreate;
+			scope.display = {};
 			attributes.$observe('createTemplate', function(){
-				scope.display.displayTemplate = attributes.displayTemplate;
-				scope.display.createTemplate = attributes.createTemplate;
+				if(attributes.createTemplate){
+					template.open('schedule-create-template', attributes.createTemplate);
+					allowCreate = true;
+				}
+				if(attributes.displayTemplate){
+					template.open('schedule-display-template', attributes.displayTemplate);
+				}
 			});
 
 			scope.items = scope.$eval(attributes.items);
 			scope.onCreateOpen = function(){
+				if(!allowCreate){
+					return;
+				}
 				scope.$eval(attributes.onCreateOpen);
+				scope.display.createItem = true;
 			};
 			scope.onCreateClose = function(){
 				scope.$eval(attributes.onCreateClose);
@@ -751,7 +753,7 @@ module.directive('scheduleItem', function($compile){
 					top: ((hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight) + 'px',
 					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
 				});
-			}
+			};
 
 			scope.$parent.$watchCollection('items', placeItem);
 			scope.$watch('item', placeItem);
