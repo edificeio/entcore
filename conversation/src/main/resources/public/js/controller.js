@@ -33,6 +33,7 @@ routes.define(function($routeProvider){
 function Conversation($scope, date, notify, route, model){
 	route({
 		readMail: function(params){
+			model.folders.openFolder('inbox');
 			$scope.openView('folders', 'page');
 			$scope.readMail(new Mail({ id: params.mailId }));
 		},
