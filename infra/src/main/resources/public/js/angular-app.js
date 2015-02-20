@@ -4301,6 +4301,18 @@ function WidgetModel(){
 						this.preferences = JSON.parse(pref.preference);
 					}
 
+					data = data.filter(function(widget){
+						if(widget.workflows){
+							var allow = true;
+							widget.workflows.forEach(function(workflow){
+								allow = allow && model.me.hasWorkflow(workflow);
+							});
+							return allow;
+						}
+						else{
+							return true;
+						}
+					});
 
 					data = data.map(function(widget, i){
 						if(!that.preferences[widget.name]){
