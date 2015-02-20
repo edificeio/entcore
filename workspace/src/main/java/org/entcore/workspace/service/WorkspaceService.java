@@ -793,6 +793,13 @@ public class WorkspaceService extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
+								//Delete revisions for each sub-document
+								for(Object obj : r.right().getValue()){
+									JsonObject item = (JsonObject) obj;
+									if(item.containsField("file"))
+										deleteAllRevisions(item.getString("_id"), new JsonArray().add(item.getString("file")));
+								}
+								//Decrement storage
 								decrementStorage(r.right().getValue());
 								renderJson(request, new JsonObject()
 										.putNumber("number", r.right().getValue().size()), 204);
