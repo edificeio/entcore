@@ -90,7 +90,7 @@ public class MongoDbShareService extends GenericShareService {
 							String u;
 							if (g != null) {
 								gs.putArray(g, a);
-							} else if ((u = userShared.getString("userId")) != null){
+							} else if ((u = userShared.getString("userId")) != null && !u.equals(userId)){
 								us.putArray(u, a);
 							}
 						}

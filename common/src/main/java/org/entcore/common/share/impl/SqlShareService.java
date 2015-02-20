@@ -77,6 +77,7 @@ public class SqlShareService extends GenericShareService {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray row = (JsonArray) o;
 						final String memberId = row.get(0);
+						if (memberId == null || memberId.equals(userId)) continue;
 						final JsonObject checkedActions = (row.get(2) != null) ? groupCheckedActions : userCheckedActions;
 						JsonArray m = checkedActions.getArray(memberId);
 						if (m == null) {
