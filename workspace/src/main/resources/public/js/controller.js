@@ -761,7 +761,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					loadingFile.loading = false;
 					var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 					if(path !== ''){
-						http().put("documents/move/" + e._id + '/' + path).done(function(){
+						http().put("documents/move/" + e._id + '/' + encodeURIComponent(path)).done(function(){
 							$scope.openFolder($scope.openedFolder.folder);
 						});
 					}
