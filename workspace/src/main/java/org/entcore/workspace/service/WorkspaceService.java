@@ -151,7 +151,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Get("/share/json/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void shareJson(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -256,7 +256,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/share/json/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void shareJsonSubmit(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -298,7 +298,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/share/remove/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void removeShare(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -1058,7 +1058,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Delete("/document/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void deleteDocument(HttpServerRequest request) {
 		deleteFile(request, documentDao, null);
 	}
@@ -1309,7 +1309,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Post("/document/copy/:id/:folder")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void copyDocument(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -1720,7 +1720,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/document/move/:id/:folder")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void moveDocument(final HttpServerRequest request) {
 		String folder = getOrElse(request.params().get("folder"), "");
 		try {
@@ -1732,7 +1732,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/document/trash/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void moveTrash(final HttpServerRequest request) {
 		moveOne(request, "Trash", documentDao, null);
 	}
@@ -1771,7 +1771,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/documents/move/:ids/:folder")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void moveDocuments(final HttpServerRequest request) {
 		final String ids = request.params().get("ids"); // TODO refactor with json in request body
 		String tempFolder = getOrElse(request.params().get("folder"), "");
@@ -1975,7 +1975,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	@Put("/restore/document/:id")
-	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void restoreTrash(HttpServerRequest request) {
 		restore(request, documentDao, null);
 	}
