@@ -48,6 +48,8 @@ import java.util.Set;
 
 public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
+	private static final String REVISIONS_COLLECTION = "documentsRevisions";
+
 	private static final Logger log = LoggerFactory.getLogger(WorkspaceRepositoryEvents.class);
 	private final MongoDb mongo = MongoDb.getInstance();
 	private final EventBus eb;
@@ -234,6 +236,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		deleteFiles(queryDocuments, DocumentDao.DOCUMENTS_COLLECTION);
 		final JsonObject queryRacks = MongoQueryBuilder.build(QueryBuilder.start("to").in(userIds));
 		deleteFiles(queryRacks, RackDao.RACKS_COLLECTION);
+		deleteFiles(queryDocuments, REVISIONS_COLLECTION);
 	}
 
 	private void deleteFiles(final JsonObject query, final String collection) {
