@@ -35,7 +35,7 @@
                     <i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
                 </th>
-                <th scope="col" class="icon" ng-if="targetDocument.myRights.document.manageRevisions"></th>
+                <th scope="col" class="icon"></th>
             </tr>
         </thead>
         <tbody>
@@ -70,7 +70,7 @@
                     <i class="close-2x"
                        ng-click="deleteRevision(revision)"
                        tooltip="workspace.delete.version"
-                       ng-if="targetDocument.myRights.document.manageRevisions && revision.file !== targetDocument.file"></i>
+                       ng-if="(targetDocument.myRights.document.manageRevisions || revision.userId === me.userId && targetDocument.myRights.document.postRevision) && revision.file !== targetDocument.file"></i>
                 </td>
             </tr>
         </tbody>

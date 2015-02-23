@@ -21,12 +21,15 @@ package org.entcore.workspace.service.impl;
 
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+
 import org.entcore.common.user.RepositoryEvents;
+import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.RackDao;
 import org.entcore.common.storage.Storage;
@@ -47,8 +50,6 @@ import java.util.List;
 import java.util.Set;
 
 public class WorkspaceRepositoryEvents implements RepositoryEvents {
-
-	private static final String REVISIONS_COLLECTION = "documentsRevisions";
 
 	private static final Logger log = LoggerFactory.getLogger(WorkspaceRepositoryEvents.class);
 	private final MongoDb mongo = MongoDb.getInstance();
@@ -236,7 +237,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		deleteFiles(queryDocuments, DocumentDao.DOCUMENTS_COLLECTION);
 		final JsonObject queryRacks = MongoQueryBuilder.build(QueryBuilder.start("to").in(userIds));
 		deleteFiles(queryRacks, RackDao.RACKS_COLLECTION);
-		deleteFiles(queryDocuments, REVISIONS_COLLECTION);
+		deleteFiles(queryDocuments, Workspace.REVISIONS_COLLECTION);
 	}
 
 	private void deleteFiles(final JsonObject query, final String collection) {

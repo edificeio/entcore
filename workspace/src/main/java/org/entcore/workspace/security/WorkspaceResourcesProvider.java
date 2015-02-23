@@ -20,8 +20,10 @@
 package org.entcore.workspace.security;
 
 import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
+import org.entcore.workspace.Workspace;
 import org.entcore.workspace.controllers.QuotaController;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -31,6 +33,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.Binding;
+
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.dao.DocumentDao;
@@ -43,8 +46,8 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	private MongoDb mongo = MongoDb.getInstance();
 
 	@Override
-	public void authorize(HttpServerRequest request, Binding binding,
-			UserInfos user, Handler<Boolean> handler) {
+	public void authorize(final HttpServerRequest request, final Binding binding,
+			final UserInfos user, final Handler<Boolean> handler) {
 		final String serviceMethod = binding.getServiceMethod();
 		if (serviceMethod != null && serviceMethod.startsWith(WorkspaceService.class.getName())) {
 			String method = serviceMethod
@@ -66,8 +69,19 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "removeShare":
 			case "getRevision":
 			case "listRevisions":
-			case "deleteRevision":
 				authorizeDocument(request, user, binding.getServiceMethod(), handler);
+				break;
+			case "deleteRevision":
+				authorizeRevisionOwner(request, user, binding.getServiceMethod(), new Handler<Boolean>() {
+					public void handle(Boolean check) {
+						if(check){
+							authorizeDocument(request, user, serviceMethod.substring(0, WorkspaceService.class.getName().length() + 1) + "updateDocument", handler);
+						}
+						else {
+							authorizeDocument(request, user, binding.getServiceMethod(), handler);
+						}
+					}
+				});
 				break;
 			case "moveDocuments":
 			case "copyDocuments":
@@ -251,6 +265,17 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"owner\": \"" + user.getUserId() + "\" }";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
+		} else {
+			handler.handle(false);
+		}
+	}
+
+	private void authorizeRevisionOwner(HttpServerRequest request, UserInfos user, String serviceMethod, final Handler<Boolean> handler) {
+		final String revisionId = request.params().get("revisionId");
+		JsonObject query = new JsonObject("{ \"_id\": \"" + revisionId + "\", \"userId\": \"" + user.getUserId() + "\" }");
+
+		if(revisionId != null && !revisionId.trim().isEmpty()){
+			executeCountQuery(request, Workspace.REVISIONS_COLLECTION, query, 1, handler);
 		} else {
 			handler.handle(false);
 		}

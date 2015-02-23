@@ -28,12 +28,10 @@ import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
-import org.vertx.java.core.http.HttpClient;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class Workspace extends BaseServer {
+
+	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 
 	@Override
 	public void start() {
