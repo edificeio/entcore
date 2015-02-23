@@ -756,8 +756,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			var url = 'document';
 			var request = http().postFile(url + '?thumbnail=120x120&thumbnail=290x290',  formData, {
 					requestName: 'file-upload-' + file.file.name + '-' + index
-				})
-				.done(function(e){
+				}).done(function(e){
 					loadingFile.loading = false;
 					var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 					if(path !== ''){
@@ -770,7 +769,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					}
 
 					getQuota();
-				}).xhr;
+				}).e400(function(e){
+					var error = JSON.parse(e.responseText);
+					notify.error(error.error);
+				});
 
 			loadingFile.request = request;
 			$scope.loadingFiles.push(loadingFile);
@@ -1444,7 +1446,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		http().putFile("document/"+$scope.targetDocument._id+"?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
 			//$scope.openHistory($scope.targetDocument)
 			$scope.openFolder($scope.openedFolder.folder)
-		})
+		}).e400(function(e){
+			var error = JSON.parse(e.responseText);
+			notify.error(error.error);
+		});
 	}
 
 	$scope.deleteRevision = function(revision){

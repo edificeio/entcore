@@ -31,6 +31,8 @@
     "e408": "Temps d'attente dépassé, veuillez réessayer",
     "e413": "Ce fichier est trop gros",
     "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
+    "file.too.large": "Espace insuffisant pour stocker le fichier.",
+    "files.too.large": "Espace insuffisant pour stocker les fichiers.",
     "edit": "Modifier",
     "forum": "Forum",
     "friday": "vendredi",

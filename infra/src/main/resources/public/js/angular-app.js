@@ -4520,6 +4520,9 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 		if(typeof callback === 'function'){
 			callback(data);
 		}
+	}).e400(function(e){
+		var error = JSON.parse(e.responseText);
+		notify.error(error.error);
 	});
 };
 
