@@ -420,18 +420,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.toTrash = function(url){
 		$scope.selectedFolders().forEach(function(folder){
-			http().put('/workspace/folder/trash/' + folder._id);
+			http().put('/workspace/folder/trash/' + folder._id).done($scope.reloadFolderView);
+			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
+				return folder.selected;
+			});
 		});
 		$scope.selectedDocuments().forEach(function(document){
-			http().put(url + "/" + document._id).done($scope.reloadFolderView)
-		});
-		$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
-
-		$scope.folder.children[$scope.folder.children.length - 1].children = $scope.folder.children[$scope.folder.children.length - 1].children.concat(
-			_.where($scope.openedFolder.folder.children, { selected: true })
-		);
-		$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(folder){
-			return folder.selected;
+			http().put(url + "/" + document._id)
+			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
 		});
 
 		refreshFolders();
@@ -1446,6 +1442,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		http().putFile("document/"+$scope.targetDocument._id+"?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
 			//$scope.openHistory($scope.targetDocument)
 			$scope.openFolder($scope.openedFolder.folder)
+			getQuota()
 		}).e400(function(e){
 			var error = JSON.parse(e.responseText);
 			notify.error(error.error);
@@ -1456,6 +1453,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(function(){
 			$('.tooltip').remove()
 			$scope.openHistory($scope.targetDocument)
+			getQuota()
 		})
 	}
 }
