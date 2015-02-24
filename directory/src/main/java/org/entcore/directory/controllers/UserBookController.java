@@ -264,6 +264,29 @@ public class UserBookController extends BaseController {
 		});
 	}
 
+	@Get("/visible/users/:groupId")
+	@SecuredAction(value = "userbook.visible.users.group", type = ActionType.AUTHENTICATED)
+	public void visibleUsersGroup(final HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		if (groupId == null || groupId.trim().isEmpty()) {
+			badRequest(request, "invalid.groupId");
+			return;
+		}
+		String customReturn =
+				"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
+				"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
+				"visibles.displayName as displayName, visibles.login as login " +
+				"ORDER BY type DESC, displayName ";
+		final JsonObject params = new JsonObject().putString("groupId", groupId);
+		UserUtils.findVisibleUsers(eb, request, true, false, customReturn, params, new Handler<JsonArray>() {
+
+			@Override
+			public void handle(final JsonArray users) {
+				renderJson(request, users);
+			}
+		});
+	}
+
 	@Get("/api/class")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
