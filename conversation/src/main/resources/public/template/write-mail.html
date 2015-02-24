@@ -12,8 +12,7 @@
 			</div>
 			<div class="row">
 				<label class="two cell" translate key="to"></label>
-				<input type="text" class="ten cell" ng-model="users.search"
-					   ng-change="updateFoundUsers()" id="to-users" />
+				<input type="text" class="ten cell" ng-model="users.search" autofocus ng-change="updateFoundUsers()" id="to-users" />
 			</div>
 			<drop-down
 					options="users.found"
