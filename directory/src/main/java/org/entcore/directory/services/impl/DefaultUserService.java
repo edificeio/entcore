@@ -55,6 +55,7 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
+		user.putArray("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-create-user")
 				.putString("structureId", structureId)
@@ -65,6 +66,7 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result) {
+		user.putArray("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-create-user")
 				.putString("classId", classId)
