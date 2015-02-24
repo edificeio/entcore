@@ -13,7 +13,7 @@
 <div class="row">
     <h3><i18n>directory.admin.exportTitle</i18n></h3>
     <label class="five cell"><span>[[lang.translate("directory.launchUserExport")]]</span></label>
-    <button class="three cell" ng-click="openExport(export_mode, export_mode === 'classId' ? exportClass.id : exportStructure.id)">[[lang.translate("directory.export")]]</button>
+    <button class="three cell" ng-click="openExport(export_mode, export_mode === 'classId' ? exportData.exportClass.id : exportData.exportStructure.id)">[[lang.translate("directory.export")]]</button>
 </div>
 <div class="row">
     <h1 class="three" style="height: 30px;font-size: 18px;margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
@@ -23,7 +23,7 @@
         <option value="classId">[[lang.translate("directory.classe")]]</option>
     </select>
     <div class="row" ng-if="export_mode !== 'all'">
-        <select class="four cell" ng-model="$parent.exportStructure" ng-change="refreshClasses(exportStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
-        <select ng-if="export_mode === 'classId'" ng-model="$parent.exportClass" class="four cell" ng-options="class as class.name for class in exportStructure.classes.all | orderBy: 'name'"></select>
+        <select class="four cell" ng-model="exportData.exportStructure" ng-change="refreshClasses(exportData.exportStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+        <select ng-if="export_mode === 'classId'" ng-model="exportData.exportClass" class="four cell" ng-options="class as class.name for class in exportData.exportStructure.classes.all | orderBy: 'name'"></select>
     </div>
 </div>

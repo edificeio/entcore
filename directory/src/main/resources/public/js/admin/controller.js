@@ -294,6 +294,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
     ////////
 
+	$scope.exportData = {}
     //Starts the download in a new tab.
     $scope.openExport = function(export_mode, export_id){
         var where = 'export/users?format=csv'
