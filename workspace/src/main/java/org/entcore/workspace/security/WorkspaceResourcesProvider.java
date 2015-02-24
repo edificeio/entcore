@@ -239,7 +239,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			String query = "{ \"_id\": \"" + id + "\", \"$or\" : [{ \"owner\": \"" + user.getUserId() +
-					"\"}, { \"protected\" : true}, {\"shared\" : { \"$elemMatch\" : " +
+					"\"}, { \"protected\" : true}, { \"public\" : true}, {\"shared\" : { \"$elemMatch\" : " +
 					orSharedElementMatch(user, serviceMethod) + "}}]}";
 			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), 1, handler);
 		} else {

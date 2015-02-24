@@ -50,7 +50,11 @@ public class GenericDao {
 	}
 
 	public void findById(String id, String onwer, final Handler<JsonObject> handler) {
-		mongo.findOne(collection,  idMatcher(id, onwer), new Handler<Message<JsonObject>>() {
+		findById(id, onwer, false, handler);
+	}
+
+	public void findById(String id, String onwer, boolean publicOnly, final Handler<JsonObject> handler) {
+		mongo.findOne(collection,  idMatcher(id, onwer, publicOnly), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				handler.handle(res.body());
@@ -59,9 +63,15 @@ public class GenericDao {
 	}
 
 	protected JsonObject idMatcher(String id, String owner) {
+		return idMatcher(id, owner, false);
+	}
+
+	protected JsonObject idMatcher(String id, String owner, boolean publicOnly) {
 		String query;
 		if (owner != null && !owner.trim().isEmpty()) {
 			query = "{ \"_id\": \"" + id + "\", \"owner\" : \"" + owner + "\"}";
+		} else if (publicOnly) {
+			query = "{ \"_id\": \"" + id + "\", \"public\" : true}";
 		} else {
 			query = "{ \"_id\": \"" + id + "\"}";
 		}

@@ -430,9 +430,13 @@ public class WorkspaceService extends BaseController {
 					doc.putString("ownerName", userInfos.getUsername());
 					String application = request.params().get("application");
 					String protectedContent = request.params().get("protected");
+					String publicContent = request.params().get("public");
 					if (application != null && !application.trim().isEmpty() &&
 							"true".equals(protectedContent)) {
 						doc.putBoolean("protected", true);
+					} else if (application != null && !application.trim().isEmpty() &&
+							"true".equals(publicContent)) {
+						doc.putBoolean("public", true);
 					}
 					request.pause();
 					emptySize(userInfos, new Handler<Long>() {
@@ -1046,11 +1050,16 @@ public class WorkspaceService extends BaseController {
 	@Get("/document/:id")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void getDocument(HttpServerRequest request) {
-		getFile(request, documentDao, null);
+		getFile(request, documentDao, null, false);
 	}
 
-	private void getFile(final HttpServerRequest request, GenericDao dao, String owner) {
-		dao.findById(request.params().get("id"), owner, new Handler<JsonObject>() {
+	@Get("/pub/document/:id")
+	public void getPublicDocument(HttpServerRequest request) {
+		getFile(request, documentDao, null, true);
+	}
+
+	private void getFile(final HttpServerRequest request, GenericDao dao, String owner, boolean publicOnly) {
+		dao.findById(request.params().get("id"), owner, publicOnly, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
