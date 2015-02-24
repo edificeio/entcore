@@ -220,7 +220,7 @@ public class DefaultConversationService implements ConversationService {
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) { // reply
 			usersQuery =
 					"MATCH (m:ConversationMessage { id : {parentMessageId}}) " +
-					"WITH (COLLECT(visibles.id) + m.to + m.cc + m.from) as vis " +
+					"WITH (COLLECT(visibles.id) + coalesce(m.to, '') + coalesce(m.cc, '') + coalesce(m.from, '')) as vis " +
 					"MATCH (v:Visible) " +
 					"WHERE v.id IN vis " +
 					"WITH DISTINCT v ";

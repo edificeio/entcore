@@ -42,6 +42,10 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
+		String q0 =
+				"MATCH (m:ConversationMessage) " +
+				"WHERE m.from = {group} OR {group} IN m.to OR {group} IN m.cc " +
+				"SET m.displayNames = FILTER(gId IN m.displayNames WHERE NOT(gId =~ {groupRegex}))";
 		String q1 =
 				"MATCH (m:ConversationMessage {from : {group}}) " +
 				"SET m.fromName = {groupName}, m.from = null ";
@@ -58,6 +62,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject params = (JsonObject) o;
 			params.removeField("users");
+			b.add(q0, params.putString("groupRegex", params.getString("group") + ".*"));
 			b.add(q1, params);
 			b.add(q2, params);
 			b.add(q3, params);
@@ -93,6 +98,10 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 				"DELETE m, pr ";
 		b.add(query);
 
+		String q0 =
+				"MATCH (m:ConversationMessage) " +
+				"WHERE m.from = {id} OR {id} IN m.to OR {id} IN m.cc " +
+				"SET m.displayNames = FILTER(gId IN m.displayNames WHERE NOT(gId =~ {idRegex}))";
 		String q1 =
 				"MATCH (m:ConversationMessage {from : {id}}) " +
 				"SET m.fromName = {displayName}, m.from = null ";
@@ -107,6 +116,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject params = (JsonObject) o;
+			b.add(q0, params.putString("idRegex", params.getString("id") + ".*"));
 			b.add(q1, params);
 			b.add(q2, params);
 			b.add(q3, params);
