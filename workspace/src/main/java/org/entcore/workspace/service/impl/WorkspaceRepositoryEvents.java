@@ -229,15 +229,33 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	@Override
 	public void deleteUsers(JsonArray users) {
 		String [] userIds = new String[users.size()];
+		JsonArray oldShared = new JsonArray();
 		for (int i = 0; i < users.size(); i++) {
 			JsonObject j = users.get(i);
-			userIds[i] = j.getString("id");
+			String id = j.getString("id");
+			userIds[i] = id;
+			oldShared.add(new JsonObject().putString("userId", id));
 		}
 		final JsonObject queryDocuments = MongoQueryBuilder.build(QueryBuilder.start("owner").in(userIds));
 		deleteFiles(queryDocuments, DocumentDao.DOCUMENTS_COLLECTION);
 		final JsonObject queryRacks = MongoQueryBuilder.build(QueryBuilder.start("to").in(userIds));
 		deleteFiles(queryRacks, RackDao.RACKS_COLLECTION);
 		deleteFiles(queryDocuments, Workspace.REVISIONS_COLLECTION);
+
+		final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
+		JsonObject update = new JsonObject()
+				.putObject("$pull", new JsonObject()
+						.putObject("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))))
+				.putObject("$addToSet", new JsonObject()
+						.putObject("old_shared", new JsonObject().putArray("$each", oldShared)));
+		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if (!"ok".equals(event.body().getString("status"))) {
+					log.error(event.body().getString("message"));
+				}
+			}
+		});
 	}
 
 	private void deleteFiles(final JsonObject query, final String collection) {
