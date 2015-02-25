@@ -45,4 +45,9 @@ public final class DefaultProfiles {
 			.putString("externalId", PERSONNEL_PROFILE_EXTERNAL_ID)
 			.putString("name", "Personnel");
 
+	public static final String GUEST_PROFILE_EXTERNAL_ID = "PROFILE_GUEST";
+	public static final JsonObject GUEST_PROFILE = new JsonObject()
+			.putString("externalId", GUEST_PROFILE_EXTERNAL_ID)
+			.putString("name", "Guest");
+
 }

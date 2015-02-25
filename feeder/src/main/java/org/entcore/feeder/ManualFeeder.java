@@ -60,6 +60,7 @@ public class ManualFeeder extends BusModBase {
 		p.put("Teacher", new Validator("dictionary/schema/Personnel.json"));
 		p.put("Student", new Validator("dictionary/schema/Student.json"));
 		p.put("Relative", new Validator("dictionary/schema/User.json"));
+		p.put("Guest", new Validator("dictionary/schema/User.json"));
 		profiles = Collections.unmodifiableMap(p);
 	}
 

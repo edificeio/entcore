@@ -109,6 +109,7 @@ public class Be1dFeeder implements Feed {
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
 		importer.createOrUpdateProfile(TEACHER_PROFILE);
+		importer.createOrUpdateProfile(GUEST_PROFILE);
 		DefaultFunctions.createOrUpdateFunctions(importer);
 		final String [] directories = vertx.fileSystem().readDirSync(path);
 		final JsonArray errors = new JsonArray();

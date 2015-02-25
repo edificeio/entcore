@@ -68,6 +68,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
 		importer.createOrUpdateProfile(TEACHER_PROFILE);
+		importer.createOrUpdateProfile(GUEST_PROFILE);
 	}
 
 	@Override
