@@ -104,6 +104,11 @@ public class Be1dFeeder implements Feed {
 		}
 	}
 
+	@Override
+	public String getSource() {
+		return "BE1D";
+	}
+
 	private void start(final Handler<Message<JsonObject>> handler) {
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);

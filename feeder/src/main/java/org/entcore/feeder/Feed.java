@@ -28,4 +28,6 @@ public interface Feed {
 
 	void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception;
 
+	String getSource();
+
 }

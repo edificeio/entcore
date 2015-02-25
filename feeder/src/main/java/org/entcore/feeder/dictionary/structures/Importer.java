@@ -50,6 +50,7 @@ public class Importer {
 	private final Validator personnelValidator;
 	private final Validator studentValidator;
 	private boolean firstImport = false;
+	private String currentSource;
 	private Neo4j neo4j;
 
 	private Importer() {
@@ -70,8 +71,9 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, final Handler<Message<JsonObject>> handler) {
+	public void init(final Neo4j neo4j, String source, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
+		this.currentSource = source;
 		this.transactionHelper = new TransactionHelper(neo4j, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
@@ -231,6 +233,7 @@ public class Importer {
 		if (error != null) {
 			log.warn(error);
 		} else {
+			object.putString("source", currentSource);
 			userImportedExternalId.add(object.getString("externalId"));
 			String query;
 			JsonObject params;
@@ -327,6 +330,7 @@ public class Importer {
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
+				object.putString("source", currentSource);
 				userImportedExternalId.add(object.getString("externalId"));
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
@@ -447,6 +451,7 @@ public class Importer {
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
+				object.putString("source", currentSource);
 				userImportedExternalId.add(object.getString("externalId"));
 				StringBuilder sb = new StringBuilder();
 				JsonObject params;
@@ -615,14 +620,14 @@ public class Importer {
 
 	public void markMissingUsers(String structureExternalId, final Handler<Void> handler) {
 		String query;
-		JsonObject params = new JsonObject();
+		JsonObject params = new JsonObject().putString("currentSource", currentSource);
 		if (structureExternalId != null) {
 			query = "MATCH (:Structure {externalId : {externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE NOT(HAS(u.manual)) " +
+					"WHERE u.source = {currentSource} " +
 					"RETURN u.externalId as externalId";
 			params.putString("externalId", structureExternalId);
 		} else {
-			query = "MATCH (u:User) WHERE NOT(HAS(u.manual)) RETURN u.externalId as externalId";
+			query = "MATCH (u:User) WHERE u.source = {currentSource} RETURN u.externalId as externalId";
 		}
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override

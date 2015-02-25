@@ -53,6 +53,7 @@ public class ManualFeeder extends BusModBase {
 	private static final Map<String, Validator> profiles;
 	private final Neo4j neo4j;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
+	public static final String SOURCE = "MANUAL";
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -184,7 +185,7 @@ public class ManualFeeder extends BusModBase {
 			sendError(message, error);
 			return;
 		}
-		user.putBoolean("manual", true);
+		user.putString("source", SOURCE);
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			createUserInStructure(message, user, profile, structureId, childrenIds);

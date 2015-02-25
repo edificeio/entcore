@@ -81,4 +81,9 @@ public class AafFeeder implements Feed {
 		}
 	}
 
+	@Override
+	public String getSource() {
+		return "AAF";
+	}
+
 }
