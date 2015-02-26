@@ -252,7 +252,7 @@ public class DefaultUserService implements UserService {
 				functionMatch + filterProfile + condition +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
 				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
-				"u.lastName as lastName, u.displayName as displayName " +
+				"u.lastName as lastName, u.displayName as displayName, u.source as source " +
 				"ORDER BY type DESC, displayName ASC ";
 		neo.execute(query, params, validResultHandler(results));
 	}
@@ -359,6 +359,33 @@ public class DefaultUserService implements UserService {
 				.putString("relativeId", relativeId)
 				.putString("studentId", studentId);
 		eb.send(Directory.FEEDER, action, validEmptyHandler(eitherHandler));
+	}
+
+	@Override
+	public void ignoreDuplicate(String userId1, String userId2, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "ignore-duplicate")
+				.putString("userId1", userId1)
+				.putString("userId2", userId2);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+
+	@Override
+	public void listDuplicates(JsonArray structures, boolean inherit, Handler<Either<String, JsonArray>> results) {
+		JsonObject action = new JsonObject()
+				.putString("action", "list-duplicate")
+				.putArray("structures", structures)
+				.putBoolean("inherit", inherit);
+		eb.send(Directory.FEEDER, action, validResultHandler(results));
+	}
+
+	@Override
+	public void mergeDuplicate(String userId1, String userId2, Handler<Either<String, JsonObject>> handler) {
+		JsonObject action = new JsonObject()
+				.putString("action", "merge-duplicate")
+				.putString("userId1", userId1)
+				.putString("userId2", userId2);
+		eb.send(Directory.FEEDER, action, validEmptyHandler(handler));
 	}
 
 	@Override

@@ -118,8 +118,18 @@ public class TransactionManager {
 		return neo4j;
 	}
 
+	public static Neo4j getNeo4jHelper() {
+		return TransactionManager.getInstance().getNeo4j();
+	}
+
 	public static TransactionHelper getTransaction() throws TransactionException {
 		return TransactionManager.getInstance().begin();
+	}
+
+	public static TransactionHelper getTransaction(boolean autoSend) throws TransactionException {
+		TransactionHelper tx = TransactionManager.getInstance().begin();
+		tx.setAutoSend(autoSend);
+		return tx;
 	}
 
 	public static void executeTransaction(final Function<TransactionHelper, Message<JsonObject>> f) {

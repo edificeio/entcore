@@ -45,6 +45,7 @@ public class TransactionHelper {
 	private Handler<Message<JsonObject>> commitHandler;
 	private boolean flush = false;
 	private Handler<Message<JsonObject>> flushHandler;
+	private boolean autoSend = true;
 
 	class ResetTransactionTimer extends TimerTask {
 
@@ -73,7 +74,7 @@ public class TransactionHelper {
 	}
 
 	public void add(String query, JsonObject params) {
-		if (!waitingQuery && transactionId != null &&
+		if (autoSend && !waitingQuery && transactionId != null &&
 				remainingStatementNumber.getAndDecrement() == 0) {
 			send(statements.copy());
 			statements = new JsonArray();
@@ -181,6 +182,15 @@ public class TransactionHelper {
 
 	boolean isEmpty() {
 		return statements == null || statements.size() == 0;
+	}
+
+
+	public boolean isAutoSend() {
+		return autoSend;
+	}
+
+	public void setAutoSend(boolean autoSend) {
+		this.autoSend = autoSend;
 	}
 
 }

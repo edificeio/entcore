@@ -50,7 +50,7 @@ public class ManualFeeder extends BusModBase {
 
 	private static final Validator structureValidator = new Validator("dictionary/schema/Structure.json");
 	private static final Validator classValidator = new Validator("dictionary/schema/Class.json");
-	private static final Map<String, Validator> profiles;
+	public static final Map<String, Validator> profiles;
 	private final Neo4j neo4j;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final String SOURCE = "MANUAL";

@@ -74,4 +74,10 @@ public interface UserService {
 
 	void unlinkRelativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler);
 
+	void ignoreDuplicate(String userId1, String userId2, Handler<Either<String, JsonObject>> result);
+
+	void listDuplicates(JsonArray structures, boolean inherit, Handler<Either<String, JsonArray>> results);
+
+	void mergeDuplicate(String userId1, String userId2, Handler<Either<String,JsonObject>> handler);
+
 }

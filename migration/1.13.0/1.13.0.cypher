@@ -9,4 +9,6 @@ SET pg.id = id(pg)+'-'+timestamp();
 MATCH (u:User {manual:true}) SET u.source = 'MANUAL', u.manual = null;
 MATCH (u:User) WHERE NOT(HAS(u.source)) AND HAS(u.joinKey) SET u.source = 'AAF';
 MATCH (u:User) WHERE NOT(HAS(u.source)) SET u.source = 'BE1D';
+start n=node(*) where has(n.externalId) set n.externalId = n.externalId;
+MATCH (u:User) SET u.firstName = u.firstName, u.lastName = u.lastName;
 commit

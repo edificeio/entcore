@@ -48,6 +48,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private Neo4j neo4j;
 	private Exporter exporter;
 	private EventStore eventStore;
+	private DuplicateUsers duplicateUsers;
 	public enum FeederEvent { IMPORT, DELETE_USER, CREATE_USER }
 
 	@Override
@@ -86,6 +87,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
+		duplicateUsers = new DuplicateUsers(container.config()
+				.getArray("duplicateSources", new JsonArray().add(ManualFeeder.SOURCE)));
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
 		switch (container.config().getString("feeder", "")) {
@@ -175,6 +178,18 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "export" : launchExport(message);
 				break;
+			case "ignore-duplicate" :
+				duplicateUsers.ignoreDuplicate(message);
+				break;
+			case "list-duplicate" :
+				duplicateUsers.listDuplicates(message);
+				break;
+			case "merge-duplicate" :
+				duplicateUsers.mergeDuplicate(message);
+				break;
+			case "mark-duplicates" :
+				duplicateUsers.markDuplicates(message);
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}
@@ -250,6 +265,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 									logger.info(m.body().encode());
 									applyComRules();
 									storeImportedEvent();
+									duplicateUsers.markDuplicates();
 									sendOK(message);
 								} else if (m != null) {
 									logger.error(m.body().getString("message"));

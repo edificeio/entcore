@@ -110,6 +110,17 @@ public class DirectoryController extends BaseController {
 		});
 	}
 
+	@Post("/duplicates/mark")
+	@SecuredAction("directory.duplicates.mark")
+	public void markDuplicates(final HttpServerRequest request) {
+		eb.send("entcore.feeder", new JsonObject().putString("action", "mark-duplicates"), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				renderJson(request, event.body());
+			}
+		});
+	}
+
 	@Post("/export")
 	@SecuredAction("directory.export")
 	public void launchExport(HttpServerRequest request) {

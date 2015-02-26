@@ -260,7 +260,7 @@ public class Validator {
 		}
 	}
 
-	private static String removeAccents(String str) {
+	public static String removeAccents(String str) {
 		return Normalizer.normalize(str, Normalizer.Form.NFD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}

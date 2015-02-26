@@ -33,6 +33,8 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.security.AdmlOfStructures;
+import org.entcore.directory.security.AdmlOfTwoUsers;
 import org.entcore.directory.security.RelativeStudentFilter;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
@@ -368,6 +370,33 @@ public class UserController extends BaseController {
 		final String studentId = request.params().get("studentId");
 		final String relativeId = request.params().get("relativeId");
 		userService.unlinkRelativeStudent(relativeId, studentId, defaultResponseHandler(request));
+	}
+
+	@Delete("/duplicate/ignore/:userId1/:userId2")
+	@ResourceFilter(AdmlOfTwoUsers.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void ignoreDuplicate(final HttpServerRequest request) {
+		final String userId1 = request.params().get("userId1");
+		final String userId2 = request.params().get("userId2");
+		userService.ignoreDuplicate(userId1, userId2, defaultResponseHandler(request));
+	}
+
+	@Put("/duplicate/merge/:userId1/:userId2")
+	@ResourceFilter(AdmlOfTwoUsers.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void mergeDuplicate(final HttpServerRequest request) {
+		final String userId1 = request.params().get("userId1");
+		final String userId2 = request.params().get("userId2");
+		userService.mergeDuplicate(userId1, userId2, defaultResponseHandler(request));
+	}
+
+	@Get("/duplicates")
+	@ResourceFilter(AdmlOfStructures.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listDuplicates(final HttpServerRequest request) {
+		final List<String> structures = request.params().getAll("structure");
+		final boolean inherit = "true".equals(request.params().get("inherit"));
+		userService.listDuplicates(new JsonArray(structures.toArray()), inherit, arrayResponseHandler(request));
 	}
 
 	public void setUserService(UserService userService) {

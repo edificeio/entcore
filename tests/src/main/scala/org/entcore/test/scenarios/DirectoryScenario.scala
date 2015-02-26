@@ -20,6 +20,36 @@ object DirectoryScenario {
 		.exec(http("Get admin page")
 			.get("""/directory/admin-console""")
 		.check(status.is(200)))
+    .exec(http("List admin")
+    .get("""/directory/user/admin/list""")
+    .check(status.is(200),
+      jsonPath("$").find.transformOption(_.map{ j =>
+      JSONValue.parse(j).asInstanceOf[JSONArray].asScala.toList
+        .filter(_.asInstanceOf[JSONObject].get("source") == "MANUAL")
+        .map(_.asInstanceOf[JSONObject].get("id"))
+        .mkString("userId=", "&userId=", "")
+    }).saveAs("manualIds"),
+      jsonPath("$").find.transformOption(_.map{ j =>
+        JSONValue.parse(j).asInstanceOf[JSONArray].asScala.toList
+          .find(_.asInstanceOf[JSONObject].get("lastName") == "PIREZ")
+          .map(_.asInstanceOf[JSONObject].get("id")).getOrElse("")
+      }).saveAs("rachelId"),
+      jsonPath("$").find.transformOption(_.map{ j =>
+        JSONValue.parse(j).asInstanceOf[JSONArray].asScala.toList
+          .exists(_.asInstanceOf[JSONObject].get("lastName") == "PIRES")
+      }).saveAs("twoRachelExists")))
+    .doIf (session => session("manualIds").as[String].trim != "userId=") {
+      exec(http("Delete manual users")
+        .delete("""/directory/user?${manualIds}""")
+        .check(status.is(200)))
+    }
+    .doIf (session => session("rachelId").as[String].nonEmpty && !session("twoRachelExists").as[Boolean]) {
+      exec(http("Update user infos")
+        .put("""/directory/user/${rachelId}""")
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{"firstName": "Rachelle", "lastName": "PIRES"}"""))
+        .check(status.is(200)))
+    }
 		.exec(http("List Schools")
 			.get("""/directory/api/ecole""")
 		.check(status.is(200), jsonPath("$.status").is("ok"),

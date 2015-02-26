@@ -192,7 +192,7 @@ public class User {
 		JsonObject params = new JsonObject().putString("userId", userId);
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
-				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED]-() " +
+				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE]-() " +
 				"SET u.deleteDate = timestamp() " +
 				"DELETE r " +
 				"CREATE UNIQUE dg<-[:IN]-u";
