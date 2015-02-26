@@ -24,6 +24,7 @@
 		<header ng-class="{ selected: display.show === 'record' }"
 				ng-click="show('record')"
 				workflow="workspace.documents.create"
+				ng-if="fileFormat === 'audio'"
 				translate content="library.header.record">
 		</header>
 		<header ng-class="{ selected: display.show === 'upload' }"

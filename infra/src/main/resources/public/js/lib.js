@@ -1146,7 +1146,7 @@ Behaviours = (function(){
 
 					this.applicationsBehaviours[serviceName].resourceRights = function(element){
 						for(var behaviour in resourceRights){
-							if(model.me.hasRight(element, resourceRights[behaviour]) || (element.owner && model.me.userId === element.owner.userId)){
+							if(model.me && (model.me.hasRight(element, resourceRights[behaviour]) || (element.owner && model.me.userId === element.owner.userId))){
 								element.myRights[behaviour] = resourceRights[behaviour];
 							}
 						}
@@ -1519,11 +1519,17 @@ var sniplets = {
 	load: function(callback){
 		var sniplets = this;
 		http().get('/resources-applications').done(function(apps) {
-			var apps = _.filter(model.me.apps, function (app) {
-				return _.find(apps, function (match) {
-					return app.address.indexOf(match) !== -1 && app.icon.indexOf('/') === -1
+			if(model.me){
+				apps = model.me.apps.filter(function (app) {
+					return _.find(apps, function (match) {
+						return app.address.indexOf(match) !== -1 && app.icon.indexOf('/') === -1
+					});
 				});
-			});
+			}
+			else{
+				app = [appPrefix, 'workspace'];
+			}
+
 			var all = apps.length;
 			apps.forEach(function(app){
 				var appPrefix = app.address.split('/')[1];
@@ -1544,13 +1550,19 @@ var sniplets = {
 		})
 	},
 	sniplets: []
-}
+};
 
 function bootstrap(func){
 	http().get('/auth/oauth2/userinfo').done(function(data){
 		if(typeof data !== 'object'){
-			skin.loadDisconnected();
-			func();
+			Behaviours.loadBehaviours(appPrefix, function(){
+				skin.loadDisconnected();
+				func();
+			})
+			.error(function(){
+				skin.loadDisconnected();
+				func();
+			});
 			return;
 		}
 
