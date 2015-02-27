@@ -1,6 +1,76 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.12.0 (05/03/2015)
+
+## Archive
+
+* Support du mode cluster
+
+## Auth
+
+* Validation de la complexité du mot de passe (configurable avec une regex)
+
+## Cas
+
+* Ajout de l'adapter pour le connecteur WebClasseur
+
+## Conversation
+
+* Amélioration de la vue snipplet
+
+## Directory
+
+* Un ADML peut ajouter ou supprimer une fonction (avant seul un admin central pouvait le faire)
+* Blocage d'un utilisateur depuis la console d'admin
+* Attribution de la fonction d'administrateur central depuis la console d'admin
+* Affichage de la ou les fonction(s) d'un utilisateur dans sa page de détails
+* Modification du nom d'une structure dans la console d'admin
+* Création d'une structure pour un super admin dans la console d'admin
+* Ajout de la gestion des groupes de classe dans la console d'admin
+* Gestion des regroupements de structures dans la console d'admin
+* Possibilité de restaurer un utilisateur en pré-suppression
+* Amélioration de l'export
+
+## Feeder
+
+* Création d'un compte parent seulement si le compte enfant existe dans l'import
+* Lors de l'import AAF le rattachement d'un personnel (ou enseignant) est effectué en prenant en compte les structures indiquées dans ses fonctions
+* Suppression de tous les groupes au niveau classe lors de la transition
+
+## Timeline
+
+* Possibilité de spécifier la date de publication d'un évènement
+
+## Worspace
+
+* Ajout d'un caroussel
+* Versionning des documents
+* Drag and drop des fichiers depuis le bureau
+
+## Framework
+
+* Api pour connaître les droits de partage de chaque application
+* Vérification des droits de partage à la compilation (read,comment,contrib,manager)
+* Ajout d'une directive attachments
+* Ajout d'une directive wizard
+* Ajout d'un mode de stockage Swift
+* Blocage du démarrage de l'application si le démarrage d'un module essentiel échoue
+* Refactoring du theme
+* Ajout d'une méthode générique pour le chargement des scripts js
+* Refactoring de l'helper sql pour le support d'un driver jdbc
+* Refactoring de la gestion des adresses du bus pour le mode cluster
+* Afficher tous les partages sur une ressource même lorsqu'ils ne respectent pas les règles de communication
+* Faire passer les appels aux unmanaged extension de neo4j par le persistor
+* Implémentation abstraite de l'interface RepositoryEvents pour la transition des applications MongoDb
+
+## Anomalies corrigées
+
+* Redirection de l'utilisateur quand sa session a expiré
+* Destruction correcte de ckeditor
+* Autoriser la mise en cache des fichiers statiques
+* Lorsqu'un dossier contient le caractère "#", l'import de doc se fait à la racine et pas dans le dossier
+
 # v1.11.1 (04/02/2015)
 
 ## Workspace
