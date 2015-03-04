@@ -21,7 +21,9 @@ package org.entcore.conversation.service;
 
 
 import org.entcore.common.user.UserInfos;
+
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -54,7 +56,7 @@ public interface ConversationService {
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
 
-	void list(String folder, UserInfos user, int page, Handler<Either<String, JsonArray>> results);
+	void list(String folder, String restrain, UserInfos user, int page, Handler<Either<String, JsonArray>> results);
 
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
@@ -69,4 +71,14 @@ public interface ConversationService {
 	void findVisibleRecipients(String parentMessageId, UserInfos user,
 		String acceptLanguage, Handler<Either<String, JsonObject>> result);
 
+	//Folders
+	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result);
+	void listTrashedFolders(UserInfos user, Handler<Either<String, JsonArray>> result);
+	void moveToFolder(List<String> messageIds, String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void backToSystemFolder(List<String> messageIds, UserInfos user,Handler<Either<String, JsonObject>> result);
+	void trashFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void restoreFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 }

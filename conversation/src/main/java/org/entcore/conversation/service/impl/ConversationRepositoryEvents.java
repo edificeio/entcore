@@ -84,13 +84,24 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			if (!(o instanceof JsonObject)) continue;
 			userIds.addString(((JsonObject) o).getString("id"));
 		}
+
+		String deleteFoldersQuery =
+			"MATCH (c: Conversation)-[r:HAS_CONVERSATION_FOLDER]->(f: ConversationUserFolder)" +
+			"-[childrenPath: HAS_CHILD_FOLDER*]->(children: ConversationUserFolder) " +
+			"WHERE c.userId IN {userIds} " +
+			"OPTIONAL MATCH (children)-[childrenRels]-() " +
+			"FOREACH (rel in childrenPath | DELETE rel) " +
+			"DELETE childrenRels, children";
+
+		StatementsBuilder b = new StatementsBuilder()
+			.add(deleteFoldersQuery, new JsonObject().putArray("userIds", userIds));
+
 		String query =
 				"MATCH (c:Conversation)-[r:HAS_CONVERSATION_FOLDER]->(f:ConversationFolder) " +
 				"WHERE c.userId IN {userIds} " +
 				"OPTIONAL MATCH f-[r2]-()" +
 				"DELETE c, r, f, r2 ";
-		StatementsBuilder b = new StatementsBuilder()
-			.add(query, new JsonObject().putArray("userIds", userIds));
+		 b.add(query, new JsonObject().putArray("userIds", userIds));
 
 		query = "MATCH (m:ConversationMessage) " +
 				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +

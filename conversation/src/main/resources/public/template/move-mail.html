@@ -1,0 +1,50 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+ <!-- Folders - move popup templates -->
+ <script type="text/ng-template" id="move-folders-content">
+ 	<a ng-click="destination.folder = folder; moveToFolderClick(folder, obj)" ng-init="obj = { template: '' }" ng-class="{ selected: destination.folder.id === folder.id, opened: destination.folder.id === folder.id || isParentOf(folder, destination.folder) }" class="folder-list-item">
+ 		<i class="arrow" ng-if="folder.userFolders.length()"></i>
+ 		[[folder.name]]
+ 	</a>
+ 	<ul ng-class="{ selected: destination.folder.id === folder.id, closed: !selected }"
+ 		ng-if="destination.folder.id === folder.id || isParentOf(folder, destination.folder)">
+ 		<li data-ng-repeat="folder in folder.userFolders.all"
+ 			data-ng-include="obj.template">
+ 		</li>
+ 	</ul>
+ </script>
+ <script type="text/ng-template" id="move-folders-root">
+ 	<ul>
+ 		<li ng-repeat="folder in userFolders.all" ng-include="'move-folders-content'"></li>
+ 	</ul>
+ </script>
+
+<h1><i18n>mail.move</i18n></h1>
+
+<h3><i18n>destination.folder</i18n></h3>
+
+
+<nav class="vertical" ng-include="'move-folders-root'"></nav>
+
+<div class="lightbox-buttons fluid centered">
+    <input type="submit" i18n-value="move.first.caps" ng-click="moveMessages(destination.folder)" ng-disabled="!destination.folder"/>
+    <input type="button" class="cancel button" i18n-value="cancel" ng-click="lightbox.show = false; template.close('lightbox')"/>
+</div>

@@ -6,5 +6,6 @@
     "host" : "http://localhost:8019",
     "app-name" : "Messagerie",
     "app-address" : "http://localhost:8019/conversation/conversation",
-    "app-icon" : "conversation-large"
+    "app-icon" : "conversation-large",
+	"max-folder-depth": 2
 }

@@ -19,7 +19,7 @@
 				<i18n>folder.empty</i18n>
 			</td>
 		</tr>
-		<tr ng-repeat="mail in folders.outbox.mails.all" ng-class="{ checked: mail.selected }">
+		<tr ng-repeat="mail in folders.outbox.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail)">
 			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
 			<td class="user">
 				<a ng-repeat="receiver in mail.to | limitTo:2" ng-click="viewMail(mail)">

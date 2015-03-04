@@ -30,7 +30,7 @@ routes.define(function($routeProvider){
 		})
 });
 
-function Conversation($scope, date, notify, route, model){
+function Conversation($scope, $timeout, date, notify, route, model){
 	route({
 		readMail: function(params){
 			model.folders.openFolder('inbox');
@@ -91,6 +91,59 @@ function Conversation($scope, date, notify, route, model){
 		$scope.openView(folderName, 'main');
 	};
 
+	$scope.openUserFolder = function(folder, obj){
+		$scope.mail = undefined
+		model.folders.current = folder
+		obj.template = ''
+		folder.userFolders.sync(function(){
+			$timeout(function(){
+				obj.template = 'folder-content'
+			}, 10)
+		})
+		folder.mails.sync()
+		$scope.openView('folder', 'main');
+	};
+
+	$scope.isParentOf = function(folder, targetFolder){
+		if(!targetFolder || !targetFolder.parentFolder)
+			return false
+
+		var ancestor = targetFolder.parentFolder
+		while(ancestor){
+			if(folder.id === ancestor.id)
+				return true
+			ancestor = ancestor.parentFolder
+		}
+		return false
+	}
+
+	$scope.matchSystemIcon = function(mail){
+		if(mail.systemFolders.indexOf("INBOX") >= 0)
+			return 'mail-in'
+		if(mail.systemFolders.indexOf("OUTBOX") >= 0)
+			return 'mail-out'
+		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+			return 'mail-new'
+		return ''
+	}
+
+	$scope.variableMailAction = function(mail){
+		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+			return $scope.editDraft(mail)
+		else if(mail.systemFolders.indexOf("INBOX") >= 0)
+			return $scope.readMail(mail)
+		else
+			return $scope.viewMail(mail)
+	}
+
+	$scope.removeFromUserFolder = function(event, mail){
+		//Tooltip force removal
+		$(event.target).trigger('mouseout')
+		mail.removeFromFolder().done(function(){
+			$scope.folders.current.mails.sync()
+		})
+	}
+
 	$scope.nextPage = function(){
 		model.folders.current.nextPage();
 	};
@@ -102,9 +155,13 @@ function Conversation($scope, date, notify, route, model){
 	$scope.switchSelectAll = function(){
 		if($scope.selection.selectAll){
 			model.folders.current.mails.selectAll();
+			if(model.folders.current.userFolders)
+				model.folders.current.userFolders.selectAll()
 		}
 		else{
 			model.folders.current.mails.deselectAll();
+			if(model.folders.current.userFolders)
+				model.folders.current.userFolders.deselectAll()
 		}
 	};
 
@@ -198,7 +255,7 @@ function Conversation($scope, date, notify, route, model){
 		notify.info('draft.saved');
 
 		model.folders.draft.saveDraft($scope.newItem);
-		$scope.openFolder();
+		$scope.openFolder(model.folders.draft.folderName);
 	};
 
 	$scope.sendMail = function(){
@@ -218,15 +275,39 @@ function Conversation($scope, date, notify, route, model){
 				notify.error(name + lang.translate('undelivered'));
 			});
 		});
-		$scope.openFolder();
+		$scope.openFolder(model.folders.outbox.folderName);
 	};
 
 	$scope.restore = function(){
-		model.folders.trash.mails.restoreMails();
+		if(model.folders.trash.mails.selection().length > 0)
+			model.folders.trash.mails.restoreMails();
+		if(model.folders.trash.userFolders){
+			var launcher = new Launcher(model.folders.trash.userFolders.selection().length, function(){
+				model.folders.trash.userFolders.sync()
+				$scope.refreshFolders()
+			})
+			_.forEach(model.folders.trash.userFolders.selection(), function(userFolder){
+				userFolder.restore().done(function(){
+					launcher.launch()
+				})
+			})
+		}
 	};
 
 	$scope.removeSelection = function(){
-		model.folders.current.mails.removeMails();
+		if(model.folders.current.mails.selection().length > 0)
+			model.folders.current.mails.removeMails();
+		if(model.folders.current.userFolders){
+			var launcher = new Launcher(model.folders.current.userFolders.selection().length, function(){
+				model.folders.current.userFolders.sync()
+				$scope.refreshFolders()
+			})
+			_.forEach(model.folders.current.userFolders.selection(), function(userFolder){
+				userFolder.delete().done(function(){
+					launcher.launch()
+				})
+			})
+		}
 	};
 
 	$scope.updateFoundCCUsers = function(){
@@ -279,10 +360,165 @@ function Conversation($scope, date, notify, route, model){
 		$scope.newItem.cc = _.reject($scope.newItem.cc, function(item){ return item === user; });
 	};
 
+	$scope.template = template
+	$scope.lightbox = {}
+
+	$scope.rootFolderTemplate = { template: 'folder-root-template' }
+	$scope.refreshFolders = function(){
+		$scope.userFolders.sync()
+		$scope.rootFolderTemplate.template = ""
+		$timeout(function(){
+			$scope.$apply()
+			$scope.rootFolderTemplate.template = 'folder-root-template'
+		}, 100)
+	}
+
+	$scope.currentFolderDepth = function(){
+		var depth = 1
+		var ancestor = $scope.folders.current.parentFolder
+		while(ancestor){
+			ancestor = ancestor.parentFolder
+			depth = depth + 1
+		}
+		return depth
+	}
+
+	$scope.moveSelection = function(){
+		$scope.destination = {}
+		$scope.lightbox.show = true
+		template.open('lightbox', 'move-mail')
+	}
+
+	$scope.moveToFolderClick = function(folder, obj){
+		obj.template = ''
+
+		if(folder.userFolders.length() > 0){
+			$timeout(function(){
+				obj.template = 'move-folders-content'
+			}, 10)
+			return
+		}
+
+		folder.userFolders.sync(function(){
+			$timeout(function(){
+				obj.template = 'move-folders-content'
+			}, 10)
+		})
+	}
+
+	$scope.moveMessages = function(folderTarget){
+		$scope.lightbox.show = false
+		template.close('lightbox')
+		$scope.folders.current.mails.moveSelection(folderTarget)
+	}
+
+	$scope.openNewFolderView = function(){
+		$scope.newFolder = new UserFolder()
+		$scope.newFolder.parentFolderId = $scope.folders.current.id
+		$scope.lightbox.show = true
+		template.open('lightbox', 'create-folder')
+	}
+	$scope.createFolder = function(){
+		$scope.newFolder.create().done(function(){
+			$scope.refreshFolders()
+		})
+		$scope.lightbox.show = false
+		template.close('lightbox')
+	}
+	$scope.openRenameFolderView = function(folder){
+		$scope.targetFolder = new UserFolder()
+		$scope.targetFolder.name = folder.name
+		$scope.targetFolder.id = folder.id
+		$scope.lightbox.show = true
+		template.open('lightbox', 'update-folder')
+	}
+	$scope.updateFolder = function(){
+		var current = $scope.folders.current
+		$scope.targetFolder.update().done(function(){
+			current.name = $scope.targetFolder.name
+			$scope.$apply()
+		})
+		$scope.lightbox.show = false
+		template.close('lightbox')
+	}
+	$scope.trashFolder = function(folder){
+		folder.trash().done(function(){
+			$scope.refreshFolders()
+			$scope.openFolder('trash')
+		})
+	}
+	$scope.restoreFolder = function(folder){
+		folder.restore().done(function(){
+			$scope.refreshFolders()
+		})
+	}
+	$scope.deleteFolder = function(folder){
+		folder.delete().done(function(){
+			$scope.refreshFolders()
+		})
+	}
+
+	$scope.drag = function(item, event){
+		return function(event){
+			var img = document.createElement("img");
+			img.src = skin.theme +".."+"/img/icons/message-icon.png";
+			event.dataTransfer.setDragImage(img, 0, 0);
+			try{
+				event.dataTransfer.setData('application/json', JSON.stringify(item));
+			} catch(e) {
+				event.dataTransfer.setData('Text', JSON.stringify(item));
+			}
+		}
+	}
+	$scope.dropCondition = function(targetItem){
+		return function(event){
+			var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") > -1 ? "application/json" : //Chrome & Safari
+							event.dataTransfer.types.contains && event.dataTransfer.types.contains("application/json") ? "application/json" : //Firefox
+							event.dataTransfer.types.contains && event.dataTransfer.types.contains("Text") ? "Text" : //IE
+							undefined
+
+			if(!dataField || targetItem.foldersName && targetItem.foldersName !== 'trash')
+				return false
+
+			return dataField
+		}
+	}
+
+	$scope.dropTo = function(targetItem){
+		return function(event){
+			event.preventDefault()
+
+			var dataField = $scope.dropCondition(targetItem)(event)
+			var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
+
+			if(targetItem.folderName === 'trash')
+				$scope.dropTrash(originalItem)
+			else
+				$scope.dropMove(originalItem, targetItem)
+		}
+	}
+
+	$scope.dropMove = function(mail, folder){
+		var mailObj = new Mail()
+		mailObj.id = mail.id
+		mailObj.move(folder)
+	}
+	$scope.dropTrash = function(mail){
+		var mailObj = new Mail()
+		mailObj.id = mail.id
+		mailObj.trash()
+	}
+
 	$scope.lang = lang;
 	$scope.notify = notify;
 	$scope.folders = model.folders;
+	$scope.userFolders = model.userFolders;
 	$scope.users = { list: model.users, search: '', found: [], foundCC: [] };
+
+	//Max folder depth
+	http().get('max-depth').done(function(result){
+		$scope.maxDepth = result['max-depth']
+	})
 
 	$scope.newItem = new Mail();
 

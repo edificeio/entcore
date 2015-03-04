@@ -27,19 +27,24 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Config;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.DefaultConversationService;
+
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -54,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
 public class ConversationController extends BaseController {
@@ -195,6 +200,7 @@ public class ConversationController extends BaseController {
 	@SecuredAction(value = "conversation.list", type = ActionType.AUTHENTICATED)
 	public void list(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
+		final String restrain = request.params().get("restrain");
 		final String p = Utils.getOrElse(request.params().get("page"), "0", false);
 		if (folder == null || folder.trim().isEmpty()) {
 			badRequest(request);
@@ -208,7 +214,7 @@ public class ConversationController extends BaseController {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.list(folder, user, page, new Handler<Either<String, JsonArray>>() {
+					conversationService.list(folder, restrain, user, page, new Handler<Either<String, JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
@@ -411,6 +417,196 @@ public class ConversationController extends BaseController {
 				}
 			}
 		});
+	}
+
+	//Get max folder depth
+	@Get("max-depth")
+	@SecuredAction(value="conversation.max.depth", type=ActionType.AUTHENTICATED)
+	public void getMaxDepth(final HttpServerRequest request){
+		renderJson(request, new JsonObject().putNumber("max-depth", Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH)));
+	}
+
+	//List folders at a given depth, or trashed folders at depth 1 only.
+	@Get("folders/list")
+	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
+	public void listFolders(final HttpServerRequest request){
+		final String parentId = request.params().get("parentId");
+		final String listTrash = request.params().get("trash");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				if(listTrash != null){
+					conversationService.listTrashedFolders(user, arrayResponseHandler(request));
+				} else {
+					conversationService.listFolders(parentId, user, arrayResponseHandler(request));
+				}
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Create a new folder at root level or inside a user folder.
+	@Post("folder")
+	@SecuredAction(value = "conversation.folder.create", type = ActionType.AUTHENTICATED)
+	public void createFolder(final HttpServerRequest request) {
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				RequestUtils.bodyToJson(request, pathPrefix + "createFolder", new Handler<JsonObject>() {
+					public void handle(JsonObject body) {
+						final String name = body.getString("name");
+						final String parentId = body.getString("parentId", null);
+
+						if(name == null || name.trim().length() == 0){
+							badRequest(request);
+							return;
+						}
+						conversationService.createFolder(name, parentId, user, defaultResponseHandler(request, 201));
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Update a folder
+	@Put("folder/:folderId")
+	@SecuredAction(value = "conversation.folder.update", type = ActionType.AUTHENTICATED)
+	public void updateFolder(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+
+		if(folderId == null || folderId.trim().length() == 0){
+			badRequest(request);
+			return;
+		}
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				RequestUtils.bodyToJson(request, pathPrefix + "updateFolder", new Handler<JsonObject>() {
+					public void handle(JsonObject data) {
+						conversationService.updateFolder(folderId , data, user, defaultResponseHandler(request, 200));
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Move messages into a folder
+	@Put("move/userfolder/:folderId")
+	@SecuredAction(value = "conversation.message.move", type = ActionType.AUTHENTICATED)
+	public void move(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+		final List<String> messageIds = request.params().getAll("id");
+
+		if(messageIds == null || messageIds.size() == 0){
+			badRequest(request);
+			return;
+		}
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				conversationService.moveToFolder(messageIds, folderId, user, defaultResponseHandler(request));
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Move messages into a system folder
+	@Put("move/root")
+	@SecuredAction(value = "conversation.message.move", type = ActionType.AUTHENTICATED)
+	public void rootMove(final HttpServerRequest request) {
+		final List<String> messageIds = request.params().getAll("id");
+
+		if(messageIds == null || messageIds.size() == 0){
+			badRequest(request);
+			return;
+		}
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				conversationService.backToSystemFolder(messageIds, user, defaultResponseHandler(request));
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Trash a folder
+	@Put("folder/trash/:folderId")
+	@SecuredAction(value = "conversation.folder.trash", type = ActionType.AUTHENTICATED)
+	public void trashFolder(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				conversationService.trashFolder(folderId, user, defaultResponseHandler(request));
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Restore a trashed folder
+	@Put("folder/restore/:folderId")
+	@SecuredAction(value = "conversation.folder.restore", type = ActionType.AUTHENTICATED)
+	public void restoreFolder(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				conversationService.restoreFolder(folderId, user, defaultResponseHandler(request));
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Delete a trashed folder
+	@Delete("folder/:folderId")
+	@SecuredAction(value = "conversation.folder.delete", type = ActionType.AUTHENTICATED)
+	public void deleteFolder(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				conversationService.deleteFolder(folderId, user, defaultResponseHandler(request));
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
 	}
 
 	@BusAddress("org.entcore.conversation")

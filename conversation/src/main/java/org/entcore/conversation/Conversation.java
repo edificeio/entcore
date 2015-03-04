@@ -27,6 +27,8 @@ import org.entcore.conversation.service.impl.ConversationServiceManager;
 
 public class Conversation extends BaseServer {
 
+	public final static int DEFAULT_FOLDER_DEPTH = 3;
+
 	@Override
 	public void start() {
 		super.start();

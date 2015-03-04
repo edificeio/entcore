@@ -55,7 +55,7 @@
 		<div class="twelve cell block-container">
 			<button class="cell right-magnet" ng-click="sendMail()" translate key="submit" ng-disabled="!newItem.to.length"></button>
 			<button class="cell right-magnet" ng-click="saveDraft()" translate key="save"></button>
-			<button class="cancel cell right-magnet" ng-click="openFolder()" translate key="cancel"></button>
+			<button class="cancel cell right-magnet" ng-click="folders.current.folderName ? openView(folders.current.folderName, 'main') : openView('folder', 'main')" translate key="cancel"></button>
 		</div>
 
 	</div>

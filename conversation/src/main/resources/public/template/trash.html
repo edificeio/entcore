@@ -6,27 +6,33 @@
 <article class="list list-view twelve cell">
 	<table class="twelve">
 		<thead>
-		<tr>
-			<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
-			<th translate key="from"><i18n>from</i18n></th>
-			<th translate key="subject"><i18n>content</i18n></th>
-			<th></th>
-			<th translate key="date"><i18n>date</i18n></th>
-		</tr>
+			<tr>
+				<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
+				<th class="icon"></th>
+				<th translate key="from"><i18n>from</i18n></th>
+				<th translate key="subject"><i18n>content</i18n></th>
+				<th></th>
+				<th translate key="date"><i18n>date</i18n></th>
+			</tr>
 		</thead>
 		<tbody>
-		<tr ng-if="folders.current.mails.empty()">
-			<td colspan="5" translate key="folder.empty">
-			</td>
-		</tr>
-		<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
-			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
-			<td><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
-			<td><i class="attachment"></i></td>
-			<td>[[mail.sentDate()]]</td>
-		</tr>
-
+			<tr ng-if="folders.current.mails.empty() && folders.current.userFolders.empty()">
+				<td colspan="6" translate key="folder.empty">
+				</td>
+			</tr>
+			<tr ng-repeat="folder in folders.trash.userFolders.all" ng-class="{ checked: folder.selected }">
+				<td><input type="checkbox" ng-model="folder.selected" /></td>
+				<td><i class="folder"></i></td>
+				<td colspan="4">[[folder.name]]</td>
+			</tr>
+			<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
+				<td><input type="checkbox" ng-model="mail.selected" /></td>
+				<td></td>
+				<td><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
+				<td><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
+				<td><i class="attachment"></i></td>
+				<td>[[mail.sentDate()]]</td>
+			</tr>
 		</tbody>
 	</table>
 </article>

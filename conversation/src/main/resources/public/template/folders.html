@@ -1,3 +1,29 @@
+<!-- Folders - main screen recursive templates -->
+<script type="text/ng-template" id="folder-content">
+	<a ng-click="openUserFolder(folder, obj)"
+	   ng-init="obj = { template: '' }"
+	   ng-class="{ selected: folders.current.id === folder.id, opened: folders.current.id === folder.id || isParentOf(folder, folders.current) }"
+	   dragdrop="dropTo(folder)"
+	   dropcondition="dropCondition(folder)"
+	   class="folder-list-item">
+		<i class="arrow" ng-if="folder.userFolders.length()"></i>
+		[[folder.name]]
+		<i class="close" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
+		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder)"></i>
+	</a>
+	<ul ng-class="{ selected: folders.current.id === folder.id, closed: !selected }"
+		ng-if="folders.current.id === folder.id || isParentOf(folder, folders.current)">
+		<li data-ng-repeat="folder in folder.userFolders.all"
+			data-ng-include="obj.template">
+		</li>
+	</ul>
+</script>
+<script type="text/ng-template" id="folder-root-template">
+	<ul>
+		<li ng-repeat="folder in userFolders.all" ng-include="'folder-content'"></li>
+	</ul>
+</script>
+
 <section class="four cell" bottom-scroll="nextPage()">
 	<h1><a data-reload><i class="conversation"></i><span translate key="conversation.title"></span></a></h1>
 
@@ -28,25 +54,47 @@
 				</a>
 			</li>
 			<li>
-				<a ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }">
+				<a class="folder-list-item"
+				   ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }"
+				   dragdrop="dropTo(folders.trash)"
+			       dropcondition="dropCondition(folders.trash)">
 					[[lang.translate('trash')]]
 				</a>
 			</li>
 		</ul>
 	</nav>
+
+	<lightbox show="lightbox.show" on-close="lightbox.show = false">
+		<div ng-include="$parent.template.containers.lightbox"></div>
+	</lightbox>
+
+	<div class="row" ng-if="maxDepth">
+		<h3 class="cell">
+			<i18n>user.folders</i18n>
+		</h3>
+		<button class="small right-magnet" ng-click="openNewFolderView()" ng-disabled="!maxDepth || maxDepth <= 0 || currentFolderDepth() >= maxDepth">
+			<i class="add"></i>
+			<span translate="" key="create.folder"></span>
+		</button>
+	</div>
+
+	<nav class="vertical" ng-include="rootFolderTemplate.template"></nav>
 </section>
 <section class="margin-four reduce-block-eight" ng-include="viewsContainers.main">
 
 </section>
 
-<section class="toggle-buttons" ng-class="{ hide: folders.current.mails.selection().length === 0 }">
+<section class="toggle-buttons" ng-class="{ hide: folders.current.mails.selection().length === 0 && (!folders.current.userFolders || folders.current.userFolders.selection().length === 0) }">
 	<div class="toggle">
 		<div class="row">
-			<button class="cell" ng-click="removeSelection()" ng-if="folders.current.mails.selection().length">
+			<button class="cell" ng-click="removeSelection()" ng-if="folders.current.mails.selection().length || folders.current.userFolders.selection().length">
 				<i18n>remove</i18n>
 			</button>
-			<button class="cell" ng-click="restore()" ng-if="folders.current.mails.selection().length && folders.current.folderName === 'trash'">
+			<button class="cell" ng-click="restore()" ng-if="(folders.current.mails.selection().length || folders.current.userFolders.selection().length) && folders.current.folderName === 'trash'">
 				<i18n>restore</i18n>
+			</button>
+			<button class="cell" ng-click="moveSelection()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
+				<i18n>move.inside.folder</i18n>
 			</button>
 		</div>
 	</div>

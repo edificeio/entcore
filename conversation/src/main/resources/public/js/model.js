@@ -14,6 +14,26 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+/// Utilities ///
+var hookCheck = function(hook){
+    if(typeof hook === 'function')
+        hook()
+}
+
+function Launcher(countdown, action){
+	return {
+		count: countdown,
+		launch: function(){
+			if(!--this.count){
+				action()
+			}
+		}
+	}
+}
+////////////////
+
 function User(data){
 	this.toString = function(){
 		return (this.displayName || '') + (this.name || '');
@@ -156,22 +176,39 @@ function Mail(data){
 			});
 		}
 	};
+
+	this.removeFromFolder = function(){
+		return http().put('move/root?id=' + this.id)
+	}
+
+	this.move = function(destinationFolder){
+		http().put('move/userfolder/' + destinationFolder.id + '?id=' + this.id).done(function(){
+			model.folders.current.mails.refresh();
+		});
+	}
+
+	this.trash = function(){
+		http().put('/conversation/trash?id=' + this.id ).done(function(){
+			model.folders.current.mails.refresh();
+		});
+	}
 }
 
 function Folder(api){
+	var thatFolder = this
 	this.pageNumber = 0;
 
 	this.collection(Mail, {
 		refresh: function(){
 			this.pageNumber = 0;
-			this.sync();
+			return this.sync();
 		},
 		sync: function(pageNumber, emptyList){
 			if(!pageNumber){
 				pageNumber = 0;
 			}
 			var that = this;
-			http().get(this.api.get + '?page=' + pageNumber).done(function(data){
+			return http().get(this.api.get + '?page=' + pageNumber).done(function(data){
 				data.sort(function(a, b){ return b.date - a.date})
 				if(emptyList === false){
 					that.addRange(data);
@@ -190,6 +227,11 @@ function Folder(api){
 			});
 			this.removeSelection();
 		},
+		moveSelection: function(destinationFolder){
+			http().put('move/userfolder/' + destinationFolder.id + '?' + http().serialize({ id: _.pluck(this.selection(), 'id') })).done(function(){
+				model.folders.current.mails.refresh();
+			});
+		},
 		api: api
 	});
 
@@ -201,8 +243,101 @@ function Folder(api){
 	};
 }
 
+function UserFolder(){
+	var thatFolder = this
+	this.pageNumber = 0;
+
+	this.collection(UserFolder, {
+		sync: function(hook){
+			var that = this
+			http().get('folders/list?parentId='+thatFolder.id).done(function(data){
+				_.forEach(data, function(item){
+					item.parentFolder = thatFolder
+				})
+				that.load(data)
+				that.forEach(function(item){
+					item.userFolders.sync()
+				})
+				hookCheck(hook)
+			})
+		}
+	})
+
+	this.collection(Mail, {
+		refresh: function(){
+			this.pageNumber = 0;
+			this.sync();
+		},
+		sync: function(pageNumber, emptyList){
+			if(!pageNumber){
+				pageNumber = 0;
+			}
+			var that = this;
+			http().get('/conversation/list/' + thatFolder.id + '?restrain=&page=' + pageNumber).done(function(data){
+				data.sort(function(a, b){ return b.date - a.date})
+				if(emptyList === false){
+					that.addRange(data);
+					if(data.length === 0){
+						that.full = true;
+					}
+				}
+				else{
+					that.load(data);
+				}
+			});
+		},
+		removeMails: function(){
+			http().put('/conversation/trash?' + http().serialize({ id: _.pluck(this.selection(), 'id') })).done(function(){
+				model.folders.trash.mails.refresh();
+			});
+			this.removeSelection();
+		},
+		moveSelection: function(destinationFolder){
+			http().put('move/userfolder/' + destinationFolder.id + '?' + http().serialize({ id: _.pluck(this.selection(), 'id') })).done(function(){
+				model.folders.current.mails.refresh();
+			});
+		},
+		removeFromFolder: function(){
+			return http().put('move/root?' + http().serialize({ id: _.pluck(this.selection(), 'id') }))
+		}
+	});
+
+	this.nextPage = function(){
+		if(!this.mails.full){
+			this.pageNumber++;
+			this.mails.sync(this.pageNumber, false);
+		}
+	};
+}
+
+UserFolder.prototype.create = function(){
+	var json = !this.parentFolderId ? {
+		name: this.name
+	} : {
+		name: this.name,
+		parentId: this.parentFolderId
+	}
+
+	return http().postJson('folder', json)
+}
+UserFolder.prototype.update = function(){
+	var json = {
+		name: this.name
+	}
+	return http().putJson('folder/' + this.id, json)
+}
+UserFolder.prototype.trash = function(){
+	return http().put('folder/trash/' + this.id)
+}
+UserFolder.prototype.restore = function(){
+	return http().put('folder/restore/' + this.id)
+}
+UserFolder.prototype.delete = function(){
+	return http().delete('folder/' + this.id)
+}
+
 model.build = function(){
-	this.makeModels([Folder, User, Mail]);
+	this.makeModels([Folder, UserFolder, User, Mail]);
 
 	this.collection(User, {
 		sync: function(){
@@ -254,8 +389,9 @@ model.build = function(){
 		},
 		openFolder: function(folderName, cb){
 			this.current = this[folderName];
-			if(this.current.mails.all.length === 0){
-				this.current.mails.sync();
+			this.current.mails.sync();
+			if(this.current.userFolders){
+				this.current.userFolders.sync()
 			}
 		},
 		systemFolders: ['inbox', 'draft', 'outbox', 'trash']
@@ -286,6 +422,15 @@ model.build = function(){
 		this.removeSelection();
 	};
 
+	this.folders.trash.collection(UserFolder, {
+		sync: function(hook){
+			var that = this
+			http().get('folders/list?trash=').done(function(data){
+				that.load(data)
+			})
+		}
+	})
+
 	this.folders.inbox.countUnread = function(){
 		var that = this;
 		http().get('/conversation/count/INBOX', { unread: true }).done(function(data){
@@ -294,4 +439,17 @@ model.build = function(){
 	}
 
 	this.folders.inbox.countUnread();
+
+	this.collection(UserFolder, {
+		sync: function(hook){
+			var that = this
+			http().get('folders/list').done(function(data){
+				that.load(data)
+				that.forEach(function(item){
+					item.userFolders.sync()
+				})
+				hookCheck(hook)
+			})
+		}
+	})
 };

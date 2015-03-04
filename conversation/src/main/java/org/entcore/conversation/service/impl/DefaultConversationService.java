@@ -22,15 +22,19 @@ package org.entcore.conversation.service.impl;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
 import static org.entcore.common.user.UserUtils.findVisibles;
-
 import fr.wseduc.webutils.Server;
+
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Config;
+import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
+
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -47,11 +51,13 @@ public class DefaultConversationService implements ConversationService {
 	private final EventBus eb;
 	private final Neo neo;
 	private final String applicationName;
+	private final int maxFolderDepth;
 
 	public DefaultConversationService(Vertx vertx, String applicationName) {
 		eb = Server.getEventBus(vertx);
 		neo = new Neo(vertx, eb, LoggerFactory.getLogger(Neo.class));
 		this.applicationName = applicationName;
+		this.maxFolderDepth = Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH);
 	}
 
 	@Override
@@ -246,7 +252,7 @@ public class DefaultConversationService implements ConversationService {
 				"message<-[r:HAS_CONVERSATION_MESSAGE]-(fDraft:ConversationSystemFolder {name : {draft}}) " +
 				"SET message.state = {sent}, " +
 				"message.displayNames = displayNames + (s.id + '$' + coalesce(s.displayName, ' ') + '$ $ ') " +
-				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE]->message " +
+				"CREATE UNIQUE fOut-[:HAS_CONVERSATION_MESSAGE { insideFolder: r.insideFolder }]->message " +
 				"DELETE r " +
 				"RETURN EXTRACT(u IN FIlTER(x IN users WHERE NOT(x.id IN sentIds)) | u.displayName) as undelivered,  " +
 				"EXTRACT(u IN FIlTER(x IN users WHERE x.id IN sentIds AND NOT(x.activationCode IS NULL)) " +
@@ -265,38 +271,63 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void list(String folder, UserInfos user, int page, final Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, String restrain, UserInfos user, int page, final Handler<Either<String, JsonArray>> results) {
 		if (validationError(user, results, folder)) return;
 		int skip = page * LIST_LIMIT;
-		String query =
-				"MATCH (c:Conversation {userId : {userId}, active : {true}})-[:HAS_CONVERSATION_FOLDER]->" +
-				"(f:ConversationFolder {name : {folder}})" +
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putString("folder", folder)
+			.putNumber("skip", skip)
+			.putNumber("limit", LIST_LIMIT)
+			.putBoolean("true", true);
+
+		String messageFilter = "";
+		if(restrain != null){
+			messageFilter =
+				messageFilter +
+				"-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)" +
+				"-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(child: ConversationUserFolder {id: {userFolderId}})" +
+				"<-[i: INSIDE]-(m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
+				"WHERE NOT HAS(i.trashed) ";
+
+			params.putString("userFolderId", folder);
+		} else {
+			messageFilter =
+				messageFilter +
+				"-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder {name : {folder}})" +
 				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
+				"WHERE NOT HAS(r.insideFolder) ";
+		}
+
+		String query =
+				"MATCH (c:Conversation {userId : {userId}, active : {true}})" +
+				messageFilter +
 				"RETURN DISTINCT m.id as id, m.to as to, m.from as from, m.state as state, " +
 				"m.toName as toName, m.fromName as fromName, " +
-				"m.subject as subject, m.date as date, r.unread as unread, m.displayNames as displayNames " +
+				"m.subject as subject, m.date as date, r.unread as unread, m.displayNames as displayNames, collect(f.name) as systemFolders " +
 				"ORDER BY m.date DESC " +
 				"SKIP {skip} " +
 				"LIMIT {limit} ";
-		JsonObject params = new JsonObject()
-				.putString("userId", user.getUserId())
-				.putString("folder", folder)
-				.putNumber("skip", skip)
-				.putNumber("limit", LIST_LIMIT)
-				.putBoolean("true", true);
+
 		neo.execute(query, params, validResultHandler(results));
 	}
 
 	@Override
 	public void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
+
 		String query =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)-[:HAS_CONVERSATION_FOLDER]->" +
 				"(df:ConversationSystemFolder) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND df.name = {trash} " +
-				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE { restoreFolder: f.name }]->m " +
-				"DELETE r ";
+				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE { restoreFolder: f.name, wasInsideFolder: r.insideFolder }]->m " +
+				"DELETE r " +
+				"WITH c, m " +
+				"MATCH (m)-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
+				"SET i.trashed = true";
+
 		StatementsBuilder b = new StatementsBuilder();
 		for (String id: messagesId) {
 			JsonObject params = new JsonObject()
@@ -312,14 +343,19 @@ public class DefaultConversationService implements ConversationService {
 	@Override
 	public void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
+
 		String query =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)-[:HAS_CONVERSATION_FOLDER]->" +
 				"(df:ConversationSystemFolder) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
 				"AND df.name = r.restoreFolder " +
-				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE]->m " +
-				"DELETE r ";
+				"CREATE UNIQUE df-[:HAS_CONVERSATION_MESSAGE {insideFolder: r.wasInsideFolder}]->m " +
+				"DELETE r " +
+				"WITH c, m " +
+				"MATCH (m)-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
+				"REMOVE i.trashed";
+
 		StatementsBuilder b = new StatementsBuilder();
 		for (String id: messagesId) {
 			JsonObject params = new JsonObject()
@@ -340,8 +376,9 @@ public class DefaultConversationService implements ConversationService {
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
 				"OPTIONAL MATCH m-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
+				"OPTIONAL MATCH (m)-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
 				"CREATE f-[:HAD_CONVERSATION_MESSAGE]->m " +
-				"DELETE r " +
+				"DELETE r, i " +
 				"WITH m as message, pr " +
 				"MATCH message<-[r:HAD_CONVERSATION_MESSAGE]-() " +
 				"WHERE NOT(message-[:HAS_CONVERSATION_MESSAGE]-()) " +
@@ -362,13 +399,13 @@ public class DefaultConversationService implements ConversationService {
 	public void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, messageId)) return;
 		String query =
-				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-f" +
+				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} " +
 				"SET r.unread = {false} " +
 				"RETURN distinct m.id as id, m.to as to, m.cc as cc, m.from as from, m.state as state, " +
 				"m.subject as subject, m.date as date, m.body as body, m.toName as toName, " +
-				"m.ccName as ccName, m.fromName as fromName, m.displayNames as displayNames ";
+				"m.ccName as ccName, m.fromName as fromName, m.displayNames as displayNames, collect(f.name) as systemFolders ";
 		JsonObject params = new JsonObject()
 				.putString("userId", user.getUserId())
 				.putString("messageId", messageId)
@@ -396,7 +433,7 @@ public class DefaultConversationService implements ConversationService {
 		String query =
 				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationFolder)" +
 				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
-				"WHERE c.userId = {userId} AND c.active = {true} AND f.name = {folder} " + condition +
+				"WHERE c.userId = {userId} AND c.active = {true} AND f.name = {folder} AND NOT HAS(r.insideFolder)" + condition +
 				"RETURN count(m) as count";
 		neo.execute(query, params, validUniqueResultHandler(result));
 	}
@@ -475,6 +512,282 @@ public class DefaultConversationService implements ConversationService {
 				}
 			});
 		}
+	}
+
+	@Override
+	public void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if (validationParamsError(user, result, folderName)) return;
+
+		JsonObject newFolderProps = new JsonObject()
+			.putString("id", UUID.randomUUID().toString())
+			.putString("name", folderName);
+
+		String completeQuery = "";
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putBoolean("true", true)
+			.putObject("props", newFolderProps);
+
+		if(parentFolderId == null){
+			completeQuery = completeQuery +
+				"MATCH (c:Conversation) " +
+				"WHERE c.userId = {userId} AND c.active = {true} " +
+				"CREATE UNIQUE (c)-[:HAS_CONVERSATION_FOLDER]->(nf: ConversationFolder:ConversationUserFolder {props}) " +
+				"RETURN nf.id as id";
+		} else {
+			completeQuery = completeQuery +
+				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(pf: ConversationUserFolder) " +
+				"WHERE c.userId = {userId} AND c.active = {true} AND pf.id = {parentId} " +
+				"CREATE UNIQUE (pf)-[:HAS_CHILD_FOLDER]->(nf: ConversationFolder:ConversationUserFolder {props}) "+
+				"RETURN nf.id as id";
+
+			params.putString("parentId", parentFolderId);
+		}
+
+		neo.execute(completeQuery, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		final String name = data.getString("name");
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putBoolean("true", true)
+			.putString("targetId", folderId);
+
+		if(name != null && name.trim().length() > 0){
+			params.putString("newName", name);
+		}
+
+		String query =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationUserFolder)" +
+			"-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(target: ConversationUserFolder) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND target.id = {targetId}" +
+			"SET target.name = {newName}";
+
+		neo.execute(query, params, validEmptyHandler(result));
+	}
+
+	@Override
+	public void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+		if(validationError(user, result)) return;
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putBoolean("true", true)
+			.putString("parentId", parentId);
+
+		String query = "";
+		if(parentId == null){
+			query =
+				"MATCH (c:Conversation)-[subLink:HAS_CONVERSATION_FOLDER]->(subFolders: ConversationUserFolder) " +
+				"WHERE c.userId = {userId} AND c.active = {true} AND NOT HAS (subLink.trashed) " +
+				"RETURN DISTINCT subFolders.name as name, subFolders.id as id";
+		} else {
+			query =
+				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationUserFolder)" +
+				"-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(target: ConversationUserFolder)"+
+				"-[subLink:HAS_CHILD_FOLDER]->(subFolders: ConversationUserFolder) " +
+				"WHERE target.id = {parentId} AND c.userId = {userId} AND c.active = {true} AND NOT HAS (subLink.trashed) " +
+				"RETURN DISTINCT subFolders.name as name, subFolders.id as id, target.id as parentId";
+		}
+
+		neo.execute(query, params, validResultHandler(result));
+	}
+
+	@Override
+	public void listTrashedFolders(UserInfos user, Handler<Either<String, JsonArray>> result) {
+		if(validationError(user, result)) return;
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putBoolean("true", true);
+
+		String query =
+			"MATCH (c:Conversation)-[:TRASHED_CONVERSATION_FOLDER]->(subFolders: ConversationUserFolder) " +
+			"WHERE c.userId = {userId} AND c.active = {true} " +
+			"RETURN DISTINCT subFolders.name as name, subFolders.id as id";
+
+		neo.execute(query, params, validResultHandler(result));
+	}
+
+	@Override
+	public void moveToFolder(List<String> messageIds, String folderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result, folderId)) return;
+
+		String query =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder)-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND m.id = {messageId} " +
+			"OPTIONAL MATCH (m)-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth - 1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
+			"DELETE i " +
+			"SET r.insideFolder = true " +
+			"WITH f, m " +
+			"MATCH c-[HAS_CONVERSATION_FOLDER]->()-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(child: ConversationUserFolder) " +
+			"WHERE child.id = {folderId} "+
+			"CREATE UNIQUE m-[:INSIDE]->child";
+
+		StatementsBuilder b = new StatementsBuilder();
+		for(String id: messageIds){
+			JsonObject params = new JsonObject()
+				.putString("userId", user.getUserId())
+				.putString("messageId", id)
+				.putBoolean("true", true)
+				.putString("folderId", folderId);
+
+			b.add(query, params);
+		}
+
+		neo.executeTransaction(b.build(), null, true, validEmptyHandler(result));
+	}
+
+	@Override
+	public void backToSystemFolder(List<String> messageIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result)) return;
+
+		String query =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder)-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND m.id = {messageId} " +
+			"REMOVE r.insideFolder " +
+			"WITH m, c " +
+			"MATCH m-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth - 1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
+			"DELETE i";
+
+		StatementsBuilder b = new StatementsBuilder();
+		for(String id: messageIds){
+			JsonObject params = new JsonObject()
+				.putString("userId", user.getUserId())
+				.putString("messageId", id)
+				.putBoolean("true", true);
+
+			b.add(query, params);
+		}
+
+		neo.executeTransaction(b.build(), null, true, validEmptyHandler(result));
+	}
+
+	@Override
+	public void trashFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result, folderId)) return;
+
+		//Trash actions on target folder and its subfolders
+		String trashFolders =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
+			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
+			"(c)-[:HAS_CONVERSATION_FOLDER]->(trashFolder:ConversationSystemFolder) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND targetFolder.id = {folderId} AND trashFolder.name = {trash} " +
+			"WITH c, targetFolder, trashFolder " +
+			"CREATE UNIQUE (c)-[:TRASHED_CONVERSATION_FOLDER]->(targetFolder) " +
+			"WITH targetFolder " +
+			"OPTIONAL MATCH (targetParent: ConversationUserFolder)-[targetParentRel: HAS_CHILD_FOLDER]->(targetFolder) " +
+			"OPTIONAL MATCH (systemParent: Conversation)-[systemParentRel: HAS_CONVERSATION_FOLDER]->(targetFolder) " +
+			"SET targetParentRel.trashed = true, systemParentRel.trashed = true";
+
+		//Trash actions on messages contained inside the folder and its children
+		String trashMessages =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
+			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
+			"(c)-[:HAS_CONVERSATION_FOLDER]->(trashFolder:ConversationSystemFolder), " +
+			"(c)-[:HAS_CONVERSATION_FOLDER]->(f: ConversationSystemFolder)-[r:HAS_CONVERSATION_MESSAGE]->(messages: ConversationMessage)-[i: INSIDE]->(children) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND targetFolder.id = {folderId} AND trashFolder.name = {trash} AND NOT HAS(i.trashed) " +
+			"CREATE UNIQUE (trashFolder)-[:HAS_CONVERSATION_MESSAGE { restoreFolder: f.name, insideFolder: true }]->(messages) " +
+			"DELETE r " +
+			"SET i.trashed = true";
+
+		//Trash actions on children folders already put in the bin before
+		String alreadyTrashedFolders =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
+			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
+			"(childrenParents: ConversationFolder)-[childrenParentRel {trashed: true}]->(children)<-[childrenTrashedRel: TRASHED_CONVERSATION_FOLDER]-(c) " +
+			"REMOVE childrenParentRel.trashed " +
+			"DELETE childrenTrashedRel";
+
+		//Trash actions on children messages already put in the bin before
+		String alreadyTrashedMails =
+			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
+			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
+			"(trashFolder)-[trashRel: HAS_CONVERSATION_MESSAGE]->(:ConversationMessage)-[:INSIDE {trashed: true}]->(children) " +
+			"SET trashRel.insideFolder = true";
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putString("folderId", folderId)
+			.putBoolean("true", true)
+			.putString("trash", "TRASH");
+
+		StatementsBuilder b = new StatementsBuilder();
+		b.add(alreadyTrashedFolders, params);
+		b.add(alreadyTrashedMails, params);
+		b.add(trashMessages, params);
+		b.add(trashFolders, params);
+		neo.executeTransaction(b.build(), null, true, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void restoreFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result, folderId)) return;
+
+		String query =
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
+			"DELETE trashedRel " +
+			"REMOVE targetParentRel.trashed "+
+			"WITH c, trashedFolder " +
+			"MATCH (c)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder) " +
+			"WHERE trashFolder.name = {trash} " +
+			"MATCH (trashedFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder)<-[i: INSIDE]-(messages: ConversationMessage), " +
+			"(trashFolder)-[r:HAS_CONVERSATION_MESSAGE]->(messages), " +
+			"(c)-[:HAS_CONVERSATION_FOLDER]->(oldFolder: ConversationSystemFolder) " +
+			"WHERE oldFolder.name = r.restoreFolder " +
+			"CREATE UNIQUE (oldFolder)-[:HAS_CONVERSATION_MESSAGE { insideFolder: true }]->(messages) " +
+			"DELETE r " +
+			"REMOVE i.trashed";
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putString("folderId", folderId)
+			.putBoolean("true", true)
+			.putString("trash", "TRASH");
+
+		neo.execute(query, params, validEmptyHandler(result));
+	}
+
+	@Override
+	public void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result, folderId)) return;
+
+		String deleteMessages =
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
+			"MATCH (c)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder) " +
+			"WHERE trashFolder.name = {trash} " +
+			"MATCH (trashedFolder)-[childrenPath: HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder) " +
+			"MATCH (children)<-[i: INSIDE]-(messages: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(trashFolder) " +
+			"OPTIONAL MATCH (messages)-[pr: PARENT_CONVERSATION_MESSAGE]-() " +
+			"DELETE r, i " +
+			"WITH messages, pr " +
+			"MATCH (messages)<-[r: HAD_CONVERSATION_MESSAGE]-() " +
+			"WHERE NOT (messages)-[:HAS_CONVERSATION_MESSAGE]-() " +
+			"DELETE r, pr, messages";
+
+		String deleteFolders =
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
+			"MATCH (trashedFolder)-[childrenPath: HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder) " +
+			"FOREACH (rel in childrenPath | DELETE rel) " +
+			"DELETE targetParentRel, trashedRel, trashedFolder, children";
+
+		JsonObject params = new JsonObject()
+			.putString("userId", user.getUserId())
+			.putString("folderId", folderId)
+			.putBoolean("true", true)
+			.putString("trash", "TRASH");
+
+		StatementsBuilder b = new StatementsBuilder();
+		b.add(deleteMessages, params);
+		b.add(deleteFolders, params);
+		neo.executeTransaction(b.build(), null, true, validUniqueResultHandler(result));
 	}
 
 	private boolean validationError(UserInfos user, Handler<Either<String, JsonArray>> results, String ... params) {
