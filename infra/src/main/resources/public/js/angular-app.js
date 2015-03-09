@@ -369,6 +369,15 @@ module.directive('mediaLibrary', function($compile){
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
 		link: function(scope, element, attributes){
+			attributes.$observe('visibility', function(){
+				if(!attributes.visibility){
+					scope.visibility = 'protected';
+				}
+				else{
+					scope.visibility = attributes.visibility.toLowerCase();
+				}
+			});
+
 			scope.upload = {
 				loading: []
 			};
@@ -890,11 +899,25 @@ module.directive('imageSelect', function($compile){
 		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
 			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" file-format="\'img\'"></media-library>' +
+			'<media-library ' +
+				'visibility="[[visibility]]"' +
+				'ng-change="updateDocument()" ' +
+				'ng-model="selectedFile.file" ' +
+				'file-format="\'img\'">' +
+			'</media-library>' +
 			'</lightbox>' +
 			'</div>',
 		link: function(scope, element, attributes){
 			scope.selectedFile = { file: {}};
+
+			attributes.$observe('visibility', function(){
+				if(!attributes.visibility){
+					scope.visibility = 'protected';
+				}
+				else{
+					scope.visibility = attributes.visibility.toLowerCase();
+				}
+			});
 
 			element.on('dragenter', function(e){
 				e.preventDefault();
@@ -955,15 +978,30 @@ module.directive('soundSelect', function($compile){
 		transclude: true,
 		scope: {
 			ngModel: '=',
-			ngChange: '&'
+			ngChange: '&',
+			visibility: '@'
 		},
 		template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-			'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" file-format="\'audio\'"></media-library>' +
+			'<media-library ' +
+				'visibility="[[visibility]]"' +
+				'ng-change="updateDocument()" ' +
+				'ng-model="selectedFile.file" ' +
+				'file-format="\'audio\'">' +
+			'</media-library>' +
 			'</lightbox>' +
 			'</div>',
 		link: function(scope, element, attributes){
 			scope.selectedFile = { file: {}};
+
+			attributes.$observe('visibility', function(){
+				if(!attributes.visibility){
+					scope.visibility = 'protected';
+				}
+				else{
+					scope.visibility = attributes.visibility.toLowerCase();
+				}
+			});
 
 			scope.updateDocument = function(){
 				scope.userSelecting = false;
@@ -4502,6 +4540,12 @@ var workspace = {
 			});
 		};
 
+		this.publicDuplicate = function(callback){
+			Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function(data){
+				callback(new workspace.Document(data))
+			});
+		};
+
 		this.role = function(){
 			var types = {
 				'doc': function(type){
@@ -4604,6 +4648,20 @@ var workspace = {
 			this.trigger('sync');
 		}.bind(this));
 	},
+	PublicDocuments: function(){
+		this.collection(workspace.Document, {
+			sync: function(){
+				http().get('/workspace/documents', { filter: 'public' }).done(function(documents){
+					this.load(_.filter(documents, function(doc){
+						return doc.folder !== 'Trash';
+					}));
+				}.bind(this))
+			}
+		});
+		this.on('documents.sync', function(){
+			this.trigger('sync');
+		}.bind(this));
+	},
 	AppDocuments: function(){
 		this.collection(workspace.Document, {
 			sync: function(){
@@ -4640,8 +4698,7 @@ function MediaLibrary($scope){
 		model.mediaLibrary.myDocuments = new workspace.MyDocuments();
 		model.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
 		model.mediaLibrary.appDocuments = new workspace.AppDocuments();
-
-		model.me.workflow.load(['workspace']);
+		model.mediaLibrary.publicDocuments = new workspace.PublicDocuments();
 	}
 
 	$scope.myDocuments = model.mediaLibrary.myDocuments;
@@ -4651,6 +4708,10 @@ function MediaLibrary($scope){
 		listFrom: 'appDocuments',
 		search: ''
 	};
+
+	if($scope.visibility === 'public'){
+		$scope.display.listFrom = 'publicDocuments';
+	}
 
 	$scope.show = function(tab){
 		$scope.display.show = tab;
@@ -4722,7 +4783,7 @@ function MediaLibrary($scope){
 	};
 
 	$scope.selectDocument = function(document){
-		if($scope.folder === model.mediaLibrary.appDocuments){
+		if($scope.folder === model.mediaLibrary.appDocuments && $scope.visibility !== 'public'){
 			if($scope.multiple){
 				$scope.$parent.ngModel = [document];
 			}
@@ -4731,8 +4792,11 @@ function MediaLibrary($scope){
 			}
 		}
 		else{
-			document.protectedDuplicate(function(newFile){
-
+			var copyFn = document.protectedDuplicate;
+			if($scope.visibility === 'public'){
+				copyFn = document.publicDuplicate;
+			}
+			copyFn(function(newFile){
 				if($scope.multiple){
 					$scope.$parent.ngModel = [newFile];
 					$scope.$parent.$apply('ngModel');
@@ -4754,14 +4818,18 @@ function MediaLibrary($scope){
 			var duplicateDocuments = [];
 			var documentsCount = 0;
 			selectedDocuments.forEach(function(doc){
-				doc.protectedDuplicate(function(newFile){
+				var copyFn = doc.protectedDuplicate;
+				if($scope.visibility === 'public'){
+					copyFn = doc.publicDuplicate;
+				}
+				copyFn(function(newFile){
 					duplicateDocuments.push(newFile);
 					documentsCount++;
 					if(documentsCount === selectedDocuments.length){
 						$scope.$parent.ngModel = duplicateDocuments;
 						$scope.$parent.$apply('ngModel');
 					}
-				})
+				});
 			})
 		}
 	};

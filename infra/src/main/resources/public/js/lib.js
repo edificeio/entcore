@@ -1527,7 +1527,7 @@ var sniplets = {
 				});
 			}
 			else{
-				app = [appPrefix, 'workspace'];
+				apps = [appPrefix, 'workspace'];
 			}
 
 			var all = apps.length;

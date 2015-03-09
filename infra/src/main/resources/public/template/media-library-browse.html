@@ -47,6 +47,9 @@
 			<li workflow="workspace.documents.create">
 				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }" translate content="workspace.appDocuments"></a>
 			</li>
+			<li workflow="workspace.documents.create" ng-if="visibility === 'public'">
+				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }" translate content="workspace.publicDocuments"></a>
+			</li>
 		</ul>
 	</nav>
 	<div class="cell eight height-five">
