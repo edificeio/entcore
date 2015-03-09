@@ -75,7 +75,7 @@ var loader = (function(){
 			{ path: 'ui.js' },
 			{ path: 'humane.min.js' },
 			{ path: 'angular-app.js' },
-			{ path: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML', completePath: true }]
+			{ path: '../mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML' }]
 	};
 
 	var loadedScripts = {};
