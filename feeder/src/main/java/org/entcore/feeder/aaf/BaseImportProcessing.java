@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.aaf;
 
+import org.apache.commons.lang3.text.translate.*;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -34,6 +35,8 @@ import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public abstract class BaseImportProcessing implements ImportProcessing {
@@ -42,6 +45,14 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected final String path;
 	protected final Vertx vertx;
 	protected final Importer importer = Importer.getInstance();
+	private static final String[][] OTHER_UNESCAPE = {{"&quot;", "\""}};
+	public static final CharSequenceTranslator UNESCAPE_AAF =
+			new AggregateTranslator(
+					new LookupTranslator(OTHER_UNESCAPE),
+					new LookupTranslator(EntityArrays.ISO8859_1_UNESCAPE()),
+					new LookupTranslator(EntityArrays.HTML40_EXTENDED_UNESCAPE()),
+					new NumericEntityUnescaper()
+			);
 
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
@@ -67,7 +78,9 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 					try {
 						String file = files[j];
 						log.info("Parsing file : " + file);
-						InputSource in = new InputSource(new FileInputStream(file));
+						byte[] encoded = Files.readAllBytes(Paths.get(file));
+						String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
+						InputSource in = new InputSource(new StringReader(content));
 						AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
 						XMLReader xr = XMLReaderFactory.createXMLReader();
 						xr.setContentHandler(sh);
@@ -147,5 +160,6 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	}
 
 	protected abstract String getFileRegex();
+
 
 }
