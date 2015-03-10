@@ -200,7 +200,7 @@ public class FeederTest extends TestVerticle {
 				switch (action) {
 					case "delete-groups" :
 						JsonArray groups = message.body().getArray("old-groups", new JsonArray());
-						assertEquals(177 * 4 + 177, groups.size());
+						assertEquals(177 * 5 + 177, groups.size());
 						String countQuery =
 								"MATCH (s:Structure) " +
 								"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
@@ -265,7 +265,7 @@ public class FeederTest extends TestVerticle {
 						assertEquals(10, (int) r.getInteger("nbStructures", 0));
 						assertEquals(177, (int) r.getInteger("nbClasses", 0));
 						assertEquals(177, (int) r.getInteger("nbFunctionalGroups", 0));
-						assertEquals(177 * 4 + 10 * 4 + 4, (int) r.getInteger("nbProfileGroups", 0));
+						assertEquals(177 * 5 + 10 * 5 + 5, (int) r.getInteger("nbProfileGroups", 0));
 						handler.handle(null);
 					}
 				});
