@@ -147,8 +147,7 @@ Behaviours.register('workspace', {
 			});
 		}.bind(this));
 	},
-	protectedDuplicate: function(file, callback){
-		console.log('copy file to media library');
+	duplicate: function(file, visibility, callback){
 		console.log(file);
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', '/workspace/document/' + file._id, true);
@@ -158,7 +157,7 @@ Behaviours.register('workspace', {
 				var blobDocument = this.response;
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
-				http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
+				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
 					if(typeof callback === 'function'){
 						callback(data);
 					}
@@ -166,6 +165,15 @@ Behaviours.register('workspace', {
 			}
 		};
 		xhr.send();
+	},
+	publicDuplicate: function(file, callback){
+		console.log('copy file as public');
+		this.duplicate(file, 'public', callback);
+	},
+	protectedDuplicate: function(file, callback){
+		console.log('copy file to media library');
+		this.duplicate(file, 'protected', callback);
+
 	},
 	sniplets: {
 		documents: {

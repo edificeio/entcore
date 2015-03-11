@@ -112,6 +112,7 @@
     "wiki": "Wiki",
     "workspace": "Espace documentaire",
     "workspace.appDocuments": "Documents ajoutés dans les applis",
+	"workspace.publicDocuments": "Documents publics",
     "workspace.myDocuments": "Mes documents",
     "workspace.sharedDocuments": "Documents partagés avec moi",
 	"file.light": "Fichier léger",
