@@ -180,12 +180,10 @@ public class ConversationController extends BaseController {
 			return;
 		}
 		final JsonObject params = new JsonObject()
-				.putString("uri", container.config().getString("userbook-host") +
-						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("username", user.getUsername())
 				.putString("subject", subject)
-				.putString("messageUri", container.config().getString("host", "http://localhost:8019") +
-						pathPrefix + "/conversation#/read-mail/" + id);
+				.putString("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		String type = container.config().getString("app-name", Conversation.class.getSimpleName()).toUpperCase();
 		List<String> recipients = new ArrayList<>();
 		for (Object o : r) {
