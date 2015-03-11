@@ -23,6 +23,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
 
 public class Validator {
 
+	private static final Logger log = LoggerFactory.getLogger(Validator.class);
 	private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
 	private static final String[] alphabet =
 			{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
@@ -100,7 +103,9 @@ public class Validator {
 						err = "Missing type validator: " + type;
 				}
 				if (err != null) {
-					return err;
+					log.info(err);
+					object.removeField(attr);
+					continue;
 				}
 				if (value instanceof JsonArray) {
 					calcChecksum.append(((JsonArray) value).encode());
