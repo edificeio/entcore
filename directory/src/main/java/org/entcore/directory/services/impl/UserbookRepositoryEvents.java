@@ -35,7 +35,7 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
-			String locale) {
+			String locale, String host, Handler<Boolean> handler) {
 
 	}
 

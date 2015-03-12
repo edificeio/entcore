@@ -106,10 +106,10 @@ public class DefaultUserService implements UserService {
 						return;
 					}
 					JsonObject json = new JsonObject()
-							.putString("activationUri", notification.getHost() +
+							.putString("activationUri", notification.getHost(request) +
 									"/auth/activation?login=" + login +
 									"&activationCode=" + activationCode)
-							.putString("host", notification.getHost())
+							.putString("host", notification.getHost(request))
 							.putString("login", login);
 					logger.debug(json.encode());
 					notification.sendEmail(request, email, null, null,

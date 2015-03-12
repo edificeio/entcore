@@ -301,7 +301,7 @@ public class ClassController extends BaseController {
 					}
 				});
 				if (welcomeMessage) {
-					JsonObject params = new JsonObject().putString("host", conversationNotification.getHost());
+					JsonObject params = new JsonObject();
 					conversationNotification.notify(request, "", userIds, null,
 						"welcome.subject", "email/welcome.html", params,
 						new Handler<Either<String, JsonObject>>() {

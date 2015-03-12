@@ -107,7 +107,7 @@ public class ArchiveController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					exportService.export(user, I18n.acceptLanguage(request), new Handler<Either<String, String>>() {
+					exportService.export(user, I18n.acceptLanguage(request), request, new Handler<Either<String, String>>() {
 						@Override
 						public void handle(Either<String, String> event) {
 							if (event.isRight()) {
@@ -177,7 +177,8 @@ public class ArchiveController extends BaseController {
 				exportService.exported(
 						message.body().getString("exportId"),
 						message.body().getString("status"),
-						message.body().getString("locale", "fr")
+						message.body().getString("locale", "fr"),
+						message.body().getString("host", container.config().getString("host", ""))
 						);
 				break;
 			default: log.error("Archive : invalid action " + action);

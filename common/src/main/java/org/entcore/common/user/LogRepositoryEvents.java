@@ -19,6 +19,7 @@
 
 package org.entcore.common.user;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -28,8 +29,9 @@ public class LogRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
-			String locale) {
+			String locale, String host, Handler<Boolean> handler) {
 		log.info("Export " + userId + " resources on path " + exportPath);
+
 	}
 
 	@Override

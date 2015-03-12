@@ -20,6 +20,7 @@
 package org.entcore.common.user;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -28,12 +29,15 @@ import org.vertx.java.core.json.JsonObject;
 public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
 	private RepositoryEvents repositoryEvents;
+	private final EventBus eb;
 
-	public RepositoryHandler() {
+	public RepositoryHandler(EventBus eb) {
+		this.eb = eb;
 		this.repositoryEvents = new LogRepositoryEvents();
 	}
 
-	public RepositoryHandler(RepositoryEvents repositoryEvents) {
+	public RepositoryHandler(RepositoryEvents repositoryEvents, EventBus eb) {
+		this.eb = eb;
 		this.repositoryEvents = repositoryEvents;
 	}
 
@@ -42,12 +46,24 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 		String action = message.body().getString("action", "");
 		switch (action) {
 			case "export" :
-				String exportId = message.body().getString("exportId", "");
+				final String exportId = message.body().getString("exportId", "");
 				String userId = message.body().getString("userId", "");
 				String path = message.body().getString("path", "");
-				String locale = message.body().getString("locale", "fr");
+				final String locale = message.body().getString("locale", "fr");
+				final String host = message.body().getString("host", "");
 				JsonArray groupIds = message.body().getArray("groups", new JsonArray());
-				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale);
+				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale, host, new Handler<Boolean>() {
+					@Override
+					public void handle(Boolean isExported) {
+						JsonObject exported = new JsonObject()
+								.putString("action", "exported")
+								.putString("status", (isExported ? "ok" : "error"))
+								.putString("exportId", exportId)
+								.putString("locale", locale)
+								.putString("host", host);
+						eb.publish("entcore.export", exported);
+					}
+				});
 				break;
 			case "delete-groups" :
 				JsonArray groups = message.body().getArray("old-groups", new JsonArray());

@@ -21,6 +21,7 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -70,7 +71,8 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void export(final UserInfos user, final String locale, final Handler<Either<String, String>> handler) {
+	public void export(final UserInfos user, final String locale, final HttpServerRequest request,
+			final Handler<Either<String, String>> handler) {
 		userExportExists(user, new Handler<Boolean>() {
 			@Override
 			public void handle(Boolean event) {
@@ -94,7 +96,8 @@ public class FileSystemExportService implements ExportService {
 												.putString("userId", user.getUserId())
 												.putArray("groups", new JsonArray(g.toArray()))
 												.putString("path", exportDirectory)
-												.putString("locale", locale);
+												.putString("locale", locale)
+												.putString("host", Renders.getScheme(request) + "://" + request.headers().get("Host"));
 										eb.publish("user.repository", j);
 										handler.handle(new Either.Right<String, String>(exportId));
 									}
@@ -143,7 +146,7 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void exported(final String exportId, String status, final String locale) {
+	public void exported(final String exportId, String status, final String locale, final String host) {
 		log.debug("Exported method");
 		if (exportId == null) {
 			log.error("Export receive event without exportId ");
@@ -166,7 +169,7 @@ public class FileSystemExportService implements ExportService {
 			});
 			userExportInProgress.remove(getUserId(exportId));
 			if (notification != null) {
-				sendExportEmail(exportId, locale, status);
+				sendExportEmail(exportId, locale, status, host);
 			}
 			return;
 		}
@@ -240,7 +243,7 @@ public class FileSystemExportService implements ExportService {
 							private void publish(Message<JsonObject> event) {
 								eb.publish("export." + exportId, event.body());
 								if (notification != null) {
-									sendExportEmail(exportId, locale, event.body().getString("status"));
+									sendExportEmail(exportId, locale, event.body().getString("status"), host);
 								}
 							}
 						});
@@ -270,7 +273,7 @@ public class FileSystemExportService implements ExportService {
 		return exportId.substring(exportId.indexOf('_') + 1);
 	}
 
-	private void sendExportEmail(final String exportId, final String locale, final String status) {
+	private void sendExportEmail(final String exportId, final String locale, final String status, final String host) {
 		final String [] userId = exportId.split("_");
 		if (userId.length != 2) {
 			log.error("Invalid  exportId");
@@ -293,9 +296,9 @@ public class FileSystemExportService implements ExportService {
 						if ("ok".equals(status)) {
 							subject = "email.export.ok";
 							template = "email/export.ok.html";
-							p.putString("download", notification.getHost() + "/archive/export/" + exportId);
+							p.putString("download", host + "/archive/export/" + exportId);
 							if (log.isDebugEnabled()) {
-								log.debug(notification.getHost() + "/archive/export/" + exportId);
+								log.debug(host + "/archive/export/" + exportId);
 							}
 						} else {
 							subject = "email.export.ko";

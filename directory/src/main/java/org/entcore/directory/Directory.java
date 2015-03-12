@@ -107,7 +107,7 @@ public class Directory extends BaseServer {
 		addController(tenantController);
 
 		vertx.eventBus().registerLocalHandler("user.repository",
-				new RepositoryHandler(new UserbookRepositoryEvents()));
+				new RepositoryHandler(new UserbookRepositoryEvents(), eb));
 	}
 
 }

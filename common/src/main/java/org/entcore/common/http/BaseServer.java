@@ -47,7 +47,7 @@ import java.util.Locale;
 public abstract class BaseServer extends Server {
 
 	private ResourcesProvider resourceProvider = null;
-	private RepositoryHandler repositoryHandler = new RepositoryHandler();
+	private RepositoryHandler repositoryHandler;
 	private String schema;
 	private boolean oauthClientGrant = false;
 
@@ -62,6 +62,8 @@ public abstract class BaseServer extends Server {
 		if (node == null) {
 			node = "";
 		}
+
+		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 
 		Config.getInstance().setConfig(config);
 		if (config.getBoolean("neo4j", true)) {

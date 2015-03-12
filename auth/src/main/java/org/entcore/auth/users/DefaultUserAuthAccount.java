@@ -172,8 +172,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 		JsonObject json = new JsonObject()
 				.putString("login", login)
-				.putString("host", notification.getHost())
-				.putString("resetUri", notification.getHost() + "/auth/reset/" + resetCode);
+				.putString("host", notification.getHost(request))
+				.putString("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode);
 		container.logger().debug(json.encode());
 		notification.sendEmail(request, email, container.config()
 				.getString("email", "noreply@one1d.fr"), null, null,

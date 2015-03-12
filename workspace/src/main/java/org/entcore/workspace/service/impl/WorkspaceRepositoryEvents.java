@@ -26,7 +26,6 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Server;
 
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.workspace.Workspace;
@@ -36,7 +35,6 @@ import org.entcore.common.storage.Storage;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -48,26 +46,25 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkspaceRepositoryEvents.class);
 	private final MongoDb mongo = MongoDb.getInstance();
-	private final EventBus eb;
 	private final Storage storage;
 	private final Vertx vertx;
 	private final boolean shareOldGroupsToUsers;
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers) {
 		this.shareOldGroupsToUsers = shareOldGroupsToUsers;
-		this.eb = Server.getEventBus(vertx);
 		this.storage = storage;
 		this.vertx = vertx;
 	}
 
 	@Override
 	public void exportResources(final String exportId, final String userId, JsonArray g,
-			final String exportPath, final String locale) {
+			final String exportPath, final String locale, String host, final Handler<Boolean> handler) {
 		log.debug("Workspace export resources.");
 		List<DBObject> groups = new ArrayList<>();
 		groups.add(QueryBuilder.start("userId").is(userId).get());
@@ -90,11 +87,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				final JsonObject exported = new JsonObject()
-						.putString("action", "exported")
-						.putString("exportId", exportId)
-						.putString("locale", locale)
-						.putString("status", "error");
+				final AtomicBoolean exported = new AtomicBoolean(false);
 				final JsonArray documents = event.body().getArray("results");
 				if ("ok".equals(event.body().getString("status")) && documents != null) {
 					QueryBuilder b = QueryBuilder.start("to").is(userId).put("file").exists(true);
@@ -128,23 +121,23 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 										alias.putString(ids[i], ids[i] + "_" + fileName);
 									}
 								}
-								exportFiles(alias, ids, exportPath, locale, exported);
+								exportFiles(alias, ids, exportPath, locale, exported, handler);
 							} else {
 								log.error("Rack " + q.encode() + " - " + event.body().getString("message"));
-								eb.publish("entcore.export", exported);
+								handler.handle(exported.get());
 							}
 						}
 					});
 				} else {
 					log.error("Documents " + query.encode() + " - " +event.body().getString("message"));
-					eb.publish("entcore.export", exported);
+					handler.handle(exported.get());
 				}
 			}
 		});
 	}
 
 	private void exportFiles(final JsonObject alias, final String[] ids,
-			String exportPath, String locale, final JsonObject exported) {
+			String exportPath, String locale, final AtomicBoolean exported, final Handler<Boolean> handler) {
 		createExportDirectory(exportPath, locale, new Handler<String>() {
 			@Override
 			public void handle(String path) {
@@ -153,17 +146,17 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						@Override
 						public void handle(JsonObject event) {
 							if ("ok".equals(event.getString("status"))) {
-								exported.putString("status", "ok");
-								eb.publish("entcore.export", exported);
+								exported.set(true);
+								handler.handle(exported.get());
 							} else {
 								log.error("Write to fs : " + new JsonArray(ids).encode() + " - " + event.encode());
-								eb.publish("entcore.export", exported);
+								handler.handle(exported.get());
 							}
 						}
 					});
 				} else {
 					log.error("Create export directory error.");
-					eb.publish("entcore.export", exported);
+					handler.handle(exported.get());
 				}
 			}
 		});

@@ -19,12 +19,13 @@
 
 package org.entcore.common.user;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 
 public interface RepositoryEvents {
 
 	void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
-			String locale);
+			String locale, String host, Handler<Boolean> handler);
 
 	void deleteGroups(JsonArray groups);
 

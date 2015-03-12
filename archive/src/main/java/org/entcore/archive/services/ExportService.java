@@ -22,10 +22,11 @@ package org.entcore.archive.services;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpServerRequest;
 
 public interface ExportService {
 
-	void export(UserInfos user, String locale, Handler<Either<String, String>> handler);
+	void export(UserInfos user, String locale, HttpServerRequest request, Handler<Either<String, String>> handler);
 
 	void userExportExists(UserInfos user, Handler<Boolean> handler);
 
@@ -33,7 +34,7 @@ public interface ExportService {
 
 	void exportPath(String exportId, Handler<Either<String, String>> handler);
 
-	void exported(String exportId, String status, String locale);
+	void exported(String exportId, String status, String locale, String host);
 
 	void deleteExport(String exportId);
 
