@@ -66,6 +66,7 @@ public class PortalController extends BaseController {
 	private String assetsPath;
 	private EventStore eventStore;
 	private enum PortalEvent { ACCESS_ADAPTER }
+	private String defaultSkin;
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -75,6 +76,7 @@ public class PortalController extends BaseController {
 		dev = "dev".equals(container.config().getString("mode"));
 		assetsPath = container.config().getString("assets-path", ".");
 		JsonObject skins = container.config().getObject("skins", new JsonObject());
+		defaultSkin = container.config().getString("skin", "raw");
 		themes = new HashMap<>();
 		this.hostSkin = new HashMap<>();
 		for (final String domain: skins.getFieldNames()) {
@@ -182,10 +184,10 @@ public class PortalController extends BaseController {
 
 	private String getSkinFromDomain(HttpServerRequest request) {
 		if (request == null) {
-			return "raw";
+			return defaultSkin;
 		}
 		String skin = hostSkin.get(request.headers().get("Host"));
-		return (skin != null && !skin.trim().isEmpty()) ? skin : "raw";
+		return (skin != null && !skin.trim().isEmpty()) ? skin : defaultSkin;
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
@@ -247,7 +249,7 @@ public class PortalController extends BaseController {
 								String userTheme = (result != null && result.size() == 1) ?
 										result.<JsonObject>get(0).getString("theme") : null;
 								List<String> t = themes.get(request.headers().get("Host"));
-								if ((dev && userTheme != null && skins.get(currentSkin(request)).contains(userTheme)) ||
+								if ((dev && userTheme != null && skins != null && skins.get(currentSkin(request)).contains(userTheme)) ||
 										(userTheme != null && t != null && t.contains(userTheme))) {
 									theme.putString("skin", getThemePrefix(request) + "/" + userTheme + "/");
 								} else {
