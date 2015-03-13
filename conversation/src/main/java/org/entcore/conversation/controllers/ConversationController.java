@@ -33,6 +33,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
@@ -47,6 +48,7 @@ import fr.wseduc.security.SecuredAction;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -57,6 +59,8 @@ import org.vertx.java.platform.Container;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -64,10 +68,20 @@ import static org.entcore.common.user.UserUtils.getUserInfos;
 
 public class ConversationController extends BaseController {
 
+	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
+
+	private String conversationName;
+	private Storage storage;
+	private int threshold;
+
 	private ConversationService conversationService;
 	private TimelineHelper notification;
 	private EventStore eventStore;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
+
+	public ConversationController(Storage storage) {
+		this.storage = storage;
+	}
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -77,6 +91,8 @@ public class ConversationController extends BaseController {
 				container.config().getString("app-name", Conversation.class.getSimpleName()));
 		notification = new TimelineHelper(vertx, eb, container);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
+		this.threshold = container.config().getInteger("alertStorage", 80);
+		this.conversationName = container.config().getString("app-name", Conversation.class.getSimpleName()).toUpperCase();
 	}
 
 	@Get("conversation")
@@ -409,7 +425,96 @@ public class ConversationController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					conversationService.delete(ids, user, defaultResponseHandler(request, 204));
+					conversationService.delete(ids, user, new Handler<Either<String,JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> event) {
+							if(event.isLeft()){
+								badRequest(request, event.left().getValue());
+								return;
+							}
+
+							JsonArray results = event.right().getValue();
+
+							final AtomicLong totalSize = new AtomicLong(0);
+							final AtomicInteger finalCountdown = new AtomicInteger(results.size() / 2);
+
+							if(finalCountdown.get() <= 0){
+								renderJson(request, new JsonObject(), 204);
+								return;
+							}
+							final Handler<Void> finalCountdownHandler = new Handler<Void>() {
+								@Override
+								public void handle(Void event) {
+									if(finalCountdown.decrementAndGet() == 0){
+										updateUserQuota(user.getUserId(), totalSize.get(), new Handler<Void>() {
+											public void handle(Void event) {
+												renderJson(request, new JsonObject(), 204);
+											}
+										});
+
+									}
+								}
+							};
+
+							for(int i = 0; i < results.size(); i++){
+								//Result from the attachment request - attachment list
+								JsonArray result = (JsonArray) results.get(i);
+								//Result from the deletion request - check whether the attachments must be deleted from the storage
+								JsonArray resultCheck = (JsonArray) results.get(++i);
+
+								JsonArray attachments = new JsonArray();
+								for(Object item : result){
+									JsonArray item_attachments = ((JsonObject) item).getArray("attachments", new JsonArray());
+									for(Object attachment: item_attachments){
+										attachments.add(attachment);
+									}
+								}
+
+								boolean toDelete = resultCheck.size() > 0 ?
+										((JsonObject) resultCheck.get(0)).getBoolean("deleteAttachments", false)
+										: false;
+
+								if(attachments.size() < 1){
+									finalCountdownHandler.handle(null);
+									continue;
+								}
+
+								final AtomicInteger countdown = new AtomicInteger(attachments.size());
+								final Handler<Void> countdownHandler = new Handler<Void>() {
+									@Override
+									public void handle(Void event) {
+										if(countdown.decrementAndGet() == 0){
+											finalCountdownHandler.handle(event);
+										}
+									}
+								};
+
+								for(Object attachmentObj: attachments){
+									final JsonObject attachment = (JsonObject) attachmentObj;
+									final String attachmentId = attachment.getString("id");
+									final Long attachmentSize = attachment.getLong("size");
+
+									if(!toDelete){
+										totalSize.addAndGet(-attachmentSize);
+										countdownHandler.handle(null);
+									} else {
+										storage.removeFile(attachmentId, new Handler<JsonObject>() {
+											@Override
+											public void handle(JsonObject event) {
+												if (!"ok".equals(event.getString("status"))) {
+													log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
+													countdownHandler.handle(null);
+												} else {
+													totalSize.addAndGet(-attachmentSize);
+													countdownHandler.handle(null);
+												}
+											}
+										});
+									}
+								}
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
@@ -600,7 +705,218 @@ public class ConversationController extends BaseController {
 					unauthorized(request);
 					return;
 				}
-				conversationService.deleteFolder(folderId, user, defaultResponseHandler(request));
+				conversationService.deleteFolder(folderId, user, new Handler<Either<String,JsonArray>>() {
+					public void handle(Either<String, JsonArray> event) {
+						if(event.isLeft()){
+							badRequest(request, event.left().getValue());
+							return;
+						}
+
+						JsonArray results = event.right().getValue();
+
+						final JsonArray attachmentsQuota =
+								((JsonArray) results.get(0)).size() > 0 ?
+									((JsonObject) ((JsonArray) results.get(0)).get(0)).getArray("attachments", new JsonArray())
+									: new JsonArray();
+						final JsonArray attachmentsDeletion =
+								((JsonArray) results.get(2)).size() > 0 ?
+									((JsonObject) ((JsonArray) results.get(2)).get(0)).getArray("attachments", new JsonArray())
+									: new JsonArray();
+
+						final AtomicLong totalSize = new AtomicLong(0L);
+						final AtomicInteger deletionCountdown = new AtomicInteger(attachmentsDeletion.size());
+
+						final VoidHandler finalHandler = new VoidHandler() {
+							@Override
+							protected void handle() {
+								if(deletionCountdown.decrementAndGet() == 0){
+									renderJson(request, new JsonObject(), 200);
+								}
+							}
+						};
+
+						for(Object attachmentObj: attachmentsQuota){
+							final JsonObject attachment = (JsonObject) attachmentObj;
+							final Long attachmentSize = attachment.getLong("size");
+
+							totalSize.addAndGet(-attachmentSize);
+						}
+
+						updateUserQuota(user.getUserId(), totalSize.get(), new Handler<Void>() {
+							@Override
+							public void handle(Void event) {
+								if(deletionCountdown.get() == 0){
+									renderJson(request, new JsonObject(), 200);
+									return;
+								}
+
+								for(Object attachmentObj: attachmentsDeletion){
+									final JsonObject attachment = (JsonObject) attachmentObj;
+									final String attachmentId = attachment.getString("id");
+
+									storage.removeFile(attachmentId, new Handler<JsonObject>() {
+										@Override
+										public void handle(JsonObject event) {
+											if (!"ok".equals(event.getString("status"))) {
+												log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
+											}
+											finalHandler.handle(null);
+										}
+									});
+								}
+							}
+						});
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Post an new attachment to a drafted message
+	@Post("message/:messageId/attachment")
+	@SecuredAction(value = "conversation.message.post.attachment", type = ActionType.AUTHENTICATED)
+	public void postAttachment(final HttpServerRequest request){
+		final String messageId = request.params().get("messageId");
+		request.pause();
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				getUserQuota(user.getUserId(), new Handler<JsonObject>() {
+					public void handle(JsonObject j) {
+						if(j == null || "error".equals(j.getString("status"))){
+							badRequest(request, j == null ? "" : j.getString("message"));
+							return;
+						}
+
+						long quota = j.getLong("quota", 0l);
+						long storage = j.getLong("storage", 0l);
+
+						request.resume();
+						ConversationController.this.storage.writeUploadFile(request, (quota - storage), new Handler<JsonObject>() {
+							public void handle(JsonObject uploaded) {
+								if (!"ok".equals(uploaded.getString("status"))) {
+									badRequest(request, uploaded.getString("message"));
+									return;
+								}
+
+								updateUserQuota(user.getUserId(), uploaded.getObject("metadata", new JsonObject()).getLong("size", 0L));
+								conversationService.addAttachment(messageId, user, uploaded, defaultResponseHandler(request));
+							}
+						});
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Download an attachment
+	@Get("message/:messageId/attachment/:attachmentId")
+	@SecuredAction(value = "conversation.message.get.attachment", type = ActionType.AUTHENTICATED)
+	public void getAttachment(final HttpServerRequest request){
+		final String messageId = request.params().get("messageId");
+		final String attachmentId = request.params().get("attachmentId");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+
+				conversationService.getAttachment(messageId, attachmentId, user, new Handler<Either<String,JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isLeft()){
+							badRequest(request, event.left().getValue());
+							return;
+						}
+						if(event.isRight() && event.right().getValue() == null){
+							badRequest(request, event.right().getValue().toString());
+							return;
+						}
+
+						JsonObject neoResult = event.right().getValue();
+						String fileId = neoResult.getString("id");
+						if(fileId == null || fileId.trim().length() == 0){
+							notFound(request, "invalid.file.id");
+							return;
+						}
+
+						JsonObject metadata = new JsonObject()
+							.putString("filename", neoResult.getString("filename"))
+							.putString("content-type", neoResult.getString("contentType"));
+
+						storage.sendFile(fileId, neoResult.getString("filename"), request, false, metadata);
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Delete an attachment
+	@Delete("message/:messageId/attachment/:attachmentId")
+	@SecuredAction(value = "conversation.message.delete.attachment", type = ActionType.AUTHENTICATED)
+	public void deleteAttachment(final HttpServerRequest request){
+		final String messageId = request.params().get("messageId");
+		final String attachmentId = request.params().get("attachmentId");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+
+				conversationService.removeAttachment(messageId, attachmentId, user, new Handler<Either<String,JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isLeft()){
+							badRequest(request, event.left().getValue());
+							return;
+						}
+						if(event.isRight() && event.right().getValue() == null){
+							badRequest(request, event.right().getValue().toString());
+							return;
+						}
+
+						JsonObject neoResult = event.right().getValue();
+
+						boolean deletionCheck = neoResult.getBoolean("deletionCheck", false);
+						final String fileId = neoResult.getString("fileId");
+						final long fileSize = neoResult.getLong("fileSize");
+
+						if(!deletionCheck){
+							updateUserQuota(user.getUserId(), -fileSize);
+							renderJson(request, neoResult);
+
+							return;
+						}
+
+						storage.removeFile(fileId, new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject result) {
+								if (!"ok".equals(result.getString("status"))) {
+									log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+fileId+"})");
+									badRequest(request);
+									return;
+								}
+
+								updateUserQuota(user.getUserId(), -fileSize);
+								renderJson(request, result);
+							}
+						});
+					}
+				});
 			}
 		};
 
@@ -644,6 +960,50 @@ public class ConversationController extends BaseController {
 						}
 					}
 				});
+	}
+
+	private void getUserQuota(String userId, final Handler<JsonObject> handler){
+		JsonObject message = new JsonObject();
+		message.putString("action", "getUserQuota");
+		message.putString("userId", userId);
+
+		eb.send(QUOTA_BUS_ADDRESS, message, new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> reply) {
+				handler.handle(reply.body());
+			}
+		});
+	}
+
+	private void updateUserQuota(final String userId, long size){
+		updateUserQuota(userId, size, null);
+	}
+
+	private void updateUserQuota(final String userId, long size, final Handler<Void> continuation){
+		JsonObject message = new JsonObject();
+		message.putString("action", "updateUserQuota");
+		message.putString("userId", userId);
+		message.putNumber("size", size);
+		message.putNumber("threshold", threshold);
+
+		eb.send(QUOTA_BUS_ADDRESS, message, new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> reply) {
+				JsonObject obj = reply.body();
+				UserUtils.addSessionAttribute(eb, userId, "storage", obj.getLong("storage"), null);
+				if (obj.getBoolean("notify", false)) {
+					notifyEmptySpaceIsSmall(userId);
+				}
+
+				if(continuation != null)
+					continuation.handle(null);
+			}
+		});
+	}
+
+	private void notifyEmptySpaceIsSmall(String userId) {
+		List<String> recipients = new ArrayList<>();
+		recipients.add(userId);
+		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), null, conversationName,
+				conversationName + "_STORAGE", recipients, null, "notification/notify-storage.html", new JsonObject());
 	}
 
 }

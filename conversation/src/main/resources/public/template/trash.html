@@ -25,7 +25,7 @@
 				<td><i class="folder"></i></td>
 				<td colspan="4">[[folder.name]]</td>
 			</tr>
-			<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected, 'new-element': !mail.isRead }">
+			<tr ng-repeat="mail in folders.trash.mails.all" ng-class="{ checked: mail.selected }">
 				<td><input type="checkbox" ng-model="mail.selected" /></td>
 				<td></td>
 				<td><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>

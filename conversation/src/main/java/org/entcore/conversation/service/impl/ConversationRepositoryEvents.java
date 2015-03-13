@@ -21,6 +21,7 @@ package org.entcore.conversation.service.impl;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -33,6 +34,11 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(ConversationRepositoryEvents.class);
 	private final Neo4j neo4j = Neo4j.getInstance();
+	private final Storage storage;
+
+	public ConversationRepositoryEvents(Storage storage) {
+		this.storage = storage;
+	}
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
@@ -101,7 +107,19 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 				"WHERE c.userId IN {userIds} " +
 				"OPTIONAL MATCH f-[r2]-()" +
 				"DELETE c, r, f, r2 ";
-		 b.add(query, new JsonObject().putArray("userIds", userIds));
+		b.add(query, new JsonObject().putArray("userIds", userIds));
+
+		String retrieveAttachments =
+				"MATCH (m:ConversationMessage)-[attachmentLink: HAS_ATTACHMENT]->(attachment: MessageAttachment) " +
+				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
+				"RETURN collect(distinct attachment.id) as attachmentIds";
+		b.add(retrieveAttachments);
+
+		String deleteAttachments =
+				"MATCH (m:ConversationMessage)-[attachmentLink: HAS_ATTACHMENT]->(attachment: MessageAttachment) " +
+				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
+				"DELETE attachmentLink, attachment";
+		b.add(deleteAttachments);
 
 		query = "MATCH (m:ConversationMessage) " +
 				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
@@ -137,6 +155,20 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			public void handle(Message<JsonObject> event) {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error deleting conversation data : " + event.body().encode());
+					return;
+				}
+
+				JsonArray attachmentIds = ((JsonObject) ((JsonArray) event.body().getArray("results").get(2)).get(0)).getArray("attachmentIds", new JsonArray());
+				for(Object attachmentObj: attachmentIds){
+					final String attachmentId = (String) attachmentObj;
+					storage.removeFile(attachmentId, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							if (!"ok".equals(event.getString("status"))) {
+								log.error("["+ConversationRepositoryEvents.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
+							}
+						}
+					});
 				}
 			}
 		});

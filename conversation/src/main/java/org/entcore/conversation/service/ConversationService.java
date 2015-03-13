@@ -62,7 +62,7 @@ public interface ConversationService {
 
 	void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
-	void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonArray>> result);
 
 	void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
@@ -80,5 +80,10 @@ public interface ConversationService {
 	void backToSystemFolder(List<String> messageIds, UserInfos user,Handler<Either<String, JsonObject>> result);
 	void trashFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void restoreFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
-	void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonArray>> result);
+
+	//Attachments
+	void addAttachment(String messageId, UserInfos user, JsonObject uploaded, Handler<Either<String, JsonObject>> result);
+	void getAttachment(String messageId, String attachmentId, UserInfos users, Handler<Either<String, JsonObject>> result);
+	void removeAttachment(String messageId, String attachmentId, UserInfos user, Handler<Either<String, JsonObject>> result);
 }

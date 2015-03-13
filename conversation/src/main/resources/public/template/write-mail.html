@@ -52,12 +52,74 @@
 		<html-editor ng-model="newItem.body" watch-collections="['newItem.to', 'newItem.cc']"></html-editor>
 	</div>
 	<div class="row">
+		<div class="row">
+			<h3 class="cell"><i18n>attachments</i18n></h3>
+			<div class="right-magnet select-file nomargin">
+				<div class="hidden-content">
+					<input type="file" multiple files-input-change="postAttachments()" ng-model="newItem.newAttachments">
+					<input type="text" data-display-file="">
+				</div>
+				<button class="small file-button" translate="" content="add.attachment"></button>
+			</div>
+		</div>
+		<article class="list-view" ng-if="newItem.loadingAttachments.length > 0">
+			<h4><i18n>attachments.loading</i18n></h4>
+			<table>
+				<thead>
+					<th><i18n>name</i18n></th>
+					<th><i18n>progress</i18n></th>
+				</thead>
+				<tbody>
+					<tr ng-repeat="attachment in newItem.loadingAttachments">
+						<td>
+							[[attachment.file.name]]
+						</td>
+						<td>
+							<progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<article class="list-view" ng-init="columnOrder = 'filename'" drop-files="newItem.newAttachments" on-drop="postAttachments()">
+		<table>
+			<thead>
+				<th class="icon"></th>
+				<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>
+				<th ng-click="columnOrder = columnOrder === 'size' ? '-size' : 'size'"><i18n>size</i18n></th>
+				<th class="icon"></th>
+			</thead>
+			<tbody>
+				<tr ng-repeat="attachment in newItem.attachments | orderBy: columnOrder" class="element">
+					<td class="icon">
+						<div class="twelve cell">
+							<i class="[[formatFileType(attachment.contentType)]]"></i>
+						</div>
+					</td>
+					<td>
+						<a ng-href="[['message/'+newItem.id+'/attachment/'+attachment.id]]">
+							[[attachment.filename]]
+						</a>
+					</td>
+					<td>
+						[[formatSize(attachment.size)]]
+					</td>
+					<td>
+						<i class="remove-small center"
+	                       ng-click="deleteAttachment($event, attachment, newItem)"
+	                       tooltip="remove.attachment">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</article>
+	<div class="row">
 		<div class="twelve cell block-container">
 			<button class="cell right-magnet" ng-click="sendMail()" translate key="submit" ng-disabled="!newItem.to.length"></button>
 			<button class="cell right-magnet" ng-click="saveDraft()" translate key="save"></button>
 			<button class="cancel cell right-magnet" ng-click="folders.current.folderName ? openView(folders.current.folderName, 'main') : openView('folder', 'main')" translate key="cancel"></button>
 		</div>
-
 	</div>
 	<div class="row">
 		<hr />

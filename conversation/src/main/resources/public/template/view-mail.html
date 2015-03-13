@@ -13,16 +13,16 @@
 			<div class="row">
 				<em class="medium-importance medium-text" ng-if="mail.to.length > 0">
 					<span translate key="to"></span>
-					<a ng-repeat="receiver in mail.to" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-						[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+					<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
+						[[mail.map(receiver).displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
 					</a>
 				</em>
 			</div>
 			<div class="row">
 				<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
 					<span translate key="cc"></span>
-					<a ng-repeat="receiver in mail.cc" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-						[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.cc.length - 1">,</span>
+					<a ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
+						[[mail.map(receiver).displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
 					</a>
 				</em>
 			</div>
@@ -43,4 +43,37 @@
 		<a ng-click="mail.remove(); openFolder()" translate key="remove.link"></a>
 		<span translate key="message"></span>
 	</div>
+</article>
+<article class="list-view" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'" ng-if="mail.attachments && mail.attachments.length > 0">
+	<h3><i18n>attachments</i18n></h3>
+	<table>
+		<thead>
+			<th class="icon"></th>
+			<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>
+			<th ng-click="columnOrder = columnOrder === 'size' ? '-size' : 'size'"><i18n>size</i18n></th>
+			<th class="icon"></th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="attachment in mail.attachments | orderBy: columnOrder" class="element">
+				<td class="icon">
+					<div class="twelve cell">
+						<i class="[[formatFileType(attachment.contentType)]]"></i>
+					</div>
+				</td>
+				<td>
+					<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]">
+						[[attachment.filename]]
+					</a>
+				</td>
+				<td>
+					[[formatSize(attachment.size)]]
+				</td>
+				<td>
+					<i class="remove-small center"
+					ng-click="deleteAttachment($event, attachment, mail)"
+					tooltip="remove.attachment">
+				</td>
+			</tr>
+		</tbody>
+	</table>
 </article>

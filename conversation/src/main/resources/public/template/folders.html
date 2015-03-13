@@ -72,13 +72,21 @@
 		<h3 class="cell">
 			<i18n>user.folders</i18n>
 		</h3>
-		<button class="small right-magnet" ng-click="openNewFolderView()" ng-disabled="!maxDepth || maxDepth <= 0 || currentFolderDepth() >= maxDepth">
-			<i class="add"></i>
-			<span translate="" key="create.folder"></span>
-		</button>
 	</div>
 
-	<nav class="vertical" ng-include="rootFolderTemplate.template"></nav>
+	<nav class="vertical">
+		<div ng-include="rootFolderTemplate.template"></div>
+		<a class="classic-link right-magnet" ng-click="openNewFolderView()" ng-show="maxDepth && maxDepth > 0 && currentFolderDepth() < maxDepth">
+			<i18n>create.folder</i18n>
+		</a>
+	</nav>
+
+	<div class="row">
+		<hr class="row" />
+		<h2><i18n>used.space</i18n></h2>
+		<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+	</div>
+
 </section>
 <section class="margin-four reduce-block-eight" ng-include="viewsContainers.main">
 

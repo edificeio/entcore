@@ -23,10 +23,10 @@
 		<tr ng-repeat="mail in folders.draft.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail)">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>
-				<a ng-repeat="receiver in mail.to" ng-click="editDraft(mail)">
-					[[mail.map(receiver).displayName]]<span ng-if="$index < 1 && mail.to.length > 1">,</span>
+				<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" ng-click="editDraft(mail)">
+					[[mail.map(receiver).displayName]]<span ng-if="$index < 1 && receivers.length > 1">,</span>
 				</a>
-				<span ng-if="mail.to.length > 2">...</span>
+				<span ng-if="receivers.length > 2">...</span>
 			</td>
 			<td><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
 			<td>[[mail.sentDate()]]</td>

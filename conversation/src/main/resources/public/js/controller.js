@@ -57,6 +57,49 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		}
 	});
 
+	$scope.formatFileType = function(fileType){
+		if(!fileType)
+			return 'unknown'
+
+		var types = {
+			'doc': function(type){
+				return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+			},
+			'xls': function(type){
+				return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
+			},
+			'img': function(type){
+				return type.indexOf('image') !== -1;
+			},
+			'pdf': function(type){
+				return type.indexOf('pdf') !== -1 || type === 'application/x-download';
+			},
+			'ppt': function(type){
+				return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
+			},
+			'video': function(type){
+				return type.indexOf('video') !== -1;
+			},
+			'audio': function(type){
+				return type.indexOf('audio') !== -1;
+			},
+			'zip': function(type){
+				return 	type.indexOf('zip') !== -1 ||
+						type.indexOf('rar') !== -1 ||
+						type.indexOf('tar') !== -1 ||
+						type.indexOf('7z') !== -1;
+			}
+		};
+
+		for(var type in types){
+			if(types[type](fileType)){
+				return type;
+			}
+		}
+
+		return 'unknown';
+	}
+
 	$scope.clearSearch = function(){
 		$scope.users.found = [];
 		$scope.users.foundCC = [];
@@ -295,12 +338,16 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	};
 
 	$scope.removeSelection = function(){
-		if(model.folders.current.mails.selection().length > 0)
-			model.folders.current.mails.removeMails();
+		if(model.folders.current.mails.selection().length > 0){
+			model.folders.current.mails.removeMails().done(function(){
+				$scope.getQuota()
+			});
+		}
 		if(model.folders.current.userFolders){
 			var launcher = new Launcher(model.folders.current.userFolders.selection().length, function(){
 				model.folders.current.userFolders.sync()
 				$scope.refreshFolders()
+				$scope.getQuota()
 			})
 			_.forEach(model.folders.current.userFolders.selection(), function(userFolder){
 				userFolder.delete().done(function(){
@@ -309,6 +356,13 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			})
 		}
 	};
+
+	$scope.filterUsers = function(mail){
+		return function(user){
+			var mapped = mail.map(user)
+			return typeof mapped !== 'undefined' && mapped.displayName !== 'undefined' && mapped.displayName.length > 0
+		}
+	}
 
 	$scope.updateFoundCCUsers = function(){
 		var include = [];
@@ -365,12 +419,13 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.rootFolderTemplate = { template: 'folder-root-template' }
 	$scope.refreshFolders = function(){
-		$scope.userFolders.sync()
-		$scope.rootFolderTemplate.template = ""
-		$timeout(function(){
-			$scope.$apply()
-			$scope.rootFolderTemplate.template = 'folder-root-template'
-		}, 100)
+		$scope.userFolders.sync(function(){
+			$scope.rootFolderTemplate.template = ""
+			$timeout(function(){
+				$scope.$apply()
+				$scope.rootFolderTemplate.template = 'folder-root-template'
+			}, 100)
+		})
 	}
 
 	$scope.currentFolderDepth = function(){
@@ -458,11 +513,11 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		})
 	}
 
+	var letterIcon = document.createElement("img")
+	letterIcon.src = skin.theme +".."+"/img/icons/message-icon.png"
 	$scope.drag = function(item, event){
 		return function(event){
-			var img = document.createElement("img");
-			img.src = skin.theme +".."+"/img/icons/message-icon.png";
-			event.dataTransfer.setDragImage(img, 0, 0);
+			event.dataTransfer.setDragImage(letterIcon, 0, 0);
 			try{
 				event.dataTransfer.setData('application/json', JSON.stringify(item));
 			} catch(e) {
@@ -509,11 +564,137 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		mailObj.trash()
 	}
 
+	//Given a data size in bytes, returns a more "user friendly" representation.
+	$scope.getAppropriateDataUnit = function(bytes){
+		var order = 0
+		var orders = {
+			0: lang.translate("byte"),
+			1: "Ko",
+			2: "Mo",
+			3: "Go",
+			4: "To"
+		}
+		var finalNb = bytes
+		while(finalNb >= 1024 && order < 4){
+			finalNb = finalNb / 1024
+			order++
+		}
+		return {
+			nb: finalNb,
+			order: orders[order]
+		}
+	}
+
+	$scope.formatSize = function(size){
+		var formattedData = $scope.getAppropriateDataUnit(size)
+		return (Math.round(formattedData.nb*10)/10)+" "+formattedData.order
+	}
+
+
+	$scope.postAttachments = function(){
+		var action = function(){
+			_.forEach($scope.newItem.newAttachments, function(targetAttachment){
+				var attachmentObj = {
+					file: targetAttachment,
+					progress: {
+						total: 100,
+						completion: 0
+					}
+				}
+
+				if($scope.newItem.loadingAttachments)
+					$scope.newItem.loadingAttachments.push(attachmentObj)
+				else
+					$scope.newItem.loadingAttachments = [attachmentObj]
+
+				var formData = new FormData()
+				formData.append('file', attachmentObj.file)
+
+				$scope.newItem.postAttachment(formData, {
+					xhr: function() {
+				        var xhr = new window.XMLHttpRequest();
+
+						xhr.upload.addEventListener("progress", function(e) {
+							if (e.lengthComputable) {
+								var percentage = Math.round((e.loaded * 100) / e.total)
+								attachmentObj.progress.completion = percentage
+								$scope.$apply()
+							}
+				       }, false);
+
+				       return xhr;
+					},
+					complete: function(){
+						$scope.newItem.loadingAttachments.splice($scope.newItem.loadingAttachments.indexOf(attachmentObj), 1)
+						$scope.$apply()
+					}
+				}).done(function(result){
+					attachmentObj.id = result.id
+					attachmentObj.filename = attachmentObj.file.name
+					attachmentObj.size = attachmentObj.file.size
+					attachmentObj.contentType = attachmentObj.file.type
+					if(!$scope.newItem.attachments)
+						$scope.newItem.attachments = []
+					$scope.newItem.attachments.push(attachmentObj)
+					$scope.getQuota()
+				}).e400(function(e){
+					var error = JSON.parse(e.responseText);
+					notify.error(error.error);
+				})
+			})
+		}
+
+		if(!$scope.newItem.id){
+			model.folders.draft.saveDraft($scope.newItem, action);
+		} else {
+			action()
+		}
+	}
+
+	$scope.deleteAttachment = function(event, attachment, mail){
+		//Tooltip force removal
+		$(event.target).trigger('mouseout')
+
+		mail.deleteAttachment(attachment).done(function(){
+			mail.attachments.splice(mail.attachments.indexOf(attachment), 1)
+			$scope.getQuota()
+		})
+	}
+
+	$scope.quota = {
+		max: 1,
+		used: 0,
+		unit: 'Mo'
+	};
+	$scope.getQuota = function(){
+		http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
+			//to mo
+			data.quota = data.quota / (1024 * 1024);
+			data.storage = data.storage / (1024 * 1024);
+
+			if(data.quota > 2000){
+				data.quota = Math.round((data.quota / 1024) * 10) / 10;
+				data.storage = Math.round((data.storage / 1024) * 10) / 10;
+				$scope.quota.unit = 'Go';
+			}
+			else{
+				data.quota = Math.round(data.quota);
+				data.storage = Math.round(data.storage);
+			}
+
+			$scope.quota.max = data.quota;
+			$scope.quota.used = data.storage;
+			$scope.$apply('quota');
+		});
+	}
+
 	$scope.lang = lang;
 	$scope.notify = notify;
 	$scope.folders = model.folders;
 	$scope.userFolders = model.userFolders;
 	$scope.users = { list: model.users, search: '', found: [], foundCC: [] };
+
+	$scope.getQuota();
 
 	//Max folder depth
 	http().get('max-depth').done(function(result){

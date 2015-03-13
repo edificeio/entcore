@@ -79,7 +79,7 @@ function Mail(data){
 		return User.prototype.mapUser(this.displayNames, id);
 	};
 
-	this.saveAsDraft = function(){
+	this.saveAsDraft = function(hook){
 		var that = this;
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
@@ -92,12 +92,16 @@ function Mail(data){
 			http().putJson(path + '/' + this.id, data).done(function(newData){
 				that.updateData(newData);
 				model.folders.draft.mails.refresh();
+                if(typeof hook === 'function')
+                    hook()
 			});
 		}
 		else{
 			http().postJson(path, data).done(function(newData){
 				that.updateData(newData);
 				model.folders.draft.mails.refresh();
+                if(typeof hook === 'function')
+                    hook()
 			});
 		}
 	};
@@ -122,7 +126,10 @@ function Mail(data){
 			if(typeof cb === 'function'){
 				cb(result);
 			}
-		});
+		}).e400(function(e){
+    		var error = JSON.parse(e.responseText);
+    		notify.error(error.error);
+    	});
 	};
 
 	this.open = function(cb){
@@ -192,6 +199,14 @@ function Mail(data){
 			model.folders.current.mails.refresh();
 		});
 	}
+
+    this.postAttachment = function(attachment, options){
+        return http().postFile("message/"+ this.id +"/attachment",  attachment, options)
+    }
+
+    this.deleteAttachment = function(attachment){
+        return http().delete("message/" + this.id + "/attachment/" + attachment.id)
+    }
 }
 
 function Folder(api){
@@ -404,8 +419,8 @@ model.build = function(){
 		model.folders[folderName].folderName = folderName;
 	});
 
-	this.folders.draft.saveDraft = function(draft){
-		draft.saveAsDraft();
+	this.folders.draft.saveDraft = function(draft, hook){
+		draft.saveAsDraft(hook);
 		this.mails.push(draft);
 	};
 
@@ -418,8 +433,9 @@ model.build = function(){
 	};
 
 	this.folders.trash.mails.removeMails = function(){
-		http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }));
-		this.removeSelection();
+		var request = http().delete('/conversation/delete?' + http().serialize({ id: _.pluck(this.selection(), 'id') }))
+		this.removeSelection()
+        return request
 	};
 
 	this.folders.trash.collection(UserFolder, {
