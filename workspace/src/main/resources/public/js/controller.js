@@ -14,54 +14,6 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-var tools = (function(){
-	return {
-		roleFromFileType: function(fileType){
-			var types = {
-				'doc': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
-				},
-				'xls': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
-				},
-				'img': function(type){
-					return type.indexOf('image') !== -1;
-				},
-				'pdf': function(type){
-					return type.indexOf('pdf') !== -1 || type === 'application/x-download';
-				},
-				'ppt': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
-				},
-				'video': function(type){
-					return type.indexOf('video') !== -1;
-				},
-				'audio': function(type){
-					return type.indexOf('audio') !== -1;
-				},
-				'zip': function(type){
-					return 	type.indexOf('zip') !== -1 ||
-							type.indexOf('rar') !== -1 ||
-							type.indexOf('tar') !== -1 ||
-							type.indexOf('7z') !== -1;
-				}
-			};
-
-			for(var type in types){
-				if(types[type](fileType)){
-					return type;
-				}
-			}
-
-			return 'unknown';
-		},
-		resolveMyRights: function(me){
-			me.myRights = {
-
-			}
-		}
-	}
-}());
 
 routes.define(function($routeProvider) {
 	$routeProvider
@@ -77,14 +29,14 @@ routes.define(function($routeProvider) {
 		.otherwise({
 		  	redirectTo: '/'
 		})
-})
+});
 
 function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template){
 
 	route({
 		viewFolder: function(params){
 			if($scope.lastRoute === window.location.href)
-				return
+				return;
 			$scope.lastRoute = window.location.href
 			if($scope.initSequence && $scope.initSequence.executed){
 		  		$scope.openFolderById(params.folderId)
@@ -115,7 +67,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		},
 		openShared: function(params){
 			if($scope.lastRoute === window.location.href)
-				return
+				return;
 			$scope.lastRoute = window.location.href
 			$scope.currentTree = trees[1]
 			$scope.currentFolderTree = $scope.folder.children[1]
@@ -124,6 +76,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	});
 
 	$scope.newFile = { name: lang.translate('nofile'), chosenFiles: [] };
+	$scope.display = {};
 	$scope.template = template;
 	template.open('documents', 'icons');
 
@@ -134,7 +87,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		else{
 			//Sharing folders
 			var way = changes.added ? "added" : changes.removed ? "removed" : undefined
-			var idField
+			var idField;
 
 			if(way){
 				var actions = changes.added.actions
@@ -183,115 +136,18 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		unit: 'Mo'
 	};
 
-	$scope.folderTreeTemplate = 'folder-content'
-
-	function getQuota(){
-		http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
-			//to mo
-			data.quota = data.quota / (1024 * 1024);
-			data.storage = data.storage / (1024 * 1024);
-
-			if(data.quota > 2000){
-				data.quota = Math.round((data.quota / 1024) * 10) / 10;
-				data.storage = Math.round((data.storage / 1024) * 10) / 10;
-				$scope.quota.unit = 'Go';
-			}
-			else{
-				data.quota = Math.round(data.quota);
-				data.storage = Math.round(data.storage);
-			}
-
-			$scope.quota.max = data.quota;
-			$scope.quota.used = data.storage;
-			$scope.$apply('quota');
-		});
-	}
-
-	getQuota();
-
-	var setDocumentRights = function(document){
-		document.myRights = {
-			document: {
-				remove: true,
-				move: true,
-				copy: true,
-				moveTrash: true,
-				share: true,
-				rename: true,
-				showRevisions: true,
-				postRevision: true,
-				manageRevisions: true
-			},
-			comment: {
-				post: true
-			}
-		};
-
-		if(document.owner === $scope.me.userId){
-			document.myRights.share = document.myRights.share &&
-				_.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|share'}).length > 0;
-			return;
-		}
-
-		var currentSharedRights = _.filter(document.shared, function(sharedRight){
-			return model.me.groupsIds.indexOf(sharedRight.groupId) !== -1
-				|| sharedRight.userId === $scope.me.userId;
-		});
-
-		function setRight(path){
-			return _.find(currentSharedRights, function(right){
-				return right[path];
-			}) !== undefined;
-		}
-
-		document.myRights.document.moveTrash = setRight('org-entcore-workspace-service-WorkspaceService|moveTrash');
-		document.myRights.document.move = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
-		document.myRights.document.copy = setRight('org-entcore-workspace-service-WorkspaceService|moveDocument');
-		document.myRights.comment.post = setRight('org-entcore-workspace-service-WorkspaceService|commentDocument') || setRight('org-entcore-workspace-service-WorkspaceService|commentFolder');
-		document.myRights.document.share = setRight('org-entcore-workspace-service-WorkspaceService|shareJsonSubmit');
-		document.myRights.document.rename = setRight('org-entcore-workspace-service-WorkspaceService|renameDocument') || setRight('org-entcore-workspace-service-WorkspaceService|renameFolder');
-		document.myRights.document.showRevisions = setRight('org-entcore-workspace-service-WorkspaceService|listRevisions');
-		document.myRights.document.postRevision = setRight('org-entcore-workspace-service-WorkspaceService|updateDocument');
-		document.myRights.document.manageRevisions = setRight('org-entcore-workspace-service-WorkspaceService|deleteRevision');
-	};
+	$scope.folderTreeTemplate = 'folder-content';
+	$scope.quota = model.quota;
 
 	function formatDocuments(documents, callback){
 		documents = _.filter(documents, function(doc){
 			return doc.metadata['content-type'] !== 'application/json' &&
 				(($scope.currentFolderTree.name !== 'trash' && doc.folder !== 'Trash') || ($scope.currentFolderTree.name === 'trash' && doc.folder === 'Trash'));
 		});
-		documents.forEach(function(item){
-			if(item.created){
-				item.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
-			}
-			else{
-				item.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
-			}
-
-			item.metadata.contentType = tools.roleFromFileType(item.metadata['content-type']);
-			if($scope.currentTree.name === 'rack'){
-				item.link = '/workspace/rack/' + item._id;
-			}
-			else{
-				item.link = '/workspace/document/' + item._id;
-			}
-			if(item.metadata.contentType === 'img'){
-				item.icon = item.link;
-			}
-
-			var fileNameSplit = item.metadata.filename.split('.');
-			item.metadata.extension = '';
-			if(item.name.split('.').length > 1){
-				item.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
-				item.name = item.name.split('.' + item.metadata.extension)[0];
-			}
-
-			if(item.from){
-				item.ownerName = item.fromName;
-				item.owner = item.from;
-			}
-
-			setDocumentRights(item);
+		documents = documents.map(function(item){
+			item = new Document(item);
+			item.behaviours('workspace');
+			return item;
 		});
 
 		callback(documents);
@@ -331,46 +187,42 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		return false;
 	};
 
+	$scope.viewFile = function(document){
+		$scope.display.viewFile = document;
+		template.open('documents', 'viewer');
+	};
+
 	$scope.openNewDocumentView = function(){
 		ui.showLightbox();
 		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
-		$scope.currentViews.lightbox = $scope.views.lightbox.createFile;
+		template.open('lightbox', 'create-file');
 	};
 
 	$scope.openNewFolderView = function(){
 		ui.showLightbox();
 		$scope.newFolder = { name: '' };
-		$scope.currentViews.lightbox = $scope.views.lightbox.createFolder;
+		template.open('lightbox', 'create-folder');
 	};
 
 	$scope.targetDocument = {};
 	$scope.openCommentView = function(document){
 		$scope.targetDocument = document;
 		ui.showLightbox();
-		$scope.currentViews.lightbox = $scope.views.lightbox.comment;
+		template.open('lightbox', 'comment');
 	};
 
 	$scope.targetFolder = {};
 	$scope.openCommentFolderView = function(folder){
 		$scope.targetFolder = folder;
 		ui.showLightbox();
-		$scope.currentViews.lightbox = $scope.views.lightbox.commentFolder;
+		template.open('lightbox', 'comment-folder');
 	};
 
 	$scope.openRenameView = function(document){
 		$scope.newName = document.name
 		$scope.renameTarget = document
 		ui.showLightbox()
-		$scope.currentViews.lightbox = $scope.views.lightbox.rename
-	};
-
-	$scope.workflowRight = function(name){
-		var workflowRights = {
-			renameFolder: 'org.entcore.workspace.service.WorkspaceService|renameFolder',
-			renameDocument: 'org.entcore.workspace.service.WorkspaceService|renameDocument'
-		};
-
-		return _.where($scope.me.authorizedActions, { name: workflowRights[name] }).length > 0;
+		template.open('lightbox', 'rename');
 	};
 
 	$scope.nbFolders = function(){
@@ -384,14 +236,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.sharedFolders = undefined
 		$scope.sharedDocuments = $scope.selectedDocuments();
 		ui.showLightbox();
-		$scope.currentViews.lightbox = $scope.views.lightbox.share;
+		template.open('lightbox', 'share');
 	};
 
 	$scope.openShareFolderView = function(){
 		$scope.sharedDocuments = undefined
 		$scope.sharedFolders = $scope.selectedFolders();
 		ui.showLightbox();
-		$scope.currentViews.lightbox = $scope.views.lightbox.shareFoldersWarning;
+		template.open('lightbox', 'share-folders-warning');
 	};
 
 	var refreshFolders = function(){
@@ -405,7 +257,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.toTrashConfirm = function(url){
-		$scope.currentViews.lightbox = $scope.views.lightbox.confirm;
+		template.open('lightbox', 'confirm');
 		ui.showLightbox();
 		$scope.confirm = function(){
 			$scope.selectedDocuments().forEach(function(document){
@@ -454,7 +306,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		targetFolders = [$scope.folder.children[0]];
 		$scope.newFolder = { name: '' };
 		ui.showLightbox();
-		$scope.currentViews.lightbox = $scope.views.lightbox[action];
+		template.open('lightbox', action);
 	};
 
 	$scope.remove = function(){
@@ -464,7 +316,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			});
 			http().delete('document/' + document._id)
 				.done(function(){
-					getQuota();
+					model.quota.sync();
 				})
 		});
 
@@ -543,14 +395,12 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		filter: 'owner',
 		hierarchical: true,
 		buttons: [
-			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, allow: function(){
-				return _.where($scope.me.authorizedActions, { name: 'org.entcore.workspace.service.WorkspaceService|addDocument'}).length > 0;
-			} }
+			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, workflow: 'workspace.documents.create' }
 		],
 		contextualButtons: [
-			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'moveFile', contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){ return true } }
+			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'move-files' },
+			{ text: 'workspace.copy', action: $scope.openMoveFileView, url: 'copy-files' },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash' }
 		]
 	}, {
 		name: 'trash',
@@ -558,8 +408,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		filter: ['owner', 'protected'],
 		buttons: [],
 		contextualButtons: [
-			{ text: 'workspace.trash.restore', action: $scope.restore, contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.move.trash', action: $scope.remove, contextual: true, allow: function(){ return true } }
+			{ text: 'workspace.trash.restore', action: $scope.restore },
+			{ text: 'workspace.move.trash', action: $scope.remove }
 		]
 	}, {
 		name: 'shared',
@@ -568,10 +418,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		path: 'documents',
 		buttons: [],
 		contextualButtons: [
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return $scope.selectedDocuments().length > 0 } },
-			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', contextual: true, allow: function(){
-				return $scope.selectedFolders().length === 0 && _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
-			} }
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copy-files' },
+			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', right: 'moveTrash' }
 		]
 	}, {
 		name: 'appDocuments',
@@ -579,12 +427,19 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		hierarchical: false,
 		path: 'documents',
 		contextualButtons: [
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copyFile', contextual: true, allow: function(){ return true } },
-			{ text: 'workspace.move.trash', action: $scope.toTrashConfirm, url: 'document/trash', contextual: true, allow: function(){
-				return _.find($scope.selectedDocuments(), function(doc){ return doc.myRights.document.moveTrash === false }) === undefined;
-			} }
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copy-files' },
+			{ text: 'workspace.move.trash', action: $scope.toTrashConfirm, url: 'document/trash', right: 'moveTrash' }
 		]
 	}];
+
+	var selection = [];
+	$scope.selectedItems = function(){
+		var sel = $scope.selectedDocuments().concat($scope.selectedFolders());
+		if(sel.length != selection.length){
+			selection = sel;
+		}
+		return selection;
+	};
 
 	$scope.selectedDocuments = function(){
 		return _.where($scope.openedFolder.content, {selected: true});
@@ -592,31 +447,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.selectedFolders = function(){
 		return _.where($scope.openedFolder.folder.children, { selected: true });
-	};
-
-	$scope.views = {
-		lightbox: {
-			createFile: 'public/template/create-file.html',
-			createFolder: 'public/template/create-folder.html',
-			moveFile: 'public/template/move-files.html',
-			copyFile: 'public/template/copy-files.html',
-			comment: 'public/template/comment.html',
-			commentFolder: 'public/template/comment-folder.html',
-			share: 'public/template/share.html',
-			shareFolders: 'public/template/share-folders.html',
-			shareFoldersWarning: 'public/template/share-folders-warning.html',
-			confirm: 'public/template/confirm.html',
-			rename: 'public/template/rename.html',
-			versions: 'public/template/versions.html'
-		}
-	};
-
-	$scope.currentViews = {
-		lightbox: ''
-	};
-
-	$scope.switchView = function(view, value){
-		$scope.currentViews[view] = $scope.views[view][value];
 	};
 
 	$scope.openedFolder = {};
@@ -856,13 +686,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 		folder.selected = true;
 		folder.showComments = true;
-	}
-
-	/*
-	$scope.$watch('targetDocument', function(newVal){
-		console.log(newVal);
-	})
-	*/
+	};
 
 	$scope.containsFolder = function(container, child){
 		var checkSubFolders = function(currentFolder){
@@ -906,8 +730,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	var getFolders = function(tree, params, hook){
 		http().get('/workspace/folders/list', params).done(function(folders){
 			_.sortBy(folders, function(folder){ return folder.folder.split("_").length }).forEach(function(folder){
-				setDocumentRights(folder);
-
+				folder = new Folder(folder);
+				folder.behaviours('workspace');
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
 					if(_.where($scope.folder.children[$scope.folder.children.length - 1].children, { folder: folder.folder }).length === 0){

@@ -2164,21 +2164,23 @@ module.directive('loadingPanel', function($compile){
 module.directive('workflow', function($compile){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
-			var auth = $attributes.workflow.split('.');
-			var right = model.me.workflow;
-			auth.forEach(function(prop){
-				right = right[prop];
+		link: function(scope, element, attributes){
+			attributes.$observe('workflow', function(){
+				var auth = attributes.workflow.split('.');
+				var right = model.me.workflow;
+				auth.forEach(function(prop){
+					right = right[prop];
+				});
+				var content = element.children();
+				if(!right){
+					content.remove();
+					element.hide();
+				}
+				else{
+					element.show();
+					element.append(content);
+				}
 			});
-			var content = $element.children();
-			if(!right){
-				content.remove();
-				$element.hide();
-			}
-			else{
-				$element.show();
-				$element.append(content);
-			}
 		}
 	}
 });
@@ -2273,23 +2275,25 @@ module.directive('resourceRight', function($compile){
 		scope: {
 			resource: '='
 		},
-		link: function($scope, $element, $attributes){
-			if(!$attributes.name){
+		link: function(scope, element, attributes){
+			if(attributes.name === undefined){
 				throw "Right name is required";
 			}
-			var content = $element.children('div');
-			$scope.$watch('resource', function(newVal){
-				var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
-					($scope.resource instanceof Model && (!$scope.resource.myRights || $scope.resource.myRights[$attributes.name] === undefined));
+			var content = element.children('div');
+			var switchHide = function(){
+				var hide = attributes.name && (scope.resource instanceof Array && _.find(scope.resource, function(resource){ return !resource.myRights || resource.myRights[attributes.name] === undefined; }) !== undefined) ||
+					(scope.resource instanceof Model && (!scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined));
 
 				if(hide){
 					content.remove();
 				}
 				else{
-					$element.append(content);
+					element.append(content);
 				}
+			};
 
-			});
+			attributes.$observe('name', switchHide);
+			scope.$watch('resource', switchHide);
 		}
 	}
 });
@@ -4053,6 +4057,139 @@ module.directive('carousel', function(){
 				setTimeout(infiniteRun, 4000);
 			};
 			infiniteRun();
+		}
+	}
+});
+
+module.directive('pdfViewer', function(){
+	return {
+		restrict: 'E',
+		template: '' +
+		'<div class="file-controls">' +
+			'<i class="previous" ng-click="previousPage()"></i>' +
+			'<i class="next" ng-click="nextPage()"></i>' +
+		'</div>' +
+		'<div class="pagination">' +
+			'<input type="text" ng-model="pageIndex" ng-change="openPage()" /> / [[numPages]]' +
+		'</div>',
+		link: function(scope, element, attributes){
+			var pdf;
+			scope.pageIndex = 1;
+			scope.nextPage = function(){
+				if(scope.pageIndex < scope.numPages){
+					scope.pageIndex ++;
+					scope.openPage();
+				}
+			};
+			scope.previousPage = function(){
+				if(scope.pageIndex > 0){
+					scope.pageIndex --;
+					scope.openPage();
+				}
+			};
+			scope.openPage = function(){
+				var pageNumber = parseInt(scope.pageIndex);
+				if(!pageNumber){
+					return;
+				}
+				if(pageNumber < 1){
+					pageNumber = 1;
+				}
+				if(pageNumber > scope.numPages){
+					pageNumber = scope.numPages;
+				}
+				pdf.getPage(pageNumber).then(function (page) {
+					var viewport;
+					if(!$(canvas).hasClass('fullscreen')){
+						viewport = page.getViewport(1);
+						var scale = element.width() / viewport.width;
+						viewport = page.getViewport(scale);
+					}
+					else{
+						viewport = page.getViewport(2);
+					}
+
+					var context = canvas.getContext('2d');
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+
+					var renderContext = {
+						canvasContext: context,
+						viewport: viewport
+					};
+					page.render(renderContext);
+				});
+			};
+			scope.$parent.render = scope.openPage;
+
+			window.PDFJS = { workerSrc: '/infra/public/js/viewers/pdf.js/worker_loader.js' };
+			var canvas = document.createElement('canvas');
+			$(canvas).addClass('render');
+			element.append(canvas);
+			loader.openFile({
+				url: '/infra/public/js/viewers/pdf.js/pdf.js',
+				success: function () {
+					PDFJS
+						.getDocument(attributes.ngSrc)
+						.then(function(file){
+							pdf = file;
+							scope.numPages = pdf.pdfInfo.numPages;
+							scope.$apply('numPages');
+							scope.openPage();
+						});
+				}
+			});
+		}
+	}
+});
+
+module.directive('fileViewer', function(){
+	return {
+		restrict: 'E',
+		scope: {
+			ngModel: '='
+		},
+		templateUrl: '/infra/public/template/file-viewer.html',
+		link: function(scope, element, attributes){
+			scope.contentType = scope.ngModel.metadata.contentType;
+			scope.isFullscreen = false;
+
+			scope.download = function(){
+				window.location.href = scope.ngModel.link;
+			};
+			var renderElement;
+			var renderParent;
+			scope.fullscreen = function(allow){
+				scope.isFullscreen = allow;
+				if(allow){
+					var container = $('<div class="fullscreen-viewer"></div>');
+					container.on('click', function(e){
+						if(!$(e.target).hasClass('render')){
+							scope.fullscreen(false);
+						}
+					});
+					element.children('.embedded-viewer').addClass('fullscreen');
+					renderElement = element
+						.find('.render');
+					renderParent = renderElement.parent();
+
+					renderElement
+						.addClass('fullscreen')
+						.appendTo(container);
+					container.appendTo('body');
+					if(typeof scope.render === 'function'){
+						scope.render();
+					}
+				}
+				else{
+					renderElement.removeClass('fullscreen').appendTo(renderParent);
+					element.children('.embedded-viewer').removeClass('fullscreen');
+					$('body').find('.fullscreen-viewer').remove();
+					if(typeof scope.render === 'function'){
+						scope.render();
+					}
+				}
+			}
 		}
 	}
 });

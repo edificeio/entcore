@@ -19,8 +19,11 @@ console.log('workspace behaviours loaded');
 
 var workspaceBehaviours = {
 	resources: {
-		comment: {
+		commentDocument: {
 			right: 'org-entcore-workspace-service-WorkspaceService|commentDocument'
+		},
+		commentFolder: {
+			right: 'org-entcore-workspace-service-WorkspaceService|commentFolder'
 		},
 		copy: {
 			right: 'org-entcore-workspace-service-WorkspaceService|copyDocuments',
@@ -39,8 +42,23 @@ var workspaceBehaviours = {
 			right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
 		},
 		share: {
-			right: 'manager',
+			right: 'org-entcore-workspace-service-WorkspaceService|shareJsonSubmit',
 			workflow: 'org.entcore.workspace.service.WorkspaceService|shareJson'
+		},
+		renameDocument: {
+			right: 'org-entcore-workspace-service-WorkspaceService|renameDocument'
+		},
+		renameFolder: {
+			right: 'org-entcore-workspace-service-WorkspaceService|renameFolder'
+		},
+		showRevisions: {
+			right: 'org-entcore-workspace-service-WorkspaceService|listRevisions'
+		},
+		postRevision: {
+			right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
+		},
+		manageRevisions: {
+			right: 'org-entcore-workspace-service-WorkspaceService|deleteRevision'
 		}
 	},
 	workflow: {
@@ -48,22 +66,16 @@ var workspaceBehaviours = {
 			list: 'org.entcore.workspace.service.WorkspaceService|listDocuments',
 			create: 'org.entcore.workspace.service.WorkspaceService|addDocument',
 			copy: '',
-			share: ''
-		},
-		rack: {
-			right: '',
-			behaviours: {
-				send: {
-					right: ''
-				}
-			}
+			share: '',
+			renameDocument: 'org.entcore.workspace.service.WorkspaceService|renameDocument',
+			renameFolder: 'org.entcore.workspace.service.WorkspaceService|renameFolder'
 		}
 	},
 	viewRights: ["org-entcore-workspace-service-WorkspaceService|copyDocuments", "org-entcore-workspace-service-WorkspaceService|getDocument"]
 };
 
 Behaviours.register('workspace', {
-	resource: function(resource){
+	resourceRights: function(resource){
 		if(!resource.myRights){
 			resource.myRights = {};
 		}

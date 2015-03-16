@@ -75,7 +75,7 @@
 					<div class="action-buttons">
 						<div class="cell" ng-repeat="button in currentTree.buttons"><button
 								ng-click="button.action(button.url)"
-								ng-if="button.allow()">
+								workflow="[[button.workflow]]">
 							<i class="add" ng-if="button.icon"></i> [[translate(button.text)]]
 						</button></div>
 					</div>
@@ -95,54 +95,53 @@
 				<div ng-include="template.containers.documents" class="twelve cell toggle-buttons-spacer"></div>
 			</section>
 		</div>
-		<div class="clear"></div>
 	</portal>
 	<section class="lightbox-window five cell" loading-panel="file-upload">
-		<div class="twelve cell" ng-include="currentViews.lightbox"></div>
+		<container template="lightbox"></container>
 		<div class="close-lightbox">
 			<i class="close-2x"></i>
 		</div>
-		<div class="clear"></div>
 	</section>
 	<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 }">
 		<div class="toggle">
 			<div class="row">
 				<button ng-click="openCommentView(selectedDocuments()[0])"
 						ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && selectedDocuments()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						translate key="workspace.document.comment"
-						ng-class="{ cell: true }">
+						class="cell">
+					<i18n>workspace.document.comment</i18n>
 				</button>
 				<button ng-click="openCommentFolderView(selectedFolders()[0])"
 						ng-if="selectedDocuments().length === 0 && selectedFolders().length === 1 && selectedFolders()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						translate key="workspace.document.comment"
-						ng-class="{ cell: true }">
+						class="cell">
+					<i18n>workspace.document.comment</i18n>
 				</button>
 				<button ng-click="openShareView(selectedDocuments()[0])"
-						translate key="workspace.share"
 						ng-if="selectedFolders().length === 0 && selectedDocuments()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						ng-class="{ cell: true }">
+						ng-class="cell">
+					<i18n>workspace.share</i18n>
 				</button>
 				<button ng-click="openShareFolderView(selectedFolders()[0])"
-						translate key="workspace.share"
 						ng-if="selectedDocuments().length === 0 && selectedFolders()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						ng-class="{ cell: true }">
+						class="cell">
+					<i18n>workspace.share</i18n>
 				</button>
 				<button ng-click="openRenameView(selectedFolders()[0])"
-						translate key="workspace.rename"
 						ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && selectedFolders()[0].myRights.document.rename && currentTree.name === 'documents'"
-						ng-class="{ cell: true }">
+						class="cell">
+					<i18n>workspace.rename</i18n>
 				</button>
 				<button ng-click="openRenameView(selectedDocuments()[0])"
-						translate key="workspace.rename"
 						ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].myRights.document.rename && currentTree.name === 'documents'"
-						ng-class="{ cell: true }">
+						class="cell">
+					<i18n>workspace.rename</i18n>
 				</button>
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
-					<button
-						ng-click="button.action(button.url)"
-						ng-if="button.allow()">
-						[[translate(button.text)]]
-					</button>
+					<resource-right resource="selectedItems()" name="[[button.right]]">
+						<button
+								ng-click="button.action(button.url)">
+							[[translate(button.text)]]
+						</button>
+					</resource-right>
 				</div>
 
 				<span class="contextual-link"

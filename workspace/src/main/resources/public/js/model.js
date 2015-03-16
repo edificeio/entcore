@@ -14,59 +14,112 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-function User(){
+function Document(item){
+	var fileNameSplit = item.metadata.filename.split('.');
+	this.metadata.extension = '';
+	if(item.name.split('.').length > 1){
+		this.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
+		this.name = item.name.split('.' + item.metadata.extension)[0];
+	}
 
+	if(this.from){
+		this.ownerName = item.fromName;
+		this.owner = item.from;
+	}
+
+	if(item.created){
+		this.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
+	}
+	else{
+		this.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
+	}
+
+	this.metadata.contentType = Document.prototype.roleFromFileType(item.metadata['content-type']);
+	this.link = '/workspace/document/' + item._id;
+	if(this.metadata.contentType === 'img'){
+		this.icon = this.link;
+	}
 }
 
-function Document(){
-
-}
-
-function Folder(data){
-	this.updateData(data);
-
-	this.collection(Folder, {
-		sync: function(){
-			this.load(model.myDocuments.folders.list.filter(function(folder){
-				return folder.folder.indexOf(data.folder + '_') !== -1;
-			}))
+Document.prototype.roleFromFileType = function(fileType) {
+	var types = {
+		'doc': function (type) {
+			return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+		},
+		'xls': function (type) {
+			return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
+		},
+		'img': function (type) {
+			return type.indexOf('image') !== -1;
+		},
+		'pdf': function (type) {
+			return type.indexOf('pdf') !== -1 || type === 'application/x-download';
+		},
+		'ppt': function (type) {
+			return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
+		},
+		'video': function (type) {
+			return type.indexOf('video') !== -1;
+		},
+		'audio': function (type) {
+			return type.indexOf('audio') !== -1;
+		},
+		'zip': function (type) {
+			return type.indexOf('zip') !== -1 ||
+				type.indexOf('rar') !== -1 ||
+				type.indexOf('tar') !== -1 ||
+				type.indexOf('7z') !== -1;
 		}
-	});
+	};
 
-	this.collection(Document,  {
-		sync: function(){
-			http().get('/workspace/documents/' + data.folder, { filter: 'owner' }).done(function(documents){
-				this.load(documents);
-			}.bind(this));
+	for (var type in types) {
+		if (types[type](fileType)) {
+			return type;
 		}
-	});
+	}
+
+	return 'unknown';
+};
+
+function Folder(){
+
 }
 
-function Rack(){
-	this.collection(User, {
-		sync: function(){
-			http().get('/users/available-rack').done(function(users){
-				this.load(users);
-			});
+function Tree(){
+}
+
+function Quota(){
+
+}
+
+Quota.prototype.sync = function(){
+	http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
+		//to mo
+		data.quota = data.quota / (1024 * 1024);
+		data.storage = data.storage / (1024 * 1024);
+
+		if(data.quota > 2000){
+			data.quota = Math.round((data.quota / 1024) * 10) / 10;
+			data.storage = Math.round((data.storage / 1024) * 10) / 10;
+			this.unit = 'Go';
 		}
-	})
-}
+		else{
+			data.quota = Math.round(data.quota);
+			data.storage = Math.round(data.storage);
+		}
 
-function Trash(){
-
-}
+		this.max = data.quota;
+		this.used = data.storage;
+		this.trigger('change');
+	}.bind(this));
+};
 
 model.build = function(){
-	this.makeModels([User, Rack]);
-	this.makeModels(workspace);
-
-	this.me.workflow.load(['workspace']);
-
-	this.mediaLibrary = new Model();
-	this.mediaLibrary.myDocuments = new workspace.MyDocuments();
-	this.mediaLibrary.sharedDocuments = new workspace.SharedDocuments();
-	this.mediaLibrary.appDocuments = new workspace.AppDocuments();
-
-	this.rack = new Rack();
-	this.trash = new Trash();
+	this.makeModels([Document, Folder, Tree, Quota]);
+	this.myDocuments = new Tree();
+	this.trash = new Tree();
+	this.appDocuments = new Tree();
+	this.sharedDocuments = new Tree();
+	this.quota = new Quota();
+	this.quota.sync();
 };

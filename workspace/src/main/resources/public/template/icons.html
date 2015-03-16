@@ -57,7 +57,7 @@
 			</legend>
 		</div>
 		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
-			<a ng-href="[[document.link]]" class="[[document.metadata.contentType]] container cell">
+			<a ng-click="viewFile(document)" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
 				<div ng-if="document.metadata.contentType === 'img'" class="twelve cell">
