@@ -1028,7 +1028,7 @@ public class DefaultConversationService implements ConversationService {
 			"SET r.attachments = filter(attachmentId IN r.attachments WHERE attachmentId <> {attachmentId}) " +
 			"WITH m, attachment, attachment.id as fileId, attachment.size as fileSize " +
 			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(m)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
-			"WITH fileId, fileSize, NOT fileId IN reduce(s = [], item in collect(messageLinks.attachments) | s + item) as deletionCheck " +
+			"WITH fileId, fileSize, none(item IN collect(messageLinks.attachments) WHERE fileId IN item) as deletionCheck " +
 			"RETURN deletionCheck, fileId, fileSize";
 
 		String q2 =
@@ -1036,7 +1036,7 @@ public class DefaultConversationService implements ConversationService {
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments " +
 			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(m)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
-			"WITH attachmentLink, attachment, NOT attachment.id IN reduce(s = [], item in collect(messageLinks.attachments) | s + item) as deletionCheck " +
+			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
 			"DELETE attachmentLink, attachment";
 
