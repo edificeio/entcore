@@ -2,6 +2,7 @@ package org.entcore.test.scenarios
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
+import org.entcore.test.load.Headers._
 
 
 object ConversationScenario {
@@ -102,6 +103,10 @@ object ConversationScenario {
   .exec(http("List inbox")
     .get("/conversation/list/INBOX")
     .check(status.is(200), jsonPath("$[0].id").find.is("${conversationMessageId}")))
+
+   /////////////
+  // FOLDERS //
+
   .exec(http("Get folder depth")
     .get("/conversation/max-depth")
     .check(status.is(200), jsonPath("$['max-depth']").find.transform(_.toInt).greaterThan(-1)))
@@ -173,4 +178,81 @@ object ConversationScenario {
     .get("/conversation/folders/list?trash=")
     .check(status.is(200), bodyString.find.is("[]")))
 
+   /////////////////
+  // ATTACHMENTS //
+
+  .exec(http("Login teacher")
+    .post("""/auth/login""")
+    .formParam("""email""", """${teacherLogin}""")
+    .formParam("""password""", """blipblop""")
+    .check(status.is(302)))
+  .exec(http("Get conversation page")
+    .get("/conversation/conversation")
+    .check(status.is(200)))
+  .exec(http("Create draft message")
+    .post("/conversation/draft")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"subject":"Attachments", "body":"<p>Testing attachments.</p>","to":[]}"""))
+    .check(status.is(201), jsonPath("$.id").find.saveAs("attachmentDraftId")))
+  .exec(http("Check teacher quota before adding the attachment")
+    .get("""/workspace/quota/user/${teacherId}""")
+    .check(status.is(200), jsonPath("$.storage").find.saveAs("teacherStorageInitial")))
+  .exec(http("Add attachment")
+    .post("""/conversation/message/${attachmentDraftId}/attachment""")
+    .headers(headers_202)
+    .body(RawFileBody("RecordSimulation_request_202.txt"))
+    .check(status.is(200)))
+  .exec(http("Get message details & check that the attachment is listed")
+    .get("/conversation/message/${attachmentDraftId}")
+    .check(
+      status.is(200),
+      jsonPath("$.attachments[0::].id").find.saveAs("attachmentId")))
+  .exec(http("Check teacher quota after adding the attachment")
+    .get("""/workspace/quota/user/${teacherId}""")
+    .check(status.is(200), jsonPath("$.storage").find.greaterThan("${teacherStorageInitial}")))
+  .exec(http("Send message")
+    .post("/conversation/send?id=${attachmentDraftId}")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"to":["${studentId}"],"cc":[]}""")))
+  .exec(http("List outbox")
+      .get("/conversation/list/OUTBOX")
+      .check(status.is(200), jsonPath("$[0].id").find.is("${attachmentDraftId}")))
+  .exec(http("Delete attachment")
+    .delete("/conversation/message/${attachmentDraftId}/attachment/${attachmentId}")
+    .check(status.is(200)))
+  .exec(http("Check teacher quota after deleting the attachment")
+    .get("""/workspace/quota/user/${teacherId}""")
+    .check(status.is(200), jsonPath("$.storage").find.is("${teacherStorageInitial}")))
+  .exec(http("Login student")
+    .post("""/auth/login""")
+    .formParam("""email""", """${studentLogin}""")
+    .formParam("""password""", """blipblop""")
+    .check(status.is(302)))
+  .exec(http("List inbox message")
+    .get("/conversation/list/INBOX")
+    .check(status.is(200), jsonPath("$[0].id").find.saveAs("attachmentDraftId"),
+      jsonPath("$[0].unread").find.transformOption(_.map(u => String.valueOf(u))).is("true")))
+  .exec(http("Get message details & check that the attachment is listed")
+    .get("/conversation/message/${attachmentDraftId}")
+    .check(status.is(200)))
+  .exec(http("Download the attachment")
+    .get("/conversation/message/${attachmentDraftId}/attachment/${attachmentId}")
+    .check(status.is(200)))
+  .exec(http("Check student quota before deleting the attachment")
+    .get("""/workspace/quota/user/${studentId}""")
+    .check(status.is(200), jsonPath("$.storage").find.saveAs("studentStorageInitial")))
+  .exec(http("Move message to trash")
+    .put("/conversation/trash?id=${attachmentDraftId}")
+    .header("Content-Length", "0")
+    .check(status.is(200)))
+//Disabled because of an error thrown (by Netty) when checking for status 204 
+  //.exec(http("Delete message")
+    //.delete("/conversation/delete?id=${attachmentDraftId}")
+    //.check(status.is(204)))
+  .exec(http("Delete attachment")
+    .delete("/conversation/message/${attachmentDraftId}/attachment/${attachmentId}")
+    .check(status.is(200)))
+  .exec(http("Check student quota after deleting the attachment")
+    .get("""/workspace/quota/user/${studentId}""")
+    .check(status.is(200), jsonPath("$.storage").find.lessThan("${studentStorageInitial}")))
 }
