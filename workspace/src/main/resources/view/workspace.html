@@ -105,36 +105,49 @@
 	<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 }">
 		<div class="toggle">
 			<div class="row">
-				<button ng-click="openCommentView(selectedDocuments()[0])"
-						ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && selectedDocuments()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						class="cell">
-					<i18n>workspace.document.comment</i18n>
-				</button>
-				<button ng-click="openCommentFolderView(selectedFolders()[0])"
-						ng-if="selectedDocuments().length === 0 && selectedFolders().length === 1 && selectedFolders()[0].myRights.comment.post && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						class="cell">
-					<i18n>workspace.document.comment</i18n>
-				</button>
-				<button ng-click="openShareView(selectedDocuments()[0])"
-						ng-if="selectedFolders().length === 0 && selectedDocuments()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						ng-class="cell">
-					<i18n>workspace.share</i18n>
-				</button>
-				<button ng-click="openShareFolderView(selectedFolders()[0])"
-						ng-if="selectedDocuments().length === 0 && selectedFolders()[0].myRights.document.share && (currentTree.name === 'shared' || currentTree.name === 'documents')"
-						class="cell">
-					<i18n>workspace.share</i18n>
-				</button>
-				<button ng-click="openRenameView(selectedFolders()[0])"
-						ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && selectedFolders()[0].myRights.document.rename && currentTree.name === 'documents'"
-						class="cell">
-					<i18n>workspace.rename</i18n>
-				</button>
-				<button ng-click="openRenameView(selectedDocuments()[0])"
-						ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].myRights.document.rename && currentTree.name === 'documents'"
-						class="cell">
-					<i18n>workspace.rename</i18n>
-				</button>
+				<resource-right resource="selectedItems()" name="commentDocument">
+					<button ng-click="openCommentView(selectedDocuments()[0])"
+							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							class="cell">
+						<i18n>workspace.document.comment</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="commentFolder">
+					<button ng-click="openCommentFolderView(selectedFolders()[0])"
+							ng-if="selectedDocuments().length === 0 && selectedFolders().length === 1 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							class="cell">
+						<i18n>workspace.document.comment</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="share">
+					<button ng-click="openShareView(selectedDocuments()[0])"
+							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							ng-class="cell">
+						<i18n>workspace.share</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="share">
+					<button ng-click="openShareFolderView(selectedFolders()[0])"
+							ng-if="selectedDocuments().length === 0 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							class="cell">
+						<i18n>workspace.share</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="renameDocument">
+					<button ng-click="openRenameView(selectedFolders()[0])"
+							ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && currentTree.name === 'documents'"
+							class="cell">
+						<i18n>workspace.rename</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="renameFolder">
+					<button ng-click="openRenameView(selectedDocuments()[0])"
+							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && currentTree.name === 'documents'"
+							class="cell">
+						<i18n>workspace.rename</i18n>
+					</button>
+				</resource-right>
+
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
 					<resource-right resource="selectedItems()" name="[[button.right]]">
 						<button
@@ -147,10 +160,10 @@
 				<span class="contextual-link"
 					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0 &&  currentTree.name !== 'trash'">
 					<a ng-if="!selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
-						[[translate('workspace.document.comment.show')]] ([[selectedDocuments()[0].comments.length]])
+						<i18n>workspace.document.comment.show</i18n> ([[selectedDocuments()[0].comments.length]])
 					</a>
 					<a ng-if="selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
-						[[translate('workspace.document.comment.hide')]]
+						<i18n>workspace.document.comment.hide</i18n>
 					</a>
 				</span>
 			</div>

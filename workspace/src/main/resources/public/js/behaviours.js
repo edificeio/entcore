@@ -17,99 +17,60 @@
 
 console.log('workspace behaviours loaded');
 
-var workspaceBehaviours = {
-	resources: {
-		commentDocument: {
-			right: 'org-entcore-workspace-service-WorkspaceService|commentDocument'
+Behaviours.register('workspace', {
+	rights: {
+		resource: {
+			commentDocument: {
+				right: 'org-entcore-workspace-service-WorkspaceService|commentDocument'
+			},
+			commentFolder: {
+				right: 'org-entcore-workspace-service-WorkspaceService|commentFolder'
+			},
+			copy: {
+				right: 'org-entcore-workspace-service-WorkspaceService|copyDocuments',
+				workflow: 'org.entcore.workspace.service.WorkspaceService|copyRackDocument'
+			},
+			move: {
+				right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
+			},
+			moveTrash: {
+				right: 'org-entcore-workspace-service-WorkspaceService|moveTrash'
+			},
+			read: {
+				right: 'org-entcore-workspace-service-WorkspaceService|getDocument'
+			},
+			edit: {
+				right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
+			},
+			share: {
+				right: 'org-entcore-workspace-service-WorkspaceService|shareJsonSubmit',
+				workflow: 'org.entcore.workspace.service.WorkspaceService|shareJson'
+			},
+			renameDocument: {
+				right: 'org-entcore-workspace-service-WorkspaceService|renameDocument'
+			},
+			renameFolder: {
+				right: 'org-entcore-workspace-service-WorkspaceService|renameFolder'
+			},
+			showRevisions: {
+				right: 'org-entcore-workspace-service-WorkspaceService|listRevisions'
+			},
+			postRevision: {
+				right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
+			},
+			manageRevisions: {
+				right: 'org-entcore-workspace-service-WorkspaceService|deleteRevision'
+			}
 		},
-		commentFolder: {
-			right: 'org-entcore-workspace-service-WorkspaceService|commentFolder'
-		},
-		copy: {
-			right: 'org-entcore-workspace-service-WorkspaceService|copyDocuments',
-			workflow: 'org.entcore.workspace.service.WorkspaceService|copyRackDocument'
-		},
-		move: {
-			right: 'org-entcore-workspace-service-WorkspaceService|moveDocument'
-		},
-		moveTrash: {
-			right: 'org-entcore-workspace-service-WorkspaceService|moveTrash'
-		},
-		read: {
-			right: 'org-entcore-workspace-service-WorkspaceService|getDocument'
-		},
-		edit: {
-			right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
-		},
-		share: {
-			right: 'org-entcore-workspace-service-WorkspaceService|shareJsonSubmit',
-			workflow: 'org.entcore.workspace.service.WorkspaceService|shareJson'
-		},
-		renameDocument: {
-			right: 'org-entcore-workspace-service-WorkspaceService|renameDocument'
-		},
-		renameFolder: {
-			right: 'org-entcore-workspace-service-WorkspaceService|renameFolder'
-		},
-		showRevisions: {
-			right: 'org-entcore-workspace-service-WorkspaceService|listRevisions'
-		},
-		postRevision: {
-			right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
-		},
-		manageRevisions: {
-			right: 'org-entcore-workspace-service-WorkspaceService|deleteRevision'
-		}
-	},
-	workflow: {
-		documents: {
+		workflow: {
 			list: 'org.entcore.workspace.service.WorkspaceService|listDocuments',
 			create: 'org.entcore.workspace.service.WorkspaceService|addDocument',
 			copy: '',
 			share: '',
 			renameDocument: 'org.entcore.workspace.service.WorkspaceService|renameDocument',
 			renameFolder: 'org.entcore.workspace.service.WorkspaceService|renameFolder'
-		}
-	},
-	viewRights: ["org-entcore-workspace-service-WorkspaceService|copyDocuments", "org-entcore-workspace-service-WorkspaceService|getDocument"]
-};
-
-Behaviours.register('workspace', {
-	resourceRights: function(resource){
-		if(!resource.myRights){
-			resource.myRights = {};
-		}
-
-		for(var behaviour in workspaceBehaviours.resources){
-			if(model.me.hasRight(resource, workspaceBehaviours.resources[behaviour]) || model.me.userId === resource.owner){
-				if(resource.myRights[behaviour] !== undefined){
-					resource.myRights[behaviour] = resource.myRights[behaviour] && workspaceBehaviours.resources[behaviour];
-				}
-				else{
-					resource.myRights[behaviour] = workspaceBehaviours.resources[behaviour];
-				}
-			}
-		}
-
-		if(model.me.userId === resource.owner){
-			resource.myRights.share = workspaceBehaviours.resources[behaviour];
-		}
-
-		return resource;
-	},
-	workflow: function(){
-		var workflow = { documents: {}, rack: {}};
-		var documentsWorkflow = workspaceBehaviours.workflow.documents;
-		for(var prop in documentsWorkflow){
-			if(model.me.hasWorkflow(documentsWorkflow[prop])){
-				workflow.documents[prop] = true;
-			}
-		}
-
-		return workflow;
-	},
-	resourceRights: function(){
-		return ['comment', 'copy', 'move', 'moveTrash']
+		},
+		viewRights: ["org-entcore-workspace-service-WorkspaceService|copyDocuments", "org-entcore-workspace-service-WorkspaceService|getDocument"]
 	},
 	loadResources: function(callback){
 		http().get('/workspace/documents').done(function(documents){

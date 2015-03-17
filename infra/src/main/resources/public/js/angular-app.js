@@ -2273,7 +2273,8 @@ module.directive('resourceRight', function($compile){
 		replace: false,
 		transclude: true,
 		scope: {
-			resource: '='
+			resource: '=',
+			name: '@'
 		},
 		link: function(scope, element, attributes){
 			if(attributes.name === undefined){
@@ -4761,7 +4762,7 @@ var workspace = {
 	MyDocuments: function(){
 		this.collection(workspace.Folder, {
 			sync: function(){
-				if(model.me.workflow.workspace.documents.create){
+				if(model.me.workflow.workspace.create){
 					http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
 						this.list = data;
 						this.load(_.filter(data, function(folder){
@@ -4788,7 +4789,7 @@ var workspace = {
 	SharedDocuments: function(){
 		this.collection(workspace.Document,  {
 			sync: function(){
-				if(model.me.workflow.workspace.documents.list){
+				if(model.me.workflow.workspace.list){
 					http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
 						this.load(documents);
 					}.bind(this));
@@ -4896,7 +4897,7 @@ function MediaLibrary($scope){
 			$scope.display.show = 'record';
 		}
 
-		if(model.me.workflow.workspace.documents.create){
+		if(model.me.workflow.workspace.create){
 			if($scope.visibility === 'public'){
 				$scope.listFrom('publicDocuments');
 			}
@@ -4904,7 +4905,7 @@ function MediaLibrary($scope){
 				$scope.listFrom('appDocuments');
 			}
 		}
-		else if(model.me.workflow.workspace.documents.list){
+		else if(model.me.workflow.workspace.list){
 			$scope.listFrom('sharedDocuments')
 		}
 	});

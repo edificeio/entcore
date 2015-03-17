@@ -21,11 +21,7 @@ function Document(item){
 		this.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
 		this.name = item.name.split('.' + item.metadata.extension)[0];
 	}
-
-	if(this.from){
-		this.ownerName = item.fromName;
-		this.owner = item.from;
-	}
+	this.owner = { userId: item.owner };
 
 	if(item.created){
 		this.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);

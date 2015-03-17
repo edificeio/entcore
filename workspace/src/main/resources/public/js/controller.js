@@ -395,7 +395,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		filter: 'owner',
 		hierarchical: true,
 		buttons: [
-			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, workflow: 'workspace.documents.create' }
+			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, workflow: 'workspace.create' }
 		],
 		contextualButtons: [
 			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'move-files' },
@@ -463,7 +463,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				delete params.hierarchical
 			else{
 				folderString = folder.folder
-				params.ownerId = folder.owner
+				params.owner = { userId: folder.owner }
 			}
 		} else {
 			folderString = folderToString($scope.currentFolderTree, folder);
@@ -487,7 +487,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 						return false
 
 					var documentFolder = doc.folder
-					if(doc.folder === root.folder && doc.owner === root.owner)
+					if(doc.folder === root.folder && doc.owner.userId === root.owner.userId)
 						return true
 
 					if(!root.children)
@@ -603,7 +603,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 						$scope.openFolder($scope.openedFolder.folder);
 					}
 
-					getQuota();
+					model.quota.sync();
 				}).e400(function(e){
 					var error = JSON.parse(e.responseText);
 					notify.error(error.error);
@@ -796,7 +796,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 						if(subFolders.length >= 2){
 							var parentFolderName = subFolders[subFolders.length-2]
 							var parentFolderPath = folder.folder.substring(0, folder.folder.lastIndexOf("_"))
-							var parentOwner = folder.owner
+							var parentOwner = folder.owner.userId
 							var parentFolder = _.findWhere(root.children, { name: parentFolderName, folder: parentFolderPath, owner: parentOwner })
 							if(parentFolder){
 								if(parentFolder.children === undefined){

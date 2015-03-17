@@ -33,7 +33,7 @@
 					<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 					<span ng-click="openFolder(folder)">[[folder.name]]</span>
 				</a>
-				<a ng-href="/userbook/annuaire#[[folder.owner]]"><strong>[[folder.ownerName]]</strong></a>
+				<a ng-href="/userbook/annuaire#[[folder.owner.userId]]"><strong>[[folder.ownerName]]</strong></a>
 			</legend>
 		</div>
 		<section ng-repeat-end>
@@ -75,7 +75,7 @@
 					<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 					[[document.name]]
 				</a>
-				<a ng-href="/userbook/annuaire#[[document.owner]]"><strong>[[document.ownerName]]</strong></a>
+				<a ng-href="/userbook/annuaire#[[document.owner.userId]]"><strong>[[document.ownerName]]</strong></a>
 			</legend>
 		</div>
 		<section ng-repeat-end>
