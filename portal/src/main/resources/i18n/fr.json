@@ -111,6 +111,8 @@
     "welcome": "Bonjour [[username]], bienvenue !",
     "widget.notes.placeholder": "Entrez ici vos notes personnelles",
     "wiki": "Wiki",
+    "poll": "Sondage",
+    "collaborativewall": "Mur Collaboratif",
     "workspace": "Espace documentaire",
     "workspace.appDocuments": "Documents ajoutés dans les applis",
 	"workspace.publicDocuments": "Documents publics",
