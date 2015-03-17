@@ -4122,7 +4122,7 @@ module.directive('pdfViewer', function(){
 			};
 			scope.$parent.render = scope.openPage;
 
-			window.PDFJS = { workerSrc: '/infra/public/js/viewers/pdf.js/worker_loader.js' };
+			window.PDFJS = { workerSrc: '/infra/public/js/viewers/pdf.js/pdf.worker.js' };
 			var canvas = document.createElement('canvas');
 			$(canvas).addClass('render');
 			element.append(canvas);
