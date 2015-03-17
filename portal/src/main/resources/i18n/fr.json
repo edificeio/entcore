@@ -130,5 +130,6 @@
     "recorder.uploading": "Chargement...",
     "recorder.saved": "Votre bande son a été enregistrée",
     "record": "Enregistrement audio",
-    "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio"
+    "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio",
+	"file.viewer.download": "Télécharger le fichier"
 }

@@ -4164,9 +4164,11 @@ module.directive('fileViewer', function(){
 				scope.isFullscreen = allow;
 				if(allow){
 					var container = $('<div class="fullscreen-viewer"></div>');
+					container.hide();
 					container.on('click', function(e){
 						if(!$(e.target).hasClass('render')){
 							scope.fullscreen(false);
+							scope.$apply('isFullscreen');
 						}
 					});
 					element.children('.embedded-viewer').addClass('fullscreen');
@@ -4178,6 +4180,7 @@ module.directive('fileViewer', function(){
 						.addClass('fullscreen')
 						.appendTo(container);
 					container.appendTo('body');
+					container.fadeIn();
 					if(typeof scope.render === 'function'){
 						scope.render();
 					}
@@ -4185,7 +4188,11 @@ module.directive('fileViewer', function(){
 				else{
 					renderElement.removeClass('fullscreen').appendTo(renderParent);
 					element.children('.embedded-viewer').removeClass('fullscreen');
-					$('body').find('.fullscreen-viewer').remove();
+					var fullscreenViewer = $('body').find('.fullscreen-viewer');
+					fullscreenViewer.fadeOut(400, function(){
+						fullscreenViewer.remove();
+					});
+
 					if(typeof scope.render === 'function'){
 						scope.render();
 					}

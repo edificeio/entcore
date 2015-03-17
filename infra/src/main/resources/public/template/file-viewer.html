@@ -9,5 +9,10 @@
 		<audio ng-if="contentType === 'audio'" controls class="render" ng-src="[[ngModel.link]]"></audio>
 		<video ng-if="contentType === 'video'" class="render" ng-src="[[ngModel.link]]"></video>
 		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
+		<div ng-if="contentType === 'unknown' || contentType === 'doc' || contentType === 'xls' || contentType === 'ppt' || contentType === 'zip'" class="default-viewer">
+			<button ng-click="download()">
+				<i18n>file.viewer.download</i18n>
+			</button>
+		</div>
 	</div>
 </div>

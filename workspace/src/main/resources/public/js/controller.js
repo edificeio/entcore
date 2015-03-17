@@ -587,7 +587,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 			var url = 'document?thumbnail=120x120&thumbnail=290x290';
 			if($scope.newFile.quality > 0){
-				url += '&quality=' + $scope.newFile.quality;
+				url += '&quality=' + $scope.newFile.quality / 100;
 			}
 			var request = http().postFile(url,  formData, {
 					requestName: 'file-upload-' + file.file.name + '-' + index
