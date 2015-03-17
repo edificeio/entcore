@@ -524,8 +524,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.openFolder = function(folder){
-		if(template.contains('documents' ,'versions'))
-			template.containers.documents = $scope.backupDocTemplate
+		if(template.contains('documents' ,'versions') || template.contains('documents', 'viewer')){
+			template.containers.documents = $scope.backupDocTemplate;
+		}
 
 		if(folder.folder && folder.folder.indexOf('Trash') === 0)
 			return
