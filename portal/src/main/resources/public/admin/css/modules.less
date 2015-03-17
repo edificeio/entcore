@@ -606,6 +606,36 @@ nav.admin-bar:hover {
 
 }
 
+table{
+	width: 100%;
+
+	thead th{
+		background: white;
+		font-size: 16px;
+	}
+
+	tbody {
+		font-family: Lato;
+		text-align: center;
+
+		tr {
+			border-left: 1px solid #fd4a98;
+  			border-right: 1px solid #fd4a98;
+
+			&.separator{
+				border-bottom: 1px solid #fd4a98;
+			}
+		}
+	}
+
+	tbody.no-hover{
+		tr:hover{
+			background: inherit;
+		}
+	}
+}
+
+
 table.comm-table{
 	table-layout: fixed;
 

@@ -282,6 +282,23 @@ ManualGroup.prototype = {
     }
 }
 
+//Duplicates
+function Duplicate(){}
+Duplicate.prototype = {
+    merge: function(hook){
+        var that = this
+        return http().put("duplicate/merge/" + that.user1.id + "/" + that.user2.id).done(function(){
+            hookCheck(hook)
+        })
+    },
+    dissociate: function(hook){
+        var that = this
+        return http().delete("duplicate/ignore/" + that.user1.id + "/" + that.user2.id).done(function(){
+            hookCheck(hook)
+        })
+    }
+}
+
 function Structure(){
 
     this.collection(Classe, {
@@ -300,9 +317,19 @@ function Structure(){
     this.collection(ManualGroup, {
         sync: function(hook){
             var that = this
-            return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-requests' }).done(function(groups){
+            return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-request' }).done(function(groups){
                 that.load(groups)
                 that.forEach(function(group){ group.getUsers() })
+                hookCheck(hook)
+            })
+        }
+    })
+
+    this.collection(Duplicate, {
+        sync: function(hook){
+            var that = this
+            return http().get('duplicates', { inherit: "true", structure: that.model.id}, { requestName: 'duplicates-request'}).done(function(duplicates){
+                that.load(duplicates)
                 hookCheck(hook)
             })
         }
@@ -445,7 +472,7 @@ function IsolatedUsers(){
 }
 
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, Structure, Classe, ManualGroup])
+    this.makeModels([User, IsolatedUsers, Structure, Classe, ManualGroup, Duplicate])
 
     this.collection(Structure, {
         sync: function(hook){

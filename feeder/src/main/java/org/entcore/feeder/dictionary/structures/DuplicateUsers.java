@@ -129,7 +129,8 @@ public class DuplicateUsers {
 		}
 		query +="RETURN r.score as score, " +
 				"{id: u1.id, firstName: u1.firstName, lastName: u1.lastName, birthDate: u1.birthDate, email: u1.email} as user1, " +
-				"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email} as user2 " +
+				"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email} as user2, " +
+				"u1.profiles as profiles1, u2.profiles as profiles2 " +
 				"ORDER BY score DESC";
 		JsonObject params = new JsonObject().putArray("structures", structures);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {

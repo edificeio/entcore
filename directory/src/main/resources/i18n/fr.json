@@ -41,7 +41,6 @@
     "directory.admin.address": "Adresse",
     "directory.admin.attachChildStructures": "Rattacher des structures à ce regroupement",
     "directory.admin.birthDate": "Date de naissance",
-    "directory.admin.birthdate": "Date de naissance",
     "directory.admin.class": "Classe",
     "directory.admin.classGroup": "Groupe de classe",
     "directory.admin.create": "Créer",
@@ -50,7 +49,7 @@
     "directory.admin.create-school": "Créer une école",
     "directory.admin.create-user": "Créer un utilisateur",
     "directory.admin.display": "Visualiser",
-    "directory.admin.email": "email",
+    "directory.admin.email": "Email",
     "directory.admin.export": "Exporter",
     "directory.admin.exports": "Exporter les données d'authentification",
     "directory.admin.firstname": "Prénom",
@@ -323,5 +322,15 @@
     "welcome.info": "Bienvenue dans votre ENT !",
     "welcome.regards": "Bonne découverte !",
     "welcome.signature": "L'équipe Ent-Core",
-    "welcome.subject": "Bienvenue dans l'ENT"
+    "welcome.subject": "Bienvenue dans l'ENT",
+    "directory.admin.duplicates": "Doublons",
+    "directory.admin.duplicatesManagement": "Gestion des doublons",
+    "directory.admin.markDuplicates": "Marquer les doublons",
+    "mark": "Marquer",
+    "directory.notify.markDuplicates": "Marquage des doublons terminé",
+    "directory.notify.import": "Import terminé",
+    "directory.action": "Action",
+    "merge": "Fusionner",
+    "dissociate": "Dissocier",
+    "directory.show.user.page": "Lien vers la page de l'utilisateur"
 }

@@ -25,6 +25,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
+				$scope.structure.selected = true
 				$scope.reloadStructureAndRetrieveUser({ id: userId })()
 			})
         },
@@ -38,7 +39,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
-
+				$scope.structure.selected = true
 	            $scope.structure.classes.sync(function(){
 	                $scope.classSelected = $scope.structure.classes.findWhere({ id: classId})
 	                $scope.$apply()
@@ -56,6 +57,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
+				$scope.structure.selected = true
 				$scope.structure.loadStructure(
 					null,
 					function(){
@@ -134,7 +136,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			text: lang.translate("directory.groupOps"),
 			templateName: 'admin-group-tab',
 			onClick: function(){ },
-			requestName : "groups-requests"
+			requestName : "groups-request"
 		},
 		{
 			text: lang.translate("directory.feeding"),
@@ -147,6 +149,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			onClick: function(){ $scope.refreshIsolated() },
 			requestName : "isolated-request",
 			showCondition: function(){ return $scope.isCentralAdmin() }
+		},
+		{
+			text: lang.translate("directory.admin.duplicatesManagement"),
+			templateName: 'admin-duplicates-tab',
+			onClick: function(){ },
+			requestName : "duplicates-request"
 		}
 	]
 
@@ -330,6 +338,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.viewStructure = function(structure){
         $scope.structure = structure
 		structure.manualGroups.sync($scope.refreshScope)
+		structure.duplicates.sync($scope.refreshScope)
         structure.loadStructure($scope.refreshScope, $scope.refreshScope)
     }
 
@@ -475,5 +484,14 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	//Structures
 	$scope.initStructure = function(){
 		$scope.createdStructure = new Structure()
+	}
+
+	//Duplicates
+	$scope.refreshDuplicates = function(){
+		$scope.structure.duplicates.sync($scope.refreshScope)
+	}
+
+	$scope.mapDuplicateUser = function(duplicateUser){
+		return $scope.structure.users.findWhere({id: duplicateUser.id})
 	}
 }

@@ -7,7 +7,7 @@
 <div class="row" ng-if="isCentralAdmin()">
     <h3><i18n>directory.admin.importTitle</i18n></h3>
     <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
-    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('Import terminé'); })">[[lang.translate("directory.import")]]</button>
+    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('directory.notify.import'); })">[[lang.translate("directory.import")]]</button>
 </div>
 <hr class="separator cell">
 <div class="row">
@@ -26,4 +26,10 @@
         <select class="four cell" ng-model="exportData.exportStructure" ng-change="refreshClasses(exportData.exportStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
         <select ng-if="export_mode === 'classId'" ng-model="exportData.exportClass" class="four cell" ng-options="class as class.name for class in exportData.exportStructure.classes.all | orderBy: 'name'"></select>
     </div>
+</div>
+<hr class="separator cell" ng-if="isCentralAdmin()">
+<div class="row" ng-if="isCentralAdmin()">
+    <h3><i18n>directory.admin.markDuplicates</i18n></h3>
+    <label class="five cell"><span>[[lang.translate("directory.admin.markDuplicates")]]</span></label>
+    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/duplicates/mark', function(){ notify.info('directory.notify.markDuplicates'); })">[[lang.translate("mark")]]</button>
 </div>

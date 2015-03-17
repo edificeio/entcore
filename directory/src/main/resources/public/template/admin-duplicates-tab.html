@@ -1,0 +1,60 @@
+<!--
+    ||||||||||||||||||||
+    |||  DUPLICATES  |||
+    ||||||||||||||||||||
+-->
+
+<!-- Structure selection menu -->
+<div ng-include="'structure-tree'"></div>
+
+<article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
+    <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.admin.duplicates")]]</h1>
+
+    <table>
+        <thead>
+            <th></th>
+            <th><i18n>directory.admin.firstname<i18n></th>
+            <th><i18n>directory.admin.lastname<i18n></th>
+            <th><i18n>directory.admin.birthDate<i18n></th>
+            <th><i18n>directory.admin.email<i18n></th>
+            <th><i18n>directory.admin.profile<i18n></th>
+            <th><i18n>directory.action</i18n></th>
+        </thead>
+        <tbody class="no-hover">
+            <tr ng-repeat-start="duplicate in structure.duplicates.all">
+                <td>
+                    <a  ng-if="mapDuplicateUser(duplicate.user1)"
+                        href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+duplicate.user1.id]]"
+                        target="_blank"
+                        tooltip="directory.show.user.page">
+                        <button class="directory-direct-link-button"></button>
+                    </a>
+                </td>
+                <td>[[ duplicate.user1.firstName ]]</td>
+                <td>[[ duplicate.user1.lastName ]]</td>
+                <td>[[ duplicate.user1.birthDate ]]</td>
+                <td>[[ duplicate.user1.email ]]</td>
+                <td>[[ duplicate.profiles1[0] ]]</td>
+                <td rowspan=2>
+                    <button ng-click="duplicate.merge(refreshDuplicates)"><i18n>merge</i18n></button>
+                    <button ng-click="duplicate.dissociate(refreshDuplicates)"><i18n>dissociate</i18n></button>
+                </td>
+            </tr>
+            <tr class="separator" ng-repeat-end>
+                <td>
+                    <a  ng-if="mapDuplicateUser(duplicate.user2)"
+                        href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+duplicate.user2.id]]"
+                        target="_blank"
+                        tooltip="directory.show.user.page">
+                        <button class="directory-direct-link-button"></button>
+                    </a>
+                </td>
+                <td>[[ duplicate.user2.firstName ]]</td>
+                <td>[[ duplicate.user2.lastName ]]</td>
+                <td>[[ duplicate.user2.birthDate ]]</td>
+                <td>[[ duplicate.user2.email ]]</td>
+                <td>[[ duplicate.profiles2[0] ]]</td>
+            </tr>
+        </tbody>
+    </table>
+</article>
