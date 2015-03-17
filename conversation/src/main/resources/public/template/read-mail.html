@@ -54,7 +54,7 @@
 </article>
 <article class="list-view" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'" ng-if="mail.attachments && mail.attachments.length > 0">
 	<h3><i18n>attachments</i18n></h3>
-	<table>
+	<table class="list-view">
 		<thead>
 			<th class="icon"></th>
 			<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>

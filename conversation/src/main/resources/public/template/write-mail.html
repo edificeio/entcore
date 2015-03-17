@@ -64,7 +64,7 @@
 		</div>
 		<article class="list-view" ng-if="newItem.loadingAttachments.length > 0">
 			<h4><i18n>attachments.loading</i18n></h4>
-			<table>
+			<table class="list-view">
 				<thead>
 					<th><i18n>name</i18n></th>
 					<th><i18n>progress</i18n></th>
@@ -83,7 +83,7 @@
 		</div>
 	</div>
 	<article class="list-view" ng-init="columnOrder = 'filename'" drop-files="newItem.newAttachments" on-drop="postAttachments()">
-		<table>
+		<table class="list-view">
 			<thead>
 				<th class="icon"></th>
 				<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>
