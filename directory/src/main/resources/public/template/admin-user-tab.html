@@ -82,6 +82,9 @@
             <li ng-class="{selected : userFilters.showRelative}" ng-click="toggleFilter('showRelative')">
                 [[lang.translate("directory.admin.showRelative")]]
             </li>
+            <li ng-class="{selected : userFilters.showGuests}" ng-click="toggleFilter('showGuests')">
+                [[lang.translate("directory.admin.showGuests")]]
+            </li>
             <li ng-class="{selected :userFilters.showStudents}" ng-click="toggleFilter('showStudents')">
                 [[lang.translate("directory.admin.showStudents")]]
             </li>
@@ -102,6 +105,10 @@
         <div class="legend-separator">
             <div class="legend-square orange"></div>
             <label class="legend-label" ng-class="userStyle({type: 'Relative'})">[[lang.translate("Relative")]]</label>
+        </div>
+        <div class="legend-separator">
+            <div class="legend-square blue"></div>
+            <label class="legend-label" ng-class="userStyle({type: 'Guest'})">[[lang.translate("Guest")]]</label>
         </div>
         <div class="legend-separator">
             <div class="legend-square black"></div>
@@ -320,6 +327,7 @@
                     <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
                     <option value="Relative">[[lang.translate("directory.Relative")]]</option>
                     <option value="Student">[[lang.translate("directory.Student")]]</option>
+                    <option value="Guest">[[lang.translate("directory.Guest")]]</option>
                 </select>
             </div>
             <div class="twelve cell">

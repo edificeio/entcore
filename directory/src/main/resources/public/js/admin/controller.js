@@ -199,6 +199,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			'personnel': user.type === "Personnel",
 			'relative': user.type === "Relative",
 			'student': user.type === "Student",
+			'guest': user.type === "Guest",
 			'isolated': user.isolated,
 			'not-active': user.code
 		}
@@ -241,7 +242,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showTeachers : true,
 		showPersonnel : true,
 		showRelative : true,
-		showStudents : true
+		showStudents : true,
+		showGuests: true
 	}
 
 	$scope.toggleFilter = function(filterName){
@@ -257,8 +259,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var filterPersonnel  = user.type === 'Personnel' ? $scope.userFilters.showPersonnel : true
 		var filterRelative 	 = user.type === 'Relative'  ? $scope.userFilters.showRelative 	: true
 		var filterStudents 	 = user.type === 'Student' 	 ? $scope.userFilters.showStudents 	: true
+		var filterGuests 	 = user.type === 'Guest' 	 ? $scope.userFilters.showGuests 	: true
 
-        return filterByInput && (filterByClass || filterIsolated) && filterInactive && filterTeachers && filterPersonnel && filterRelative && filterStudents
+        return filterByInput && (filterByClass || filterIsolated) && filterInactive && filterTeachers && filterPersonnel && filterRelative && filterStudents && filterGuests
 	}
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){

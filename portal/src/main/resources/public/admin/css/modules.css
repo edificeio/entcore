@@ -10044,6 +10044,12 @@ div.legend-square.teal {
 div.legend-square.orange {
   background-color: orange;
 }
+div.legend-square.purple {
+  background-color: purple;
+}
+div.legend-square.blue {
+  background-color: dodgerblue;
+}
 div.legend-square.black {
   background-color: black;
 }
@@ -10093,6 +10099,9 @@ label.legend-label.marged {
 }
 .user-style.relative {
   color: orange;
+}
+.user-style.guest {
+  color: dodgerblue;
 }
 .user-style.isolated {
   text-decoration: underline;
