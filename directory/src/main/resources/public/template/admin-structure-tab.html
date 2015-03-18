@@ -10,7 +10,9 @@
     <div class="three" style="position: relative;">
         <div class="vertical_buttons_container" style="right: -36px; top: 17px;">
             <!-- Creation button -->
-            <button ng-click="setShowWhat('showStructureCreation'); initStructure()" tooltip="directory.tooltip.createStructure"
+            <button ng-click="setShowWhat('showStructureCreation'); initStructure()"
+                    ng-if="isCentralAdmin()"
+                    tooltip="directory.tooltip.createStructure"
                     class="directory-list-glyph-button plus-icon">
             </button>
         </div>
@@ -43,8 +45,8 @@
         <hr class="separator cell">
         <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportStructure")]]</strong>
         <button class="two cell" ng-click="openExport('structureId', structure.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
-        <hr class="separator cell">
-        <div class="twelve cell">
+        <hr class="separator cell" ng-if="isCentralAdmin()">
+        <div class="twelve cell" ng-if="isCentralAdmin()">
             <h3><i18n>directory.admin.attachChildStructures</i18n></h3>
             <nav class="vertical search-container-left three cell" style="height: 380px">
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructures"/>

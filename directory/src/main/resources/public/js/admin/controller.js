@@ -124,8 +124,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		{
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
-			onClick: function(){ },
-			showCondition: function(){ return $scope.isCentralAdmin() }
+			onClick: function(){ }
 		},
 		{
 			text: lang.translate("directory.classOps"),
