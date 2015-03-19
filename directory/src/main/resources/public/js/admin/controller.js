@@ -465,10 +465,18 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	//Creates a new fresh User
 	$scope.initUser = function(){
 		var newUser = new User()
-		newUser.type 		= 'Personnel'
-		newUser.structureId = $scope.structure.id
-		newUser.children = []
+		$scope.resetUser(newUser)
 		return newUser
+	}
+
+	$scope.resetUser = function(user){
+		delete user.classId
+		delete user.birthDate
+		delete user.firstName
+		delete user.lastName
+		user.type = 'Personnel'
+		user.structureId = $scope.structure.id
+		user.children = []
 	}
 
     //Init the date of birth. (cannot be put in html, causes angular parsing error)
@@ -478,6 +486,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.createUser = function(user){
 		user.create(function(){
+			$scope.resetUser(user)
 			$scope.structure.loadStructure($scope.refreshScope)
 		})
 	}
