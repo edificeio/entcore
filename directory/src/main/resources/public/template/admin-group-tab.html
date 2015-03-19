@@ -72,18 +72,18 @@
                         ng-model="groupUsersStructure"
                         ng-init="groupUsersStructure = structure"
                         ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
-                        ng-change="usersLimit = SCROLL_INCREMENT; groupUsersStructure.loadStructure(refreshScope, refreshScope)">
+                        ng-change="scrollOpts.reset(); groupUsersStructure.loadStructure(refreshScope, refreshScope)">
                 </select>
                 <select style="width: 95%"
                         ng-model="groupUsersClass"
                         ng-init="groupUsersClass = groupSelected.classes ? structure.classes.findWhere({id: groupSelected.classes[0].id}) : null"
                         ng-options="class as class.name for class in groupUsersStructure.classes.all | orderBy: 'name'"
-                        ng-change="usersLimit = SCROLL_INCREMENT">
+                        ng-change="scrollOpts.reset()">
                         <option value="">[[lang.translate("directory.allClasses")]]</option>
                 </select>
-                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="usersLimit = SCROLL_INCREMENT"/>
-                <ul bottom-scroll-action="usersLimit = usersLimit + SCROLL_INCREMENT" style="height: 355px; padding-top: 10; border-bottom: none">
-                    <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: usersLimit"
+                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="scrollOpts.reset()"/>
+                <ul bottom-scroll-action="scrollOpts.increment()" style="height: 355px; padding-top: 10; border-bottom: none">
+                    <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
                         ng-click="addUserToGroup(user, groupSelected)"
                         style="padding-left: 0">
                         <span ng-class="userStyle(user)">[[user.displayName]]</span>

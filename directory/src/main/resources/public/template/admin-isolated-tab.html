@@ -4,19 +4,22 @@
     |||||||||||||||||||||||||||
 -->
 
-<ul bottom-scroll-action="incrementUsersLimit()" class="three cell" style="list-style: none; font-family: Lato; height: 550px; padding: 0 20 0 0; border-right: 2px ridge #ff0b75; border-bottom: 2px ridge #ff0b75; overflow-y: scroll;">
-    <div style="width: 100%; border-bottom: 1px solid #444; margin-bottom: 5px;">
-        <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; $parent.usersLimit = SCROLL_INCREMENT" style="margin-bottom: 0">
-            <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="directory-inline-middle" style="width: 86%; background: inherit; border-radius: 0; padding-left: 20; height: 40px; font-size: 16px;"/>
-            <input type="submit" class="directory-inline-middle" style="width: 10%; padding: 0; margin: 0; width: 25; height: 25; border: none;" value="✓">
+<div class="three cell users-search">
+    <div>
+        <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; scrollOpts.reset()">
+            <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="inline-middle"/>
+            <button class="inline-middle check-button"></button>
         </form>
     </div>
-    <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction(filterIsolatedUsers) | orderBy: 'lastName' | limitTo: usersLimit"
-        ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
-        [[user.displayName]]
-    </li>
-</ul>
-<div class="nine cell" style="border-bottom: 2px ridge #ff0b75; padding: 20 0 0 20; height: 564px; overflow-y: scroll" ng-if="isolatedUser">
+    <ul bottom-scroll-action="scrollOpts.increment()">
+
+        <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction(filterIsolatedUsers) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
+            ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
+            [[user.displayName]]
+        </li>
+    </ul>
+</div>
+<div class="nine cell right-content" ng-if="isolatedUser">
     <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[isolatedUser.firstName+" "+isolatedUser.lastName]]</h1></div>
     <hr class="separator">
     <div style="text-align:center">
@@ -28,6 +31,7 @@
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+isolatedUser.type)]]</div>
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[isolatedUser.login]]</div>
+    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(isolatedUser.source)]]</div>
     <div class="twelve cell" ng-show="isolatedUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[isolatedUser.code]]</div>
     <div class="twelve cell" ng-if="isolatedUser.deleteDate"><strong class="four cell">[[lang.translate("directory.predeletionDate")]]</strong> [[formatLongDate(isolatedUser.deleteDate)]]</div>
     <hr style="border: 1px solid black; margin: 15 0 15 0;"/>

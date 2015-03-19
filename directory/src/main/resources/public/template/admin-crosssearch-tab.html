@@ -1,0 +1,26 @@
+<!--
+    ||||||||||||||||||||||||||
+    |||    CROSS SEARCH    |||
+    ||||||||||||||||||||||||||
+-->
+
+<div class="three cell users-search">
+    <div>
+        <form ng-submit="scrollOpts.reset(); refreshCrossUsers(filterCrossUsersInput)">
+            <input type="text" ng-model="filterCrossUsersInput" placeholder="[[lang.translate('directory.search')]]" class="inline-middle"/>
+            <button class="inline-middle check-button" ng-disabled="!filterCrossUsersInput || filterCrossUsersInput.length < 1"></button>
+        </form>
+    </div>
+    <ul bottom-scroll-action="scrollOpts.increment()">
+
+        <li ng-repeat="user in crossUsers.users.all | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
+            ng-click="$parent.targetUser = user; getUserDetails(user)"
+            ng-class="userStyle(user)">
+            [[user.displayName]]
+        </li>
+    </ul>
+</div>
+
+<div class="nine cell right-content" ng-if="targetUser">
+    <div ng-include="template.containers.userDetails"></div>
+</div>

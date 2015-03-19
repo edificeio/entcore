@@ -21,6 +21,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
@@ -35,6 +36,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
@@ -205,7 +207,13 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void listAdmin(String structureId, String classId, String groupId,
-						  JsonArray expectedProfiles, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+						  JsonArray expectedProfiles, UserInfos userInfos, org.vertx.java.core.Handler<fr.wseduc.webutils.Either<String,JsonArray>> results) {
+		listAdmin(structureId, classId, groupId, expectedProfiles, null, userInfos, results);
+	};
+
+	@Override
+	public void listAdmin(String structureId, String classId, String groupId,
+						  JsonArray expectedProfiles, String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
 		String filter = "";
 		String filterProfile = "WHERE 1=1 ";
@@ -246,13 +254,17 @@ public class DefaultUserService implements UserService {
 				params.putArray("scope", new JsonArray(scope.toArray()));
 			}
 		}
+		if(nameFilter != null && !nameFilter.trim().isEmpty()){
+			condition += "AND u.displayName =~ {regex}  ";
+			params.putString("regex", "(?i)^.*?" + Pattern.quote(nameFilter.trim()) + ".*?$");
+		}
 
 		String query =
 				"MATCH " + filter + "(u:User) " +
 				functionMatch + filterProfile + condition +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
 				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
-				"u.lastName as lastName, u.displayName as displayName, u.source as source " +
+				"u.lastName as lastName, u.displayName as displayName, u.source as source, collect(distinct {id: s.id, name: s.name}) as structures " +
 				"ORDER BY type DESC, displayName ASC ";
 		neo.execute(query, params, validResultHandler(results));
 	}

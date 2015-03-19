@@ -197,6 +197,7 @@
     "directory.setLocalAdmin": "Attribuer (pour cette structure)",
     "directory.showHide": "Afficher / Masquer",
     "directory.structure": "Structure",
+    "directory.structures": "Structures",
     "directory.structure.children": "Structure(s) rattachée(s)",
     "directory.structure.parents": "Structure(s) parente(s)",
     "directory.structureOps": "Opérations sur les structures",
@@ -337,5 +338,8 @@
     "directory.action": "Action",
     "merge": "Fusionner",
     "dissociate": "Dissocier",
-    "directory.show.user.page": "Lien vers la page de l'utilisateur"
+    "directory.show.user.page": "Lien vers la page de l'utilisateur",
+    "directory.trasversal.search": "Recherche transverse",
+    "MANUAL": "Manuel",
+    "directory.userSource": "Source"
 }

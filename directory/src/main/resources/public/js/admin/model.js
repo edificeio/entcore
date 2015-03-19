@@ -65,6 +65,7 @@ User.prototype.update = function(hook){
         zipCode:        that.zipCode
     }).done(function(){
         notify.info(lang.translate("directory.notify.userUpdate"))
+        that.displayName = that.firstName + " " + that.lastName
         hookCheck(hook)
     })
 }
@@ -471,8 +472,19 @@ function IsolatedUsers(){
     })
 }
 
+function CrossUsers(){
+    this.collection(User, {
+        sync: function(filter){
+            var that = this
+            return http().get('user/admin/list', { name: filter}, { requestName: 'cross-search-request' }).done(function(users){
+                that.load(users);
+            })
+        }
+    })
+}
+
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, Structure, Classe, ManualGroup, Duplicate])
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Classe, ManualGroup, Duplicate])
 
     this.collection(Structure, {
         sync: function(hook){
@@ -497,5 +509,5 @@ model.build = function(){
     })
 
     this.isolatedUsers = new IsolatedUsers()
-
+    this.crossUsers = new CrossUsers()
 }

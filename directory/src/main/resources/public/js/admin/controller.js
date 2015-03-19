@@ -3,6 +3,9 @@ routes.define(function($routeProvider){
 		.when('/structureUser/:structureId/:userId', {
 			action: 'viewStructureUser'
 		})
+		.when('/structure/:structureId', {
+			action: 'viewStructure'
+		})
         .when('/class/:structureId/:classId', {
             action: 'viewClass'
         })
@@ -19,6 +22,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
             var structureId = params.structureId
 
 			template.open('body', 'admin-user-tab')
+			$scope.currentLeaf = "userTab"
 			$scope.showWhat = 'showStructureUser'
 
 			$scope.structures.sync(function(){
@@ -29,11 +33,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.reloadStructureAndRetrieveUser({ id: userId })()
 			})
         },
+        viewStructure: function(params){
+            var structureId = params.structureId
+
+			template.open('body', 'admin-structure-tab')
+			$scope.currentLeaf = "structureTab"
+			$scope.showWhat = 'showCurrentStructure'
+
+			$scope.structures.sync(function(){
+				$scope.structure = $scope.structures.find(function(structure){
+					return structure.id === structureId
+				})
+				$scope.structure.selected = true
+			})
+        },
         viewClass: function(params){
             var classId = params.classId
             var structureId = params.structureId
 
 			template.open('body', 'admin-class-tab')
+			$scope.currentLeaf = "classTab"
 
 			$scope.structures.sync(function(){
 				$scope.structure = $scope.structures.find(function(structure){
@@ -51,6 +70,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			var structureId = params.structureId
 
 			template.open('body', 'admin-user-tab')
+			$scope.currentLeaf = "userTab"
 			$scope.showWhat = 'showStructureUser'
 
 			$scope.structures.sync(function(){
@@ -76,16 +96,22 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	})
 
 	$scope.template = template
+	template.open('userDetails', 'admin-user-details')
     $rootScope.export_id = ""
     $scope.export_mode = "all"
     $scope.structures = model.structures
     $scope.lang = lang
 
-    $scope.SCROLL_INCREMENT = 250
-    $scope.usersLimit = $scope.SCROLL_INCREMENT
-    $scope.incrementUsersLimit = function(){
-        $scope.usersLimit += $scope.SCROLL_INCREMENT
-    }
+	$scope.scrollOpts = {
+		SCROLL_INCREMENT: 250,
+		scrollLimit: 250,
+		increment: function(){
+			this.scrollLimit = this.scrollLimit + this.SCROLL_INCREMENT
+		},
+		reset: function(){
+			this.scrollLimit = this.SCROLL_INCREMENT
+		}
+	}
 
     $scope.refreshScope = function(){ $scope.$apply() }
 
@@ -114,48 +140,83 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		return typeof item.showCondition !== "function" || item.showCondition()
 	}
 
+	$scope.currentLeaf = ""
 	$scope.leafMenu = [
 		{
+			name: "userTab",
 			text: lang.translate("directory.userOps"),
 			templateName: 'admin-user-tab',
-			onClick: function(){ },
+			onClick: function(){
+				delete $scope.targetUser
+				$scope.scrollOpts.reset()
+			},
 			requestName : "user-requests"
 		},
 		{
+			name: "structureTab",
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
-			onClick: function(){ }
+			onClick: function(){ $scope.scrollOpts.reset() }
 		},
 		{
+			name: "classTab",
 			text: lang.translate("directory.classOps"),
 			templateName: 'admin-class-tab',
-			onClick: function(){ }
+			onClick: function(){ $scope.scrollOpts.reset() }
 		},
 		{
+			name: "groupTab",
 			text: lang.translate("directory.groupOps"),
 			templateName: 'admin-group-tab',
-			onClick: function(){ },
+			onClick: function(){ $scope.scrollOpts.reset() },
 			requestName : "groups-request"
 		},
 		{
+			name: "maintenanceTab",
 			text: lang.translate("directory.feeding"),
 			templateName: 'admin-maintenance-tab',
-			onClick: function(){ }
+			onClick: function(){ $scope.scrollOpts.reset() }
 		},
 		{
+			name: "isolatedTab",
 			text: lang.translate("directory.isolatedUsers"),
 			templateName: 'admin-isolated-tab',
-			onClick: function(){ $scope.refreshIsolated() },
+			onClick: function(){
+				$scope.scrollOpts.reset();
+				$scope.refreshIsolated()
+			},
 			requestName : "isolated-request",
 			showCondition: function(){ return $scope.isCentralAdmin() }
 		},
 		{
+			name: "duplicatesTab",
 			text: lang.translate("directory.admin.duplicatesManagement"),
 			templateName: 'admin-duplicates-tab',
-			onClick: function(){ },
+			onClick: function(){ $scope.scrollOpts.reset() },
 			requestName : "duplicates-request"
+		},
+		{
+			name: "crossSearchTab",
+			text: lang.translate("directory.trasversal.search"),
+			templateName: 'admin-crosssearch-tab',
+			onClick: function(){
+				delete $scope.targetUser
+				$scope.scrollOpts.reset()
+			},
+			requestName : "cross-search-request"
 		}
 	]
+	_.forEach($scope.leafMenu, function(leaf){
+		var temp = leaf.onClick
+		leaf.onClick = function(){
+			$scope.currentLeaf = leaf.name
+			temp()
+		}
+	})
+
+	$scope.notCrossSearchTab = function(){
+		return $scope.currentLeaf !== 'crossSearchTab'
+	}
 
     //Given a data size in bytes, returns a more "user friendly" representation.
     $scope.getAppropriateDataUnit = function(bytes){
@@ -319,13 +380,20 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         delete $scope.isolatedUser
     }
 
+	//Refresh the cross users list.
+	$scope.crossUsers = model.crossUsers
+	$scope.refreshCrossUsers = function(filter){
+        model.crossUsers.users.sync(filter)
+        delete $scope.crossUser
+    }
+
 	$scope.refreshStructures = function(){
 		$scope.structures.sync($scope.refreshScope)
 	}
 
     $scope.getUserDetails = function(user){
         user.get(function(){
-			if(user.type === 'Relative'){
+			if($scope.notCrossSearchTab() && user.type === 'Relative'){
 				user.children = $scope.structure.users.filter(function(u){
 					return _.findWhere(user.children, {id: u.id})
 				})
@@ -345,12 +413,16 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     }
 
     $scope.reloadStructureAndRetrieveUser = function(user){
+		if(!$scope.notCrossSearchTab()){
+			return $scope.getUserDetails(user)
+		}
+
         return function(){
             $scope.structure.loadStructure(
                 $scope.refreshScope,
                 function(){
-                    $rootScope.structureUser = _.findWhere($scope.structure.users.all, {id: user.id})
-					$scope.getUserDetails($rootScope.structureUser)
+                    $rootScope.targetUser = _.findWhere($scope.structure.users.all, {id: user.id})
+					$scope.getUserDetails($rootScope.targetUser)
                 }
             )
         }
@@ -407,6 +479,22 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.createUser = function(user){
 		user.create(function(){
 			$scope.structure.loadStructure($scope.refreshScope)
+		})
+	}
+
+	$scope.updateUser = function(user){
+		user.update(function(){ $scope.$apply() })
+	}
+
+	$scope.deleteUser = function(user){
+		user.delete(function(){
+			delete $scope.targetUser
+			if($scope.notCrossSearchTab()){
+				$scope.structure.users.remove(user)
+			} else {
+				$scope.crossUsers.users.remove(user)
+			}
+			$scope.$apply()
 		})
 	}
 

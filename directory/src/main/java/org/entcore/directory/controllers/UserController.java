@@ -325,7 +325,8 @@ public class UserController extends BaseController {
 					final String classId = request.params().get("classId");
 					final JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
 					final String groupId = request.params().get("groupId");
-					userService.listAdmin(structureId, classId, groupId, types, user, arrayResponseHandler(request));
+					final String nameFilter = request.params().get("name");
+					userService.listAdmin(structureId, classId, groupId, types, nameFilter, user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}

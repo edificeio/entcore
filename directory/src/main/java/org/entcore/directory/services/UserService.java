@@ -53,6 +53,9 @@ public interface UserService {
 	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
 			UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
+	void listAdmin(String structureId, String classId, String groupId, JsonArray expectedProfiles,
+			String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
 	void delete(List<String> users, Handler<Either<String, JsonObject>> result);
 
 	void restore(List<String> users, Handler<Either<String, JsonObject>> result);

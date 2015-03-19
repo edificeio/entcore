@@ -446,7 +446,7 @@ button.directory-direct-link-button{
 	overflow-y: scroll
 }
 
-.directory-inline-middle{
+.inline-middle{
 	display: inline-block;
 	vertical-align: middle;
 }
@@ -703,4 +703,57 @@ table.comm-table{
 			}
 		}
 	}
+}
+
+div.users-search{
+	height: 550px;
+	font-family: Lato;
+	> div {
+		width: 100%;
+		border-bottom: 1px solid #444;
+		margin-bottom: 5px;
+
+		form{
+			margin-bottom: 0;
+
+			input[type=text]{
+				width: 86%;
+				background: inherit;
+				border-radius: 0;
+				padding-left: 20;
+				height: 40px;
+				font-size: 16px;
+			}
+		}
+	}
+
+	> ul{
+		list-style: none;
+		padding: 0 20 0 0;
+		border-right: 2px ridge @magenta;
+		border-bottom: 2px ridge @magenta;
+		overflow-y: scroll;
+		height: 500px;
+	}
+}
+
+input[type=submit].check-button, button.check-button{
+	width: 10%;
+	padding: 0;
+	margin: 0;
+	width: 25px;
+	height: 25px;
+	border: none;
+
+	&:after{
+		content: "✓"
+	}
+}
+
+div.right-content{
+	height: 564px;
+	border-bottom: 2px ridge @magenta;
+	border-right: 2px ridge @magenta;
+	padding: 0px 20px;
+	overflow-y: scroll;
 }
