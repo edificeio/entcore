@@ -2,7 +2,7 @@
     <h1>
         <i18n>workspace.versions.list</i18n>
         <button class="right-magnet" ng-click="closeHistory()" translate content="workspace.return"></button>
-        <div class="right-magnet" ng-if="targetDocument.myRights.document.postRevision">
+        <div class="right-magnet" ng-if="targetDocument.myRights.postRevision">
             <div class="select-file">
                 <div class="hidden-content">
                     <input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
@@ -70,7 +70,7 @@
                     <i class="close-2x"
                        ng-click="deleteRevision(revision)"
                        tooltip="workspace.delete.version"
-                       ng-if="(targetDocument.myRights.document.manageRevisions || revision.userId === me.userId && targetDocument.myRights.document.postRevision) && revision.file !== targetDocument.file"></i>
+                       ng-if="(targetDocument.myRights.manageRevisions || revision.userId === me.userId && targetDocument.myRights.postRevision) && revision.file !== targetDocument.file"></i>
                 </td>
             </tr>
         </tbody>

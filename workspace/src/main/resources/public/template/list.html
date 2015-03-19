@@ -113,7 +113,7 @@
 			<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 			<td class="date small-font">[[shortDate(document.created)]]</td>
 			<td ng-if="currentTree.name === 'documents' || currentTree.name === 'shared'">
-				<i class="history" tooltip="workspace.show.versions" ng-click="openHistory(document)" ng-if="document.myRights.document.showRevisions"></i>
+				<i class="history" tooltip="workspace.show.versions" ng-click="openHistory(document)" ng-if="document.myRights.showRevisions"></i>
 			</td>
 			<td class="size small-font">
 				[[formatDocumentSize(document.metadata.size)]]
