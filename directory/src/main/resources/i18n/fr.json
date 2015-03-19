@@ -110,6 +110,8 @@
     "directory.admin.userFilters": "Filtres sur les personnes",
     "directory.all": "Tous",
     "directory.allClasses": "Toutes classes",
+    "directory.allStructures": "Toutes structures",
+    "directory.allProfiles": "Tous profils",
     "directory.birthdate": "Naissance",
     "directory.bit": "Bit(s)",
     "directory.byte": "Octet(s)",

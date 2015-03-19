@@ -306,10 +306,12 @@ function Directory(){
 		match: function(){
 			return this.all;
 		},
-		searchDirectory: function(search){
+		searchDirectory: function(search, filters){
 			var searchTerm = lang.removeAccents(search).toLowerCase();
+			var structure = filters.structure ? filters.structure : "";
+			var profile = filters.profile ? filters.profile : "";
 			this.loading = true;
-			http().get('/userbook/api/search?name=' + searchTerm).done(function(result){
+			http().get('/userbook/api/search?name=' + searchTerm + "&structure=" + structure + "&profile=" + profile).done(function(result){
 				this.loading = false;
 				this.load(_.map(result, function(user){
 					if(!user.mood){

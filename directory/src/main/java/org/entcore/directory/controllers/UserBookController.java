@@ -104,11 +104,23 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void search(final HttpServerRequest request) {
 		String name = request.params().get("name");
+		String structure = request.params().get("structure");
+		String profile = request.params().get("profile");
 		String filter = "";
 		JsonObject params = new JsonObject();
 		if (name != null && !name.trim().isEmpty()) {
 			filter = "WHERE visibles.displayName=~{regex} ";
 			params.putString("regex", "(?i)^.*?" + Pattern.quote(name.trim()) + ".*?$");
+		}
+		if(profile != null && !profile.trim().isEmpty()){
+			filter += filter.isEmpty() ? "WHERE " : "AND ";
+			filter += " profile.name = {profile} ";
+			params.putString("profile", profile);
+		}
+		if(structure != null && !structure.trim().isEmpty()){
+			filter += filter.isEmpty() ? "WHERE " : "AND ";
+			filter += "(visibles)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
+			params.putString("structureId", structure);
 		}
 		String customReturn = filter +
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
@@ -116,8 +128,7 @@ public class UserBookController extends BaseController {
 				"u.mood as mood, u.userid as userId, u.picture as photo, " +
 				"profile.name as type " +
 				"ORDER BY displayName";
-		UserUtils.findVisibleUsers(eb, request, true, customReturn, params, new Handler<JsonArray>() {
-
+		UserUtils.findVisibleUsers(eb, request, false, true, customReturn, params, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray users) {
 				renderJson(request, users);

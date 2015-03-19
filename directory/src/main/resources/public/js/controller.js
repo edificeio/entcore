@@ -81,6 +81,9 @@ function DirectoryController($scope, route, date, template){
 		},
 		directory: function(){
 			$scope.users = model.directory.users;
+			$scope.schools = model.network.schools;
+			$scope.schools.sync();
+			$scope.filters = {}
 			template.open('page', 'directory');
 			$scope.title = 'directory';
 		},
@@ -140,7 +143,7 @@ function DirectoryController($scope, route, date, template){
 
 	$scope.searchDirectory = function(){
 		model.directory.users.all = [];
-		model.directory.users.searchDirectory($scope.search.field);
+		model.directory.users.searchDirectory($scope.search.field, $scope.filters);
 		model.directory.users.one('change', function(){
 			$scope.users = model.directory.users;
 			$scope.$apply('users');

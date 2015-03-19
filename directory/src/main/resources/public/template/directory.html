@@ -45,6 +45,18 @@
 					placeholder="userBook.search"
 					class="three" />
 			<input type="submit" value="OK" />
+			<div class="one cell">&nbsp</div>
+			<select class="styled-combo-box" ng-model="filters.structure" ng-options="school.id as school.name for school in schools.all">
+				<option value="" selected="selected" translate content="directory.allStructures"></option>
+			</select>
+			<select class="styled-combo-box" ng-model="filters.profile">
+				<option value="" selected="selected" translate content="directory.allProfiles"></option>
+				<option value="Teacher" translate content="directory.Teacher"></option>
+				<option value="Personnel" translate content="directory.Personnel"></option>
+				<option value="Relative" translate content="directory.Relative"></option>
+				<option value="Student" translate content="directory.Student"></option>
+				<option value="Guest" translate content="directory.Guest"></option>
+			</select>
 		</div>
 	</div>
 </form>
