@@ -50,6 +50,7 @@
     <!-- Filter container -->
     <div ng-if="showWhat === 'showFilters'" class="directory-userlist-right-container">
         <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.filterResults")]]</h1>
+
         <!-- Classes -->
         <div class="row angle-container">
             <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.classes")]]</span>
@@ -61,11 +62,11 @@
                 [[class.name]]
             </li>
         </ul>
+
         <!-- User criterias -->
         <div class="row angle-container">
             <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.admin.userFilters")]]</span>
         </div>
-
         <ul class="selectable-list">
             <li ng-class="{selected : userFilters.showIsolated}" ng-click="toggleFilter('showIsolated')">
                 [[lang.translate("directory.admin.showIsolated")]]
@@ -87,6 +88,12 @@
             </li>
             <li ng-class="{selected :userFilters.showStudents}" ng-click="toggleFilter('showStudents')">
                 [[lang.translate("directory.admin.showStudents")]]
+            </li>
+            <li ng-class="{selected :userFilters.showFeedModeManual}" ng-click="toggleFilter('showFeedModeManual')">
+                [[lang.translate("directory.admin.showFeedModeManual")]]
+            </li>
+            <li ng-class="{selected :userFilters.showFeedModeAuto}" ng-click="toggleFilter('showFeedModeAuto')">
+                [[lang.translate("directory.admin.showFeedModeAuto")]]
             </li>
         </ul>
     </div>

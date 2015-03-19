@@ -97,6 +97,8 @@
     "directory.admin.showStudents": "Afficher les élèves",
     "directory.admin.showTeachers": "Afficher les enseignants",
     "directory.admin.showGuests": "Afficher les invités",
+    "directory.admin.showFeedModeManual": "Afficher les comptes crées manuellement",
+    "directory.admin.showFeedModeAuto": "Afficher les comptes crées automatiquement",
     "directory.admin.structureGroup": "Groupe de structure",
     "directory.admin.student": "Eleve",
     "directory.admin.teacher": "Enseignant",
