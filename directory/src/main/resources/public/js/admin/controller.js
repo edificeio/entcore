@@ -594,6 +594,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	//Duplicates
 	$scope.refreshDuplicates = function(){
 		$scope.structure.duplicates.sync($scope.refreshScope)
+		$scope.reloadStructure($scope.structure)()
 	}
 
 	$scope.mapDuplicateUser = function(duplicateUser){
