@@ -53,7 +53,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }" dragstart="drag(folder)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)">
+		<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 			<td class="icon"><input type="checkbox" data-ng-model="folder.selected" /></td>
 			<td class="icon">
 				<div class="twelve cell">
@@ -100,7 +100,7 @@
 			<td></td>
 			<td class="size"></td>
 		</tr>
-		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
+		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
 			<td class="icon">
 				<div class="twelve cell">

@@ -3699,21 +3699,34 @@ module.directive('completeClick', function($parse){
 	}
 });
 
-module.directive('dragstart', function(){
+module.directive('dragstart', function($parse){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
+			var dragStartFn = $parse(attributes.dragstart);
+			var ngModel = $parse(attributes.ngModel);
             if(attributes.dragcondition !== undefined && scope.$eval(attributes.dragcondition) === false){
-                element.attr("draggable", "false")
+                element.attr("draggable", "false");
                 return
             }
 
-            element.attr("draggable", "true")
-            element.attr("native", "")
+            element.attr("draggable", "true");
+            element.attr("native", "");
 
             element.on("dragstart", function(event){
-                scope.$eval(attributes.dragstart)(event.originalEvent)
-            })
+				if(ngModel && ngModel(scope)){
+					try{
+						event.originalEvent.dataTransfer.setData('application/json', JSON.stringify(ngModel(scope)));
+					} catch(e) {
+						event.originalEvent.dataTransfer.setData('Text', JSON.stringify(ngModel(scope)));
+					}
+				}
+				if(attributes.dragstart === ''){
+
+					return;
+				}
+                dragStartFn(scope, { $originalEvent: event.originalEvent });
+            });
 
             element.on('$destroy', function() {
                 element.off()
@@ -3722,30 +3735,36 @@ module.directive('dragstart', function(){
     }
 })
 
-module.directive('dragdrop', function(){
+module.directive('dragdrop', function($parse){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
+			var dropFn = $parse(attributes.dragdrop);
+			var dropConditionFn = $parse(attributes.dropcondition);
             element.on("dragover", function(event){
-                if(attributes.dropcondition === undefined || scope.$eval(attributes.dropcondition)(event.originalEvent)){
-                   event.preventDefault()
-                   event.stopPropagation()
+                if(attributes.dropcondition === undefined || dropConditionFn(scope, { $originalEvent: event.originalEvent })){
+                   event.preventDefault();
+                   event.stopPropagation();
                    element.addClass("droptarget")
                 }
-            })
+            });
+
             element.on("dragleave", function(event){
-                event.preventDefault()
-                event.stopPropagation()
-                element.removeClass("droptarget")
-            })
+                event.preventDefault();
+                event.stopPropagation();
+                element.removeClass("droptarget");
+            });
+
             element.on("drop", function(event){
-                element.removeClass("droptarget")
-                scope.$eval(attributes.dragdrop)(event.originalEvent)
-            })
+				event.originalEvent.preventDefault();
+                element.removeClass("droptarget");
+				var item = JSON.parse(event.originalEvent.dataTransfer.getData('application/json'));
+				dropFn(scope, { $originalEvent: event.originalEvent, $item: item });
+            });
 
             element.on('$destroy', function() {
                 element.off()
-            })
+            });
         }
     }
 });
@@ -4200,6 +4219,42 @@ module.directive('fileViewer', function(){
 			}
 		}
 	}
+});
+
+module.directive('popover', function(){
+	return {
+		controller: function(){},
+		restrict: 'E',
+		link: function (scope, element, attributes) {
+
+		}
+	};
+});
+
+module.directive('popoverOpener', function(){
+	return {
+		require: '^popover',
+		link: function(scope, element, attributes){
+			var parentElement = element.parents('popover');
+			var popover = parentElement.find('popover-content');
+			parentElement.on('mouseover', function(e){
+				popover.removeClass("hidden");
+			});
+			parentElement.on('mouseout', function(e){
+				popover.addClass("hidden");
+			});
+		}
+	};
+});
+
+module.directive('popoverContent', function(){
+	return {
+		require: '^popover',
+		restrict: 'E',
+		link: function(scope, element, attributes){
+			element.addClass("hidden");
+		}
+	};
 });
 
 $(document).ready(function(){

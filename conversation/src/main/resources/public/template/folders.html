@@ -3,7 +3,7 @@
 	<a ng-click="openUserFolder(folder, obj)"
 	   ng-init="obj = { template: '' }"
 	   ng-class="{ selected: folders.current.id === folder.id, opened: folders.current.id === folder.id || isParentOf(folder, folders.current) }"
-	   dragdrop="dropTo(folder)"
+	   dragdrop="dropTo(folder, $originalEvent)"
 	   dropcondition="dropCondition(folder)"
 	   class="folder-list-item">
 		<i class="arrow" ng-if="folder.userFolders.length()"></i>
@@ -56,7 +56,7 @@
 			<li>
 				<a class="folder-list-item"
 				   ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }"
-				   dragdrop="dropTo(folders.trash)"
+				   dragdrop="dropTo(folders.trash, $originalEvent)"
 			       dropcondition="dropCondition(folders.trash)">
 					[[lang.translate('trash')]]
 				</a>

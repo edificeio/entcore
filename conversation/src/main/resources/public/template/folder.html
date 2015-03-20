@@ -21,7 +21,7 @@
     				<i18n>folder.empty</i18n>
     			</td>
     		</tr>
-    		<tr ng-repeat="mail in folders.current.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail)">
+    		<tr ng-repeat="mail in folders.current.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
     			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
                 <td class="icon"><i class="[[matchSystemIcon(mail)]]" tooltip="[[matchSystemIcon(mail)]]"></i></td>
     			<td class="user" ng-if="mail.systemFolders.indexOf('INBOX') < 0">

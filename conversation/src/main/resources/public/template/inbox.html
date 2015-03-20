@@ -25,7 +25,7 @@
 		<tr
 				ng-repeat="mail in folders.inbox.mails.all"
 				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
-				dragstart="drag(mail)"
+				dragstart="drag(mail, $originalEvent)"
 		>
 			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
 			<td class="user"><a ng-click="readMail(mail)">[[mail.sender().displayName]][[mail.fromName]]</a></td>

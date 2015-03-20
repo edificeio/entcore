@@ -20,7 +20,7 @@
 			<td colspan="5" translate key="folder.empty">
 			</td>
 		</tr>
-		<tr ng-repeat="mail in folders.draft.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail)">
+		<tr ng-repeat="mail in folders.draft.mails.all" ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
 			<td><input type="checkbox" ng-model="mail.selected" /></td>
 			<td>
 				<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" ng-click="editDraft(mail)">

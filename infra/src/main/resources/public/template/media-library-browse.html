@@ -44,10 +44,10 @@
 			<li>
 				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }" translate content="workspace.sharedDocuments"></a>
 			</li>
-			<li workflow="workspace.documents.create">
+			<li workflow="workspace.create">
 				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }" translate content="workspace.appDocuments"></a>
 			</li>
-			<li workflow="workspace.documents.create" ng-if="visibility === 'public'">
+			<li workflow="workspace.create" ng-if="visibility === 'public'">
 				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }" translate content="workspace.publicDocuments"></a>
 			</li>
 		</ul>

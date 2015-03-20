@@ -21,9 +21,9 @@
 <article class="icons-view" drop-files="newFile.files" on-drop="setFilesName();addLoadingFiles();">
 	<header>&nbsp;</header>
 	<div>
-		<div ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)">
+		<div ng-repeat-start="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 			<a class="container" draggable="false">
-				<i class="folder-large" data-ng-click="openFolder(folder)" dragstart="drag(folder)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder)" dropcondition="dropCondition(folder)"></i>
+				<i class="folder-large" data-ng-click="openFolder(folder)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
 			</a>
 			<input type="checkbox" data-ng-model="folder.selected" />
 
@@ -56,7 +56,7 @@
 				<a><strong>[[me.username]]</strong></a>
 			</legend>
 		</div>
-		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document)" dragcondition="dragCondition(document)">
+		<div ng-repeat-start="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<a ng-click="viewFile(document)" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>

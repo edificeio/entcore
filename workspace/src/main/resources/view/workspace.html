@@ -31,7 +31,7 @@
 		<script type="text/ng-template" id="folder-content">
 			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name"
 			   class="folder-list-item"
-			   dragdrop="dropTo(folder)"
+			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)">
 				<i class="arrow" ng-if="folder.children.length"></i> [[translate(folder.name)]]
 			</a>

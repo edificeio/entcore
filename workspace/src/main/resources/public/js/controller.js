@@ -1162,15 +1162,14 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		}
 	}
 
-	$scope.drag = function(item, event){
-		return function(event){
-			try{
-				event.dataTransfer.setData('application/json', JSON.stringify(item));
-			} catch(e) {
-				event.dataTransfer.setData('Text', JSON.stringify(item));
-			}
+	$scope.drag = function(item, $originalEvent){
+		try{
+			$originalEvent.dataTransfer.setData('application/json', JSON.stringify(item));
+		} catch(e) {
+			$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
 		}
-	}
+	};
+
 	$scope.dragCondition = function(item){
 		return $scope.currentFolderTree.name === 'documents' && item.folder
 	}
@@ -1188,22 +1187,18 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		}
 	}
 
-	$scope.dropTo = function(targetItem){
-		return function(event){
-			event.preventDefault()
+	$scope.dropTo = function(targetItem, $originalEvent){
+		var dataField = $scope.dropCondition(targetItem)($originalEvent);
+		var originalItem = JSON.parse($originalEvent.dataTransfer.getData(dataField));
 
-			var dataField = $scope.dropCondition(targetItem)(event)
-			var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
+		if(originalItem._id === targetItem._id)
+			return;
 
-			if(originalItem._id === targetItem._id)
-				return
-
-			if(targetItem.name === 'trash')
-				$scope.dropTrash(originalItem)
-			else
-				$scope.dropMove(originalItem, targetItem)
-		}
-	}
+		if(targetItem.name === 'trash')
+			$scope.dropTrash(originalItem);
+		else
+			$scope.dropMove(originalItem, targetItem);
+	};
 
 	$scope.dropMove = function(originalItem, targetItem){
 		$scope.dragMove(originalItem, targetItem)

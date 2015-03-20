@@ -515,16 +515,14 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	var letterIcon = document.createElement("img")
 	letterIcon.src = skin.theme +".."+"/img/icons/message-icon.png"
-	$scope.drag = function(item, event){
-		return function(event){
-			event.dataTransfer.setDragImage(letterIcon, 0, 0);
-			try{
-				event.dataTransfer.setData('application/json', JSON.stringify(item));
-			} catch(e) {
-				event.dataTransfer.setData('Text', JSON.stringify(item));
-			}
+	$scope.drag = function(item, $originalEvent){
+		$originalEvent.dataTransfer.setDragImage(letterIcon, 0, 0);
+		try{
+			$originalEvent.dataTransfer.setData('application/json', JSON.stringify(item));
+		} catch(e) {
+			$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
 		}
-	}
+	};
 	$scope.dropCondition = function(targetItem){
 		return function(event){
 			var dataField = event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("application/json") > -1 ? "application/json" : //Chrome & Safari
@@ -537,21 +535,17 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 			return dataField
 		}
-	}
+	};
 
-	$scope.dropTo = function(targetItem){
-		return function(event){
-			event.preventDefault()
+	$scope.dropTo = function(targetItem, $originalEvent){
+		var dataField = $scope.dropCondition(targetItem)($originalEvent)
+		var originalItem = JSON.parse($originalEvent.dataTransfer.getData(dataField))
 
-			var dataField = $scope.dropCondition(targetItem)(event)
-			var originalItem = JSON.parse(event.dataTransfer.getData(dataField))
-
-			if(targetItem.folderName === 'trash')
-				$scope.dropTrash(originalItem)
-			else
-				$scope.dropMove(originalItem, targetItem)
-		}
-	}
+		if(targetItem.folderName === 'trash')
+			$scope.dropTrash(originalItem);
+		else
+			$scope.dropMove(originalItem, targetItem);
+	};
 
 	$scope.dropMove = function(mail, folder){
 		var mailObj = new Mail()
