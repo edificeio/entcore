@@ -1,9 +1,102 @@
-@import "../../../assets/themes/raw/magenta/theme";
+@import "../../../../../../../../css-lib/app";
+@import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 
 @nav-width: 300px;
+@main: #fd4a98;
+@secondary: pink;
+@accent: @main;
+
+@blue: #628CD6;
 
 *{
 	font-weight: 300;
+}
+
+html, body{
+	background-color: #eee
+}
+
+body {
+	overflow-x: hidden;
+	font-size: 14px;
+	line-height: 20px;
+
+	section.main{
+		background: transparent;
+	}
+}
+
+a{
+	color: @main;
+	text-decoration: none;
+
+	&:hover{
+		color: #000;
+	}
+}
+
+h1, h2, h3, h4, h5{
+	font-family: Lato;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	line-height: normal;
+}
+
+h1{
+	color: @main;
+	font-size: 48px;
+}
+
+h2{
+	font-size: 30px;
+	max-width: 930px;
+	margin-left: auto;
+	margin-right: auto;
+	strong{
+		color: @main;
+	}
+	a{
+		color: #444;
+	}
+}
+
+h3{
+	color: @main;
+	text-align: left;
+	font-size: 22px;
+}
+
+h4{
+	text-align: center;
+}
+
+h5{
+	text-align: center;
+	font-size: 16px;
+	margin: 0;
+}
+
+article{
+	border-radius: 3px;
+	border: none;
+	margin-bottom: 15px;
+}
+
+button, input[type=button], a.button, input[type=submit]{
+	background: @main;
+	padding: 9px 18px;
+	color: #fff;
+	font-size: 15px;
+	border: 1px solid transparent;
+	.run-transition(background);
+	font-family: Lato;
+	font-weight: 300;
+	line-height: 20px;
+}
+
+button:hover, input[type=button]:hover, input[type=submit]:hover, a.button:hover{
+	background: #444;
+	color: #fff;
 }
 
 header.navbar{
@@ -45,6 +138,12 @@ i.folded-icon{
 	&.folded{
 		.icon(glyphicons_223_chevron-right, 22px);
 	}
+}
+i.disconnect{
+	.icon(glyphicons_063_power_white, 35px);
+	margin: 5px;
+	float: right;
+	margin-bottom: -6px;
 }
 
 .preview{
@@ -95,6 +194,14 @@ article{
 	margin-right: auto;
 }
 
+a.button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled],
+a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:hover, input[type=submit][disabled]:hover{
+	color: #fff;
+	background: #BBB;
+	border: 1px solid #CCC;
+	cursor: default;
+}
+
 button, input[type=submit], input[type="button"]{
 	padding: 5px 10px;
 	border-radius: 3px;
@@ -104,6 +211,13 @@ button, input[type=submit], input[type="button"]{
 		padding: 2px 5px;
 		font-size: 14px;
 	}
+}
+
+select{
+	background: #494949;
+	color: #999;
+	border: 1px solid #595959;
+	height: 25px;
 }
 
 input[type=text], select, label{
@@ -118,13 +232,66 @@ input[type=text]{
 	padding-left: 5px;
 }
 
+input[type=text], input[type=search], input[type=password]{
+	height: 25px;
+	line-height: 25px;
+	padding-left: 5px;
+	font-family: Lato;
+	font-size: 14px;
+	margin-bottom: 7px;
+}
+
+.selectable-list{
+	li{
+		border: none;
+		.border-radius(0);
+		border-left: 10px solid #ccc;
+		background: transparent;
+		color: #999;
+	}
+
+	li.selected{
+		border: none;
+		.border-radius(0);
+		background: #444;
+		border-left: 10px solid @main;
+		color: #aaa;
+	}
+}
+
 nav.side-tabs{
 	font-size: 12px;
 	width: 25%;
 
 	> ul{
+
 		max-height: 550px;
 		overflow-y: scroll;
+
+		li{
+			border-color: @main;
+			color: #ccc;
+			background: #444;
+		}
+		li:hover{
+			color: @main;
+		}
+		li.selected{
+			border-color: @main;
+			color: #2a2829;
+		 	background: #FCFCFC;
+			border-right: none;
+		 	border-top: none;
+		  	border-bottom: none;
+		}
+		li.selected:first-child{
+			border-top: 1px solid @main;
+			.border-radius(0);
+		}
+		li.selected:last-child{
+			border-bottom: 1px solid @main;
+			.border-radius(0);
+		}
 	}
 
 	&.recursive-list{
@@ -157,7 +324,7 @@ nav.side-tabs{
 
 			&:hover{
 				background: whitesmoke;
-				color: @light;
+				color: @main;
 
 				> i.folded-icon{
 					-webkit-filter: invert(0);
@@ -169,7 +336,7 @@ nav.side-tabs{
 
 				&:hover{
 					background: white;
-					color: @light;
+					color: @main;
 				}
 
 				ul{
@@ -185,18 +352,22 @@ nav.side-tabs{
 		> ul {
 			ul {
 				li:first-child{
-					//border-top: 4px solid @light;
+					//border-top: 4px solid @main;
 				}
 
 				li.selected{
 					border: none;
-					background: @light;
+					background: @main;
 					color: white;
 					box-shadow: 0px 0px 3px;
 				}
 			}
 		}
 	}
+}
+
+.side-tabs-content{
+	border-color: @main;
 }
 
 nav.left{
@@ -218,6 +389,84 @@ nav.left{
 
 nav.vertical{
 	padding-right: 15px;
+
+	h2{
+		font-size: 18px;
+		font-family: Arial;
+		font-weight: normal;
+		font-variant: small-caps;
+		color: #444;
+		margin-top: 20px;
+	}
+	ul{
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		li{
+			padding-left: 20px;
+			.border-box;
+			a{
+				color: #000;
+				.run-transition(background);
+				font-family: Lato;
+				font-weight: 300;
+				margin: 0;
+				border-right: 8px solid #ccc;
+				line-height: 25px;
+				i.arrow{
+					height: 20px;
+					display: block;
+					float: left;
+					color: #fff;
+					font-family: Arial;
+				}
+				i.arrow::before{
+					content: "▸";
+					font-size: 16px;
+					line-height: 13px;
+					color: @main;
+				}
+			}
+			a.selected{
+				color: #FFF;
+				border-right: 8px solid @main;
+				background: #444;
+				i.arrow::before{
+					margin-top: 4px;
+					color: #666;
+				}
+			}
+			a:hover{
+				color: @main;
+				background: #ccc;
+			}
+			a.opened{
+				i.arrow::before{
+					content: "▾";
+				}
+			}
+		}
+	}
+	ul:first-child > li, div ul:first-child > li, h2 + ul > li{
+		padding-left: 0;
+	}
+	a.classic-link{
+		display: block;
+		padding: 5px;
+		padding-left: 11px;
+		background: @main;
+		color: #fff;
+		font-family: Lato;
+		font-weight: 300;
+		width: 100%;
+		.border-box;
+		.run-transition(background);
+		border-radius: 3px;
+		border: 1px solid transparent;
+	}
+	a.classic-link:hover{
+		background: #444;
+	}
 }
 
 .container{
@@ -240,6 +489,17 @@ nav.vertical{
 	background: @blue;
 }
 
+.tooltip{
+	.content{
+		color: white;
+		background: @main;
+	}
+	.arrow{
+		color: @main;
+	}
+
+}
+
 ul.angle-list{
 	list-style-type: none;
 
@@ -249,6 +509,9 @@ ul.angle-list{
 		padding-left: 5px;
 		margin-bottom: 10px;
 		padding-top: 5px;
+		border-bottom: 1px solid @main;
+		border-left: 3px solid @main;
+		color: black;
 
 		button.close{
 			font-size: 14px;
@@ -277,6 +540,7 @@ ul.angle-list{
 div.leaf-menu-container{
 	margin-bottom: 15px;
 	padding-bottom: 10px;
+	border-bottom: 3px solid @main;
 	text-align: center;
 }
 div.leaf-menu{
@@ -291,12 +555,23 @@ div.leaf-menu{
 	-webkit-transition: background 200ms ease-in;
 	-o-transition: background 200ms ease-in;
 	transition: background 200ms ease-in;
+
+	&:hover{
+		background-color: @secondary;
+	}
+	&.selected{
+		background-color: @secondary;
+	}
 }
 
 div.angle-container{
 	font-size: 16px;
 	font-family: Lato;
 	padding: 10px;
+	background: #444;
+	color: white;
+	border-left: 5px solid @main;
+	border-bottom: 5px solid @main;
 }
 
 input[type=text].angle-container-header{
@@ -309,6 +584,9 @@ input[type=text].angle-container-header{
 	font-size: 24px;
 	height: 40px;
 	border-radius: 0;
+	color: #333;
+	border-left: 5px solid @main;
+	border-bottom: 2px solid @main;
 }
 
 div.angle-container-header{
@@ -321,6 +599,9 @@ div.angle-container-header{
 	font-size: 24px;
 	height: 40px;
 	border-radius: 0;
+	color: #333;
+	border-left: 5px solid @main;
+	border-bottom: 2px solid @main;
 }
 
 button.instantButtons{
@@ -329,6 +610,7 @@ button.instantButtons{
 	width: 33px;
 	height: 28px;
 	vertical-align: middle;
+	background-color: @accent;
 
 	&.select{
 		background-image: url(/public/img/glyphicons-halflings-white.png);
@@ -345,6 +627,8 @@ button.instantButtons{
 
 nav.search-container{
 	padding-right: 0;
+	border-right: 2px ridge @main;
+	border-bottom: 2px ridge @main;
 }
 
 nav.search-container-left{
@@ -355,6 +639,8 @@ nav.search-container-left{
 	padding: 0;
 	margin-bottom: 14;
 	margin-top: 14;
+	border-right: 2px ridge @main;
+	border-bottom: 2px ridge @main;
 }
 
 nav.search-container,
@@ -367,6 +653,7 @@ nav.search-container-left{
 		font-size: 16px;
 		width: 95%;
 		height: 40px;
+		border-bottom: 1px solid #444;
 	}
 
 	> ul{
@@ -380,10 +667,84 @@ div.search-container-view{
 	overflow-x: hidden;
 	padding: 10 0 0 4%;
 	height: 554px;
+	border-bottom: 2px ridge @main;
 }
 
 hr.separator{
 	margin: 15 0 15 0;
+	border: 1px solid black;
+}
+
+.accordions{
+	.accordion{
+		h2{
+			.vertical-gradient(#383838, #333);
+			border: 1px solid #555;
+			color: #666;
+			border-bottom: none;
+		}
+		h2:hover{
+			background: #444;
+			color: #fff;
+		}
+		.toggle{
+			background: #333;
+			.content{
+				color: #999;
+				h3{
+					color: @main;
+				}
+				input[type=text], textarea, select{
+					background: #2C2C2C;
+					border: none;
+				}
+			}
+			textarea{
+				background: #252525;
+			}
+		}
+	}
+
+	.accordion:last-child{
+		h2{
+			border-bottom: 1px solid #555;
+		}
+	}
+
+	.accordion.opened{
+		h2{
+			border: 1px solid #555;
+			color: @main;
+			border-bottom: none;
+			background: #333;
+
+		}
+		.toggle{
+			border: 1px solid #555;
+			border-top: none;
+		}
+	}
+}
+
+.progress-bar{
+	.filled{
+		background: @main;
+	}
+	.filled.small{
+		color: @main;
+	}
+}
+
+.navbar{
+	background: #444;
+}
+
+.toggle-buttons{
+	background: #444;
+}
+
+.icons-view .element.selected .container {
+	background: @main;
 }
 
 div.vertical_buttons_container{
@@ -440,7 +801,7 @@ button.directory-direct-link-button{
 .directory-userlist-right-container{
 	width: 67%;
 	float: left;
-	border-bottom: 2px ridge @light;
+	border-bottom: 2px ridge @main;
 	padding: 20 0 0 4%;
 	height: 544px;
 	overflow-y: scroll
@@ -615,12 +976,52 @@ nav.admin-bar:hover {
 
 }
 
+table tr:hover{
+	background: #ccc;
+}
+
 table{
 	width: 100%;
+	border-bottom: 2px solid @main;
 
-	thead th{
-		background: white;
-		font-size: 16px;
+	td{
+		padding: 5px;
+	}
+	tr, tr.underline{
+		background: none;
+		border-top: 1px dashed #ddd;
+		.run-transition(background);
+	}
+
+	thead{
+		tr{
+			font-family: Lato;
+			font-weight: 700;
+			font-size: 1.3em;
+			background: #444;
+
+			border-top: 5px solid;
+			border-bottom: 1px solid;
+			border-left: 1px solid;
+			border-right: 1px solid;
+
+			border-bottom-color: @main;
+			border-top-color: @main;
+
+			&:hover{
+				background: #444;
+			}
+
+			th{
+				padding: 5px;
+				background: white;
+				font-size: 16px;
+
+				a.selected{
+					color: @main;
+				}
+			}
+		}
 	}
 
 	tbody {
@@ -628,11 +1029,11 @@ table{
 		text-align: center;
 
 		tr {
-			border-left: 1px solid #fd4a98;
-  			border-right: 1px solid #fd4a98;
+			border-left: 1px solid @main;
+  			border-right: 1px solid @main;
 
 			&.separator{
-				border-bottom: 1px solid #fd4a98;
+				border-bottom: 1px solid @main;
 			}
 		}
 	}
@@ -644,7 +1045,6 @@ table{
 	}
 }
 
-
 table.comm-table{
 	table-layout: fixed;
 
@@ -653,26 +1053,28 @@ table.comm-table{
 		font-weight:bold;
 
 		tr{
-			border-bottom-width: 2px;
+			border-bottom: 2px solid @main;
 			border-top: none;
-			border-right: 2px solid @light;
+			border-right: 2px solid @main;
 			border-left: none;
 			color: white;
+			background: inherit;
 
 			th:first-child{
 				background-color: rgb(238, 238, 238);
 				border-top: none;
 			}
 			th:nth-child(2){
-				border-top: 3px solid @light;
-				border-left: 2px solid @light;
+				border-top: 3px solid @main;
+				border-left: 2px solid @main;
 			}
 			th:nth-child(3){
 				border-right: 1px solid #444;
-				border-top: 3px solid @light;
+				border-top: 3px solid @main;
 			}
 			th{
-				border-top: 3px solid @light;
+				background: #444;
+				border-top: 3px solid @main;
 			}
 		}
 	}
@@ -682,12 +1084,12 @@ table.comm-table{
 		font-family: Lato;
 
 		tr{
-			border-right: 2px solid @light;
-			border-left: 2px solid @light;
+			border-right: 2px solid @main;
+			border-left: 2px solid @main;
 
 			td:first-child{
 				background-color: white;
-				border-right: 2px solid @light;
+				border-right: 2px solid @main;
 			}
 			td:nth-child(2){
 				text-align: center;
@@ -730,8 +1132,8 @@ div.users-search{
 	> ul{
 		list-style: none;
 		padding: 0 20 0 0;
-		border-right: 2px ridge @magenta;
-		border-bottom: 2px ridge @magenta;
+		border-right: 2px ridge @main;
+		border-bottom: 2px ridge @main;
 		overflow-y: scroll;
 		height: 500px;
 	}
@@ -752,8 +1154,84 @@ input[type=submit].check-button, button.check-button{
 
 div.right-content{
 	height: 564px;
-	border-bottom: 2px ridge @magenta;
-	border-right: 2px ridge @magenta;
+	border-bottom: 2px ridge @main;
+	border-right: 2px ridge @main;
 	padding: 0px 20px;
 	overflow-y: scroll;
+}
+
+.datepicker{
+	padding: 0;
+	table{
+		thead{
+			tr:first-child {
+				th:hover {
+					background: #eeeeee;
+					color: #444;
+				}
+			}
+			tr{
+				background: #444;
+				th:hover{
+					background: #eeeeee;
+					color: #444;
+				}
+			}
+		}
+		tr{
+			background: #fff;
+			td {
+				span.active {
+					background: #444;
+				}
+				span:hover {
+					background: white;
+				}
+			}
+			td, td:first-child, th{
+				width: 22px;
+				font-size: 12px
+			}
+			td:hover{
+				background: inherit;
+			}
+		}
+	}
+}
+
+div.quota-container{
+	text-align: center;
+	margin-bottom: 10px;
+
+	> div {
+		width: 250px;
+		border: 1px solid black;
+		display: inline-block;
+
+		> div:first-child{
+			background-color: @main;
+			padding: 0;
+			margin: 0;
+			float: left;
+		}
+		> div:nth-child(2){
+			width: 90%;
+			display: inline-block;
+			background-color: #444;
+			padding: 0;
+			margin: 0;
+			float: left;
+		}
+
+		h4{
+			text-align: center;
+			margin: 0;
+		}
+	}
+}
+
+div.leaf-bordered-container{
+	margin-bottom: 10px;
+	border-bottom: 2px solid @main;
+	text-align: center;
 }

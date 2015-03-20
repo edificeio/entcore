@@ -128,11 +128,11 @@
     <!-- Quota -->
     <hr class="separator cell">
     <h3 style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
-    <div style="text-align: center; margin-bottom: 10">
-        <div style="width: 250px; border: 1px solid black; display: inline-block;">
-            <div ng-style="{ width: getStorageRatio(targetUser.storage, targetUser.quota)+'%' }" style="background-color: #ff0b75; padding: 0; margin: 0; float: left;">&nbsp;</div>
-            <div ng-style="{ width: (100 - getStorageRatio(targetUser.storage, targetUser.quota))+'%' }" style="width: 90%; display: inline-block; background-color: #444; padding: 0; margin: 0; float: left;">&nbsp;</div>
-            <h4 style="text-align:center; margin:0">
+    <div class="quota-container">
+        <div>
+            <div ng-style="{ width: getStorageRatio(targetUser.storage, targetUser.quota)+'%' }">&nbsp;</div>
+            <div ng-style="{ width: (100 - getStorageRatio(targetUser.storage, targetUser.quota))+'%' }">&nbsp;</div>
+            <h4>
                 [[formatStorage(targetUser.storage, targetUser.quota)]] / [[formatQuota(targetUser.quota)]] [[ lang.translate("directory.usedSpace") ]]
             </h4>
         </div>
