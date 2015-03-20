@@ -32,12 +32,37 @@
 		function ApplicationController($scope, template){
 			template.open('main', 'applications');
 			$scope.template = template;
+			$scope.lang = lang;
+			$scope.bookmarkedApps = model.me.bookmarkedApps;
 			http().get('/applications-list').done(function(app){
 				$scope.applications = _.filter(app.apps, function(app){
 					return app.display !== false;
 				});
 				$scope.$apply();
 			});
+
+			$scope.addBookmark = function($item){
+				if(_.findWhere(model.me.bookmarkedApps, { name: $item.name }) !== undefined){
+					return;
+				}
+				model.me.bookmarkedApps.push($item);
+				$scope.$apply();
+				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
+			};
+
+			$scope.removeBookmark = function($item){
+				if(_.findWhere(model.me.bookmarkedApps, { name: $item.name }) === undefined){
+					return;
+				}
+				var itemIndex = model.me.bookmarkedApps.indexOf($item);
+				model.me.bookmarkedApps.splice(itemIndex, 1);
+				$scope.$apply();
+				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
+			};
+
+			$scope.drag = function(item, event){
+				event.dataTransfer.setData('application/json', JSON.stringify(item));
+			}
 		}
 	</script>
 </head>

@@ -1618,7 +1618,13 @@ function bootstrap(func){
 
 		calendar.init();
 
-		func();
+		http().get('/userbook/preference/apps').done(function(data){
+			if(!data.preference){
+				data.preference = null;
+			}
+			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
+			func();
+		});
 	})
 	.e404(function(){
 		func();

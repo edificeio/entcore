@@ -1,11 +1,32 @@
 <h1><i class="apps"></i><i18n>portal.header.navigation.myapps</i18n></h1>
+<div class="row" dragdrop="addBookmark($item);">
+	<nav class="list icons-view bookmarked-apps">
+		<div ng-if="bookmarkedApps.length === 0">
+			<i18n>apps.drag</i18n>
+		</div>
+		<div class="list icons-view apps">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in bookmarkedApps | orderBy:'displayName' | filter:searchText">
+				<div class="container">
+					<a href="[[application.address]]" target="[[application.target]]">
+						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
+						<img skin-src="[[application.icon]]" ng-if="application.icon.indexOf('/') !== -1" />
+					</a>
+				</div>
+				<legend>
+					<a href="[[application.address]]" target="[[application.target]]" translate content="[[application.displayName]]"></a>
+				</legend>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</nav>
+</div>
 <div class="row">
 	<input type="search" ng-model="searchText" i18n-placeholder="search" class="twelve cell" autofocus />
 </div>
-<div class="row">
+<div class="row" dragdrop="removeBookmark($item)">
 	<nav class="list icons-view">
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>

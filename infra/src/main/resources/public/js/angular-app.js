@@ -3758,7 +3758,13 @@ module.directive('dragdrop', function($parse){
             element.on("drop", function(event){
 				event.originalEvent.preventDefault();
                 element.removeClass("droptarget");
-				var item = JSON.parse(event.originalEvent.dataTransfer.getData('application/json'));
+				var item;
+				try{
+					item = JSON.parse(event.originalEvent.dataTransfer.getData('application/json'));
+				}
+				catch(e){
+					item = JSON.parse(event.originalEvent.dataTransfer.getData('Text'));
+				}
 				dropFn(scope, { $originalEvent: event.originalEvent, $item: item });
             });
 
@@ -4281,6 +4287,7 @@ function Account($scope){
 	$scope.me = model.me;
 	$scope.rand = Math.random();
 	$scope.skin = skin;
+	$scope.lang = lang;
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person').done(function(result){
 			$scope.avatar = result.result['0'].photo;
