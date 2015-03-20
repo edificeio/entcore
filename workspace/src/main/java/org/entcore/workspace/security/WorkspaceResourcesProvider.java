@@ -83,6 +83,18 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 					}
 				});
 				break;
+			case "deleteComment":
+				authorizeCommentOwner(request, user, binding.getServiceMethod(), new Handler<Boolean>() {
+					public void handle(Boolean check) {
+						if(check){
+							authorizeDocument(request, user, serviceMethod.substring(0, WorkspaceService.class.getName().length() + 1) + "commentDocument", handler);
+						}
+						else {
+							authorizeDocument(request, user, binding.getServiceMethod(), handler);
+						}
+					}
+				});
+				break;
 			case "moveDocuments":
 			case "copyDocuments":
 				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
@@ -276,6 +288,18 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 
 		if(revisionId != null && !revisionId.trim().isEmpty()){
 			executeCountQuery(request, Workspace.REVISIONS_COLLECTION, query, 1, handler);
+		} else {
+			handler.handle(false);
+		}
+	}
+
+	private void authorizeCommentOwner(HttpServerRequest request, UserInfos user, String serviceMethod, final Handler<Boolean> handler) {
+		final String id = request.params().get("id");
+		final String commentId = request.params().get("commentId");
+		JsonObject query = new JsonObject("{ \"_id\": \"" + id + "\", \"comments.id\": \"" + commentId + "\", \"comments.author\": \"" + user.getUserId() + "\"  }");
+
+		if(commentId != null && !commentId.trim().isEmpty()){
+			executeCountQuery(request, DocumentDao.DOCUMENTS_COLLECTION, query, 1, handler);
 		} else {
 			handler.handle(false);
 		}

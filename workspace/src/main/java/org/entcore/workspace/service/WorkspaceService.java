@@ -1710,8 +1710,10 @@ public class WorkspaceService extends BaseController {
 						protected void handle() {
 							String comment = request.formAttributes().get("comment");
 							if (comment != null && !comment.trim().isEmpty()) {
+								final String id = UUID.randomUUID().toString();
 								String query = "{ \"$push\" : { \"comments\":" +
-										" {\"author\" : \"" + user.getUserId() + "\", " +
+										" { \"id\" : \"" + id + "\", " +
+										"\"author\" : \"" + user.getUserId() + "\", " +
 										"\"authorName\" : \"" + user.getUsername() +
 										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
 										"\", \"comment\": \"" + comment + "\" }}}";
@@ -1721,7 +1723,7 @@ public class WorkspaceService extends BaseController {
 									public void handle(JsonObject res) {
 										if ("ok".equals(res.getString("status"))) {
 											notifyComment(request, request.params().get("id"), user, false);
-											renderJson(request, res);
+											renderJson(request, res.putString("id", id));
 										} else {
 											renderError(request, res);
 										}
@@ -1752,8 +1754,10 @@ public class WorkspaceService extends BaseController {
 						protected void handle() {
 							String comment = request.formAttributes().get("comment");
 							if (comment != null && !comment.trim().isEmpty()) {
+								final String id = UUID.randomUUID().toString();
 								String query = "{ \"$push\" : { \"comments\":" +
-										" {\"author\" : \"" + user.getUserId() + "\", " +
+										" { \"id\" : \"" + id + "\", " +
+										"\"author\" : \"" + user.getUserId() + "\", " +
 										"\"authorName\" : \"" + user.getUsername() +
 										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
 										"\", \"comment\": \"" + comment + "\" }}}";
@@ -1763,7 +1767,7 @@ public class WorkspaceService extends BaseController {
 									public void handle(JsonObject res) {
 										if ("ok".equals(res.getString("status"))) {
 											notifyComment(request, request.params().get("id"), user, true);
-											renderJson(request, res);
+											renderJson(request, res.putString("id", id));
 										} else {
 											renderError(request, res);
 										}
@@ -1779,6 +1783,18 @@ public class WorkspaceService extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Delete("/document/:id/comment/:commentId")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void deleteComment(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		final String commentId = request.params().get("commentId");
+
+		QueryBuilder query = QueryBuilder.start("_id").is(id);
+		MongoUpdateBuilder queryUpdate = new MongoUpdateBuilder().pull("comments", new JsonObject().putString("id", commentId));
+
+		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), queryUpdate.build(), MongoDbResult.validActionResultHandler(defaultResponseHandler(request)));
 	}
 
 	@Put("/document/move/:id/:folder")

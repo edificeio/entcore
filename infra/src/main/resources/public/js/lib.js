@@ -1146,7 +1146,8 @@ Behaviours = (function(){
 
 					this.applicationsBehaviours[serviceName].resourceRights = function(element){
 						for(var behaviour in resourceRights){
-							if(model.me && (model.me.hasRight(element, resourceRights[behaviour]) || (element.owner && model.me.userId === element.owner.userId))){
+							if(model.me && (model.me.hasRight(element, resourceRights[behaviour]) ||
+								(element.owner && (model.me.userId === element.owner.userId || model.me.userId === element.owner)))){
 								element.myRights[behaviour] = resourceRights[behaviour];
 							}
 						}

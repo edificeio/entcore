@@ -81,6 +81,11 @@
 					<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in folder.comments">
 						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 						<em>[[longDate(comment.posted)]]</em>
+						<a 	class="right-magnet"
+					   		ng-click="removeComment(folder, comment)"
+							ng-if="comment.id && (comment.author === me.userId || folder.myRights.deleteComment)">
+							<i18n>workspace.delete</i18n>
+						</a>
 						<p>[[comment.comment]]</p>
 					</article>
 				</section>
@@ -125,6 +130,11 @@
 					<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in document.comments">
 						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
 						<em>[[longDate(comment.posted)]]</em>
+						<a class="right-magnet"
+					   	   ng-click="removeComment(document, comment)"
+						   ng-if="comment.id && (comment.author === me.userId || folder.myRights.deleteComment)">
+							<i18n>workspace.delete</i18n>
+						</a>
 						<p>[[comment.comment]]</p>
 					</article>
 				</section>

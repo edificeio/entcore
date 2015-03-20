@@ -355,11 +355,12 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.sendComment = function(){
 		ui.hideLightbox();
-		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + $scope.targetDocument.comment).done(function(){
+		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + $scope.targetDocument.comment).done(function(result){
 			if(!$scope.targetDocument.comments){
 				$scope.targetDocument.comments = [];
 			}
 			$scope.targetDocument.comments.push({
+				id: result.id,
 				author: $scope.me.userId,
 				authorName: $scope.me.username,
 				comment: $scope.targetDocument.comment,
@@ -373,11 +374,12 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.sendFolderComment = function(){
 		ui.hideLightbox();
-		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + $scope.targetFolder.comment).done(function(){
+		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + $scope.targetFolder.comment).done(function(result){
 			if(!$scope.targetFolder.comments){
 				$scope.targetFolder.comments = [];
 			}
 			$scope.targetFolder.comments.push({
+				id: result.id,
 				author: $scope.me.userId,
 				authorName: $scope.me.username,
 				comment: $scope.targetFolder.comment,
@@ -388,6 +390,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.$apply();
 		});
 	};
+
+	$scope.removeComment = function(item, comment){
+		http().delete('document/'+ item._id +'/comment/' + comment.id).done(function(){
+			item.comments.splice(item.comments.indexOf(comment), 1)
+			$scope.$apply()
+		})
+	}
 
 	var trees = [{
 		name: 'documents',

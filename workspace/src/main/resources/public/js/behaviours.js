@@ -60,6 +60,9 @@ Behaviours.register('workspace', {
 			},
 			manageRevisions: {
 				right: 'org-entcore-workspace-service-WorkspaceService|deleteRevision'
+			},
+			deleteComment: {
+				right: 'org-entcore-workspace-service-WorkspaceService|deleteComment'
 			}
 		},
 		workflow: {
