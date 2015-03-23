@@ -291,14 +291,17 @@ model.build = function(){
 				that.load(data)
 				//this.forEach(function(school){ school.sync() })
 				_.forEach(that.all, function(struct){
-					_.forEach(struct.parents, function(parent){
+					struct.parents = _.filter(struct.parents, function(parent){
 						var parentMatch = _.findWhere(that.all, {id: parent.id})
 						if(parentMatch){
 							parentMatch.children = parentMatch.children ? parentMatch.children : []
 							parentMatch.children.push(struct)
+							return true
 						} else
-							delete struct.parents
+							return false
 					})
+					if(struct.parents.length === 0)
+						delete struct.parents
 				})
 			}.bind(this));
 		}

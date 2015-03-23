@@ -111,15 +111,18 @@ model.build = function(){
             http().get('/directory/structure/admin/list').done(function(data){
                 that.load(data)
                 _.forEach(that.all, function(struct){
-                    _.forEach(struct.parents, function(parent){
-                        var parentMatch = _.findWhere(that.all, {id: parent.id})
-                        if(parentMatch){
-                            parentMatch.children = parentMatch.children ? parentMatch.children : []
-                            parentMatch.children.push(struct)
-                        } else
-                            delete struct.parents
-                    })
-                })
+					struct.parents = _.filter(struct.parents, function(parent){
+						var parentMatch = _.findWhere(that.all, {id: parent.id})
+						if(parentMatch){
+							parentMatch.children = parentMatch.children ? parentMatch.children : []
+							parentMatch.children.push(struct)
+							return true
+						} else
+							return false
+					})
+                    if(struct.parents.length === 0)
+						delete struct.parents
+				})
                 if(model.scope)
                     model.scope.$apply()
             })
