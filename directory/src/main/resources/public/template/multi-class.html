@@ -1,19 +1,29 @@
+<script type="text/ng-template" id="school-tree">
+	<nav class="vertical">
+		<div class="row">
+			<ul>
+				<li ng-if="schools.length() > search.maxSchoolsLength">
+					<input type="text" ng-model="search.schoolField" class="row" />
+				</li>
+				<li ng-repeat="school in schools.match(search.schoolField) | filter: filterTopStructures | limitTo:search.maxSchoolsLength">
+					<a ng-click="showSchool(school)" ng-class="{ selected: school === currentSchool }">[[school.name]]</a>
+					<ul ng-include="'school-tree-sub-levels'"></ul>
+				</li>
+			</ul>
+		</div>
+		<a class="static-link" ng-click="increaseSchoolsSize()" ng-if="schools.length() > search.maxSchoolsLength">Voir la suite</a>
+	</nav>
+</script>
+<script type="text/ng-template" id="school-tree-sub-levels">
+	<li ng-repeat="school in levelStructures = school.children">
+		<a ng-click="showSchool(school)" ng-class="{ selected: school === currentSchool }">[[school.name]]</a>
+		<ul ng-include="'school-tree-sub-levels'"></ul>
+	</li>
+</script>
+
 <div class="row">
 	<section class="four cell">
-		<nav class="vertical">
-
-			<div class="row">
-				<ul>
-					<li ng-if="schools.length() > search.maxSchoolsLength">
-						<input type="text" ng-model="search.schoolField" class="row" />
-					</li>
-					<li ng-repeat="school in schools.match(search.schoolField) | limitTo:search.maxSchoolsLength">
-						<a ng-click="showSchool(school)" ng-class="{ selected: school === currentSchool }">[[school.name]]</a>
-					</li>
-				</ul>
-			</div>
-			<a class="static-link" ng-click="increaseSchoolsSize()" ng-if="schools.length() > search.maxSchoolsLength">Voir la suite</a>
-		</nav>
+		<nav class="vertical" ng-include="'school-tree'"></nav>
 	</section>
 
 

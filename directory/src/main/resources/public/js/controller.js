@@ -193,9 +193,12 @@ function DirectoryController($scope, route, date, template){
 		});
 	};
 
-
 	$scope.colorFromType = function(type){
 		return colorsMatch[type.toLowerCase()];
+	};
+
+	$scope.filterTopStructures = function(structure){
+		return !structure.parents
 	};
 }
 

@@ -261,10 +261,7 @@ function School(){
 
 	this.sync = function(){
 		http().get('/userbook/structure/' + this.id).done(function(d){
-			this.classrooms.load(_.filter(d.classes, function(classroom){
-					return model.me.classes.indexOf(classroom.id) !== -1 || model.me.classes.length === 0;
-				})
-			);
+			this.classrooms.load(d.classes);
 			this.users.load(d.users);
 			this.classrooms.trigger('sync');
 			this.trigger('sync');
@@ -276,8 +273,22 @@ function School(){
 function Network(){
 	this.collection(School, {
 		sync: function(){
+			var that = this
 			http().get('/userbook/structures').done(function(d){
 				this.load(d);
+				_.forEach(that.all, function(struct){
+					struct.parents = _.filter(struct.parents, function(parent){
+						var parentMatch = _.findWhere(that.all, {id: parent.id})
+						if(parentMatch){
+							parentMatch.children = parentMatch.children ? parentMatch.children : []
+							parentMatch.children.push(struct)
+							return true
+						} else
+							return false
+					})
+					if(struct.parents.length === 0)
+						delete struct.parents
+				})
 				this.trigger('sync');
 			}.bind(this))
 		},
