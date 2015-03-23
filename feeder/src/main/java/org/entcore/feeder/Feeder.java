@@ -38,12 +38,15 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public static final String USER_REPOSITORY = "user.repository";
 	public static final String FEEDER_ADDRESS = "entcore.feeder";
-	private Feed feed;
+	private String defaultFeed;
+	private final Map<String, Feed> feeds = new HashMap<>();
 	private ManualFeeder manual;
 	private Neo4j neo4j;
 	private Exporter exporter;
@@ -91,17 +94,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				.getArray("duplicateSources", new JsonArray().add(ManualFeeder.SOURCE)));
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
-		switch (container.config().getString("feeder", "")) {
-			case "AAF" :
-				feed = new AafFeeder(vertx, container.config().getString("import-files"),
-						container.config().getBoolean("aafNeo4jPlugin", false));
-				break;
-			case "BE1D" :
-				feed = new Be1dFeeder(vertx, container.config().getString("import-files"),
-						container.config().getString("uai-separator","_"));
-				break;
-			default: throw new IllegalArgumentException("Invalid importer");
-		}
+		defaultFeed = container.config().getString("feeder", "AAF");
+		feeds.put("AAF", new AafFeeder(vertx, container.config().getString("import-files"),
+				container.config().getBoolean("aafNeo4jPlugin", false)));
+		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files"),
+				container.config().getString("uai-separator","_")));
 		switch (container.config().getString("exporter", "")) {
 			case "ELIOT" :
 				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
@@ -248,6 +245,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private void launchImport(final Message<JsonObject> message) {
 		final Importer importer = Importer.getInstance();
+		final Feed feed = feeds.get(message.body().getString("feeder", defaultFeed));
+		if (feed == null) {
+			sendError(message, "invalid.feeder");
+			return;
+		}
 		if (importer.isReady()) { // TODO else manage queue
 			final long start = System.currentTimeMillis();
 			importer.init(neo4j, feed.getSource(), new Handler<Message<JsonObject>>() {
