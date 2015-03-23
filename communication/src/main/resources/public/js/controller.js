@@ -15,6 +15,41 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 function CommunicationAdminController($scope, $http){
+
+	$scope.themes = [
+		{
+			name: "pink",
+			path: "default"
+		},
+		{
+			name: "orange",
+			path: "orange"
+		},
+		{
+			name: "blue",
+			path: "blue"
+		},
+		{
+			name: "purple",
+			path: "purple"
+		},
+		{
+			name: "red",
+			path: "red"
+		},
+		{
+			name: "green",
+			path: "green"
+		}
+	]
+	$scope.setTheme = function(theme){
+		ui.setStyle('/public/admin/'+theme.path+'/')
+		http().putJson('/userbook/preference/admin', {
+			name: theme.name,
+			path: theme.path
+		})
+	}
+
 	$scope.lang = lang
 	$scope.structures = model.structures
 	$http.get('rules').success(function(rules){ $scope.defaultRules = _.map(rules, function(val, key){ val.name = key; return val }) })

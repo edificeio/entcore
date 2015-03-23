@@ -1238,7 +1238,17 @@ module.directive('adminPortal', function($compile){
 		templateUrl: '/public/admin/portal.html',
 		compile: function(element, attributes, transclude){
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
-			ui.setStyle(skin.theme);
+			http().get('/userbook/preference/admin').done(function(data){
+				var theme = data.preference ? JSON.parse(data.preference) : null
+
+				if(!theme || !theme.path)
+					ui.setStyle(skin.theme)
+				else{
+					ui.setStyle('/public/admin/'+theme.path+'/')
+				}
+			}).error(function(error){
+				ui.setStyle(skin.theme)
+			})
 		}
 	}
 });
@@ -1247,7 +1257,7 @@ module.directive('portalStyles', function($compile){
 	return {
 		restrict: 'E',
 		compile: function(element, attributes){
-			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback)
+			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
 		}
 	}

@@ -16,6 +16,40 @@ routes.define(function($routeProvider){
 
 function AdminDirectoryController($scope, $rootScope, $http, $route, template, model, date, route){
 
+	$scope.themes = [
+		{
+			name: "pink",
+			path: "default"
+		},
+		{
+			name: "orange",
+			path: "orange"
+		},
+		{
+			name: "blue",
+			path: "blue"
+		},
+		{
+			name: "purple",
+			path: "purple"
+		},
+		{
+			name: "red",
+			path: "red"
+		},
+		{
+			name: "green",
+			path: "green"
+		}
+	]
+	$scope.setTheme = function(theme){
+		ui.setStyle('/public/admin/'+theme.path+'/')
+		http().putJson('/userbook/preference/admin', {
+			name: theme.name,
+			path: theme.path
+		})
+	}
+
     route({
         viewStructureUser: function(params){
             var userId = params.userId

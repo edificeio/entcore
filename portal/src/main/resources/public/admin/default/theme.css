@@ -51,7 +51,7 @@
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 8.333333333333334%;
+  padding-bottom: 8.33333333%;
 }
 .height-one .right-magnet.cell.absolute {
   right: 0 !important;
@@ -85,14 +85,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-one {
-    left: 8.333333333333334%;
+    left: 8.33333333%;
   }
 }
 .height-two {
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 16.666666666666668%;
+  padding-bottom: 16.66666667%;
 }
 .height-two .right-magnet.cell.absolute {
   right: 0 !important;
@@ -108,7 +108,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-two {
-    left: 16.666666666666668%;
+    left: 16.66666667%;
   }
 }
 .height-three {
@@ -138,7 +138,7 @@
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 33.333333333333336%;
+  padding-bottom: 33.33333333%;
 }
 .height-four .right-magnet.cell.absolute {
   right: 0 !important;
@@ -154,14 +154,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-four {
-    left: 33.333333333333336%;
+    left: 33.33333333%;
   }
 }
 .height-five {
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 41.66666666666667%;
+  padding-bottom: 41.66666667%;
 }
 .height-five .right-magnet.cell.absolute {
   right: 0 !important;
@@ -177,7 +177,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-five {
-    left: 41.66666666666667%;
+    left: 41.66666667%;
   }
 }
 .height-six {
@@ -224,7 +224,7 @@
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 58.333333333333336%;
+  padding-bottom: 58.33333333%;
 }
 .height-seven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -240,14 +240,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-seven {
-    left: 58.333333333333336%;
+    left: 58.33333333%;
   }
 }
 .height-eight {
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 66.66666666666667%;
+  padding-bottom: 66.66666667%;
 }
 .height-eight .right-magnet.cell.absolute {
   right: 0 !important;
@@ -263,7 +263,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eight {
-    left: 66.66666666666667%;
+    left: 66.66666667%;
   }
 }
 .height-nine {
@@ -293,7 +293,7 @@
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 83.33333333333334%;
+  padding-bottom: 83.33333333%;
 }
 .height-ten .right-magnet.cell.absolute {
   right: 0 !important;
@@ -309,14 +309,14 @@
 }
 @media screen and (min-width: 720px) {
   .left-ten {
-    left: 83.33333333333334%;
+    left: 83.33333333%;
   }
 }
 .height-eleven {
   box-sizing: content-box;
   position: relative;
   height: 0px;
-  padding-bottom: 91.66666666666667%;
+  padding-bottom: 91.66666667%;
 }
 .height-eleven .right-magnet.cell.absolute {
   right: 0 !important;
@@ -332,7 +332,7 @@
 }
 @media screen and (min-width: 720px) {
   .left-eleven {
-    left: 91.66666666666667%;
+    left: 91.66666667%;
   }
 }
 .height-twelve {
@@ -369,37 +369,37 @@
   left: 0;
 }
 .one {
-  width: 8.333333333333334%;
+  width: 8.33333333%;
 }
 .two {
-  width: 16.666666666666668%;
+  width: 16.66666667%;
 }
 .three {
   width: 25%;
 }
 .four {
-  width: 33.333333333333336%;
+  width: 33.33333333%;
 }
 .five {
-  width: 41.66666666666667%;
+  width: 41.66666667%;
 }
 .six {
   width: 50%;
 }
 .seven {
-  width: 58.333333333333336%;
+  width: 58.33333333%;
 }
 .eight {
-  width: 66.66666666666667%;
+  width: 66.66666667%;
 }
 .nine {
   width: 75%;
 }
 .ten {
-  width: 83.33333333333334%;
+  width: 83.33333333%;
 }
 .eleven {
-  width: 91.66666666666667%;
+  width: 91.66666667%;
 }
 .twelve {
   width: 100%;
@@ -1138,7 +1138,7 @@ p i {
 }
 .birthday nav.vertical ul li a .user {
   display: inline-block;
-  width: 41.66666666666667%;
+  width: 41.66666667%;
   height: 100%;
   line-height: 100%;
   vertical-align: middle;
@@ -1303,7 +1303,7 @@ p i {
 .dominos .item .domino .top {
   box-sizing: content-box;
   height: 0px;
-  padding-bottom: 91.66666666666667%;
+  padding-bottom: 91.66666667%;
   width: 100%;
   position: relative;
   clear: both;
@@ -1898,7 +1898,6 @@ a {
 }
 .toggle-panel .toggle {
   width: 300px;
-  padding: 20px;
 }
 .toggle-buttons-spacer {
   margin-bottom: 50px;
@@ -4271,53 +4270,6 @@ portal .page-markers {
     display: none;
   }
 }
-.bookmarked-apps {
-  min-height: 48px;
-  padding: 5px;
-  margin-bottom: 30px;
-  border: 2px dashed #ddd;
-  font-size: 24px;
-  text-align: center;
-  line-height: 30px;
-  color: #ccc;
-  font-weight: bold;
-}
-.bookmarked-apps .icons-view.apps {
-  margin-top: 0;
-}
-popover {
-  position: relative;
-  display: inline-block;
-}
-popover popover-content::before {
-  content: "\25b2";
-  display: block;
-  position: absolute;
-  top: -17px;
-  font-size: 36px;
-  left: 50%;
-  margin-left: -14px;
-  color: #fff;
-}
-popover popover-content {
-  position: absolute;
-  min-height: 100px;
-  background: #eee;
-  width: 100px;
-  top: 100%;
-  opacity: 1;
-  -o-transition: opacity 250ms ease;
-  -moz-transition: opacity 250ms ease;
-  -webkit-transition: opacity 250ms ease;
-  transition: opacity 250ms ease;
-  left: -50px;
-  margin-left: 50%;
-  text-align: center;
-}
-popover popover-content.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
 .panel {
   width: 415px;
   margin-left: auto;
@@ -4413,7 +4365,7 @@ popover popover-content.hidden {
 }
 .schedule .days .day {
   float: left;
-  width: 14.285714285714286%;
+  width: 14.28571429%;
   position: relative;
 }
 .schedule .days .day legend {
@@ -4509,16 +4461,16 @@ popover popover-content.hidden {
   z-index: 510;
 }
 .schedule .schedule-items .schedule-item.one {
-  width: 8.333333333333334%;
+  width: 8.33333333%;
 }
 .schedule .schedule-items .schedule-item.two {
-  width: 16.666666666666668%;
+  width: 16.66666667%;
 }
 .schedule .schedule-items .schedule-item.three {
   width: 25%;
 }
 .schedule .schedule-items .schedule-item.four {
-  width: 33.333333333333336%;
+  width: 33.33333333%;
 }
 .schedule .schedule-items .schedule-item.six {
   width: 50%;
@@ -5492,6 +5444,30 @@ html.app body {
   background: #fff;
   min-height: 100%;
   height: auto;
+}
+div.admin-theme-picker {
+  width: 31px;
+  height: 31px !important;
+  margin-top: 6px;
+  margin-left: 6px;
+}
+div.admin-theme-picker.pink {
+  background: #fd4a98;
+}
+div.admin-theme-picker.orange {
+  background: #ff7f5f;
+}
+div.admin-theme-picker.blue {
+  background: #1776b2;
+}
+div.admin-theme-picker.purple {
+  background: #8a7bff;
+}
+div.admin-theme-picker.red {
+  background: #ff483e;
+}
+div.admin-theme-picker.green {
+  background: #319171;
 }
 * {
   font-weight: 300;

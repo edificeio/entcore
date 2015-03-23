@@ -2,11 +2,39 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 
 @nav-width: 300px;
-@main: #fd4a98;
-@secondary: pink;
-@accent: @main;
 
-@blue: #628CD6;
+@pink-theme: #fd4a98;
+@orange-theme: #ff7f5f;
+@blue-theme: #1776B2;
+@purple-theme: #8A7BFF;
+@red-theme: #FF483E;
+@green-theme: #319171;
+
+div.admin-theme-picker{
+	width: 31px;
+	height: 31px !important;
+	margin-top: 6px;
+	margin-left: 6px;
+
+	&.pink{
+		background: @pink-theme;
+	}
+	&.orange{
+		background: @orange-theme;
+	}
+	&.blue{
+		background: @blue-theme;
+	}
+	&.purple{
+		background: @purple-theme;
+	}
+	&.red{
+		background: @red-theme;
+	}
+	&.green{
+		background: @green-theme;
+	}
+}
 
 *{
 	font-weight: 300;

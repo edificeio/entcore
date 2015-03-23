@@ -21,6 +21,9 @@
 <header class="navbar">
 	<h1 translate content="admin.header">admin.header</h1>
 	<a class="right-magnet cell" href="/auth/logout"><i class="disconnect"></i></a>
+	<div ng-repeat="theme in themes"
+		class="right-magnet cell admin-theme-picker [[theme.name]]"
+		ng-click="setTheme(theme)"></div>
 </header>
 <nav ng-controller="Admin" class="vertical admin-bar">
 	<!--button ng-click="scrollUp()">Remonter</button-->
