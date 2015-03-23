@@ -160,7 +160,7 @@ public class UserBookController extends BaseController {
 								"OPTIONAL MATCH u-[r2:SHOW_PHONE]->() " +
 								"OPTIONAL MATCH u-[r3:SHOW_MAIL]->() " +
 								"OPTIONAL MATCH u-[r4:SHOW_HEALTH]->u " +
-								"WITH DISTINCT h, c, n, v, u, n2, n.address as address, " +
+								"WITH DISTINCT h, s, c, n, v, u, n2, p, n.address as address, " +
 								"n.email as email, u.health as health, " +
 								"n.homePhone as tel, n.birthDate as birthdate, " +
 								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4)]) as r ";
@@ -172,29 +172,35 @@ public class UserBookController extends BaseController {
 								"OPTIONAL MATCH u-[:SHOW_PHONE]->p " +
 								"OPTIONAL MATCH u-[:SHOW_BIRTHDATE]->b " +
 								"OPTIONAL MATCH u-[:SHOW_HEALTH]->s " +
-								"WITH h, c, n, v, u, n2, a.address as address, " +
+								"WITH h, s, c, n, v, u, n2, p, a.address as address, " +
 								"e.email as email, s.health as health, " +
 								"p.homePhone as tel, b.birthDate as birthdate, " +
 								"COLLECT([]) as r ";
 					}
 					String query = "MATCH (n:User) "
 								+ "WHERE n.id = {userId} "
-								+ "OPTIONAL MATCH n-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Structure)"
+								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) "
+								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) "
+								+ "OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(s) "
 								+ "OPTIONAL MATCH (n)-[:USERBOOK]->(u) "
 								+ "OPTIONAL MATCH (u)-[v:" + hobbyVisibility + "]->(h1) "
 								+ "OPTIONAL MATCH (n)-[:RELATED]-(n2) "
-								+ "WITH DISTINCT h1 as h, c, n, v, u, n2 "
+								+ "WITH DISTINCT h1 as h, s, collect(distinct c.name) as c, n, v, u, n2, p "
 								+ personnalInfos
+								+ "WITH h, collect(distinct {name: s.name, classes: c}) as schools, collect(s.name) as schoolNames, "
+								+ "n, v, u, n2, address, email, health, tel, birthdate, r,  COLLECT(p.name) as type "
 								+ "RETURN DISTINCT "
 									+ "n.id as id,"
 									+ "n.login as login, "
 									+ "n.displayName as displayName,"
+									+ "type,"
 									+ "address,"
 									+ "email, "
 									+ "tel, "
 									+ "birthdate, "
 									+ "HEAD(r) as visibleInfos, "
-									+ "c.name as schoolName, "
+									+ "schools, "
+									+ "schoolNames[0] as schoolName, "
 									+ "n2.displayName as relatedName, "
 									+ "n2.id as relatedId,"
 									+ "n2.type as relatedType,"
