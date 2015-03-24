@@ -32,13 +32,23 @@
             <hr class="separator cell">
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[classSelected.id]]</div>
             <div class="twelve cell">
-                <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+                <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
                 <input type="text" ng-model="classSelected.name"/>
             </div>
             <a href="[['/directory/admin-console#/classUsers/'+structure.id+'/'+classSelected.id]]" target="_blank">[[lang.translate("directory.classUsers")]]</a>
+            <!-- Export -->
             <hr class="separator cell">
-            <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportClass")]]</strong>
-            <button class="two cell" ng-click="openExport('classId', classSelected.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+            <strong class="four cell" style="padding-top: 3px;">[[lang.translate("directory.exportClass")]]</strong>
+            <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+                <option value="">[[lang.translate("directory.allProfiles")]]</option>
+                <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+                <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+                <option value="Student">[[lang.translate("directory.Student")]]</option>
+                <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+            </select>
+            <button class="two cell" ng-click="exportItem(classSelected, 'classId')" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+            <!-- Quota -->
             <hr class="separator cell">
             <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
             <div class="twelve cell">

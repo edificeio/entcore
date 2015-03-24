@@ -13,23 +13,41 @@
 <div class="row">
     <h3><i18n>directory.admin.exportTitle</i18n></h3>
     <label class="five cell"><span>[[lang.translate("directory.launchUserExport")]]</span></label>
-    <button class="three cell" ng-click="openExport(export_mode, export_mode === 'classId' ? exportData.exportClass.id : exportData.exportStructure.id)">[[lang.translate("directory.export")]]</button>
+    <button class="three cell" ng-click="openExport()">[[lang.translate("directory.export")]]</button>
 </div>
 <div class="row">
     <h1 class="three" style="height: 30px;font-size: 18px;margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
-    <select ng-model="export_mode" class="three cell directory-top-padded" style="margin-left: 0">
+    <select ng-model="exportData.export_mode" class="three cell padding-top-5" style="margin-left: 0; margin-right: 10px;">
         <option value="all">[[lang.translate("directory.all")]]</option>
         <option value="structureId">[[lang.translate("directory.structure")]]</option>
         <option value="classId">[[lang.translate("directory.classe")]]</option>
     </select>
-    <div class="row" ng-if="export_mode !== 'all'">
-        <select class="four cell" ng-model="exportData.exportStructure" ng-change="refreshClasses(exportData.exportStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
-        <select ng-if="export_mode === 'classId'" ng-model="exportData.exportClass" class="four cell" ng-options="class as class.name for class in exportData.exportStructure.classes.all | orderBy: 'name'"></select>
+    <select class="three cell" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+        <option value="">[[lang.translate("directory.allProfiles")]]</option>
+        <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+        <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+        <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+        <option value="Student">[[lang.translate("directory.Student")]]</option>
+        <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+    </select>
+    <div class="row" ng-if="exportData.export_mode !== 'all'">
+        <select class="four cell margin-top-5"
+                ng-model="exportData.structure"
+                ng-change="exportData.structureId = exportData.structure.id; refreshClasses(exportData.structure)"
+                ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+        <select class="four cell margin-top-5"
+                ng-if="exportData.export_mode === 'classId'"
+                ng-model="exportData.classId"
+                ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
     </div>
 </div>
 <hr class="separator cell" ng-if="isCentralAdmin()">
 <div class="row" ng-if="isCentralAdmin()">
     <h3><i18n>directory.admin.markDuplicates</i18n></h3>
     <label class="five cell"><span>[[lang.translate("directory.admin.markDuplicates")]]</span></label>
-    <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/duplicates/mark', function(){ notify.info('directory.notify.markDuplicates'); })">[[lang.translate("mark")]]</button>
+    <button class="three cell"
+            style="margin-bottom: 5px"
+            ng-click="markDuplicates()">
+        [[lang.translate("mark")]]
+    </button>
 </div>

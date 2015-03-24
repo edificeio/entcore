@@ -6369,8 +6369,14 @@ label.legend-label.marged {
 .user-style.not-active::after {
   content: " *";
 }
-.directory-top-padded {
+.padding-top-5 {
   padding-top: 5px;
+}
+.margin-top-5 {
+  margin-top: 5px;
+}
+.row-item {
+  margin-right: 10px;
 }
 /* Change accordion size & some styles for admin panels */
 .accordions .large-dark-input {

@@ -28,17 +28,17 @@
 <div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]"><strong class="four cell">[[lang.translate("directory.functions")]]</strong> [[formatUserFunctions(targetUser)]]</div>
 <hr class="separator cell"/>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
     <input type="text" ng-model="targetUser.firstName"/>
 </div>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
     <input type="text" ng-model="targetUser.lastName"/>
 </div>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userBirth")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
     <div ng-if="!targetUser.birthDate">
-        <div class="directory-top-padded" style="display: inline-block; width: 30%"> [[lang.translate("directory.notFilled")]]</div>
+        <div class="padding-top-5" style="display: inline-block; width: 30%"> [[lang.translate("directory.notFilled")]]</div>
         <button ng-click="initUserBirth(targetUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
     </div>
     <div ng-if="targetUser.birthDate">
@@ -47,15 +47,15 @@
     </div>
 </div>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userAddress")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userAddress")]]</strong>
     <input type="text" ng-model="targetUser.address"/>
 </div>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userCity")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userCity")]]</strong>
     <input type="text" ng-model="targetUser.city"/>
 </div>
 <div class="twelve cell">
-    <strong class="four cell directory-top-padded">[[lang.translate("directory.userZipCode")]]</strong>
+    <strong class="four cell padding-top-5">[[lang.translate("directory.userZipCode")]]</strong>
     <input type="text" ng-model="targetUser.zipCode"/>
 </div>
 <hr style="border: 1px solid black; margin: 15 0 15 0;" ng-if="!targetUser.code">
@@ -138,7 +138,7 @@
         </div>
     </div>
     <div class="twelve cell">
-        <strong class="three cell directory-top-padded">[[lang.translate("directory.quotaShort")]]</strong>
+        <strong class="three cell padding-top-5">[[lang.translate("directory.quotaShort")]]</strong>
         <form name="quotaForm">
             <input type="number" name="size" ng-model="$root.quotaSize" ng-change="targetUser.quota = $root.quotaSize * quotaUnit" style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
             <select class="three cell" ng-model="$root.quotaUnit" ng-change="$root.quotaSize = targetUser.quota / $root.quotaUnit" style="margin-left: 10px; margin-right: 10px">

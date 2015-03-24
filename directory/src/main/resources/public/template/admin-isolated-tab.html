@@ -36,17 +36,17 @@
     <div class="twelve cell" ng-if="isolatedUser.deleteDate"><strong class="four cell">[[lang.translate("directory.predeletionDate")]]</strong> [[formatLongDate(isolatedUser.deleteDate)]]</div>
     <hr class="separator cell"/>
     <div class="twelve cell">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
         <input type="text" ng-model="isolatedUser.firstName"/>
     </div>
     <div class="twelve cell">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
         <input type="text" ng-model="isolatedUser.lastName"/>
     </div>
     <div class="twelve cell">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userBirth")]]</strong>
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!isolatedUser.birthDate">
-            <div class="directory-top-padded" style="display: inline-block;" class="three"> [[lang.translate("directory.notFilled")]]</div>
+            <div class="padding-top-5" style="display: inline-block;" class="three"> [[lang.translate("directory.notFilled")]]</div>
             <button ng-click="initUserBirth(isolatedUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="isolatedUser.birthDate">
@@ -54,16 +54,16 @@
             <button ng-click="isolatedUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
-    <div class="twelve cell directory-top-padded">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userAddress")]]</strong>
+    <div class="twelve cell padding-top-5">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userAddress")]]</strong>
         <input type="text" ng-model="isolatedUser.address"/>
     </div>
-    <div class="twelve cell directory-top-padded">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userCity")]]</strong>
+    <div class="twelve cell padding-top-5">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userCity")]]</strong>
         <input type="text" ng-model="isolatedUser.city"/>
     </div>
-    <div class="twelve cell directory-top-padded">
-        <strong class="four cell directory-top-padded">[[lang.translate("directory.userZipCode")]]</strong>
+    <div class="twelve cell padding-top-5">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userZipCode")]]</strong>
         <input type="text" ng-model="isolatedUser.zipCode"/>
     </div>
     <hr class="separator cell">

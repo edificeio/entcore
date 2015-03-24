@@ -150,15 +150,15 @@
             </div>
             <hr class="separator cell">
             <div class="twelve cell">
-                <strong class="four cell directory-top-padded">[[lang.translate("directory.userFirstName")]]</strong>
-                <input  class="four cell directory-top-padded" type="text" ng-model="createdUser.firstName"/>
+                <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
+                <input  class="four cell padding-top-5" type="text" ng-model="createdUser.firstName"/>
             </div>
             <div class="twelve cell">
-                <strong class="four cell directory-top-padded">[[lang.translate("directory.userLastName")]]</strong>
-                <input  class="four cell directory-top-padded" type="text" ng-model="createdUser.lastName"/>
+                <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
+                <input  class="four cell padding-top-5" type="text" ng-model="createdUser.lastName"/>
             </div>
             <div class="twelve cell">
-                <strong class="four cell directory-top-padded">[[lang.translate("directory.userType")]]</strong>
+                <strong class="four cell padding-top-5">[[lang.translate("directory.userType")]]</strong>
                 <select class="four cell" ng-model="createdUser.type" style="margin-right: 10px;">
                     <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
                     <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
@@ -179,7 +179,7 @@
                 </div>
             </div>
             <div class="twelve cell">
-                <strong class="four cell directory-top-padded">[[lang.translate("directory.classe")]]</strong>
+                <strong class="four cell padding-top-5">[[lang.translate("directory.classe")]]</strong>
                 <select class="four cell"
                         ng-model="createdUser.classId"
                         ng-options="classe.id as classe.name for classe in structure.classes.all | orderBy: 'name'"

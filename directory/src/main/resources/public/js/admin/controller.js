@@ -135,8 +135,6 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.template = template
 	template.open('userDetails', 'admin-user-details')
-    $rootScope.export_id = ""
-    $scope.export_mode = "all"
     $scope.structures = model.structures
     $scope.lang = lang
 
@@ -409,13 +407,37 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
     ////////
 
-	$scope.exportData = {}
-    //Starts the download in a new tab.
-    $scope.openExport = function(export_mode, export_id){
+	$scope.deleteIfEmpty = function(object, property){
+		if(typeof object[property] !== 'undefined' && object[property].length < 1)
+			delete object[property]
+	}
+
+	$scope.exportData = {
+		export_mode: "all",
+		classId : "",
+		structureId : "",
+		params: {}
+	}
+    $scope.export_mode = "all"
+
+    $scope.openExport = function(){
+		var exportData = $scope.exportData
         var where = 'export/users?format=csv'
-        where += export_mode !== 'all' ? "&"+export_mode+"="+export_id : ""
+		if(exportData.export_mode !== 'all'){
+			where += "&" + exportData.export_mode + "=" + exportData[exportData.export_mode]
+		}
+		where += "&" + $.param(exportData.params)
+
         window.open(where, '_blank')
     }
+
+	$scope.exportItem = function(item, mode, params){
+		$scope.exportData.export_mode = mode
+		$scope.exportData[mode] = item.id
+		if(params)
+			$scope.exportData.params = params
+		$scope.openExport()
+	}
 
     //Refresh the isolated users list.
     $scope.isolatedUsers = model.isolatedUsers
@@ -651,6 +673,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.refreshDuplicates = function(){
 		$scope.structure.duplicates.sync($scope.refreshScope)
 		$scope.reloadStructure($scope.structure)()
+	}
+
+	$scope.markDuplicates = function(){
+		http().post('/directory/duplicates/mark').done(function(){
+			notify.info('directory.notify.markDuplicates')
+		})
 	}
 
 	$scope.mapDuplicateUser = function(duplicateUser){

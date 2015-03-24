@@ -31,20 +31,30 @@
         <hr class="separator cell">
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[structure.id]]</div>
         <div class="twelve cell">
-            <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+            <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
             <input class="eight cell" type="text" ng-model="structure.name"/>
         </div>
         <div class="twelve cell" ng-if="structure.parents">
-            <strong class="four cell directory-top-padded">[[lang.translate("directory.structure.parents")]]</strong>
+            <strong class="four cell padding-top-5">[[lang.translate("directory.structure.parents")]]</strong>
             <nav class="eight cell">
                 <ul class="angle-list small" style="margin: 0">
                     <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name'">[[parent.name]] <button class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button></li>
                 </ul>
             </nav>
         </div>
+        <!-- Export -->
         <hr class="separator cell">
-        <strong style="margin-top: 0;padding-top: 3px;" class="four cell">[[lang.translate("directory.exportStructure")]]</strong>
-        <button class="two cell" ng-click="openExport('structureId', structure.id)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+        <strong style="padding-top: 3px;" class="four cell">[[lang.translate("directory.exportStructure")]]</strong>
+        <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+            <option value="">[[lang.translate("directory.allProfiles")]]</option>
+            <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+            <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+            <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+            <option value="Student">[[lang.translate("directory.Student")]]</option>
+            <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+        </select>
+        <button class="two cell" ng-click="exportItem(structure, 'structureId')" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+        <!-- Structure grouping -->
         <hr class="separator cell" ng-if="isCentralAdmin()">
         <div class="twelve cell" ng-if="isCentralAdmin()">
             <h3><i18n>directory.admin.attachChildStructures</i18n></h3>
@@ -68,6 +78,7 @@
                 </ul>
             </div>
         </div>
+        <!-- Set quota -->
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
         <div class="twelve cell">
@@ -106,7 +117,7 @@
         </div>
         <hr class="separator">
         <div class="twelve cell">
-            <strong class="four cell directory-top-padded">[[lang.translate("directory.name")]]</strong>
+            <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
             <input class="eight cell" type="text" ng-model="createdStructure.name"/>
         </div>
     </div>
