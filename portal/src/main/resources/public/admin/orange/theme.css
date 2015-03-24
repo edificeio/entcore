@@ -5450,6 +5450,11 @@ div.admin-theme-picker {
   height: 31px !important;
   margin-top: 6px;
   margin-left: 6px;
+  border: 1px solid black;
+  transition: border-color 0.25s ease-in-out;
+}
+div.admin-theme-picker:hover {
+  border-color: white;
 }
 div.admin-theme-picker.pink {
   background: #fd4a98;
@@ -5461,13 +5466,16 @@ div.admin-theme-picker.blue {
   background: #1776b2;
 }
 div.admin-theme-picker.purple {
-  background: #8a7bff;
+  background: #9c27b0;
 }
 div.admin-theme-picker.red {
   background: #ff483e;
 }
 div.admin-theme-picker.green {
   background: #319171;
+}
+div.admin-theme-picker.grey {
+  background: #607d8b;
 }
 * {
   font-weight: 300;

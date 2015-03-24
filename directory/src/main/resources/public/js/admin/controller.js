@@ -40,6 +40,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		{
 			name: "green",
 			path: "green"
+		},
+		{
+			name: "grey",
+			path: "grey"
 		}
 	]
 	$scope.setTheme = function(theme){

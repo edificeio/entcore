@@ -40,6 +40,10 @@ function AppRegistry($scope, $sce, model){
 		{
 			name: "green",
 			path: "green"
+		},
+		{
+			name: "grey",
+			path: "grey"
 		}
 	]
 	$scope.setTheme = function(theme){

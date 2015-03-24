@@ -40,6 +40,10 @@ function CommunicationAdminController($scope, $http){
 		{
 			name: "green",
 			path: "green"
+		},
+		{
+			name: "grey",
+			path: "grey"
 		}
 	]
 	$scope.setTheme = function(theme){

@@ -6,15 +6,22 @@
 @pink-theme: #fd4a98;
 @orange-theme: #ff7f5f;
 @blue-theme: #1776B2;
-@purple-theme: #8A7BFF;
+@purple-theme: #9C27B0;
 @red-theme: #FF483E;
 @green-theme: #319171;
+@grey-theme: #607D8B;
 
 div.admin-theme-picker{
 	width: 31px;
 	height: 31px !important;
 	margin-top: 6px;
 	margin-left: 6px;
+	border: 1px solid black;
+	transition: border-color 0.25s ease-in-out;
+
+	&:hover{
+		border-color: white;
+	}
 
 	&.pink{
 		background: @pink-theme;
@@ -33,6 +40,9 @@ div.admin-theme-picker{
 	}
 	&.green{
 		background: @green-theme;
+	}
+	&.grey{
+		background: @grey-theme;
 	}
 }
 

@@ -5493,7 +5493,7 @@ body section.main {
   background: transparent;
 }
 a {
-  color: #1776b2;
+  color: #607d8b;
   text-decoration: none;
 }
 a:hover {
@@ -5510,7 +5510,7 @@ h5 {
   line-height: normal;
 }
 h1 {
-  color: #1776b2;
+  color: #607d8b;
   font-size: 48px;
 }
 h2 {
@@ -5520,13 +5520,13 @@ h2 {
   margin-right: auto;
 }
 h2 strong {
-  color: #1776b2;
+  color: #607d8b;
 }
 h2 a {
   color: #444;
 }
 h3 {
-  color: #1776b2;
+  color: #607d8b;
   text-align: left;
   font-size: 22px;
 }
@@ -5547,7 +5547,7 @@ button,
 input[type=button],
 a.button,
 input[type=submit] {
-  background: #1776b2;
+  background: #607d8b;
   padding: 9px 18px;
   color: #fff;
   font-size: 15px;
@@ -5789,7 +5789,7 @@ input[type=password] {
   -o-border-radius: 0;
   border-radius: 0;
   background: #444;
-  border-left: 10px solid #1776b2;
+  border-left: 10px solid #607d8b;
   color: #aaa;
 }
 nav.side-tabs {
@@ -5801,15 +5801,15 @@ nav.side-tabs > ul {
   overflow-y: scroll;
 }
 nav.side-tabs > ul li {
-  border-color: #1776b2;
+  border-color: #607d8b;
   color: #ccc;
   background: #444;
 }
 nav.side-tabs > ul li:hover {
-  color: #1776b2;
+  color: #607d8b;
 }
 nav.side-tabs > ul li.selected {
-  border-color: #1776b2;
+  border-color: #607d8b;
   color: #2a2829;
   background: #FCFCFC;
   border-right: none;
@@ -5817,7 +5817,7 @@ nav.side-tabs > ul li.selected {
   border-bottom: none;
 }
 nav.side-tabs > ul li.selected:first-child {
-  border-top: 1px solid #1776b2;
+  border-top: 1px solid #607d8b;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   -ms-border-radius: 0;
@@ -5825,7 +5825,7 @@ nav.side-tabs > ul li.selected:first-child {
   border-radius: 0;
 }
 nav.side-tabs > ul li.selected:last-child {
-  border-bottom: 1px solid #1776b2;
+  border-bottom: 1px solid #607d8b;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   -ms-border-radius: 0;
@@ -5857,7 +5857,7 @@ nav.side-tabs.recursive-list li {
 }
 nav.side-tabs.recursive-list li:hover {
   background: whitesmoke;
-  color: #1776b2;
+  color: #607d8b;
 }
 nav.side-tabs.recursive-list li:hover > i.folded-icon {
   -webkit-filter: invert(0);
@@ -5865,7 +5865,7 @@ nav.side-tabs.recursive-list li:hover > i.folded-icon {
 }
 nav.side-tabs.recursive-list li.selected:hover {
   background: white;
-  color: #1776b2;
+  color: #607d8b;
 }
 nav.side-tabs.recursive-list li.selected ul {
   box-shadow: 0px 0px 3px;
@@ -5875,12 +5875,12 @@ nav.side-tabs.recursive-list li.selected ul li {
 }
 nav.side-tabs.recursive-list > ul ul li.selected {
   border: none;
-  background: #1776b2;
+  background: #607d8b;
   color: white;
   box-shadow: 0px 0px 3px;
 }
 .side-tabs-content {
-  border-color: #1776b2;
+  border-color: #607d8b;
 }
 nav.left {
   z-index: 1;
@@ -5943,11 +5943,11 @@ nav.vertical ul li a i.arrow::before {
   content: "▸";
   font-size: 16px;
   line-height: 13px;
-  color: #1776b2;
+  color: #607d8b;
 }
 nav.vertical ul li a.selected {
   color: #FFF;
-  border-right: 8px solid #1776b2;
+  border-right: 8px solid #607d8b;
   background: #444;
 }
 nav.vertical ul li a.selected i.arrow::before {
@@ -5955,7 +5955,7 @@ nav.vertical ul li a.selected i.arrow::before {
   color: #666;
 }
 nav.vertical ul li a:hover {
-  color: #1776b2;
+  color: #607d8b;
   background: #ccc;
 }
 nav.vertical ul li a.opened i.arrow::before {
@@ -5970,7 +5970,7 @@ nav.vertical a.classic-link {
   display: block;
   padding: 5px;
   padding-left: 11px;
-  background: #1776b2;
+  background: #607d8b;
   color: #fff;
   font-family: Lato;
   font-weight: 300;
@@ -6008,10 +6008,10 @@ nav.vertical a.classic-link:hover {
 }
 .tooltip .content {
   color: white;
-  background: #1776b2;
+  background: #607d8b;
 }
 .tooltip .arrow {
-  color: #1776b2;
+  color: #607d8b;
 }
 ul.angle-list {
   list-style-type: none;
@@ -6022,8 +6022,8 @@ ul.angle-list > li {
   padding-left: 5px;
   margin-bottom: 10px;
   padding-top: 5px;
-  border-bottom: 1px solid #1776b2;
-  border-left: 3px solid #1776b2;
+  border-bottom: 1px solid #607d8b;
+  border-left: 3px solid #607d8b;
   color: black;
 }
 ul.angle-list > li button.close {
@@ -6048,7 +6048,7 @@ ul.angle-list.small > li {
 div.leaf-menu-container {
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 3px solid #1776b2;
+  border-bottom: 3px solid #607d8b;
   text-align: center;
 }
 div.leaf-menu {
@@ -6065,10 +6065,10 @@ div.leaf-menu {
   transition: background 200ms ease-in;
 }
 div.leaf-menu:hover {
-  background-color: #6fd0ff;
+  background-color: #e0f7fa;
 }
 div.leaf-menu.selected {
-  background-color: #6fd0ff;
+  background-color: #e0f7fa;
 }
 div.angle-container {
   font-size: 16px;
@@ -6076,8 +6076,8 @@ div.angle-container {
   padding: 10px;
   background: #444;
   color: white;
-  border-left: 5px solid #1776b2;
-  border-bottom: 5px solid #1776b2;
+  border-left: 5px solid #607d8b;
+  border-bottom: 5px solid #607d8b;
 }
 input[type=text].angle-container-header {
   font-weight: 300;
@@ -6090,8 +6090,8 @@ input[type=text].angle-container-header {
   height: 40px;
   border-radius: 0;
   color: #333;
-  border-left: 5px solid #1776b2;
-  border-bottom: 2px solid #1776b2;
+  border-left: 5px solid #607d8b;
+  border-bottom: 2px solid #607d8b;
 }
 div.angle-container-header {
   font-weight: 300;
@@ -6104,8 +6104,8 @@ div.angle-container-header {
   height: 40px;
   border-radius: 0;
   color: #333;
-  border-left: 5px solid #1776b2;
-  border-bottom: 2px solid #1776b2;
+  border-left: 5px solid #607d8b;
+  border-bottom: 2px solid #607d8b;
 }
 button.instantButtons {
   margin-right: 10px;
@@ -6113,7 +6113,7 @@ button.instantButtons {
   width: 33px;
   height: 28px;
   vertical-align: middle;
-  background-color: #1776b2;
+  background-color: #607d8b;
 }
 button.instantButtons.select {
   background-image: url(/public/img/glyphicons-halflings-white.png);
@@ -6127,8 +6127,8 @@ button.instantButtons.deselect {
 }
 nav.search-container {
   padding-right: 0;
-  border-right: 2px ridge #1776b2;
-  border-bottom: 2px ridge #1776b2;
+  border-right: 2px ridge #607d8b;
+  border-bottom: 2px ridge #607d8b;
 }
 nav.search-container-left {
   list-style: none;
@@ -6138,8 +6138,8 @@ nav.search-container-left {
   padding: 0;
   margin-bottom: 14;
   margin-top: 14;
-  border-right: 2px ridge #1776b2;
-  border-bottom: 2px ridge #1776b2;
+  border-right: 2px ridge #607d8b;
+  border-bottom: 2px ridge #607d8b;
 }
 nav.search-container > input[type=text],
 nav.search-container-left > input[type=text] {
@@ -6162,7 +6162,7 @@ div.search-container-view {
   overflow-x: hidden;
   padding: 10 0 0 4%;
   height: 554px;
-  border-bottom: 2px ridge #1776b2;
+  border-bottom: 2px ridge #607d8b;
 }
 hr.separator {
   margin: 15 0 15 0;
@@ -6190,7 +6190,7 @@ hr.separator {
   color: #999;
 }
 .accordions .accordion .toggle .content h3 {
-  color: #1776b2;
+  color: #607d8b;
 }
 .accordions .accordion .toggle .content input[type=text],
 .accordions .accordion .toggle .content textarea,
@@ -6206,7 +6206,7 @@ hr.separator {
 }
 .accordions .accordion.opened h2 {
   border: 1px solid #555;
-  color: #1776b2;
+  color: #607d8b;
   border-bottom: none;
   background: #333;
 }
@@ -6215,10 +6215,10 @@ hr.separator {
   border-top: none;
 }
 .progress-bar .filled {
-  background: #1776b2;
+  background: #607d8b;
 }
 .progress-bar .filled.small {
-  color: #1776b2;
+  color: #607d8b;
 }
 .navbar {
   background: #444;
@@ -6227,7 +6227,7 @@ hr.separator {
   background: #444;
 }
 .icons-view .element.selected .container {
-  background: #1776b2;
+  background: #607d8b;
 }
 div.vertical_buttons_container {
   position: absolute;
@@ -6277,7 +6277,7 @@ button.directory-direct-link-button {
 .directory-userlist-right-container {
   width: 67%;
   float: left;
-  border-bottom: 2px ridge #1776b2;
+  border-bottom: 2px ridge #607d8b;
   padding: 20 0 0 4%;
   height: 544px;
   overflow-y: scroll;
@@ -6428,7 +6428,7 @@ table tr:hover {
 }
 table {
   width: 100%;
-  border-bottom: 2px solid #1776b2;
+  border-bottom: 2px solid #607d8b;
 }
 table td {
   padding: 5px;
@@ -6451,8 +6451,8 @@ table thead tr {
   border-bottom: 1px solid;
   border-left: 1px solid;
   border-right: 1px solid;
-  border-bottom-color: #1776b2;
-  border-top-color: #1776b2;
+  border-bottom-color: #607d8b;
+  border-top-color: #607d8b;
 }
 table thead tr:hover {
   background: #444;
@@ -6463,18 +6463,18 @@ table thead tr th {
   font-size: 16px;
 }
 table thead tr th a.selected {
-  color: #1776b2;
+  color: #607d8b;
 }
 table tbody {
   font-family: Lato;
   text-align: center;
 }
 table tbody tr {
-  border-left: 1px solid #1776b2;
-  border-right: 1px solid #1776b2;
+  border-left: 1px solid #607d8b;
+  border-right: 1px solid #607d8b;
 }
 table tbody tr.separator {
-  border-bottom: 1px solid #1776b2;
+  border-bottom: 1px solid #607d8b;
 }
 table tbody.no-hover tr:hover {
   background: inherit;
@@ -6487,9 +6487,9 @@ table.comm-table thead {
   font-weight: bold;
 }
 table.comm-table thead tr {
-  border-bottom: 2px solid #1776b2;
+  border-bottom: 2px solid #607d8b;
   border-top: none;
-  border-right: 2px solid #1776b2;
+  border-right: 2px solid #607d8b;
   border-left: none;
   color: white;
   background: inherit;
@@ -6499,28 +6499,28 @@ table.comm-table thead tr th:first-child {
   border-top: none;
 }
 table.comm-table thead tr th:nth-child(2) {
-  border-top: 3px solid #1776b2;
-  border-left: 2px solid #1776b2;
+  border-top: 3px solid #607d8b;
+  border-left: 2px solid #607d8b;
 }
 table.comm-table thead tr th:nth-child(3) {
   border-right: 1px solid #444;
-  border-top: 3px solid #1776b2;
+  border-top: 3px solid #607d8b;
 }
 table.comm-table thead tr th {
   background: #444;
-  border-top: 3px solid #1776b2;
+  border-top: 3px solid #607d8b;
 }
 table.comm-table tbody {
   font-size: 12px;
   font-family: Lato;
 }
 table.comm-table tbody tr {
-  border-right: 2px solid #1776b2;
-  border-left: 2px solid #1776b2;
+  border-right: 2px solid #607d8b;
+  border-left: 2px solid #607d8b;
 }
 table.comm-table tbody tr td:first-child {
   background-color: white;
-  border-right: 2px solid #1776b2;
+  border-right: 2px solid #607d8b;
 }
 table.comm-table tbody tr td:nth-child(2) {
   text-align: center;
@@ -6557,8 +6557,8 @@ div.users-search > div form input[type=text] {
 div.users-search > ul {
   list-style: none;
   padding: 0 20 0 0;
-  border-right: 2px ridge #1776b2;
-  border-bottom: 2px ridge #1776b2;
+  border-right: 2px ridge #607d8b;
+  border-bottom: 2px ridge #607d8b;
   overflow-y: scroll;
   height: 500px;
 }
@@ -6577,8 +6577,8 @@ button.check-button:after {
 }
 div.right-content {
   height: 564px;
-  border-bottom: 2px ridge #1776b2;
-  border-right: 2px ridge #1776b2;
+  border-bottom: 2px ridge #607d8b;
+  border-right: 2px ridge #607d8b;
   padding: 0px 20px;
   overflow-y: scroll;
 }
@@ -6624,7 +6624,7 @@ div.quota-container > div {
   display: inline-block;
 }
 div.quota-container > div > div:first-child {
-  background-color: #1776b2;
+  background-color: #607d8b;
   padding: 0;
   margin: 0;
   float: left;
@@ -6643,6 +6643,6 @@ div.quota-container > div h4 {
 }
 div.leaf-bordered-container {
   margin-bottom: 10px;
-  border-bottom: 2px solid #1776b2;
+  border-bottom: 2px solid #607d8b;
   text-align: center;
 }
