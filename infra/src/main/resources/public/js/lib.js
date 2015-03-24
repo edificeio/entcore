@@ -1526,6 +1526,10 @@ var sniplets = {
 						return app.address.indexOf(match) !== -1 && app.icon.indexOf('/') === -1
 					});
 				});
+				apps.push({
+					displayName: 'directory',
+					address: '/directory'
+				})
 			}
 			else{
 				apps = [appPrefix, 'workspace'];

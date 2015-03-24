@@ -346,5 +346,10 @@
     "directory.show.user.page": "Lien vers la page de l'utilisateur",
     "directory.trasversal.search": "Recherche transverse",
     "MANUAL": "Manuel",
-    "directory.userSource": "Source"
+    "directory.userSource": "Source",
+    "sniplet.facebook.title": "Trombinoscope",
+    "sniplet.facebook.desc": "Affiche la liste des membres des groupes de votre choix.",
+    "sniplet.facebook.selected.groups": "Groupes à afficher",
+    "sniplet.facebook.search": "Recherchez les groupes dont vous voulez afficher les membres",
+    "sniplet.facebook.search.title": "Rechercher des groupes"
 }
