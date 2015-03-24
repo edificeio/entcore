@@ -20,6 +20,7 @@
 package org.entcore.communication.services;
 
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -66,6 +67,9 @@ public interface CommunicationService {
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
 	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
+			Handler<Either<String, JsonArray>> handler);
+
+	void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
 			Handler<Either<String, JsonArray>> handler);
 
 }

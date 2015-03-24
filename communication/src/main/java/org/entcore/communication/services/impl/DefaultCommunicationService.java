@@ -537,4 +537,25 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
+	@Override
+	public void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
+			Handler<Either<String, JsonArray>> handler) {
+		String r;
+		if (customReturn != null && !customReturn.trim().isEmpty()) {
+			r = "WITH mg as manualGroup " + customReturn;
+		} else {
+			r = "RETURN distinct mg.id as id, mg.name as name, " +
+				"mg.groupDisplayName as groupDisplayName " +
+				"ORDER BY type DESC, name ";
+		}
+		JsonObject params =
+				(additionnalParams != null) ? additionnalParams : new JsonObject();
+		params.putString("userId", userId);
+		String query =
+				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(mg:ManualGroup) " +
+				"WHERE n.id = {userId} AND (length(p) > 1 OR mg.users <> 'INCOMING') " +
+				r;
+		neo4j.execute(query, params, validResultHandler(handler));
+	}
+
 }

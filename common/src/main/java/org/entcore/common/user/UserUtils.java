@@ -40,6 +40,8 @@ public class UserUtils {
 	private static final JsonArray usersTypes = new JsonArray().addString("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.putString("action", "visibleProfilsGroups");
+	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
+	.putString("action", "visibleManualGroups");
 	private static final I18n i18n = I18n.getInstance();
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
@@ -233,6 +235,14 @@ public class UserUtils {
 				handler.handle(res.body());
 			}
 		});
+	}
+
+	public static void findVisibleManualGroups(final EventBus eb, HttpServerRequest request,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = QUERY_VISIBLE_MANUAL_GROUPS.copy()
+				.putString("customReturn", customReturn)
+				.putObject("additionnalParams", additionnalParams);
+		findUsers(eb, request, m, handler);
 	}
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,

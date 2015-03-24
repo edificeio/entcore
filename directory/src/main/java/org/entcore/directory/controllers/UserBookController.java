@@ -266,15 +266,28 @@ public class UserBookController extends BaseController {
 			public void handle(final JsonArray personnel) {
 				String customReturn =
 						"MATCH profileGroup-[:DEPENDS]->(c:Class)-[:BELONGS]->(s:Structure { id : {structId}}) " +
-						"RETURN DISTINCT c.id as id, c.name as name, c.level as level " +
-						"ORDER BY name ASC ";
+						"RETURN collect(distinct {id: c.id, name: c.name, level: c.level}) as classes, " +
+						"collect(distinct {id: profileGroup.id, name: profileGroup.name, groupDisplayName: profileGroup.groupDisplayName }) as profileGroups";
 				UserUtils.findVisibleProfilsGroups(eb, request, customReturn, params, new Handler<JsonArray>() {
 					@Override
-					public void handle(JsonArray classes) {
-						JsonObject result = new JsonObject()
-								.putArray("users", personnel)
-								.putArray("classes", classes);
-						renderJson(request, result);
+					public void handle(final JsonArray classesAndProfileGroups) {
+						String customReturn =
+								"MATCH manualGroup-[:DEPENDS]->(c)-[:BELONGS*0..1]->(s:Structure { id : {structId}}) " +
+								"WHERE ALL(label IN labels(c) WHERE label IN [\"Structure\", \"Class\"]) " +
+								"RETURN DISTINCT manualGroup.id as id, manualGroup.name as name, manualGroup.groupDisplayName as groupDisplayName " +
+								"ORDER BY name ASC ";
+						UserUtils.findVisibleManualGroups(eb, request, customReturn, params, new Handler<JsonArray>() {
+							@Override
+							public void handle(JsonArray manualGroups) {
+								JsonObject result = new JsonObject()
+									.putArray("users", personnel)
+									.putArray("classes", ((JsonObject) classesAndProfileGroups.get(0)).getArray("classes", new JsonArray()))
+									.putArray("profileGroups", ((JsonObject) classesAndProfileGroups.get(0)).getArray("profileGroups", new JsonArray()))
+									.putArray("manualGroups", manualGroups);
+								renderJson(request, result);
+							}
+						});
+
 					}
 				});
 			}

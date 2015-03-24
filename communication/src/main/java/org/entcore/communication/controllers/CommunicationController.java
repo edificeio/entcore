@@ -172,6 +172,11 @@ public class CommunicationController extends BaseController {
 				JsonObject p = message.body().getObject("additionnalParams");
 				communicationService.visibleProfilsGroups(userId, c, p, responseHandler);
 				break;
+			case "visibleManualGroups":
+				String cr = message.body().getString("customReturn");
+				JsonObject pa = message.body().getObject("additionnalParams");
+				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
+				break;
 			default:
 				message.reply(new JsonArray());
 				break;
