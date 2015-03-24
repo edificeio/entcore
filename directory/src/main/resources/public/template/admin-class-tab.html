@@ -47,6 +47,7 @@
                     <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
                     <option value="Relative">[[lang.translate("directory.Relative")]]</option>
                     <option value="Student">[[lang.translate("directory.Student")]]</option>
+                    <option value="Guest">[[lang.translate("directory.Guest")]]</option>
                 </select>
                 <select class="three cell" ng-model="quotaUnit" ng-init="quotaUnit = 1" style="margin-right: 10px">
                     <option value="1">[[lang.translate("directory.byte")]]</option>
@@ -55,8 +56,13 @@
                     <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
                     <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
                 </select>
-                <input class="three cell" type="number" name="size" ng-model="quotaSize" ng-init="quotaSize = 0" style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
-                <button class="two right-magnet" style="margin: 0; font-size: 12" ng-click="saveClassQuota(classSelected, quotaSize*quotaUnit, quotaProfile)" ng-disabled="!quotaProfile || (quotaSize <= 0)">[[lang.translate("directory.save")]]</button>
+                <input class="three cell" type="number" name="size" ng-model="quotaSize" ng-init="quotaSize = 0"
+                       style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
+                <button class="two right-magnet" style="margin: 0; font-size: 12"
+                        ng-click="saveClassQuota(classSelected, quotaSize*quotaUnit, quotaProfile)"
+                        ng-disabled="!quotaProfile || (quotaSize <= 0)">
+                    [[lang.translate("directory.save")]]
+                </button>
             </div>
         </div>
     </div>

@@ -115,7 +115,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure.loadStructure(
 					null,
 					function(){
-						$scope.showIsolated = false
+						$scope.userFilters.showIsolated = false
 						$scope.deselectAllClasses()
 						$scope.structure.classes.forEach(function(classe){
 							if(classe.id === classId){
@@ -551,13 +551,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.saveClassQuota = function(classe, size, profile){
         $http.get('user/admin/list', {
             params: {
-                classId: classe.id
+                classId: classe.id,
+				profile: profile
             }
         }).success(function(users){
-            var userarray = _.filter(users, function(user){
-                return user.type === profile
-            })
-            userarray = _.map(userarray, function(user){
+			var userarray = _.map(users, function(user){
                 return user.id
             })
             $http.put('/workspace/quota', {
@@ -568,6 +566,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
             })
         })
     }
+
+	//Batch quota update for all users in a single structure.
+	$scope.saveStructureQuota = function(structure, size, profile){
+		$http.get('user/admin/list', {
+            params: {
+                structureId: structure.id,
+				profile: profile
+            }
+        }).success(function(users){
+			var userarray = _.map(users, function(user){
+                return user.id
+            })
+            $http.put('/workspace/quota', {
+                users: userarray,
+                quota: size
+            }).success(function(){
+                notify.info(lang.translate("directory.notify.quotaUpdate"))
+            })
+        })
+	}
 
 	$scope.addChild = function(child, user){
 		if(user.children.indexOf(child) < 0){
