@@ -25,6 +25,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
+import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
@@ -90,8 +91,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		Validator.initLogin(neo4j);
 		manual = new ManualFeeder(neo4j);
-		duplicateUsers = new DuplicateUsers(container.config()
-				.getArray("duplicateSources", new JsonArray().add(ManualFeeder.SOURCE)));
+		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"));
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
 		defaultFeed = container.config().getString("feeder", "AAF");
@@ -99,6 +99,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				container.config().getBoolean("aafNeo4jPlugin", false)));
 		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files"),
 				container.config().getString("uai-separator","_")));
+		feeds.put("CSV", new CsvFeeder(container.config().getObject("csvMappings", new JsonObject())));
 		switch (container.config().getString("exporter", "")) {
 			case "ELIOT" :
 				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
@@ -246,6 +247,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void launchImport(final Message<JsonObject> message) {
 		final Importer importer = Importer.getInstance();
 		final Feed feed = feeds.get(message.body().getString("feeder", defaultFeed));
+		final String profile = message.body().getString("profile");
+		final String content = message.body().getString("content");
+		final String structureExternalId = message.body().getString("structureExternalId");
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
 			return;
@@ -260,7 +264,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						return;
 					}
 					try {
-						feed.launch(importer, new Handler<Message<JsonObject>>() {
+						Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
@@ -279,10 +283,17 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 								importer.clear();
 							}
-						});
+						};
+						if (profile != null && content != null && structureExternalId != null &&
+								!content.trim().isEmpty() && ManualFeeder.profiles.containsKey(profile) &&
+								!structureExternalId.trim().isEmpty() && feed instanceof PartialFeed) {
+							((PartialFeed) feed).launch(profile, structureExternalId, content, importer, handler);
+						} else {
+							feed.launch(importer, handler);
+						}
 					} catch (Exception e) {
-						logger.error(e.getMessage(), e);
 						importer.clear();
+						sendError(message, e.getMessage(), e);
 					}
 				}
 			});

@@ -55,7 +55,7 @@ public class ClassController extends BaseController {
 	private UserService userService;
 	private SchoolService schoolService;
 	private ConversationNotification conversationNotification;
-	private static final List<String> csvMimeTypes = Arrays.asList("text/comma-separated-values", "text/csv",
+	public static final List<String> csvMimeTypes = Arrays.asList("text/comma-separated-values", "text/csv",
 			"application/csv", "application/excel", "application/vnd.ms-excel", "application/vnd.msexcel",
 			"text/anytext", "text/plain");
 

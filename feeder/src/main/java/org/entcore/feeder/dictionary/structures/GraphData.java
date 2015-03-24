@@ -73,6 +73,7 @@ public class GraphData {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject r = (JsonObject) o;
 						JsonObject s = r.getObject("s", new JsonObject()).getObject("data");
+						System.out.println(">>>>  " + s.getString("externalId"));
 						structures.putIfAbsent(s.getString("externalId"),
 								new Structure(s, r.getArray("groups"), r.getArray("classes")));
 					}

@@ -49,9 +49,9 @@ public class DuplicateUsers {
 	}
 
 	public DuplicateUsers(JsonArray searchSources, JsonArray sourcesPriority) {
-		this.searchSources = searchSources;
+		this.searchSources = (searchSources != null) ? searchSources : new JsonArray().add(ManualFeeder.SOURCE).add("CSV");
 		if (sourcesPriority == null) {
-			sourcesPriority = new JsonArray().add("AAF").add("BE1D").add("MANUAL");
+			sourcesPriority = new JsonArray().add("AAF").add("BE1D").add("CSV").add("MANUAL");
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {

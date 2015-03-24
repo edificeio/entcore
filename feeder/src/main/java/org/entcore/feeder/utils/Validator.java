@@ -314,6 +314,11 @@ public class Validator {
 		}
 	}
 
+	public String getType(String attr) {
+		JsonObject a = validate.getObject(attr);
+		return a != null ? a.getString("type", "") : "";
+	}
+
 	public static void initLogin(Neo4j neo4j) {
 		logins.clear();
 		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";

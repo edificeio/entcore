@@ -32,6 +32,8 @@ import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.directory.security.AdmlOfStructures;
+import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.SchoolService;
@@ -39,7 +41,9 @@ import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -87,10 +91,53 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Post("/import")
-	@SecuredAction("directory.import")
-	public void launchImport(HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().putString("action", "import"));
-		request.response().end();
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructuresByExternalId.class)
+	public void launchImport(final HttpServerRequest request) {
+		final JsonObject json = new JsonObject()
+				.putString("action", "import")
+				.putString("feeder", request.params().get("feeder"))
+				.putString("profile", request.params().get("profile"))
+				.putString("structureExternalId", request.params().get("structureExternalId"));
+		if ("CSV".equals(json.getString("feeder"))) {
+			request.expectMultiPart(true);
+			request.uploadHandler(new Handler<HttpServerFileUpload>() {
+				@Override
+				public void handle(final HttpServerFileUpload event) {
+					final Buffer buff = new Buffer();
+//					if (!ClassController.csvMimeTypes.contains(event.contentType())) {
+//						renderJson(request, new JsonObject().putString("message", "invalid.file"), 400);
+//						return;
+//					}
+					event.dataHandler(new Handler<Buffer>() {
+						@Override
+						public void handle(Buffer event) {
+							buff.appendBuffer(event);
+						}
+					});
+					event.endHandler(new Handler<Void>() {
+						@Override
+						public void handle(Void end) {
+							json.putString("content", buff.toString("ISO-8859-1"));
+							log.debug(json.encode());
+							eb.send("entcore.feeder", json, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if ("ok".equals(event.body().getString("status"))) {
+										request.response().end();
+									} else {
+										badRequest(request, event.body().getString("message"));
+									}
+								}
+							});
+						}
+					});
+				}
+			});
+		} else {
+			eb.send("entcore.feeder", json);
+			request.response().end();
+		}
 	}
 
 	@Post("/transition")

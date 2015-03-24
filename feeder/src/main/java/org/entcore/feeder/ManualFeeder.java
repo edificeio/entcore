@@ -29,7 +29,6 @@ import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
-import org.mozilla.universalchardet.UniversalDetector;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -45,6 +44,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
+
+import static org.entcore.feeder.utils.FeederHelper.detectCharset;
 
 public class ManualFeeder extends BusModBase {
 
@@ -653,17 +654,6 @@ public class ManualFeeder extends BusModBase {
 				}
 			}
 		});
-	}
-
-	private String detectCharset(String csv) {
-		UniversalDetector detector = new UniversalDetector(null);
-		byte[] data = csv.getBytes();
-		detector.handleData(data, 0, data.length);
-		detector.dataEnd();
-		String encoding = detector.getDetectedCharset();
-		logger.debug(encoding);
-		detector.reset();
-		return encoding != null ? encoding : "ISO-8859-1";
 	}
 
 	private void generateUserExternalId(JsonObject props, String c, String structureExternalId) {

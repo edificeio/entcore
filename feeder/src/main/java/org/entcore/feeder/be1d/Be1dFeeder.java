@@ -365,7 +365,11 @@ public class Be1dFeeder implements Feed {
 		});
 	}
 
-	private void generateUserExternalId(JsonObject props, String c, Structure structure, long seed) {
+	public static void generateUserExternalId(JsonObject props, String c, Structure structure, long seed) {
+		String externalId = props.getString("externalId");
+		if (externalId != null && !externalId.trim().isEmpty()) {
+			return;
+		}
 		String mapping = structure.getExternalId()+props.getString("surname", "")+
 				props.getString("lastName", "")+props.getString("firstName", "")+
 				props.getString("email","")+props.getString("title","")+

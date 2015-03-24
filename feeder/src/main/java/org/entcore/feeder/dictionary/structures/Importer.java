@@ -265,6 +265,68 @@ public class Importer {
 		}
 	}
 
+	public void createOrUpdateGuest(JsonObject object, String[][] linkClasses) {
+		final String error = userValidator.validate(object);
+		if (error != null) {
+			log.warn(error);
+		} else {
+			object.putString("source", currentSource);
+			final String externalId = object.getString("externalId");
+			userImportedExternalId.add(externalId);
+			String query;
+			JsonObject params;
+			if (!firstImport) {
+				query =
+						"MERGE (u:User { externalId : {externalId}}) " +
+						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} " +
+						"WITH u " +
+						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
+						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+						"id", "externalId", "login", "activationCode");
+				params = object;
+			} else {
+				query = "CREATE (u:User {props}) ";
+				params = new JsonObject().putObject("props", object);
+			}
+			transactionHelper.add(query, params);
+			JsonArray structures = object.getArray("structures");
+			if (externalId != null && structures != null && structures.size() > 0) {
+				JsonObject p = new JsonObject().putString("userExternalId", externalId);
+				String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+							"(u:User) " +
+							"USING INDEX s:Structure(externalId) " +
+							"USING INDEX u:User(externalId) " +
+							"USING INDEX p:Profile(externalId) " +
+							"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
+							"AND p.externalId = {profileExternalId} " +
+							"MERGE u-[:IN]->g";
+				p.putArray("structuresAdmin", structures)
+						.putString("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
+				transactionHelper.add(q1, p);
+			}
+			if (externalId != null && linkClasses != null) {
+				for (String[] structClass : linkClasses) {
+					if (structClass != null && structClass[0] != null && structClass[1] != null) {
+						String q =
+								"MATCH (s:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g:ProfileGroup)" +
+										"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (u:User) " +
+										"USING INDEX s:Structure(externalId) " +
+										"USING INDEX u:User(externalId) " +
+										"USING INDEX p:Profile(externalId) " +
+										"WHERE s.externalId = {structure} AND c.externalId = {class} " +
+										"AND u.externalId = {userExternalId} AND p.externalId = {profileExternalId} " +
+										"MERGE u-[:IN]->g";
+						JsonObject p = new JsonObject()
+								.putString("userExternalId", externalId)
+								.putString("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID)
+								.putString("structure", structClass[0])
+								.putString("class", structClass[1]);
+						transactionHelper.add(q, p);
+					}
+				}
+			}
+		}
+	}
 
 	public boolean isFirstImport() {
 		return firstImport;

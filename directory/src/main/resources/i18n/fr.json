@@ -143,6 +143,7 @@
     "directory.groupOps": "Opérations sur les groupes",
     "directory.groupUsers": "Utilisateurs dans le groupe",
     "directory.import": "Importer",
+    "directory.importCSV": "Import CSV",
     "directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
     "directory.inactive": "Personnes non activées.",
     "directory.isolatedUsers": "Personnes non rattachées",
