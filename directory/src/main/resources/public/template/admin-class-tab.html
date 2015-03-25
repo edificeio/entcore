@@ -39,8 +39,8 @@
             <!-- Export -->
             <hr class="separator cell">
             <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.exportClass")]]</h3>
-            <div class="row">
-                <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+            <div class="row" ng-init="exportData.params.filterActive = ''">
+                <select class="five cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
                     <option value="">[[lang.translate("directory.allProfiles")]]</option>
                     <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
                     <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
@@ -48,20 +48,11 @@
                     <option value="Student">[[lang.translate("directory.Student")]]</option>
                     <option value="Guest">[[lang.translate("directory.Guest")]]</option>
                 </select>
-            </div>
-            <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
-                <div class="three cell row-item">
-                    <label><i18n>directory.ignoreActivation</i18n></label>
-                    <input type="radio" ng-model="exportData.params.filterActive" value=""/>
-                </div>
-                <div class="three cell row-item">
-                    <label><i18n>directory.onlyActivatedUsers</i18n></label>
-                    <input type="radio" ng-model="exportData.params.filterActive" value="active"/>
-                </div>
-                <div class="four cell row-item">
-                    <label><i18n>directory.onlyInactiveUsers</i18n></label>
-                    <input type="radio" ng-model="exportData.params.filterActive" value="inactive"/>
-                </div>
+                <select class="five cell" ng-model="exportData.params.filterActive">
+                    <option value="">[[lang.translate("directory.ignoreActivation")]]</option>
+                    <option value="active">[[lang.translate("directory.onlyActivatedUsers")]]</option>
+                    <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+                </select>
             </div>
             <button class="three cell margin-top-5" ng-click="exportItem(classSelected, 'classId')" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
             <!-- Quota -->

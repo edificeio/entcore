@@ -41,18 +41,11 @@
                 ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
     </div>
     <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
-        <div class="two cell row-item">
-            <label><i18n>directory.ignoreActivation</i18n></label>
-            <input type="radio" ng-model="exportData.params.filterActive" value=""/>
-        </div>
-        <div class="two cell row-item">
-            <label><i18n>directory.onlyActivatedUsers</i18n></label>
-            <input type="radio" ng-model="exportData.params.filterActive" value="active"/>
-        </div>
-        <div class="two cell row-item">
-            <label><i18n>directory.onlyInactiveUsers</i18n></label>
-            <input type="radio" ng-model="exportData.params.filterActive" value="inactive"/>
-        </div>
+        <select class="three cell" ng-model="exportData.params.filterActive">
+            <option value="">[[lang.translate("directory.ignoreActivation")]]</option>
+            <option value="active">[[lang.translate("directory.onlyActivatedUsers")]]</option>
+            <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+        </select>
     </div>
 </div>
 <hr class="separator cell" ng-if="isCentralAdmin()">

@@ -220,8 +220,8 @@ public class DefaultUserService implements UserService {
 		String filterProfile = "WHERE 1=1 ";
 		String optionalMatch =
 			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
-			"OPTIONAL MATCH u-[:RELATED]->(child: User) " +
-			"OPTIONAL MATCH (parent: User)-[:RELATED]->u ";
+			"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
+			"OPTIONAL MATCH (child: User)-[:RELATED]->u ";
 		if (expectedProfiles != null && expectedProfiles.size() > 0) {
 			filterProfile += "AND p.name IN {expectedProfiles} ";
 			params.putArray("expectedProfiles", expectedProfiles);
