@@ -16,13 +16,13 @@
     <button class="three cell" ng-click="openExport()">[[lang.translate("directory.export")]]</button>
 </div>
 <div class="row">
-    <h1 class="three" style="height: 30px;font-size: 18px;margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
-    <select ng-model="exportData.export_mode" class="three cell padding-top-5" style="margin-left: 0; margin-right: 10px;">
+    <h1 class="three" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
+    <select ng-model="exportData.export_mode" class="three cell padding-top-5 row-item">
         <option value="all">[[lang.translate("directory.all")]]</option>
         <option value="structureId">[[lang.translate("directory.structure")]]</option>
         <option value="classId">[[lang.translate("directory.classe")]]</option>
     </select>
-    <select class="three cell" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+    <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
         <option value="">[[lang.translate("directory.allProfiles")]]</option>
         <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
         <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
@@ -31,14 +31,28 @@
         <option value="Guest">[[lang.translate("directory.Guest")]]</option>
     </select>
     <div class="row" ng-if="exportData.export_mode !== 'all'">
-        <select class="four cell margin-top-5"
+        <select class="three cell margin-top-5 row-item"
                 ng-model="exportData.structure"
                 ng-change="exportData.structureId = exportData.structure.id; refreshClasses(exportData.structure)"
                 ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
-        <select class="four cell margin-top-5"
+        <select class="three cell margin-top-5 row-item"
                 ng-if="exportData.export_mode === 'classId'"
                 ng-model="exportData.classId"
                 ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
+    </div>
+    <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
+        <div class="two cell row-item">
+            <label><i18n>directory.ignoreActivation</i18n></label>
+            <input type="radio" ng-model="exportData.params.filterActive" value=""/>
+        </div>
+        <div class="two cell row-item">
+            <label><i18n>directory.onlyActivatedUsers</i18n></label>
+            <input type="radio" ng-model="exportData.params.filterActive" value="active"/>
+        </div>
+        <div class="two cell row-item">
+            <label><i18n>directory.onlyInactiveUsers</i18n></label>
+            <input type="radio" ng-model="exportData.params.filterActive" value="inactive"/>
+        </div>
     </div>
 </div>
 <hr class="separator cell" ng-if="isCentralAdmin()">

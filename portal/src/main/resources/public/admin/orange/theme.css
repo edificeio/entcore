@@ -5483,6 +5483,7 @@ div.admin-theme-picker.grey {
 html,
 body {
   background-color: #eee;
+  font-family: Lato;
 }
 body {
   overflow-x: hidden;
@@ -5537,6 +5538,10 @@ h5 {
   text-align: center;
   font-size: 16px;
   margin: 0;
+}
+h6 {
+  margin: 10px 0px;
+  font-size: 15px;
 }
 article {
   border-radius: 3px;
@@ -5832,11 +5837,23 @@ nav.side-tabs > ul li.selected:last-child {
   -o-border-radius: 0;
   border-radius: 0;
 }
-nav.side-tabs.recursive-list input[type=text] {
-  width: 100%;
+nav.side-tabs.recursive-list {
   background: #444;
+  border-radius: 10px;
+}
+nav.side-tabs.recursive-list input[type=text] {
+  display: block;
+  width: 95%;
   height: 29px;
+  background: #444;
   color: white;
+  margin: 10px auto;
+  border-bottom: 2px solid #ff7f5f;
+  border-radius: 0px;
+  transition: border-color 0.25s ease;
+}
+nav.side-tabs.recursive-list input[type=text]:focus {
+  border-color: white;
 }
 nav.side-tabs.recursive-list i.folded-icon {
   transition: all 0.25s ease-in-out;
@@ -6374,6 +6391,9 @@ label.legend-label.marged {
 }
 .margin-top-5 {
   margin-top: 5px;
+}
+.margin-top-10 {
+  margin-top: 10px;
 }
 .row-item {
   margin-right: 10px;

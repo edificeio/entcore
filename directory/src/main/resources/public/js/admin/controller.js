@@ -458,6 +458,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
     $scope.getUserDetails = function(user){
+		if(!user)
+			return
+			
         user.get(function(){
 			if($scope.notCrossSearchTab() && user.type === 'Relative'){
 				user.children = $scope.structure.users.filter(function(u){

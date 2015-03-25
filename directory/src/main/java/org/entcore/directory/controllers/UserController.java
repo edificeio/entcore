@@ -212,6 +212,7 @@ public class UserController extends BaseController {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
 					JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
+					final String filterActive = request.params().get("filterActive");
 					Handler<Either<String, JsonArray>> handler;
 					if ("csv".equals(request.params().get("format"))) {
 						handler = new Handler<Either<String, JsonArray>>() {
@@ -240,7 +241,7 @@ public class UserController extends BaseController {
 					} else {
 						handler = arrayResponseHandler(request);
 					}
-					userService.listAdmin(structureId, classId, null, types, user, handler);
+					userService.listAdmin(structureId, classId, null, types, filterActive, null, user, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -326,7 +327,9 @@ public class UserController extends BaseController {
 					final JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
 					final String groupId = request.params().get("groupId");
 					final String nameFilter = request.params().get("name");
-					userService.listAdmin(structureId, classId, groupId, types, nameFilter, user, arrayResponseHandler(request));
+					final String filterActive = request.params().get("filterActive");
+
+					userService.listAdmin(structureId, classId, groupId, types, filterActive, nameFilter, user, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}

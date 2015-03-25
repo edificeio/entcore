@@ -1,4 +1,4 @@
-"Id";"Type";"Nom";"Prénom";"Login";"Code d'activation"
+"Id";"Type";"Nom";"Prénom";"Login";"Code d'activation";"Fonction(s)";"Structure(s)";"Classe(s)";"Enfant(s)";"Parent(s)"
 {{#list}}
-"{{externalId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{code}}"
+"{{externalId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{code}}";"{{#aafFunctions}}{{.}}, {{/aafFunctions}}";"{{#structures}}{{name}}, {{/structures}}";"{{#allClasses}}{{name}}, {{/allClasses}}";"{{#children}}{{firstName}} {{lastName}}, {{/children}}";"{{#parents}}{{firstName}} {{lastName}}, {{/parents}}"
 {{/list}}

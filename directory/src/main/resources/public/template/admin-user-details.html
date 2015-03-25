@@ -165,27 +165,27 @@
         <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
         </select>
     </div>
-    <div style="text-align: center; margin-bottom: 10px">
-        <button ng-if="linkStructure" ng-click="linkStructure.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))" style="margin-top: 5px">[[lang.translate("directory.linkToSchool")]]</button>
-        <button ng-if="linkClass" ng-click="linkClass.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))">[[lang.translate("directory.linkToClass")]]</button>
+    <div>
+        <button class="small margin-top-10" ng-if="linkStructure" ng-click="linkStructure.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))">[[lang.translate("directory.linkToSchool")]]</button>
+        <button class="small margin-top-10" ng-if="linkClass" ng-click="linkClass.linkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))">[[lang.translate("directory.linkToClass")]]</button>
     </div>
 </div>
 <!-- Function management -->
-<div ng-if="!isSelf(targetUser)" class="twelve cell">
+<div ng-if="!isSelf(targetUser)" class="twelve cell" style="margin-bottom: 10px;">
     <hr class="separator cell">
     <h3 style="margin-top: 0;">[[lang.translate("directory.functionsManagement")]]</h3>
     <!-- Central admin attribution -->
     <div ng-if="isCentralAdmin()">
-        <h5>[[lang.translate("directory.centralAdmin")]]</h5>
-        <div style="text-align: center; margin: 10px 0px">
+        <h6>[[lang.translate("directory.centralAdmin")]]</h6>
+        <div>
             <button ng-click="targetUser.setCentralAdmin()" class="text-flow small">[[lang.translate("directory.set")]]</button>
             <button ng-click="targetUser.removeCentralAdmin()" class="text-flow small">[[lang.translate("directory.delete")]]</button>
         </div>
     </div>
     <!-- Local admin attribution -->
-    <h5 ng-if="notCrossSearchTab()">[[lang.translate("directory.localAdmin")]]</h5>
-    <div ng-if="notCrossSearchTab()" style="text-align: center; margin: 10px 0px">
-        <button ng-click="targetUser.setLocalAdmin(structure)" class="text-flow small" style="margin-bottom:5px">[[lang.translate("directory.setLocalAdmin")]]</button>
-        <button ng-click="targetUser.removeLocalAdmin()" class="text-flow small" style="margin-bottom:5px">[[lang.translate("directory.deleteLocalAdmin")]]</button>
+    <h6 ng-if="notCrossSearchTab()">[[lang.translate("directory.localAdmin")]]</h6>
+    <div ng-if="notCrossSearchTab()">
+        <button ng-click="targetUser.setLocalAdmin(structure)" class="text-flow small">[[lang.translate("directory.setLocalAdmin")]]</button>
+        <button ng-click="targetUser.removeLocalAdmin()" class="text-flow small">[[lang.translate("directory.deleteLocalAdmin")]]</button>
     </div>
 </div>

@@ -144,8 +144,8 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 				"RETURN DISTINCT u.profiles as type, " +
 				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"COLLECT({id: child.id, displayName: child.displayName}) as children, " +
-				"COLLECT({id: parent.id, displayName: parent.displayName}) as parents, " +
+				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName}) END as children, " +
+				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName}) END as parents, " +
 				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}
@@ -208,15 +208,20 @@ public class DefaultUserService implements UserService {
 	@Override
 	public void listAdmin(String structureId, String classId, String groupId,
 						  JsonArray expectedProfiles, UserInfos userInfos, org.vertx.java.core.Handler<fr.wseduc.webutils.Either<String,JsonArray>> results) {
-		listAdmin(structureId, classId, groupId, expectedProfiles, null, userInfos, results);
+		listAdmin(structureId, classId, groupId, expectedProfiles, null, null, userInfos, results);
 	};
 
 	@Override
 	public void listAdmin(String structureId, String classId, String groupId,
-						  JsonArray expectedProfiles, String nameFilter, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+						  JsonArray expectedProfiles, String filterActivated, String nameFilter,
+						  UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject();
 		String filter = "";
 		String filterProfile = "WHERE 1=1 ";
+		String optionalMatch =
+			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
+			"OPTIONAL MATCH u-[:RELATED]->(child: User) " +
+			"OPTIONAL MATCH (parent: User)-[:RELATED]->u ";
 		if (expectedProfiles != null && expectedProfiles.size() > 0) {
 			filterProfile += "AND p.name IN {expectedProfiles} ";
 			params.putArray("expectedProfiles", expectedProfiles);
@@ -258,13 +263,25 @@ public class DefaultUserService implements UserService {
 			condition += "AND u.displayName =~ {regex}  ";
 			params.putString("regex", "(?i)^.*?" + Pattern.quote(nameFilter.trim()) + ".*?$");
 		}
+		if(filterActivated != null){
+			if("active".equals(filterActivated)){
+				condition += "AND NOT(u.activationCode IS NULL)  ";
+			} else if("inactive".equals(filterActivated)){
+				condition += "AND u.activationCode IS NULL ";
+			}
+		}
 
 		String query =
 				"MATCH " + filter + "(u:User) " +
-				functionMatch + filterProfile + condition +
+				functionMatch + filterProfile + condition + optionalMatch +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
 				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
-				"u.lastName as lastName, u.displayName as displayName, u.source as source, collect(distinct {id: s.id, name: s.name}) as structures " +
+				"u.lastName as lastName, u.displayName as displayName, u.source as source, " +
+				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
+				"collect(distinct {id: s.id, name: s.name}) as structures, " +
+				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
+				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
+				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName}) END as children " +
 				"ORDER BY type DESC, displayName ASC ";
 		neo.execute(query, params, validResultHandler(results));
 	}
