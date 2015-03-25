@@ -1898,6 +1898,7 @@ a {
 }
 .toggle-panel .toggle {
   width: 300px;
+  padding: 20px;
 }
 .toggle-buttons-spacer {
   margin-bottom: 50px;
@@ -4270,6 +4271,58 @@ portal .page-markers {
     display: none;
   }
 }
+.bookmarked-apps {
+  min-height: 48px;
+  padding: 5px;
+  margin-bottom: 30px;
+  border: 2px dashed #ddd;
+  font-size: 24px;
+  text-align: center;
+  line-height: 30px;
+  color: #ccc;
+  font-weight: bold;
+}
+.bookmarked-apps .icons-view.apps {
+  margin-top: 0;
+}
+popover {
+  position: relative;
+  display: inline-block;
+}
+popover popover-content::before {
+  content: "\25b2";
+  display: block;
+  position: absolute;
+  top: -7px;
+  font-size: 36px;
+  left: 50%;
+  margin-left: -17px;
+  color: #fff;
+  z-index: 0;
+}
+popover popover-content {
+  position: absolute;
+  min-height: 100px;
+  background: #eee;
+  width: 100px;
+  top: 100%;
+  opacity: 1;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
+  left: -50px;
+  margin-left: 50%;
+  text-align: center;
+}
+popover popover-content .content {
+  z-index: 1;
+  position: relative;
+}
+popover popover-content.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 .panel {
   width: 415px;
   margin-left: auto;
@@ -4964,6 +5017,10 @@ table {
   display: table;
   width: 100%;
   min-height: 350px;
+}
+.wizard .search-results {
+  max-height: 200px;
+  overflow: auto;
 }
 .wizard nav.steps {
   display: table-cell;
@@ -5669,6 +5726,7 @@ i.disconnect {
 .preview {
   padding-top: 15px;
   padding-bottom: 15px;
+  padding-right: 15px;
 }
 .preview h2 {
   font-size: 16px;
@@ -5839,7 +5897,9 @@ nav.side-tabs > ul li.selected:last-child {
 }
 nav.side-tabs.recursive-list {
   background: #444;
-  border-radius: 10px;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  border-bottom: 3px solid #ff7f5f;
 }
 nav.side-tabs.recursive-list input[type=text] {
   display: block;
@@ -5898,6 +5958,12 @@ nav.side-tabs.recursive-list > ul ul li.selected {
 }
 .side-tabs-content {
   border-color: #ff7f5f;
+  border-width: 1px;
+  border-radius: 10px;
+  box-shadow: 2px 2px #444;
+  border-right: none;
+  border-bottom: none;
+  padding-right: 0px;
 }
 nav.left {
   z-index: 1;
@@ -6179,7 +6245,6 @@ div.search-container-view {
   overflow-x: hidden;
   padding: 10 0 0 4%;
   height: 554px;
-  border-bottom: 2px ridge #ff7f5f;
 }
 hr.separator {
   margin: 15 0 15 0;
@@ -6292,7 +6357,7 @@ button.directory-direct-link-button {
   background-position: 25.5%;
 }
 .directory-userlist-right-container {
-  width: 67%;
+  width: 70%;
   float: left;
   border-bottom: 2px ridge #ff7f5f;
   padding: 20 0 0 4%;
@@ -6396,7 +6461,7 @@ label.legend-label.marged {
   margin-top: 10px;
 }
 .row-item {
-  margin-right: 10px;
+  margin-right: 10px !important;
 }
 /* Change accordion size & some styles for admin panels */
 .accordions .large-dark-input {

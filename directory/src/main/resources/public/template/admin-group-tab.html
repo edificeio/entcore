@@ -64,7 +64,7 @@
             <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
             <div class="twelve cell">
                 <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
-                <input type="text" ng-model="groupSelected.name"/>
+                <input class="six cell" type="text" ng-model="groupSelected.name"/>
             </div>
             <hr class="separator">
             <nav class="vertical cell search-container-left" style="width: 40%; height: 480px; margin: 0">
@@ -74,7 +74,8 @@
                         ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
                         ng-change="scrollOpts.reset(); groupUsersStructure.loadStructure(refreshScope, refreshScope)">
                 </select>
-                <select style="width: 95%"
+                <select class="margin-top-5"
+                        style="width: 95%"
                         ng-model="groupUsersClass"
                         ng-init="groupUsersClass = groupSelected.classes ? structure.classes.findWhere({id: groupSelected.classes[0].id}) : null"
                         ng-options="class as class.name for class in groupUsersStructure.classes.all | orderBy: 'name'"

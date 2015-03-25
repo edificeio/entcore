@@ -192,6 +192,7 @@ i.disconnect{
 .preview{
 	padding-top: 15px;
 	padding-bottom: 15px;
+	padding-right: 15px;
 	h2{
 		font-size: 16px;
 		color: #888;
@@ -340,7 +341,9 @@ nav.side-tabs{
 	&.recursive-list{
 
 		background: #444;
-  		border-radius: 10px;
+  		border-top-right-radius: 10px;
+  		border-top-left-radius: 10px;
+		border-bottom: 3px solid @main;
 
 		input[type=text]{
 			display: block;
@@ -423,6 +426,12 @@ nav.side-tabs{
 
 .side-tabs-content{
 	border-color: @main;
+	border-width: 1px;
+	border-radius: 10px;
+	box-shadow: 2px 2px #444;
+	border-right: none;
+	border-bottom: none;
+	padding-right: 0px;
 }
 
 nav.left{
@@ -722,7 +731,7 @@ div.search-container-view{
 	overflow-x: hidden;
 	padding: 10 0 0 4%;
 	height: 554px;
-	border-bottom: 2px ridge @main;
+	//border-bottom: 2px ridge @main;
 }
 
 hr.separator{
@@ -854,7 +863,7 @@ button.directory-direct-link-button{
 }
 
 .directory-userlist-right-container{
-	width: 67%;
+	width: 70%;
 	float: left;
 	border-bottom: 2px ridge @main;
 	padding: 20 0 0 4%;
@@ -969,7 +978,7 @@ label.legend-label{
 }
 
 .row-item{
-	margin-right: 10px;
+	margin-right: 10px !important;
 }
 
 /* Change accordion size & some styles for admin panels */
