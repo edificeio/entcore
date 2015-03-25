@@ -69,7 +69,9 @@
 					<input type="checkbox" ng-model="user.rememberMe" name="remember-me" value="false"><label translate content="auth.remember.me"></label>
 				</p>
 				<a href="/auth/forgot" translate content="missing.password"></a>
-				<input type="submit" translate attr="value" value="auth.login" tabindex=3 />
+				<button tabindex=3 class="right-magnet">
+					<i18n>auth.login</i18n>
+				</button>
 				<a href="/auth/activation" class="cell reduce-block-six right-magnet" translate content="auth.activateAccount"></a>
 				<div class="clear"></div>
 			</form>
