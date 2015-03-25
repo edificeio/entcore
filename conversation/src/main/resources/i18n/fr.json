@@ -67,8 +67,8 @@
     "transfer.title": "Message transféré",
     "transfer.to": "A : ",
     "trash": "Corbeille",
-    "undelivered": " n'a pu recevoir le message.<br/><i><small>Raisons courantes : quota plein, messagerie bloquée, ...</small></i>",
-    "conversation.send.error": "Aucun destinataire n'a pu recevoir le messsage.<br/><i><small>Raisons courantes : quota plein, messagerie bloquée, ...</small></i>",
+    "undelivered": " n'a pu recevoir le message.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
+    "conversation.send.error": "Aucun destinataire n'a pu recevoir le messsage.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
     "updating": "Mise à jour...",
     "widget.empty": "Vous n'avez aucun message",
     "widget.title": "messages",
@@ -98,5 +98,5 @@
     "add.attachment": "Ajouter une pièce jointe",
     "remove.attachment": "Supprimer la pièce jointe",
     "size": "Taille",
-    "file.too.large": "Quota de stockage : espace libre insuffisant."
+    "file.too.large": "Quota de stockage : espace disponible insuffisant."
 }
