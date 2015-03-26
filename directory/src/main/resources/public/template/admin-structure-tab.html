@@ -22,7 +22,7 @@
 <article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
 
     <!-- Structure details -->
-    <div ng-if="structure && showWhat === 'showCurrentStructure'">
+    <div ng-if="structure && showWhat !== 'showStructureCreation'">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
         <hr class="separator cell">
         <div style="text-align:center">
@@ -96,7 +96,7 @@
                 <option value="Student">[[lang.translate("directory.Student")]]</option>
                 <option value="Guest">[[lang.translate("directory.Guest")]]</option>
             </select>
-            <select class="three cell" ng-model="quotaUnit" ng-init="quotaUnit = 1" style="margin-right: 10px">
+            <select class="three cell" ng-model="quotaUnit" ng-init="quotaUnit = DEFAULT_QUOTA_UNIT" style="margin-right: 10px">
                 <option value="1">[[lang.translate("directory.byte")]]</option>
                 <option value="1024">[[lang.translate("directory.kilobyte")]]</option>
                 <option value="1048576">[[lang.translate("directory.megabyte")]]</option>

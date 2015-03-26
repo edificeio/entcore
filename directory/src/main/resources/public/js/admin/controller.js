@@ -138,6 +138,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.structures = model.structures
     $scope.lang = lang
 
+	$scope.DEFAULT_QUOTA_UNIT = 1048576
+
 	$scope.scrollOpts = {
 		SCROLL_INCREMENT: 250,
 		scrollLimit: 250,
@@ -460,15 +462,15 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.getUserDetails = function(user){
 		if(!user)
 			return
-			
+
         user.get(function(){
 			if($scope.notCrossSearchTab() && user.type === 'Relative'){
 				user.children = $scope.structure.users.filter(function(u){
 					return _.findWhere(user.children, {id: u.id})
 				})
 			}
-            $rootScope.quotaSize = user.quota
-            $rootScope.quotaUnit = 1
+            $rootScope.quotaUnit = $scope.DEFAULT_QUOTA_UNIT
+			$rootScope.quotaSize = user.quota / $scope.DEFAULT_QUOTA_UNIT
             $scope.refreshScope()
         }, true)
     }

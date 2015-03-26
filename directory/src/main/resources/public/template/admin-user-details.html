@@ -140,7 +140,11 @@
     <div class="twelve cell">
         <strong class="three cell padding-top-5">[[lang.translate("directory.quotaShort")]]</strong>
         <form name="quotaForm">
-            <input type="number" name="size" ng-model="$root.quotaSize" ng-change="targetUser.quota = $root.quotaSize * quotaUnit" style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
+            <input  type="number"
+                    name="size"
+                    ng-model="$root.quotaSize"
+                    ng-change="targetUser.quota = $root.quotaSize * quotaUnit"
+                    style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
             <select class="three cell" ng-model="$root.quotaUnit" ng-change="$root.quotaSize = targetUser.quota / $root.quotaUnit" style="margin-left: 10px; margin-right: 10px">
                 <option value="1">[[lang.translate("directory.byte")]]</option>
                 <option value="1024">[[lang.translate("directory.kilobyte")]]</option>
