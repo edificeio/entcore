@@ -102,6 +102,7 @@ Quota.prototype.sync = function(){
 		else{
 			data.quota = Math.round(data.quota);
 			data.storage = Math.round(data.storage);
+			this.unit = 'Mo';
 		}
 
 		this.max = data.quota;
