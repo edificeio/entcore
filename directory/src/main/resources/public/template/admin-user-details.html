@@ -14,7 +14,7 @@
     </a>
     <button ng-click="updateUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.save")]]</button>
     <button ng-if="notCrossSearchTab()" ng-click="structure.unlinkUser(targetUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button>
-    <button ng-click="delete(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
+    <button ng-click="deleteUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
     <button ng-if="!targetUser.blocked" ng-click="targetUser.block(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.block")]]</button>
     <button ng-if="targetUser.blocked" ng-click="targetUser.unblock(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.unblock")]]</button>
 </div>
