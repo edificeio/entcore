@@ -1449,7 +1449,10 @@ var recorder = (function(){
 		},
 		record: function(){
 			player.pause();
-			player.currentTime = 0;
+			if(player.currentTime > 0){
+				player.currentTime = 0;
+			}
+
 			this.status = 'recording';
 			notifyFollowers(this.status);
 			if(!loaded){
