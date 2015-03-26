@@ -652,6 +652,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.addChild = function(child, user){
 		if(user.children.indexOf(child) < 0){
 			user.children.push(child)
+
+			if(!user.id)
+				return
+				
 			user.linkChild(child).error(function(){
 				var index = user.children.indexOf(child)
 				if(index >= 0)
@@ -663,6 +667,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var index = user.children.indexOf(child)
 		if(index >= 0){
 			user.children.splice(index, 1)
+
+			if(!user.id)
+				return
+
 			user.unlinkChild(child).error(function(){
 				user.children.push(child)
 			})
