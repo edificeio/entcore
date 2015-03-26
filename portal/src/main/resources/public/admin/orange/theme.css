@@ -5960,9 +5960,12 @@ nav.side-tabs.recursive-list > ul ul li.selected {
   border-color: #ff7f5f;
   border-width: 1px;
   border-radius: 10px;
-  box-shadow: 2px 2px #444;
+  box-shadow: 2px 2px 3px #333;
   border-right: none;
   border-bottom: none;
+  padding-right: 15px;
+}
+.side-tabs-content.unpadded {
   padding-right: 0px;
 }
 nav.left {
@@ -6243,7 +6246,7 @@ nav.search-container-left > ul {
 div.search-container-view {
   overflow-y: scroll;
   overflow-x: hidden;
-  padding: 10 0 0 4%;
+  padding: 10px 15px 0px 20px;
   height: 554px;
 }
 hr.separator {

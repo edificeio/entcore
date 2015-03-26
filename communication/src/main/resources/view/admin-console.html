@@ -58,7 +58,7 @@
                 <div ng-include="'structure-tree'"></div>
 
                 <!-- Right side container -->
-                <article class="side-tabs-content nine cell" ng-if="structure">
+                <article class="side-tabs-content unpadded nine cell" ng-if="structure">
 
                     <!-- Group selection menu -->
                     <nav class="vertical cell search-container-left">
@@ -72,101 +72,99 @@
 
                     <!-- Group data container -->
                     <div ng-if="group" class="search-container-view">
-                        <div style="width: 97%">
-                            <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[group.name]]</h1></div>
-                            <hr class="separator">
-                            <div style="text-align: center;">
-                                <strong style="margin-right: 20;">[[lang.translate("communication.id")]]</strong><span>[[group.id]]</span>
-                            </div>
-                            <hr class="separator">
-                            <div class="row accordions">
+                        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[group.name]]</h1></div>
+                        <hr class="separator">
+                        <div style="text-align: center;">
+                            <strong style="margin-right: 20;">[[lang.translate("communication.id")]]</strong><span>[[group.id]]</span>
+                        </div>
+                        <hr class="separator">
+                        <div class="row accordions">
 
-                                <!-- Group users -->
-                                <article class="accordion" ng-class="{ opened: section === 1 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(1)">
-                                        [[lang.translate("communication.accordion.groupUsers")+" ("+group.users.length()+")"]]
-                                    </h2>
-                                    <div class="toggle">
-                                        <div class="content" style="overflow-y: scroll; height: 100%">
-                                            <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
-                                                <li ng-repeat="user in group.users.all | orderBy: 'lastName'" style="float: left; display: inline; width: 48%; margin-right: 1%">
-                                                    <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+user.id]]" target="_blank">[[user.displayName]]</a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                            <!-- Group users -->
+                            <article class="accordion" ng-class="{ opened: section === 1 }" style="padding: 0">
+                                <h2 ng-click="accordionClick(1)">
+                                    [[lang.translate("communication.accordion.groupUsers")+" ("+group.users.length()+")"]]
+                                </h2>
+                                <div class="toggle">
+                                    <div class="content" style="overflow-y: scroll; height: 100%">
+                                        <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
+                                            <li ng-repeat="user in group.users.all | orderBy: 'lastName'" style="float: left; display: inline; width: 48%; margin-right: 1%">
+                                                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+user.id]]" target="_blank">[[user.displayName]]</a>
+                                            </li>
+                                        </ul>
                                     </div>
-                                </article>
+                                </div>
+                            </article>
 
-                                <!-- Custom group communication rules -->
-                                <article class="accordion" ng-class="{ opened: section === 2 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(2)">
-                                        [[lang.translate("communication.accordion.customRules")]]
-                                    </h2>
-                                    <div class="toggle">
-                                        <div class="content" style="overflow-y: scroll; height: 100%; padding-top: 0">
-                                            <select class="large-dark-input"
-                                                    ng-model="commStructure"
-                                                    ng-init="commStructure = structure"
-                                                    ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
-                                                    ng-change="commStructure.groups.sync()">
+                            <!-- Custom group communication rules -->
+                            <article class="accordion" ng-class="{ opened: section === 2 }" style="padding: 0">
+                                <h2 ng-click="accordionClick(2)">
+                                    [[lang.translate("communication.accordion.customRules")]]
+                                </h2>
+                                <div class="toggle">
+                                    <div class="content" style="overflow-y: scroll; height: 100%; padding-top: 0">
+                                        <select class="large-dark-input"
+                                                ng-model="commStructure"
+                                                ng-init="commStructure = structure"
+                                                ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
+                                                ng-change="commStructure.groups.sync()">
+                                        </select>
+                                        <input class="large-dark-input" type="text" ng-model="$parent.filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]"/>
+                                        <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
+                                            <li ng-repeat="listedGroup in filterAllOtherGroups(commStructure.groups.all, group) | filter: filterGroupsFunction(filterAccordionGroups) | orderBy: 'name'"
+                                                ng-style="groupStyling(group, listedGroup)"
+                                                ng-click="toggleGroupCommunication(group, listedGroup)"
+                                                style="float: left; display: inline; width: 27%; margin-right: 1%;border-left: 10px solid gray;padding-left: 10; margin-bottom: 5px; transition: border-color 250ms ease;">
+                                                [[listedGroup.name]]
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- Intra group policy -->
+                            <article class="accordion" ng-class="{ opened: section === 3 }" style="padding: 0">
+                                <h2 ng-click="accordionClick(3)">
+                                    [[lang.translate("communication.accordion.groupPolicy")]]
+                                </h2>
+                                <div class="toggle">
+                                    <div class="content" style="overflow-y: scroll; height: 100%; padding-top: 0">
+                                        <h3 class="twelve cell" translate content="communication.innerGroupRule" style="color: #AAA; margin-bottom:5px; margin-top: 0"></h3>
+                                        <div ng-if="!group.communiqueUsers">
+                                            <label style="display: inline-block; margin: 0 20 0 20; padding: 5; background: inherit; font-family: Lato;" translate content="communication.defaultRules"></label>
+                                            <button ng-click="group.communiqueUsers = 'INCOMING'" style="display: inline-block; vertical-align: middle" translate content="communication.create"></button>
+                                        </div>
+                                        <div class="twelve cell" ng-if="group.communiqueUsers">
+                                            <select ng-model="group.communiqueUsers" class="seven cell" style="height: 28px; margin-right: 10px">
+                                                <option value="INCOMING">[[lang.translate("communication.incoming")]]</option>
+                                                <option value="OUTGOING">[[lang.translate("communication.outgoing")]]</option>
+                                                <option value="BOTH">[[lang.translate("communication.both")]]</option>
                                             </select>
-                                            <input class="large-dark-input" type="text" ng-model="$parent.filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]"/>
-                                            <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
-                                                <li ng-repeat="listedGroup in filterAllOtherGroups(commStructure.groups.all, group) | filter: filterGroupsFunction(filterAccordionGroups) | orderBy: 'name'"
-                                                    ng-style="groupStyling(group, listedGroup)"
-                                                    ng-click="toggleGroupCommunication(group, listedGroup)"
-                                                    style="float: left; display: inline; width: 27%; margin-right: 1%;border-left: 10px solid gray;padding-left: 10; margin-bottom: 5px; transition: border-color 250ms ease;">
-                                                    [[listedGroup.name]]
-                                                </li>
-                                            </ul>
+                                            <button translate content="communication.modify" ng-click="modifyInnerGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
+                                            <button translate content="communication.delete" ng-click="deleteInnerGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
                                         </div>
-                                    </div>
-                                </article>
-
-                                <!-- Intra group policy -->
-                                <article class="accordion" ng-class="{ opened: section === 3 }" style="padding: 0">
-                                    <h2 ng-click="accordionClick(3)">
-                                        [[lang.translate("communication.accordion.groupPolicy")]]
-                                    </h2>
-                                    <div class="toggle">
-                                        <div class="content" style="overflow-y: scroll; height: 100%; padding-top: 0">
-                                            <h3 class="twelve cell" translate content="communication.innerGroupRule" style="color: #AAA; margin-bottom:5px; margin-top: 0"></h3>
-                                            <div ng-if="!group.communiqueUsers">
+                                        <div ng-if="group.name.indexOf('Relative') >= 0">
+                                            <div>
+                                            <hr class="separator">
+                                            <h3 class="twelve cell" translate content="communication.relativeRule" style="color: #AAA; margin-bottom:5px; margin-top: 0"></h3>
+                                            <div ng-if="!group.relativeCommuniqueStudent">
                                                 <label style="display: inline-block; margin: 0 20 0 20; padding: 5; background: inherit; font-family: Lato;" translate content="communication.defaultRules"></label>
-                                                <button ng-click="group.communiqueUsers = 'INCOMING'" style="display: inline-block; vertical-align: middle" translate content="communication.create"></button>
+                                                <button ng-click="group.relativeCommuniqueStudent = 'INCOMING'" style="display: inline-block; vertical-align: middle" translate content="communication.create"></button>
                                             </div>
-                                            <div class="twelve cell" ng-if="group.communiqueUsers">
-                                                <select ng-model="group.communiqueUsers" class="seven cell" style="height: 28px; margin-right: 10px">
-                                                    <option value="INCOMING">[[lang.translate("communication.incoming")]]</option>
-                                                    <option value="OUTGOING">[[lang.translate("communication.outgoing")]]</option>
-                                                    <option value="BOTH">[[lang.translate("communication.both")]]</option>
+                                            <div class="twelve cell" ng-if="group.relativeCommuniqueStudent">
+                                                <select ng-model="group.relativeCommuniqueStudent" class="seven cell" style="height: 28px; margin-right: 10px">
+                                                    <option value="INCOMING">[[lang.translate("Communication des enfants vers les parents")]]</option>
+                                                    <option value="OUTGOING">[[lang.translate("communication.parentsToChildren")]]</option>
+                                                    <option value="BOTH">[[lang.translate("communication.table.both")]]</option>
                                                 </select>
-                                                <button translate content="communication.modify" ng-click="modifyInnerGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
-                                                <button translate content="communication.delete" ng-click="deleteInnerGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
-                                            </div>
-                                            <div ng-if="group.name.indexOf('Relative') >= 0">
-                                                <div>
-                                                <hr class="separator">
-                                                <h3 class="twelve cell" translate content="communication.relativeRule" style="color: #AAA; margin-bottom:5px; margin-top: 0"></h3>
-                                                <div ng-if="!group.relativeCommuniqueStudent">
-                                                    <label style="display: inline-block; margin: 0 20 0 20; padding: 5; background: inherit; font-family: Lato;" translate content="communication.defaultRules"></label>
-                                                    <button ng-click="group.relativeCommuniqueStudent = 'INCOMING'" style="display: inline-block; vertical-align: middle" translate content="communication.create"></button>
-                                                </div>
-                                                <div class="twelve cell" ng-if="group.relativeCommuniqueStudent">
-                                                    <select ng-model="group.relativeCommuniqueStudent" class="seven cell" style="height: 28px; margin-right: 10px">
-                                                        <option value="INCOMING">[[lang.translate("Communication des enfants vers les parents")]]</option>
-                                                        <option value="OUTGOING">[[lang.translate("communication.parentsToChildren")]]</option>
-                                                        <option value="BOTH">[[lang.translate("communication.table.both")]]</option>
-                                                    </select>
-                                                    <button translate content="communication.modify" ng-click="modifyRelativeGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
-                                                    <button translate content="communication.delete" ng-click="deleteRelativeGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
-                                                </div>
+                                                <button translate content="communication.modify" ng-click="modifyRelativeGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
+                                                <button translate content="communication.delete" ng-click="deleteRelativeGroupRules(group)" style="display: inline-block; vertical-align: middle"></button>
                                             </div>
                                         </div>
                                     </div>
-                                </article>
+                                </div>
+                            </article>
 
-                            </div>
                         </div>
                     </div>
                 </article>

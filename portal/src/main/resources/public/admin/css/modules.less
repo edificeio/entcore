@@ -428,10 +428,14 @@ nav.side-tabs{
 	border-color: @main;
 	border-width: 1px;
 	border-radius: 10px;
-	box-shadow: 2px 2px #444;
+	box-shadow: 2px 2px 3px #333;
 	border-right: none;
 	border-bottom: none;
-	padding-right: 0px;
+	padding-right: 15px;
+
+	&.unpadded{
+		padding-right: 0px;
+	}
 }
 
 nav.left{
@@ -729,7 +733,7 @@ nav.search-container-left{
 div.search-container-view{
 	overflow-y: scroll;
 	overflow-x: hidden;
-	padding: 10 0 0 4%;
+	padding: 10px 15px 0px 20px;
 	height: 554px;
 	//border-bottom: 2px ridge @main;
 }

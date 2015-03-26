@@ -126,8 +126,8 @@
                     <div class="row">
                         <input type="button" class="left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.advancedParams')"/>
                         <input type="button" class="left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.simpleMode')"/>
-                        <input type="button" class="right-magnet row-item" ng-click="application.save()" ng-value="lang.translate('appregistry.save')" />
-                        <input type="button" class="right-magnet row-item" ng-click="deleteApplication()" ng-if="application.id" ng-value="lang.translate('appregistry.delete')"/>
+                        <input type="button" class="right-magnet" ng-click="application.save()" ng-value="lang.translate('appregistry.save')" />
+                        <input type="button" class="right-magnet" ng-click="deleteApplication()" ng-if="application.id" ng-value="lang.translate('appregistry.delete')"/>
                     </div>
                 </article>
             </div>
@@ -215,8 +215,8 @@
                     <div class="row">
                         <label class="three comment"><span>[[lang.translate("appregistry.roleName")]]</span></label>
                         <input class="four" type="text" ng-model="role.name" placeholder="[[lang.translate('appregistry.role')]]" style="height: 36px; border-radius: initial; border: 1px dotted black; margin: 0;"/>
-                        <button class="right-magnet row-item three" ng-if="!role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.create")]]</button>
-                        <button class="right-magnet row-item" ng-if="role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.save")]]</button>
+                        <button class="right-magnet three" ng-if="!role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.create")]]</button>
+                        <button class="right-magnet" ng-if="role.id" ng-click="saveCrossRole(role)" ng-disabled="!validateCrossRole(role)">[[lang.translate("appregistry.save")]]</button>
                         <button class="right-magnet" ng-click="deleteRole(role)" ng-if="role.id" style="margin-right: 10px">[[lang.translate("appregistry.delete")]]</button>
                     </div>
 
@@ -255,7 +255,7 @@
                         </ul>
                     </nav>
 
-                    <div class="right-magnet row-item" ng-if="group" style="width: 66%;">
+                    <div class="right-magnet" ng-if="group" style="width: 66%;">
                         <ul class="selectable-list" style="height: 555px; margin-top: 0">
                             <h3 style="padding-bottom: 5px; text-align: center; border-bottom: 2px solid #444; font-style: inherit; margin-bottom: 0; margin-top: 7px">
                                 [[group.name]]
