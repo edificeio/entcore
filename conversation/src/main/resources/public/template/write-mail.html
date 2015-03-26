@@ -17,6 +17,7 @@
 			<drop-down
 					options="users.found"
 					ng-change="addUser()"
+					on-close="clearSearch()"
 					ng-model="newItem.currentReceiver"
 					for="to-users">
 			</drop-down>

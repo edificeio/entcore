@@ -1408,19 +1408,30 @@ module.directive('dropDown', function($compile, $timeout){
 		scope: {
 			options: '=',
 			ngChange: '&',
+			onClose: '&',
 			ngModel: '='
 		},
 		template: '<div data-drop-down class="drop-down">' +
 						'<div>' +
 							'<ul class="ten cell right-magnet">' +
-								'<li ng-repeat="option in options | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
+								'<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
+								'<li class="display-more" ng-if="limit < options.length" ng-click="increaseLimit()">Afficher la suite</li>' +
 							'</ul>' +
 						'</div>' +
 					'</div>',
 		link: function(scope, element, attributes){
+			scope.limit = 6;
+			scope.increaseLimit = function(){
+				scope.limit += 5;
+				element.height(
+						element.find('li').height() * scope.limit
+					);
+			};
 			scope.$watchCollection('options', function(newValue){
 				if(!scope.options || scope.options.length === 0){
 					element.addClass('hidden');
+					scope.limit = 6;
+					element.attr('style', '');
 					return;
 				}
 				element.removeClass('hidden');
@@ -1438,19 +1449,32 @@ module.directive('dropDown', function($compile, $timeout){
 				pos.top = pos.top + height;
 				element.offset(pos);
 				element.width(width);
-			})
+			});
 			element.parent().on('remove', function(){
 				element.remove();
-			})
+			});
 			element.detach().appendTo('body');
 
-
 			element.on('click', 'li', function(e){
+				if($(e.target).hasClass('display-more')){
+					return;
+				}
+				scope.limit = 6;
+				element.attr('style', '');
 				scope.current = $(this).scope().option;
 				scope.ngModel = $(this).scope().option;
 				scope.$apply('ngModel');
 				scope.$eval(scope.ngChange);
+				scope.$eval(scope.onClose);
 				scope.$apply('ngModel');
+			});
+
+			$('body').on('click', function(e){
+				if(element.find(e.target).length > 0){
+					return;
+				}
+				scope.$eval(scope.onClose);
+				scope.$apply();
 			});
 			element.attr('data-opened-drop-down', true);
 
@@ -1470,7 +1494,7 @@ module.directive('autocomplete', function($compile){
 		template: '' +
 			'<div class="row">' +
 				'<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />' +
-				'<div data-drop-down class="drop-down">' +
+				'<div data-drop-down class="drop-down autocomplete">' +
 					'<div>' +
 						'<ul class="ten cell right-magnet">' +
 							'<li ng-repeat="option in match | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
