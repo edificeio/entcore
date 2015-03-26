@@ -53,20 +53,20 @@ public class PronoteRegisteredService extends DefaultRegisteredService {
 			String category = null;
 			JsonArray types = data.getArray("type");
 			for (Object type : types.toList()) {
-				switch(type.toString()) {
-				case "Student" :
-					category = (category == null ? "" : ";") + "National_1";
-					break;
-				case "Teacher" :
-					category = (category == null ? "" : ";") + "National_3";
-					break;
-				case "Relative" :
-					category = (category == null ? "" : ";") + "National_2";
-					break;
-				case "Personnel" :
-					category = (category == null ? "" : ";") + "National_4";
-					break;
-				}
+			    switch(type.toString()) {
+	                case "Student" :
+	                    category = checkProfile(category,"National_1");
+	                    break;
+	                case "Teacher" :
+	                    category = checkProfile(category,"National_3");
+	                    break;
+	                case "Relative" :
+	                    category = checkProfile(category,"National_2");
+	                    break;
+	                case "Personnel" :
+	                    category = checkProfile(category,"National_4");
+	                    break;
+	                }
 			}
 			if (category != null) {
 				user.getAttributes().put("categories", category);
@@ -76,4 +76,15 @@ public class PronoteRegisteredService extends DefaultRegisteredService {
 			log.error("Failed to transform User for Pronote");
 		}
 	}
+	private String checkProfile(String category, String national){
+	    if(category== null){
+            return national;
+        }else{
+           if(category.contains(national)){
+               return category;
+           }else{
+               return category+";"+national;
+           }
+        }
+    }
 }
