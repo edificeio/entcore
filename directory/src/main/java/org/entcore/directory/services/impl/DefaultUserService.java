@@ -264,9 +264,9 @@ public class DefaultUserService implements UserService {
 			params.putString("regex", "(?i)^.*?" + Pattern.quote(nameFilter.trim()) + ".*?$");
 		}
 		if(filterActivated != null){
-			if("active".equals(filterActivated)){
+			if("inactive".equals(filterActivated)){
 				condition += "AND NOT(u.activationCode IS NULL)  ";
-			} else if("inactive".equals(filterActivated)){
+			} else if("active".equals(filterActivated)){
 				condition += "AND u.activationCode IS NULL ";
 			}
 		}
