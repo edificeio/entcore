@@ -1,5 +1,8 @@
 routes.define(function($routeProvider){
 	$routeProvider
+		.when('/', {
+			action: 'default'
+		})
 		.when('/structureUser/:structureId/:userId', {
 			action: 'viewStructureUser'
 		})
@@ -11,6 +14,9 @@ routes.define(function($routeProvider){
         })
 		.when('/classUsers/:structureId/:classId', {
 			action: 'viewClassUsers'
+		})
+		.otherwise({
+			redirectTo: '/'
 		})
 })
 
@@ -55,6 +61,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
     route({
+		default: function(){
+			$scope.structures.sync(function(){
+				$scope.$apply()
+			})
+		},
         viewStructureUser: function(params){
             var userId = params.userId
             var structureId = params.structureId
@@ -67,7 +78,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
-				$scope.structure.selected = true
+				$scope.selectOnly($scope.structure)
 				$scope.reloadStructureAndRetrieveUser({ id: userId })()
 			})
         },
@@ -82,7 +93,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
-				$scope.structure.selected = true
+				$scope.selectOnly($scope.structure)
 			})
         },
         viewClass: function(params){
@@ -96,7 +107,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
-				$scope.structure.selected = true
+				$scope.selectOnly($scope.structure)
 	            $scope.structure.classes.sync(function(){
 	                $scope.classSelected = $scope.structure.classes.findWhere({ id: classId})
 	                $scope.$apply()
@@ -115,7 +126,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.structure = $scope.structures.find(function(structure){
 					return structure.id === structureId
 				})
-				$scope.structure.selected = true
+				$scope.selectOnly($scope.structure)
 				$scope.structure.loadStructure(
 					null,
 					function(){
@@ -135,7 +146,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.template = template
 	template.open('userDetails', 'admin-user-details')
-    $scope.structures = model.structures
+    $scope.structures = model.structures.structures
     $scope.lang = lang
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
@@ -404,8 +415,28 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		}
 	}
 	$scope.selectOnly = function(structure, structureList){
-		_.forEach(structure.children, function(s){ s.selected = false })
-		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
+		/*
+			_.forEach(structure.children, function(s){ s.selected = false })
+			_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
+		*/
+		$scope.structures.forEach(function(structure){
+			structure.selected = false
+		})
+
+		var recursivelySelectParents = function(structure){
+			structure.selected = true;
+
+			if(!structure.parents)
+				return;
+
+			_.forEach(structure.parents, function(parent){
+					var parentLocated = $scope.structures.findWhere({id: parent.id })
+					if(parentLocated)
+						recursivelySelectParents(parentLocated)
+			})
+		}
+		recursivelySelectParents(structure)
+
 	}
     ////////
 

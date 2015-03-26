@@ -419,7 +419,7 @@ Structure.prototype.removeClassUsers = function(classe, hook){
     var classUsers = _.filter(structure.users.all, function(user){
         return _.findWhere(user.allClasses, {id: classe.id})
     })
-    
+
     _.forEach(classUsers, function(u){
         u.classesList = _.reject(u.classesList, function(c){ return classe.id === c.id })
     })
@@ -452,32 +452,8 @@ Structure.prototype.detachParent = function(parent, hook){
     })
 }
 
-//Collection of users with no relation to classes or structures
-function IsolatedUsers(){
-    this.collection(User, {
-        sync: function(){
-            var that = this
-            return http().get('list/isolated', {}, { requestName: 'isolated-request' }).done(function(users){
-                that.load(users);
-            })
-        }
-    })
-}
-
-function CrossUsers(){
-    this.collection(User, {
-        sync: function(filter){
-            var that = this
-            return http().get('user/admin/list', { name: filter}, { requestName: 'cross-search-request' }).done(function(users){
-                that.load(users);
-            })
-        }
-    })
-}
-
-model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Classe, ManualGroup, Duplicate])
-
+//Collection of structures
+function Structures(){
     this.collection(Structure, {
         sync: function(hook){
             var that = this
@@ -502,7 +478,35 @@ model.build = function(){
             })
         }
     })
+}
 
+//Collection of users with no relation to classes or structures
+function IsolatedUsers(){
+    this.collection(User, {
+        sync: function(){
+            var that = this
+            return http().get('list/isolated', {}, { requestName: 'isolated-request' }).done(function(users){
+                that.load(users);
+            })
+        }
+    })
+}
+
+function CrossUsers(){
+    this.collection(User, {
+        sync: function(filter){
+            var that = this
+            return http().get('user/admin/list', { name: filter}, { requestName: 'cross-search-request' }).done(function(users){
+                that.load(users);
+            })
+        }
+    })
+}
+
+model.build = function(){
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate])
+
+    this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()
     this.crossUsers = new CrossUsers()
 }
