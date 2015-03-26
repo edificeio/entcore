@@ -140,6 +140,9 @@ function ForgotController($scope, template){
 					$scope.error = data.error.message;
 					$scope.$apply('error');
 				}
+			})
+			.e400(function(data){
+				notify.error(data.responseJSON.error.message);
 			});
 	};
 }
