@@ -130,12 +130,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.maxQuota = 8;
 	$scope.usedQuota = 4;
 
-	$scope.quota = {
-		max: 1,
-		used: 0,
-		unit: 'Mo'
-	};
-
 	$scope.folderTreeTemplate = 'folder-content';
 	$scope.quota = model.quota;
 
