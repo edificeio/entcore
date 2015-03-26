@@ -414,6 +414,29 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			return !_.contains(list, item)
 		}
 	}
+	$scope.filterChildren = function(struct){
+		if(struct === $scope.structure)
+			return struct.children
+			
+		var parents = []
+
+		var recursivelyTagParents = function(struct){
+			if(typeof struct.parents === 'undefined')
+				return
+
+			_.forEach(struct.parents, function(p){
+				if(parents.indexOf(p) < 0)
+					parents.push(p)
+				recursivelyTagParents(p)
+			})
+		}
+		recursivelyTagParents(struct)
+
+		//Prevents infinite loops when parents are contained inside children.
+		return _.filter(struct.children, function(child){
+			return !child.selected || !_.findWhere(parents, {id: child.id})
+		})
+	}
 	$scope.selectOnly = function(structure, structureList){
 		/*
 			_.forEach(structure.children, function(s){ s.selected = false })
@@ -424,6 +447,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		})
 
 		var recursivelySelectParents = function(structure){
+			//Prevent infinite loops
+			if(structure.selected)
+				return;
+
 			structure.selected = true;
 
 			if(!structure.parents)
@@ -655,7 +682,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 			if(!user.id)
 				return
-				
+
 			user.linkChild(child).error(function(){
 				var index = user.children.indexOf(child)
 				if(index >= 0)

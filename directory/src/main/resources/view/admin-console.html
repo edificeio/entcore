@@ -26,13 +26,17 @@
                 <nav class="side-tabs three cell recursive-list">
                     <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="structureFilteringInput" />
                     <ul ng-if="!structureFilteringInput">
-                        <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'" ng-click="viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+                        <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'"
+                            ng-click="viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
+                            ng-class="{ selected: struct.selected }">
                             [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
                             <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
                         </li>
                     </ul>
                     <ul ng-if="structureFilteringInput">
-                        <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'" ng-click="viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, allStructures)" ng-class="{ selected: struct.selected }">
+                        <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'"
+                            ng-click="viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, allStructures)"
+                            ng-class="{ selected: struct.selected }">
                             [[struct.name]]
                         </li>
                     </ul>
@@ -40,7 +44,9 @@
             </script>
             <script type="text/ng-template" id="structure-tree-sub-levels">
                 <ul ng-if="struct.children">
-                    <li ng-repeat="struct in levelStructures = struct.children | orderBy: 'name'" ng-click="$event.stopPropagation(); viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+                    <li ng-repeat="struct in levelStructures = filterChildren(struct) | orderBy: 'name'"
+                        ng-click="$event.stopPropagation(); viewStructure(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
+                        ng-class="{ selected: struct.selected }">
                         [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
                         <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
                     </li>
