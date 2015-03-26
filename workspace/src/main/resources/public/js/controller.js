@@ -1283,9 +1283,11 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 		http().putFile("document/"+$scope.targetDocument._id+"?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
 			//$scope.openHistory($scope.targetDocument)
+			delete $scope.revisionInProgress
 			$scope.openFolder($scope.openedFolder.folder)
 			getQuota()
 		}).e400(function(e){
+			delete $scope.revisionInProgress
 			var error = JSON.parse(e.responseText);
 			notify.error(error.error);
 		});
