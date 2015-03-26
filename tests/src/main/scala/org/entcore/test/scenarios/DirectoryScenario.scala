@@ -3,7 +3,7 @@ package org.entcore.test.scenarios
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
-import net.minidev.json.{JSONValue, JSONObject}
+import net.minidev.json.{JSONValue, JSONObject, JSONArray}
 import scala.collection.JavaConverters._
 
 object DirectoryScenario {
@@ -195,5 +195,11 @@ object DirectoryScenario {
     .post("""/directory/user/group/${studentId}/${manuel-group-id}""")
     .header("Content-Length", "0")
     .check(status.is(200)))
+
+  .exec(http("Get user")
+    .get("""/directory/user/${studentId}""")
+    .check(status.is(200), jsonPath("$.id").find.is("${studentId}"),
+      jsonPath("$.type[0]").find.is("Student"),
+      jsonPath("$.type").find.transformOption(_.map(res => JSONValue.parse(res).asInstanceOf[JSONArray].size())).is(1)))
 
 }

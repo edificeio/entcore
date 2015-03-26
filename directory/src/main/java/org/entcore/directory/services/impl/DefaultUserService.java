@@ -137,11 +137,10 @@ public class DefaultUserService implements UserService {
 	public void get(String id, Handler<Either<String, JsonObject>> result) {
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
-				"RETURN DISTINCT COLLECT(p.name) as type, " +
+				"RETURN DISTINCT u.profiles as type, " +
 				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT({id: child.id, displayName: child.displayName}) as children, " +
 				"COLLECT({id: parent.id, displayName: parent.displayName}) as parents, " +
