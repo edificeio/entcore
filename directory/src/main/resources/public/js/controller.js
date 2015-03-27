@@ -93,7 +93,7 @@ function DirectoryController($scope, route, date, template){
 			}
 			$scope.network = model.network;
 			model.network.schools.sync();
-			model.network.schools.on('sync', function(){
+			model.network.schools.one('sync', function(){
 				$scope.schools = model.network.schools;
 				$scope.currentSchool = $scope.schools.first();
 				if($scope.currentSchool === undefined){
