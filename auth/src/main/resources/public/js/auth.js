@@ -134,15 +134,17 @@ function ForgotController($scope, template){
 				if(data.message){
 					template.open('main', 'forgot-message')
 					$scope.message = data.message;
-					$scope.$apply('message');
+					$scope.error = '';
+					$scope.$apply();
 				}
 				else{
 					$scope.error = data.error.message;
 					$scope.$apply('error');
 				}
 			})
-			.e400(function(data){
-				notify.error(data.responseJSON.error.message);
+			.e400(function(req){
+				$scope.error = req.responseJSON.error.message;
+				$scope.$apply('error');
 			});
 	};
 }

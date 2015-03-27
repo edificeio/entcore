@@ -1,10 +1,10 @@
 <section class="main">
 	<div class="panel">
 		<h1 translate content="auth.forgot.header"></h1>
-		<p class="warning" ng-if="error" translate content="error"></p>
+		<p class="warning" ng-if="error" translate content="[[error]]"></p>
 		<form method="post">
 			<p>
-				<label translate content="auth.email"></label>
+				<label><i18n>auth.email</i18n></label>
 				<input type="text" name="login" ng-model="user.login" />
 			</p>
 			<input type="submit" translate attr="value" value="auth.forgot.send" ng-click="forgot()" />
