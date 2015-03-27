@@ -202,6 +202,7 @@
     "directory.predeletionDate": "Date de pré-suppression :",
     "directory.quota": "Quota de stockage",
     "directory.quotaShort": "Quota :",
+    "directory.maxQuota": "Quota maximum autorisé pour ce profil",
     "directory.relative": "Parent",
     "directory.relatives": "Parents",
     "directory.remove.confirm": "Si vous demandez la suppression de ces utilisateurs, ils pourront exporter leurs données, puis perdront leur accès à l'ENT. Voulez-vous vraiment les supprimer ?",

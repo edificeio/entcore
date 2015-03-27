@@ -152,8 +152,15 @@
                 <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
                 <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
             </select>
-            <button class="two right-magnet" style="margin: 0; font-size: 12" ng-click="targetUser.saveQuota()" ng-disabled="!$root.quotaSize || targetUser.quota < targetUser.storage">[[lang.translate("directory.save")]]</button>
+            <button
+                class="small two right-magnet"
+                style="margin: 0; font-size: 12"
+                ng-click="targetUser.saveQuota()"
+                ng-disabled="!$root.quotaSize || targetUser.quota < targetUser.storage || targetUser.quota >= getMaxUserQuota(targetUser)">
+                [[lang.translate("directory.save")]]
+            </button>
         </form>
+        <em class="twelve cell"><i18n>directory.maxQuota</i18n> : [[ formatQuota(getMaxUserQuota(targetUser)) ]]</em>
     </div>
 </div>
 <hr class="separator cell">

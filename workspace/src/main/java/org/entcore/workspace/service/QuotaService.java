@@ -20,6 +20,7 @@
 package org.entcore.workspace.service;
 
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -41,6 +42,8 @@ public interface QuotaService {
 
 	void updateQuotaDefaultMax(String profile,  Long defaultQuota, Long maxQuota,
 			Handler<Either<String, JsonObject>> handler);
+
+	void getDefaultMaxQuota(Handler<Either<String, JsonArray>> handler);
 
 	void init(String userId);
 

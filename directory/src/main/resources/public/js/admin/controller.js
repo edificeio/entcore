@@ -150,6 +150,22 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.lang = lang
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
+	$scope.maxQuotas = {}
+	//Get max quotas
+	http().get("/workspace/quota/default").done(function(result){
+		$scope.maxQuotas = result
+	})
+	$scope.getMaxUserQuota = function(user){
+		if(!user.profiles || !user.profiles[0])
+			return 0
+		return _.findWhere($scope.maxQuotas, {name: user.profiles[0]}).maxQuota
+	}
+	$scope.getMaxProfileQuota = function(profile){
+		if(!profile)
+			return 0
+
+		return _.findWhere($scope.maxQuotas, {name: profile}).maxQuota
+	}
 
 	$scope.scrollOpts = {
 		SCROLL_INCREMENT: 250,
@@ -421,7 +437,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.filterChildren = function(struct){
 		if(struct === $scope.structure)
 			return struct.children
-			
+
 		var parents = []
 
 		var recursivelyTagParents = function(struct){

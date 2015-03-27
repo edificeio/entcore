@@ -21,6 +21,7 @@ package org.entcore.workspace.service.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.workspace.service.QuotaService;
 import org.vertx.java.core.Handler;
@@ -148,6 +149,12 @@ public class DefaultQuotaService implements QuotaService {
 				"SET " + Joiner.on(", ").join(p) +
 				" RETURN p.id as id ";
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void getDefaultMaxQuota(Handler<Either<String, JsonArray>> handler) {
+		String query = "MATCH (p:Profile) RETURN p.name as name, coalesce(p.maxQuota, 1073741824) as maxQuota";
+		neo4j.execute(query, new JsonObject(), validResultHandler(handler));
 	}
 
 	@Override

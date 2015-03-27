@@ -123,6 +123,11 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				case "getQuotaGlobal" :
 					isSuperAdmin(user, handler);
 					break;
+				case "getDefault":
+					UserInfos.Function adminLocal = getFunction(user, handler);
+					if(adminLocal != null)
+						handler.handle(true);
+					break;
 				default: handler.handle(false);
 			}
 		}

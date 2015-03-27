@@ -92,6 +92,12 @@ public class QuotaController extends BaseController {
 		});
 	}
 
+	@Get("/quota/default")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getDefault(final HttpServerRequest request) {
+		quotaService.getDefaultMaxQuota(arrayResponseHandler(request));
+	}
+
 	@BusAddress("activation.ack")
 	public void initQuota(final Message<JsonObject> message){
 		String userId = message.body().getString("userId");
@@ -99,7 +105,7 @@ public class QuotaController extends BaseController {
 			quotaService.init(userId);
 		}
 	}
-	
+
 	@BusAddress("org.entcore.workspace.quota")
 	public void quotaEventBusHandler(final Message<JsonObject> message){
 		Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
@@ -113,11 +119,11 @@ public class QuotaController extends BaseController {
 				}
 			}
 		};
-		
+
 		String userId = message.body().getString("userId");
-		
+
 		switch (message.body().getString("action", "")) {
-			case "getUserQuota" : 
+			case "getUserQuota" :
 				quotaService.quotaAndUsage(userId, responseHandler);
 				break;
 			case "updateUserQuota" :
@@ -129,7 +135,7 @@ public class QuotaController extends BaseController {
 				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
 		}
 	}
-	
+
 
 	public void setQuotaService(QuotaService quotaService) {
 		this.quotaService = quotaService;
