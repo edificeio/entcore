@@ -4338,6 +4338,11 @@ function Account($scope){
 		$scope.$apply('nbNewMessages');
 	});
 
+	http().get('/directory/userbook/' + model.me.userId).done(function(data){
+		model.me.userbook = data;
+		$scope.$apply('me');
+	});
+
 	skin.listThemes(function(themes){
 		$scope.themes = themes;
 		$scope.$apply('themes');

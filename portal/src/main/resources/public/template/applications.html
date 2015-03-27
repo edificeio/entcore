@@ -5,7 +5,7 @@
 			<i18n>apps.drag</i18n>
 		</div>
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in bookmarkedApps | orderBy:'displayName' | filter:searchText">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in bookmarkedApps">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
