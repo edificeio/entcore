@@ -313,10 +313,10 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			if(result.inactive.length > 0){
 				notify.info(inactives);
 			}
-
-			result.undelivered.forEach(function(name){
-				notify.error(name + lang.translate('undelivered'));
-			});
+			var undelivered = result.undelivered.join(', ');
+			if(result.undelivered.length > 0){
+				notify.error(undelivered + lang.translate('undelivered'));
+			}
 		});
 		$scope.openFolder(model.folders.outbox.folderName);
 	};
