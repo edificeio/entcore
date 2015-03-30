@@ -84,7 +84,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					.substring(UserController.class.getName().length() + 1);
 			switch (method) {
 				case "delete" :
-				case "addFunction" :
 				case "removeFunction" :
 					adminOrTeacher(request, user, handler);
 					break;

@@ -33,6 +33,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.security.AddFunctionFilter;
 import org.entcore.directory.security.AdmlOfStructures;
 import org.entcore.directory.security.AdmlOfTwoUsers;
 import org.entcore.directory.security.RelativeStudentFilter;
@@ -251,6 +252,7 @@ public class UserController extends BaseController {
 
 	@Post("/user/function/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AddFunctionFilter.class)
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addFunction", new Handler<JsonObject>() {
