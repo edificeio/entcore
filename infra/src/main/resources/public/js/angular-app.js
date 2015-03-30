@@ -5004,7 +5004,9 @@ function MediaLibrary($scope){
 		if(newVal === 'audio'){
 			$scope.display.show = 'record';
 		}
+	});
 
+	$scope.$watch('visibility', function(newVal){
 		if(model.me.workflow.workspace.create){
 			if($scope.visibility === 'public'){
 				$scope.listFrom('publicDocuments');
