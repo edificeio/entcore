@@ -58,9 +58,15 @@
 			<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 			<div class="clear"></div>
 		</div>
-		<div class="row" ng-if="account.type !== 'Student'">
+		<div class="row" ng-if="account.type.indexOf('Student') < 0">
 			<label translate content="userBook.profile.telephone" class="four cell"></label>
 			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.homePhone" />
+			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
+			<div class="clear"></div>
+		</div>
+		<div class="row" ng-if="account.type.indexOf('Student') < 0">
+			<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
+			<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.mobile" />
 			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
 			<div class="clear"></div>
 		</div>

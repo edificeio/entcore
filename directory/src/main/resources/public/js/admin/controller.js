@@ -148,6 +148,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	template.open('userDetails', 'admin-user-details')
     $scope.structures = model.structures.structures
     $scope.lang = lang
+	$scope.phonePattern = new RegExp("^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$")
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
 	$scope.maxQuotas = {}

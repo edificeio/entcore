@@ -12,57 +12,95 @@
         tooltip="directory.directlink">
         <button class="directory-direct-link-button"></button>
     </a>
-    <button ng-click="updateUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.save")]]</button>
+    <button ng-click="updateUser(targetUser)" class="text-flow" style="margin-bottom:5px" ng-disabled="userDetailsForm.$invalid">[[lang.translate("directory.save")]]</button>
     <button ng-if="notCrossSearchTab()" ng-click="structure.unlinkUser(targetUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button>
     <button ng-click="deleteUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
     <button ng-if="!targetUser.blocked" ng-click="targetUser.block(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.block")]]</button>
     <button ng-if="targetUser.blocked" ng-click="targetUser.unblock(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.unblock")]]</button>
+    <div class="twelve cell warning" ng-if="userDetailsForm.$invalid">
+        <strong ng-repeat="(fieldName, status) in userDetailsForm.$error">
+            <div ng-if="status">[[lang.translate('directory.form.'+ fieldName)]]</div>
+        </strong>
+    </div>
 </div>
 <hr class="separator">
 <div class="twelve cell warning" ng-if="targetUser.blocked"><strong translate content="admin.blocked.account"/></div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[targetUser.id]]</div>
+<div class="twelve cell"><strong class="four cell">[[lang.translate("directory.externalId")]] :</strong> [[targetUser.externalId]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+targetUser.type)]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[targetUser.login]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
 <div class="twelve cell" ng-show="targetUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[targetUser.code]]</div>
 <div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]"><strong class="four cell">[[lang.translate("directory.functions")]]</strong> [[formatUserFunctions(targetUser)]]</div>
 <hr class="separator cell"/>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
-    <input type="text" ng-model="targetUser.firstName"/>
-</div>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
-    <input type="text" ng-model="targetUser.lastName"/>
-</div>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
-    <div ng-if="!targetUser.birthDate">
-        <div class="padding-top-5" style="display: inline-block; width: 30%"> [[lang.translate("directory.notFilled")]]</div>
-        <button ng-click="initUserBirth(targetUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+<form name="userDetailsForm" novalidate>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.firstName"/>
     </div>
-    <div ng-if="targetUser.birthDate">
-        <date-picker ng-model="targetUser.birthDate"></date-picker>
-        <button ng-click="targetUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.lastName"/>
     </div>
-</div>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userAddress")]]</strong>
-    <input type="text" ng-model="targetUser.address"/>
-</div>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userCity")]]</strong>
-    <input type="text" ng-model="targetUser.city"/>
-</div>
-<div class="twelve cell">
-    <strong class="four cell padding-top-5">[[lang.translate("directory.userZipCode")]]</strong>
-    <input type="text" ng-model="targetUser.zipCode"/>
-</div>
-<hr style="border: 1px solid black; margin: 15 0 15 0;" ng-if="!targetUser.code">
-<div class="row" ng-if="!targetUser.code">
-    <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
-    <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
-    <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="targetUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("userBook.profile.displayName")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.displayName"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
+        <div ng-if="!targetUser.birthDate">
+            <div class="six cell padding-top-5" style="display: inline-block"> [[lang.translate("directory.notFilled")]]</div>
+            <button ng-click="initUserBirth(targetUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+        </div>
+        <div ng-if="targetUser.birthDate">
+            <date-picker class="six cell" ng-model="targetUser.birthDate"></date-picker>
+            <button ng-click="targetUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+        </div>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userAddress")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.address"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userCity")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.city"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.userZipCode")]]</strong>
+        <input class="six cell" type="text" ng-model="targetUser.zipCode"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.admin.email")]] :</strong>
+        <input class="six cell" type="email" name="email" ng-model="targetUser.email"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("userBook.profile.telephone")]] :</strong>
+        <input class="six cell" type="tel" ng-pattern="phonePattern"
+               name="homePhone" ng-model="targetUser.homePhone"/>
+    </div>
+    <div class="twelve cell">
+        <strong class="four cell padding-top-5">[[lang.translate("directory.admin.mobilePhone")]] :</strong>
+        <input class="six cell" type="tel" ng-pattern="phonePattern"
+               name="mobilePhone" ng-model="targetUser.mobile"/>
+    </div>
+    <hr class="separator cell" ng-if="!targetUser.code">
+    <div class="row" ng-if="!targetUser.code">
+        <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
+        <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
+        <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="targetUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
+    </div>
+</form>
+<!-- Aaf Functions -->
+<div class="twelve cell" ng-if="targetUser.aafFunctions">
+    <hr class="separator">
+    <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.aaf.functions")]]</h3>
+    <div class="row">
+        <ul class="angle-list small" style="padding-left: 5%">
+            <li ng-repeat="function in targetUser.aafFunctions track by $index">
+                [[function]]
+            </li>
+        </ul>
+    </div>
 </div>
 <!-- Structures list -->
 <div class="twelve cell" ng-if="targetUser.data.structures && targetUser.data.structures.length > 0">
@@ -85,6 +123,18 @@
             <li ng-repeat="classe in targetUser.totalClasses | orderBy: 'name'">
                 <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classe.id]]" target="_blank">[[classe.name]]</a>
                 <button ng-click="classe.unlinkUser(targetUser, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close"></button>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- Functional groups -->
+<div class="twelve cell" ng-if="targetUser.functionalGroups && targetUser.functionalGroups.length > 0">
+    <hr class="separator">
+    <h3 class="ten cell" style="margin: 0 0 10 0;">[[lang.translate("directory.functional.groups")]]</h3>
+    <div class="row">
+        <ul class="angle-list small" style="padding-left: 5%">
+            <li ng-repeat="group in targetUser.functionalGroups | orderBy: 'name'">
+                [[group.name]]
             </li>
         </ul>
     </div>

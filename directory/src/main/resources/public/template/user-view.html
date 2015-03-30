@@ -52,10 +52,14 @@
 			<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 		</div>
 		<div class="row">
-			<div class="five cell">
-				<i18n>userBook.profile.telephone</i18n>
-			</div>
-			<em class="six cell">[[account.tel]]</em>
+			<div class="four cell"><label translate content="userBook.profile.telephone"></label></div>
+			<em class="six cell">[[account.homePhone]]</em>
+			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
+			<div class="clear"></div>
+		</div>
+		<div class="row">
+			<div class="four cell"><label translate content="userBook.profile.mobilePhone"></label></div>
+			<em class="six cell">[[account.mobile]]</em>
 			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
 		</div>
 		<div class="row">

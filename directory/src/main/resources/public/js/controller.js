@@ -212,7 +212,9 @@ function DirectoryController($scope, route, date, template){
 	}
 
 	$scope.colorFromType = function(type){
-		return colorsMatch[$scope.getType(type).toLowerCase()];
+		if(type instanceof Array)
+			return colorsMatch[type[0].toLowerCase()];
+		return colorsMatch[type.toLowerCase()];
 	};
 
 	$scope.filterTopStructures = function(structure){

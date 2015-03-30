@@ -142,10 +142,12 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
+				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) " +
 				"RETURN DISTINCT u.profiles as type, " +
 				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName}) END as children, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName}) END as parents, " +
+				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct {id: fgroup.id, name: fgroup.name}) END as functionalGroups, " +
 				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
 	}

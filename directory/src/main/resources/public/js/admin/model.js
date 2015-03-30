@@ -58,14 +58,15 @@ User.prototype.update = function(hook){
     http().putJson("user/"+that.id, {
         firstName:      that.firstName,
         lastName:       that.lastName,
-        displayName:    that.firstName+" "+that.lastName,
+        displayName:    that.displayName,
         birthDate:      that.birthDate ? moment(that.birthDate).format("YYYY-MM-DD") : null,
         address:        that.address,
         city:           that.city,
-        zipCode:        that.zipCode
+        zipCode:        that.zipCode,
+        email:          that.email,
+        homePhone:      that.homePhone
     }).done(function(){
         notify.info(lang.translate("directory.notify.userUpdate"))
-        that.displayName = that.firstName + " " + that.lastName
         hookCheck(hook)
     })
 }
