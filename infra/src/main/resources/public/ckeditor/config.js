@@ -6,9 +6,9 @@
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
 	config.allowedContent = true;
-	config.extraPlugins = 'upload,audio,videoembed,linker,mathjax';
+	config.extraPlugins = 'upload,audio,videoembed,linker,mathjax,html';
 	config.toolbar = [
-		{ name: 'document', items: ['Templates' ] },
+		{ name: 'document', items: ['Templates', 'HTML' ] },
 		{ name: 'clipboard', items: [ 'Undo', 'Redo' ] },
 		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
 		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },

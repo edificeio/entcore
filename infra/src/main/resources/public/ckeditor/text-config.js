@@ -5,9 +5,10 @@
 
 CKEDITOR.editorConfig = function(config){
 	config.title = false;
-	config.extraPlugins = 'mathjax,linker';
+	config.extraPlugins = 'mathjax,linker,html';
 	config.allowedContent = true;
 	config.toolbar = [
+		{ name: 'document', items: ['Templates', 'HTML' ] },
 		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },

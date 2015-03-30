@@ -223,36 +223,39 @@ module.directive('lightbox', function($compile){
 			onClose: '&'
 		},
 		template: '<div>'+
-					'<section class="lightbox-background"></section>'+
-					'<section class="lightbox-view">'+
-						'<div class="twelve cell" ng-transclude></div>'+
-						'<div class="close-lightbox">'+
-						'<i class="close-2x"></i>'+
+					'<section class="lightbox">' +
+						'<div class="content" ng-transclude>' +
+							'<div class="twelve cell" ng-transclude></div>'+
+							'<div class="close-lightbox">'+
+							'<i class="close-2x"></i>'+
+							'</div>'+
 						'</div>'+
-						'<div class="clear"></div>'+
 					'</section>'+
 				'</div>',
 		link: function(scope, element, attributes){
-			element.find('.lightbox-background, i.close-2x').on('click', function(){
-				element.find('.lightbox-view').first().fadeOut();
-				element.find('.lightbox-background').first().fadeOut();
+			var content = element.find('.content');
+			element.find('.lightbox, i.close-2x').on('click', function(e){
+				if(content.find(e.target).length > 0){
+					return;
+				}
+				element.find('.lightbox').first().fadeOut();
+				$('body').css({ position: 'relative' });
 
 				scope.$eval(scope.onClose);
 				if(!scope.$$phase){
 					scope.$parent.$apply();
 				}
 			});
-			element.find('.lightbox-view, .lightbox-background').on('mousedown', function(e){
+			element.find('.lightbox').on('mousedown', function(e){
 				e.stopPropagation();
 			});
 
 			scope.$watch('show', function(newVal){
 				if(newVal){
-                    var lightboxWindow = element.find('.lightbox-view');
-                    var backdrop = element.find('.lightbox-background');
+                    var lightboxWindow = element.find('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
-                    var parentElements = backdrop.parents()
+                    var parentElements = element.parents()
 
                     scope.backup = {
                         overflowX: _.filter(parentElements, function(parent){ return $(parent).css('overflow-x') == 'hidden' }),
@@ -269,18 +272,11 @@ module.directive('lightbox', function($compile){
                     //Ensuring proper z-index
                     _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', 9999) })
 
-					//delay to account for templates loading inside the lightbox
 					setTimeout(function(){
 						lightboxWindow.fadeIn();
-
-						lightboxWindow.css({
-							top: parseInt(($(window).height() - lightboxWindow.height()) / 2) + 'px'
-						});
 					}, 100);
 
-					setTimeout(function(){
-						backdrop.fadeIn();
-					}, 0);
+					$('body').css({ position: 'fixed', width: '100%' });
 				}
 				else{
                     if(scope.backup){
@@ -290,8 +286,8 @@ module.directive('lightbox', function($compile){
                         _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', elementObj.index) })
                     }
 
-					element.find('.lightbox-view').fadeOut();
-					element.find('.lightbox-background').fadeOut();
+					element.find('.lightbox').fadeOut();
+					$('body').css({ position: 'relative' });
 				}
 			})
 		}
@@ -1634,12 +1630,12 @@ var ckeEditorFixedPositionning = function(){
 };
 
 function createCKEditorInstance(editor, scope, $compile){
-	var ckeInstance;
+	var cke = { instance: null };
 	CKEDITOR.on('instanceReady', function(ck){
 		if(!(ck.editor.element.$ === editor[0])){
 			return;
 		}
-		ckeInstance = ck;
+		cke.instance = ck;
 		editor.html($compile((scope.ngModel(scope) || ''))(scope));
 		scope.$apply();
 
@@ -1656,14 +1652,14 @@ function createCKEditorInstance(editor, scope, $compile){
 	});
 
 	editor.on('blur', function(e) {
-		if(ckeInstance.editor.getData() !== scope.ngModel(scope)){
-			scope.ngModel.assign(scope, ckeInstance.editor.getData());
+		if(cke.instance.editor.getData() !== scope.ngModel(scope)){
+			scope.ngModel.assign(scope, cke.instance.editor.getData());
 			editor.attr('style', '');
 			scope.$apply();
 		}
 	});
 
-	return ckeEditorFixedPositionning;
+	return cke;
 }
 
 module.directive('textEditor', function($compile){
@@ -1676,7 +1672,12 @@ module.directive('textEditor', function($compile){
 			ngChange: '&'
 		},
 		template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
-			'<linker editor="contextEditor" on-change="updateContent()"></linker>',
+			'<linker editor="contextEditor" on-change="updateContent()"></linker>' +
+		'<lightbox show="editHtml" on-close="editHtml = false;">' +
+			'<h2><i18n>html</i18n></h2>' +
+		'<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
+		'<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
+		'</lightbox>',
 		compile: function(){
 			CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
 			if(window.CKEDITOR === undefined){
@@ -1754,10 +1755,20 @@ module.directive('textEditor', function($compile){
 					}
 				});
 
+				scope.applyHtml = function(){
+					editor.html(scope.selected.html);
+					scope.editHtml = false;
+				};
+
 				$('body').on('click', '#cke_' + instance.name + ' .cke_button__linker', function(){
 					$('#cke_' + instance.name).hide();
 					scope.display.chooseLink = true;
 					scope.$apply('display');
+				});
+				$('body').on('click', '#cke_' + instance.name + ' .cke_button__html', function(){
+					scope.editHtml = true;
+					scope.selected.html = editor.html();
+					scope.$apply('editHtml');
 				});
 
 				element.on('removed', function(){
@@ -1785,6 +1796,11 @@ module.directive('htmlEditor', function($compile, $parse){
 			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div>' +
 			'<linker editor="contextEditor" on-change="updateContent()"></linker>' +
+			'<lightbox show="editHtml" on-close="editHtml = false;">' +
+			'<h2><i18n>html</i18n></h2>' +
+			'<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
+			'<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
+			'</lightbox>' +
 			'<lightbox show="selectFiles" on-close="selectFiles = false;">' +
 			'<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
 			'</media-library></lightbox>' +
@@ -1825,7 +1841,7 @@ module.directive('htmlEditor', function($compile, $parse){
 				var contextEditor = CKEDITOR.inline(editor[0]);
 				scope.contextEditor = contextEditor;
 
-				createCKEditorInstance(editor, scope, $compile);
+				var cke = createCKEditorInstance(editor, scope, $compile);
 
 				scope.$watch(function(){
 						return scope.ngModel(scope);
@@ -1911,6 +1927,18 @@ module.directive('htmlEditor', function($compile, $parse){
                     scope.inputVideo = true;
                     scope.$apply('inputVideo');
                 });
+
+				$('body').on('click', '.cke_button__html', function(){
+					scope.editHtml = true;
+					scope.selected.html = editor.html();
+					scope.$apply('editHtml');
+				});
+
+				scope.applyHtml = function(){
+					editor.html(scope.selected.html);
+					scope.editHtml = false;
+					scope.updateContent();
+				};
 
                 scope.addVideoLink = function(htmlText){
                     //TODO : Escape dangerous html
@@ -5018,6 +5046,20 @@ function MediaLibrary($scope){
 		else if(model.me.workflow.workspace.list){
 			$scope.listFrom('sharedDocuments')
 		}
+
+		model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync, publicDocuments.sync', function(){
+			$scope.documents = filteredDocuments(model.mediaLibrary[$scope.display.listFrom]);
+			if(model.mediaLibrary[$scope.display.listFrom].folders){
+				$scope.folders = model.mediaLibrary[$scope.display.listFrom].folders.filter(function(folder){
+					return lang.removeAccents(folder.name.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
+				});
+				$scope.$apply('folders');
+			}
+
+			$scope.folder = model.mediaLibrary[$scope.display.listFrom];
+			$scope.openedFolder = $scope.folder;
+			$scope.$apply('documents');
+		});
 	});
 
 	function filteredDocuments(source){
@@ -5026,20 +5068,6 @@ function MediaLibrary($scope){
 				lang.removeAccents(doc.metadata.filename.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
 		});
 	}
-
-	model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync, publicDocuments.sync', function(){
-		$scope.documents = filteredDocuments(model.mediaLibrary[$scope.display.listFrom]);
-		if(model.mediaLibrary[$scope.display.listFrom].folders){
-			$scope.folders = model.mediaLibrary[$scope.display.listFrom].folders.filter(function(folder){
-				return lang.removeAccents(folder.name.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
-			});
-			$scope.$apply('folders');
-		}
-
-		$scope.folder = model.mediaLibrary[$scope.display.listFrom];
-		$scope.openedFolder = $scope.folder;
-		$scope.$apply('documents');
-	});
 
 	$scope.insertRecord = function(){
 		model.mediaLibrary.appDocuments.documents.sync();
