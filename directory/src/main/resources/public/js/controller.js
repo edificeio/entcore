@@ -80,6 +80,7 @@ function DirectoryController($scope, route, date, template){
 			$scope.title = 'profile';
 		},
 		directory: function(){
+			$scope.currentSchool = undefined;
 			model.directory.users.all = [];
 			model.network.schools.all = [];
 			$scope.users = model.directory.users;
