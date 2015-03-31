@@ -4556,8 +4556,6 @@ function Share($rootScope, $scope, ui, _, lang){
 		item.actions = {};
 		$scope.sharingModel.edited.push(item);
 		item.index = $scope.sharingModel.edited.length;
-		$scope.found = [];
-		$scope.search = '';
 
 		$scope.actions.forEach(function(action){
 			var actionId = action.displayName.split('.')[1];
