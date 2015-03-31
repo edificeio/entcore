@@ -280,14 +280,14 @@ public class PortalController extends BaseController {
 
 	@Get("/skins")
 	public void getSkins(final  HttpServerRequest request) {
-		if (!dev) {
-			renderJson(request, new JsonObject().putArray("skins", new JsonArray()), 200);
-		} else {
+		if (dev && skins != null) {
 			JsonArray joa = new JsonArray();
 			for (String s : skins.keySet()) {
 				joa.addString(s);
 			}
 			renderJson(request, new JsonObject().putArray("skins", joa), 200);
+		} else {
+			renderJson(request, new JsonObject().putArray("skins", new JsonArray()), 200);
 		}
 	}
 
@@ -334,9 +334,7 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		if (!dev){
-			renderJson(request, container.config().getArray("themes"));
-		} else {
+		if (dev && skins != null) {
 			JsonArray currentSkinThemes = new JsonArray();
 			for (String theme : skins.get(currentSkin(request))) {
 				currentSkinThemes.addObject(new JsonObject()
@@ -345,6 +343,8 @@ public class PortalController extends BaseController {
 						.putString("path", getThemePrefix(request) + "/" + theme + "/"));
 			}
 			renderJson(request, currentSkinThemes);
+		} else {
+			renderJson(request, container.config().getArray("themes"));
 		}
 	}
 
