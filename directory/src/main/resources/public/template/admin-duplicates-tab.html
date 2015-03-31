@@ -35,7 +35,7 @@
                     <td>[[ duplicate.user1.lastName ]]</td>
                     <td>[[ duplicate.user1.birthDate ]]</td>
                     <td>[[ duplicate.user1.email ]]</td>
-                    <td>[[ duplicate.profiles1[0] ]]</td>
+                    <td>[[ duplicate.user1.profiles[0] ]]</td>
                     <td rowspan=2>
                         <button ng-click="duplicate.merge(refreshDuplicates)"><i18n>merge</i18n></button>
                         <button ng-click="duplicate.dissociate(refreshDuplicates)"><i18n>dissociate</i18n></button>
@@ -54,7 +54,7 @@
                     <td>[[ duplicate.user2.lastName ]]</td>
                     <td>[[ duplicate.user2.birthDate ]]</td>
                     <td>[[ duplicate.user2.email ]]</td>
-                    <td>[[ duplicate.profiles2[0] ]]</td>
+                    <td>[[ duplicate.user2.profiles[0] ]]</td>
                 </tr>
             </tbody>
         </table>
