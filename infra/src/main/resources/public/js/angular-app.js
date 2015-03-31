@@ -224,6 +224,7 @@ module.directive('lightbox', function($compile){
 		},
 		template: '<div>'+
 					'<section class="lightbox">' +
+						'<div class="background"></div>' +
 						'<div class="content" ng-transclude>' +
 							'<div class="twelve cell" ng-transclude></div>'+
 							'<div class="close-lightbox">'+
@@ -234,10 +235,7 @@ module.directive('lightbox', function($compile){
 				'</div>',
 		link: function(scope, element, attributes){
 			var content = element.find('.content');
-			element.find('.lightbox, i.close-2x').on('click', function(e){
-				if(content.find(e.target).length > 0){
-					return;
-				}
+			element.find('.background, i.close-2x').on('click', function(e){
 				element.find('.lightbox').first().fadeOut();
 				$('body').css({ position: 'relative' });
 
@@ -4556,6 +4554,8 @@ function Share($rootScope, $scope, ui, _, lang){
 		item.actions = {};
 		$scope.sharingModel.edited.push(item);
 		item.index = $scope.sharingModel.edited.length;
+		var addedIndex = $scope.found.indexOf(item);
+		$scope.found.splice(addedIndex, 1);
 
 		$scope.actions.forEach(function(action){
 			var actionId = action.displayName.split('.')[1];
