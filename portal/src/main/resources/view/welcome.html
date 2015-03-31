@@ -51,10 +51,11 @@
 			};
 
 			$scope.removeBookmark = function($item){
-				if(_.findWhere(model.me.bookmarkedApps, { name: $item.name }) === undefined){
+				var item = _.findWhere(model.me.bookmarkedApps, { name: $item.name });
+				if(item === undefined){
 					return;
 				}
-				var itemIndex = model.me.bookmarkedApps.indexOf($item);
+				var itemIndex = model.me.bookmarkedApps.indexOf(item);
 				model.me.bookmarkedApps.splice(itemIndex, 1);
 				$scope.$apply();
 				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
