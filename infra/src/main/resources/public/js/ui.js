@@ -249,7 +249,7 @@ var ui = (function(){
 ui.extendElement = {
 	draggable: function(element, params){
 		element.on('mousedown', function(e){
-			if(element.data('lock') === true){
+			if(element.data('lock') === true || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))){
 				return;
 			}
 			var interrupt = false;
