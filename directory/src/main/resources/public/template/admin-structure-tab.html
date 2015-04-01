@@ -47,6 +47,7 @@
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.exportStructure")]]</h3>
         <div class="row" ng-init="exportData.params.filterActive = ''">
             <select class="five cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+                <option value="">[[lang.translate("directory.allProfiles")]]</option>
                 <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
                 <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
                 <option value="Relative">[[lang.translate("directory.Relative")]]</option>
@@ -65,9 +66,8 @@
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.importCSV")]]</h3>
         <div class="row">
             <select class="five cell row-item" ng-model="importCSVData.profile" ng-change="deleteIfEmpty(importCSVData, 'profile')">
-                <option value="">[[lang.translate("directory.allProfiles")]]</option>
-                <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
                 <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
                 <option value="Relative">[[lang.translate("directory.Relative")]]</option>
                 <option value="Student">[[lang.translate("directory.Student")]]</option>
                 <option value="Guest">[[lang.translate("directory.Guest")]]</option>
