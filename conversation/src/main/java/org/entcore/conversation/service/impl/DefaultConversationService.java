@@ -878,7 +878,8 @@ public class DefaultConversationService implements ConversationService {
 		if(validationParamsError(user, result, folderId)) return;
 
 		String query =
-			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)" +
+			"<-[targetParentRel: HAS_CHILD_FOLDER|HAS_CONVERSATION_FOLDER { trashed: true }]-(targetParent) " +
 			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
 			"DELETE trashedRel " +
 			"REMOVE targetParentRel.trashed "+
@@ -919,7 +920,8 @@ public class DefaultConversationService implements ConversationService {
 			"RETURN attachments";
 
 		String processMessages =
-			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)" +
+			"<-[targetParentRel: HAS_CHILD_FOLDER|HAS_CONVERSATION_FOLDER { trashed: true }]-(targetParent) " +
 			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
 			"MATCH (c)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder) " +
 			"WHERE trashFolder.name = {trash} " +
@@ -946,7 +948,8 @@ public class DefaultConversationService implements ConversationService {
 			"DELETE r, pr, al, a, messages";
 
 		String deleteFolders =
-			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)<-[targetParentRel { trashed: true }]-(targetParent) " +
+			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)" +
+			"<-[targetParentRel: HAS_CHILD_FOLDER|HAS_CONVERSATION_FOLDER { trashed: true }]-(targetParent) " +
 			"WHERE c.userId = {userId} AND c.active = {true} AND trashedFolder.id = {folderId} " +
 			"MATCH (trashedFolder)-[childrenPath: HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder) " +
 			"FOREACH (rel in childrenPath | DELETE rel) " +
