@@ -1437,7 +1437,10 @@ var recorder = (function(){
 		stop: function(){
 			this.status = 'idle';
 			player.pause();
-			player.currentTime = 0;
+			if(player.currentTime > 0){
+				player.currentTime = 0;
+			}
+
 			notifyFollowers(this.status);
 		},
 		flush: function(){
