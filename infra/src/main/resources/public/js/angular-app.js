@@ -287,7 +287,11 @@ module.directive('lightbox', function($compile){
 					element.find('.lightbox').fadeOut();
 					$('body').css({ position: 'relative' });
 				}
-			})
+			});
+
+			scope.$on("$destroy", function() {
+				$('body').css({ position: 'relative' });
+			});
 		}
 	}
 });
