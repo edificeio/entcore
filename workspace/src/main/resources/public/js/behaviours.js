@@ -43,8 +43,7 @@ Behaviours.register('workspace', {
 				right: 'org-entcore-workspace-service-WorkspaceService|updateDocument'
 			},
 			share: {
-				right: 'org-entcore-workspace-service-WorkspaceService|shareJsonSubmit',
-				workflow: 'org.entcore.workspace.service.WorkspaceService|shareJson'
+				right: 'org-entcore-workspace-service-WorkspaceService|shareJsonSubmit'
 			},
 			renameDocument: {
 				right: 'org-entcore-workspace-service-WorkspaceService|renameDocument'

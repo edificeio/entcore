@@ -25,7 +25,7 @@
                     <i class="arrow-bottom" ng-if="order.field === 'userName' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'userName' && order.desc"></i>
                 </th>
-                <th scope="col" class="date" ng-click="orderByField('date.$date')">
+                <th scope="col" ng-click="orderByField('date.$date')">
                     <span translate content="modified"></span>
                     <i class="arrow-bottom" ng-if="order.field === 'date.$date' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'date.$date' && order.desc"></i>
@@ -60,7 +60,7 @@
                 <td class="user">
                     <a ng-href="/userbook/annuaire#[[revision.userId]]">[[revision.userName]]</a>
                 </td>
-                <td class="date">
+                <td>
                     [[shortDate(revision.date.$date)]]
                 </td>
                 <td class="size">
