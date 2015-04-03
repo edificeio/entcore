@@ -5004,7 +5004,6 @@ function MediaLibrary($scope){
 
 	$scope.listFrom = function(listName){
 		$scope.display.listFrom = listName;
-		model.mediaLibrary[listName].sync();
 	};
 
 	$scope.openFolder = function(folder){
@@ -5030,6 +5029,11 @@ function MediaLibrary($scope){
 		if(newVal === 'audio'){
 			$scope.display.show = 'record';
 		}
+		else{
+			$scope.display.show = 'browse';
+		}
+
+		model.mediaLibrary[$scope.display.listFrom].sync();
 	});
 
 	$scope.$watch('visibility', function(newVal){
