@@ -97,19 +97,6 @@ function LoginController($scope, template){
 		}
 	}
 
-	$scope.skins = [];
-		http().get('/skins').done(function(data){
-		for(var i=0; i<data.skins.length; i++) {
-			$scope.skins.push({'id':data.skins[i], 'label':data.skins[i]});
-		}
-	});
-
-	$scope.switchSkin = function(){
-		http().putJson('/skin', {'skin': this.selectedSkin})
-			.done(function(data){
-			window.location = window.location;
-			});
-	};
 }
 
 function ForgotController($scope, template){

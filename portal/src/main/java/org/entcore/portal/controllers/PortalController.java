@@ -60,7 +60,6 @@ public class PortalController extends BaseController {
 
 	private ConcurrentMap<String, String> staticRessources;
 	private boolean dev;
-	private Map<String,List<String>> skins;
 	private Map<String, List<String>> themes;
 	private Map<String, String> hostSkin;
 	private String assetsPath;
@@ -89,21 +88,7 @@ public class PortalController extends BaseController {
 				}
 			});
 		}
-		ThemeUtils.availableSkins(vertx, assetsPath + "/assets/themes/", new Handler<Map<String, List<String>>>() {
-			@Override
-			public void handle(Map<String, List<String>> event) {
-				PortalController.this.skins = event;
-			}
-		});
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-	}
-
-	private String currentSkin(HttpServerRequest request) {
-		String skin = getSkinFromDomain(request);
-		if (dev && request != null && CookieHelper.get("customSkin", request) != null) {
-			skin = CookieHelper.get("customSkin", request);
-		}
-		return skin;
 	}
 
 	@Get("/welcome")
@@ -191,8 +176,7 @@ public class PortalController extends BaseController {
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		String skin = (dev) ? currentSkin(request) : getSkinFromDomain(request);
-		return "/assets/themes/" + skin;
+		return "/assets/themes/" + getSkinFromDomain(request);
 	}
 
 	private void sendWithLastModified(final HttpServerRequest request, final String path) {
@@ -249,8 +233,7 @@ public class PortalController extends BaseController {
 								String userTheme = (result != null && result.size() == 1) ?
 										result.<JsonObject>get(0).getString("theme") : null;
 								List<String> t = themes.get(request.headers().get("Host"));
-								if ((dev && userTheme != null && skins != null && skins.get(currentSkin(request)).contains(userTheme)) ||
-										(userTheme != null && t != null && t.contains(userTheme))) {
+								if (userTheme != null && t != null && t.contains(userTheme)) {
 									theme.putString("skin", getThemePrefix(request) + "/" + userTheme + "/");
 								} else {
 									theme.putString("skin", getThemePrefix(request) + "/default/");
@@ -271,24 +254,12 @@ public class PortalController extends BaseController {
 
 	@Get("/skin")
 	public void getSkin(final HttpServerRequest request) {
-		if (dev) {
-			renderJson(request, new JsonObject().putString("skin", currentSkin(request)));
-		} else {
-			renderJson(request, new JsonObject().putString("skin", getSkinFromDomain(request)));
-		}
+		renderJson(request, new JsonObject().putString("skin", getSkinFromDomain(request)));
 	}
 
 	@Get("/skins")
 	public void getSkins(final  HttpServerRequest request) {
-		if (dev && skins != null) {
-			JsonArray joa = new JsonArray();
-			for (String s : skins.keySet()) {
-				joa.addString(s);
-			}
-			renderJson(request, new JsonObject().putArray("skins", joa), 200);
-		} else {
-			renderJson(request, new JsonObject().putArray("skins", new JsonArray()), 200);
-		}
+		renderJson(request, new JsonObject().putArray("skins", new JsonArray()), 200);
 	}
 
 	@Put("skin")
@@ -334,18 +305,7 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		if (dev && skins != null) {
-			JsonArray currentSkinThemes = new JsonArray();
-			for (String theme : skins.get(currentSkin(request))) {
-				currentSkinThemes.addObject(new JsonObject()
-						.putString("_id", theme)
-						.putString("displayName", theme)
-						.putString("path", getThemePrefix(request) + "/" + theme + "/"));
-			}
-			renderJson(request, currentSkinThemes);
-		} else {
-			renderJson(request, container.config().getArray("themes"));
-		}
+		renderJson(request, container.config().getArray("themes"));
 	}
 
 	@Get("/admin")

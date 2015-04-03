@@ -58,30 +58,4 @@ public class ThemeUtils {
 		});
 	}
 
-	public static void availableSkins(final Vertx vertx, final String themesDir, final Handler<Map<String,List<String>>> skins) {
-		vertx.fileSystem().readDir(themesDir, new Handler<AsyncResult<String[]>>() {
-			@Override
-			public void handle(AsyncResult<String[]> event) {
-			if (event.succeeded() && event.result().length > 0) {
-					final String[] files = event.result();
-					final Map<String,List<String>> skinsAsMap = new HashMap<>();
-					for (int i = 0; i < files.length; i++) {
-						final String skin = new File(files[i]).getName();
-						availableThemes(vertx, themesDir + skin, false, new Handler<List<String>>() {
-							@Override
-							public void handle(List<String> event) {
-								skinsAsMap.put(skin, event);
-								if (skinsAsMap.size() == files.length) {
-									skins.handle(skinsAsMap);
-								}
-							}
-						});
-					}
-				} else {
-					skins.handle(Collections.<String, List<String>>emptyMap());
-				}
-			}
-		});
-	}
-
 }

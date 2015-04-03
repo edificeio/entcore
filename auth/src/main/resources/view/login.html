@@ -28,12 +28,6 @@
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 	</head>
 	<body ng-controller="LoginController">
-		<div ng-if="skins.length > 1" class="row" style="position:absolute; z-index:1000">
-			<select ng-model="selectedSkin"
-					ng-options="s.id as s.label for s in skins"
-					ng-change="switchSkin()">
-			</select>[[selectedSkin]]
-		</div>
 		<default-styles>
 			<div class="absolute">
              <div ng-include="template.containers.main"></div>
