@@ -458,14 +458,14 @@ Structure.prototype.importCSV = function(file, profile, hook){
     form.append('file', file);
     http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile, form)
     .done(function(){
-       hookCheck(hook)
+        notify.info((lang.translate("directory.notify.csv.imported")))
+        hookCheck(hook)
     })
     .e400(function(e){
-        this.sync();
-        var error = JSON.parse(e.responseText).message;
-        var errWithIdx = error.split(/\s/);
-        if (errWithIdx.length === 2) {
-            notify.error(lang.translate(errWithIdx[0]) + errWithIdx[1]);
+        var error = JSON.parse(e.responseText).error;
+        var errWithIdx = error ? error.split(/\s/) : [];
+        if (errWithIdx.length > 1) {
+            notify.error(lang.translate(errWithIdx[0]) + '<br>' + errWithIdx[1]);
         } else {
             notify.error(error);
         }

@@ -62,7 +62,9 @@
                 <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
             </select>
         </div>
-        <button class="three cell margin-top-5" ng-click="exportItem(structure, 'structureId')" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.export")]]</button>
+        <button class="three cell margin-top-5" ng-click="exportItem(structure, 'structureId')" style="margin-left: 0%; font-size: 12; padding: 2;">
+            [[lang.translate("directory.export")]]
+        </button>
         <!-- Import CSV -->
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.importCSV")]]</h3>
@@ -74,9 +76,17 @@
                 <option value="Student">[[lang.translate("directory.Student")]]</option>
                 <option value="Guest">[[lang.translate("directory.Guest")]]</option>
             </select>
-            <input class="five cell" type="file" files-input-change ng-model="importCSVData.csv" />
+            <div class="three cell file-btn-container">
+                <input type="file" files-input-change ng-model="importCSVData.csv" />
+                <label>[[ importCSVData.csv && importCSVData.csv.length > 0 ? importCSVData.csv[0].name : lang.translate("choose.file") ]]</label>
+            </div>
         </div>
-        <button class="three cell margin-top-5" ng-click="importCSV(structure)" style="margin-left: 0%; font-size: 12; padding: 2;">[[lang.translate("directory.import")]]</button>
+        <button class="three cell margin-top-5"
+                ng-click="importCSV(structure)"
+                ng-disabled="!importCSVData.profile || !importCSVData.csv || importCSVData.csv.length < 1"
+                style="margin-left: 0%; font-size: 12; padding: 2;">
+            [[lang.translate("directory.import")]]
+        </button>
         <!-- Structure grouping -->
         <hr class="separator cell" ng-if="isCentralAdmin()">
         <div class="twelve cell" ng-if="isCentralAdmin()">

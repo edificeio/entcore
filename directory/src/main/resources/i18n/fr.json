@@ -15,6 +15,7 @@
     "birthday.title": "Anniversaires",
     "change.password": "Modifier mon mot de passe",
     "choose": "Choisir",
+    "choose.file": "Choisir un fichier",
     "classAdmin.className": "Nom de la classe",
     "classAdmin.exportFile": "Exporter les codes d'activation",
     "classAdmin.fileHelp": "Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice).",
@@ -355,5 +356,9 @@
     "sniplet.facebook.desc": "Affiche la liste des membres des groupes de votre choix.",
     "sniplet.facebook.selected.groups": "Groupes à afficher",
     "sniplet.facebook.search": "Recherchez les groupes dont vous voulez afficher les membres",
-    "sniplet.facebook.search.title": "Rechercher des groupes"
+    "sniplet.facebook.search.title": "Rechercher des groupes",
+    "directory.notify.csv.imported": "Le fichier a été importé",
+    "invalid.column": "Colonne invalide",
+    "invalid.structure": "Structure invalide",
+    "invalid.child.mapping": "Relation parents/enfants invalide"
 }
