@@ -38,7 +38,9 @@
             <strong class="four cell padding-top-5">[[lang.translate("directory.structure.parents")]]</strong>
             <nav class="eight cell">
                 <ul class="angle-list small" style="margin: 0">
-                    <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name'">[[parent.name]] <button class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button></li>
+                    <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name'">
+                        [[parent.name]] <button ng-if="isCentralAdmin()" class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button>
+                    </li>
                 </ul>
             </nav>
         </div>
