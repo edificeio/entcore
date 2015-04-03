@@ -5021,21 +5021,6 @@ function MediaLibrary($scope){
 		});
 	};
 
-	$scope.$watch('fileFormat', function(newVal){
-		if(!newVal){
-			return;
-		}
-
-		if(newVal === 'audio'){
-			$scope.display.show = 'record';
-		}
-		else{
-			$scope.display.show = 'browse';
-		}
-
-		model.mediaLibrary[$scope.display.listFrom].sync();
-	});
-
 	$scope.$watch('visibility', function(newVal){
 		if(model.me.workflow.workspace.create){
 			if($scope.visibility === 'public'){
@@ -5061,6 +5046,21 @@ function MediaLibrary($scope){
 			$scope.folder = model.mediaLibrary[$scope.display.listFrom];
 			$scope.openedFolder = $scope.folder;
 			$scope.$apply('documents');
+		});
+
+		$scope.$watch('fileFormat', function(newVal){
+			if(!newVal){
+				return;
+			}
+
+			if(newVal === 'audio'){
+				$scope.display.show = 'record';
+			}
+			else{
+				$scope.display.show = 'browse';
+			}
+
+			model.mediaLibrary[$scope.display.listFrom].sync();
 		});
 	});
 
