@@ -473,6 +473,7 @@ module.directive('linker', function($compile){
 					var prefix = _.find(apps, function(a){ return app.address.indexOf(a) !== -1 && app.icon &&  app.icon.indexOf('/') === -1 });
 					if(prefix){
 						app.prefix = prefix;
+						app.displayName = lang.translate(app.displayName);
 						Behaviours.loadBehaviours(app.prefix, function(behaviours){
 							n--;
 							if(behaviours.loadResources){

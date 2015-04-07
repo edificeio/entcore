@@ -22,7 +22,7 @@
 			<div class="row">
 				<div class="twelve cell vertical-spacing">
 					<div class="row">
-            <select ng-model="linker.search.application" ng-options="app.name for app in linker.apps" class="five cell" ng-change="linker.loadApplicationResources()"></select>
+            <select ng-model="linker.search.application" ng-options="app.displayName for app in linker.apps" class="five cell" ng-change="linker.loadApplicationResources()"></select>
             <input type="text" i18n-placeholder="search" ng-model="linker.search.text" class="six cell right-magnet" ng-change="linker.searchApplication()" />
 					</div>
 				</div>
