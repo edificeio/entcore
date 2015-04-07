@@ -1067,64 +1067,69 @@ Behaviours = (function(){
 			if(!params.provider.resource.shared){
 				return;
 			}
-			http().get('/' + params.provider.application + '/rights/sharing').done(function(providerSharing){
-				http().get('/' + params.target.application + '/rights/sharing').done(function(targetSharing){
-					params.provider.resource.shared.forEach(function(share){
-						if(share.userId === model.me.userId){
-							return;
-						}
-						var data = {  };
-						if(share.groupId){
-							data.groupId = share.groupId;
-						}
-						else{
-							data.userId = share.userId;
-						}
-
-						var bundles = { read: false, contrib: false, publish: false, comment: false, manager: false };
-						for(var property in share){
-							for(var bundle in providerSharing){
-								if(providerSharing[bundle].indexOf(property) !== -1){
-									var bundleSplit = bundle.split('.');
-									bundles[bundleSplit[bundleSplit.length - 1]] = true;
-								}
+			http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function(config){
+				http().get('/' + params.provider.application + '/rights/sharing').done(function(providerSharing){
+					http().get('/' + params.target.application + '/rights/sharing').done(function(targetSharing){
+						params.provider.resource.shared.forEach(function(share){
+							if(share.userId === model.me.userId){
+								return;
 							}
-						}
+							var data = {  };
+							if(share.groupId){
+								data.groupId = share.groupId;
+							}
+							else{
+								data.userId = share.userId;
+							}
 
-						function addRights(targetResource){
-							data.actions = [];
-							for(var bundle in bundles){
-								if(!bundles[bundle]){
-									continue;
-								}
-								for(var targetBundle in targetSharing){
-									var targetBundleSplit = targetBundle.split('.');
-									if(targetBundleSplit[targetBundleSplit.length - 1].indexOf(bundle) !== -1){
-										targetSharing[targetBundle].forEach(function(right){
-											data.actions.push(right);
+							var bundles = { read: false, contrib: false, publish: false, comment: false, manager: false };
+							for(var property in share){
+								for(var bundle in providerSharing){
+									if(providerSharing[bundle].indexOf(property) !== -1){
+										var bundleSplit = bundle.split('.');
+										bundles[bundleSplit[bundleSplit.length - 1]] = true;
+										config[bundleSplit[bundleSplit.length - 1]].requires.forEach(function(required){
+											bundles[required] = true;
 										});
 									}
 								}
 							}
 
-							http().put('/' + params.target.application + '/share/json/' + targetResource, http().serialize(data)).e401(function(){});
-						}
+							function addRights(targetResource){
+								data.actions = [];
+								for(var bundle in bundles){
+									if(!bundles[bundle]){
+										continue;
+									}
+									for(var targetBundle in targetSharing){
+										var targetBundleSplit = targetBundle.split('.');
+										if(targetBundleSplit[targetBundleSplit.length - 1].indexOf(bundle) !== -1){
+											targetSharing[targetBundle].forEach(function(right){
+												data.actions.push(right);
+											});
+										}
+									}
+								}
 
-						//drop rights if I'm not part of the group
-						if(model.me.groupsIds.indexOf(share.groupId) === -1){
-							params.target.resources.forEach(function(targetResource){
-								http().put('/' + params.target.application + '/share/remove/' + targetResource, data).done(function(){
-									addRights(targetResource);
-								}).e401(function(){});
-							})
-						}
-						//simply add rights bundles (don't want to remove my own manager right)
-						else{
-							params.target.resources.forEach(addRights);
-						}
+								http().put('/' + params.target.application + '/share/json/' + targetResource, http().serialize(data)).e401(function(){});
+							}
+
+							//drop rights if I'm not part of the group
+							if(model.me.groupsIds.indexOf(share.groupId) === -1){
+								params.target.resources.forEach(function(targetResource){
+									http().put('/' + params.target.application + '/share/remove/' + targetResource, data).done(function(){
+										addRights(targetResource);
+									}).e401(function(){});
+								})
+							}
+							//simply add rights bundles (don't want to remove my own manager right)
+							else{
+								params.target.resources.forEach(addRights);
+							}
+						});
 					});
 				});
-			});
+			}.bind(this));
 		},
 		register: function(application, appBehaviours){
 			this.applicationsBehaviours[application] = {};
