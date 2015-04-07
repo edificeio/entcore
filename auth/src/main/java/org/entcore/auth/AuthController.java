@@ -302,6 +302,9 @@ public class AuthController extends BaseController {
 		String c = request.params().get("callback");
 		final StringBuilder callback = new StringBuilder();
 		if (c != null && !c.trim().isEmpty()) {
+			if (c.contains("_current-domain_")) {
+				c = c.replaceAll("_current\\-domain_", request.headers().get("Host"));
+			}
 			try {
 				callback.append(URLDecoder.decode(c, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
