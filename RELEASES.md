@@ -1,6 +1,13 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.12.1 (07/04/2015)
+
+## Anomalies corrigées
+
+* Profil en double dans la réponse des infos d'un utilisateur
+* Validation Pronote invalide pour les utilisateurs multi-profils
+
 # v1.12.0 (05/03/2015)
 
 ## Archive
