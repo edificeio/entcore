@@ -65,8 +65,8 @@
 			</div>
 			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true" ng-class="{ selected: document.selected }">
 				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
-					<div class="clip twelve cell">
-						<img class="absolute" ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+					<div class="clip">
+						<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
 					</div>
 				</div>
 				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
