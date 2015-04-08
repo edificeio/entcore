@@ -175,7 +175,9 @@ public class UserUtils {
 		String arg = name.substring(0, idx);
 		String type = name.substring(idx + 1);
 		String displayName = group.getString("groupDisplayName", "group." + type);
-		group.putString("name", i18n.translate(displayName, acceptLanguage, arg));
+		String translatedName = i18n.translate(displayName, acceptLanguage, arg);
+		if(!translatedName.equals(displayName))
+			group.putString("name", translatedName);
 	}
 
 	public static String groupDisplayName(String name, String groupDisplayName, String acceptLanguage) {
