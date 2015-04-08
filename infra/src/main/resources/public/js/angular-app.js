@@ -2269,11 +2269,12 @@ module.directive('tooltip', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
+			var tip;
 			element.on('mouseover', function(){
 				if(!attributes.tooltip || attributes.tooltip === 'undefined'){
 					return;
 				}
-				var tip = $('<div />')
+				tip = $('<div />')
 					.addClass('tooltip')
 					.html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
 					.appendTo('body');
@@ -2292,8 +2293,8 @@ module.directive('tooltip', function($compile){
 			});
 
 			scope.$on("$destroy", function() {
-				element.trigger('mouseout')
-				element.off()
+				tip.remove();
+				element.off();
 			});
 
 		}
