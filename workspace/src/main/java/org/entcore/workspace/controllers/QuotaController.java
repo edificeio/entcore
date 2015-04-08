@@ -108,7 +108,8 @@ public class QuotaController extends BaseController {
 				if (res.isRight()) {
 					message.reply(res.right().getValue());
 				} else {
-					message.reply(new JsonArray());
+					message.reply(new JsonObject().putString("status", "error")
+							.putString("message", res.left().getValue()));
 				}
 			}
 		};
