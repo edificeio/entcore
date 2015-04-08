@@ -2293,7 +2293,10 @@ module.directive('tooltip', function($compile){
 			});
 
 			scope.$on("$destroy", function() {
-				tip.remove();
+				if(tip){
+					tip.remove();
+				}
+
 				element.off();
 			});
 
