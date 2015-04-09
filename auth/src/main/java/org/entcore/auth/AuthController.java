@@ -458,7 +458,7 @@ public class AuthController extends BaseController {
 								eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
 								if (container.config().getBoolean("activationAutoLogin", false)) {
 									createSession(activated.right().getValue(), request,
-											container.config().getString("host"));
+											getScheme(request) + "://" + getHost(request));
 								} else {
 									redirect(request, "/auth/login");
 								}
