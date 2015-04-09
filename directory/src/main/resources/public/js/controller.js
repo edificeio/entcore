@@ -50,7 +50,13 @@ function DirectoryController($scope, route, date, template){
 		}
 	};
 
-	var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
+	var colorsMatch = {
+		relative: 'cyan',
+		teacher: 'green',
+		student: 'orange',
+		personnel: 'purple',
+		guest: 'pink'
+	};
 
 	$scope.increaseSearchSize = function(){
 		$scope.search.maxLength += 15;
