@@ -143,6 +143,7 @@
     "directory.groupName": "Nom du groupe",
     "directory.groupOps": "Opérations sur les groupes",
     "directory.groupUsers": "Utilisateurs dans le groupe",
+    "directory.guest": "Invité",
     "directory.import": "Importer",
     "directory.importCSV": "Import CSV",
     "directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
