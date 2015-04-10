@@ -1,6 +1,65 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.13.0 (15/04/2015)
+
+## Conversation
+
+* Gestion des dossiers
+* Gestion des pièces jointes
+* Ajout du drag and drop
+
+## Directory
+
+* Onglet de recherche d'utilisateurs sur toutes les structures
+* Vue pour afficher son réseau
+* Sniplet trombinoscope
+* Multithèmes dans l'admin
+* Gestion des structures pour les ADML
+* Ajout d'information dans la fiche utilisateur
+
+## Feeder
+
+* Ajout du profil invité
+* Ajout de la source de l'import dans les informations de l'utilisateur
+* Gestion des doublons
+* Decodage des htmlentities dans les fichiers AAF
+* Modification du validateur pour ne pas bloquer l'import si certains champs facultatifs sont invalides
+* Import csv
+
+## Infra
+
+* Ajout du mode public dans la bibliothèque multimedia
+* Visualisation du code source dans l'éditeur
+
+## Portal
+
+* Gestion du multi-thèmes en fonction du domaine
+* Changement de appPrefix dans l'adapter
+
+## Recorder
+
+* Nouveau widget pour effectuer une capture sonore depuis le micro
+* Possibilité d'enregistrer du son depuis la bibliothèque multimédia
+
+## Session
+
+* Changement du comportement des sessions pour avoir :
+** Une session qui expire à la fermeture du navigateur
+** La possibilité de garder une session persistante
+
+## Timeline
+
+* Rendre les uri relatives
+
+## Workspace
+
+* Visionneuse de documents pour les images, sons, vidéos et pdf
+* Sélecteur pour indiquer le niveau de compression des images lors de l'ajout
+* Possibilité d'avoir des documents publics (accesibles pour des utilisateurs non connectés)
+* Correction des droits pour le versionning
+* Possibilité de supprimer des commentaires
+
 # v1.12.1 (07/04/2015)
 
 ## Anomalies corrigées
