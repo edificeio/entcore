@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.FileProps;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -61,6 +62,7 @@ public class PortalController extends BaseController {
 	private ConcurrentMap<String, String> staticRessources;
 	private boolean dev;
 	private Map<String, List<String>> themes;
+	private Map<String, JsonArray> themesDetails;
 	private Map<String, String> hostSkin;
 	private String assetsPath;
 	private EventStore eventStore;
@@ -68,7 +70,7 @@ public class PortalController extends BaseController {
 	private String defaultSkin;
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(final Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
@@ -77,6 +79,7 @@ public class PortalController extends BaseController {
 		JsonObject skins = container.config().getObject("skins", new JsonObject());
 		defaultSkin = container.config().getString("skin", "raw");
 		themes = new HashMap<>();
+		themesDetails = new HashMap<>();
 		this.hostSkin = new HashMap<>();
 		for (final String domain: skins.getFieldNames()) {
 			final String skin = skins.getString(domain);
@@ -85,6 +88,30 @@ public class PortalController extends BaseController {
 				@Override
 				public void handle(List<String> event) {
 					themes.put(domain, event);
+					JsonArray a = new JsonArray();
+					for (final String s : event) {
+						String path = assetsPath + "/assets/themes/" + skin + "/" + s + "/";
+						final JsonObject j = new JsonObject()
+								.putString("_id", s)
+								.putString("path", path);
+						if ("default".equals(s)) {
+							vertx.fileSystem().readFile(path + "/details.json", new Handler<AsyncResult<Buffer>>() {
+								@Override
+								public void handle(AsyncResult<Buffer> event) {
+									if (event.succeeded()) {
+										JsonObject d = new JsonObject(event.result().toString());
+										j.putString("displayName", d.getString("displayName"));
+									} else {
+										j.putString("displayName", s);
+									}
+								}
+							});
+						} else {
+							j.putString("displayName", s);
+						}
+						a.add(j);
+					}
+					themesDetails.put(domain, a);
 				}
 			});
 		}
@@ -171,7 +198,7 @@ public class PortalController extends BaseController {
 		if (request == null) {
 			return defaultSkin;
 		}
-		String skin = hostSkin.get(request.headers().get("Host"));
+		String skin = hostSkin.get(getHost(request));
 		return (skin != null && !skin.trim().isEmpty()) ? skin : defaultSkin;
 	}
 
@@ -232,7 +259,7 @@ public class PortalController extends BaseController {
 								JsonArray result = event.body().getArray("result");
 								String userTheme = (result != null && result.size() == 1) ?
 										result.<JsonObject>get(0).getString("theme") : null;
-								List<String> t = themes.get(request.headers().get("Host"));
+								List<String> t = themes.get(getHost(request));
 								if (userTheme != null && t != null && t.contains(userTheme)) {
 									theme.putString("skin", getThemePrefix(request) + "/" + userTheme + "/");
 								} else {
@@ -305,7 +332,11 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		renderJson(request, container.config().getArray("themes"));
+		JsonArray themes = themesDetails.get(getHost(request));
+		if (themes == null) {
+			themes = new JsonArray();
+		}
+		renderJson(request, themes);
 	}
 
 	@Get("/admin")
