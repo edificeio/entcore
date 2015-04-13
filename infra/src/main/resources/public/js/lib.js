@@ -280,6 +280,9 @@ function Collection(obj){
 			this.current = item;
 			this.trigger('change');
 		},
+		slice: function(a, b){
+			return this.all.slice(a, b);
+		},
 		push: function(element, notify){
 			var newItem = element;
 			if(this.obj === undefined){

@@ -42,28 +42,6 @@ var ui = (function(){
 		}
 	};
 
-	var iframeLightbox = {
-		show: function(){
-			$('.lightbox-backdrop').fadeIn('normal', function(){
-				messenger.requireResize();
-			});
-			$('.lightbox-window').fadeIn()
-			$('.lightbox-window').css({ 'margin-left': '-' + ($('.lightbox-window').width() / 2) + 'px'});
-
-			messenger.requireLightbox();
-			//For now, we ignore parent size and base ourselves on iframe size only.
-			messenger.sendMessage({
-				name: 'where-lightbox',
-				data: {}
-			});
-		},
-		hide: function(){
-			$('.lightbox-backdrop').fadeOut();
-			$('.lightbox-window').fadeOut();
-			messenger.closeLightbox();
-		}
-	}
-
 	var uiInterface = {
 		scrollToTop: function(){
 			var scrollUp = function(){
@@ -77,20 +55,10 @@ var ui = (function(){
 			scrollUp();
 		},
 		showLightbox: function(){
-			if(parent !== window){
-				iframeLightbox.show();
-			}
-			else{
-				mainLightbox.show();
-			}
+			mainLightbox.show();
 		},
 		hideLightbox: function(){
-			if(parent !== window){
-				iframeLightbox.hide();
-			}
-			else{
-				mainLightbox.hide();
-			}
+			mainLightbox.hide();
 		},
 		updateAvatar: function(){
 			var scope = angular.element(document.getElementById('my-photo')).scope();
@@ -135,7 +103,7 @@ var ui = (function(){
 		var resizeTextarea = function(){
 			$(this).height(1);
 			$(this).height(this.scrollHeight - 1);
-		}
+		};
 
 		$('body').on('keydown', 'textarea.inline-editing', resizeTextarea);
 		$('body').on('keyup', 'textarea.inline-editing', resizeTextarea);
@@ -225,6 +193,15 @@ var ui = (function(){
 				optionsList.removeClass('toggle-visible');
 				$(document).unbind('click.close');
 				e.preventDefault();
+			})
+		});
+
+		//CSS transitions expansions
+		$('body').on('click', 'article.preview', function(){
+			$(this).height(this.scrollHeight);
+			$(this).one('click', function(){
+				$(this).removeAttr('style');
+				return false;
 			})
 		});
 	});
