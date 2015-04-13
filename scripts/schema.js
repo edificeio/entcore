@@ -1,3 +1,14 @@
 db.documents.ensureIndex({ "owner" : 1 });
 db.documents.ensureIndex({ "folder" : 1 });
 db.documents.ensureIndex({ "old-folder" : 1 });
+db.events.ensureIndex({ "resource" : 1 });
+db.events.ensureIndex({ "event-type" : 1 });
+db.events.ensureIndex({ "module" : 1 });
+db.events.ensureIndex({ "date" : 1 });
+db.events.ensureIndex({ "userId" : 1 });
+db.events.ensureIndex({ "profil" : 1 });
+db.events.ensureIndex({ "structures" : 1 });
+db.events.ensureIndex({ "classes" : 1 });
+db.events.ensureIndex({ "groups" : 1 });
+db.events.ensureIndex({ "referer" : 1 });
+db.events.ensureIndex({ "sessionId" : 1 });
