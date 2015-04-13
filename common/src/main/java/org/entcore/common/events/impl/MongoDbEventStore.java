@@ -32,7 +32,7 @@ public class MongoDbEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
-		mongoDb.save(COLLECTION, event, new Handler<Message<JsonObject>>() {
+		mongoDb.insert(COLLECTION, event, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
