@@ -20,9 +20,11 @@
 package org.entcore.auth.oauth;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.security.Md5;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
@@ -37,6 +39,8 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.wseduc.webutils.security.BCrypt;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 public class OAuthDataHandler extends DataHandler {
 	private final Neo4j neo;
@@ -44,6 +48,7 @@ public class OAuthDataHandler extends DataHandler {
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
+	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo) {
 		super(request);
@@ -79,7 +84,7 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	@Override
-	public void getUserId(String username, final String password, final Handler<String> handler) {
+	public void getUserId(final String username, final String password, final Handler<String> handler) {
 		if (username != null && password != null &&
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
@@ -97,8 +102,28 @@ public class OAuthDataHandler extends DataHandler {
 					if ("ok".equals(res.body().getString("status")) &&
 							result != null && result.size() == 1) {
 						JsonObject r = result.get(0);
-						if (r != null && BCrypt.checkpw(password, r.getString("password"))) {
-							handler.handle(r.getString("userId"));
+						String dbPassword;
+						if (r != null && (dbPassword = r.getString("password")) != null) {
+							boolean success = false;
+							switch (dbPassword.length()) {
+								case 32: // md5
+									try {
+										success = !dbPassword.trim().isEmpty() && dbPassword.equalsIgnoreCase(Md5.hash(password));
+									} catch (NoSuchAlgorithmException e) {
+										log.error(e.getMessage(), e);
+									}
+									if (success) {
+										upgradeOldPassword(username, password);
+									}
+									break;
+								default: // BCrypt
+									success = BCrypt.checkpw(password, dbPassword);
+							}
+							if (success) {
+								handler.handle(r.getString("userId"));
+							} else {
+								handler.handle(null);
+							}
 						} else {
 							handler.handle(null);
 						}
@@ -110,6 +135,21 @@ public class OAuthDataHandler extends DataHandler {
 		} else {
 			handler.handle(null);
 		}
+	}
+
+	private void upgradeOldPassword(final String username, String password) {
+		String query = "MATCH (u:User {login: {login}}) SET u.password = {password} ";
+		JsonObject params = new JsonObject()
+				.putString("login", username)
+				.putString("password", BCrypt.hashpw(password, BCrypt.gensalt()));
+		neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if (!"ok".equals(event.body().getString("status"))) {
+					log.error("Error updating old password for user " + username + " : " + event.body().getString("message"));
+				}
+			}
+		});
 	}
 
 	@Override
