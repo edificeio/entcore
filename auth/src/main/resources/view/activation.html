@@ -26,7 +26,8 @@
 		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>
 		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
 	</head>
-	<body ng-controller="ActivationController">
+	<body ng-controller="ActivationController"
+		  ng-init='user.login = "{{login}}"; user.activationCode = "{{activationCode}}"'>
 	<default-styles>
 		<div ng-include="template.containers.main" class="absolute"></div>
 	</default-styles>

@@ -42,12 +42,14 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.logging.Tracer;
 import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.RequestUtils;
+
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
+
 import fr.wseduc.security.ActionType;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
@@ -71,19 +73,22 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
+
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
+
 import fr.wseduc.security.SecuredAction;
 
 public class AuthController extends BaseController {
@@ -202,7 +207,7 @@ public class AuthController extends BaseController {
 			context.putObject("error", new JsonObject()
 					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
 		}
-		renderJson(request, context);
+		renderView(request, context, "login.html", null);
 	}
 
 	@Get("/context")
@@ -210,6 +215,8 @@ public class AuthController extends BaseController {
 		JsonObject context = new JsonObject();
 		context.putString("callBack", container.config().getObject("authenticationServer").getString("loginCallback"));
 		context.putBoolean("cgu", container.config().getBoolean("cgu", true));
+		context.putString("passwordRegex", passwordPattern.toString());
+		context.putObject("mandatory", container.config().getObject("mandatory", new JsonObject()));
 		renderJson(request, context);
 	}
 
@@ -256,19 +263,35 @@ public class AuthController extends BaseController {
 				}
 				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				final String login = request.formAttributes().get("email");
-				String password = request.formAttributes().get("password");
+				final String password = request.formAttributes().get("password");
 				data.getUserId(login, password, new Handler<String>() {
 
 					@Override
 					public void handle(String userId) {
-						String c = callBack.toString();
+						final String c = callBack.toString();
 						if (userId != null && !userId.trim().isEmpty()) {
 							trace.info("Connexion de l'utilisateur " + login);
 							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
 							createSession(userId, request, c);
 						} else {
-							trace.info("Erreur de connexion pour l'utilisateur " + login);
-							loginResult(request, "auth.error.authenticationFailed", c);
+							userAuthAccount.matchActivationCode(login, password, new org.vertx.java.core.Handler<Boolean>() {
+								@Override
+								public void handle(Boolean passIsActivationCode) {
+									if(passIsActivationCode){
+										trace.info("Code d'activation entré pour l'utilisateur " + login);
+										JsonObject json = new JsonObject();
+										json.putString("activationCode", password);
+										json.putString("login", login);
+										if (container.config().getBoolean("cgu", true)) {
+											json.putBoolean("cgu", true);
+										}
+										renderView(request, json, "activation.html", null);
+									} else {
+										trace.info("Erreur de connexion pour l'utilisateur " + login);
+										loginResult(request, "auth.error.authenticationFailed", c);
+									}
+								}
+							});
 						}
 					}
 				});
@@ -414,6 +437,8 @@ public class AuthController extends BaseController {
 			protected void handle() {
 				final String login = request.formAttributes().get("login");
 				final String activationCode = request.formAttributes().get("activationCode");
+				final String email = request.formAttributes().get("mail");
+				final String phone = request.formAttributes().get("phone");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				if (container.config().getBoolean("cgu", true) &&
@@ -430,10 +455,18 @@ public class AuthController extends BaseController {
 						error.putString("login", login);
 					}
 					renderJson(request, error);
-				} else if (login == null || activationCode == null|| password == null ||
-						login.trim().isEmpty() || activationCode.trim().isEmpty() ||
-						password.trim().isEmpty() || !password.equals(confirmPassword) ||
-						!passwordPattern.matcher(password).matches()) {
+				} else if (
+					login == null || activationCode == null|| password == null ||
+					login.trim().isEmpty() || activationCode.trim().isEmpty() ||
+					password.trim().isEmpty() || !password.equals(confirmPassword) ||
+					!passwordPattern.matcher(password).matches() ||
+					(container.config().getObject("mandatory", new JsonObject()).getBoolean("mail", false)
+					  && (email == null || email.trim().isEmpty())) ||
+					(container.config().getObject("mandatory", new JsonObject()).getBoolean("phone", false)
+					  && (phone == null || phone.trim().isEmpty())) ||
+					(email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email)) ||
+					(phone != null && !phone.trim().isEmpty() && !StringValidation.isPhone(phone))
+				) {
 					trace.info("Echec de l'activation du compte utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
@@ -449,7 +482,7 @@ public class AuthController extends BaseController {
 					}
 					renderJson(request, error);
 				} else {
-					userAuthAccount.activateAccount(login, activationCode, password,
+					userAuthAccount.activateAccount(login, activationCode, password, email, phone,
 							new org.vertx.java.core.Handler<Either<String, String>>() {
 
 						@Override
@@ -497,31 +530,44 @@ public class AuthController extends BaseController {
 			@Override
 			protected void handle() {
 				String login = request.formAttributes().get("login");
+				String mail = request.formAttributes().get("mail");
 				final I18n i18n = I18n.getInstance();
 				final String language = request.headers().get("Accept-Language");
-				if (login != null && !login.trim().isEmpty()) {
-					userAuthAccount.forgotPassword(request, login,
-							new org.vertx.java.core.Handler<Boolean>() {
 
-						@Override
-						public void handle(Boolean sent) {
-							if (Boolean.TRUE.equals(sent)) {
-								String message = i18n.translate("auth.resetCodeSent", language);
-								renderJson(request, new JsonObject()
-								.putString("message", message));
-							} else {
-								error(request, i18n, language);
+				final org.vertx.java.core.Handler<Boolean> finalHandler = new org.vertx.java.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean sent) {
+						if (Boolean.TRUE.equals(sent)) {
+							String message = i18n.translate("auth.resetCodeSent", language);
+							renderJson(request, new JsonObject()
+							.putString("message", message));
+						} else {
+							error(request, i18n, "id", language);
+						}
+					}
+				};
+
+				if(mail != null && !mail.trim().isEmpty()){
+					userAuthAccount.findByMail(mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							if(event.isLeft()){
+								error(request, i18n, "mail", language);
+								return;
 							}
+							String login = event.right().getValue().getString("login", "");
+							userAuthAccount.forgotPassword(request, login, finalHandler);
 						}
 					});
+				} else if (login != null && !login.trim().isEmpty()) {
+					userAuthAccount.forgotPassword(request, login, finalHandler);
 				} else {
-					error(request, i18n, language);
+					error(request, i18n, "id", language);
 				}
 			}
 
 			private void error(final HttpServerRequest request,
-					final I18n i18n, final String language) {
-				String message = i18n.translate("forgot.error", language);
+					final I18n i18n, final String which, final String language) {
+				String message = i18n.translate("forgot."+which+".error", language);
 				JsonObject error = new JsonObject()
 				.putObject("error", new JsonObject()
 				.putString("message", message));

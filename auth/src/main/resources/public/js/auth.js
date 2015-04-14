@@ -1,5 +1,18 @@
 // Copyright. Tous droits réservés. WebServices pour l’Education.
 
+routes.define(function($routeProvider) {
+	$routeProvider
+		.when('/id', {
+			action: 'actionId'
+		})
+		.when('/password', {
+	  		action: 'actionPassword'
+		})
+		.otherwise({
+		  	redirectTo: '/'
+		})
+});
+
 function LoginController($scope, template){
 	$scope.template = template;
 	$scope.template.open('main', 'login-form');
@@ -58,10 +71,13 @@ function LoginController($scope, template){
 		if(window.location.href.split('activationCode=').length > 1){
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
+		if(window.location.href.split('callback=').length > 1){
+			$scope.callBack = window.location.href.split('callback=')[1].split('&')[0];
+		}
 	}
 
 	http().get('/auth/context').done(function(data){
-		$scope.callBack = data.callBack;
+		//$scope.callBack = data.callBack;
 		$scope.cgu = data.cgu;
 		$scope.$apply('cgu');
 	});
@@ -99,7 +115,7 @@ function LoginController($scope, template){
 
 }
 
-function ForgotController($scope, template){
+function ForgotController($scope, route, template){
 	$scope.template = template;
 	$scope.template.open('main', 'forgot-form');
 	$scope.user = {};
@@ -113,9 +129,19 @@ function ForgotController($scope, template){
 		}
 	}
 
+	route({
+		actionId: function(params){
+			$scope.user.mode = "id"
+		},
+		actionPassword: function(params){
+			$scope.user.mode = "password"
+		}
+	})
+
 	$scope.forgot = function(){
 		http().post('/auth/forgot', http().serialize({
-			login: $scope.user.login
+			login: $scope.user.login,
+			mail: $scope.user.mail ? $scope.user.mail : ""
 		}))
 			.done(function(data){
 				if(data.message){
@@ -138,8 +164,10 @@ function ForgotController($scope, template){
 
 function ActivationController($scope, template){
 	$scope.template = template;
+	$scope.lang = lang;
 	$scope.template.open('main', 'activation-form');
 	$scope.user = {};
+	$scope.phonePattern = new RegExp("^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$");
 
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
@@ -153,17 +181,63 @@ function ActivationController($scope, template){
 	http().get('/auth/context').done(function(data){
 		$scope.callBack = data.callBack;
 		$scope.cgu = data.cgu;
+		$scope.passwordRegex = data.passwordRegex;
+		$scope.mandatory = data.mandatory;
 		$scope.$apply('cgu');
 	});
 
+	$scope.identicalRegex = function(str){
+		if(!str)
+			return new RegExp("^$")
+		return new RegExp("^"+str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")+"$")
+	}
+
+	$scope.refreshInput = function(form, inputName){
+		form[inputName].$setViewValue(form[inputName].$viewValue)
+	}
+
+	$scope.passwordComplexity = function(password){
+		if(!password)
+			return 0
+
+		if(password.length < 6)
+			return password.length
+
+		var score = password.length
+		if(/[0-9]+/.test(password) && /[a-zA-Z]+/.test(password)){
+			score += 5
+		}
+		if(!/^[a-zA-Z0-9- ]+$/.test(password)) {
+			score += 5
+		}
+
+		return score
+	}
+
+	$scope.translateComplexity = function(password){
+		var score = $scope.passwordComplexity(password)
+		if(score < 12){
+			return lang.translate("weak")
+		}
+		if(score < 20)
+			return lang.translate("moderate")
+		return lang.translate("strong")
+	}
+
 	$scope.activate = function(){
+		var emptyIfUndefined = function(item){
+			return item ? item : ""
+		}
+
 		http().post('/auth/activation', http().serialize({
 			login: $scope.user.login,
 			password: $scope.user.password,
 			confirmPassword: $scope.user.confirmPassword,
 			acceptCGU: $scope.user.acceptCGU,
 			activationCode: $scope.user.activationCode,
-			callBack: $scope.callBack
+			callBack: $scope.callBack,
+			mail: emptyIfUndefined($scope.user.email),
+			phone: emptyIfUndefined($scope.user.phone)
 		}))
 			.done(function(data){
 				if(typeof data !== 'object'){
@@ -180,6 +254,7 @@ function ActivationController($scope, template){
 
 function ResetController($scope, template){
 	$scope.template = template;
+	$scope.lang = lang;
 	$scope.template.open('main', 'reset-form');
 	$scope.user = {};
 
@@ -190,6 +265,48 @@ function ResetController($scope, template){
 		if(window.location.href.split('activationCode=').length > 1){
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
+	}
+
+	http().get('/auth/context').done(function(data){
+		$scope.passwordRegex = data.passwordRegex;
+	});
+
+	$scope.identicalRegex = function(str){
+		if(!str)
+			return new RegExp("^$")
+		return new RegExp("^"+str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")+"$")
+	}
+
+	$scope.refreshInput = function(form, inputName){
+		form[inputName].$setViewValue(form[inputName].$viewValue)
+	}
+
+	$scope.passwordComplexity = function(password){
+		if(!password)
+			return 0
+
+		if(password.length < 6)
+			return password.length
+
+		var score = password.length
+		if(/[0-9]+/.test(password) && /[a-zA-Z]+/.test(password)){
+			score += 5
+		}
+		if(!/^[a-zA-Z0-9- ]+$/.test(password)) {
+			score += 5
+		}
+
+		return score
+	}
+
+	$scope.translateComplexity = function(password){
+		var score = $scope.passwordComplexity(password)
+		if(score < 12){
+			return lang.translate("weak")
+		}
+		if(score < 20)
+			return lang.translate("moderate")
+		return lang.translate("strong")
 	}
 
 	$scope.reset = function(){

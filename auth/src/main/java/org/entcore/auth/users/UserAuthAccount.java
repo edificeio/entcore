@@ -20,12 +20,14 @@
 package org.entcore.auth.users;
 
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 public interface UserAuthAccount {
 
-	void activateAccount(String login, String activationCode, String password,
+	void activateAccount(String login, String activationCode, String password, String email, String phone,
 			Handler<Either<String, String>> handler);
 
 	void forgotPassword(HttpServerRequest request, String login, Handler<Boolean> handler);
@@ -37,5 +39,10 @@ public interface UserAuthAccount {
 	void sendResetCode(HttpServerRequest request, String login, String email, Handler<Boolean> handler);
 
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
+
+	void matchActivationCode(String login, String potentialActivationCode,
+			Handler<Boolean> handler);
+
+	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
 
 }

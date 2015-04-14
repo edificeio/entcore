@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -31,8 +32,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4jResult;
+
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.security.BCrypt;
@@ -54,19 +56,21 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
-			final Handler<Either<String, String>> handler) {
+			String email, String phone, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
 				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
 				"WHERE LENGTH(duplicates) = 0 " +
-				"SET n.password = {password}, n.activationCode = null " +
+				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone} " +
 				"RETURN n.password as password, n.id as id";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
 		params.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
+		params.put("email", email);
+		params.put("phone", phone);
 		neo.send(query, params, new Handler<Message<JsonObject>>(){
 
 			@Override
@@ -74,7 +78,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				if ("ok".equals(res.body().getString("status"))
 						&& res.body().getObject("result").getObject("0") != null) {
 					JsonObject jo = new JsonObject().putString(
-							"userId", 
+							"userId",
 							res.body().getObject("result").getObject("0").getString("id"));
 					Server.getEventBus(vertx).publish("activation.ack", jo);
 					handler.handle(new Either.Right<String, String>(
@@ -104,6 +108,39 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void matchActivationCode(final String login, String potentialActivationCode,
+			final Handler<Boolean> handler) {
+		String query =
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
+				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
+				"WHERE LENGTH(duplicates) = 0 " +
+				"RETURN true as exists";
+
+		JsonObject params = new JsonObject()
+			.putString("login", login)
+			.putString("activationCode", potentialActivationCode);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+					handler.handle(false);
+				else
+					handler.handle(true);
+			}
+		}));
+	}
+
+	@Override
+	public void findByMail(final String email, final Handler<Either<String,JsonObject>> handler) {
+		String query = "MATCH (u:User) WHERE u.email = {mail} RETURN u.login as login";
+		JsonObject params = new JsonObject().putString("mail", email);
+
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
 	}
 
 	@Override

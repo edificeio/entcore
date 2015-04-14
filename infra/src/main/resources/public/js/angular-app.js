@@ -4360,6 +4360,34 @@ module.directive('popoverContent', function(){
 	};
 });
 
+module.directive('inputPassword', function($compile){
+	return {
+		restrict: 'E',
+		replace: false,
+		template:
+			'<input type="password"/>' +
+			'<button type="button" ng-mousedown="show(true)" ng-mouseup="show(false)" ng-mouseleave="show(false)"></button>',
+		scope: true,
+		compile: function(element, attributes){
+			element.addClass('toggleable-password')
+			var passwordInput = element.children('input[type=password]')
+			for(var prop in attributes.$attr){
+				passwordInput.attr(attributes.$attr[prop], attributes[prop])
+				element.removeAttr(attributes.$attr[prop])
+			}
+
+			return {
+				pre: function(){},
+				post: function(scope){
+					scope.show = function(bool){
+						passwordInput[0].type = bool ? "text" : "password"
+					}
+				}
+			}
+		}
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
