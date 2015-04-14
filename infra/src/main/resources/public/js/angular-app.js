@@ -5013,6 +5013,7 @@ function MediaLibrary($scope){
 
 	$scope.listFrom = function(listName){
 		$scope.display.listFrom = listName;
+		model.mediaLibrary[$scope.display.listFrom].sync();
 	};
 
 	$scope.openFolder = function(folder){
@@ -5033,14 +5034,14 @@ function MediaLibrary($scope){
 	$scope.$watch('visibility', function(newVal){
 		if(model.me.workflow.workspace.create){
 			if($scope.visibility === 'public'){
-				$scope.listFrom('publicDocuments');
+				$scope.display.listFrom = 'publicDocuments';
 			}
 			else{
-				$scope.listFrom('appDocuments');
+				$scope.display.listFrom = 'appDocuments';
 			}
 		}
 		else if(model.me.workflow.workspace.list){
-			$scope.listFrom('sharedDocuments')
+			$scope.display.listFrom = 'sharedDocuments';
 		}
 
 		model.mediaLibrary.on('myDocuments.sync, sharedDocuments.sync, appDocuments.sync, publicDocuments.sync', function(){

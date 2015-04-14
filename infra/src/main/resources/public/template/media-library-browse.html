@@ -35,7 +35,7 @@
 	<nav class="four cell vertical">
 		<ul>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: openedFolder === myDocuments }" translate content="workspace.myDocuments"></a>
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }" translate content="workspace.myDocuments"></a>
 				<div>
 					<ul ng-include="'list-folders'">
 					</ul>
