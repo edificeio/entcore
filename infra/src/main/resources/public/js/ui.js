@@ -197,12 +197,13 @@ var ui = (function(){
 		});
 
 		//CSS transitions expansions
-		$('body').on('click', 'article.preview', function(){
-			$(this).height(this.scrollHeight);
-			$(this).one('click', function(){
+		$('body').on('click', 'article.preview', function(e){
+			if($(this).hasClass('expanded')){
+				$(this).height(this.scrollHeight);
+			}
+			else{
 				$(this).removeAttr('style');
-				return false;
-			})
+			}
 		});
 	});
 
