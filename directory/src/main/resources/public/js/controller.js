@@ -204,8 +204,14 @@ function DirectoryController($scope, route, date, template){
 		});
 	};
 
+	$scope.getType = function(type){
+		if(type instanceof Array)
+		 	return type[0]
+		return type
+	}
+
 	$scope.colorFromType = function(type){
-		return colorsMatch[type.toLowerCase()];
+		return colorsMatch[$scope.getType(type).toLowerCase()];
 	};
 
 	$scope.filterTopStructures = function(structure){

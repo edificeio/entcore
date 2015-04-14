@@ -29,7 +29,7 @@
 			<div class="bottom">
 				<div class="content">
 					<a ng-click="selectUser(user)">[[user.displayName]]</a>
-					<br /><span class="medium-text" translate content="directory.[[user.type.toLowerCase()]]"></span>
+					<br /><span class="medium-text" translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
 					<div class="mood three">
 						<i class="liquid [[user.mood]]"></i>
 					</div>
