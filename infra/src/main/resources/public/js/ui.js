@@ -199,7 +199,9 @@ var ui = (function(){
 		//CSS transitions expansions
 		$('body').on('click', 'article.preview', function(e){
 			if($(this).hasClass('expanded')){
-				$(this).height(this.scrollHeight);
+				setTimeout(function(){
+					$(this).height(this.scrollHeight);
+				}.bind(this), 100);
 			}
 			else{
 				$(this).removeAttr('style');
