@@ -229,13 +229,7 @@ public class Be1dFeeder implements Feed {
 				for (int j = i; j < values.length; j++) {
 					String c = values[j].trim();
 					if (c.isEmpty()) continue;
-					String eId;
-					try {
-						eId = Hash.sha1((structure.getExternalId() + c).getBytes("UTF-8"));
-					} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
-						log.error(e.getMessage(), e);
-						continue;
-					}
+					String eId = structure.getExternalId() + '$' + c;
 					structure.createClassIfAbsent(eId, c);
 					classes.add(eId);
 					cs[j - i][0] = structure.getExternalId();
@@ -343,15 +337,11 @@ public class Be1dFeeder implements Feed {
 				String[][] cs = null;
 				if (c != null && !c.trim().isEmpty()) {
 					cs = new String[1][2];
-					try {
-						String eId = Hash.sha1((structure.getExternalId() + c).getBytes("UTF-8"));
-						structure.createClassIfAbsent(eId, c);
-						cs[0][0] = structure.getExternalId();
-						cs[0][1] = eId;
-						props.putArray("classes", new JsonArray().add(eId));
-					} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
-						log.error(e.getMessage(), e);
-					}
+					String eId = structure.getExternalId() + '$' + c;
+					structure.createClassIfAbsent(eId, c);
+					cs[0][0] = structure.getExternalId();
+					cs[0][1] = eId;
+					props.putArray("classes", new JsonArray().add(eId));
 				}
 				String externalId = props.getString("externalId");
 				if (externalId == null || externalId.trim().isEmpty()) {

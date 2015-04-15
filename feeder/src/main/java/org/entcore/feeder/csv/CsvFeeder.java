@@ -199,13 +199,7 @@ public class CsvFeeder implements PartialFeed {
 								}
 						}
 						if ("classes".equals(c)) {
-							String eId;
-							try { // TODO lastindex of classes as structure.getExternalId() + v
-								eId = Hash.sha1((structure.getExternalId() + v).getBytes("UTF-8"));
-							} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-								log.error(e.getMessage(), e);
-								continue;
-							}
+							String eId = structure.getExternalId() + '$' + v;
 							structure.createClassIfAbsent(eId, v);
 							String[] classId = new String[2];
 							classId[0] = structure.getExternalId();
