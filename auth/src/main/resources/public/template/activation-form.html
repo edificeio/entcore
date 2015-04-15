@@ -1,31 +1,63 @@
 <div class="centered container row">
 	<section class="main">
-		<div class="panel">
+		<div class="panel activation">
 			<h1 translate content="auth.activation.header"></h1>
 			<p class="warning" translate content="[[error]]" ng-if="error"></p>
 
-			<form method="post" ng-submit="activate()">
+			<form method="post" ng-submit="activate()" name="activationForm" novalidate>
 				<p>
-					<label translate content="auth.email"></label>
-					<input type="text" ng-model="user.login" />
-				</p>
-				<p>
-					<label translate content="auth.activation.code"></label>
-					<input type="text" ng-model="user.activationCode" />
+					<h2 translate content="auth.email"></h2>
+					<em><h2>[[user.login]]</h2></em>
 				</p>
 				<p>
 					<label translate content="auth.activation.password"></label>
-					<input type="password" ng-model="user.password" />
+					<input-password required ng-pattern="/[[passwordRegex]]/" ng-model="user.password"
+						ng-change="refreshInput(activationForm, 'confirmPassword')" name="password" ng-trim="false" tabindex="1"></input-password>
+					<p class="input-errors" ng-if="activationForm.password.$invalid && activationForm.password.$dirty">
+						<i18n>password.errors</i18n><br/>
+						<span ng-repeat="(key, value) in activationForm.password.$error">
+							<label ng-if="value">[[lang.translate(key)]]</label>
+						</span>
+					</p>
+					<label translate content="auth.activation.confirm.password"></label>
+					<input-password required ng-pattern="identicalRegex(user.password)" ng-model="user.confirmPassword"
+						name="confirmPassword" ng-trim="false" tabindex="2"></input-password>
+					<p class="input-errors" ng-if="activationForm.confirmPassword.$invalid && activationForm.confirmPassword.$dirty">
+						<i18n>password.identical</i18n>
+					</p>
+				</p>
+				<small><i18n>complexity</i18n> : [[ translateComplexity(activationForm['password'].$viewValue) ]]</small>
+				<div class="fill-bar">
+					<div style="width: [[ (passwordComplexity(activationForm['password'].$viewValue) / 20) * 100 ]]%"
+						 ng-class="{
+						 	'weak': passwordComplexity(user.password) < 12,
+						 	'normal': passwordComplexity(user.password) < 20 && passwordComplexity(activationForm['password'].$viewValue) >= 12,
+						 	'strong': passwordComplexity(user.password) >= 20 }"
+					></div>
+				</div>
+				<p>
+					<label translate content="auth.mail"></label>
+					<input type="email" name="mail" ng-model="user.email" ng-required="mandatory.mail" tabindex="3"/>
+					<span class="input-errors" ng-if="activationForm.mail.$invalid && activationForm.mail.$dirty">
+						<span ng-repeat="(key, value) in activationForm.mail.$error">
+							<label ng-if="value">[[lang.translate(key)]]</label>
+						</span>
+					</span>
 				</p>
 				<p>
-					<label translate content="auth.activation.confirm.password"></label>
-					<input type="password" ng-model="user.confirmPassword" />
+					<label translate content="auth.phone"></label>
+					<input type="tel" ng-pattern="phonePattern" name="phone" ng-model="user.phone" ng-required="mandatory.phone" tabindex="4"/>
+					<span class="input-errors" ng-if="activationForm.phone.$invalid && activationForm.phone.$dirty">
+						<span ng-repeat="(key, value) in activationForm.phone.$error">
+							<label ng-if="value">[[lang.translate(key)]]</label>
+						</span>
+					</span>
 				</p>
 				<p ng-if="cgu">
-					<input type="checkbox" ng-model="user.acceptCGU" value="true"><a href="/auth/cgu" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
+					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>&nbsp;&nbsp;<a href="/auth/cgu" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
 				</p>
-				<input type="submit" translate attr="value" value="auth.activate" />
-				<a href="/auth/login" class="right cell" translate content="auth.cancel"></a>
+				<input type="submit" translate attr="value" value="auth.activate" ng-disabled="activationForm.$invalid" tabindex="6"/>
+				<a href="/auth/login" target="_self" class="right cell" translate content="auth.cancel"></a>
 				<div class="clear"></div>
 			</form>
 		</div>

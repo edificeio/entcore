@@ -2,13 +2,19 @@
 	<div class="panel">
 		<h1 translate content="auth.forgot.header"></h1>
 		<p class="warning" ng-if="error" translate content="[[error]]"></p>
-		<form method="post">
+		<form method="post" name="forgotForm" ng-submit="forgot()">
 			<p>
-				<label><i18n>auth.email</i18n></label>
-				<input type="text" name="login" ng-model="user.login" />
+				<label translate ng-if="user.mode === 'password'" content="auth.email"></label>
+				<label translate ng-if="user.mode === 'id'" content="auth.mail"></label>
+				<input type="text" name="login" ng-if="user.mode === 'password'" ng-model="user.login" required/>
+				<input type="email" name="mail" ng-if="user.mode === 'id'" ng-model="user.mail" required/>
 			</p>
-			<input type="submit" translate attr="value" value="auth.forgot.send" ng-click="forgot()" />
+
+			<a href="/auth/forgot#/id" ng-if="user.mode === 'password'" translate content="missing.id"></a>
+			<a href="/auth/forgot#/password" ng-if="user.mode === 'id'" translate content="missing.password"></a>
 			<a href="/auth/login" class="right cell" translate content="auth.cancel"></a>
+			<input type="submit" translate attr="value" value="auth.forgot.send" ng-disabled="forgotForm.$invalid"/>
+
 			<div class="clear"></div>
 		</form>
 	</div>
