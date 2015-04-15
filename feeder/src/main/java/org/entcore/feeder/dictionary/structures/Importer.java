@@ -305,6 +305,7 @@ public class Importer {
 				transactionHelper.add(q1, p);
 			}
 			if (externalId != null && linkClasses != null) {
+				JsonArray classes = new JsonArray();
 				for (String[] structClass : linkClasses) {
 					if (structClass != null && structClass[0] != null && structClass[1] != null) {
 						String q =
@@ -322,8 +323,17 @@ public class Importer {
 								.putString("structure", structClass[0])
 								.putString("class", structClass[1]);
 						transactionHelper.add(q, p);
+						classes.add(structClass[1]);
 					}
 				}
+				String q =
+						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
+						"WHERE NOT(c.externalId IN {classes}) " +
+						"DELETE r";
+				JsonObject p = new JsonObject()
+						.putString("userExternalId", externalId)
+						.putArray("classes", classes);
+				transactionHelper.add(q, p);
 			}
 		}
 	}
@@ -462,6 +472,7 @@ public class Importer {
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null && linkClasses != null) {
+					JsonArray classes = new JsonArray();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							String query =
@@ -479,8 +490,17 @@ public class Importer {
 									.putString("structure", structClass[0])
 									.putString("class", structClass[1]);
 							transactionHelper.add(query, p);
+							classes.add(structClass[1]);
 						}
 					}
+					String q =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
+							"WHERE NOT(c.externalId IN {classes}) " +
+							"DELETE r";
+					JsonObject p = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("classes", classes);
+					transactionHelper.add(q, p);
 				}
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -567,6 +587,7 @@ public class Importer {
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null && linkClasses != null) {
+					JsonArray classes = new JsonArray();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							String query =
@@ -584,8 +605,17 @@ public class Importer {
 									.putString("structure", structClass[0])
 									.putString("class", structClass[1]);
 							transactionHelper.add(query, p);
+							classes.add(structClass[1]);
 						}
 					}
+					String q =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
+							"WHERE NOT(c.externalId IN {classes}) " +
+							"DELETE r";
+					JsonObject p = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("classes", classes);
+					transactionHelper.add(q, p);
 				}
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -666,6 +696,13 @@ public class Importer {
 				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
 				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
+		String query2 =
+				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WITH u, COLLECT(distinct c.id) as cIds " +
+				"MATCH u-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
+				"WHERE NOT(c.id IN cIds) " +
+				"DELETE r";
+		transactionHelper.add(query2, j);
 	}
 
 	public Structure getStructure(String externalId) {
