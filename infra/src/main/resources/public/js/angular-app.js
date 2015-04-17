@@ -4360,7 +4360,7 @@ module.directive('popoverContent', function(){
 	};
 });
 
-module.directive('inputPassword', function($compile){
+module.directive('inputPassword', function(){
 	return {
 		restrict: 'E',
 		replace: false,
@@ -4369,21 +4369,81 @@ module.directive('inputPassword', function($compile){
 			'<button type="button" ng-mousedown="show(true)" ng-mouseup="show(false)" ng-mouseleave="show(false)"></button>',
 		scope: true,
 		compile: function(element, attributes){
-			element.addClass('toggleable-password')
-			var passwordInput = element.children('input[type=password]')
+			element.addClass('toggleable-password');
+			var passwordInput = element.children('input[type=password]');
 			for(var prop in attributes.$attr){
-				passwordInput.attr(attributes.$attr[prop], attributes[prop])
-				element.removeAttr(attributes.$attr[prop])
+				passwordInput.attr(attributes.$attr[prop], attributes[prop]);
+				element.removeAttr(attributes.$attr[prop]);
 			}
 
-			return {
-				pre: function(){},
-				post: function(scope){
-					scope.show = function(bool){
-						passwordInput[0].type = bool ? "text" : "password"
-					}
+			return function(scope){
+				scope.show = function(bool){
+					passwordInput[0].type = bool ? "text" : "password"
 				}
-			}
+			};
+		}
+	}
+});
+
+module.directive('sidePanel', function(){
+	return{
+		restrict: 'E',
+		transclude: true,
+		template: '<div class="opener"></div>' +
+		'<div class="toggle">' +
+			'<div class="content" ng-transclude></div>' +
+		'</div>',
+		link: function(scope, element, attributes){
+			element.addClass('hidden');
+			element.children('.opener').on('click', function(e){
+				if(!element.hasClass('hidden')){
+					return;
+				}
+				element.removeClass('hidden');
+				setTimeout(function(){
+					$('body').on('click.switch-side-panel', function(e){
+						if(!(element.children('.toggle').find(e.originalEvent.target).length)){
+							element.addClass('hidden');
+							$('body').off('click.switch-side-panel');
+						}
+					});
+				}, 0);
+			});
+		}
+	};
+});
+
+module.directive('plus', function($compile){
+	return {
+		restrict: 'E',
+		transclude: true,
+		template: '' +
+		'<div class="opener">' +
+			'<div class="plus"></div>' +
+			'<div class="minus"></div>' +
+		'</div>' +
+		'<section class="toggle-buttons">' +
+			'<div class="toggle" ng-transclude></div>' +
+		'</div>',
+		link: function(scope, element, attributes){
+			element.children('.toggle-buttons').addClass('hide');
+			element.children('.opener').addClass('plus');
+			element.children('.opener').on('click', function(e) {
+				if(!element.children('.toggle-buttons').hasClass('hide')){
+					return;
+				}
+				element.children('.toggle-buttons').removeClass('hide');
+				element.children('.opener').removeClass('plus').addClass('minus');
+				setTimeout(function(){
+					$('body').on('click.switch-plus-buttons', function(e){
+						if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
+							element.children('.toggle-buttons').addClass('hide');
+							element.children('.opener').removeClass('minus').addClass('plus');
+							$('body').off('click.switch-plus-buttons');
+						}
+					});
+				}, 0);
+			});
 		}
 	}
 });
