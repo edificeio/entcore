@@ -502,10 +502,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	// Import CSV
 	$scope.importCSVData = {
 		profile : "",
+		charset : ""
 	}
 
 	$scope.importCSV = function(structure){
-		structure.importCSV($scope.importCSVData.csv[0], $scope.importCSVData.profile)
+		structure.importCSV($scope.importCSVData.csv[0], $scope.importCSVData.profile, $scope.importCSVData.charset)
 	};
 
     //Refresh the isolated users list.

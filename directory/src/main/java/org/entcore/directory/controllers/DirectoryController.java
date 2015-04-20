@@ -32,7 +32,6 @@ import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.directory.security.AdmlOfStructures;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.GroupService;
@@ -50,10 +49,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
@@ -68,6 +64,7 @@ public class DirectoryController extends BaseController {
 	private ClassService classService;
 	private UserService userService;
 	private GroupService groupService;
+	private static final List<String> charsets = Arrays.asList("UTF-8", "ISO-8859-1");
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -98,8 +95,14 @@ public class DirectoryController extends BaseController {
 				.putString("action", "import")
 				.putString("feeder", request.params().get("feeder"))
 				.putString("profile", request.params().get("profile"))
+				.putString("charset", request.params().get("charset"))
 				.putString("structureExternalId", request.params().get("structureExternalId"));
+
 		if ("CSV".equals(json.getString("feeder"))) {
+			String charset = json.getString("charset");
+			if (charset == null || charset.trim().isEmpty() || !charsets.contains(charset)) {
+				json.putString("charset", "ISO-8859-1");
+			}
 			request.expectMultiPart(true);
 			request.uploadHandler(new Handler<HttpServerFileUpload>() {
 				@Override
@@ -118,7 +121,7 @@ public class DirectoryController extends BaseController {
 					event.endHandler(new Handler<Void>() {
 						@Override
 						public void handle(Void end) {
-							json.putString("content", buff.toString("ISO-8859-1"));
+							json.putString("content", buff.toString(json.getString("charset")));
 							log.debug(json.encode());
 							eb.send("entcore.feeder", json, new Handler<Message<JsonObject>>() {
 								@Override

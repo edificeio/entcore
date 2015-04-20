@@ -26,7 +26,7 @@ import org.vertx.java.core.json.JsonObject;
 
 public interface PartialFeed extends Feed {
 
-	void launch(String profile, String structureId, String content,
+	void launch(String profile, String structureId, String content, String charset,
 				Importer importer, Handler<Message<JsonObject>> handler) throws Exception;
 
 }

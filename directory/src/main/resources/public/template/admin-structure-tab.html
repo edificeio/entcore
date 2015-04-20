@@ -76,6 +76,10 @@
                 <option value="Student">[[lang.translate("directory.Student")]]</option>
                 <option value="Guest">[[lang.translate("directory.Guest")]]</option>
             </select>
+            <select class="five cell row-item" ng-model="importCSVData.charset" ng-change="deleteIfEmpty(importCSVData, 'charset')">
+                <option value="UTF-8">[[lang.translate("charset.utf8")]]</option>
+                <option value="ISO-8859-1">[[lang.translate("charset.iso88591")]]</option>
+            </select>
             <div class="three cell file-btn-container">
                 <input type="file" files-input-change ng-model="importCSVData.csv" />
                 <label>[[ importCSVData.csv && importCSVData.csv.length > 0 ? importCSVData.csv[0].name : lang.translate("choose.file") ]]</label>

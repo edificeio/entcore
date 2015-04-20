@@ -14,6 +14,8 @@
     "birthday.class": "Ma classe",
     "birthday.title": "Anniversaires",
     "change.password": "Modifier mon mot de passe",
+    "charset.iso88591" : "Europe Occidentale (ISO-8859-1)",
+    "charset.utf8" : "Unicode (UTF-8)",
     "choose": "Choisir",
     "choose.file": "Choisir un fichier",
     "classAdmin.className": "Nom de la classe",

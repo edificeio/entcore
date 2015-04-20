@@ -86,7 +86,7 @@ public class CsvFeeder implements PartialFeed {
 	}
 
 	@Override
-	public void launch(final String profile, final String structureId, final String content,
+	public void launch(final String profile, final String structureId, final String content, final String charset,
 			final Importer importer, final Handler<Message<JsonObject>> handler) throws Exception {
 		if (importer.isFirstImport()) {
 			importer.profileConstraints();
@@ -101,7 +101,7 @@ public class CsvFeeder implements PartialFeed {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if (message != null && "ok".equals(message.body().getString("status"))) {
-						start(profile, structureId, content, importer, handler);
+						start(profile, structureId, content, charset, importer, handler);
 					} else {
 						if (handler != null) {
 							handler.handle(message);
@@ -110,11 +110,11 @@ public class CsvFeeder implements PartialFeed {
 				}
 			});
 		} else {
-			start(profile, structureId, content, importer, handler);
+			start(profile, structureId, content, charset, importer, handler);
 		}
 	}
 
-	public void start(final String profile, final String structureExternalId, String content,
+	public void start(final String profile, final String structureExternalId, String content, String charset,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
@@ -130,7 +130,6 @@ public class CsvFeeder implements PartialFeed {
 			return;
 		}
 
-		String charset = detectCharset(content);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')

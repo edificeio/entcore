@@ -250,6 +250,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String profile = message.body().getString("profile");
 		final String content = message.body().getString("content");
 		final String structureExternalId = message.body().getString("structureExternalId");
+		final String charset = message.body().getString("charset", "UTF-8");
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
 			return;
@@ -287,7 +288,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (profile != null && content != null && structureExternalId != null &&
 								!content.trim().isEmpty() && ManualFeeder.profiles.containsKey(profile) &&
 								!structureExternalId.trim().isEmpty() && feed instanceof PartialFeed) {
-							((PartialFeed) feed).launch(profile, structureExternalId, content, importer, handler);
+							((PartialFeed) feed).launch(profile, structureExternalId, content, charset, importer, handler);
 						} else {
 							feed.launch(importer, handler);
 						}
