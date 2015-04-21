@@ -1378,7 +1378,15 @@ module.directive('recorder', function(){
 				}
 			};
 			scope.time = function(){
-				return parseInt(recorder.elapsedTime);
+				var minutes = parseInt(recorder.elapsedTime / 60);
+				if(minutes < 10){
+					minutes = '0' + minutes;
+				}
+				var seconds = parseInt(recorder.elapsedTime % 60);
+				if(seconds < 10){
+					seconds = '0' + seconds;
+				}
+				return minutes + ':' + seconds;
 			};
 			scope.switchPlay = function(){
 				if(recorder.status === 'playing'){
