@@ -122,6 +122,7 @@
 	"file.light": "Fichier léger",
 	"file.heavy": "Fichier lourd",
 	"quality": "Qualité",
+    "recorder": "Dictaphone",
     "recorder.widget": "dictaphone",
     "recorder.playing": "Ecoute du morceau",
     "recorder.recording": "Enregistrement",
