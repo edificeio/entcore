@@ -107,7 +107,7 @@
 			<div class="row">
 				<resource-right resource="selectedItems()" name="commentDocument">
 					<button ng-click="openCommentView(selectedDocuments()[0])"
-							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 							class="cell">
 						<i18n>workspace.document.comment</i18n>
 					</button>
