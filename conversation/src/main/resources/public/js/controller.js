@@ -127,6 +127,10 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.openFolder = function(folderName, cb){
 		if(!folderName){
+			if(model.folders.current instanceof UserFolder){
+				$scope.openUserFolder(model.folders.current, {});
+				return;
+			}
 			folderName = model.folders.current.folderName;
 		}
 		$scope.mail = undefined;
