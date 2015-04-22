@@ -1,13 +1,15 @@
 package org.entcore.common.aggregation.indicators.mongo;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_DATE;
+import static org.entcore.common.aggregation.MongoConstants.STATS_FIELD_GROUPBY;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_TYPE;
+
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.entcore.common.aggregation.AggregationTools.HandlerChainer;
+import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
 import org.entcore.common.aggregation.filters.IndicatorFilter;
 import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
 import org.entcore.common.aggregation.filters.mongo.IndicatorFilterMongoImpl;
@@ -17,25 +19,23 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 
-import static org.entcore.common.aggregation.MongoConstants.*;
-
-/**
- * MongoDB implementation of the Indicator class.
- */
 public class IndicatorMongoImpl extends Indicator{
 
 	//MongoDB instance
 	protected final MongoDb mongo;
 
+	//Output key
 	private String writtenIndicatorKey;
 
-	//Memoization map, used to buffer distinct values from Mongo and avoiding unnecessary database queries.
-	private final HashMap<String, JsonArray> memoizeDistincts = new  HashMap<>();
+	//Logger
+	private Logger log = LoggerFactory.getLogger(IndicatorMongoImpl.class);
 
 	/**
 	 * Creates a new Indicator without filters or groups.<br>
@@ -77,181 +77,144 @@ public class IndicatorMongoImpl extends Indicator{
 		return this.writtenIndicatorKey;
 	}
 
-	//Callback to the writeStats function
-	private Handler<Integer> writeCallback(final Handler<Message<JsonObject>> callBack){
-		return writeCallback(null, null, callBack);
-	}
-	private Handler<Integer> writeCallback(final IndicatorGroup group, final HashMap<String, String> groupIds, final Handler<Message<JsonObject>> callBack){
-		return new Handler<Integer>(){
-			public void handle(Integer countResult) {
-				writeStats(countResult, group, groupIds, callBack);
-			}
-		};
-	}
-
 	//Write aggregated data to the database, using data from a Mongo count
-	private void writeStats(int countResult, final IndicatorGroup group, final HashMap<String, String> groupIds, final Handler<Message<JsonObject>> callBack){
+	private void writeStats(JsonArray results, final IndicatorGroup group, final Handler<JsonObject> callBack){
 
 		//If no documents found, write nothing
-		if(countResult == 0){
-			callBack.handle(null);
+		if(results.size() == 0){
+			callBack.handle(new JsonObject());
 			return;
 		}
 
 		//Document date
 		Date writeDate = this.writeDate;
 
-		MongoDBBuilder criteriaQuery = new MongoDBBuilder();
+		final MongoDBBuilder criteriaQuery = new MongoDBBuilder();
 
-		if(group == null){
-			//When not using groups, set groupedBy specifically to not exists
-			criteriaQuery.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate)).and(STATS_FIELD_GROUPBY).exists(false);
-		} else {
-			//Retrieve all the group chain keys and append them into groupedBy.
-			LinkedList<String> groupedByKeys = new LinkedList<>();
-			groupedByKeys.add(group.getKey());
-
-			IndicatorGroup parent = group.getParent();
-			while(parent != null){
-				groupedByKeys.addFirst(parent.getKey()+"/");
-				parent = parent.getParent();
-			}
-			StringBuilder groupedByString = new StringBuilder();
-			for(String groupKey : groupedByKeys){
-				groupedByString.append(groupKey);
-			}
-			criteriaQuery
-				.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
-				.and(STATS_FIELD_GROUPBY).is(groupedByString.toString());
-
-			//For the group and its ancestors, retrieve each group id and add it to the document.
-			for(Entry<String, String> groupId : groupIds.entrySet()){
-				criteriaQuery.and(groupId.getKey()+"_id").is(groupId.getValue());
-			}
-		}
-
-		MongoUpdateBuilder objNewQuery = new MongoUpdateBuilder();
-		//Increment the counter
-		objNewQuery.inc(writtenIndicatorKey, countResult);
-
-		//Write the document (increments if it already exists, else creates it)
-		mongo.update(COLLECTIONS.stats.name(), MongoQueryBuilder.build(criteriaQuery), objNewQuery.build(), true, true, callBack);
-
-	}
-
-	/* AGGREGATE */
-
-	//Action to be performed for each distinct value of the group key in the traces
-	private void distinctAction(JsonArray distinctValues, final IndicatorGroup group, final HashMap<String, String> groupIds, final Handler<Message<JsonObject>> callBack){
-
-		HandlerChainer<String, Message<JsonObject>> distinctChainer = new HandlerChainer<String, Message<JsonObject>>(){
-			protected void executeItem(final String groupValue, final Handler<Message<JsonObject>> nextCallback) {
-				//For the group and for each parent group, adding the filter on the group key value in the trace.
-				Collection<IndicatorFilter> groupFilters = new ArrayList<>();
-				groupFilters.addAll(filters);
-				for(final Entry<String, String> groupId : groupIds.entrySet()){
-					groupFilters.add(new IndicatorFilterMongoImpl() {
-						public void filter(MongoDBBuilder builder) {
-							builder.and(groupId.getKey()).is(groupId.getValue());
-						}
-					});
-				}
-				groupFilters.add(new IndicatorFilterMongoImpl() {
-					public void filter(MongoDBBuilder builder) {
-						builder.and(group.getKey()).is(groupValue);
-					}
-				});
-
-				//Filter by trace type + custom filters + group & parent groups ids
-				final MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
-				for(IndicatorFilter filter : groupFilters){
-					filter.filter(filteringQuery);
+		//Synchronization handler
+		final AtomicInteger countDown = new AtomicInteger(results.size());
+		Handler<Message<JsonObject>> synchroHandler = new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> message) {
+				if (!"ok".equals(message.body().getString("status"))){
+					String groupstr = group == null ? "Global" : group.toString();
+					log.error("[Aggregation][Error]{"+writtenIndicatorKey+"} ("+ groupstr +") writeStats : "+message.body().toString());
+					log.info(criteriaQuery.toString());
 				}
 
-				//Cloning the map and adding this group id.
-				final HashMap<String, String> newGroupIds = new HashMap<>();
-				newGroupIds.putAll(groupIds);
-				newGroupIds.put(group.getKey(), groupValue);
-
-				//Aggregation process for each child group.
-				Handler<Message<JsonObject>> childrenHandler = new Handler<Message<JsonObject>>(){
-					public void handle(Message<JsonObject> event) {
-						HandlerChainer<IndicatorGroup, Message<JsonObject>> chainer = new HandlerChainer<IndicatorGroup, Message<JsonObject>>(){
-							protected void executeItem(IndicatorGroup child, Handler<Message<JsonObject>> next) {
-								aggregateGroup(child, newGroupIds, next);
-							}
-						};
-
-						for(IndicatorGroup child : group.getChildren()){
-							chainer.chainItem(child);
-						}
-						chainer.executeChain(nextCallback);
-					}
-				};
-
-				//Count the traces, then write the document & recurse for each child.
-				countTraces(filteringQuery, writeCallback(group, newGroupIds, childrenHandler));
+				if(countDown.decrementAndGet() == 0){
+					callBack.handle(new JsonObject());
+				}
 			}
 		};
+		//For each aggregated result
+		for(Object obj: results){
+			JsonObject result = (JsonObject) obj;
 
-		for(final Object distinctValue : distinctValues){
-			distinctChainer.chainItem((String) distinctValue);
+			if(group == null){
+				//When not using groups, set groupedBy specifically to not exists
+				criteriaQuery
+					.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
+					.and(STATS_FIELD_GROUPBY).exists(false);
+			} else {
+				//Adding date & group by to the criterias.
+				criteriaQuery
+					.put(STATS_FIELD_DATE).is(MongoDb.formatDate(writeDate))
+					.and(STATS_FIELD_GROUPBY).is(group.toString());
+
+				//Adding the group ids values
+				IndicatorGroup g = group;
+				while(g != null){
+					criteriaQuery.and(g.getKey()+"_id").is(result.getObject("_id").getString(g.getKey()));
+					g = g.getParent();
+				}
+			}
+
+			MongoUpdateBuilder objNewQuery = new MongoUpdateBuilder();
+			//Increment the counter
+			objNewQuery.inc(writtenIndicatorKey, result.getInteger("count"));
+
+			//Write the document (increments if it already exists, else creates it)
+			mongo.update(COLLECTIONS.stats.name(), MongoQueryBuilder.build(criteriaQuery), objNewQuery.build(), true, true, synchroHandler);
 		}
-
-		distinctChainer.executeChain(callBack);
 	}
 
-	//Aggregation process for a single group, if the group has children this function is recursively called for each child.
-	//The groupIds HashMap is an accumulator used to store the parent group(s) trace value(s) (id) which will be written in the Mongo document.
-	private void aggregateGroup(final IndicatorGroup group, final HashMap<String, String> groupIds, final Handler<Message<JsonObject>> callBack){
+	//Unwind clauses of the aggregation pipeline - useful for flattening arrays
+	private void addUnwindPipeline(JsonArray pipeline, IndicatorGroup group){
+		if(group == null)
+			return;
 
-		//If the memoization map already contains the group distinct key values.
-		if(memoizeDistincts.containsKey(group.getKey())){
-			JsonArray distinctValues = memoizeDistincts.get(group.getKey());
-			distinctAction(distinctValues, group, groupIds, callBack);
-		} else {
-			//Filtering by trace type + custom filters.
-			final MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
-			for(IndicatorFilter filter : filters){
-				filter.filter(filteringQuery);
-			}
-			//Counting distinct values of group keys in the traces.
-			mongo.distinct(COLLECTIONS.events.name(), group.getKey(), MongoQueryBuilder.build(filteringQuery), new Handler<Message<JsonObject>>(){
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						JsonArray distinctValues = message.body().getArray("values", new JsonArray());
-						memoizeDistincts.put(group.getKey(), distinctValues);
-						distinctAction(distinctValues, group, groupIds, callBack);
-					} else {
-						//TODO : better error handling
-						callBack.handle(message);
-					}
-				}
-			});
-		}
+		addUnwindPipeline(pipeline, group.getParent());
+		if(group.isArray())
+			pipeline.addObject(new JsonObject().putString("$unwind", "$"+group.getKey()));
+	}
 
+	//Building the $group _id object
+	private JsonObject getGroupByObject(JsonObject accumulator, IndicatorGroup group){
+		if(group == null)
+			return accumulator;
+
+		return getGroupByObject(accumulator, group.getParent()).putString(group.getKey(), "$"+group.getKey());
 	}
 
 	/**
-	 * Method called to aggregate traces.
-	 * @param filteringQuery : the query which is used to filter traces.
-	 * @param callBack : Handler called when the operation completes.
+	 * Override this function to modify the $group stage before the aggregation query.
+	 * @param groupBy $group stage object
 	 */
-	protected void countTraces(MongoDBBuilder filteringQuery, final Handler<Integer> callBack){
-		mongo.count(COLLECTIONS.events.name(), MongoQueryBuilder.build(filteringQuery), new Handler<Message<JsonObject>>(){
-			public void handle(Message<JsonObject> message){
-				if ("ok".equals(message.body().getString("status"))) {
-					//Retrieve Mongo count result
-					int countResult = message.body().getInteger("count");
-					callBack.handle(countResult);
+	protected void customizeGroupBy(JsonObject groupBy){}
+
+	/**
+	 * Override this function to modify the pipeline before the aggregation query.
+	 * @param pipeline pipeline object containing $match, $unwind and $group stages.
+	 */
+	protected void customizePipeline(JsonArray pipeline){}
+
+	//Builds and executes an entire aggregation pipeline query for a given group, and recurse for each child.
+	private void executeAggregationQuery(final IndicatorGroup group, final Handler<JsonObject> finalHandler){
+		//Filter by trace type + custom filters
+		final MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
+		for(IndicatorFilter filter : filters){
+			filter.filter(filteringQuery);
+		}
+
+		final JsonObject aggregation = new JsonObject();
+		JsonArray pipeline = new JsonArray();
+		aggregation
+			.putString("aggregate", COLLECTIONS.events.name())
+			.putBoolean("allowDiskUse", true)
+			.putArray("pipeline", pipeline);
+
+		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(filteringQuery)));
+		addUnwindPipeline(pipeline, group);
+		JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
+			.putObject("_id", getGroupByObject(new JsonObject(), group))
+			.putObject("count", new JsonObject().putNumber("$sum", 1)));
+		pipeline.addObject(groupBy);
+
+		//Customize the request if needed
+		customizeGroupBy(groupBy);
+		customizePipeline(pipeline);
+
+		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> message) {
+				if ("ok".equals(message.body().getString("status")) && message.body().getObject("result", new JsonObject()).getInteger("ok") == 1){
+					JsonArray result = message.body().getObject("result").getArray("result");
+					writeStats(result, group, finalHandler);
 				} else {
-					callBack.handle(0);
+					String groupstr = group == null ? "Global" : group.toString();
+					log.error("[Aggregation][Error]{"+writtenIndicatorKey+"} ("+ groupstr +") executeAggregationQuery : "+message.body().toString());
+					log.info(aggregation.toString());
+					finalHandler.handle(new JsonObject());
 				}
 			}
 		});
-	}
 
-	/* MAIN AGGREGATION */
+		//Recurse
+		if(group != null)
+			for(IndicatorGroup child : group.getChildren()){
+				executeAggregationQuery(child, finalHandler);
+			}
+	}
 
 	/**
 	 * Launch the aggregation process which consists of :
@@ -263,32 +226,37 @@ public class IndicatorMongoImpl extends Indicator{
 	 * <ul>
 	 * @param callBack : Handler called when processing is over.
 	 */
-	public void aggregate(final Handler<Message<JsonObject>> callBack){
+	public void aggregate(final Handler<JsonObject> callBack){
+		final Date start = new Date();
+
 		//Filtering by trace type + custom filters.
 		MongoDBBuilder filteringQuery = (MongoDBBuilder) new MongoDBBuilder().put(TRACE_FIELD_TYPE).is(indicatorKey);
 		for(IndicatorFilter filter : filters){
 			filter.filter(filteringQuery);
 		}
 
-		//Aggregation process for each group.
-		Handler<Message<JsonObject>> groupsHandler = new Handler<Message<JsonObject>>(){
-			public void handle(Message<JsonObject> event) {
-				HandlerChainer<IndicatorGroup, Message<JsonObject>> chainer = new HandlerChainer<IndicatorGroup, Message<JsonObject>>(){
-					protected void executeItem(IndicatorGroup item, Handler<Message<JsonObject>> nextCallback) {
-						aggregateGroup(item, new HashMap<String, String>(), nextCallback);
-					}
-				};
+		final AtomicInteger totalCalls = new AtomicInteger(1);
+		for(IndicatorGroup group: groups){
+			totalCalls.addAndGet(group.getTotalChildren());
+		}
 
-				for(IndicatorGroup group : groups){
-					chainer.chainItem(group);
+		final Handler<JsonObject> finalHandler = new Handler<JsonObject>(){
+			public void handle(JsonObject event) {
+				if(totalCalls.decrementAndGet() == 0){
+					final Date end = new Date();
+					log.info("[Aggregation]{"+writtenIndicatorKey+"} Took ["+(end.getTime() - start.getTime())+"] ms");
+					callBack.handle(new JsonObject().putString("status", "ok"));
 				}
-				chainer.executeChain(callBack);
 			}
 		};
 
-		//Counting the results & writing down the aggregation.
-		countTraces(filteringQuery, writeCallback(groupsHandler));
+		//Count the total number of traces
+		executeAggregationQuery(null, finalHandler);
 
+		//Process for each registered group
+		for(IndicatorGroup group : groups){
+			executeAggregationQuery(group, finalHandler);
+		}
 
 	}
 

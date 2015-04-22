@@ -27,14 +27,14 @@ public abstract class Indicator{
 
 	//Indicator key - must match a trace collection type
 	protected final String indicatorKey;
-		
+
 	//Filters and groups
 	protected Collection<IndicatorFilter> filters;
 	protected Collection<IndicatorGroup> groups;
-	
+
 	//Write date, default to instantiation date @ midnight
 	protected Date writeDate = AggregationTools.setToMidnight(Calendar.getInstance());
-	
+
 	/**
 	 * Creates a new Indicator without filters or groups.<br>
 	 * @param key : Traces will be filtered using this String and an equality check against the type of trace.
@@ -55,9 +55,9 @@ public abstract class Indicator{
 		this.filters = new ArrayList<>(filters);
 		this.groups = groups;
 	}
-	
+
 	/* GETTERS */
-	
+
 	/**
 	 * Returns the indicator key.
 	 * @return Indicator key
@@ -65,7 +65,7 @@ public abstract class Indicator{
 	protected String getKey(){
 		return indicatorKey;
 	}
-	
+
 	/**
 	 * Returns the collection of filters.
 	 * @return Indicator filters.
@@ -80,7 +80,7 @@ public abstract class Indicator{
 	protected Collection<IndicatorGroup> getGroups(){
 		return groups;
 	}
-	
+
 	/**
 	 * Add a new indicator filter to the collection.
 	 * @param filter Filter to add.
@@ -99,7 +99,7 @@ public abstract class Indicator{
 		groups.add(group);
 		return this;
 	}
-	
+
 	/**
 	 * Sets the recording date. (usage may vary with the implementation of this class)
 	 * @param date : New recording date to set
@@ -107,7 +107,7 @@ public abstract class Indicator{
 	public void setWriteDate(Date date){
 		this.writeDate = date;
 	}
-	
+
 	/**
 	 * Retrieves the recording date.
 	 * @return : Indicator recording date
@@ -115,10 +115,10 @@ public abstract class Indicator{
 	public Date getWriteDate(){
 		return this.writeDate;
 	}
-	
+
 	/**
 	 * Aggregation method.
 	 * @param callBack : Handler called when processing is over.
 	 */
-	public abstract void aggregate(Handler<Message<JsonObject>> callBack);
+	public abstract void aggregate(Handler<JsonObject> callBack);
 }

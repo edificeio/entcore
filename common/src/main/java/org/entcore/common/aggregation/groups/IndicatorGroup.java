@@ -22,55 +22,73 @@ public class IndicatorGroup {
 	private HashSet<IndicatorGroup> childGroups = new HashSet<>();
 	private IndicatorGroup parent = null;
 
+	//Format
+	private boolean isArray = false;
+
+	//Total number of groups & sub groups
+	private int totalChildren = 1;
+
 	/**
 	 * Creates a new IndicatorGroup.
-	 * @param groupKey : The group key, must match a MongoDB trace collection type.
+	 * @param groupKey : The group key, must match a collection type.
 	 */
 	public IndicatorGroup(String groupKey){
 		this.key = groupKey;
 	}
 
+	//Propagates
+	private void incrementCounter(int add){
+		totalChildren += add;
+		if(parent != null){
+			parent.incrementCounter(add);
+		}
+	}
+
 	/**
 	 * Add a new child group.
-	 * @param group : An already initialized group.
+	 * @param group : A group key from which the child group will be initialized, must match a collection type.
 	 * @return The current group.
 	 */
 	public IndicatorGroup addChild(String group){
 		IndicatorGroup childGroup = new IndicatorGroup(group);
 		this.childGroups.add(childGroup);
+		incrementCounter(1);
 		childGroup.parent = this;
 		return this;
 	}
 	/**
 	 * Add a new child group.
-	 * @param group : A group key from which the child group will be initialized, must match a MongoDB trace collection type.
+	 * @param group : An already initialized group.
 	 * @return The current group.
 	 */
 	public IndicatorGroup addChild(IndicatorGroup group){
 		this.childGroups.add(group);
+		incrementCounter(group.totalChildren);
 		group.parent = this;
 		return this;
 	}
 
 	/**
 	 * Add a new child group.
-	 * @param group : An already initialized group.
+	 * @param group : A group key from which the child group will be initialized, must match a collection type.
 	 * @return The child group.
 	 */
 	public IndicatorGroup addAndReturnChild(String group){
 		IndicatorGroup childGroup = new IndicatorGroup(group);
 		this.childGroups.add(childGroup);
+		incrementCounter(1);
 		childGroup.parent = this;
 		return childGroup;
 	}
 	/**
 	 * Add a new child group.
-	 * @param group : A group key from which the child group will be initialized, must match a MongoDB trace collection type.
+	 * @param group : An already initialized group.
 	 * @return The child group.
 	 */
 	public IndicatorGroup addAndReturnChild(IndicatorGroup group){
 		this.childGroups.add(group);
 		group.parent = this;
+		incrementCounter(group.totalChildren);
 		return group;
 	}
 
@@ -96,6 +114,34 @@ public class IndicatorGroup {
 	 */
 	public IndicatorGroup getParent(){
 		return parent;
+	}
+
+	/**
+	 * Sets the group array format.
+	 */
+	public IndicatorGroup setArray(boolean mode){
+		this.isArray = mode;
+		return this;
+	}
+
+	/**
+	 * True if the group format is an array.
+	 */
+	public boolean isArray(){
+		return this.isArray;
+	}
+
+	/**
+	 * Gets the total number of children contained in this group and its subgroups.
+	 */
+	public int getTotalChildren(){
+		return this.totalChildren;
+	}
+
+	public String toString(){
+		if(this.parent != null)
+			return this.parent.toString() + "/" + this.key;
+		return this.key;
 	}
 
 }
