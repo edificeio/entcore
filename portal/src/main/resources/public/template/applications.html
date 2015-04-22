@@ -21,12 +21,12 @@
 	</nav>
 </div>
 <div class="row">
-	<input type="search" ng-model="searchText" i18n-placeholder="search" class="twelve cell" autofocus />
+	<input type="search" ng-model="display.searchText" i18n-placeholder="search" class="twelve cell" autofocus />
 </div>
 <div class="row">
 	<nav class="list icons-view" dragdrop="removeBookmark($item)">
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | orderBy:'displayName' | filter:searchText">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | orderBy:'displayName' | filter:searchDisplayName">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
