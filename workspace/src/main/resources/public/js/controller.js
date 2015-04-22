@@ -31,7 +31,7 @@ routes.define(function($routeProvider) {
 		})
 });
 
-function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template){
+function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template, model){
 
 	route({
 		viewFolder: function(params){
