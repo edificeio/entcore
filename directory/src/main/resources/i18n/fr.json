@@ -199,7 +199,7 @@
     "directory.school": "Ecole",
     "directory.search": "Chercher",
     "directory.send": "Envoyer",
-    "directory.sendActivationCode": "Renvoyer un code d'activation.",
+    "directory.sendActivationCode": "Envoyer un mail de réinitialisationde mot de passe.",
     "directory.set": "Attribuer",
     "directory.setLocalAdmin": "Attribuer (pour cette structure)",
     "directory.showHide": "Afficher / Masquer",
