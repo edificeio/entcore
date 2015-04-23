@@ -1422,7 +1422,7 @@ module.directive('dropDown', function($compile, $timeout){
 						'<div>' +
 							'<ul class="ten cell right-magnet">' +
 								'<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
-								'<li class="display-more" ng-if="limit < options.length" ng-click="increaseLimit()">Afficher la suite</li>' +
+								'<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">Afficher la suite</li>' +
 							'</ul>' +
 						'</div>' +
 					'</div>',
