@@ -24,6 +24,7 @@ import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.SwiftStorage;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,15 +32,30 @@ import java.net.URISyntaxException;
 public class StorageFactory {
 
 	private final Vertx vertx;
-	private final JsonObject config;
+	private JsonObject swift;
+	private String gridfsAddress;
+
+	public StorageFactory(Vertx vertx) {
+		this(vertx, null);
+	}
 
 	public StorageFactory(Vertx vertx, JsonObject config) {
 		this.vertx = vertx;
-		this.config = config;
+		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		String s = (String) server.get("swift");
+		if (s != null) {
+			this.swift = new JsonObject(s);
+		}
+		this.gridfsAddress = (String) server.get("gridfsAddress");
+		if (config != null && config.getObject("swift") != null) {
+			this.swift = config.getObject("swift");
+		} else if (config != null && config.getString("gridfs-address") != null) {
+			this.gridfsAddress = config.getString("gridfs-address");
+		}
+
 	}
 
 	public Storage getStorage() {
-		JsonObject swift = config.getObject("swift");
 		Storage storage = null;
 		if (swift != null) {
 			String uri = swift.getString("uri");
@@ -52,7 +68,6 @@ public class StorageFactory {
 				e.printStackTrace();
 			}
 		} else {
-			String gridfsAddress = config.getString("gridfs-address", "wse.gridfs.persistor");
 			storage = new GridfsStorage(vertx, Server.getEventBus(vertx), gridfsAddress);
 		}
 		return storage;

@@ -57,6 +57,11 @@ public class Starter extends BaseServer {
 			serverMap.put("cluster", cluster);
 			node = config.getString("node", "");
 			serverMap.put("node", node);
+			JsonObject swift = config.getObject("swift");
+			if (swift != null) {
+				serverMap.put("swift", swift.encode());
+			}
+			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
 				protected void handle() {
