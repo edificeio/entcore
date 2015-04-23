@@ -20,7 +20,7 @@
 
 <div class="row rigid-grid">
 	<div class="four cell" style="height: 115px;">
-		<div class="row horizontal-spacing-twice">
+		<div class="row horizontal-spacing-twice" style="z-index: 1">
 			<div class="twelve cell centered">
 				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
 				<button type="button" i18n-value="remove" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
