@@ -45,7 +45,7 @@ function MyAccount($scope, lang, date, notify, route){
 		},
 		editMe: function(params){
 			model.account = new User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
-			if(model.me.type === 'ENSEIGNANT'){
+			if(model.me.type !== 'ELEVE'){
 				model.account.edit.infos = true;
 				$scope.openView('user-edit', 'user');
 			}
