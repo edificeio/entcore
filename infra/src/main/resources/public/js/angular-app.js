@@ -2361,7 +2361,7 @@ module.directive('behaviour', function($compile){
 
 module.directive('resourceRight', function($compile){
 	return {
-		restrict: 'E',
+		restrict: 'EA',
 		template: '<div ng-transclude></div>',
 		replace: false,
 		transclude: true,
