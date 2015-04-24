@@ -121,8 +121,8 @@ function DirectoryController($scope, route, date, template){
 					$scope.classrooms = $scope.currentSchool.classrooms;
 					if(model.me.classes.length === 1){
 						template.open('main', 'mono-class');
-						$scope.myClass = $scope.classrooms.first();
-						$scope.selectClassroom($scope.classrooms.first());
+						$scope.myClass = $scope.classrooms.where({id: model.me.classes[0]});
+						$scope.selectClassroom($scope.myClass);
 					}
 					else{
 						template.open('main', 'multi-class');
