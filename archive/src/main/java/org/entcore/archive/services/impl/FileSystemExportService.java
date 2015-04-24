@@ -192,6 +192,15 @@ public class FileSystemExportService implements ExportService {
 									log.error("Zip export " + exportId + " error : " +
 											event.body().getString("message"));
 									event.body().putString("message", "zip.export.error");
+									userExportInProgress.remove(getUserId(exportId));
+									fs.delete(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+										@Override
+										public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error("Error deleting directory : " + exportDirectory, event.cause());
+										}
+										}
+									});
 									publish(event);
 								} else {
 									storeZip(event);
@@ -222,6 +231,8 @@ public class FileSystemExportService implements ExportService {
 										} else {
 											log.error("Zip saving " + exportId + " error.", eventFile.cause());
 											event.body().putString("message", "zip.saving.error");
+											deleteTempZip(exportId);
+											userExportInProgress.remove(getUserId(exportId));
 											publish(event);
 										}
 									}
