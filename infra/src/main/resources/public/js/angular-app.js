@@ -222,8 +222,7 @@ module.directive('lightbox', function($compile){
 			show: '=',
 			onClose: '&'
 		},
-		template: '<div>'+
-					'<section class="lightbox">' +
+		template: '<section class="lightbox">' +
 						'<div class="background"></div>' +
 						'<div class="content">' +
 							'<div class="twelve cell" ng-transclude></div>'+
@@ -235,25 +234,25 @@ module.directive('lightbox', function($compile){
 				'</div>',
 		link: function(scope, element, attributes){
 			var content = element.find('.content');
-			element.find('.background, i.close-2x').on('click', function(e){
-				element.find('.lightbox').first().fadeOut();
-				$('body').css({ position: 'relative' });
+			element.children('.lightbox').children('.background, i.close-2x').on('click', function(e){
+				element.children('.lightbox').first().fadeOut();
+				$('body').css({ overflow: 'auto' });
 
 				scope.$eval(scope.onClose);
 				if(!scope.$$phase){
 					scope.$parent.$apply();
 				}
 			});
-			element.find('.lightbox').on('mousedown', function(e){
+			element.children('.lightbox').on('mousedown', function(e){
 				e.stopPropagation();
 			});
 
 			scope.$watch('show', function(newVal){
 				if(newVal){
-                    var lightboxWindow = element.find('.lightbox');
+                    var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
-                    var parentElements = element.parents()
+                    var parentElements = element.parents();
 
                     scope.backup = {
                         overflowX: _.filter(parentElements, function(parent){ return $(parent).css('overflow-x') == 'hidden' }),
@@ -261,7 +260,7 @@ module.directive('lightbox', function($compile){
                         zIndex: _.chain(parentElements)
                             .map(function(parent){ return {element: $(parent), index: parseInt($(parent).css('z-index'))}})
                             .filter(function(parentObj){ return parentObj.index > 0 }).value()
-                    }
+                    };
 
                     //Removing overflow properties
                     _.forEach(scope.backup.overflowX, function(element){ $(element).css('overflow-x', 'visible') })
@@ -274,7 +273,7 @@ module.directive('lightbox', function($compile){
 						lightboxWindow.fadeIn();
 					}, 100);
 
-					$('body').css({ position: 'fixed', width: '100%' });
+					$('body').css({ overflow: 'hidden' });
 				}
 				else{
                     if(scope.backup){
@@ -284,13 +283,13 @@ module.directive('lightbox', function($compile){
                         _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', elementObj.index) })
                     }
 
-					element.find('.lightbox').fadeOut();
-					$('body').css({ position: 'relative' });
+					element.children('.lightbox').fadeOut();
+					$('body').css({ overflow: 'auto' });
 				}
 			});
 
 			scope.$on("$destroy", function() {
-				$('body').css({ position: 'relative' });
+				$('body').css({ overflow: 'auto' });
 			});
 		}
 	}
