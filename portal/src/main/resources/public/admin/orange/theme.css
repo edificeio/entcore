@@ -2242,6 +2242,9 @@ ul.icons-tabs li i {
 .inline-editing {
   color: #666;
 }
+.tiny-text {
+  font-size: 8px !important;
+}
 .small-text {
   font-size: 12px !important;
 }
@@ -5255,6 +5258,9 @@ carousel.triplets .image.current {
 carousel.triplets .image.next {
   margin-left: 66%;
 }
+.user-infos {
+  line-height: 25px;
+}
 .user-infos input[type=text] {
   margin: 0;
 }
@@ -5495,9 +5501,62 @@ input-password button {
   padding-top: 80px;
   display: block;
 }
+nav.double-content-stamps {
+  text-align: center;
+}
+nav.double-content-stamps article::first-child {
+  margin-right: 0;
+}
+nav.double-content-stamps article {
+  width: 330px;
+  display: inline-block;
+  text-align: left;
+  padding: 0;
+  margin-right: 25px;
+  margin-bottom: 20px;
+  position: relative;
+}
+nav.double-content-stamps article .illustration {
+  float: left;
+  width: 180px;
+  height: 120px;
+}
+nav.double-content-stamps article .illustration img {
+  width: 180px;
+  height: 120px;
+}
+nav.double-content-stamps article .vertical-content {
+  float: right;
+  width: 150px;
+  height: 240px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+nav.double-content-stamps article .vertical-content ul {
+  padding: 0;
+}
+nav.double-content-stamps article .vertical-content ul li {
+  list-style-type: none;
+}
+nav.double-content-stamps article .vertical-content ul li a {
+  display: block;
+  margin-bottom: 3px;
+}
+nav.double-content-stamps article .horizontal-content {
+  float: left;
+  width: 180px;
+  height: 120px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+nav.double-content-stamps article .horizontal-content label {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
 side-panel {
   position: relative;
-  z-index: 1;
+  z-index: 7001;
 }
 side-panel .opener {
   cursor: pointer;
