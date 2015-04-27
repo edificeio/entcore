@@ -5106,9 +5106,9 @@ function MediaLibrary($scope){
 			}
 		}
 		else{
-			var copyFn = document.protectedDuplicate.bind(document);
+			var copyFn = document.protectedDuplicate;
 			if($scope.visibility === 'public'){
-				copyFn = document.publicDuplicate.bind(document);
+				copyFn = document.publicDuplicate;
 			}
 			copyFn(function(newFile){
 				if($scope.multiple){
@@ -5133,9 +5133,9 @@ function MediaLibrary($scope){
 			var duplicateDocuments = [];
 			var documentsCount = 0;
 			selectedDocuments.forEach(function(doc){
-				var copyFn = doc.protectedDuplicate.bind(document);
+				var copyFn = doc.protectedDuplicate.bind(doc);
 				if($scope.visibility === 'public'){
-					copyFn = doc.publicDuplicate.bind(document);
+					copyFn = doc.publicDuplicate.bind(doc);
 				}
 				copyFn(function(newFile){
 					duplicateDocuments.push(newFile);
