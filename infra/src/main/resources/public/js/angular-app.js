@@ -3589,14 +3589,14 @@ module.directive('datePicker', function($compile){
 		replace: true,
 		restrict: 'E',
 		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy"  />',
-		link: function($scope, $element, $attributes){
-			$scope.$watch('ngModel', function(newVal){
-				$element.val(moment($scope.ngModel).format('DD/MM/YYYY'));
-                if($element.datepicker)
-                    $element.datepicker('setValue', moment($scope.ngModel).format('DD/MM/YYYY'));
+		link: function(scope, element, attributes){
+			scope.$watch('ngModel', function(newVal){
+				element.val(moment(scope.ngModel).format('DD/MM/YYYY'));
+                if(element.datepicker)
+                    element.datepicker('setValue', moment(scope.ngModel).format('DD/MM/YYYY'));
 			});
 			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
-				$element.datepicker({
+				element.datepicker({
 						dates: {
 							months: moment.months(),
 							monthsShort: moment.monthsShort(),
@@ -3608,40 +3608,44 @@ module.directive('datePicker', function($compile){
 					})
 					.on('changeDate', function(){
 						setTimeout(function(){
-							var date = $element.val().split('/');
+							var date = element.val().split('/');
 							var temp = date[0];
 							date[0] = date[1];
 							date[1] = temp;
 							date = date.join('/');
-							$scope.ngModel = new Date(date);
-							$scope.$apply('ngModel');
-							$scope.$parent.$eval($scope.ngChange);
-							$scope.$parent.$apply();
+							scope.ngModel = new Date(date);
+							scope.$apply('ngModel');
+							scope.$parent.$eval(scope.ngChange);
+							scope.$parent.$apply();
 						}, 10);
 
 						$(this).datepicker('hide');
 					});
-				$element.datepicker('hide');
+				element.datepicker('hide');
 			});
 
-			$element.on('focus', function(){
+			element.on('focus', function(){
 				var that = this;
 				$(this).parents('form').on('submit', function(){
 					$(that).datepicker('hide');
 				});
-				$element.datepicker('show');
+				element.datepicker('show');
 			});
 
-			$element.on('change', function(){
-				var date = $element.val().split('/');
+			element.on('change', function(){
+				var date = element.val().split('/');
 				var temp = date[0];
 				date[0] = date[1];
 				date[1] = temp;
 				date = date.join('/');
-				$scope.ngModel = new Date(date);
-				$scope.$apply('ngModel');
-				$scope.$parent.$eval($scope.ngChange);
-				$scope.$parent.$apply();
+				scope.ngModel = new Date(date);
+				scope.$apply('ngModel');
+				scope.$parent.$eval(scope.ngChange);
+				scope.$parent.$apply();
+			});
+
+			element.on('$destroy', function(){
+				element.datepicker('hide');
 			});
 		}
 	}
