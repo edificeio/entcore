@@ -648,7 +648,11 @@ public class WorkspaceService extends BaseController {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				final String name = request.formAttributes().get("name");
+				String n = request.formAttributes().get("name");
+				if (n != null) {
+					n = n.replaceAll("_", "＿"); // "&#95;"
+				}
+				final String name = n;
 				final String path = request.formAttributes().get("path");
 				if (name == null || name.trim().isEmpty()) {
 					badRequest(request);
