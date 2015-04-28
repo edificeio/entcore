@@ -168,6 +168,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         return d ? date.create(d).format('LLLL') : ""
     }
 
+	$scope.formatDate = function(date){
+		return date ? moment(date).format('DD/MM/YYYY') : "";
+	}
+
 	$scope.formatUserFunctions = function(user){
 		return _.chain(user.functions).map(function(f){ return f[0]}).uniq().map(function(f){ return lang.translate(f) }).value().join(", ")
 	}
