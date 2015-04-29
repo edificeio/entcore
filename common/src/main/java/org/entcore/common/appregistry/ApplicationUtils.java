@@ -26,6 +26,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
+import static org.entcore.common.appregistry.AppRegistryEvents.IMPORT_SUCCEEDED;
 import static org.entcore.common.appregistry.AppRegistryEvents.USER_GROUP_UPDATED;
 
 public final class ApplicationUtils {
@@ -89,6 +90,12 @@ public final class ApplicationUtils {
 		JsonObject json = new JsonObject();
 		json.putString("action", "setDefaultClassRoles").putString("classId", classId);
 		eb.send(APP_REGISTRY_BUS_ADDRESS, json, handler);
+	}
+
+	public static void afterImport(EventBus eb) {
+		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS,
+				new JsonObject().putString("type", IMPORT_SUCCEEDED)
+		);
 	}
 
 }

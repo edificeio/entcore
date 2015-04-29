@@ -20,6 +20,7 @@
 package org.entcore.feeder;
 
 import fr.wseduc.cron.CronTrigger;
+import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
@@ -34,6 +35,7 @@ import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -270,9 +272,20 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
-									applyComRules();
 									storeImportedEvent();
-									duplicateUsers.markDuplicates();
+									duplicateUsers.markDuplicates(new Handler<JsonObject>() {
+										@Override
+										public void handle(JsonObject event) {
+											applyComRules(new VoidHandler() {
+												@Override
+												protected void handle() {
+													if (config.getBoolean("notify-apps-after-import", true)) {
+														ApplicationUtils.afterImport(eb);
+													}
+												}
+											});
+										}
+									});
 									sendOK(message);
 								} else if (m != null) {
 									logger.error(m.body().getString("message"));
@@ -320,7 +333,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		});
 	}
 
-	private void applyComRules() {
+	private void applyComRules(final VoidHandler handler) {
 		if (config.getBoolean("apply-communication-rules", false)) {
 			String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
 			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
@@ -333,12 +346,25 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								.putString("action", "initAndApplyDefaultCommunicationRules")
 								.putArray("schoolIds", ((JsonObject) ids.get(0))
 										.getArray("ids", new JsonArray()));
-						eb.send("wse.communication", j);
+						eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								if (!"ok".equals(event.body().getString("status"))) {
+									logger.error("Init rules error : " + event.body().getString("message"));
+								} else {
+									logger.info("Communication rules applied.");
+								}
+								handler.handle(null);
+							}
+						});
 					} else {
 						logger.error(message.body().getString("message"));
+						handler.handle(null);
 					}
 			 }
 			});
+		} else {
+			handler.handle(null);
 		}
 	}
 

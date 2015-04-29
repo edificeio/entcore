@@ -28,6 +28,8 @@ public final class AppRegistryEvents {
 
 	public static final String USER_GROUP_UPDATED = "USER_GROUP_UPDATED";
 
+	public static final String IMPORT_SUCCEEDED = "IMPORT_SUCCEEDED";
+
 	private AppRegistryEvents() {}
 
 }

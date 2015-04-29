@@ -30,4 +30,6 @@ public interface AppRegistryEventsService {
 
 	void userGroupUpdated(JsonArray users, Message<JsonObject> message);
 
+	void importSucceeded();
+
 }

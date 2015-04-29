@@ -59,11 +59,15 @@ public class DuplicateUsers {
 		}
 	}
 
-	public void markDuplicates() {
-		markDuplicates(null);
+	public void markDuplicates(Handler<JsonObject> handler) {
+		markDuplicates(null, handler);
 	}
 
 	public void markDuplicates(final Message<JsonObject> message) {
+		markDuplicates(message, null);
+	}
+
+	public void markDuplicates(final Message<JsonObject> message, final Handler<JsonObject> handler) {
 		final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
 		final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
 		final long start = System.currentTimeMillis();
@@ -73,6 +77,9 @@ public class DuplicateUsers {
 				log.info("Mark duplicates users finished - elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 				if (message != null) {
 					message.reply(new JsonObject().putString("status", "ok"));
+				}
+				if (handler != null) {
+					handler.handle(new JsonObject().putString("status", "ok"));
 				}
 			}
 		};

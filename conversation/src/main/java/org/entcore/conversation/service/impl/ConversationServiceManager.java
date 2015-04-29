@@ -30,6 +30,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.HashSet;
@@ -40,6 +41,7 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 	private final EventBus eb;
 	private final Neo neo;
 	private final String applicationName;
+	private static final Logger log = LoggerFactory.getLogger(ConversationServiceManager.class);
 
 	public ConversationServiceManager(Vertx vertx, String applicationName) {
 		eb = vertx.eventBus();
@@ -78,6 +80,80 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 					userIds.add(((JsonObject) o).getString("id"));
 				}
 				manageConversationNodes(userIds, users, message);
+			}
+		});
+	}
+
+	@Override
+	public void importSucceeded() {
+		final String query =
+				"MATCH (:Application {name : {application}})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(:Role)" +
+				"<-[:AUTHORIZED]-(:Group)<-[:IN]-(u:User) " +
+				"WHERE NOT(u-[:HAS_CONVERSATION]->()) " +
+				"CREATE UNIQUE u-[:HAS_CONVERSATION]->(c:Conversation { userId : u.id, active : {true} }) ";
+		final JsonObject params = new JsonObject().putBoolean("true", true).putString("application", applicationName);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					final String q1 =
+			"MATCH (c:Conversation) " +
+			"WHERE NOT(c-[:HAS_CONVERSATION_FOLDER]->(:ConversationFolder {name :'INBOX'})) " +
+			"CREATE UNIQUE c-[:HAS_CONVERSATION_FOLDER]->(fi:ConversationFolder:ConversationSystemFolder { name : 'INBOX'}) ";
+					final JsonObject p = new JsonObject();
+					neo.execute(q1, p, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							if ("ok".equals(event.body().getString("status"))) {
+								final String q2 =
+			"MATCH (c:Conversation) " +
+			"WHERE NOT(c-[:HAS_CONVERSATION_FOLDER]->(:ConversationFolder {name :'OUTBOX'})) " +
+			"CREATE UNIQUE c-[:HAS_CONVERSATION_FOLDER]->(fi:ConversationFolder:ConversationSystemFolder { name : 'OUTBOX'}) ";
+								final JsonObject p = new JsonObject();
+								neo.execute(q2, p, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if ("ok".equals(event.body().getString("status"))) {
+											final String q3 =
+			"MATCH (c:Conversation) " +
+			"WHERE NOT(c-[:HAS_CONVERSATION_FOLDER]->(:ConversationFolder {name :'DRAFT'})) " +
+			"CREATE UNIQUE c-[:HAS_CONVERSATION_FOLDER]->(fi:ConversationFolder:ConversationSystemFolder { name : 'DRAFT'}) ";
+											final JsonObject p = new JsonObject();
+											neo.execute(q3, p, new Handler<Message<JsonObject>>() {
+												@Override
+												public void handle(Message<JsonObject> event) {
+													if ("ok".equals(event.body().getString("status"))) {
+														final String q4 =
+			"MATCH (c:Conversation) " +
+			"WHERE NOT(c-[:HAS_CONVERSATION_FOLDER]->(:ConversationFolder {name :'TRASH'})) " +
+			"CREATE UNIQUE c-[:HAS_CONVERSATION_FOLDER]->(fi:ConversationFolder:ConversationSystemFolder { name : 'TRASH'}) ";
+														final JsonObject p = new JsonObject();
+														neo.execute(q4, p, new Handler<Message<JsonObject>>() {
+															@Override
+															public void handle(Message<JsonObject> event) {
+																if ("ok".equals(event.body().getString("status"))) {
+																	log.error(event.body().getString("message"));
+																}
+															}
+														});
+													} else {
+														log.error(event.body().getString("message"));
+													}
+												}
+											});
+										} else {
+											log.error(event.body().getString("message"));
+										}
+									}
+								});
+							} else {
+								log.error(event.body().getString("message"));
+							}
+						}
+					});
+				} else {
+					log.error(event.body().getString("message"));
+				}
 			}
 		});
 	}

@@ -46,6 +46,9 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 				case USER_GROUP_UPDATED:
 					appRegistryEventsService.userGroupUpdated(event.body().getArray("users"), event);
 					break;
+				case IMPORT_SUCCEEDED:
+					appRegistryEventsService.importSucceeded();
+					break;
 			}
 		}
 	}
