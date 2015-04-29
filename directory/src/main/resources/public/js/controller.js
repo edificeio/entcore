@@ -218,6 +218,10 @@ function DirectoryController($scope, route, date, template){
 	$scope.filterTopStructures = function(structure){
 		return !structure.parents
 	};
+
+	$scope.displayFamily = function(currentUser) {
+		return currentUser.relatives.length && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	};
 }
 
 function ClassAdminController($scope, date, notify){
