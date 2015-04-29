@@ -63,7 +63,7 @@
 					<a ng-click="emptyTrash()" ng-if="currentFolderTree.name === 'trash'" translate key="workspace.empty.trash" class="classic-link"></a>
 					<div class="row">
 						<hr class="row" />
-						<h2>Espace utilisé</h2>
+						<h2><i18n>quota.title</i18n></h2>
 						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
 					</div>
 				</nav>

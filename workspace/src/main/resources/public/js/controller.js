@@ -1279,7 +1279,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			//$scope.openHistory($scope.targetDocument)
 			delete $scope.revisionInProgress
 			$scope.openFolder($scope.openedFolder.folder)
-			getQuota()
+			model.quota.sync();
 		}).e400(function(e){
 			delete $scope.revisionInProgress
 			var error = JSON.parse(e.responseText);
@@ -1291,7 +1291,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(function(){
 			$('.tooltip').remove()
 			$scope.openHistory($scope.targetDocument)
-			getQuota()
+			model.quota.sync();
 		})
 	}
 }

@@ -140,5 +140,8 @@
     "workspace.add.version": "Nouvelle version",
     "workspace.delete.version": "Supprimer la version",
     "workspace.manager": "Gérer",
-    "user": "Utilisateur"
+    "user": "Utilisateur",
+    "quota.title": "Espace utilisé",
+    "mb": "Mo",
+    "gb": "Go"
 }

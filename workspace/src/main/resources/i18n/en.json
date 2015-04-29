@@ -129,5 +129,8 @@
     "workspace.trash.error": "Error while moving to the trash",
     "workspace.trash.restore": "Restore",
     "workspace.unselect.all": "None",
-    "workspace.valid": "Valid"
+    "workspace.valid": "Valid",
+    "quota.title": "Used space",
+    "mb": "MB",
+    "gb": "GB"
 }
