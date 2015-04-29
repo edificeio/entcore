@@ -114,7 +114,7 @@
 		class="horizontal-spacing"
 	></h1>
 	<article>
-		<div class="row medium-text" ng-class="{ line: $index !== 0 }" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
+		<div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
 			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
 			<em class="ten cell reduce-block-six user-content">[[hobby.value]]</em>
 		</div>
@@ -123,10 +123,11 @@
 </div>
 
 <h1
-		translate key="userBook.profile.health"
 		class="horizontal-spacing"
 		ng-if="currentUser.health"
-		></h1>
+		>
+	<i18n>userBook.profile.health</i18n>
+		</h1>
 <div class="row reduce-block-six" ng-if="currentUser.health">
 	<article class="user-content">[[currentUser.health]]</article>
 </div>
