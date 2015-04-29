@@ -121,7 +121,14 @@
 				</resource-right>
 				<resource-right resource="selectedItems()" name="share">
 					<button ng-click="openShareView(selectedDocuments()[0])"
-							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
+							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared')"
+							ng-class="cell">
+						<i18n>workspace.share</i18n>
+					</button>
+				</resource-right>
+				<resource-right resource="selectedItems()" name="share">
+					<button ng-click="openShareView(selectedDocuments()[0])"
+							ng-if="selectedFolders().length === 0 && (currentTree.name === 'documents')"
 							ng-class="cell">
 						<i18n>workspace.share</i18n>
 					</button>
