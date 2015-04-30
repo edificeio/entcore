@@ -663,6 +663,20 @@ module.directive('calendar', function($compile){
 
 					refreshCalendar();
 				};
+
+				$scope.previousTimeslots = function(){
+					calendar.startOfDay --;
+					calendar.endOfDay --;
+					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+					refreshCalendar();
+				};
+
+				$scope.nextTimeslots = function(){
+					calendar.startOfDay ++;
+					calendar.endOfDay ++;
+					model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+					refreshCalendar();
+				};
 			};
 			$timeout(function(){
 				refreshCalendar();
@@ -823,7 +837,7 @@ module.directive('scheduleItem', function($compile){
 					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
 				});
 			};
-
+			scope.$parent.$watch('items', placeItem);
 			scope.$parent.$watchCollection('items', placeItem);
 			scope.$watch('item', placeItem);
 			scope.placeItem = placeItem;

@@ -11,8 +11,12 @@
 		</div>
 	</legend>
 	<div class="days">
+		<button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
 		<div ng-repeat="day in calendar.days.all" class="day">
 			<legend translate content="[[day.name]]"></legend>
+			<div class="hidden-schedule-items before" ng-if="day.scheduleItems.beforeCalendar() > 0">
+				+ [[day.scheduleItems.beforeCalendar()]]
+			</div>
 			<div class="timeslots">
 				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)"></div>
 			</div>
@@ -22,7 +26,11 @@
 					<schedule-item item="scheduleItem" day="day"></schedule-item>
 				</div>
 			</div>
+			<div class="hidden-schedule-items after" ng-if="day.scheduleItems.afterCalendar() > 0">
+				+ [[day.scheduleItems.afterCalendar()]]
+			</div>
 		</div>
+		<button class="next-timeslots" ng-click="nextTimeslots()"  ng-disabled="calendar.timeSlots.last().end === 24"></button>
 	</div>
 	<div class="row"></div>
 

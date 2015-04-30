@@ -1290,6 +1290,16 @@ var calendar = {
 	Day: function(data){
 		var day = this;
 		this.collection(calendar.ScheduleItem, {
+			beforeCalendar: function(){
+				return this.filter(function(scheduleItem){
+					return scheduleItem.beginning.hour() < calendar.startOfDay;
+				}).length;
+			},
+			afterCalendar: function(){
+				return this.filter(function(scheduleItem){
+					return scheduleItem.end.hour() > calendar.endOfDay;
+				}).length;
+			},
 			scheduleItemWidth: function(scheduleItem){
 				var nbConcurrentItems = 1;
 				var scheduleItemTime = calendar.getHours(scheduleItem, day);
