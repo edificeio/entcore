@@ -35,6 +35,7 @@ function Document(item){
 	if(this.metadata.contentType === 'img'){
 		this.icon = this.link;
 	}
+	this.version = parseInt(Math.random() * 100);
 }
 
 Document.prototype.roleFromFileType = function(fileType) {

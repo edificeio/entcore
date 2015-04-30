@@ -1275,10 +1275,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.revisionInProgress = {}
 		});
 
-		http().putFile("document/"+$scope.targetDocument._id+"?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
-			//$scope.openHistory($scope.targetDocument)
-			delete $scope.revisionInProgress
-			$scope.openFolder($scope.openedFolder.folder)
+		http().putFile("document/" + $scope.targetDocument._id + "?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
+			delete $scope.revisionInProgress;
+			$scope.openFolder($scope.openedFolder.folder);
 			model.quota.sync();
 		}).e400(function(e){
 			delete $scope.revisionInProgress
