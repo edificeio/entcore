@@ -157,8 +157,7 @@
 
 				<div class="cell" ng-repeat="button in currentTree.contextualButtons">
 					<resource-right resource="selectedItems()" name="[[button.right]]">
-						<button
-								ng-click="button.action(button.url)">
+						<button ng-if="button.allow ? button.allow() : true" ng-click="button.action(button.url)">
 							[[translate(button.text)]]
 						</button>
 					</resource-right>

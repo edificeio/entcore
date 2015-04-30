@@ -421,7 +421,9 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		path: 'documents',
 		buttons: [],
 		contextualButtons: [
-			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copy-files' },
+			{ text: 'workspace.move.racktodocs', action: $scope.openMoveFileView, url: 'copy-files', allow: function(){
+				return $scope.selectedFolders().length === 0
+  			} },
 			{ text: 'workspace.move.trash', action: $scope.toTrash, url: 'document/trash', right: 'moveTrash' }
 		]
 	}, {
