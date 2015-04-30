@@ -1037,7 +1037,7 @@ public class DefaultConversationService implements ConversationService {
 		String q2 =
 			"MATCH (attachment: MessageAttachment)<-[: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments " +
+			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} " +
 			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(m)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
 			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
