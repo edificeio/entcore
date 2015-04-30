@@ -105,9 +105,6 @@ public class ManualFeeder extends BusModBase {
 		if (c == null) return;
 		String structureId = getMandatoryString("structureId", message);
 		if (structureId == null) return;
-		if (c.getString("externalId") == null) {
-			c.putString("externalId", UUID.randomUUID().toString());
-		}
 		final String error = classValidator.validate(c);
 		if (error != null) {
 			logger.error(error);
@@ -115,7 +112,8 @@ public class ManualFeeder extends BusModBase {
 		} else {
 			String query =
 					"MATCH (s:Structure { id : {structureId}}) " +
-					"CREATE s<-[:BELONGS]-(c:Class {props})" +
+					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
+					"SET c.externalId = s.externalId + '$' + c.name " +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name})-[:DEPENDS]->g " +
@@ -212,13 +210,15 @@ public class ManualFeeder extends BusModBase {
 					"WITH u " +
 					"MATCH (student:User) " +
 					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED]->u ";
+					"CREATE student-[:RELATED]->u " +
+					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$1$1$1$1$0') ";
 			params.putArray("childrenIds", childrenIds);
 		}
 		String query =
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-" +
 				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
 				"CREATE UNIQUE pg<-[:IN]-(u:User {props}) " +
+				"SET u.structures = [s.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -260,6 +260,8 @@ public class ManualFeeder extends BusModBase {
 				"WITH u, p " +
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
 				"CREATE UNIQUE pg<-[:IN]-u " +
+				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
+				"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -296,6 +298,8 @@ public class ManualFeeder extends BusModBase {
 				"(pg:ProfileGroup)-[:DEPENDS]->(s:Structure { id : {structureId}}), " +
 				"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
 				"CREATE UNIQUE dpg<-[:IN]-u " +
+				"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
+				"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
 				"DELETE r " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -318,13 +322,15 @@ public class ManualFeeder extends BusModBase {
 					"WITH u " +
 					"MATCH (student:User) " +
 					"WHERE student.id IN {childrenIds} " +
-					"CREATE student-[:RELATED]->u ";
+					"CREATE student-[:RELATED]->u " +
+					"SET student.relative = coalesce(student.relative, []) + (u.externalId + '$1$1$1$1$0') ";
 			params.putArray("childrenIds", childrenIds);
 		}
 		String query =
 				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
+				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}), s-[:BELONGS]->(struct:Structure) " +
 				"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
+				"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -348,8 +354,12 @@ public class ManualFeeder extends BusModBase {
 				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WITH u, p " +
 				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-				"(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
+				"(pg:ProfileGroup)-[:HAS_PROFILE]->p, s-[:BELONGS]->(struct:Structure) " +
 				"CREATE UNIQUE pg<-[:IN]-u, cpg<-[:IN]-u " +
+				"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
+				"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
+				"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
+				"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -369,6 +379,7 @@ public class ManualFeeder extends BusModBase {
 				"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 				"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
 				"CREATE UNIQUE dpg<-[:IN]-u " +
+				"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) " +
 				"DELETE r " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {

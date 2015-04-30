@@ -178,7 +178,11 @@ public class CsvFeeder implements PartialFeed {
 									a = new JsonArray();
 									user.putArray(c, a);
 								}
-								a.add(v);
+								if ("classes".equals(c)) {
+									a.add(structure.getExternalId() + "$" + v);
+								} else {
+									a.add(v);
+								}
 								break;
 							case "boolean":
 								user.putBoolean(c, "true".equals(v.toLowerCase()));

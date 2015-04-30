@@ -389,6 +389,8 @@ public class User {
 				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
 				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
 				"CREATE UNIQUE s-[:RELATED]->r, r-[:IN]->rspg, r-[:IN]->rcpg " +
+				"SET s.relative = CASE WHEN r.externalId IN s.relative THEN " +
+				"s.relative ELSE coalesce(s.relative, []) + (r.externalId + '$1$1$1$1$0') END " +
 				"RETURN COLLECT(st.id) as structures ";
 		JsonObject params = new JsonObject()
 				.putString("relativeId", relativeId)
@@ -403,7 +405,9 @@ public class User {
 				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
 				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
 				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
-				"MATCH s-[relations]-r DELETE relations";
+				"MATCH s-[relations]-r " +
+				"SET s.relative = FILTER(rId IN s.relative WHERE NOT(rId =~ (r.externalId + '.*'))) " +
+				"DELETE relations";
 		JsonObject params = new JsonObject()
 			.putString("relativeId", relativeId)
 			.putString("studentId", studentId);
