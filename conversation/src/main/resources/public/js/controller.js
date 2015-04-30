@@ -285,7 +285,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		$scope.newItem.parentConversation = $scope.mail;
 		setMailContent('reply');
 		$scope.mail.displayNames.forEach(function(user){
-			if(user[0] === model.me.userId){
+			if(user[0] === model.me.userId || _.findWhere($scope.newItem.to, {id: user[0]})){
 				return;
 			}
 			$scope.addUser(new User({ id: user[0], displayName: user[1] }));
