@@ -288,7 +288,8 @@ public class AuthController extends BaseController {
 							long timeout = rememberMe ? 3600l * 24 * 365 : container.config()
 									.getLong("cookie_timeout", Long.MIN_VALUE);
 							CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
-							redirect(request, callBack, "");
+							redirect(request, callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?") ?
+									callBack.replaceFirst("/auth/login", "") : callBack, "");
 						} else {
 							loginResult(request, "auth.error.authenticationFailed", callBack);
 						}
@@ -310,11 +311,11 @@ public class AuthController extends BaseController {
 			} catch (UnsupportedEncodingException e) {
 				log.error(e.getMessage(), e);
 				callback.append(container.config()
-						.getObject("authenticationServer").getString("logoutCallback", "/auth/login"));
+						.getObject("authenticationServer").getString("logoutCallback", "/"));
 			}
 		} else {
 			callback.append(container.config()
-					.getObject("authenticationServer").getString("logoutCallback", "/auth/login"));
+					.getObject("authenticationServer").getString("logoutCallback", "/"));
 		}
 
 		if (sessionId != null && !sessionId.trim().isEmpty()) {
