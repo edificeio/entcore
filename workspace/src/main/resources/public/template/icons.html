@@ -43,7 +43,7 @@
 					<em>[[longDate(comment.posted)]]</em>
 					<a class="right-magnet"
 				   	   ng-click="removeComment(folder, comment)"
-					   ng-if="comment.id && ((comment.author === me.userId && folder.myRights.commentFolder) || folder.myRights.deleteComment)">
+					   ng-if="comment.id && ((comment.author === me.userId && selectedFolders()[0].myRights.commentFolder) || selectedFolders()[0].myRights.deleteComment)">
 						<i18n>workspace.delete</i18n>
 					</a>
 					<p>[[comment.comment]]</p>
@@ -91,7 +91,7 @@
 					<em>[[longDate(comment.posted)]]</em>
 					<a class="right-magnet"
 					   ng-click="removeComment(document, comment)"
-					   ng-if="comment.id && ((comment.author === me.userId && document.myRights.commentDocument) || document.myRights.deleteComment)">
+					   ng-if="comment.id && ((comment.author === me.userId && selectedDocuments()[0].myRights.commentDocument) || selectedDocuments()[0].myRights.deleteComment)">
 						<i18n>workspace.delete</i18n>
 					</a>
 					<p>[[comment.comment]]</p>
