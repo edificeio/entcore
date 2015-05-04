@@ -21,7 +21,7 @@
     "auth.message.title": "Mot de passe oublié",
     "auth.old.password": "Ancien mot de passe",
     "auth.password": "Mot de passe",
-    "auth.remember.me" : "Se souvenir de moi",
+    "auth.remember.me": "Se souvenir de moi",
     "auth.reset": "Réinitialiser",
     "auth.reset.header": "Réinitialisation du mot de passe",
     "auth.reset.invalid.argument": "Le formulaire contient des erreurs",

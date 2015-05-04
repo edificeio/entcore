@@ -21,6 +21,7 @@
     "auth.message.title": "Missing password",
     "auth.old.password": "Old password",
     "auth.password": "Password",
+    "auth.remember.me": "Se souvenir de moi",
     "auth.reset": "Reset",
     "auth.reset.header": "Password reset",
     "auth.reset.invalid.argument": "Form errors",

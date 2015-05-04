@@ -21,6 +21,7 @@
     "auth.message.title": "Esqueceu sua senha?",
     "auth.old.password": "Senha antiga",
     "auth.password": "Senha",
+    "auth.remember.me": "Se souvenir de moi",
     "auth.reset": "Reinicialização",
     "auth.reset.header": "Reinicialização da senha",
     "auth.reset.invalid.argument": "O formulàrio tem erros",
