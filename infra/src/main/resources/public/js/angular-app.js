@@ -2234,10 +2234,12 @@ module.directive('loadingPanel', function($compile){
 			$attributes.$observe('loadingPanel', function(val) {
 				http().bind('request-started.' + $attributes.loadingPanel, function(e){
 					var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
-					$element.append('<div class="loading-panel">' +
-						'<h1>' + lang.translate('loading') + '</h1>' +
-						'<img src="' + loadingIllustrationPath + '" />' +
-						'</div>');
+					if($element.children('.loading-panel').length === 0){
+						$element.append('<div class="loading-panel">' +
+							'<h1>' + lang.translate('loading') + '</h1>' +
+							'<img src="' + loadingIllustrationPath + '" />' +
+							'</div>');
+					}
 
 				})
 				http().bind('request-ended.' + $attributes.loadingPanel, function(e){
