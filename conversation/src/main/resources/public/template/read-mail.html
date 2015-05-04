@@ -44,6 +44,38 @@
 			</div>
 		</div>
 	</div>
+	<div class="row block-container medium-text" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
+		<p><h2><i18n>attachments</i18n></h2></p>
+		<article class="list-view">
+			<table class="list-view">
+				<thead>
+					<th colspan="4"></th>
+				</thead>
+				<tbody>
+					<tr ng-repeat="attachment in mail.attachments | orderBy: columnOrder" class="element">
+						<td class="icon">
+							<div class="twelve cell">
+								<i class="[[formatFileType(attachment.contentType)]]"></i>
+							</div>
+						</td>
+						<td>
+							<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]">
+								[[attachment.filename]]
+							</a>
+						</td>
+						<td>
+							[[formatSize(attachment.size)]]
+						</td>
+						<td>
+							<i class="remove-small center"
+							ng-click="deleteAttachment($event, attachment, mail)"
+							tooltip="remove.attachment">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</article>
+	</div>
 	<div class="row block-container medium-text">
 		<span translate key="clickhere"></span>
 		<a ng-click="reply()" translate key="reply"></a>,
@@ -51,37 +83,4 @@
 		<a ng-click="transfer()" translate key="transfer"></a>,
 		<a ng-click="mail.remove(); openFolder()" translate key="remove.link"></a> <span translate key="message"></span>
 	</div>
-</article>
-<article class="list-view" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'" ng-if="mail.attachments && mail.attachments.length > 0">
-	<h3><i18n>attachments</i18n></h3>
-	<table class="list-view">
-		<thead>
-			<th class="icon"></th>
-			<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>
-			<th ng-click="columnOrder = columnOrder === 'size' ? '-size' : 'size'"><i18n>size</i18n></th>
-			<th class="icon"></th>
-		</thead>
-		<tbody>
-			<tr ng-repeat="attachment in mail.attachments | orderBy: columnOrder" class="element">
-				<td class="icon">
-					<div class="twelve cell">
-						<i class="[[formatFileType(attachment.contentType)]]"></i>
-					</div>
-				</td>
-				<td>
-					<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]">
-						[[attachment.filename]]
-					</a>
-				</td>
-				<td>
-					[[formatSize(attachment.size)]]
-				</td>
-				<td>
-					<i class="remove-small center"
-					ng-click="deleteAttachment($event, attachment, mail)"
-					tooltip="remove.attachment">
-				</td>
-			</tr>
-		</tbody>
-	</table>
 </article>
