@@ -48,7 +48,6 @@ import static org.entcore.feeder.be1d.Be1dFeeder.generateUserExternalId;
 import static org.entcore.feeder.be1d.Be1dFeeder.frenchDatePatter;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
-import static org.entcore.feeder.utils.FeederHelper.detectCharset;
 
 public class CsvFeeder implements PartialFeed {
 
@@ -69,7 +68,31 @@ public class CsvFeeder implements PartialFeed {
 				.putString("childexternalid", "childExternalId")
 				.putString("nomenfant", "childLastName")
 				.putString("prenomenfant", "childFirstName")
-				.putString("classeenfant", "childClasses");
+				.putString("classeenfant", "childClasses")
+				.putString("presencedevanteleves", "teaches")
+				.putString("fonction", "functions")
+				.putString("niveau", "level")
+				.putString("regime", "accommodation")
+				.putString("filiere", "sector")
+				.putString("mef", "module")
+				.putString("libellemef", "moduleName")
+				.putString("boursier", "scholarshipHolder")
+				.putString("transport", "transport")
+				.putString("statut", "status")
+				.putString("codematiere", "fieldOfStudy")
+				.putString("matiere", "fieldOfStudyLabels")
+				.putString("persreleleve", "relative")
+				.putString("civilite", "title")
+				.putString("telephone", "homePhone")
+				.putString("telephonetravail", "workPhone")
+				.putString("adresse", "address")
+				.putString("cp", "zipCode")
+				.putString("ville", "city")
+				.putString("pays", "country")
+				.putString("discipline", "classCategories")
+				.putString("matiere", "subjectTaught")
+				.putString("email", "email")
+				.putString("professeurprincipal", "headTeacher");
 
 		mappings.mergeIn(additionnalsMappings);
 		namesMapping = mappings.toMap();
@@ -178,7 +201,8 @@ public class CsvFeeder implements PartialFeed {
 									a = new JsonArray();
 									user.putArray(c, a);
 								}
-								if ("classes".equals(c)) {
+								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
+										!v.startsWith(structure.getExternalId() + "$")) {
 									a.add(structure.getExternalId() + "$" + v);
 								} else {
 									a.add(v);
