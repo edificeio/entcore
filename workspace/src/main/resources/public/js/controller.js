@@ -213,7 +213,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.openRenameView = function(document){
-		$scope.newName = document.name
+		document.newName = document.name
 		$scope.renameTarget = document
 		ui.showLightbox()
 		template.open('lightbox', 'rename');

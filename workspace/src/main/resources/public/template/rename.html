@@ -1,17 +1,17 @@
 <h1 translate content="workspace.rename"></h1>
 
-<div class="row warning" ng-if="!renameTarget.file && $parent.newName.indexOf('_') > -1">
+<div class="row warning" ng-if="!renameTarget.file && renameTarget.newName.indexOf('_') > -1">
     <span translate content="workspace.folder.invalid.name"></span>
 </div>
 
 <div class="row">
     <label class="two cell" translate content="workspace.name"></label>
-    <input class="ten cell" type="text" ng-model="$parent.newName" placeholder="[[renameTarget.name]]" autofocus />
+    <input class="ten cell" type="text" ng-model="renameTarget.newName" placeholder="[[renameTarget.name]]" autofocus />
     <hr />
 </div>
 
 <div class="lightbox-buttons fluid">
-    <input type="submit" ng-click="rename(renameTarget, newName)" ng-disabled="!renameTarget.file && $parent.newName.indexOf('_') > -1"/>
+    <input type="submit" ng-click="rename(renameTarget, renameTarget.newName)" ng-disabled="!renameTarget.file && renameTarget.newName.indexOf('_') > -1"/>
 </div>
 
 <div class="clear"></div>
