@@ -492,7 +492,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 						return false
 
 					var documentFolder = doc.folder
-					if(doc.folder === root.folder && doc.owner.userId === root.owner.userId)
+					if(doc.folder === root.folder && doc.owner === root.owner)
 						return true
 
 					if(!root.children)
@@ -806,7 +806,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 						if(subFolders.length >= 2){
 							var parentFolderName = subFolders[subFolders.length-2]
 							var parentFolderPath = folder.folder.substring(0, folder.folder.lastIndexOf("_"))
-							var parentOwner = folder.owner.userId
+							var parentOwner = folder.owner
 							var parentFolder = _.findWhere(root.children, { name: parentFolderName, folder: parentFolderPath, owner: parentOwner })
 							if(parentFolder){
 								if(parentFolder.children === undefined){
