@@ -338,6 +338,9 @@ public class DuplicateUsers {
 			sb.append(attributeName).append(":").append(v).append(d).append(" OR ");
 		}
 		int len = sb.length();
+		if (len == 1) {
+			return "";
+		}
 		sb.delete(len - 4, len);
 		return sb.append(")").toString();
 	}
