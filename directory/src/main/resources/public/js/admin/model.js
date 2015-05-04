@@ -41,7 +41,7 @@ User.prototype.get = function(hook, getQuota){
     http().get("user/" + that.id).done(function(data){
         for(var prop in data){
             if(prop === 'type'){
-                if(data[prop].length > 0)
+                if(data[prop] && data[prop].length > 0)
                     that[prop] = data[prop][0]
             } else
                 that[prop] = data[prop]
