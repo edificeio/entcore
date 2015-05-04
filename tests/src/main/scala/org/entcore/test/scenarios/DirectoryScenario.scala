@@ -246,4 +246,14 @@ object DirectoryScenario {
       jsonPath("$.type[0]").find.is("Student"),
       jsonPath("$.type").find.transformOption(_.map(res => JSONValue.parse(res).asInstanceOf[JSONArray].size())).is(1)))
 
+//    .exec(http("Create structure")
+//    .post("""/directory/school?setDefaultRoles=true""")
+//    .header("Content-Type", "application/json")
+//    .body(StringBody("""{"name":"Manual school","UAI":"0301072C"}"""))
+//    .check(status.is(201), jsonPath("$.id").saveAs("manualStructureId")))
+    .exec(http("Create class")
+    .post("""/directory/class/${schoolId}?setDefaultRoles=true""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"name": "Manual class ${now}"}"""))
+    .check(status.is(201)))
 }

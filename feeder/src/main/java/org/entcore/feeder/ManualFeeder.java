@@ -105,6 +105,9 @@ public class ManualFeeder extends BusModBase {
 		if (c == null) return;
 		String structureId = getMandatoryString("structureId", message);
 		if (structureId == null) return;
+		if (c.getString("externalId") == null || c.getString("externalId").isEmpty()) {
+			c.putString("externalId", structureId + "$" + c.getString("name"));
+		}
 		final String error = classValidator.validate(c);
 		if (error != null) {
 			logger.error(error);
