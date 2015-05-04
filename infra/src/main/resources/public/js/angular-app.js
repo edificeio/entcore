@@ -225,7 +225,7 @@ module.directive('lightbox', function($compile){
 		template: '<div>'+
 					'<section class="lightbox">' +
 						'<div class="background"></div>' +
-						'<div class="content" ng-transclude>' +
+						'<div class="content">' +
 							'<div class="twelve cell" ng-transclude></div>'+
 							'<div class="close-lightbox">'+
 							'<i class="close-2x"></i>'+
