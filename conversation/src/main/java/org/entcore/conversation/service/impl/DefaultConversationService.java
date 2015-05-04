@@ -136,7 +136,7 @@ public class DefaultConversationService implements ConversationService {
 				"-[:HAS_CONVERSATION_MESSAGE]->(pm:ConversationMessage) " +
 				"WHERE c.userId = {userId} AND c.active = {true} AND f.name = {folderName} " +
 				"AND pm.id = {parentMessageId} " +
-				"WITH f, pm, count(f) as nb " +
+				"WITH distinct f, pm, count(distinct f) as nb " +
 				"WHERE nb = 1 " +
 				"CREATE f-[:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage {props})" +
 				"-[:PARENT_CONVERSATION_MESSAGE]->pm " +
