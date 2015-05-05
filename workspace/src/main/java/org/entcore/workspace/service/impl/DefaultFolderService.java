@@ -99,7 +99,7 @@ public class DefaultFolderService implements FolderService {
 						if ("ok".equals(event.body().getString("status")) &&
 								event.body().getInteger("count") == 0) {
 
-							if(path == null || path.trim().isEmpty() || path.lastIndexOf('_') < 0){
+							if(path == null || path.trim().isEmpty()){
 								mongo.save(DOCUMENTS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> res) {
