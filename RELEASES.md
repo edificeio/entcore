@@ -1,6 +1,56 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.13.2 (06/05/2015)
+
+## Anomalies corrigées
+
+* Chargement des différentes skins de chaque thèmes en fonction du domaine
+* Différence de format avec AAF lors de la génération des externalId des classes (BE1D, CSV, manuel)
+* Suppression des relations entre un groupe de classe et un utilisateur s'il n'est plus dans la classe lors d'un import (AAF, BE1D, CSV)
+* Correction du style lors de l'avertissement pour les navigateurs périmés
+* Ajout d'une liste pour selectionner le codage de caractères pour l'import csv (UTF-8, ISO-8859-1)
+* Impossible de supprimer une photo à partir du moment ou on en a mis une
+* Décalage dans les infos personnelles d'un élève
+* Temps de calcul des statistiques trop long
+* Refactoring du chargement de la configuration par défaut du stockage
+* Personne ayant accès à une classe différente de celle de la console
+* Lock non supprimer si l'export d'archive échoue durant le stockage du zip
+* Ajout de fichiers multiples impossible dans la bibliothèque multimedia
+* La recherche d'une application ne fonctionne pas avec le libellé traduit
+* La suppression d'un message dans un dossier affiche un message Undefined apres la suppression (en mode lecture du message)
+* L'option "commenter" ne devrait pas rester disponible en cas de selection multiple de documents
+* La mise à jour du quota ne se fait pas en dynamique
+* Message d'erreur lors du partage d'un document
+* Recherche de destinataires dans la messagerie - le bouton afficher la suite fait disparaitre la recherce
+* Un invité ne peut pas indiquer son n° de tel dans sa fiche Mon compte
+* Les noms des connecteurs sont coupés
+* Page blanche dans la vue "Ma classe"
+* L'objet date picker n'est pas détruit
+* La création de dossiers ne fonctionne pas si le nom contient un underscore
+* Le format de la date dans l'interface de recherche des doublons n'est pas cohérente avec le reste de l'application
+* La création d'un ou plusieurs utilisateur dans un groupe qui peut accéder à l'application "Messagerie" ne crée pas les boites des utilisateurs
+* Un élève peut voir les parents d'un autre élève en regardant sa fiche
+* Boutons "Partager" et "Commenter" inactifs dans l'espace documentaire
+* Modification du libellé par défaut dans le widget dictaphone
+* Les utilisateurs manuels ne sont pas reconnus par Eliot
+* Impossible de copier un dossier dans Mes Documents
+* Une PJ supprimée est quand même envoyée
+* Destinataire non affiché dans messages envoyés
+* Le calendrier graphique sort de l'ecran dans certains cas
+* Arborescence non respectée lors du partage de sous dossiers
+* Dans certains cas un utilisateur peut être redirigé vers la page de login après son authentification
+* Colonnes manquantes dans l'import csv avec la configuration par défaut
+* Exception dans le marquage des doublons si un utilisateur manuel ou csv a un nom contenant des espaces et que tous les mots font moins de 4 caractères
+* Erreur lors de la réponse à un message où l'expéditeur est aussi destinataire
+
+# v1.13.1 (15/04/2015)
+
+## Anomalies corrigées
+
+* Dossiers cassés dans la bibliothèque multimédia
+* Affichage du profil de l'utilisateur invalide dans directory
+
 # v1.13.0 (15/04/2015)
 
 ## Conversation
