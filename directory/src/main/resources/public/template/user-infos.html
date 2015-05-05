@@ -97,13 +97,17 @@
 		class="horizontal-spacing"
 	></h1>
 	<article>
-		<div class="row" ng-class="{ line: $index !== 0 }" ng-repeat="school in currentUser.schools | orderBy:'name'">
-			<div>[[school.name]]</div>
-			<article ng-if="school.classes && school.classes.length">
-				<h3 translate key="userBook.profile.classes"></h3>
-				<ul><li class="row medium-text" ng-repeat="class in school.classes track by $index">[[class]]</li></ul>
-			</article>
-		</div>
+		<nav class="vertical">
+			<ul>
+				<li class="row" ng-class="{ line: $index !== 0 }" ng-repeat="school in currentUser.schools | orderBy:'name'">
+					<strong><a>[[school.name]]</a></strong>
+					<ul ng-if="school.classes && school.classes.length">
+						<strong><a translate key="userBook.profile.classes"></a></strong>
+						<li class="row medium-text" ng-repeat="class in school.classes track by $index"><a>[[class]]</a></li>
+					</ul>
+				</li>
+			</ul>
+		</nav>
 		<div class="row"></div>
 	</article>
 </div>

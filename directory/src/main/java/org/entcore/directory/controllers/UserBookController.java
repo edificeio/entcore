@@ -169,12 +169,12 @@ public class UserBookController extends BaseController {
 						hobbyVisibility = "PUBLIC";
 						personnalInfos = "OPTIONAL MATCH u-[:SHOW_EMAIL]->e " +
 								"OPTIONAL MATCH u-[:SHOW_MAIL]->a " +
-								"OPTIONAL MATCH u-[:SHOW_PHONE]->p " +
+								"OPTIONAL MATCH u-[:SHOW_PHONE]->ph " +
 								"OPTIONAL MATCH u-[:SHOW_BIRTHDATE]->b " +
-								"OPTIONAL MATCH u-[:SHOW_HEALTH]->s " +
+								"OPTIONAL MATCH u-[:SHOW_HEALTH]->st " +
 								"WITH h, s, c, n, v, u, n2, p, a.address as address, " +
-								"e.email as email, s.health as health, " +
-								"p.homePhone as tel, b.birthDate as birthdate, " +
+								"e.email as email, st.health as health, " +
+								"ph.homePhone as tel, b.birthDate as birthdate, " +
 								"COLLECT([]) as r ";
 					}
 					String query = "MATCH (n:User) "
