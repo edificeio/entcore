@@ -417,6 +417,7 @@ module.directive('linker', function($compile){
 			scope.linker.onChange = function(){
 				scope.$eval(attributes.onChange);
 			};
+
 			var linkNode = $('<a />');
 			var appendText = '';
 			scope.$watch(function(){ return scope.display.chooseLink}, function(newVal){
@@ -1712,6 +1713,7 @@ module.directive('textEditor', function($compile){
 				if(!scope.display){
 					scope.display = {};
 				}
+				scope.selected = {};
 				var editor = element.find('[contenteditable=true]');
 				var parentElement = element.parents('grid-cell');
 				if(parentElement.length === 0){
