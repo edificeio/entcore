@@ -4449,6 +4449,22 @@ module.directive('plus', function($compile){
 	}
 });
 
+module.directive('help', function(){
+	return {
+		restrict: 'E',
+		scope: {},
+		template: '<i class="help"></i>' +
+		'<lightbox show="display.read" on-close="display.read = false"><iframe src="http://opendigitaleducation.com/application/' + appPrefix + '/?iframe=true"></iframe></lightbox>',
+		link: function(scope, element, attributes){
+			scope.display = {};
+			element.children('i.help').on('click', function(){
+				scope.display.read = true;
+				scope.$apply('display');
+			});
+		}
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
