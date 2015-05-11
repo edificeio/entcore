@@ -127,7 +127,7 @@ var loader = (function(){
 		}
 
 		request.open('GET', path, false);
-		request.onreadystatechange = function(){
+		request.on = function(){
 			if(request.readyState === 4 && request.status === 200){
 				var lib = new Function(request.responseText);
 				lib.name = script.path;

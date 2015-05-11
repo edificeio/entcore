@@ -234,7 +234,7 @@ module.directive('lightbox', function($compile){
 				'</div>',
 		link: function(scope, element, attributes){
 			var content = element.find('.content');
-			element.children('.lightbox').children('.background, i.close-2x').on('click', function(e){
+			element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e){
 				element.children('.lightbox').first().fadeOut();
 				$('body').css({ overflow: 'auto' });
 
