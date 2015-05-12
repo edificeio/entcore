@@ -5235,7 +5235,7 @@ function MediaLibrary($scope){
 			if($scope.visibility === 'public'){
 				copyFn = document.publicDuplicate;
 			}
-			copyFn(function(newFile){
+			copyFn.call(document, function(newFile){
 				if($scope.multiple){
 					$scope.$parent.ngModel = [newFile];
 					$scope.$parent.$apply('ngModel');
