@@ -13,7 +13,7 @@
     "auth.email": "Identifiant",
     "auth.mail": "E-mail",
     "auth.phone": "Téléphone mobile",
-    "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect",
+    "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect.",
     "auth.forgot.header": "Identifiant ou mot de passe oublié",
     "auth.forgot.send": "Envoyer",
     "auth.forgot.title": "Identifiant ou mot de passe oublié",
