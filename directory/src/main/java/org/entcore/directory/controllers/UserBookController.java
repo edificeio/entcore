@@ -28,6 +28,7 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
@@ -40,14 +41,17 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo;
+
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.HttpClientUtils;
+
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
-import fr.wseduc.security.SecuredAction;
 
+import fr.wseduc.security.SecuredAction;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
@@ -60,7 +64,11 @@ public class UserBookController extends BaseController {
 	private JsonObject userBookData;
 	private HttpClient client;
 	private SchoolService schoolService;
+	private EventStore eventStore;
+	private enum DirectoryEvent { ACCESS }
+	private static final String ANNUAIRE_MODULE = "Annuaire";
 
+	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		pathPrefix = "/userbook";
@@ -74,6 +82,7 @@ public class UserBookController extends BaseController {
 						.setMaxPoolSize(16)
 						.setKeepAlive(false);
 		getWithRegEx(".*", "proxyDocument");
+		eventStore = EventStoreFactory.getFactory().getEventStore(ANNUAIRE_MODULE);
 	}
 
 	@Get("/mon-compte")
@@ -98,6 +107,7 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
 		renderView(request);
+		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request);
 	}
 
 	@Get("/api/search")
