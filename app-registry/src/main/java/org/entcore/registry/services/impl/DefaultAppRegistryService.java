@@ -344,7 +344,10 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"MATCH (n:Application { id : {id}}) " +
 				"OPTIONAL MATCH n-[r1:PROVIDE]->(a:Action) " +
 				"OPTIONAL MATCH a<-[r2:AUTHORIZE]-(r:Role) " +
-				"DELETE n, r1, a, r2 ";
+				"DELETE n, r1 " +
+				"WITH a, r2 " +
+				"WHERE NOT(a<-[:PROVIDE]-()) "+
+				"DELETE a, r2";
 		JsonObject params = new JsonObject().putString("id", applicationId);
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
