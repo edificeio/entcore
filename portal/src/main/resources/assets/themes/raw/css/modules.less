@@ -11,7 +11,7 @@
 @yellow: rgb(233, 227, 91);
 
 html, body{
-	background: #f9f9f9;
+	background: #fff;
 }
 
 body {
@@ -372,6 +372,7 @@ nav.stamps{
 		border-radius: 0;
 		color: @dark;
 		.run-transition(background);
+		margin-bottom: 1px;
 
 		h4{
 			font-size: 18px;
@@ -379,7 +380,6 @@ nav.stamps{
 			line-height: 20px;
 			font-style: normal;
 			margin: 0;
-			text-align: left;
 		}
 		a{
 			margin: 0;
@@ -419,8 +419,8 @@ nav.stamps{
 		.domino{
 			border: 0;
 			.bottom{
-				color: @dark;
-				background: #eee;
+				background: @dark;
+				color: #ccc;
 
 				.content{
 					padding: 0;
@@ -432,6 +432,7 @@ nav.stamps{
 				h4{
 					margin: 0;
 					font-size: 18px;
+					text-align: center;
 				}
 				.mood{
 					top: 53px;
@@ -940,6 +941,7 @@ nav.vertical{
 		margin: 0;
 		padding: 0;
 		width: 100%;
+		background: #fafafa;
 		li{
 			padding-left: 20px;
 			.border-box;
@@ -947,7 +949,6 @@ nav.vertical{
 				color: #000;
 				.run-transition(background);
 				font-family: Lato;
-				font-weight: 300;
 				margin: 0;
 				border-right: 4px solid #ddd;
 				line-height: 25px;
@@ -967,6 +968,7 @@ nav.vertical{
 			}
 			a.selected{
 				border-right: 4px solid @light;
+				color: @light;
 				background: #eee;
 				i.arrow::before{
 					margin-top: 4px;
@@ -975,6 +977,7 @@ nav.vertical{
 			}
 			a:hover{
 				color: @light;
+				background: #eee;
 			}
 			a.opened{
 				i.arrow::before{
@@ -985,6 +988,7 @@ nav.vertical{
 	}
 	ul:first-child > li, div ul:first-child > li, h2 + ul > li{
 		padding-left: 0;
+		border: 1px solid #eee;
 	}
 	ul.green{
 		background: none;
@@ -1103,26 +1107,20 @@ h2{
 
 h1{
 	color: @light;
-	font-size: 35px;
+	font-size: 40px;
       font-weight: 100;
 }
 
 h1:first-child{
-	margin-top: 0px;
+	margin-top: 0;
 }
 
 h3{
 	color: @light;
-	text-align: left;
 	font-size: 22px;
 }
 
-h4{
-	text-align: center;
-}
-
 h5{
-	text-align: center;
 	font-size: 16px;
 	margin: 0;
 }
@@ -1132,31 +1130,31 @@ table{
 		padding: 5px;
 	}
 	tr, tr.underline{
-		background: none;
-		border-top: 1px dashed #ddd;
+		background: #444;
+		color: #ccc;
 		.run-transition(background);
+		border-top: none;
+	}
+	tr:nth-child(2n){
+		background: #666;
+		color: #ddd;
 	}
 	tr.checked{
 		background: @dark;
 		color: #fff;
-		border-color: #333;
 		a:hover{
 			color: @light;
 		}
-	}
-	tr.checked:hover{
-		background: #333;
-	}
-	tr.new-element{
-		background: #e8e8e8;
-		border-bottom-color: #D9F1F1;
 	}
 	thead{
 		tr{
 			font-family: Lato;
 			font-weight: 700;
 			font-size: 1.3em;
-			border-bottom: 4px solid @light;
+			border-bottom: 2px solid @light;
+			th{
+				text-align: left;
+			}
 		}
 		tr:hover{
 			background: #fff;
@@ -1419,7 +1417,7 @@ textarea{
 
 	.info{
 		.message;
-		border-left: 10px solid @light;
+		border-left: 10px solid @blue;
 	}
 
 
@@ -1466,8 +1464,9 @@ textarea{
 }
 
 .comment{
-	background: @background;
+	background: #F5F5F5;
 	color: #666;
+	border: 1px solid #ddd
 }
 
 article.selected{
@@ -1538,18 +1537,6 @@ i.zip-large{
 	}
 }
 
-.lightbox-window .datepicker, .lightbox-view .datepicker{
-	z-index: 1100;
-}
-
-	.lightbox-view{
-		.lightbox-window;
-	}
-
-	.lightbox-background{
-		.lightbox-backdrop;
-	}
-
 	.warning-text{
 		color: rgb(245, 103, 103);
 	}
@@ -1561,25 +1548,28 @@ i.zip-large{
 	.accordion{
 		h2{
 			border: none;
-			background: @light;
-			font-size: 20px;
-			color: #fff;
-			font-family: Lato;
+			font-size: 16px;
+			padding: 6px;
+			background: #444;
+			border-top: 1px solid #555;
+			color: #ccc;
+			border-bottom: none;
 		}
 		h2:hover{
-			background: @dark;
+			background: #444;
+			color: #fff;
 		}
 		.toggle{
+			background: #333;
 			border: none;
-			background: #eee;
 			.content{
 				h3{
 					font-weight: normal;
-					color: @light;
 					font-size: 16px;
 				}
-				select, input[type=text], textarea{
-					background: #fff;
+				input[type=text], textarea, select{
+					background: #2C2C2C;
+					border: none;
 				}
 			}
 		}
@@ -1593,16 +1583,18 @@ i.zip-large{
 
 	.accordion.opened{
 		h2{
-			border: none;
-			background: #eee;
-			color: @light;
+			border-top: 1px solid #555;
+			color: #ddd;
+			border-bottom: none;
+			background: #666;
 		}
 		.toggle{
 			height: 350px;
-			border: none;
-			padding: 10px;
 			overflow: auto;
 			margin-top: -1px;
+			border: none;
+			background: #666;
+			color: #ddd;
 		}
 	}
 }
@@ -1692,6 +1684,19 @@ select{
 		}
 	}
 
+	.radial-menu{
+		ul.menu-items{
+			li{
+				background: #eee;
+				color: #444;
+			}
+			li:hover{
+				background: @light;
+				color: #fff;
+			}
+		}
+	}
+
 	.menu-items{
 		padding: 0;
 		margin: 0;
@@ -1700,11 +1705,9 @@ select{
 			min-height: 30px;
 			line-height: 30px;
 			list-style-type: none;
-			color: @light;
 			cursor: pointer !important;
-		}
-		li:hover{
-			color: #000;
+			background: #eee;
+			color: #444;
 		}
 		i.text{
 			.icon(text-icon, 30px);
@@ -2386,11 +2389,20 @@ select{
 	nav.illustrated-links{
 		ul{
 			padding: 0;
+			li:nth-child(2n){
+				background: #666;
+				color: #ccc;
+			}
+			li:hover{
+				.content h1{
+					border-bottom: 2px solid @light;
+				}
+			}
 			li{
+				background: #444;
 				list-style-type: none;
 				display: table;
-				margin-bottom: 12px;
-				border-bottom: 8px solid @light;
+				margin-bottom: 0;
 
 				.illustration{
 					display: table-cell;
@@ -2408,14 +2420,14 @@ select{
 					display: table-cell;
 					vertical-align: top;
 					width: 100%;
-					background: #fff;
 					h1{
 						margin: 0;
 						font-size: 22px;
 						text-align: left;
 						text-transform: none;
 						font-weight: bold;
-						color: @dark;
+						color: #ccc;
+						border-bottom: 2px solid transparent;
 					}
 					em, strong{
 						font-size: 16px;
@@ -2548,24 +2560,35 @@ select{
 }
 
 .patchwork{
-	.items{
-		.row{
-			background: #eee;
-			img{
-				height: 130px;
-				width: 130px;
-			}
-		}
+	.content{
+		background: #f6f6f6;
+		color: #444;
+		padding: 10px;
+		margin-top: 47px;
+		border: 1px #ddd solid;
 	}
-
-		.row.selected, .row:nth-child(2n).selected{
-			background: @light;
-			color: #fff;
-			h3{
+	.navigation{
+		.items{
+			padding-right: 15px;
+			.row{
+				background: #eee;
+				margin: 0;
+				border: 0;
+				img{
+					height: 130px;
+					width: 130px;
+				}
+			}
+			.row.selected{
+				background: @light;
 				color: #fff;
+				h3{
+					color: #fff;
+				}
 			}
 		}
 	}
+}
 
 	.open-right{
 		.icon(glyphicons_223_chevron-right, 25px);

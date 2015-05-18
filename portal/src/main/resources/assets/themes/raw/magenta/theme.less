@@ -14,10 +14,6 @@
 
 @import "../css/modules.less";
 
-html, body{
-	background-color: #eee
-}
-
 nav.horizontal{
 	a:hover{
 		color: @light;
@@ -47,109 +43,6 @@ button:hover, input[type=button]:hover, input[type=submit]:hover, a.button:hover
 
 [contenteditable], input[type=text], input[type=search], input[type=password]{
 	background: #fff;
-}
-
-nav.vertical{
-	ul{
-		li{
-			a{
-
-			}
-			a:hover, a.selected{
-				border-color: @light;
-			}
-			a.selected{
-				color: #FFF;
-			}
-			a:hover, a.selected:hover{
-				color: @light;
-			}
-		}
-	}
-	ul.green{
-		background: none;
-		li a, li a.green{
-			border-color: @green;
-			background: none;
-		}
-		li a.selected{
-			background: #444;
-			border-color: @green;
-		}
-	}
-	ul.orange{
-		background: none;
-		li a, li a.orange{
-			border-color: @orange;
-			background: none;
-		}
-		li a.selected{
-			background: #444;
-			border-color: @orange;
-		}
-	}
-	ul.pink{
-		background: none;
-		li a, li a.pink{
-			border-color: @pink;
-			background: none;
-		}
-		li a.selected{
-			background: #444;
-			border-color: @pink;
-		}
-	}
-	ul.cyan{
-		background: none;
-		li a, li a.cyan{
-			border-color: @cyan;
-			background: none;
-		}
-		li a.selected{
-			background: #444;
-			border-color: @cyan;
-		}
-	}
-	ul.purple{
-		background: none;
-		li a, li a.purple{
-			border-color: @purple;
-			background: none;
-		}
-		li a.selected{
-			background: #444;
-			border-color: @purple;
-		}
-	}
-	a.classic-link{
-		background: @light;
-	}
-	a.classic-link:hover{
-		background: #444;
-	}
-}
-
-nav.vertical.stamps article.selected{
-	background: @light;
-}
-
-table{
-	thead{
-		tr{
-			border-bottom-color: @light;
-			border-top-color: @light;
-			th{
-				a.selected{
-					color: @light
-				}
-			}
-		}
-	}
-	border-bottom: 2px solid @light;
-}
-
-.icons-view .element .img.container{
-	border-color: @light;
 }
 
 .label-badge{
@@ -327,14 +220,6 @@ hr.separator{
 	border: 1px solid black;
 }
 
-.accordions{
-	.accordion.opened{
-		h2{
-			color: @light
-		}
-	}
-}
-
 ul.angle-list{
 	list-style-type: none;
 
@@ -395,86 +280,12 @@ div.angle-container-header{
 	background: @light;
 }
 
-nav.vertical ul li a.selected {
-	border-right: 8px solid @light;
-	background: #444;
-}
-
-nav.vertical ul li a:hover {
-	background: #ccc;
-}
-
-.green{
-	background: @green;
-}
-
-.cyan{
-	background: @cyan;
-}
-
-	nav.vertical.stamps article{
-		background: #444;
-		h3{
-			color: #aaa;
-		}
-	}
-
-.orange{
-	background: @orange;
-}
-
-.pink{
-	background: @light;
-}
-
-.purple{
-	background: @purple;
-}
-
-.dominos .item .domino .bottom {
-	background: #444;
-}
-
 .actions-list{
-	background: #444;
-}
-
-nav.vertical.stamps article{
 	background: #444;
 }
 
 .drop-down-filters p:first-child, .filters p:first-child, .drop-down-filters .filters-icons, .filters .filters-icons{
 	background: #444;
-}
-
-.lightbox-window{
-	background: #444;
-	border: 5px solid #555;
-	nav.vertical{
-		a{
-			border-color: #555;
-			color: #777;
-		}
-		a.selected{
-			background: #353535;
-		}
-		a:hover{
-			background: #555;
-			color: #999;
-		}
-	}
-	.info{
-		background: #505050;
-		color: #999;
-	}
-}
-
-table thead tr{
-	background: #444;
-	border-top: 5px solid @light;
-	border-bottom: 1px solid @light;
-	border-left: 1px solid @light;
-	border-right: 1px solid @light;
 }
 
 .datepicker table thead tr {
@@ -501,10 +312,6 @@ table thead tr{
 
 .datepicker td span:hover {
 	background: white;
-}
-
-nav.vertical ul li a{
-	border-right: 8px solid #ccc;
 }
 
 table tr.checked{
@@ -539,9 +346,6 @@ nav.vertical h2{
 	color: #ccc
 }
 
-table tr:hover{
-	background: #ccc;
-}
 .media-container.blue{
 	background: @cyan;
 }
@@ -553,15 +357,6 @@ table tr:hover{
 
 button.cancel, input[type=button].cancel{
 	background: #ccc;
-}
-
-table tr{
-	border-right: 1px solid #ccc;
-	border-left: 1px solid #ccc;
-}
-
-table thead tr:hover{
-	background: #444;
 }
 
 .lightbox-window{
@@ -684,19 +479,8 @@ table thead tr:hover{
 	}
 }
 
-nav.illustrated-links ul li{
-	border-right: 8px solid @light;
-	.content{
-		background: #ddd;
-	}
-}
-
 .lightbox-view input[type=text], .lightbox-view input[type=search], .lightbox-view textarea{
 	background: #333;
-}
-
-.comment{
-	background: #ddd;
 }
 
 .badge{
@@ -744,58 +528,7 @@ select{
 
 hr.separator{
 	border: 1px solid black;
-	margin: 15 0 15 0;
-}
-
-.accordions{
-	.accordion{
-		h2{
-			.vertical-gradient(#383838, #333);
-			border: 1px solid #555;
-			color: #666;
-			border-bottom: none;
-		}
-		h2:hover{
-			background: #444;
-			color: #fff;
-		}
-		.toggle{
-			background: #333;
-			.content{
-				color: #999;
-				h3{
-					color: @light;
-				}
-				input[type=text], textarea, select{
-					background: #2C2C2C;
-					border: none;
-				}
-			}
-			textarea{
-				background: #252525;
-			}
-		}
-	}
-
-	.accordion:last-child{
-		h2{
-			border-bottom: 1px solid #555;
-		}
-	}
-
-	.accordion.opened{
-		h2{
-			border: 1px solid #555;
-			color: @light;
-			border-bottom: none;
-			background: #333;
-
-		}
-		.toggle{
-			border: 1px solid #555;
-			border-top: none;
-		}
-	}
+	margin: 15px 0 15px 0;
 }
 
 .drop-down-button{
@@ -850,14 +583,6 @@ h1.letter-picker:hover{
 	color: @light;
 }
 
-ul.thought-out-actions li{
-	background: #333;
-}
-
-ul.thought-out-actions li:hover{
-	background: @light;
-}
-
 .page-markers .marker:nth-child(2){
 	border-color: transparent transparent @light transparent
 }
@@ -870,49 +595,12 @@ ul.thought-out-actions li:hover{
 	background: #444;
 }
 
-.menu-items li{
-	color: @light
-}
-
-.patchwork{
-	color: #fff;
-	.row{
-		background: #444;
-		h1{
-			color: #aaa;
-		}
-		button{
-			background: @light;
-		}
-	}
-	.row.selected, .row:nth-child(2n).selected{
-		h1{
-			color: #fff;
-			border-bottom: 1px dashed #666;
-		}
-	}
-	.row:nth-child(2n){
-		background: #333;
-		h1{
-			color: #bbb;
-		}
-		button{
-			background: @light;
-		}
-	}
-}
-
 a.button[disabled], button[disabled], input[type=button][disabled], input[type=submit][disabled],
 a.button[disabled]:hover, button[disabled]:hover, input[type=button][disabled]:hover, input[type=submit][disabled]:hover{
 	color: #fff;
 	background: #BBB;
 	border: 1px solid #CCC;
 	cursor: default;
-}
-
-.comment{
-	background: #444;
-	color: #ccc;
 }
 
 .folder-large, .folder-list-item{
