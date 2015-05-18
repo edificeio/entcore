@@ -240,11 +240,12 @@ public class Importer {
 			if (!firstImport) {
 				query =
 						"MERGE (u:User { externalId : {externalId}}) " +
-						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} " +
+						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, " +
+						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
-								"id", "externalId", "login", "activationCode");
+								"id", "externalId", "login", "activationCode", "displayName");
 				params = object;
 			} else {
 				query = "CREATE (u:User {props}) ";
@@ -278,11 +279,12 @@ public class Importer {
 			if (!firstImport) {
 				query =
 						"MERGE (u:User { externalId : {externalId}}) " +
-						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} " +
+						"ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, " +
+						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
-						"id", "externalId", "login", "activationCode");
+						"id", "externalId", "login", "activationCode", "displayName");
 				params = object;
 			} else {
 				query = "CREATE (u:User {props}) ";
@@ -408,11 +410,12 @@ public class Importer {
 				JsonObject params;
 				if (!firstImport) {
 					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
-					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} ");
+					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, ");
+					sb.append("u.displayName = {displayName} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode"));
+							"id", "externalId", "login", "activationCode", "displayName"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");
@@ -539,11 +542,12 @@ public class Importer {
 				JsonObject params;
 				if (!firstImport) {
 					sb.append("MERGE (u:`User` { externalId : {externalId}}) ");
-					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode} ");
+					sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, ");
+					sb.append("u.displayName = {displayName} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode"));
+							"id", "externalId", "login", "activationCode", "displayName"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");
