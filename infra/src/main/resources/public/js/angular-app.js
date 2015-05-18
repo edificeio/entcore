@@ -1832,8 +1832,7 @@ module.directive('htmlEditor', function($compile, $parse){
 			'</media-library></lightbox>' +
             '<lightbox show="inputVideo" on-close="inputVideo = false">' +
                 '<p style="padding-bottom: 10px;">' +
-                    'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
-                    '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
+                    '<i18n>info.video.embed</i18n>' +
                 '</p>' +
                 '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
                 '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
@@ -2029,10 +2028,9 @@ module.directive('htmlInlineEditor', function($compile){
             '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
             '</media-library></lightbox>' +
             '<lightbox show="inputVideo" on-close="inputVideo = false">' +
-                '<p style="padding-bottom: 10px;">' +
-                    'Au préalable, votre vidéo doit être enregistrée sur une plateforme de partage ' +
-                    '(Youtube, Vimeo, ScolaWebTV, etc.). <br />Pour l\'insérer ici, copiez le le lien de partage "embed" et collez-le ci-dessous.' +
-                '</p>' +
+				'<p style="padding-bottom: 10px;">' +
+					'<i18n>info.video.embed</i18n>' +
+				'</p>' +
                 '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
                 '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
             '</lightbox>' +
