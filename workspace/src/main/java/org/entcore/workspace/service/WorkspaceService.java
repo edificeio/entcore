@@ -1018,7 +1018,7 @@ public class WorkspaceService extends BaseController {
 							.getObject("thumbnails");
 
 					String query = "{ \"_id\": \"" + id + "\"}";
-					set.putObject("$set", doc);
+					set.putObject("$set", doc).putObject("$unset", new JsonObject().putString("thumbnails", ""));
 					mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(query), set,
 							new Handler<Message<JsonObject>>() {
 								@Override
