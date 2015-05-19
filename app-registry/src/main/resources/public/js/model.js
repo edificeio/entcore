@@ -193,13 +193,25 @@ Role.prototype.save = function(hook){
 Role.prototype.saveCross = function(hook, skipNotify){
 	//Aggregate app-roles actions before saving
 	var role = this
-	role.actions.all = []
+
+	var actionsSum = []
+	var equalityCheck = true
+
 	_.forEach(role.appRoles, function(approle){
 		approle.actions.forEach(function(action){
-			if(role.actions.indexOf(action) < 0)
-				role.actions.push(action)
+			if(_.findWhere(actionsSum, {displayName: action.displayName, name: action.name, type: action.type}) === undefined)
+				actionsSum.push(action)
+			if(_.findWhere(role.actions.all, {displayName: action.displayName, name: action.name, type: action.type}) === undefined)
+				equalityCheck = false
 		})
 	})
+
+	//If the new aggregation does not bring any changes
+	if(equalityCheck && actionsSum.length === role.actions.all.length)
+		return typeof hook === "function" ? hook() : null
+
+	role.actions.all = actionsSum
+
 	if(!this.id){
 		this.createRole(hook, skipNotify)
 	} else {

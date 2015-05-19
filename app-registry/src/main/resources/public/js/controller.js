@@ -224,15 +224,22 @@ function AppRegistry($scope, $sce, model){
 			}
 		})
 
+		//Synchronize cross role saving to prevent neo4j deadlocks ...
 		var launcher = {
-			count: crossRoleStack.length + 1,
-			decrement: function(){ if(--this.count === 0){ this.launch() } },
-			launch: function(){ role.save() }
+			index: 0,
+			action: function(){
+				if(crossRoleStack.length > 0 && launcher.index < crossRoleStack.length){
+					crossRoleStack[launcher.index].saveCross(function(){
+						launcher.index++
+						launcher.action()
+					}, true)
+				} else {
+					launcher.terminate()
+				}
+			},
+			terminate: function(){ role.save() }
 		}
-		launcher.decrement()
-		_.forEach(crossRoleStack, function(crossRole){
-			crossRole.saveCross(function(){ launcher.decrement() }, true)
-		})
+		launcher.action()
 	}
 
 	$scope.saveCrossRole = function(role){
