@@ -4499,10 +4499,12 @@ function Account($scope){
 		});
 	};
 
-	http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
-		$scope.nbNewMessages = nbMessages.count;
-		$scope.$apply('nbNewMessages');
-	});
+	$scope.refreshMails = function(){
+		http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
+			$scope.nbNewMessages = nbMessages.count;
+			$scope.$apply('nbNewMessages');
+		});
+	};
 
 	http().get('/directory/userbook/' + model.me.userId).done(function(data){
 		model.me.userbook = data;
@@ -4514,6 +4516,9 @@ function Account($scope){
 		$scope.$apply('themes');
 	});
 
+	$scope.$root.$on('refreshMails', $scope.refreshMails);
+
+	$scope.refreshMails();
 	$scope.refreshAvatar();
 	$scope.currentURL = window.location.href;
 }

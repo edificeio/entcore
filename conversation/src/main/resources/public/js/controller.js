@@ -237,6 +237,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			if(!mail.state){
 				$scope.openView('e404', 'page');
 			}
+			$scope.$root.$emit('refreshMails');
 		});
 	};
 
