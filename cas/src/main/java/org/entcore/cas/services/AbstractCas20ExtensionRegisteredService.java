@@ -17,8 +17,6 @@ import fr.wseduc.cas.entities.User;
 
 public abstract class AbstractCas20ExtensionRegisteredService extends DefaultRegisteredService {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractCas20ExtensionRegisteredService.class);
-
 	protected static final String CAS_NAMESPACE = "http://www.yale.edu/tp/cas";
 	protected static final String CAS_PREFIX = "cas";
 

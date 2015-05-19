@@ -44,7 +44,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	protected String principalAttributeName = "login";
 	protected String directoryAction = "getUser";
 
-	private static final Logger log = LoggerFactory.getLogger(DefaultRegisteredService.class);
+	protected static final Logger log = LoggerFactory.getLogger(DefaultRegisteredService.class);
 	protected static final String CONF_PATTERNS = "patterns";
 	protected static final String CONF_PRINCIPAL_ATTR_NAME = "principalAttributeName";
 
