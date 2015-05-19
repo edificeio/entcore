@@ -68,7 +68,7 @@
       <div class="row" ng-if="account.type.indexOf('Student') < 0">
         <label translate content="userBook.profile.mobilePhone" class="four cell"></label>
         <input type="tel" ng-pattern="/^(0|\+33)\s*[6-7]([-. ]?[0-9]{2}){4}$/" name="phone" class="seven cell inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
-				<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
+				<i class="[[account.visible.mobile]] right-magnet" title="[[translate(account.visible.mobile)]]" data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)"></i>
 				<div class="clear"></div>
 			</div>
 			<!--div class="row">

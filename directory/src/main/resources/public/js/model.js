@@ -72,6 +72,7 @@ User.prototype.saveInfos = function(){
 		address: this.address,
 		email: this.email,
 		homePhone: this.homePhone,
+        mobile: this.mobile,
 		birthDate: moment(this.birthDate).format('YYYY-MM-DD')
 	};
 	if(this.type === 'Relative'){
@@ -153,7 +154,8 @@ User.prototype.loadVisibility = function(){
 				mail: data.result[0].visibleInfos.indexOf("SHOW_MAIL") !== -1 ? "public" : "prive",
 				phone: data.result[0].visibleInfos.indexOf("SHOW_PHONE") !== -1 ? "public" : "prive",
 				birthdate: data.result[0].visibleInfos.indexOf("SHOW_BIRTHDATE") !== -1 ? "public" : "prive",
-				health: data.result[0].visibleInfos.indexOf("SHOW_HEALTH") !== -1 ? "public" : "prive"
+				health: data.result[0].visibleInfos.indexOf("SHOW_HEALTH") !== -1 ? "public" : "prive",
+				mobile: data.result[0].visibleInfos.indexOf("SHOW_MOBILE") !== -1 ? "public" : "prive"
 			}
 		});
 	}.bind(this));

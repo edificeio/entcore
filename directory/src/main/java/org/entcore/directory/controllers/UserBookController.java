@@ -160,21 +160,23 @@ public class UserBookController extends BaseController {
 								"OPTIONAL MATCH u-[r2:SHOW_PHONE]->() " +
 								"OPTIONAL MATCH u-[r3:SHOW_MAIL]->() " +
 								"OPTIONAL MATCH u-[r4:SHOW_HEALTH]->u " +
+								"OPTIONAL MATCH u-[r5:SHOW_MOBILE]->() " +
 								"WITH DISTINCT h, s, c, n, v, u, n2, p, n.address as address, " +
 								"n.email as email, u.health as health, " +
-								"n.homePhone as tel, n.birthDate as birthdate, " +
-								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4)]) as r ";
+								"n.homePhone as tel, n.birthDate as birthdate, n.mobile as mobile, " +
+								"COLLECT(distinct [type(r0),type(r1),type(r2),type(r3),type(r4),type(r5)]) as r ";
 					} else {
 						params.put("userId",request.params().get("id"));
 						hobbyVisibility = "PUBLIC";
 						personnalInfos = "OPTIONAL MATCH u-[:SHOW_EMAIL]->e " +
 								"OPTIONAL MATCH u-[:SHOW_MAIL]->a " +
 								"OPTIONAL MATCH u-[:SHOW_PHONE]->ph " +
+								"OPTIONAL MATCH u-[:SHOW_MOBILE]->mo " +
 								"OPTIONAL MATCH u-[:SHOW_BIRTHDATE]->b " +
 								"OPTIONAL MATCH u-[:SHOW_HEALTH]->st " +
 								"WITH h, s, c, n, v, u, n2, p, a.address as address, " +
 								"e.email as email, st.health as health, " +
-								"ph.homePhone as tel, b.birthDate as birthdate, " +
+								"ph.homePhone as tel, b.birthDate as birthdate, mo.mobile as mobile, " +
 								"COLLECT([]) as r ";
 					}
 					String query = "MATCH (n:User) "
@@ -188,7 +190,7 @@ public class UserBookController extends BaseController {
 								+ "WITH DISTINCT h1 as h, s, collect(distinct c.name) as c, n, v, u, n2, p "
 								+ personnalInfos
 								+ "WITH h, collect(distinct {name: s.name, classes: c}) as schools, collect(s.name) as schoolNames, "
-								+ "n, v, u, n2, address, email, health, tel, birthdate, r,  COLLECT(p.name) as type "
+								+ "n, v, u, n2, address, email, health, tel, mobile, birthdate, r,  COLLECT(p.name) as type "
 								+ "RETURN DISTINCT "
 									+ "n.id as id,"
 									+ "n.login as login, "
@@ -197,6 +199,7 @@ public class UserBookController extends BaseController {
 									+ "address,"
 									+ "email, "
 									+ "tel, "
+									+ "mobile, "
 									+ "birthdate, "
 									+ "HEAD(r) as visibleInfos, "
 									+ "schools, "
@@ -497,7 +500,7 @@ public class UserBookController extends BaseController {
 	@Get("/api/edit-user-info-visibility")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void editUserInfoVisibility(final HttpServerRequest request) {
-		final List<String> infos = Arrays.asList("email", "mail", "phone", "birthdate", "health");
+		final List<String> infos = Arrays.asList("email", "mail", "phone", "mobile", "birthdate", "health");
 		final String info = request.params().get("info");
 		if (info == null || !infos.contains(info)) {
 			badRequest(request);

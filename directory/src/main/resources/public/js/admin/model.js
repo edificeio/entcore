@@ -64,7 +64,8 @@ User.prototype.update = function(hook){
         city:           that.city,
         zipCode:        that.zipCode,
         email:          that.email,
-        homePhone:      that.homePhone
+        homePhone:      that.homePhone,
+        mobile:         that.mobile
     }).done(function(){
         notify.info(lang.translate("directory.notify.userUpdate"))
         hookCheck(hook)
