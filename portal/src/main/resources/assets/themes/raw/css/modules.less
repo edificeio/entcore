@@ -2,13 +2,14 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 
 //legend colors
-@green: #B2D663;
-@purple: #A872C5;
-@pink: #DB6087;
-@cyan: #23a9aa;
-@orange: #F3C055;
-@blue: #628CD6;
-@yellow: rgb(233, 227, 91);
+@green: #333;
+@purple: #444;
+@pink: #555;
+@cyan: #666;
+@orange: #222;
+@blue: #777;
+@yellow: #888;
+@red: #999;
 
 html, body{
 	background: #fff;
@@ -670,8 +671,6 @@ button.cancel, input[type=button].cancel{
 .icons-view.apps{
 	margin-top: 12px;
 	.element{
-		width: 100px;
-		height: 138px;
 		padding: 0;
 		margin: 0;
 		a{
@@ -680,13 +679,7 @@ button.cancel, input[type=button].cancel{
 				width: 100px;
 			}
 		}
-		.container{
-			padding: 0;
-			width: 100px;
-			height: 100px;
-		}
 		legend{
-			background: @light;
 			color: #fff;
 			padding: 0;
 			padding-left: 5px;
@@ -700,6 +693,7 @@ button.cancel, input[type=button].cancel{
 			a:hover{
 				color: #fff
 			}
+			position: absolute;
 		}
 	}
 	.element:hover{
@@ -1556,8 +1550,12 @@ i.zip-large{
 			border-bottom: none;
 		}
 		h2:hover{
-			background: #444;
 			color: #fff;
+			background: #444;
+			font-size: 16px;
+            padding: 8px;
+			color: #888;
+			font-family: Lato;
 		}
 		.toggle{
 			background: #333;
@@ -2271,7 +2269,7 @@ select{
 	}
 
 	.letter-picker{
-		.lightbox-view{
+		.lightbox .content{
 			background: transparent;
 			h2{
 				margin-right: 1px;
@@ -2291,26 +2289,20 @@ select{
 				color: @light;
 			}
 			h2.disabled{
-				background: #666;
+				background: transparent;
 				color: #999;
 				cursor: default;
+				pointer-events: none;
 			}
 		}
 	}
 
 	h1.letter-picker{
-		height: 50px;
-		width: 50px;
 		background: @light;
 		color: #fff;
-		line-height: 50px;
-		text-align: center;
+
 		.run-transition(background);
-		margin-left: auto;
-		margin-right: auto;
-		clear: both;
-		margin-bottom: -9px;
-		margin-top: 40px;
+
 	}
 
 	h1.letter-picker:first-child{
@@ -2572,8 +2564,10 @@ select{
 			padding-right: 15px;
 			.row{
 				background: #eee;
+				color: #444;
 				margin: 0;
 				border: 0;
+				font-size: 16px;
 				img{
 					height: 130px;
 					width: 130px;
@@ -2582,9 +2576,9 @@ select{
 			.row.selected{
 				background: @light;
 				color: #fff;
+				border: none;
 				h3{
 					color: #fff;
-				}
 			}
 		}
 	}
