@@ -1638,6 +1638,7 @@ var ckeEditorFixedPositionning = function(){
 		if(!el.height()){
 			continue;
 		}
+		el.css({ 'margin-top': toolbox.height() + 'px' });
 		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
 		editableElement = $(CKEDITOR.instances[instance].element.$);
 		if(editableElement.hasClass('contextual-editor')){
