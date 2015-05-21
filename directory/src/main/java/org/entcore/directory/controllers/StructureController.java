@@ -29,12 +29,19 @@ import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import java.io.StringWriter;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -123,6 +130,58 @@ public class StructureController extends BaseController {
 		final String parentStructureId = request.params().get("parentStructureId");
 		final String structureId = request.params().get("structureId");
 		structureService.removeParent(structureId, parentStructureId, defaultResponseHandler(request));
+	}
+
+	@Get("/structures")
+	@SecuredAction("structure.list.all")
+	public void listStructures(final HttpServerRequest request) {
+		String format = request.params().get("format");
+		JsonArray fields = new JsonArray().add("id").add("externalId").add("name").add("UAI")
+				.add("address").add("zipCode").add("city").add("phone").add("academy");
+		if ("XML".equalsIgnoreCase(format)) {
+			structureService.list(fields, new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isRight()) {
+						JsonArray r = event.right().getValue();
+						Ent ent = new Ent();
+						for (Object o: r) {
+							if (!(o instanceof JsonObject)) continue;
+							JsonObject j = (JsonObject) o;
+							Ent.Etablissement etablissement = new Ent.Etablissement();
+							etablissement.setEtablissementId(j.getString("UAI", ""));
+							etablissement.setEtablissementUid(j.getString("UAI", ""));
+							etablissement.setCodePorteur(j.getString("academy", ""));
+							etablissement.setNomCourant(j.getString("name", ""));
+							etablissement.setAdressePlus(j.getString("address", ""));
+							etablissement.setCodePostal(j.getString("zipCode", ""));
+							etablissement.setVille(j.getString("city", ""));
+							etablissement.setTelephone(j.getString("phone", ""));
+							etablissement.setFax("");
+							ent.getEtablissement().add(etablissement);
+						}
+						try {
+							StringWriter response = new StringWriter();
+							JAXBContext context = JAXBContext.newInstance(Ent.class);
+							Marshaller marshaller = context.createMarshaller();
+							marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+							marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+							marshaller.marshal(ent, response);
+							request.response().putHeader("content-type", "application/xml");
+							request.response().end(response.toString());
+						} catch (JAXBException e) {
+							log.error(e.toString(), e);
+							request.response().setStatusCode(500);
+							request.response().end(e.getMessage());
+						}
+					} else {
+						leftToResponse(request, event.left());
+					}
+				}
+			});
+		} else {
+			structureService.list(fields, arrayResponseHandler(request));
+		}
 	}
 
 	public void setStructureService(SchoolService structureService) {
