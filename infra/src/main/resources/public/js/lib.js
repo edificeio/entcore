@@ -1333,6 +1333,9 @@ var calendar = {
 		this.year = data.year;
 		this.collection(calendar.Day);
 		this.dayForWeek = new Date();
+		if(data.week){
+			this.dayForWeek = moment().week(data.week).day(1).toDate();
+		}
 		function dayOfYear(dayOfWeek){
 			var week = data.week;
 			var year = data.year;

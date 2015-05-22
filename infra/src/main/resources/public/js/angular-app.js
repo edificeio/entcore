@@ -4909,15 +4909,19 @@ function WidgetModel(){
 					});
 
 					that.load(data, function(widget){
-						if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
-							widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
-						}
 						if(widget.i18n){
 							lang.addBundle(widget.i18n, function(){
+								if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
+									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
+								}
 								loader.loadFile(widget.js);
+
 							})
 						}
 						else{
+							if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
+								widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
+							}
 							loader.loadFile(widget.js);
 						}
 					});
