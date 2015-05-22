@@ -3640,6 +3640,13 @@ module.directive('datePicker', function($compile){
 				element.datepicker('hide');
 			});
 
+			$('body, lightbox').on('click', function(e){
+				if(element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0){
+					return;
+				}
+				element.datepicker('hide');
+			});
+
 			element.on('focus', function(){
 				var that = this;
 				$(this).parents('form').on('submit', function(){
