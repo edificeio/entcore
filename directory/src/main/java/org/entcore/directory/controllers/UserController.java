@@ -19,6 +19,8 @@
 
 package org.entcore.directory.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -33,10 +35,9 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.security.AddFunctionFilter;
-import org.entcore.directory.security.AdmlOfStructures;
-import org.entcore.directory.security.AdmlOfTwoUsers;
-import org.entcore.directory.security.RelativeStudentFilter;
+import org.entcore.directory.pojo.Ent;
+import org.entcore.directory.pojo.Users;
+import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -44,6 +45,11 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -402,6 +408,45 @@ public class UserController extends BaseController {
 		final List<String> structures = request.params().getAll("structure");
 		final boolean inherit = "true".equals(request.params().get("inherit"));
 		userService.listDuplicates(new JsonArray(structures.toArray()), inherit, arrayResponseHandler(request));
+	}
+
+	@Get("/user/structures/list")
+	@ResourceFilter(AdmlOfStructuresByUAI.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listUserInStructuresByUAI(final HttpServerRequest request) {
+		final String format = request.params().get("format");
+		final List<String> structures = request.params().getAll("uai");
+		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+		if ("XML".equalsIgnoreCase(format)) {
+			userService.listByUAI(structures, fields, new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isRight()) {
+						JsonArray r = event.right().getValue();
+						ObjectMapper mapper = new ObjectMapper();
+						try {
+							List<Users.User> users = mapper.readValue(r.encode(), new TypeReference<List<Users.User>>(){});
+							StringWriter response = new StringWriter();
+							JAXBContext context = JAXBContext.newInstance(Users.class);
+							Marshaller marshaller = context.createMarshaller();
+							marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+							marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+							marshaller.marshal(new Users(users), response);
+							request.response().putHeader("content-type", "application/xml");
+							request.response().end(response.toString());
+						} catch (IOException | JAXBException e) {
+							log.error(e.toString(), e);
+							request.response().setStatusCode(500);
+							request.response().end(e.getMessage());
+						}
+					} else {
+						leftToResponse(request, event.left());
+					}
+				}
+			});
+		} else {
+			userService.listByUAI(structures, fields, arrayResponseHandler(request));
+		}
 	}
 
 	public void setUserService(UserService userService) {

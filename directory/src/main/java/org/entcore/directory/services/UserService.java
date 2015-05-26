@@ -83,4 +83,6 @@ public interface UserService {
 
 	void mergeDuplicate(String userId1, String userId2, Handler<Either<String,JsonObject>> handler);
 
+	void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results);
+
 }

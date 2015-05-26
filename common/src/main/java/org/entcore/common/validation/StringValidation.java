@@ -29,6 +29,8 @@ public class StringValidation {
 			"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
 	private static final Pattern absoluteDocumentUriPattern = Pattern.compile(
 			"^/workspace/document/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
+	private static final Pattern uaiPattern = Pattern.compile("^[0-9]{7}[A-Z]$");
+
 
 	public static boolean isEmail(String email) {
 		return email != null && emailPattern.matcher(email).matches();
@@ -44,6 +46,10 @@ public class StringValidation {
 
 	public static boolean isAbsoluteDocumentUri(String uri) {
 		return  uri != null && absoluteDocumentUriPattern.matcher(uri).matches();
+	}
+
+	public static boolean isUAI(String uai) {
+		return uai != null && uaiPattern.matcher(uai).matches();
 	}
 
 }

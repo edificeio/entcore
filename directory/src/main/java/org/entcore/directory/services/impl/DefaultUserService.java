@@ -24,6 +24,7 @@ import fr.wseduc.webutils.NotificationHelper;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
@@ -417,6 +418,39 @@ public class DefaultUserService implements UserService {
 				.putString("userId1", userId1)
 				.putString("userId2", userId2);
 		eb.send(Directory.FEEDER, action, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results) {
+		if (UAI == null || UAI.isEmpty()) {
+			results.handle(new Either.Left<String, JsonArray>("missing.uai"));
+			return;
+		} else {
+			for (String uaiCode: UAI) {
+				if (!StringValidation.isUAI(uaiCode)) {
+					results.handle(new Either.Left<String, JsonArray>("invalid.uai"));
+					return;
+				}
+			}
+		}
+
+		if (fields == null || fields.size() == 0) {
+			fields = new JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
+		}
+		StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User)")
+				.append("WHERE s.UAI IN {uai} RETURN DISTINCT ");
+		for (Object field : fields) {
+			if ("type".equals(field) || "profile".equals(field)) {
+				query.append(" HEAD(u.profiles)");
+			} else {
+				query.append(" u.").append(field);
+			}
+			query.append(" as ").append(field).append(",");
+		}
+		query.deleteCharAt(query.length() - 1);
+		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
+		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
 	@Override
