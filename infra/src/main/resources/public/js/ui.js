@@ -72,10 +72,16 @@ var ui = (function(){
 					href: stylePath + 'theme.css',
 					id: 'theme'
 				});
+				var favicon = $('<link>', {
+					rel: 'icon',
+					href: stylePath + '../img/illustrations/favicon.ico'
+				});
 				style.on('load', function(){
 					$('body').show();
 				});
-				$('head').append(style);
+				$('head')
+					.append(style)
+					.append(favicon);
 				setTimeout(function(){
 					$('body').show();
 				}, 300);

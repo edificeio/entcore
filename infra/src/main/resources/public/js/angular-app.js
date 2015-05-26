@@ -1306,7 +1306,7 @@ module.directive('skinSrc', function($compile){
 
 		}
 	}
-})
+});
 
 module.directive('localizedClass', function($compile){
 	return {
