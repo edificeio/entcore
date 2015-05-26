@@ -1,5 +1,8 @@
 <h1><a data-reload><i18n>timeline.title</i18n></a></h1>
 <div data-ng-controller="Timeline" class="twelve cell">
+	<div class="row">
+		<i18n>filters.title</i18n>
+	</div>
 	<filters>
 		<li ng-repeat="type in notificationTypes.all" ng-class="{ selected: type.selected }">
 			<label>
