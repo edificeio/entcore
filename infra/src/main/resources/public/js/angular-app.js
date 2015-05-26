@@ -3571,7 +3571,9 @@ module.directive('progressBar', function($compile){
 			filled: '=',
 			unit: '@'
 		},
-		template: '<div class="progress-bar"><div class="filled">[[filled]] [[unit]]</div>[[max]] [[unit]]</div>',
+		template: '<div class="progress-bar">' +
+			'<div class="filled">[[filled]] <span translate content="[[unit]]"></span></div>[[max]] <span translate content="[[unit]]"></span>' +
+			'</div>',
 		link: function(scope, element, attributes){
 			function updateBar(){
 				var filledPercent = scope.filled * 100 / scope.max;

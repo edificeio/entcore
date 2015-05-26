@@ -92,19 +92,19 @@ function Quota(){
 Quota.prototype.sync = function(){
 	http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
 		//to mo
-		this.unit = lang.translate('mb');
+		this.unit = 'mb';
 		data.quota = data.quota / (1024 * 1024);
 		data.storage = data.storage / (1024 * 1024);
 
 		if(data.quota > 2000){
 			data.quota = Math.round((data.quota / 1024) * 10) / 10;
 			data.storage = Math.round((data.storage / 1024) * 10) / 10;
-			this.unit = lang.translate('gb');
+			this.unit = 'gb';
 		}
 		else{
 			data.quota = Math.round(data.quota);
 			data.storage = Math.round(data.storage);
-			this.unit = lang.translate('mb');
+			this.unit = 'mb';
 		}
 
 		this.max = data.quota;
