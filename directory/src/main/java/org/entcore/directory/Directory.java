@@ -25,6 +25,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.http.BasicFilter;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
@@ -45,7 +46,7 @@ public class Directory extends BaseServer {
 		final EventBus eb = getEventBus(vertx);
 		clearFilters();
 		setOauthClientGrant(true);
-		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
+		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
