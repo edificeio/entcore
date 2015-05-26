@@ -325,8 +325,8 @@ public class User {
 		String query;
 		JsonObject params = new JsonObject();
 		if (profiles != null && profiles.size() > 0) {
-			query = "MATCH (p:Profile)<-[:HAS_PROFILE]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE p.name IN {profiles} ";
+			query = "MATCH (u:User) " +
+					"WHERE HEAD(u.profiles) IN {profiles} ";
 			params.putArray("profiles", profiles);
 		} else {
 			query = "MATCH (u:User) ";
@@ -340,8 +340,9 @@ public class User {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		if (profiles != null && profiles.size() > 0) {
-			query.append("MATCH (p:Profile)<-[:HAS_PROFILE]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE p.name IN {profiles} ");
+			query.append("MATCH (u:User) WHERE HEAD(u.profiles) IN {profiles} " +
+					"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH u, COLLECT(s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
 			params.putArray("profiles", profiles);
 		} else {
 			query.append("MATCH (u:User) ");
@@ -349,7 +350,12 @@ public class User {
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
 			for (Object attribute : attributes) {
-				query.append(" u.").append(attribute).append(" as ").append(attribute).append(",");
+				if ("manualGroups".equals(attribute)) {
+					query.append(" manualGroups");
+				} else {
+					query.append(" u.").append(attribute);
+				}
+				query.append(" as ").append(attribute).append(",");
 			}
 			query.deleteCharAt(query.length() - 1);
 			query.append(" ");

@@ -17,6 +17,7 @@
 	"subjectTaught" : { "attribute" : "ENTAuxEnsMatiereEnseignEtab" },
 	"classes" : { "attribute" : "ENTAuxEnsClasses" },
 	"groups" : { "attribute" : "ENTAuxEnsGroupes" },
+	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"headTeacher" : { "attribute" : "ENTAuxEnsClassesPrincipal" },
 	"functions" : { "attribute" : "ENTPersonFonctions" },
 	"teaches" : { "attribute" : "PersEducNatPresenceDevantEleves", "converter" : "boolean-ON" }

@@ -13,6 +13,7 @@
 	"moduleName" : { "attribute" : "ENTEleveLibelleMEF" },
 	"classes" : { "attribute" : "ENTEleveClasses" },
 	"groups" : { "attribute" : "ENTEleveGroupes" },
+	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"level" : { "attribute" : "ENTEleveNivFormation" },
 	"sector" : { "attribute" : "ENTEleveFiliere" },
 	"scholarshipHolder" : { "attribute" : "ENTEleveBoursier", "converter": "boolean-ON" },
