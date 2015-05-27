@@ -229,15 +229,15 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.openShareView = function(){
 		$scope.sharedFolders = undefined
 		$scope.sharedDocuments = $scope.selectedDocuments();
-		ui.showLightbox();
-		template.open('lightbox', 'share');
+		$scope.display.share = true;
+		template.open('share', 'share');
 	};
 
 	$scope.openShareFolderView = function(){
 		$scope.sharedDocuments = undefined
 		$scope.sharedFolders = $scope.selectedFolders();
-		ui.showLightbox();
-		template.open('lightbox', 'share-folders-warning');
+		$scope.display.share = true;
+		template.open('share', 'share-folders-warning');
 	};
 
 	var refreshFolders = function(){
@@ -366,7 +366,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		});
 	};
 
-	$scope.sendFolderComment = function(){
+	$scope.sendFolderComment = function(folder){
+		if(folder){
+			$scope.targetFolder = folder;
+		}
 		ui.hideLightbox();
 		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + $scope.targetFolder.comment).done(function(result){
 			if(!$scope.targetFolder.comments){

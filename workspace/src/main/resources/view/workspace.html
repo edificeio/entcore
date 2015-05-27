@@ -102,6 +102,9 @@
 			<i class="close-2x"></i>
 		</div>
 	</section>
+	<lightbox show="display.share" on-close="display.share = false;">
+		<container template="share"></container>
+	</lightbox>
 	<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 }">
 		<div class="toggle">
 			<div class="row">
