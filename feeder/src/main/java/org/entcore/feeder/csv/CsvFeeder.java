@@ -90,7 +90,7 @@ public class CsvFeeder implements PartialFeed {
 				.putString("ville", "city")
 				.putString("pays", "country")
 				.putString("discipline", "classCategories")
-				.putString("matiere", "subjectTaught")
+				.putString("matiereenseignee", "subjectTaught")
 				.putString("email", "email")
 				.putString("professeurprincipal", "headTeacher");
 
