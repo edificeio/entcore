@@ -26,17 +26,21 @@
 		currentDay = moment(currentDay).date(currentDay.date() + 1);
 	}
 
+	Calendar.thisMonth = function(){
+		return moment().format('MMMM').toUpperCase()[0] + moment().format('MMMM').substring(1);
+	};
+
 	Calendar.getDay = function(date){
 		return date.day();
-	}
+	};
 
 	Calendar.getDayInMonth = function(date){
 		return date.date();
-	}
+	};
 
 	Calendar.todayDate = function(){
 		return moment().date();
-	}
+	};
 
 	Calendar.getSeason = function(){
 		var currentYear = moment().year() + '-';
