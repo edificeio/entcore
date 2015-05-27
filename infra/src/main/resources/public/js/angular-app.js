@@ -2304,9 +2304,17 @@ module.directive('tooltip', function($compile){
 					.appendTo('body');
 				scope.$apply();
 
+				var top = parseInt(element.offset().top + element.height());
+				var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
+				if(top < 5){
+					top = 5;
+				}
+				if(left < 5){
+					left = 5;
+				}
 				tip.offset({
-					top: parseInt(element.offset().top + element.height()),
-					left: parseInt(element.offset().left + element.width() / 2 - tip.width() / 2)
+					top: top,
+					left: left
 				});
 				tip.fadeIn();
 				element.one('mouseout', function(){
