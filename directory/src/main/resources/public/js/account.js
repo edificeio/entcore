@@ -121,7 +121,7 @@ function MyAccount($scope, lang, date, notify, route){
 		http().post(url, {
 				oldPassword: $scope.account.oldPassword,
 				password: $scope.account.password,
-				confirmPassword: $scope.account.password,
+				confirmPassword: $scope.account.confirmPassword,
 				login: $scope.account.login,
 				callback: '/userbook/mon-compte'
 			})
