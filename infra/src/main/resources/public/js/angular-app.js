@@ -3430,6 +3430,9 @@ module.directive('sortableList', function($compile){
 		restrict: 'A',
 		controller: function(){},
 		link: function(scope, element, attributes){
+			scope.updateElementsOrder = function(){
+
+			};
 		}
 	}
 });
@@ -3621,6 +3624,26 @@ module.directive('datePicker', function($compile){
                 if(element.datepicker)
                     element.datepicker('setValue', moment(scope.ngModel).format('DD/MM/YYYY'));
 			});
+
+			function setNewDate(){
+				var minDate = scope.$parent.$eval(attributes.minDate);
+				var date = element.val().split('/');
+				var temp = date[0];
+				date[0] = date[1];
+				date[1] = temp;
+				date = date.join('/');
+				scope.ngModel = new Date(date);
+
+				if(scope.ngModel < minDate){
+					scope.ngModel = minDate;
+					element.val(moment(minDate).format('DD/MM/YYYY'));
+				}
+
+				scope.$apply('ngModel');
+				scope.$parent.$eval(scope.ngChange);
+				scope.$parent.$apply();
+			}
+
 			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
 				element.datepicker({
 						dates: {
@@ -3633,17 +3656,7 @@ module.directive('datePicker', function($compile){
 						weekStart: 1
 					})
 					.on('changeDate', function(){
-						setTimeout(function(){
-							var date = element.val().split('/');
-							var temp = date[0];
-							date[0] = date[1];
-							date[1] = temp;
-							date = date.join('/');
-							scope.ngModel = new Date(date);
-							scope.$apply('ngModel');
-							scope.$parent.$eval(scope.ngChange);
-							scope.$parent.$apply();
-						}, 10);
+						setTimeout(setNewDate, 10);
 
 						$(this).datepicker('hide');
 					});
@@ -3665,17 +3678,7 @@ module.directive('datePicker', function($compile){
 				element.datepicker('show');
 			});
 
-			element.on('change', function(){
-				var date = element.val().split('/');
-				var temp = date[0];
-				date[0] = date[1];
-				date[1] = temp;
-				date = date.join('/');
-				scope.ngModel = new Date(date);
-				scope.$apply('ngModel');
-				scope.$parent.$eval(scope.ngChange);
-				scope.$parent.$apply();
-			});
+			element.on('change', setNewDate);
 
 			element.on('$destroy', function(){
 				element.datepicker('hide');
