@@ -687,6 +687,43 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		});
 	}
 
+	$scope.sortBy = {
+        name: function(mail){
+            if(mail.systemFolders.indexOf('INBOX') >= 0){
+                if(mail.fromName)
+                    return mail.fromName
+                else
+                    return mail.sender().displayName
+            }
+            return _.chain(mail.displayNames)
+						.filter(function(u){ return mail.to.indexOf(u[0]) >= 0 })
+						.map(function(u){ return u[1] }).value().sort()
+        },
+        subject: function(mail){
+            return mail.subject
+        },
+        date: function(mail){
+            return mail.date
+        },
+        systemFolder: function(mail){
+            if(mail.systemFolders.indexOf("INBOX") >= 0)
+    			return 1
+    		if(mail.systemFolders.indexOf("OUTBOX") >= 0)
+    			return 2
+    		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+    			return 3
+    		return 0
+        }
+    }
+	$scope.setSort = function(box, sortFun){
+		if(box.sort === sortFun){
+			box.reverse = !box.reverse
+		} else {
+			box.sort = sortFun
+			box.reverse = false
+		}
+	}
+
 	$scope.lang = lang;
 	$scope.notify = notify;
 	$scope.folders = model.folders;

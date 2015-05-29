@@ -9,10 +9,10 @@
 			<tr>
 				<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 				<th class="icon"></th>
-				<th translate key="from"><i18n>from</i18n></th>
-				<th translate key="subject"><i18n>content</i18n></th>
+				<th translate key="from" ng-click="setSort(folders.trash, sortBy.name)"><i18n>from</i18n></th>
+				<th translate key="subject" ng-click="setSort(folders.trash, sortBy.subject)"><i18n>content</i18n></th>
 				<th></th>
-				<th translate key="date"><i18n>date</i18n></th>
+				<th translate key="date" ng-click="setSort(folders.trash, sortBy.date)"><i18n>date</i18n></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -20,7 +20,8 @@
 				<td colspan="6" translate key="folder.empty">
 				</td>
 			</tr>
-			<tr ng-repeat="folder in folders.trash.userFolders.all" ng-class="{ checked: folder.selected }">
+			<tr ng-repeat="folder in folders.trash.userFolders.all | orderBy : folders.trash.sort : folders.trash.reverse"
+			    ng-class="{ checked: folder.selected }">
 				<td><input type="checkbox" ng-model="folder.selected" /></td>
 				<td><i class="folder"></i></td>
 				<td colspan="4">[[folder.name]]</td>
