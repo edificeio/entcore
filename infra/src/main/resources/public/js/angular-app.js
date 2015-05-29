@@ -3429,15 +3429,41 @@ module.directive('sortableList', function($compile){
 	return {
 		restrict: 'A',
 		controller: function(){},
-		link: function(scope, element, attributes){
-			scope.updateElementsOrder = function(){
+		compile: function(element, attributes, transclude){
+			var initialHtml = element.html();
+			return function(scope, element, attributes){
+				scope.updateElementsOrder = function(el){
+					var sortables = element.find('[sortable-element]');
+					sortables.removeClass('animated');
+					sortables.each(function(index, item){
+						if(parseInt($(item).css('margin-top')) > 0){
+							el.detach().insertBefore(item);
+						}
+					});
 
-			};
+					if(el.offset().top > sortables.last().offset().top + sortables.last().height()){
+						element.append(el.detach());
+					}
+
+					//get new elements order
+					sortables = element.find('[sortable-element]');
+					sortables.each(function(index, item){
+						var itemScope = angular.element(item).scope();
+						if(index !== itemScope.ngModel){
+							itemScope.ngModel = index;
+						}
+					});
+
+					sortables.attr('style', '');
+					element.html($compile(initialHtml)(scope));
+					scope.$apply();
+				};
+			}
 		}
 	}
 });
 
-module.directive('sortableElement', function($compile){
+module.directive('sortableElement', function($parse){
 	return {
 		scope: {
 			ngModel: '=',
@@ -3448,42 +3474,22 @@ module.directive('sortableElement', function($compile){
 		transclude: true,
 		link: function(scope, element, attributes){
 			var sortables;
+			scope.$watch('ngModel', function(newVal, oldVal){
+				if(newVal !== oldVal && typeof scope.ngChange === 'function'){
+					scope.ngChange();
+				}
+			});
 			ui.extendElement.draggable(element, {
 				lock: {
 					horizontal: true
 				},
 				mouseUp: function(){
-					sortables.removeClass('animated');
+					scope.$parent.updateElementsOrder(element);
+
 					element.on('click', function(){
 						scope.$parent.$eval(attributes.ngClick);
 					});
-					sortables.each(function(index, item){
-						if(parseInt($(item).css('margin-top')) > 0){
-							element.detach().insertBefore(item);
-						}
-					});
 
-					if(element.offset().top > sortables.last().offset().top + sortables.last().height()){
-						element.detach().insertAfter(sortables.last());
-					}
-
-					//get new elements order
-					var changed = false;
-					sortables = element.parents('[sortable-list]').find('[sortable-element]');
-					sortables.each(function(index, item){
-						var itemScope = angular.element(item).scope();
-						if(index !== itemScope.ngModel){
-							itemScope.ngModel = index;
-							itemScope.$apply('ngModel');
-							changed = true;
-						}
-					});
-
-					if(typeof scope.ngChange === 'function' && changed){
-						scope.ngChange();
-					}
-
-					sortables.attr('style', '');
 				},
 				startDrag: function(){
 					sortables = element.parents('[sortable-list]').find('[sortable-element]');
