@@ -372,5 +372,15 @@
     "welcome.info": "Bienvenue dans votre ENT !",
     "welcome.regards": "Bonne découverte !",
     "welcome.signature": "L'équipe Ent-Core",
-    "welcome.subject": "Bienvenue dans l'ENT"
+    "welcome.subject": "Bienvenue dans l'ENT",
+    "show.password": "Afficher le mot de passe",
+    "complexity": "Sécurité",
+    "weak": "Faible",
+    "moderate": "Modérée",
+    "strong": "Forte",
+    "required": "Champ obligatoire",
+    "pattern": "Format invalide",
+    "email": "Email invalide",
+    "password.errors": "Erreur(s) lors de la saisie du mot de passe",
+    "password.identical": "Les mots de passe doivent être identiques"
 }

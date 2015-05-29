@@ -69,6 +69,7 @@ function MyAccount($scope, lang, date, notify, route){
 	}
 
 	$scope.display = {};
+	$scope.lang = lang;
 
 	$scope.viewsContainers = {};
 	$scope.openView = function(view, name){
@@ -174,4 +175,47 @@ function MyAccount($scope, lang, date, notify, route){
 	$scope.longDate = function(dateString){
 		return moment(dateString).format('DD MMMM YYYY')
 	};
+
+	$scope.passwordComplexity = function(password){
+		if(!password)
+			return 0
+
+		if(password.length < 6)
+			return password.length
+
+		var score = password.length
+		if(/[0-9]+/.test(password) && /[a-zA-Z]+/.test(password)){
+			score += 5
+		}
+		if(!/^[a-zA-Z0-9- ]+$/.test(password)) {
+			score += 5
+		}
+
+		return score
+	}
+
+	$scope.translateComplexity = function(password){
+		var score = $scope.passwordComplexity(password)
+		if(score < 12){
+			return lang.translate("weak")
+		}
+		if(score < 20)
+			return lang.translate("moderate")
+		return lang.translate("strong")
+	}
+
+	$scope.identicalRegex = function(str){
+		if(!str)
+			return new RegExp("^$")
+		return new RegExp("^"+str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")+"$")
+	}
+
+	$scope.refreshInput = function(form, inputName){
+		form[inputName].$setViewValue(form[inputName].$viewValue)
+	}
+
+	http().get('/auth/context').done(function(data){
+		$scope.passwordRegex = data.passwordRegex;
+	})
+
 }
