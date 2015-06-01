@@ -22,7 +22,7 @@
 					<label translate content="auth.activation.confirm.password"></label>
 					<input-password required ng-pattern="identicalRegex(user.password)" ng-model="user.confirmPassword"
 						name="confirmPassword" ng-trim="false" tabindex="2"></input-password>
-					<p class="input-errors" ng-if="activationForm.confirmPassword.$invalid && activationForm.confirmPassword.$dirty">
+					<p class="input-errors" ng-if="activationForm.confirmPassword.$viewValue && activationForm.confirmPassword.$invalid && activationForm.confirmPassword.$dirty">
 						<i18n>password.identical</i18n>
 					</p>
 				</p>
