@@ -238,6 +238,7 @@ ui.extendElement = {
 			if(element.data('lock') === true || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))){
 				return;
 			}
+			var initialScroll = $(window).scrollTop();
 			var interrupt = false;
 			if(element.data('resizing') !== true){
 
@@ -268,7 +269,7 @@ ui.extendElement = {
 					}
 
 					var newOffset = {
-						top: parseInt(mouse.y - elementDistance.y),
+						top: parseInt((mouse.y - elementDistance.y) + ($(window).scrollTop() - initialScroll)),
 						left: parseInt(mouse.x - elementDistance.x)
 					};
 
