@@ -26,7 +26,7 @@
 <div class="row">
 	<nav class="list icons-view" dragdrop="removeBookmark($item)">
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | orderBy:'displayName' | filter:searchDisplayName">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | orderBy:order | filter:searchDisplayName">
 				<div class="container" tooltip="[[application.displayName]]">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>

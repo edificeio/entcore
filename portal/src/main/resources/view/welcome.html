@@ -71,6 +71,10 @@
 						lang.removeAccents(lang.translate(item.displayName)).toLowerCase().indexOf(
 							lang.removeAccents($scope.display.searchText).toLowerCase()
 					) !== -1;
+			};
+
+			$scope.order = function(app){
+				return lang.translate(app.displayName);
 			}
 		}
 	</script>
