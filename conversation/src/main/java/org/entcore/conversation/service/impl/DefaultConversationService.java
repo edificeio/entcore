@@ -849,6 +849,7 @@ public class DefaultConversationService implements ConversationService {
 			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
 			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
 			"(childrenParents: ConversationFolder)-[childrenParentRel {trashed: true}]->(children)<-[childrenTrashedRel: TRASHED_CONVERSATION_FOLDER]-(c) " +
+			"WHERE targetFolder.id = {folderId} " +
 			"REMOVE childrenParentRel.trashed " +
 			"DELETE childrenTrashedRel";
 
@@ -857,6 +858,7 @@ public class DefaultConversationService implements ConversationService {
 			"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(:ConversationUserFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(targetFolder: ConversationUserFolder), " +
 			"(targetFolder)-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder), " +
 			"(trashFolder)-[trashRel: HAS_CONVERSATION_MESSAGE]->(:ConversationMessage)-[:INSIDE {trashed: true}]->(children) " +
+			"WHERE targetFolder.id = {folderId} " +
 			"SET trashRel.insideFolder = true";
 
 		JsonObject params = new JsonObject()
