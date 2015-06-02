@@ -11,7 +11,7 @@ CKEDITOR.editorConfig = function(config){
 		{ name: 'document', items: ['Templates', 'HTML' ] },
 		{ name: 'clipboard', items: [ 'Undo', 'Redo' ] },
 		{ name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
-		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
+		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat', 'Subscript', 'Superscript' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		'/',

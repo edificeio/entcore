@@ -9,7 +9,7 @@ CKEDITOR.editorConfig = function(config){
 	config.allowedContent = true;
 	config.toolbar = [
 		{ name: 'document', items: ['Templates', 'HTML' ] },
-		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
+		{ name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat', 'Subscript', 'Superscript' ] },
 		{ name: 'colors', items: [ 'TextColor', 'BGColor' ] },
 		{ name: 'paragraph', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
 		{ name: 'links', items: ['Linker'] },
