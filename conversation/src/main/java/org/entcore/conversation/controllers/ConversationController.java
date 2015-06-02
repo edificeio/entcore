@@ -435,8 +435,10 @@ public class ConversationController extends BaseController {
 
 							JsonArray results = event.right().getValue();
 
+							final int resultsModulo = 4;
+
 							final AtomicLong totalSize = new AtomicLong(0);
-							final AtomicInteger finalCountdown = new AtomicInteger(results.size() / 2);
+							final AtomicInteger finalCountdown = new AtomicInteger(results.size() / resultsModulo);
 
 							if(finalCountdown.get() <= 0){
 								renderJson(request, new JsonObject(), 204);
@@ -456,30 +458,33 @@ public class ConversationController extends BaseController {
 								}
 							};
 
-							for(int i = 0; i < results.size(); i++){
-								//Result from the attachment request - attachment list
-								JsonArray result = (JsonArray) results.get(i);
-								//Result from the deletion request - check whether the attachments must be deleted from the storage
-								JsonArray resultCheck = (JsonArray) results.get(++i);
+							for(int i = 0; i < results.size(); i+=resultsModulo){
+								//Result from the get all attachments request - attachment list
+								JsonArray result = (JsonArray) results.get(i+1);
+								//Result from the attachments deletion request - retrieves only deleted attachments
+								JsonArray result2 = (JsonArray) results.get(i+2);
 
-								JsonArray attachments = new JsonArray();
+								JsonArray allAttachments = new JsonArray();
+								JsonArray deletedAttachments = new JsonArray();
 								for(Object item : result){
-									JsonArray item_attachments = ((JsonObject) item).getArray("attachments", new JsonArray());
-									for(Object attachment: item_attachments){
-										attachments.add(attachment);
+									JsonArray itemAttachments = ((JsonObject) item).getArray("attachments", new JsonArray());
+									for(Object attachment: itemAttachments){
+										allAttachments.add(attachment);
+									}
+								}
+								for(Object item : result2){
+									JsonArray itemAttachments = ((JsonObject) item).getArray("attachments", new JsonArray());
+									for(Object attachment: itemAttachments){
+										deletedAttachments.add(attachment);
 									}
 								}
 
-								boolean toDelete = resultCheck.size() > 0 ?
-										((JsonObject) resultCheck.get(0)).getBoolean("deleteAttachments", false)
-										: false;
-
-								if(attachments.size() < 1){
+								if(allAttachments.size() < 1){
 									finalCountdownHandler.handle(null);
 									continue;
 								}
 
-								final AtomicInteger countdown = new AtomicInteger(attachments.size());
+								final AtomicInteger countdown = new AtomicInteger(allAttachments.size());
 								final Handler<Void> countdownHandler = new Handler<Void>() {
 									@Override
 									public void handle(Void event) {
@@ -489,10 +494,19 @@ public class ConversationController extends BaseController {
 									}
 								};
 
-								for(Object attachmentObj: attachments){
+								for(Object attachmentObj: allAttachments){
 									final JsonObject attachment = (JsonObject) attachmentObj;
 									final String attachmentId = attachment.getString("id");
 									final Long attachmentSize = attachment.getLong("size");
+
+									boolean toDelete = false;
+									for(Object obj : deletedAttachments){
+										JsonObject att = (JsonObject) obj;
+										if(att.getString("id").equals(attachment.getString("id"))){
+											toDelete = true;
+											break;
+										}
+									}
 
 									if(!toDelete){
 										totalSize.addAndGet(-attachmentSize);
@@ -922,6 +936,86 @@ public class ConversationController extends BaseController {
 
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
 	}
+
+	@Put("message/:messageId/forward/:forwardedId")
+	@SecuredAction(value = "conversation.message.forward.attachments", type = ActionType.AUTHENTICATED)
+	public void forwardAttachments(final HttpServerRequest request){
+		final String messageId = request.params().get("messageId");
+		final String forwardedId = request.params().get("forwardedId");
+
+		//1 - get user infos
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				//2 - get user quota
+				getUserQuota(user.getUserId(), new Handler<JsonObject>() {
+					public void handle(JsonObject j) {
+						if(j == null || "error".equals(j.getString("status"))){
+							badRequest(request, j == null ? "" : j.getString("message"));
+							return;
+						}
+
+						final long quotaLeft = j.getLong("quota", 0l) - j.getLong("storage", 0l);
+
+						//3 - get forwarded message attachments
+						conversationService.get(forwardedId, user, new Handler<Either<String,JsonObject>>() {
+							@Override
+							public void handle(Either<String, JsonObject> event) {
+								if(event.isLeft()){
+									badRequest(request, event.left().getValue());
+									return;
+								}
+								if(event.isRight() && event.right().getValue() == null){
+									badRequest(request, event.right().getValue().toString());
+									return;
+								}
+								final JsonObject neoResult = event.right().getValue();
+								final JsonArray attachments = neoResult.getArray("attachments");
+
+								long attachmentsSize = 0l;
+								for(Object genericObj : attachments){
+									JsonObject attachment = (JsonObject) genericObj;
+									attachmentsSize += attachment.getLong("size", 0l);
+								}
+								final long finalAttachmentsSize = attachmentsSize;
+
+								// if total attachment size > quota left, return 403
+								if(attachmentsSize > quotaLeft){
+									forbidden(request, "forward.failed.quota");
+									return;
+								}
+
+								//4 - forward attachments, add relationships between the message and the already existing attachments
+								conversationService.forwardAttachments(forwardedId, messageId, user, new Handler<Either<String,JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> event) {
+										if(event.isLeft()){
+											badRequest(request, event.left().getValue());
+											return;
+										}
+
+										//5 - update user quota
+										updateUserQuota(user.getUserId(), finalAttachmentsSize, new Handler<Void>(){
+											@Override
+											public void handle(Void event) {
+												ok(request);
+											}
+										});
+									}
+
+								});
+							}
+						});
+					}
+				});
+			}
+		};
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
 
 	@BusAddress("org.entcore.conversation")
 	public void conversationEventBusHandler(Message<JsonObject> message) {

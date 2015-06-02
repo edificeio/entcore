@@ -272,6 +272,18 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.transfer = function(){
 		$scope.openView('write-mail', 'main');
 		setMailContent('transfer');
+		model.folders.draft.saveDraft($scope.newItem, function(id){
+			http().put("message/"+ $scope.newItem.id +"/forward/" + $scope.mail.id).done(function(){
+				if(!$scope.newItem.attachments)
+					$scope.newItem.attachments = []
+				for(var i = 0; i < $scope.mail.attachments.length; i++){
+					$scope.newItem.attachments.push(JSON.parse(JSON.stringify($scope.mail.attachments[i])))
+				}
+				$scope.getQuota()
+			}).error(function(data){
+				notify.error(data.error)
+			})
+		});
 	};
 
 	$scope.reply = function(){

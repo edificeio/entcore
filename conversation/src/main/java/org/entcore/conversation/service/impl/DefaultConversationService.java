@@ -501,28 +501,44 @@ public class DefaultConversationService implements ConversationService {
 	public void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		if (validationError(user, result)) return;
 
-		String retrieveAttachments =
-				"MATCH (a: MessageAttachment)<-[:HAS_ATTACHMENT]-(m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
-				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} AND a.id IN r.attachments " +
-				"WITH CASE WHEN a IS NULL THEN [] ELSE collect({id: a.id, size: a.size}) END as attachments " +
-				"RETURN attachments";
 
-		String query =
+		final String getMessage =
+				"MATCH (m:ConversationMessage)<-[r:HAD_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
+				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
+				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} ";
+		final String getMessageWithAttachments =
+				"MATCH (a: MessageAttachment)<-[aLink:HAS_ATTACHMENT]-(m:ConversationMessage)<-[r:HAD_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
+				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
+				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} AND a.id IN r.attachments ";
+
+		String prepareMessage =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} " +
-				"OPTIONAL MATCH m-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
 				"OPTIONAL MATCH (m)-[i: INSIDE]->(:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]-(:ConversationUserFolder)<-[:HAS_CONVERSATION_FOLDER]-(c) " +
-				"CREATE f-[:HAD_CONVERSATION_MESSAGE]->m " +
-				"DELETE r, i " +
+				"CREATE f-[:HAD_CONVERSATION_MESSAGE {attachments: r.attachments}]->m " +
+				"DELETE r, i ";
+
+		String getAllAttachments =
+				getMessageWithAttachments +
+				"RETURN collect({id: a.id, size: a.size}) as attachments";
+
+		String deleteAndCollectAttachments =
+				getMessageWithAttachments +
+				"AND NOT(m-[:HAS_CONVERSATION_MESSAGE]-()) " +
+				"DELETE aLink " +
+				"WITH a, collect({id: a.id, size: a.size}) as attachments " +
+				"WHERE NOT((:ConversationMessage)-[:HAS_ATTACHMENT]->(a)) " +
+				"DELETE a " +
+				"RETURN attachments";
+
+		String deleteMessage =
+				getMessage +
+				"OPTIONAL MATCH m-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
 				"WITH m as message, pr " +
 				"MATCH message<-[r:HAD_CONVERSATION_MESSAGE]-() " +
 				"WHERE NOT(message-[:HAS_CONVERSATION_MESSAGE]-()) " +
-				"OPTIONAL MATCH (message)-[al: HAS_ATTACHMENT]->(a: MessageAttachment) " +
-				"DELETE r, pr, al, a, message " +
-				"WITH CASE WHEN a IS NULL THEN false ELSE true END as deleteAttachments " +
-				"RETURN deleteAttachments";
+				"DELETE r, pr, message";
 
 		StatementsBuilder b = new StatementsBuilder();
 		for (String id: messagesId) {
@@ -531,8 +547,10 @@ public class DefaultConversationService implements ConversationService {
 					.putString("messageId", id)
 					.putBoolean("true", true)
 					.putString("trash", "TRASH");
-			b.add(retrieveAttachments, params);
-			b.add(query, params);
+			b.add(prepareMessage, params);
+			b.add(getAllAttachments, params);
+			b.add(deleteAndCollectAttachments, params);
+			b.add(deleteMessage, params);
 		}
 		neo.executeTransaction(b.build(), null, true, validResultsHandler(result));
 	}
@@ -1031,8 +1049,8 @@ public class DefaultConversationService implements ConversationService {
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments " +
 			"SET r.attachments = filter(attachmentId IN r.attachments WHERE attachmentId <> {attachmentId}) " +
-			"WITH m, attachment, attachment.id as fileId, attachment.size as fileSize " +
-			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(m)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
+			"WITH attachment, attachment.id as fileId, attachment.size as fileSize " +
+			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
 			"WITH fileId, fileSize, none(item IN collect(messageLinks.attachments) WHERE fileId IN item) as deletionCheck " +
 			"RETURN deletionCheck, fileId, fileSize";
 
@@ -1040,7 +1058,7 @@ public class DefaultConversationService implements ConversationService {
 			"MATCH (attachment: MessageAttachment)<-[: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} " +
-			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(m)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
+			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
 			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
 			"DELETE attachmentLink, attachment";
@@ -1065,6 +1083,35 @@ public class DefaultConversationService implements ConversationService {
 				result.handle(new Either.Right<String, JsonObject>((JsonObject) ((JsonArray) event.right().getValue().get(0)).get(0)));
 			}
 		}));
+	}
+
+	@Override
+	public void forwardAttachments(String forwardId, String messageId, UserInfos user,
+			Handler<Either<String, JsonObject>> result){
+		if (validationParamsError(user, result, messageId)) return;
+
+		JsonObject params = new JsonObject()
+				.putString("userId", user.getUserId())
+				.putString("folderName", "DRAFT")
+				.putString("forwardId", forwardId)
+				.putString("messageId", messageId)
+				.putBoolean("true", true);
+
+		String query =
+				"MATCH (c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(f:ConversationSystemFolder)" +
+				"-[r:HAS_CONVERSATION_MESSAGE]->(m:ConversationMessage {id: {messageId}}), " +
+				"(c:Conversation)-[:HAS_CONVERSATION_FOLDER]->(af:ConversationSystemFolder)" +
+				"-[r2:HAS_CONVERSATION_MESSAGE]->(pm:ConversationMessage) " +
+				"WHERE c.userId = {userId} AND c.active = {true} AND f.name = {folderName} " +
+				"AND pm.id = {forwardId} " +
+				"OPTIONAL MATCH (pm)-[:HAS_ATTACHMENT]->(a: MessageAttachment) " +
+				"SET r.attachments = r2.attachments " +
+				"WITH distinct m, a " +
+				"FOREACH (attachment IN CASE WHEN a IS NOT NULL THEN [a] ELSE [] END | " +
+				"CREATE (m)-[:HAS_ATTACHMENT]->(attachment) )";
+
+		neo.execute(query, params, validEmptyHandler(result));
+
 	}
 
 	private boolean validationError(UserInfos user, Handler<Either<String, JsonArray>> results, String ... params) {
