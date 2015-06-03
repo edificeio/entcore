@@ -42,7 +42,7 @@
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureUsers" ng-change="scrollOpts.reset()"/>
         <ul bottom-scroll-action="scrollOpts.increment()">
             <li ng-repeat="user in structure.users.all | filter:structureUserFilteringFunction | orderBy: userOrdering | limitTo: scrollOpts.scrollLimit" ng-click="$root.targetUser = user; setShowWhat('showStructureUser'); getUserDetails(user);" style="padding-left: 0">
-                <span ng-class="userStyle(user)">[[user.displayName]]</span>
+                <span ng-class="userStyle(user)">[[user.lastName]] [[user.firstName]]</span>
             </li>
         </ul>
     </nav>
@@ -200,14 +200,14 @@
                     <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'lastName'"
                         ng-click="addChild(child, createdUser)"
                         style="padding-left: 0">
-                        <span>[[child.displayName]]</span>
+                        <span>[[child.lastName]] [[child.firstName]]</span>
                     </li>
                 </ul>
             </nav>
             <div style="width:60%; float: left">
                 <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
                 <ul style="list-style-type: decimal; font-family: Lato;">
-                    <li ng-repeat="child in createdUser.children" ng-click="removeChild(child, createdUser)">[[child.displayName]]</li>
+                    <li ng-repeat="child in createdUser.children" ng-click="removeChild(child, createdUser)">[[child.lastName]] [[child.firstName]]</li>
                 </ul>
             </div>
         </div>

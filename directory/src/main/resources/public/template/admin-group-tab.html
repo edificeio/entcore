@@ -84,7 +84,7 @@
                 <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
                     ng-click="addUserToGroup(user, groupSelected)"
                     style="padding-left: 0">
-                    <span ng-class="userStyle(user)">[[user.displayName]]</span>
+                    <span ng-class="userStyle(user)">[[user.lastName]] [[user.firstName]]</span>
                 </li>
             </ul>
         </nav>

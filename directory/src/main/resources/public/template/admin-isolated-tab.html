@@ -15,7 +15,7 @@
 
         <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction(filterIsolatedUsers) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
             ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
-            [[user.displayName]]
+            [[user.lastName]] [[user.firstName]]
         </li>
     </ul>
 </div>

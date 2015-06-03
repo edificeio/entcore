@@ -149,7 +149,7 @@
             <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'lastName'"
                 ng-click="addChild(child, targetUser)"
                 style="padding-left: 0">
-                <span ng-class="userStyle(child)">[[child.displayName]]</span>
+                <span ng-class="userStyle(child)">[[child.lastName]] [[child.firstName]]</span>
             </li>
         </ul>
     </nav>
@@ -157,7 +157,7 @@
         <h3 style="text-align: center">[[lang.translate("directory.children")]]</h3>
         <ul class="angle-list small">
             <li ng-repeat="child in targetUser.children" style="margin-left: 10px">
-                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+child.id]]" target="_blank">[[child.displayName]]</a>
+                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+child.id]]" target="_blank">[[child.lastName]] [[child.firstName]]</a>
                 <button ng-click="removeChild(child, targetUser)" class="right-magnet close"></button>
             </li>
         </ul>
@@ -170,7 +170,7 @@
     <div class="row">
         <ul class="angle-list small" style="padding-left: 5%">
             <li ng-repeat="relative in targetUser.parents | orderBy: 'displayName'">
-                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+relative.id]]" target="_blank">[[relative.displayName]]</a>
+                <a href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+relative.id]]" target="_blank">[[relative.lastName]] [[relative.firstName]]</a>
             </li>
         </ul>
     </div>

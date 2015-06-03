@@ -16,7 +16,7 @@
         <li ng-repeat="user in crossUsers.users.all | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
             ng-click="$parent.targetUser = user; getUserDetails(user)"
             ng-class="userStyle(user)">
-            [[user.displayName]]
+            [[user.lastName]] [[user.firstName]]
         </li>
     </ul>
 </div>
