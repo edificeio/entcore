@@ -320,7 +320,7 @@ nav.side-tabs{
 
 	> ul{
 
-		max-height: 550px;
+		/*max-height: 550px;*/
 		overflow-y: scroll;
 
 		li{
@@ -446,6 +446,10 @@ nav.side-tabs{
 
 	&.unpadded{
 		padding-right: 0px;
+	}
+
+	&.content-flex{
+		display: flex;
 	}
 }
 
@@ -711,12 +715,15 @@ nav.search-container{
 }
 
 nav.search-container-left{
+	display: flex;
+  	flex-direction: column;
+	flex: 0.35;
 	list-style: none;
 	font-family: Lato;
-	height: 552px;
-	width: 25%;
+	min-height: 500px;
+	max-width: 25%;
 	padding: 0;
-	margin-bottom: 14;
+	//margin-bottom: 14;
 	margin-top: 14;
 	border-right: 2px ridge @main;
 	border-bottom: 2px ridge @main;
@@ -736,17 +743,16 @@ nav.search-container-left{
 	}
 
 	> ul{
-		height: 500px;
+		//height: 500px;
+		position: absolute;
+  		height: calc(~"100% - 50px");
 		overflow-y: scroll;
 	}
 }
 
 div.search-container-view{
-	overflow-y: scroll;
-	overflow-x: hidden;
 	padding: 10px 15px 0px 20px;
-	height: 554px;
-	//border-bottom: 2px ridge @main;
+	flex: 1;
 }
 
 hr.separator{
@@ -875,15 +881,6 @@ button.directory-direct-link-button{
 	width: 25px;
 	height: 25px;
 	background-position: 25.5%;
-}
-
-.directory-userlist-right-container{
-	width: 70%;
-	float: left;
-	border-bottom: 2px ridge @main;
-	padding: 20 0 0 4%;
-	height: 544px;
-	overflow-y: scroll
 }
 
 .inline-middle{
@@ -1198,7 +1195,7 @@ table.comm-table{
 }
 
 div.users-search{
-	height: 550px;
+	//height: 550px;
 	font-family: Lato;
 	> div {
 		width: 100%;
@@ -1219,11 +1216,11 @@ div.users-search{
 
 	> ul{
 		list-style: none;
-		padding: 0 20 0 0;
+		padding: 0 20 20 0;
 		border-right: 2px ridge @main;
 		border-bottom: 2px ridge @main;
 		overflow-y: scroll;
-		height: 500px;
+		max-height: 488px;
 	}
 }
 
@@ -1241,7 +1238,7 @@ input[type=submit].check-button, button.check-button{
 }
 
 div.right-content{
-	height: 564px;
+	//height: 564px;
 	border-bottom: 2px ridge @main;
 	border-right: 2px ridge @main;
 	padding: 0px 20px;

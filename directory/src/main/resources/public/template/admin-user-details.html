@@ -142,7 +142,7 @@
 <!-- Relatives & children -->
 <div ng-if="notCrossSearchTab() && targetUser.type === 'Relative'" class="twelve cell">
     <hr class="separator">
-    <nav class="vertical cell search-container-left" style="width: 40%; height: 380px; margin: 0">
+    <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 380px; height: 380px; margin: 0">
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
         <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
             <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'lastName'"

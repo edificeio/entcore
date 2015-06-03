@@ -1808,16 +1808,6 @@ a {
 .cke_editable {
   padding: 4px;
 }
-.lightbox-window .share .found-users-list,
-.lightbox-view .share .found-users-list {
-  height: 180px;
-  overflow-y: auto;
-}
-.lightbox-window .share .groups-list,
-.lightbox-view .share .groups-list {
-  height: 160px;
-  overflow-y: auto;
-}
 .share table {
   width: 100%;
 }
@@ -2005,7 +1995,7 @@ a {
   -moz-transition: height 250ms ease;
   -webkit-transition: height 250ms ease;
   transition: height 250ms ease;
-  z-index: 20;
+  z-index: 8000;
 }
 .toggle-buttons .toggle {
   padding: 10px;
@@ -2276,6 +2266,10 @@ ul.icons-tabs li i {
 }
 .file-selector {
   cursor: pointer;
+}
+.rss-flux i {
+  display: inline !important;
+  font-style: italic;
 }
 .action-cell {
   width: 30px;
@@ -3690,6 +3684,7 @@ a.cke_smile img {
   right: 7px;
   top: 5px;
   background-size: 60%;
+  z-index: 200;
 }
 .media .icons-view i.close {
   right: 11px;
@@ -4226,6 +4221,7 @@ portal .page-markers {
   display: none;
   right: 0;
   bottom: 0;
+  z-index: 651;
 }
 .page-markers .marker {
   position: absolute;
@@ -4527,6 +4523,10 @@ popover popover-content.hidden {
   box-sizing: border-box;
 }
 .schedule .schedule-items .schedule-item {
+  -o-transition: top 250ms ease;
+  -moz-transition: top 250ms ease;
+  -webkit-transition: top 250ms ease;
+  transition: top 250ms ease;
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4538,6 +4538,12 @@ popover popover-content.hidden {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   z-index: 500;
+}
+.schedule .schedule-items .schedule-item container {
+  -o-transition: all 250ms ease;
+  -moz-transition: all 250ms ease;
+  -webkit-transition: all 250ms ease;
+  transition: all 250ms ease;
 }
 .schedule .schedule-items .schedule-item .schedule-item-content {
   position: absolute;
@@ -4737,10 +4743,6 @@ article iframe,
 .letter-picker .content {
   background: transparent;
 }
-.letter-picker .lightbox-view,
-.letter-picker .lightbox {
-  background: transparent;
-}
 .letter-picker .lightbox-view h2,
 .letter-picker .lightbox h2 {
   color: #fff;
@@ -4756,10 +4758,12 @@ article iframe,
   color: #ddd;
 }
 h1.letter-picker {
-  width: 16px;
-  margin-left: 5px;
-  text-align: center;
   clear: both;
+  height: 60px;
+  width: 60px;
+  line-height: 60px;
+  text-align: center;
+  margin: 40px auto -9px;
 }
 nav.illustrated-links ul li {
   list-style-type: none;
@@ -4782,6 +4786,8 @@ nav.illustrated-links ul li .content {
   display: table-cell;
   vertical-align: top;
   width: 100%;
+  position: relative;
+  min-height: 0;
 }
 nav.illustrated-links ul li .content h1 {
   margin: 0px;
@@ -5074,6 +5080,7 @@ ul.thought-out-actions > li p {
   float: right !important;
   overflow: hidden;
   padding: 0;
+  position: relative;
 }
 [sortable-element] {
   cursor: move;
@@ -5158,6 +5165,7 @@ carousel .images .image {
 }
 carousel .images .image img {
   display: inline-block;
+  max-height: 100%;
 }
 carousel .images .image .image-container {
   height: 100%;
@@ -5543,6 +5551,10 @@ input-password button {
   margin-top: -80px;
   padding-top: 80px;
   display: block;
+  pointer-events: none;
+}
+.hash-magnet > * {
+  pointer-events: all;
 }
 nav.double-content-stamps {
   text-align: center;
@@ -5709,6 +5721,15 @@ body {
 html section.main,
 body section.main {
   background: #fff;
+  position: relative;
+  padding-bottom: 60px;
+}
+html section.main::after,
+body section.main::after {
+  clear: both;
+  content: " ";
+  display: block;
+  width: 100%;
 }
 html.print {
   background: transparent;
@@ -6208,7 +6229,7 @@ nav.side-tabs {
   width: 25%;
 }
 nav.side-tabs > ul {
-  max-height: 550px;
+  /*max-height: 550px;*/
   overflow-y: scroll;
 }
 nav.side-tabs > ul li {
@@ -6315,6 +6336,9 @@ nav.side-tabs.recursive-list > ul ul li.selected {
 }
 .side-tabs-content.unpadded {
   padding-right: 0px;
+}
+.side-tabs-content.content-flex {
+  display: flex;
 }
 nav.left {
   z-index: 1;
@@ -6565,12 +6589,14 @@ nav.search-container {
   border-bottom: 2px ridge #607d8b;
 }
 nav.search-container-left {
+  display: flex;
+  flex-direction: column;
+  flex: 0.35;
   list-style: none;
   font-family: Lato;
-  height: 552px;
-  width: 25%;
+  min-height: 500px;
+  max-width: 25%;
   padding: 0;
-  margin-bottom: 14;
   margin-top: 14;
   border-right: 2px ridge #607d8b;
   border-bottom: 2px ridge #607d8b;
@@ -6588,14 +6614,13 @@ nav.search-container-left > input[type=text] {
 }
 nav.search-container > ul,
 nav.search-container-left > ul {
-  height: 500px;
+  position: absolute;
+  height: calc(100% - 50px);
   overflow-y: scroll;
 }
 div.search-container-view {
-  overflow-y: scroll;
-  overflow-x: hidden;
   padding: 10px 15px 0px 20px;
-  height: 554px;
+  flex: 1;
 }
 hr.separator {
   margin: 15 0 15 0;
@@ -6706,14 +6731,6 @@ button.directory-direct-link-button {
   width: 25px;
   height: 25px;
   background-position: 25.5%;
-}
-.directory-userlist-right-container {
-  width: 70%;
-  float: left;
-  border-bottom: 2px ridge #607d8b;
-  padding: 20 0 0 4%;
-  height: 544px;
-  overflow-y: scroll;
 }
 .inline-middle {
   display: inline-block;
@@ -6977,7 +6994,6 @@ table.comm-table tbody tr td {
   border: 1px solid #DDD;
 }
 div.users-search {
-  height: 550px;
   font-family: Lato;
 }
 div.users-search > div {
@@ -6995,11 +7011,11 @@ div.users-search > div form input[type=text] {
 }
 div.users-search > ul {
   list-style: none;
-  padding: 0 20 0 0;
+  padding: 0 20 20 0;
   border-right: 2px ridge #607d8b;
   border-bottom: 2px ridge #607d8b;
   overflow-y: scroll;
-  height: 500px;
+  max-height: 488px;
 }
 input[type=submit].check-button,
 button.check-button {
@@ -7015,7 +7031,6 @@ button.check-button:after {
   content: "✓";
 }
 div.right-content {
-  height: 564px;
   border-bottom: 2px ridge #607d8b;
   border-right: 2px ridge #607d8b;
   padding: 0px 20px;

@@ -7,7 +7,7 @@
 <!-- Structure selection menu -->
 <div ng-include="'structure-tree'"></div>
 
-<article class="side-tabs-content unpadded nine cell" ng-if="structure">
+<article class="side-tabs-content content-flex unpadded nine cell" ng-if="structure">
     <!-- Group selection menu -->
     <nav class="vertical cell search-container-left">
 
@@ -64,7 +64,7 @@
             <input class="six cell" type="text" ng-model="groupSelected.name"/>
         </div>
         <hr class="separator">
-        <nav class="vertical cell search-container-left" style="width: 40%; height: 480px; margin: 0">
+        <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">
             <select style="width: 95%"
                     ng-model="groupUsersStructure"
                     ng-init="groupUsersStructure = structure"

@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<article class="side-tabs-content nine cell" ng-if="structure || createdStructure">
+<article class="side-tabs-content content-flex nine cell" ng-if="structure || createdStructure">
 
     <!-- Structure details -->
     <div ng-if="structure && showWhat !== 'showStructureCreation'">
@@ -80,22 +80,24 @@
                 <option value="UTF-8">[[lang.translate("charset.utf8")]]</option>
                 <option value="ISO-8859-1">[[lang.translate("charset.iso88591")]]</option>
             </select>
+        </div>
+        <div class="row margin-top-5">
             <div class="three cell file-btn-container">
                 <input type="file" files-input-change ng-model="importCSVData.csv" />
                 <label>[[ importCSVData.csv && importCSVData.csv.length > 0 ? importCSVData.csv[0].name : lang.translate("choose.file") ]]</label>
             </div>
+            <button class="three cell"
+                    ng-click="importCSV(structure)"
+                    ng-disabled="!importCSVData.profile || !importCSVData.csv || importCSVData.csv.length < 1"
+                    style="margin-left: 10px; font-size: 12; padding: 2; height: 25px;">
+                [[lang.translate("directory.import")]]
+            </button>
         </div>
-        <button class="three cell margin-top-5"
-                ng-click="importCSV(structure)"
-                ng-disabled="!importCSVData.profile || !importCSVData.csv || importCSVData.csv.length < 1"
-                style="margin-left: 0%; font-size: 12; padding: 2;">
-            [[lang.translate("directory.import")]]
-        </button>
         <!-- Structure grouping -->
         <hr class="separator cell" ng-if="isCentralAdmin()">
         <div class="twelve cell" ng-if="isCentralAdmin()">
             <h3><i18n>directory.admin.attachChildStructures</i18n></h3>
-            <nav class="vertical search-container-left three cell" style="height: 380px">
+            <nav class="vertical search-container-left three cell" style="min-height: 380px; height: 380px">
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructures"/>
                 <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
                     <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | filter: filterExcludeDoubles(structure.children) | orderBy: 'name'"
