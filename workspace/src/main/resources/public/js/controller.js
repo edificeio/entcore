@@ -634,7 +634,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					notify.error(error.error);
 				})
 				.e0(function(e){
-					notify.error('file.too.large');
+					notify.error('file.too.large.max' + $scope.maxSize() + lang.translate(model.quota.unit));
 				});
 
 			loadingFile.request = request;
