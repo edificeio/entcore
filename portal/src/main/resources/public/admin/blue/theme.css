@@ -6662,37 +6662,37 @@ hr.separator {
 .icons-view .element.selected .container {
   background: #1776b2;
 }
-div.vertical_buttons_container {
+div.vertical-buttons-container {
   position: absolute;
   right: -15px;
   top: 0px;
   width: 30px;
   z-index: 100;
 }
-div.vertical_buttons_container button {
+div.vertical-buttons-container button {
   margin: 0px;
   margin-bottom: 15px;
 }
-div.vertical_buttons_container button.directory-list-glyph-button {
+div.vertical-buttons-container button.directory-list-glyph-button {
   width: 30px;
   height: 30px;
   padding: 0;
   background-image: url(/public/img/glyphicons-halflings.png);
   background-repeat: no-repeat;
 }
-div.vertical_buttons_container button.directory-list-glyph-button.filter-icon {
+div.vertical-buttons-container button.directory-list-glyph-button.filter-icon {
   background-position: 91% 104%;
 }
-div.vertical_buttons_container button.directory-list-glyph-button.silhouette-icon {
+div.vertical-buttons-container button.directory-list-glyph-button.silhouette-icon {
   background-position: 36.5% -5%;
 }
-div.vertical_buttons_container button.directory-list-glyph-button.question-mark-icon {
+div.vertical-buttons-container button.directory-list-glyph-button.question-mark-icon {
   background-position: 20% 67.5%;
 }
-div.vertical_buttons_container button.directory-list-glyph-button.plus-icon {
+div.vertical-buttons-container button.directory-list-glyph-button.plus-icon {
   background-position: -1.5% 68%;
 }
-div.vertical_buttons_container button.directory-list-sort-button {
+div.vertical-buttons-container button.directory-list-sort-button {
   width: 30px;
   height: 30px;
   padding: 0;

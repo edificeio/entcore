@@ -832,16 +832,13 @@ hr.separator{
 	background: @main;
 }
 
-div.vertical_buttons_container{
+div.vertical-buttons-container, div.horizontal-buttons-container{
+
 	position: absolute;
-	right: -15px;
-	top: 0px;
-	width: 30px;
 	z-index: 100;
 
 	button{
 		margin: 0px;
-		margin-bottom: 15px;
 	}
 
 	button.directory-list-glyph-button{
@@ -873,6 +870,25 @@ div.vertical_buttons_container{
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size: 15px 15px;
+	}
+}
+
+div.vertical-buttons-container{
+	right: -15px;
+	width: 30px;
+	top: 0px;
+
+	button{
+		margin-bottom: 15px;
+	}
+}
+div.horizontal-buttons-container{
+	left: 0px;
+  	top: -40px;
+	width: auto;
+
+	button{
+		margin-left: 5px;
 	}
 }
 
