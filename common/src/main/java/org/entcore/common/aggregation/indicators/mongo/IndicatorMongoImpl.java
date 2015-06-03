@@ -129,13 +129,27 @@ public class IndicatorMongoImpl extends Indicator{
 				}
 			}
 
-			MongoUpdateBuilder objNewQuery = new MongoUpdateBuilder();
-			//Increment the counter
-			objNewQuery.inc(writtenIndicatorKey, result.getInteger("count"));
-
-			//Write the document (increments if it already exists, else creates it)
-			mongo.update(COLLECTIONS.stats.name(), MongoQueryBuilder.build(criteriaQuery), objNewQuery.build(), true, true, synchroHandler);
+			//Perform write action
+			writeAction(criteriaQuery, result.getInteger("count"), synchroHandler);
 		}
+	}
+
+	/**
+	 * <em><b>You may override this method in order to perform a custom write action.</b></em><br>
+	 * Default write action performed on each aggregated result,
+	 * increments the MongoDB collection entry with the results count.
+	 *
+	 * @param criteriaQuery : Already built query, containing the write date, the aggregated values and the group label.
+	 * @param resultsCount : Aggregation count.
+	 * @param handler : Synchronization handler, which must be called as a continuation.
+	 */
+	protected void writeAction(MongoDBBuilder criteriaQuery, int resultsCount, Handler<Message<JsonObject>> handler){
+		mongo.update(COLLECTIONS.stats.name(),
+				MongoQueryBuilder.build(criteriaQuery),
+				new MongoUpdateBuilder().inc(writtenIndicatorKey, resultsCount).build(),
+				true,
+				true,
+				handler);
 	}
 
 	//Unwind clauses of the aggregation pipeline - useful for flattening arrays
