@@ -722,7 +722,7 @@ module.directive('scheduleItem', function($compile){
 		restrict: 'E',
 		require: '^calendar',
 		template: '<div class="schedule-item" resizable horizontal-resize-lock draggable>' +
-			'<container template="schedule-display-template"></container>' +
+			'<container template="schedule-display-template" class="absolute"></container>' +
 			'</div>',
 		controller: function($scope){
 
@@ -831,11 +831,25 @@ module.directive('scheduleItem', function($compile){
 				scope.item.calendarGutter = calendarGutter;
 				var beginningMinutesHeight = scope.item.beginning.minutes() * calendar.dayHeight / 60;
 				var endMinutesHeight = scope.item.end.minutes() * calendar.dayHeight / 60;
+				var top = (hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight;
 				scheduleItemEl.height(((hours.endTime - hours.startTime) * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
 				scheduleItemEl.css({
-					top: ((hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight) + 'px',
+					top: top + 'px',
 					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
 				});
+				var container = element.find('container')
+				if(top < 0){
+					container.css({
+						top: (Math.abs(top) - 5) + 'px'
+					});
+					container.height(element.children('.schedule-item').height() + top + 5)
+				}
+				else{
+					container.css({
+						top: 0 + 'px'
+					});
+					container.css({ height: '100%' })
+				}
 			};
 			scope.$parent.$watch('items', placeItem);
 			scope.$parent.$watchCollection('items', placeItem);

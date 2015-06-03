@@ -324,7 +324,8 @@ ui.extendElement = {
 							element.css({ top: element.position().top, left: element.position().left });
 						}
 						element.css({
-							'position': 'absolute'
+							'position': 'absolute',
+							'transition': 'none'
 						});
 
 						setTimeout(moveElement, 5);
@@ -343,6 +344,7 @@ ui.extendElement = {
 						'-moz-user-select': 'initial',
 						'user-select' : 'initial'
 					});
+					element.css('transition', '');
 					interrupt = true;
 					$('body').unbind('mouseup.drag');
 					$(window).unbind('mousemove.drag');
