@@ -375,7 +375,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showStudents : true,
 		showGuests: true,
 		showFeedModeManual: true,
-		showFeedModeAuto: true
+		showFeedModeAuto: true,
+		showLocalAdmin: false
 	}
 	$scope.toggleFilter = function(filterName){
 		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
@@ -393,11 +394,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var filterGuests 	 = user.type === 'Guest' 	 ? $scope.userFilters.showGuests 	: true
 		var filterFeedManual = user.source === "MANUAL"  ? $scope.userFilters.showFeedModeManual : true
 		var filterFeedAuto   = user.source !== "MANUAL"  ? $scope.userFilters.showFeedModeAuto : true
+		var filterLocalAdmin = $scope.userFilters.showLocalAdmin ? _.chain(user.functions).map(function(f){ return f[0]}).uniq().value().indexOf("ADMIN_LOCAL") >= 0 : true
 
         return filterByInput && (filterByClass || filterIsolated) &&
 			filterInactive && filterTeachers && filterPersonnel &&
 			filterRelative && filterStudents && filterGuests &&
-			filterFeedAuto && filterFeedManual
+			filterFeedAuto && filterFeedManual && filterLocalAdmin
 	}
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){
@@ -785,5 +787,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.mapDuplicateUser = function(duplicateUser){
 		return $scope.structure.users.findWhere({id: duplicateUser.id})
+	}
+
+	$scope.removeUserFromStructure = function(user, structure, hook){
+		new Structure(structure).unlinkUser(user, hook)
 	}
 }

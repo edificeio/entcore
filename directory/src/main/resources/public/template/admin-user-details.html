@@ -13,7 +13,7 @@
         <button class="directory-direct-link-button"></button>
     </a>
     <button ng-click="updateUser(targetUser)" class="text-flow" style="margin-bottom:5px" ng-disabled="userDetailsForm.$invalid">[[lang.translate("directory.save")]]</button>
-    <button ng-if="notCrossSearchTab()" ng-click="structure.unlinkUser(targetUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button>
+    <!--button ng-if="notCrossSearchTab()" ng-click="structure.unlinkUser(targetUser, reloadStructure(structure))" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.admin.unlink.school")]]</button-->
     <button ng-click="deleteUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
     <button ng-if="!targetUser.blocked" ng-click="targetUser.block(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.block")]]</button>
     <button ng-if="targetUser.blocked" ng-click="targetUser.unblock(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.unblock")]]</button>
@@ -110,6 +110,7 @@
         <ul class="angle-list small" style="padding-left: 5%">
             <li ng-repeat="structure in targetUser.data.structures | orderBy: 'name'">
                 <a href="[['/directory/admin-console#/structure/'+structure.id]]" target="_blank">[[structure.name]]</a>
+                <button ng-click="removeUserFromStructure(targetUser, structure, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close"></button>
             </li>
         </ul>
     </div>

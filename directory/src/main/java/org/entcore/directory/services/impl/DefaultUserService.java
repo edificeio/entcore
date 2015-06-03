@@ -224,7 +224,8 @@ public class DefaultUserService implements UserService {
 		String optionalMatch =
 			"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 			"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
-			"OPTIONAL MATCH (child: User)-[:RELATED]->u ";
+			"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
+			"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) ";
 		if (expectedProfiles != null && expectedProfiles.size() > 0) {
 			filterProfile += "AND p.name IN {expectedProfiles} ";
 			params.putArray("expectedProfiles", expectedProfiles);
@@ -283,6 +284,7 @@ public class DefaultUserService implements UserService {
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
 				"collect(distinct {id: s.id, name: s.name}) as structures, " +
 				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
+				"collect(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
 				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName}) END as children " +
 				"ORDER BY type DESC, displayName ASC ";

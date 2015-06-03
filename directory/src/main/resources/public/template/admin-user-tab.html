@@ -68,12 +68,7 @@
             <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.admin.userFilters")]]</span>
         </div>
         <ul class="selectable-list">
-            <li ng-class="{selected : userFilters.showIsolated}" ng-click="toggleFilter('showIsolated')">
-                [[lang.translate("directory.admin.showIsolated")]]
-            </li>
-            <li ng-class="{selected : userFilters.showInactive}" ng-click="toggleFilter('showInactive')">
-                [[lang.translate("directory.admin.showInactive")]]
-            </li>
+            <h3><i18n>directory.admin.profile</i18n></h3>
             <li ng-class="{selected : userFilters.showTeachers}" ng-click="toggleFilter('showTeachers')">
                 [[lang.translate("directory.admin.showTeachers")]]
             </li>
@@ -83,17 +78,28 @@
             <li ng-class="{selected : userFilters.showRelative}" ng-click="toggleFilter('showRelative')">
                 [[lang.translate("directory.admin.showRelative")]]
             </li>
-            <li ng-class="{selected : userFilters.showGuests}" ng-click="toggleFilter('showGuests')">
-                [[lang.translate("directory.admin.showGuests")]]
-            </li>
             <li ng-class="{selected :userFilters.showStudents}" ng-click="toggleFilter('showStudents')">
                 [[lang.translate("directory.admin.showStudents")]]
             </li>
+            <li ng-class="{selected : userFilters.showGuests}" ng-click="toggleFilter('showGuests')">
+                [[lang.translate("directory.admin.showGuests")]]
+            </li>
+            <h3><i18n>origin</i18n></h3>
             <li ng-class="{selected :userFilters.showFeedModeManual}" ng-click="toggleFilter('showFeedModeManual')">
                 [[lang.translate("directory.admin.showFeedModeManual")]]
             </li>
             <li ng-class="{selected :userFilters.showFeedModeAuto}" ng-click="toggleFilter('showFeedModeAuto')">
                 [[lang.translate("directory.admin.showFeedModeAuto")]]
+            </li>
+            <h3><i18n>properties</i18n></h3>
+            <li ng-class="{selected : userFilters.showLocalAdmin}" ng-click="toggleFilter('showLocalAdmin')">
+                [[lang.translate("directory.admin.showLocalAdmin")]]
+            </li>
+            <li ng-class="{selected : userFilters.showIsolated}" ng-click="toggleFilter('showIsolated')">
+                [[lang.translate("directory.admin.showIsolated")]]
+            </li>
+            <li ng-class="{selected : userFilters.showInactive}" ng-click="toggleFilter('showInactive')">
+                [[lang.translate("directory.admin.showInactive")]]
             </li>
         </ul>
     </div>
