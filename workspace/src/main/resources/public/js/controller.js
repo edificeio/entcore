@@ -135,7 +135,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.maxSize = function(){
 		var leftOvers = model.quota.max - model.quota.used;
-		if(model.quota.unit === 'mb'){
+		if(model.quota.unit === 'gb'){
 			leftOvers *= 1000;
 		}
 		if(leftOvers > 50){
@@ -634,7 +634,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					notify.error(error.error);
 				})
 				.e0(function(e){
-					notify.error('file.too.large.max' + $scope.maxSize() + lang.translate(model.quota.unit));
+					notify.error(lang.translate('file.too.large.max') + $scope.maxSize() + lang.translate(model.quota.unit));
 				});
 
 			loadingFile.request = request;
