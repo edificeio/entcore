@@ -133,6 +133,17 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.folderTreeTemplate = 'folder-content';
 	$scope.quota = model.quota;
 
+	$scope.maxSize = function(){
+		var leftOvers = model.quota.max - model.quota.used;
+		if(model.quota.unit === 'mb'){
+			leftOvers *= 1000;
+		}
+		if(leftOvers > 50){
+			leftOvers = 50;
+		}
+		return leftOvers;
+	};
+
 	function formatDocuments(documents, callback){
 		documents = _.filter(documents, function(doc){
 			return doc.metadata['content-type'] !== 'application/json' &&
@@ -617,9 +628,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 					}
 
 					model.quota.sync();
-				}).e400(function(e){
+				})
+				.e400(function(e){
 					var error = JSON.parse(e.responseText);
 					notify.error(error.error);
+				})
+				.e0(function(e){
+					notify.error('file.too.large');
 				});
 
 			loadingFile.request = request;
