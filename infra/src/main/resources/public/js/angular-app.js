@@ -4510,12 +4510,31 @@ $(document).ready(function(){
 			model.build();
 
 			lang.addDirectives(module);
-			lang.addBundle('/i18n', function(){
-				lang.addBundle('/' + appPrefix + '/i18n', function(){
-					angular.bootstrap($('html'), ['app']);
-					model.sync();
+
+			function start(){
+				lang.addBundle('/i18n', function(){
+					lang.addBundle('/' + appPrefix + '/i18n', function(){
+						angular.bootstrap($('html'), ['app']);
+						model.sync();
+					});
 				});
-			});
+			}
+
+			loader.openFile({
+				url: skin.basePath + 'js/directives.js',
+				success: function(){
+					if(typeof skin.addDirectives === 'function'){
+						skin.addDirectives(module, start);
+					}
+					else{
+						start();
+					}
+				},
+				error: function(){
+					start();
+				}
+			})
+
 		});
 	}, 10);
 });
