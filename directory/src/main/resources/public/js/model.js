@@ -320,7 +320,7 @@ function Directory(){
 			return this.all;
 		},
 		searchDirectory: function(search, filters){
-			var searchTerm = lang.removeAccents(search).toLowerCase();
+			var searchTerm = encodeURIComponent(search.toLowerCase());
 			var structure = filters.structure ? filters.structure : "";
 			var profile = filters.profile ? filters.profile : "";
 			this.loading = true;
