@@ -56,6 +56,7 @@
     "mail.reset.pw.subject": "Réinitialisation de votre mot de passe",
     "missing.password": "Mot de passe oublié",
     "missing.id": "Identifiant oublié",
+    "need.help": "Besoin d'aide ?",
     "reset.error": "Erreur durant la réinitialisation",
     "show.password": "Afficher le mot de passe",
     "complexity": "Sécurité",

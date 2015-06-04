@@ -60,11 +60,8 @@
 				</p>
 				<p>
 					<input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
+					<a href="/auth/forgot#/password"><small translate content="need.help"></small></a>
 				</p>
-				<ul class="cell">
-					<li><a href="/auth/forgot#/password"><small translate content="missing.password"></small></a></li>
-					<li><a href="/auth/forgot#/id"><small translate content="missing.id"></small></a></li>
-				</ul>
 				<input type="hidden" name="callBack" ng-value="callBack" />
 				<input type="submit" translate attr="value" value="auth.login" tabindex=3 />
 				<div class="clear"></div>
