@@ -36,7 +36,7 @@ function Launcher(countdown, action){
 
 function User(data){
 	this.toString = function(){
-		return (this.displayName || '') + (this.name || '');
+		return (this.displayName || '') + (this.name || '') + (this.profile ? ' ('+lang.translate(this.profile)+')' : '')
 	};
 
 	this.findData = function(cb){

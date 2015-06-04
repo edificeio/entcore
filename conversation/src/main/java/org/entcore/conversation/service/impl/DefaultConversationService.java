@@ -642,8 +642,9 @@ public class DefaultConversationService implements ConversationService {
 							"MATCH (app:Application)-[:PROVIDE]->(a:Action)<-[:AUTHORIZE]-(r:Role)" +
 							"<-[:AUTHORIZED]-(pg:Group)<-[:IN]-(u:User) " +
 							replyUserQuery + "AND app.name = {conversation} " +
-							"RETURN DISTINCT u.id as id, u.displayName as displayName";
-					findVisibleUsers(eb, user.getUserId(), true, false, users, params, new Handler<JsonArray>() {
+							"RETURN DISTINCT u.id as id, u.displayName as displayName, " +
+							"CASE labels(visibles)[0] WHEN 'User' THEN profile.name ELSE NULL END as profile";
+					findVisibleUsers(eb, user.getUserId(), true, true, users, params, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibleUsers) {
 							visible.putArray("users", visibleUsers);
@@ -657,8 +658,9 @@ public class DefaultConversationService implements ConversationService {
 			String groups =
 					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName";
-			findVisibles(eb, user.getUserId(), groups, params, true, true, false, new Handler<JsonArray>() {
+					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+					"CASE labels(visibles)[0] WHEN 'User' THEN profile.name ELSE NULL END as profile";
+			findVisibles(eb, user.getUserId(), groups, params, true, true, true, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
 					JsonArray users = new JsonArray();

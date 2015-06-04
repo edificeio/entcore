@@ -88,12 +88,12 @@ public abstract class GenericShareService implements ShareService {
 				new JsonArray(groupCheckedActions.getFieldNames().toArray()));
 		final String q2 =
 				"RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, " +
-				"visibles.lastName as lastName, visibles.firstName as firstName " +
+				"visibles.lastName as lastName, visibles.firstName as firstName, visibles.profiles[0] as profile " +
 				"ORDER BY username " +
 				"UNION " +
 				"MATCH (u:User) WHERE u.id in {userIds} " +
 				"RETURN distinct u.id as id, u.login as login, u.displayName as username, " +
-				"u.lastName as lastName, u.firstName as firstName " +
+				"u.lastName as lastName, u.firstName as firstName, u.profiles[0] as profile  " +
 				"ORDER BY username ";
 		final JsonObject params2 = new JsonObject().putArray("userIds",
 				new JsonArray(userCheckedActions.getFieldNames().toArray()));
@@ -108,7 +108,7 @@ public abstract class GenericShareService implements ShareService {
 					JsonObject group = (JsonObject) u;
 					UserUtils.groupDisplayName(group, acceptLanguage);
 				}
-				findVisibleUsers(eb, userId, false, q2, params2, new Handler<JsonArray>() {
+				findVisibleUsers(eb, userId, true, q2, params2, new Handler<JsonArray>() {
 					@Override
 					public void handle(JsonArray visibleUsers) {
 						JsonObject users = new JsonObject();
