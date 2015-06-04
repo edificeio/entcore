@@ -4493,7 +4493,7 @@ module.directive('help', function(){
 		restrict: 'E',
 		scope: {},
 		template: '<i class="help"></i>' +
-		'<lightbox show="display.read" on-close="display.read = false"><iframe src="http://opendigitaleducation.com/application/' + appPrefix + '/?iframe=true"></iframe></lightbox>',
+		'<lightbox show="display.read" on-close="display.read = false"><iframe src="https://opendigitaleducation.com/application/' + appPrefix + '/?iframe=true"></iframe></lightbox>',
 		link: function(scope, element, attributes){
 			scope.display = {};
 			element.children('i.help').on('click', function(){
