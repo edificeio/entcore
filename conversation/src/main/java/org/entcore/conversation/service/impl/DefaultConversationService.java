@@ -509,7 +509,7 @@ public class DefaultConversationService implements ConversationService {
 		final String getMessageWithAttachments =
 				"MATCH (a: MessageAttachment)<-[aLink:HAS_ATTACHMENT]-(m:ConversationMessage)<-[r:HAD_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
 				"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} AND a.id IN r.attachments ";
+				"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND f.name = {trash} ";
 
 		String prepareMessage =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
@@ -521,6 +521,7 @@ public class DefaultConversationService implements ConversationService {
 
 		String getAllAttachments =
 				getMessageWithAttachments +
+				"AND a.id IN r.attachments " +
 				"RETURN collect({id: a.id, size: a.size}) as attachments";
 
 		String deleteAndCollectAttachments =
@@ -948,24 +949,30 @@ public class DefaultConversationService implements ConversationService {
 			"MATCH (trashedFolder)-[childrenPath: HAS_CHILD_FOLDER*0.."+(maxFolderDepth-1)+"]->(children: ConversationUserFolder) " +
 			"MATCH (children)<-[i: INSIDE]-(messages: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(trashFolder) " +
 			"OPTIONAL MATCH (messages)-[pr: PARENT_CONVERSATION_MESSAGE]-() " +
-			"CREATE (trashFolder)-[:HAD_CONVERSATION_MESSAGE]->(messages) " +
+			"CREATE (trashFolder)-[:HAD_CONVERSATION_MESSAGE { attachments: r.attachments }]->(messages) " +
 			"DELETE r, i";
 
 		String gatherAttachmentsToDelete =
-			"MATCH (c: Conversation)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder)-[:HAD_CONVERSATION_MESSAGE]->(messages: ConversationMessage) " +
+			"MATCH (c: Conversation)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder)-[r:HAD_CONVERSATION_MESSAGE]->(messages: ConversationMessage) " +
 			"WHERE c.userId = {userId} AND c.active = {true} AND trashFolder.name = {trash} " +
 			"AND NOT (messages)<-[:HAS_CONVERSATION_MESSAGE]-() " +
 			"MATCH (messages)-[al: HAS_ATTACHMENT]->(a: MessageAttachment) " +
-			"WITH collect({id: a.id, size: a.size}) as attachments " +
+			"MATCH (a)<-[aLinks:HAS_ATTACHMENT]-(target) " +
+			"WITH a, count(target) as links " +
+			"WHERE links = 1 " +
+			"MATCH (a)<-[l:HAS_ATTACHMENT]-(target) " +
+			"WITH collect({id: a.id, size: a.size}) as attachments, l, a " +
+			"DELETE l, a " +
 			"RETURN attachments";
 
 		String deleteMessages =
-			"MATCH (c: Conversation)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder)-[r: HAD_CONVERSATION_MESSAGE]->(messages: ConversationMessage) " +
+			"MATCH (c: Conversation)-[:HAS_CONVERSATION_FOLDER]->(trashFolder: ConversationSystemFolder)-[:HAD_CONVERSATION_MESSAGE]->(messages: ConversationMessage) " +
+			"MATCH (messages)-[r:HAD_CONVERSATION_MESSAGE]-() " +
 			"WHERE c.userId = {userId} AND c.active = {true} AND trashFolder.name = {trash} " +
 			"AND NOT (messages)-[:HAS_CONVERSATION_MESSAGE]-() " +
 			"OPTIONAL MATCH (messages)-[pr: PARENT_CONVERSATION_MESSAGE]-() " +
 			"OPTIONAL MATCH (messages)-[al: HAS_ATTACHMENT]->(a: MessageAttachment) " +
-			"DELETE r, pr, al, a, messages";
+			"DELETE r, pr, al, messages";
 
 		String deleteFolders =
 			"MATCH (c: Conversation)-[trashedRel: TRASHED_CONVERSATION_FOLDER]->(trashedFolder: ConversationUserFolder)" +
