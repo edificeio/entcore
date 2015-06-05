@@ -22,7 +22,7 @@
 <article class="side-tabs-content content-flex nine cell" ng-if="structure || createdStructure">
 
     <!-- Structure details -->
-    <div ng-if="structure && showWhat !== 'showStructureCreation'">
+    <div class="twelve" ng-if="structure && showWhat !== 'showStructureCreation'">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1></div>
         <hr class="separator cell">
         <div style="text-align:center">
@@ -149,7 +149,7 @@
     </div>
 
     <!-- Structure creation -->
-    <div ng-if="showWhat === 'showStructureCreation'">
+    <div class="twelve"  ng-if="showWhat === 'showStructureCreation'">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdStructure.name ? createdStructure.name : lang.translate("directory.structure")]]</h1></div>
         <hr class="separator">
         <div style="text-align:center">
