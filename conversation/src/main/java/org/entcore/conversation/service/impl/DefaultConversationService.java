@@ -1053,24 +1053,32 @@ public class DefaultConversationService implements ConversationService {
 	public void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result) {
 		if(validationParamsError(user, result, messageId, attachmentId)) return;
 
-		String query =
-			"MATCH (attachment: MessageAttachment)<-[: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
+		String get =
+			"MATCH (attachment: MessageAttachment)<-[aLink: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments " +
+			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments ";
+
+		String query =
+			get +
 			"SET r.attachments = filter(attachmentId IN r.attachments WHERE attachmentId <> {attachmentId}) " +
 			"WITH attachment, attachment.id as fileId, attachment.size as fileSize " +
-			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
-			"WITH fileId, fileSize, none(item IN collect(messageLinks.attachments) WHERE fileId IN item) as deletionCheck " +
-			"RETURN deletionCheck, fileId, fileSize";
+			"RETURN fileId, fileSize";
 
 		String q2 =
-			"MATCH (attachment: MessageAttachment)<-[: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
-			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
-			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} " +
+			get +
+			"AND length(r.attachments) = 0 " +
+			"DELETE r";
+
+		String q3 =
+			get +
 			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
 			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
-			"DELETE attachmentLink, attachment";
+			"DELETE attachmentLink " +
+			"WITH attachment " +
+			"WHERE NOT(attachment-[:HAS_ATTACHMENT]-()) " +
+			"DELETE attachment " +
+			"RETURN true as deletionCheck";
 
 		JsonObject params = new JsonObject()
 			.putString("userId", user.getUserId())
@@ -1081,6 +1089,7 @@ public class DefaultConversationService implements ConversationService {
 		StatementsBuilder b = new StatementsBuilder();
 		b.add(query, params);
 		b.add(q2, params);
+		b.add(q3, params);
 
 		neo.executeTransaction(b.build(), null, true, validResultsHandler(new Handler<Either<String, JsonArray>>() {
 			@Override
@@ -1089,7 +1098,18 @@ public class DefaultConversationService implements ConversationService {
 					result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
 					return;
 				}
-				result.handle(new Either.Right<String, JsonObject>((JsonObject) ((JsonArray) event.right().getValue().get(0)).get(0)));
+
+				JsonArray result1 = (JsonArray) event.right().getValue().get(0);
+				JsonArray result3 = (JsonArray) event.right().getValue().get(2);
+
+				JsonObject jsonResult = result1.size() > 0 ?
+						(JsonObject) result1.get(0) :
+						new JsonObject();
+				jsonResult.putBoolean("deletionCheck", result3.size() > 0 ?
+							((JsonObject) result3.get(0)).getBoolean("deletionCheck", false) :
+							false);
+
+				result.handle(new Either.Right<String, JsonObject>(jsonResult));
 			}
 		}));
 	}
