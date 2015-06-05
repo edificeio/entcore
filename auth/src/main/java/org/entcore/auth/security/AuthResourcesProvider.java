@@ -21,7 +21,7 @@ package org.entcore.auth.security;
 
 import fr.wseduc.webutils.http.Binding;
 
-import org.entcore.auth.AuthController;
+import org.entcore.auth.controllers.AuthController;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.DefaultFunctions;

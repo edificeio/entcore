@@ -156,6 +156,7 @@ public class UserInfos {
 	private List<String> classes;
 	private List<String> structures;
 	private Map<String, Object> cache;
+	private Boolean federated;
 
 	public Map<String, Function> getFunctions() {
 		return functions;
@@ -327,6 +328,14 @@ public class UserInfos {
 
 	public void setChildrenIds(List<String> childrenIds) {
 		this.childrenIds = childrenIds;
+	}
+
+	public Boolean getFederated() {
+		return federated;
+	}
+
+	public void setFederated(Boolean federated) {
+		this.federated = federated;
 	}
 
 }

@@ -167,6 +167,7 @@ User.prototype.loadInfos = function(){
 			this.loadVisibility();
 		}
 		this.updateData(data);
+		this.trigger('loadInfos');
 	}.bind(this));
 };
 
@@ -174,6 +175,18 @@ User.prototype.load = function(){
 	this.loadInfos();
 	if(this.edit.userbook){
 		this.loadUserbook();
+	}
+	if(model.me.federated){
+		model.account.on('loadInfos', this.loadFederatedAddress);
+	}
+};
+
+User.prototype.loadFederatedAddress = function(){
+	if(model.me.federated){
+		http().get('/directory/conf/public').done(function(conf){
+			this.federatedAddress = conf.federatedAddress[model.account.federatedIDP];
+			this.trigger('change');
+		}.bind(this))
 	}
 };
 

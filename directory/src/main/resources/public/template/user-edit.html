@@ -36,9 +36,10 @@
 				<em class="seven cell">[[account.login]]</em>
 			</div>
 			<div class="row" ng-if="account.id === me.userId">
-				<label translate content="userBook.profile.password" class="four cell"></label>
+				<label class="four cell"><i18n>userBook.profile.password</i18n></label>
 				<em class="eight cell">
-					<a data-ng-click="openPasswordDialog()" translate content="change.password"></a>
+					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
 				</em>
 			</div>
 			<div class="row">

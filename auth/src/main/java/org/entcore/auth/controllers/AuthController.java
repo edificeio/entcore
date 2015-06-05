@@ -17,7 +17,7 @@
  *
  */
 
-package org.entcore.auth;
+package org.entcore.auth.controllers;
 
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
@@ -46,7 +46,6 @@ import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
 
@@ -73,14 +72,12 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
-import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 
 import fr.wseduc.webutils.request.CookieHelper;
@@ -100,7 +97,7 @@ public class AuthController extends BaseController {
 	private static final Tracer trace = TracerFactory.getTracer("auth");
 	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
-	private enum AuthEvent { ACTIVATION, LOGIN }
+	public enum AuthEvent { ACTIVATION, LOGIN }
 	private Pattern passwordPattern;
 
 	@Override
@@ -119,8 +116,6 @@ public class AuthController extends BaseController {
 		protectedResource = new ProtectedResource();
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		userAuthAccount = new DefaultUserAuthAccount(vertx, container);
-		eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		passwordPattern = Pattern.compile(container.config().getString("passwordRegex", ".{8}.*"));
 	}
 
@@ -797,6 +792,14 @@ public class AuthController extends BaseController {
 				}
 			}
 		});
+	}
+
+	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
+		this.userAuthAccount = userAuthAccount;
+	}
+
+	public void setEventStore(EventStore eventStore) {
+		this.eventStore = eventStore;
 	}
 
 }

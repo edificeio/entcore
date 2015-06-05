@@ -53,6 +53,10 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		String profile = detectProfile(object);
 		object.putArray("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
+		String email = object.getString("email");
+		if (email != null && !email.trim().isEmpty()) {
+			object.putString("emailAcademy", email);
+		}
 		importer.createOrUpdatePersonnel(object, profile, null, null, null, true, false);
 	}
 

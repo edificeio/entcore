@@ -56,6 +56,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.removeField("classNames");
 			JsonArray structureNames = filteredInfos.getArray("structureNames");
 			filteredInfos.removeField("structureNames");
+			filteredInfos.removeField("federated");
 			if (classNames != null && classNames.size() > 0) {
 				filteredInfos.putString("classId", classNames.<String>get(0));
 			}
