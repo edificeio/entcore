@@ -3684,7 +3684,7 @@ module.directive('datePicker', function($compile){
 			});
 
 			$('body, lightbox').on('click', function(e){
-				if(element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0){
+				if(e.originalEvent && (element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0)){
 					return;
 				}
 				element.datepicker('hide');
