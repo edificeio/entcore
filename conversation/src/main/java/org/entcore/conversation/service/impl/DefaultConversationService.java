@@ -217,10 +217,11 @@ public class DefaultConversationService implements ConversationService {
 		if (validationParamsError(user, result, messageId)) return;
 
 		String attachmentsRetrieval =
-			"MATCH (message:ConversationMessage)<-[:HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder)" +
+			"MATCH (message:ConversationMessage)<-[link:HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder)" +
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 			"WHERE message.id = {messageId} AND message.state = {draft} AND message.from = {userId} AND c.userId = {userId} AND c.active = {true} " +
 			"OPTIONAL MATCH (message)-[:HAS_ATTACHMENT]->(a: MessageAttachment) " +
+			"WHERE a.id IN link.attachments " +
 			"WITH CASE WHEN a IS NULL THEN [] ELSE collect({id: a.id, size: a.size}) END as attachments " +
 			"RETURN attachments";
 
@@ -1067,11 +1068,11 @@ public class DefaultConversationService implements ConversationService {
 		String q2 =
 			get +
 			"AND length(r.attachments) = 0 " +
-			"DELETE r";
+			"DELETE aLink";
 
 		String q3 =
-			get +
 			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
+			"WHERE attachment.id = {attachmentId} " +
 			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
 			"DELETE attachmentLink " +
