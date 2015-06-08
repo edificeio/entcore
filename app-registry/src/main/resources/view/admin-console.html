@@ -116,9 +116,10 @@
                         </div>
                         <div class="row">
                             <label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
-                            <select class="four cell">
-                                <option>[[lang.translate("appregistry.code")]]</option>
-                                <option>[[lang.translate("appregistry.clientId")]]</option>
+                            <select class="four cell" ng-model="application.grantType">
+                                <option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
+                                <option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
+                                <option value="Basic">[[lang.translate("appregistry.basic")]]</option>
                             </select>
                         </div>
                     </div>
