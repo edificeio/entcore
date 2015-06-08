@@ -24,6 +24,9 @@
 		<script type="text/javascript">
 			window.resetCode = '{{resetCode}}';
 		</script>
+       {{#notLoggedIn}}
+       <script type="text/javascript">var notLoggedIn = true;</script>
+       {{/notLoggedIn}}
 		<title>{{#i18n}}auth.reset.title{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>

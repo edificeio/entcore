@@ -194,8 +194,8 @@ public class AuthController extends BaseController {
 		});
 	}
 
-	private void loginResult(HttpServerRequest request, String error, String callBack) {
-		JsonObject context = new JsonObject();
+	private void loginResult(final HttpServerRequest request, String error, String callBack) {
+		final JsonObject context = new JsonObject();
 		if (callBack != null && !callBack.trim().isEmpty()) {
 			try {
 				context.putString("callBack", URLEncoder.encode(callBack, "UTF-8"));
@@ -207,12 +207,18 @@ public class AuthController extends BaseController {
 			context.putObject("error", new JsonObject()
 					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
 		}
-		renderView(request, context, "login.html", null);
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				context.putBoolean("notLoggedIn", user == null);
+				renderView(request, context, "login.html", null);
+			}
+		});
 	}
 
 	@Get("/context")
 	public void context(final HttpServerRequest request) {
-		JsonObject context = new JsonObject();
+		final JsonObject context = new JsonObject();
 		context.putString("callBack", container.config().getObject("authenticationServer").getString("loginCallback"));
 		context.putBoolean("cgu", container.config().getBoolean("cgu", true));
 		context.putString("passwordRegex", passwordPattern.toString());
@@ -285,13 +291,20 @@ public class AuthController extends BaseController {
 								public void handle(Boolean passIsActivationCode) {
 									if(passIsActivationCode){
 										trace.info("Code d'activation entré pour l'utilisateur " + login);
-										JsonObject json = new JsonObject();
+										final JsonObject json = new JsonObject();
 										json.putString("activationCode", password);
 										json.putString("login", login);
 										if (container.config().getBoolean("cgu", true)) {
 											json.putBoolean("cgu", true);
 										}
-										renderView(request, json, "activation.html", null);
+										UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+											@Override
+											public void handle(UserInfos user) {
+												json.putBoolean("notLoggedIn", user == null);
+												renderView(request, json, "activation.html", null);
+											}
+										});
+
 									} else {
 										trace.info("Erreur de connexion pour l'utilisateur " + login);
 										loginResult(request, "auth.error.authenticationFailed", c);
@@ -420,8 +433,8 @@ public class AuthController extends BaseController {
 	}
 
 	@Get("/activation")
-	public void activeAccount(HttpServerRequest request) {
-		JsonObject json = new JsonObject();
+	public void activeAccount(final HttpServerRequest request) {
+		final JsonObject json = new JsonObject();
 		if (request.params().contains("activationCode")) {
 			json.putString("activationCode", request.params().get("activationCode"));
 		}
@@ -431,7 +444,13 @@ public class AuthController extends BaseController {
 		if (container.config().getBoolean("cgu", true)) {
 			json.putBoolean("cgu", true);
 		}
-		renderView(request, json);
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				json.putBoolean("notLoggedIn", user == null);
+				renderView(request, json);
+			}
+		});
 	}
 
 	@Post("/activation")
@@ -519,14 +538,28 @@ public class AuthController extends BaseController {
 	}
 
 	@Get("/forgot")
-	public void forgotPassword(HttpServerRequest request) {
-		renderView(request);
+	public void forgotPassword(final HttpServerRequest request) {
+		final JsonObject context = new JsonObject();
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				context.putBoolean("notLoggedIn", user == null);
+				renderView(request, context);
+			}
+		});
 	}
 
 	@Get("/upgrade")
-    	public void upgrade(HttpServerRequest request) {
-    		renderView(request);
-    	}
+	public void upgrade(final HttpServerRequest request) {
+		final JsonObject context = new JsonObject();
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				context.putBoolean("notLoggedIn", user == null);
+				renderView(request, context);
+			}
+		});
+	}
 
 	@Post("/forgot")
 	public void forgotPasswordSubmit(final HttpServerRequest request) {
@@ -645,6 +678,7 @@ public class AuthController extends BaseController {
 					"changePassword.html", null);
 				} else {
 					renderView(request, params
+					.putBoolean("notLoggedIn", user == null)
 					.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
 				}
 			}
@@ -729,7 +763,14 @@ public class AuthController extends BaseController {
 
 	@Get("/cgu")
 	public void cgu(final HttpServerRequest request) {
-		renderView(request);
+		final JsonObject context = new JsonObject();
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				context.putBoolean("notLoggedIn", user == null);
+				renderView(request, context);
+			}
+		});
 	}
 
 	@Delete("/sessions")

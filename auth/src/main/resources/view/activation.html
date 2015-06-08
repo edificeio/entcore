@@ -22,6 +22,9 @@
 <html>
 	<head>
 		<title>{{#i18n}}auth.activation.title{{/i18n}}</title>
+       {{#notLoggedIn}}
+       <script type="text/javascript">var notLoggedIn = true;</script>
+       {{/notLoggedIn}}
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>
 		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
