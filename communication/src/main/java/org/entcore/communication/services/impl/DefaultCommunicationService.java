@@ -490,7 +490,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
 					+ "m.login as login, m.displayName as username, ").append(pr)
-					.append("m.lastName as lastName, m.firstName as firstName "
+					.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 							+ "ORDER BY name, username ");
 		}
 		params.putString("userId", userId);
