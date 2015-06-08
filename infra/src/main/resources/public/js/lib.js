@@ -1588,19 +1588,18 @@ var sniplets = {
 };
 
 function bootstrap(func){
+	if(window.notLoggedIn){
+		Behaviours.loadBehaviours(appPrefix, function(){
+			skin.loadDisconnected();
+			func();
+		})
+		.error(function(){
+			skin.loadDisconnected();
+			func();
+		});
+		return;
+	}
 	http().get('/auth/oauth2/userinfo').done(function(data){
-		if(typeof data !== 'object'){
-			Behaviours.loadBehaviours(appPrefix, function(){
-				skin.loadDisconnected();
-				func();
-			})
-			.error(function(){
-				skin.loadDisconnected();
-				func();
-			});
-			return;
-		}
-
 		skin.loadConnected();
 		model.me = data;
 		model.me.preferences = {
