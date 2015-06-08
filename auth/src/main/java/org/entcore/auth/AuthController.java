@@ -220,8 +220,8 @@ public class AuthController extends BaseController {
 		renderJson(request, context);
 	}
 
-	private void viewLogin(HttpServerRequest request, String error, String callBack) {
-		JsonObject context = new JsonObject();
+	private void viewLogin(final HttpServerRequest request, String error, String callBack) {
+		final JsonObject context = new JsonObject();
 		if (callBack != null && !callBack.trim().isEmpty()) {
 			try {
 				context.putString("callBack", URLEncoder.encode(callBack, "UTF-8"));
@@ -233,7 +233,13 @@ public class AuthController extends BaseController {
 			context.putObject("error", new JsonObject()
 					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
 		}
-		renderView(request, context, "login.html", null);
+		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				context.putBoolean("notLoggedIn", user == null);
+				renderView(request, context, "login.html", null);
+			}
+		});
 	}
 
 	@Get("/login")

@@ -26,6 +26,9 @@
 		<script type="text/javascript" src="{{#infra}}js/loader.js{{/infra}}" id="context"></script>
 		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+        {{#notLoggedIn}}
+        <script type="text/javascript">var notLoggedIn = true;</script>
+        {{/notLoggedIn}}
 	</head>
 	<body ng-controller="LoginController"
 		  ng-init='error = "{{error.message}}"; callBack = "{{callBack}}"'>
