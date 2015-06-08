@@ -31,7 +31,7 @@ routes.define(function($routeProvider) {
 		})
 });
 
-function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template, model){
+function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template, model, lang){
 
 	route({
 		viewFolder: function(params){
@@ -75,6 +75,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		}
 	});
 
+	$scope.lang = lang;
+	$scope.model = model;
 	$scope.newFile = { name: lang.translate('nofile'), chosenFiles: [] };
 	$scope.display = {};
 	$scope.template = template;
@@ -133,16 +135,30 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.folderTreeTemplate = 'folder-content';
 	$scope.quota = model.quota;
 
+	$scope.maxFileSize = 52428800
+
 	$scope.maxSize = function(){
 		var leftOvers = model.quota.max - model.quota.used;
 		if(model.quota.unit === 'gb'){
 			leftOvers *= 1000;
 		}
+		/*
 		if(leftOvers > 50){
 			leftOvers = 50;
 		}
+		*/
 		return leftOvers;
 	};
+
+	$scope.totalFilesSize = function(fileList){
+		var size = 0
+		if(!fileList.files)
+			return size
+		for(var i = 0; i < fileList.files.length; i++){
+			size += fileList.files[i].size
+		}
+		return size
+	}
 
 	function formatDocuments(documents, callback){
 		documents = _.filter(documents, function(doc){
@@ -629,12 +645,15 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 					model.quota.sync();
 				})
-				.e400(function(e){
-					var error = JSON.parse(e.responseText);
-					notify.error(error.error);
+				.e413(function(e){
+					$scope.loadingFiles.splice($scope.loadingFiles.indexOf(loadingFile), 1);
+					notify.error(lang.translate('file.too.large.limit') + ($scope.maxFileSize/1024/1024) + lang.translate('mb'));
+					$scope.$apply();
 				})
-				.e0(function(e){
+				.e400(function(e){
+					$scope.loadingFiles.splice($scope.loadingFiles.indexOf(loadingFile), 1);
 					notify.error(lang.translate('file.too.large.max') + $scope.maxSize() + lang.translate(model.quota.unit));
+					$scope.$apply();
 				});
 
 			loadingFile.request = request;

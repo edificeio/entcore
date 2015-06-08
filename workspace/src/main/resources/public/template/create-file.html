@@ -51,13 +51,24 @@
 		</div>
 	</div>
 	<div class="row">
-    <div class="twelve cell">
-      <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
-        <div class="warning" translate content="files.warning.identical"></div>
-      </div>
-      <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()"><i18n>confirm</i18n></button>
-      <button ng-click="addLoadingFiles()" class="right-magnet" ng-disabled="newFile.blockIdentical"><i18n>import.file</i18n></button>
-			<button class="cancel right-magnet" translate content="terminate"></button>
-		</div>
+        <div class="twelve cell reduce-block-eight">
+            <div ng-if="newFile.blockIdentical && newFile.warnIdentical">
+                <div class="warning" translate content="files.warning.identical"></div>
+            </div>
+            <div ng-if="totalFilesSize(newFile) >= maxFileSize">
+                <div class="warning">[[lang.translate('file.too.large.limit') + (maxFileSize/1024/1024) + lang.translate('mb')]]</div>
+            </div>
+            <div ng-if="!(totalFilesSize(newFile) >= maxFileSize) && totalFilesSize(newFile) >= (maxSize() * 1024 * 1024)">
+                <div class="warning">[[lang.translate('file.too.large.max') + maxSize() + lang.translate(model.quota.unit)]]</div>
+            </div>
+        </div>
+        <div class="twelve cell">
+            <button ng-if="newFile.blockIdentical && newFile.warnIdentical" ng-click="confirmIdentical()"><i18n>confirm</i18n></button>
+            <button ng-click="addLoadingFiles()" class="right-magnet"
+                    ng-disabled="newFile.blockIdentical || totalFilesSize(newFile) >= maxFileSize || totalFilesSize(newFile) >= (maxSize() * 1024 * 1024)">
+                <i18n>import.file</i18n>
+            </button>
+            <button class="cancel right-magnet" translate content="terminate"></button>
+    	</div>
 	</div>
 </form>

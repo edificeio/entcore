@@ -32,7 +32,7 @@
     "e404": "Adresse introuvable",
     "e404.page": "Ce contenu n'existe pas ou a été supprimé, vous ne pouvez plus le consulter.",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
-    "e413": "Ce fichier est trop gros",
+    "e413": "Espace insuffisant pour stocker le fichier.",
     "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "edit": "Modifier",
     "file.heavy": "Fichier lourd",
