@@ -102,6 +102,25 @@ public class Structure {
 		getTransaction().add(query, params);
 	}
 
+
+	public synchronized Object[] addJointure(String externalId) {
+		if (struct != null) {
+			JsonArray joinKey = struct.getArray("joinKey");
+			if (joinKey == null) {
+				joinKey = new JsonArray();
+				struct.putArray("joinKey", joinKey);
+			}
+			joinKey.add(externalId);
+			String query =
+					"MATCH (s:Structure {externalId: {externalId}}) " +
+					"SET s.joinKey = {joinKey} ";
+			JsonObject params = new JsonObject().putArray("joinKey", joinKey).putString("externalId", getExternalId());
+			getTransaction().add(query, params);
+			return joinKey.toArray();
+		}
+		return null;
+	}
+
 	public void addAttachment() {
 		JsonArray functionalAttachment = struct.getArray("functionalAttachment");
 		if (functionalAttachment != null && functionalAttachment.size() > 0 &&

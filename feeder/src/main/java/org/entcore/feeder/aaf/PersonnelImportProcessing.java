@@ -119,9 +119,10 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (g.length == 2) {
 					Structure s = importer.getStructure(g[0]);
 					if (s != null) {
-						s.createFunctionalGroupIfAbsent((String) o, g[1]);
-						linkStructureGroups[i][0] = g[0];
-						linkStructureGroups[i++][1] = (String) o;
+						String groupExternalId = s.getExternalId() + "$" + g[1];
+						s.createFunctionalGroupIfAbsent(groupExternalId, g[1]);
+						linkStructureGroups[i][0] = s.getExternalId();
+						linkStructureGroups[i++][1] = groupExternalId;
 					}
 				}
 			}
@@ -140,9 +141,10 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 				if (c.length == 2) {
 					Structure s = importer.getStructure(c[0]);
 					if (s != null) {
-						s.createClassIfAbsent((String) o, c[1]);
-						linkStructureClasses[i][0] = c[0];
-						linkStructureClasses[i++][1] = (String) o;
+						String classExternalId = s.getExternalId() + "$" + c[1];
+						s.createClassIfAbsent(classExternalId, c[1]);
+						linkStructureClasses[i][0] = s.getExternalId();
+						linkStructureClasses[i++][1] = classExternalId;
 					}
 				}
 			}

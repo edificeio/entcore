@@ -34,6 +34,8 @@ public class GraphData {
 
 	private static final ConcurrentMap<String, Structure> structures = new ConcurrentHashMap<>();
 	private static final ConcurrentMap<String, Profile> profiles = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, Structure> structuresByUAI = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, String> externalIdMapping = new ConcurrentHashMap<>();
 
 	static void loadData(final Neo4j neo4j, final Handler<Message<JsonObject>> handler) {
 		String query =
@@ -73,8 +75,19 @@ public class GraphData {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject r = (JsonObject) o;
 						JsonObject s = r.getObject("s", new JsonObject()).getObject("data");
-						structures.putIfAbsent(s.getString("externalId"),
-								new Structure(s, r.getArray("groups"), r.getArray("classes")));
+						Structure structure = new Structure(s, r.getArray("groups"), r.getArray("classes"));
+						String externalId = s.getString("externalId");
+						structures.putIfAbsent(externalId, structure);
+						String UAI = s.getString("UAI");
+						if (UAI != null && !UAI.trim().isEmpty()) {
+							structuresByUAI.putIfAbsent(UAI, structure);
+						}
+						JsonArray joinKeys = s.getArray("joinKey");
+						if (joinKeys != null && joinKeys.size() > 0) {
+							for (Object key : joinKeys) {
+								externalIdMapping.putIfAbsent(key.toString(), externalId);
+							}
+						}
 					}
 				}
 				if (handler != null && count.decrementAndGet() == 0) {
@@ -91,6 +104,8 @@ public class GraphData {
 	public static void clear() {
 		structures.clear();
 		profiles.clear();
+		structuresByUAI.clear();
+		externalIdMapping.clear();
 	}
 
 	public static ConcurrentMap<String, Profile> getProfiles() {
@@ -99,6 +114,14 @@ public class GraphData {
 
 	public static ConcurrentMap<String, Structure> getStructures() {
 		return structures;
+	}
+
+	public static ConcurrentMap<String, Structure> getStructuresByUAI() {
+		return structuresByUAI;
+	}
+
+	public static ConcurrentHashMap<String, String> getExternalIdMapping() {
+		return externalIdMapping;
 	}
 
 }

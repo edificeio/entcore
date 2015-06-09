@@ -33,6 +33,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Importer {
@@ -52,6 +53,8 @@ public class Importer {
 	private boolean firstImport = false;
 	private String currentSource;
 	private Neo4j neo4j;
+	private ConcurrentMap<String, Structure> structuresByUAI;
+	private ConcurrentHashMap<String, String> externalIdMapping;
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -80,6 +83,8 @@ public class Importer {
 			public void handle(Message<JsonObject> event) {
 				firstImport = GraphData.getStructures().isEmpty();
 				structures = GraphData.getStructures();
+				structuresByUAI = GraphData.getStructuresByUAI();
+				externalIdMapping = GraphData.getExternalIdMapping();
 				profiles = GraphData.getProfiles();
 				if (handler != null) {
 					handler.handle(event);
@@ -143,12 +148,27 @@ public class Importer {
 			if (s != null) {
 				s.update(struct);
 			} else {
-				try {
-					s = new Structure(externalId, struct);
+				String UAI = struct.getString("UAI");
+				if (UAI != null) {
+					s = structuresByUAI.get(UAI);
+				}
+				if (s != null) {
 					structures.putIfAbsent(externalId, s);
-					s.create();
-				} catch (IllegalArgumentException e) {
-					log.error(e.getMessage());
+					Object[] joinKeys = s.addJointure(externalId);
+					if (joinKeys != null) {
+						String origExternalId = s.getExternalId();
+						for (Object key : joinKeys) {
+							externalIdMapping.putIfAbsent(key.toString(), origExternalId);
+						}
+					}
+				} else {
+					try {
+						s = new Structure(externalId, struct);
+						structures.putIfAbsent(externalId, s);
+						s.create();
+					} catch (IllegalArgumentException e) {
+						log.error(e.getMessage());
+					}
 				}
 			}
 		}
@@ -291,7 +311,7 @@ public class Importer {
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
-			JsonArray structures = object.getArray("structures");
+			JsonArray structures = getMappingStructures(object.getArray("structures"));
 			if (externalId != null && structures != null && structures.size() > 0) {
 				JsonObject p = new JsonObject().putString("userExternalId", externalId);
 				String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
@@ -338,6 +358,18 @@ public class Importer {
 				transactionHelper.add(q, p);
 			}
 		}
+	}
+
+	public JsonArray getMappingStructures(JsonArray structures) {
+		if (structures != null) {
+			JsonArray ms = new JsonArray();
+			for (Object s: structures) {
+				String externalId = externalIdMapping.get(s.toString());
+				ms.add(((externalId != null && !externalId.trim().isEmpty()) ? externalId : s));
+			}
+			return ms;
+		}
+		return null;
 	}
 
 	public boolean isFirstImport() {
@@ -425,7 +457,7 @@ public class Importer {
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
-				JsonArray structures = object.getArray("structures");
+				JsonArray structures = getMappingStructures(object.getArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
@@ -448,6 +480,7 @@ public class Importer {
 				}
 				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0) {
 					String query;
+					structuresByFunctions = getMappingStructures(structuresByFunctions);
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
 					if (structuresByFunctions.size() == 1) {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
@@ -557,7 +590,7 @@ public class Importer {
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
-				JsonArray structures = object.getArray("structures");
+				JsonArray structures = getMappingStructures(object.getArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
