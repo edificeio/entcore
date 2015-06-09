@@ -4501,7 +4501,7 @@ module.directive('help', function(){
 				scope.$apply('display');
 			});
 			var iframeWindow = element.find('iframe')[0].contentWindow;
-			iframeWindow.postMessage(skin.theme + 'theme.css', "https://opendigitaleducation.com");
+			iframeWindow.postMessage(skin.theme + 'theme.css', window.location.origin);
 		}
 	}
 });
