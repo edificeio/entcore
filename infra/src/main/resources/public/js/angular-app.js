@@ -2360,7 +2360,7 @@ module.directive('behaviour', function($compile){
 			resource: '='
 		},
 		link: function($scope, $element, $attributes){
-			console.log('This directive is deprecated. Please use "resource-right" instead.');
+			console.log('This directive is deprecated. Please use "authorize" instead.');
 			if(!$attributes.name){
 				throw "Behaviour name is required";
 			}
@@ -2402,14 +2402,48 @@ module.directive('resourceRight', function($compile){
 
 				if(hide){
 					content.remove();
+					element.hide();
 				}
 				else{
 					element.append(content);
+					element.show();
 				}
 			};
 
 			attributes.$observe('name', switchHide);
 			scope.$watch('resource', switchHide);
+		}
+	}
+});
+
+module.directive('authorize', function($compile){
+	return {
+		restrict: 'EA',
+		link: function(scope, element, attributes){
+			if(attributes.name === undefined && attributes.authorize === undefined){
+				throw "Right name is required";
+			}
+			var content = element.children('div');
+
+			var switchHide = function(){
+				var resource = scope.$eval(attributes.resource);
+				var name = attributes.name || attributes.authorize;
+				var hide = name && (resource instanceof Array && _.find(resource, function(resource){ return !resource.myRights || resource.myRights[name] === undefined; }) !== undefined) ||
+					(resource instanceof Model && (!resource.myRights || resource.myRights[name] === undefined));
+
+				if(hide){
+					content.remove();
+					element.hide();
+				}
+				else{
+					element.append(content);
+					element.show();
+				}
+			};
+
+			attributes.$observe('name', switchHide);
+			attributes.$observe('authorize', switchHide);
+			scope.$watch(function(){ return scope.$eval(attributes.resource); }, switchHide);
 		}
 	}
 });
@@ -4501,7 +4535,9 @@ module.directive('help', function(){
 				scope.$apply('display');
 			});
 			var iframeWindow = element.find('iframe')[0].contentWindow;
-			iframeWindow.postMessage(skin.theme + 'theme.css', window.location.origin);
+			iframeWindow.onload = function(){
+				iframeWindow.postMessage(window.location.origin + skin.theme + 'theme.css', "https://opendigitaleducation.com")
+			}
 		}
 	}
 });
