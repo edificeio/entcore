@@ -39,6 +39,9 @@
 						 	'strong': passwordComplexity(user.password) >= 20 }"
 					></div>
 				</div>
+				<p class="input-errors" ng-if="passwordComplexity(user.password) < 20">
+					<i18n>password.recommandations</i18n>
+				</p>
 				<p>
 					<input type="submit" translate attr="value" value="auth.reset" ng-disabled="resetForm.$invalid" tabindex="4"/>
 				</p>

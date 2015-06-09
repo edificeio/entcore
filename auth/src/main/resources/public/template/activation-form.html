@@ -35,6 +35,9 @@
 						 	'strong': passwordComplexity(user.password) >= 20 }"
 					></div>
 				</div>
+				<p class="input-errors" ng-if="passwordComplexity(user.password) < 20">
+					<i18n>password.recommandations</i18n>
+				</p>
 				<p>
 					<label translate content="auth.mail"></label>
 					<input type="email" name="mail" ng-model="user.email" ng-required="mandatory.mail" tabindex="3"/>
