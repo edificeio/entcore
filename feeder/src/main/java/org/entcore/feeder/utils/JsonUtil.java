@@ -51,6 +51,9 @@ public final class JsonUtil {
 				case "long" :
 					res = Long.parseLong(value);
 					break;
+				case "siecle-address":
+					res = (value != null) ? value.replaceAll("\\$", "\n") : null;
+					break;
 				default :
 					res = value;
 			}

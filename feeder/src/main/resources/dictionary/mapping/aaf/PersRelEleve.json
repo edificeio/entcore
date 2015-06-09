@@ -7,9 +7,13 @@
 	"personalTitle" : { "attribute" : "title", "type" : "string" },
 	"homePhone" : { "attribute" : "homePhone", "type" : "string" },
 	"telephoneNumber" : { "attribute" : "workPhone", "type" : "string" },
-	"ENTPersonAdresse" : { "attribute" : "address", "type" : "string" },
+	"ENTPersonAdresse" : { "attribute" : "address", "type" : "siecle-address" },
 	"ENTPersonCodePostal" : { "attribute" : "zipCode", "type" : "string" },
 	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
 	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
+	"ENTPersonAdresseDiffusion" : { "attribute" : "addressDiffusion", "type" : "boolean" },
+	"mobile" : { "attribute" : "deprecated", "type" : "array-string" },
+	"mail" : { "attribute" : "email", "type" : "string" },
+	"ENTPersonMobileSMS" : { "attribute" : "mobile", "type" : "string" },
 	"categoriePersonne" : { "attribute" : "category", "type" : "string" }
 }

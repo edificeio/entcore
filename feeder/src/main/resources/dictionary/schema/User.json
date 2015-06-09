@@ -80,6 +80,9 @@
 			"type" : "string",
 			"validator" : "email"
 		},
+		"addressDiffusion" : {
+		  "type" : "boolean"
+		},
 		"birthDate" : {
 			"type" : "string",
 			"validator" : "birthDate"
