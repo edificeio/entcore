@@ -4500,6 +4500,8 @@ module.directive('help', function(){
 				scope.display.read = true;
 				scope.$apply('display');
 			});
+			var iframeWindow = element.find('iframe')[0].contentWindow;
+			iframeWindow.postMessage(skin.theme + 'theme.css', "https://opendigitaleducation.com");
 		}
 	}
 });
