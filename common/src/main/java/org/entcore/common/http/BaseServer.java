@@ -23,6 +23,8 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
+
+import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ActionFilter;
@@ -107,6 +109,7 @@ public abstract class BaseServer extends Server {
 		loadI18nAssetsFiles();
 
 		addController(new RightsController());
+		addController(new ConfController());
 	}
 
 	private void loadI18nAssetsFiles() {
