@@ -1,22 +1,15 @@
-function Note(){
-
-}
-
-
 (function(){
 	"use strict";
 
-	model.makeModel(Note);
-	model.makePermanent(Note);
+	var widget = model.widgets.findWidget('notes');
 
-	var Notes = model.widgets.findWidget('notes');
-	model.notes.mine.one('sync', function(){
-		Notes.note = model.notes.mine.first() || new Note();
-		if(Notes.note._id){
-			Notes.note.open();
-			Notes.note.on('sync', function(){
-				model.widgets.apply();
-			});
-		}
+	http().get('/userbook/preference/notes').done(function(notes){
+		widget.notes = JSON.parse(notes.preference) || '';
+		model.widgets.apply();
 	});
+
+	widget.save = function(){
+		http().putJson('/userbook/preference/notes', widget.notes);
+		notify.info('notify.object.saved');
+	};
 }());

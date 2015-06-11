@@ -2568,17 +2568,14 @@ select{
 				margin: 0;
 				border: 0;
 				font-size: 16px;
-				img{
-					height: 130px;
-					width: 130px;
-				}
 			}
 			.row.selected{
 				background: @light;
 				color: #fff;
 				border: none;
-				h3{
+				h3 {
 					color: #fff;
+				}
 			}
 		}
 	}
@@ -2614,4 +2611,32 @@ carousel{
 			}
 		}
 	}
+}
+
+carousel.slide .image.next::before, carousel.slide .image.previous::before{
+	background: #eee;
+}
+
+carousel.slide .image.next::after{
+	border-left: 35px solid #444;
+}
+
+carousel.slide .image.previous::after{
+	border-right: 35px solid #444;
+}
+
+carousel.slide .image.previous:hover::after{
+	border-right: 35px solid @light;
+}
+
+carousel.slide .image.next:hover::after{
+	border-left: 35px solid @light;
+}
+
+carousel.slide .image.previous:hover::before{
+	background: #eee;
+}
+
+carousel.slide .image.next:hover::before{
+	background: #eee;
 }
