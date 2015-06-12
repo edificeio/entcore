@@ -721,31 +721,70 @@ h1 i {
   float: none !important;
   display: inline-block !important;
 }
-nav.vertical {
+help section.lightbox > div.content {
+  width: 920px;
+}
+.app-single-post {
+  background: #fff;
+}
+.app-single-post section.app-content-section:not(:target) {
+  display: none;
+}
+.app-single-post .app-menu {
+  float: left;
+  width: 250px;
+}
+.app-single-post .app-content-section {
+  width: 640px;
+  float: right;
+  overflow: auto;
+  height: 395px;
+}
+.app-single-post .app-content-section img {
+  max-width: 100%;
+}
+.app-single-post .app-content-container {
+  margin-top: 15px;
+}
+.app-single-post::after {
+  content: " ";
+  display: block;
+  width: 100%;
+  clear: both;
+}
+nav.vertical,
+.app-menu {
   padding-right: 15px;
   box-sizing: border-box;
 }
-nav.vertical h2 {
+nav.vertical h2,
+.app-menu h2 {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-nav.vertical h2:first-child {
+nav.vertical h2:first-child,
+.app-menu h2:first-child {
   margin-bottom: 0;
 }
-nav.vertical h1 {
+nav.vertical h1,
+.app-menu h1 {
   margin-top: 0;
 }
 nav.vertical ul:first-child,
-nav.vertical div ul:first-child {
+.app-menu ul:first-child,
+nav.vertical div ul:first-child,
+.app-menu div ul:first-child {
   padding-left: 0;
 }
-nav.vertical ul {
+nav.vertical ul,
+.app-menu ul {
   margin-top: 0;
   width: 99%;
   padding-left: 10px;
 }
-nav.vertical ul li {
+nav.vertical ul li,
+.app-menu ul li {
   float: none;
   display: block;
   font-size: 14px;
@@ -753,7 +792,8 @@ nav.vertical ul li {
   width: 100% !important;
   top: 0;
 }
-nav.vertical ul li a {
+nav.vertical ul li a,
+.app-menu ul li a {
   display: block;
   position: relative;
   line-height: 20px;
@@ -768,15 +808,18 @@ nav.vertical ul li a {
   margin-top: 5px;
   margin-bottom: 5px;
 }
-nav.vertical ul li a i {
+nav.vertical ul li a i,
+.app-menu ul li a i {
   display: block;
   float: right;
   margin-top: 2px;
 }
-nav.vertical ul li a i.arrow {
+nav.vertical ul li a i.arrow,
+.app-menu ul li a i.arrow {
   float: left;
 }
-nav.vertical ul li a i.arrow::before {
+nav.vertical ul li a i.arrow::before,
+.app-menu ul li a i.arrow::before {
   content: ">";
   font-weight: 900;
   font-size: 12px;
@@ -784,23 +827,29 @@ nav.vertical ul li a i.arrow::before {
   margin-right: 6px;
   font-family: Arial;
 }
-nav.vertical ul li a img {
+nav.vertical ul li a img,
+.app-menu ul li a img {
   vertical-align: middle;
   margin-right: 5px;
 }
-nav.vertical ul li a.selected {
+nav.vertical ul li a.selected,
+.app-menu ul li a.selected {
   background: #ccc;
 }
-nav.vertical ul li a.opened i.arrow::before {
+nav.vertical ul li a.opened i.arrow::before,
+.app-menu ul li a.opened i.arrow::before {
   content: "v";
 }
-nav.vertical ul li input {
+nav.vertical ul li input,
+.app-menu ul li input {
   position: relative !important;
   top: 0px !important;
   left: 0px !important;
 }
 nav.vertical ul li input[type=text],
-nav.vertical ul li input[type=search] {
+.app-menu ul li input[type=text],
+nav.vertical ul li input[type=search],
+.app-menu ul li input[type=search] {
   -webkit-border-radius: 0px;
   -moz-border-radius: 0px;
   -ms-border-radius: 0px;
@@ -5710,6 +5759,57 @@ plus .opener.plus .minus {
 plus .opener.minus .plus {
   transform: scaleY(0);
 }
+.cards-list {
+  width: 100%;
+  text-align: center;
+}
+.cards-list .card {
+  text-align: left;
+  display: inline-block;
+  padding: 10px;
+  margin: 8px;
+  vertical-align: top;
+}
+.cards-list .card .illustration {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  width: 25%;
+  box-sizing: content-box;
+  height: 0px;
+  padding-bottom: 25%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+.cards-list .card .illustration .right-magnet.cell.absolute {
+  right: 0 !important;
+  left: auto;
+}
+.cards-list .card .illustration .cell.fluid {
+  position: relative;
+  height: 100%;
+}
+.cards-list .card .illustration .bottom-magnet.cell {
+  bottom: 0;
+  position: absolute;
+}
+.cards-list .card .illustration img {
+  max-width: 100%;
+}
+.cards-list .card .illustration input[type=checkbox] {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+.cards-list .card h3:first-of-type,
+.cards-list .card h1:first-of-type,
+.cards-list .card h2:first-of-type {
+  margin-top: 0;
+}
 html,
 body {
   margin: 0;
@@ -6882,7 +6982,6 @@ label.legend-label.marged {
   color: white;
 }
 nav.admin-bar {
-  max-height: 35px;
   overflow-y: hidden;
   transition: max-height 250ms ease;
   margin-top: 43px;
@@ -6891,11 +6990,19 @@ nav.admin-bar {
   position: absolute;
   width: 100%;
   z-index: 10;
-  background-color: #eeeeee;
+  background-color: #EEE;
+}
+nav.admin-bar ul li {
+  transition: height 0.25s ease-in-out;
+}
+nav.admin-bar ul li:not(.selected) {
+  height: 0px;
 }
 nav.admin-bar:hover {
-  max-height: 120px;
   border-bottom: 1px solid #444;
+}
+nav.admin-bar:hover ul li {
+  height: 35px;
 }
 .selectable-list li.cols3 {
   width: 29%;

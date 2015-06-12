@@ -1052,7 +1052,7 @@ label.legend-label{
 }
 
 nav.admin-bar {
-    max-height: 35px;
+    ///max-height: 35px;
     overflow-y: hidden;
     transition: max-height 250ms ease;
     margin-top: 43px;
@@ -1061,12 +1061,24 @@ nav.admin-bar {
     position: absolute;
     width: 100%;
     z-index: 10;
-    background-color: #EEE
+    background-color: #EEE;
+
+	ul li{
+  		transition: height 0.25s ease-in-out;
+
+		&:not(.selected){
+			height: 0px;
+		}
+	}
 }
 
 nav.admin-bar:hover {
-    max-height: 120px;
+    //max-height: 120px;
     border-bottom: 1px solid #444;
+
+	ul li {
+		height: 35px;
+	}
 }
 
 .selectable-list{
