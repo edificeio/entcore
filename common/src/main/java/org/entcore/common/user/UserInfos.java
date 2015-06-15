@@ -146,6 +146,7 @@ public class UserInfos {
 	private List<String> classNames;
 	private List<String> structureNames;
 	private List<String> uai;
+	private List<String> childrenIds;
 	private String level;
 	private String type;
 	private String login;
@@ -318,6 +319,14 @@ public class UserInfos {
 
 	public void setStructures(List<String> structures) {
 		this.structures = structures;
+	}
+
+	public List<String> getChildrenIds() {
+		return childrenIds;
+	}
+
+	public void setChildrenIds(List<String> childrenIds) {
+		this.childrenIds = childrenIds;
 	}
 
 }

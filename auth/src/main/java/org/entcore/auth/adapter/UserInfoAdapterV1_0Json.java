@@ -56,16 +56,11 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.removeField("classNames");
 			JsonArray structureNames = filteredInfos.getArray("structureNames");
 			filteredInfos.removeField("structureNames");
-			JsonArray uai = filteredInfos.getArray("uai");
-			filteredInfos.removeField("uai");
 			if (classNames != null && classNames.size() > 0) {
 				filteredInfos.putString("classId", classNames.<String>get(0));
 			}
 			if (structureNames != null && structureNames.size() > 0) {
 				filteredInfos.putString("schoolName", structureNames.<String>get(0));
-			}
-			if (uai != null && uai.size() > 0) {
-				filteredInfos.putString("uai", uai.<String>get(0));
 			}
 			filteredInfos.removeField("functions");
 			filteredInfos.removeField("groupsIds");
