@@ -990,7 +990,6 @@ module.directive('imageSelect', function($compile){
 					path = '/workspace/pub/document/'
 				}
 				scope.ngModel = path + scope.selectedFile.file._id;
-				scope.$apply('ngModel');
 				scope.ngChange();
 			};
 			element.on('click', '.pick-file', function(){

@@ -24,6 +24,7 @@ var http = (function(){
 
 	Http.prototype = {
 		serialize: function(obj){
+			obj = JSON.parse(JSON.stringify(obj));
 			var str = [];
 			for(var p in obj){
 				if (obj.hasOwnProperty(p)) {
@@ -143,7 +144,7 @@ var http = (function(){
 			params.data = angular.toJson(data);
 			params.type = type.toUpperCase();
 			return this.request(url, params, requestName);
-		}
+		};
 		Http.prototype[type] = function(url, data, params, requestName){
 			var that = this;
 
@@ -160,7 +161,7 @@ var http = (function(){
 					}
 				}
 				else{
-					params.data = data;
+					params.data = JSON.parse(JSON.stringify(data));
 				}
 			}
 			params.type = type.toUpperCase();
