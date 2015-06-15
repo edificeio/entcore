@@ -100,6 +100,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 				currentAction = $route.current.action;
 				currentParams = $route.current.params;
 				routes[$route.current.action]($routeParams);
+				ui.scrollToId(window.location.hash.split('#')[1]);
 			}
 		});
 
@@ -4621,7 +4622,7 @@ function Account($scope){
 
 function Share($rootScope, $scope, ui, _, lang){
 	if(!$scope.appPrefix){
-		$scope.appPrefix = 'workspace';
+		$scope.appPrefix = appPrefix;
 	}
 	if($scope.resources instanceof Model){
 		$scope.resources = [$scope.resources];
