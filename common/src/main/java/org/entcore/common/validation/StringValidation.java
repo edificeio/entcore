@@ -19,6 +19,7 @@
 
 package org.entcore.common.validation;
 
+import java.text.Normalizer;
 import java.util.regex.Pattern;
 
 public class StringValidation {
@@ -50,6 +51,11 @@ public class StringValidation {
 
 	public static boolean isUAI(String uai) {
 		return uai != null && uaiPattern.matcher(uai).matches();
+	}
+
+	public static String removeAccents(String str) {
+		return Normalizer.normalize(str, Normalizer.Form.NFD)
+				.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
 }

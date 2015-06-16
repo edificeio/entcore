@@ -109,8 +109,9 @@ public class UserBookController extends BaseController {
 		String filter = "";
 		JsonObject params = new JsonObject();
 		if (name != null && !name.trim().isEmpty()) {
-			filter = "WHERE visibles.displayName=~{regex} ";
-			params.putString("regex", "(?i)^.*?" + Pattern.quote(name.trim()) + ".*?$");
+			filter = "WHERE visibles.displayNameSearchField=~{regex} ";
+			params.putString("regex", "(?i)^.*?" +
+					Pattern.quote(StringValidation.removeAccents(name.trim()).toLowerCase()) + ".*?$");
 		}
 		if(profile != null && !profile.trim().isEmpty()){
 			filter += filter.isEmpty() ? "WHERE " : "AND ";

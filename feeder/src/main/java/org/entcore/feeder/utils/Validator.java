@@ -52,6 +52,8 @@ public class Validator {
 		patterns.put("uri", Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
 	}
 
+	public static final String SEARCH_FIELD = "SearchField";
+
 	private final JsonObject validate;
 	private final JsonObject generate;
 	private final JsonArray required;
@@ -130,6 +132,7 @@ public class Validator {
 			return "Null object.";
 		}
 		final Set<String> attributes = new HashSet<>(object.getFieldNames());
+		JsonObject generatedAttributes = null;
 		for (String attr : attributes) {
 			JsonObject v = validate.getObject(attr);
 			if (v == null || !modifiable.contains(attr)) {
@@ -165,7 +168,19 @@ public class Validator {
 				if (err != null) {
 					return err;
 				}
+				if (value != null && generate.containsField(attr)) {
+					JsonObject g = generate.getObject(attr);
+					if (g != null && "displayName".equals(g.getString("generator"))) {
+						if (generatedAttributes == null) {
+							generatedAttributes = new JsonObject();
+						}
+						generatedAttributes.putString(attr + SEARCH_FIELD, removeAccents(value.toString()).toLowerCase());
+					}
+				}
 			}
+		}
+		if (generatedAttributes != null) {
+			object.mergeIn(generatedAttributes);
 		}
 		return (object.size() > 0) ? null : "Empty object.";
 	}
@@ -242,7 +257,9 @@ public class Validator {
 			String firstName = in[0];
 			String lastName = in[1];
 			if (firstName != null && lastName != null) {
-				object.putString(attr, firstName + " " + lastName);
+				String displayName = firstName + " " + lastName;
+				object.putString(attr, displayName);
+				object.putString(attr + SEARCH_FIELD, removeAccents(displayName).toLowerCase());
 			}
 		}
 	}
