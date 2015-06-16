@@ -30,6 +30,7 @@ public class EliotRegisteredService extends DefaultRegisteredService {
 		if (st.getService() != null && st.getService()
 					.replaceFirst("autoLoginTicketSession/getCasTicket/", "")
 					.replaceFirst("autoLoginTicket/getCasTicket/", "")
+					.replaceFirst("&hostCAS=.*$", "")
 					.replaceFirst("&rne.*$", "").equals(serviceUri)) {
 			return st.getService();
 		}
