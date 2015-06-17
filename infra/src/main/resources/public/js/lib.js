@@ -24,7 +24,6 @@ var http = (function(){
 
 	Http.prototype = {
 		serialize: function(obj){
-			obj = JSON.parse(JSON.stringify(obj));
 			var str = [];
 			for(var p in obj){
 				if (obj.hasOwnProperty(p)) {
@@ -161,7 +160,7 @@ var http = (function(){
 					}
 				}
 				else{
-					params.data = JSON.parse(JSON.stringify(data));
+					params.data = data;
 				}
 			}
 			params.type = type.toUpperCase();
