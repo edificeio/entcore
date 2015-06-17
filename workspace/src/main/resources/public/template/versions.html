@@ -1,26 +1,17 @@
-<article class="list-view">
+<div class="reduce-block-eight">
     <h1>
         <i18n>workspace.versions.list</i18n>
-        <div class="select-file right-magnet"><button ng-click="closeHistory()" translate content="workspace.return"></button></div>
-        <div class="right-magnet" ng-if="targetDocument.myRights.postRevision">
-            <div class="select-file">
-                <div class="hidden-content">
-                    <input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
-                </div>
-                <button translate content="workspace.add.version" ng-disabled="revisionInProgress.pending"></button>
-            </div>
-        </div>
     </h1>
     <table class="list-view">
         <thead>
             <tr>
-                <th scope="col" class="icon"></th>
-                <th scope="col" class="content" ng-click="orderByField('name')">
+                <th scope="col"></th>
+                <th scope="col" ng-click="orderByField('name')">
                     <span translate content="name"></span>
                     <i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
                 </th>
-                <th scope="col" class="user" ng-click="orderByField('userName')">
+                <th scope="col" ng-click="orderByField('userName')">
                     <span translate content="user"></span>
                     <i class="arrow-bottom" ng-if="order.field === 'userName' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'userName' && order.desc"></i>
@@ -30,12 +21,12 @@
                     <i class="arrow-bottom" ng-if="order.field === 'date.$date' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'date.$date' && order.desc"></i>
                 </th>
-                <th scope="col" class="size" ng-click="orderByField('metadata.size')">
+                <th scope="col" ng-click="orderByField('metadata.size')">
                     <span translate content="size"></span>
                     <i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
                     <i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
                 </th>
-                <th scope="col" class="icon"></th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
@@ -45,29 +36,29 @@
                         <loading-icon default="loading"></loading-icon>
                     </div>
                 </td>
-                <td class="content" colspan="3">
+                <td colspan="3">
                     [[revisionInProgress.file.name]]
                 </td>
-                <td class="size" colspan="2">
+                <td colspan="2">
                     [[formatDocumentSize(revisionInProgress.file.size)]]
                 </td>
             </tr>
             <tr ng-repeat="revision in targetDocument.revisions | orderBy: order.order:order.desc">
                 <td></td>
-                <td class="content">
+                <td>
                     <a ng-href="document/[[targetDocument._id]]/revision/[[revision._id]]">[[revision.name]]</a>
                 </td>
-                <td class="user">
+                <td>
                     <a ng-href="/userbook/annuaire#[[revision.userId]]">[[revision.userName]]</a>
                 </td>
                 <td>
                     [[shortDate(revision.date.$date)]]
                 </td>
-                <td class="size">
+                <td>
                     [[formatDocumentSize(revision.metadata.size)]]
                 </td>
                 <td>
-                    <i class="close-2x"
+                    <i class="close"
                        ng-click="deleteRevision(revision)"
                        tooltip="workspace.delete.version"
                        ng-if="(targetDocument.myRights.manageRevisions || revision.userId === me.userId && targetDocument.myRights.postRevision) && revision.file !== targetDocument.file"></i>
@@ -75,4 +66,4 @@
             </tr>
         </tbody>
     </table>
-</article>
+</div>

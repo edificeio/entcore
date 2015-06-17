@@ -86,8 +86,7 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			<i class="history" ng-if="currentTree.name === 'documents' || (currentTree.name === 'shared' && document.myRights.showRevisions)" tooltip="workspace.show.versions" ng-click="openHistory(document)"></i>
-
+			
 			<legend>
 				<a ng-href="[[document.link]]">
 					<i ng-if="document.shared.length > 0" class="shared inline"></i>

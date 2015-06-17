@@ -145,5 +145,5 @@
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
     "workspace.valid": "Appliquer",
-    "workspace.versions.list": "Versions du document"
+    "workspace.versions.list": "Versions"
 }

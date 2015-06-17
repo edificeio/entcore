@@ -559,10 +559,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.openFolder = function(folder){
-		if(template.contains('documents' ,'versions')){
-			template.containers.documents = $scope.backupDocTemplate;
-		}
-
 		if(template.contains('documents', 'viewer')){
 			template.open('documents', 'icons');
 		}
@@ -1281,22 +1277,25 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		})
 	}
 
-	$scope.openHistory = function(document){
-		$scope.targetDocument = document
-		http().get("document/"+document._id+"/revisions").done(function(revisions){
-			document.revisions = revisions
-			if(!template.contains('documents' ,'versions'))
-				$scope.backupDocTemplate = template.containers.documents
-			$scope.orderByField('date.$date');
-			$scope.order.desc = true;
-			template.open('documents', 'versions');
+	$scope.refreshHistory = function(doc, hook){
+		http().get("document/"+doc._id+"/revisions").done(function(revisions){
+			doc.revisions = revisions
+			if(typeof hook === 'function'){
+				hook()
+			}
 			$scope.$apply()
 		})
 	}
 
-	$scope.closeHistory = function(){
-		if(template.contains('documents' ,'versions'))
-			template.containers.documents = $scope.backupDocTemplate
+	$scope.openHistory = function(document){
+		$scope.targetDocument = document
+		$scope.refreshHistory(document, function(){
+			$scope.orderByField('date.$date');
+			$scope.order.desc = true;
+			ui.showLightbox();
+			template.open('lightbox', 'versions')
+			$scope.$apply()
+		})
 	}
 
 	$scope.revisionInProgress = {}
@@ -1319,6 +1318,8 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			delete $scope.revisionInProgress;
 			$scope.openFolder($scope.openedFolder.folder);
 			model.quota.sync();
+			ui.hideLightbox();
+			//$scope.refreshHistory($scope.targetDocument);
 		}).e400(function(e){
 			delete $scope.revisionInProgress
 			var error = JSON.parse(e.responseText);
