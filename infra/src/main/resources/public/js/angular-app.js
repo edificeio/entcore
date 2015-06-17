@@ -1224,7 +1224,10 @@ module.directive('bindHtml', function($compile){
 		},
 		link: function($scope, $element){
 			$scope.$watch('bindHtml', function(newVal){
-				$element.html($compile('<div>' + newVal + '</div>')($scope.$parent));
+				var htmlVal = $(newVal)
+				//Remove resizable attributes
+				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+				$element.html($compile('<div>' + htmlVal.html() + '</div>')($scope.$parent));
 				//weird browser bug with audio tags
 				$element.find('audio').each(function(index, item){
 					var parent = $(item).parent();
@@ -1652,13 +1655,13 @@ var ckeEditorFixedPositionning = function(){
 		if(!el.height()){
 			continue;
 		}
-		el.css({ 'margin-top': toolbox.height() + 'px' });
 		$('head').find('[ckestyle=' + CKEDITOR.instances[instance].name + ']').remove();
 		editableElement = $(CKEDITOR.instances[instance].element.$);
 		if(editableElement.hasClass('contextual-editor')){
 			continue;
 		}
 
+		el.css({ 'margin-top': toolbox.height() + 'px' });
 		toolbox.width(editableElement.width() + 2 + parseInt(editableElement.css('padding') || 4) * 2);
 		$('<style ckestyle="' + CKEDITOR.instances[instance].name + '"></style>').text('#cke_' + CKEDITOR.instances[instance].name + '{' +
 			'top:' + (editableElement.offset().top - toolbox.height()) + 'px !important;' +
@@ -1834,7 +1837,7 @@ module.directive('htmlEditor', function($compile, $parse){
 			$scope.notify = null;
 		},
 		template: '<div class="twelve cell block-editor">' +
-			'<div contenteditable="true" class="editor-container twelve cell" loading-panel="ckeditor-image">' +
+			'<div contenteditable="true" loading-panel="ckeditor-image" drawing-zone>' +
 			'</div><div class="clear"></div>' +
 			'<linker editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<lightbox show="editHtml" on-close="editHtml = false;">' +
@@ -1878,6 +1881,13 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				CKEDITOR.fileUploadPath = scope.$eval(attributes.fileUploadPath);
 				var editor = element.find('[contenteditable=true]');
+
+				if(attributes.inlineEditor){
+					editor.addClass('contextual-editor');
+				} else {
+					editor.addClass('editor-container')
+				}
+
 				var contextEditor = CKEDITOR.inline(editor[0]);
 				scope.contextEditor = contextEditor;
 
@@ -2002,6 +2012,8 @@ module.directive('htmlEditor', function($compile, $parse){
 							imageLink.setAttribute('target', '_blank');
 							var image = contextEditor.document.createElement('img');
 							image.setAttribute('src', '/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0');
+							if(attributes.resizeImages)
+								image.setAttribute('resizable', '');
 							imageLink.append(image);
 							contextEditor.insertElement(imageLink);
 						}
@@ -2028,181 +2040,6 @@ module.directive('htmlEditor', function($compile, $parse){
 		}
 	}
 });
-
-module.directive('htmlInlineEditor', function($compile){
-    return {
-        restrict: 'E',
-        scope: {
-            ngModel: '=',
-            notify: '=',
-            ngChange: '&'
-        },
-        template: '<div style="width: 100%;"><div contenteditable="true" style="width: 100%; min-height: 24px" class="contextual-editor"></div>' +
-            '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
-            '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
-            '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
-            '</media-library></lightbox>' +
-            '<lightbox show="inputVideo" on-close="inputVideo = false">' +
-				'<p style="padding-bottom: 10px;">' +
-					'<i18n>info.video.embed</i18n>' +
-				'</p>' +
-                '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
-                '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
-            '</lightbox>' +
-            '</div>',
-        compile: function($element, $attributes, $transclude){
-            CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
-            if(window.CKEDITOR === undefined){
-                loader.syncLoad('ckeditor');
-                CKEDITOR.plugins.basePath = '/' + infraPrefix + '/public/ckeditor/plugins/';
-            }
-
-            //// Link function ////
-            return function($scope, $element, $attributes){
-				if(!$scope.display){
-					$scope.display = {};
-				}
-                $scope.selected = { files: [], link: '' };
-
-                if(!$attributes.fileUploadPath){
-                    $attributes.fileUploadPath = "'/workspace/document?application=' + appPrefix + '-stored-resources&protected=true'"
-                }
-
-                CKEDITOR.fileUploadPath = $scope.$eval($attributes.fileUploadPath);
-
-                var editor = $element.find('[contenteditable=true]');
-                var parentElement = $element.parents('grid-cell');
-                if(parentElement.length === 0){
-                    parentElement = editor.parent().parent();
-                }
-                var instance = CKEDITOR.inline(editor[0]);
-                var contextEditor = instance;
-                $scope.contextEditor = instance;
-
-                //editor.html($scope.ngModel);
-                CKEDITOR.on('instanceReady', function(ck){
-                    editor.html($compile($scope.ngModel)($scope.$parent));
-                });
-                $scope.$watch('ngModel', function(newVal){
-                    if(newVal !== editor.html()){
-                        editor.html($compile($scope.ngModel)($scope.$parent));
-                    }
-                });
-
-                editor.on('click', function(){
-                    if(parentElement.data('resizing') || parentElement.data('dragging')){
-                        return;
-                    }
-                    editor.focus();
-                });
-                $element.parent().on('startDrag', function(){
-                    editor.blur();
-                });
-
-                editor.on('focus', function(){
-                    $('.' + instance.id).width(editor.width());
-                    parentElement.data('lock', true);
-                    editor.css({ cursor: 'text' });
-                });
-
-                editor.on('blur', function(){
-                    parentElement.data('lock', false);
-                    editor.css({ cursor: '' });
-                    $scope.ngModel = editor.html();
-                    $scope.$apply('ngModel');
-                    if($scope.ngChange){
-                        $scope.ngChange();
-                    }
-                });
-
-                $scope.updateContent = function(){
-                    var content = editor.html();
-                    if(content.indexOf(';base64,') !== -1){
-                        $scope.notify.error('Une image est corrompue')
-                    }
-                    editor.find('img').each(function(index, item){
-                        if($(item).attr('src').indexOf(';base64,') !== -1){
-                            $(item).remove();
-                        }
-                    })
-
-                    $scope.ngModel = editor.html();
-                }
-
-                $scope.addContent = function(){
-                    $scope.selected.files.forEach(function(file){
-                        if(!file._id){
-                            return;
-                        }
-
-                        if($scope.format === 'img'){
-                            var src = 'src = "/workspace/document/' + file._id + '?thumbnail=' + editor.width() + 'x0"';
-							var image = contextEditor.document.createElement($compile('<img '+src+' resizable-element></img>')($scope)[0]);
-                            contextEditor.insertElement(image);
-                        }
-                        if($scope.format === 'audio'){
-                            var sound = contextEditor.document.createElement('audio');
-
-                            sound.setAttribute('src', '/workspace/document/' + file._id);
-                            sound.setAttribute('controls', 'controls');
-
-                            contextEditor.insertElement(sound);
-                        }
-
-                        $scope.updateContent();
-                    });
-                    $scope.selectFiles = false;
-                };
-
-                $scope.addVideoLink = function(htmlText){
-                    //TODO : Escape dangerous html
-                    instance.insertHtml(htmlText)
-                    $scope.inputVideo = false
-                }
-
-                $element.on('removed', function(){
-                    for(var instance in CKEDITOR.instances){
-                        if(CKEDITOR.instances[instance].element.$ === editor[0]){
-                            CKEDITOR.instances[instance].destroy();
-                        }
-                    }
-                });
-
-                contextEditor.on('contentDom', function(ck){
-                    $('#cke_'+ck.editor.name).on('click', '.cke_button__linker', function(){
-                        $scope.display.chooseLink = true;
-                        $scope.$apply('display');
-                    });
-
-                    $('#cke_'+ck.editor.name).on('click', '.cke_button__upload', function(){
-                        var resize = editor.width();
-                        if(workspace.thumbnails.indexOf(resize) === -1){
-                            workspace.thumbnails += '&thumbnail=' + resize + 'x0';
-                        }
-                        $scope.selectFiles = true;
-                        $scope.format = 'img';
-                        $scope.$apply('selectFiles');
-                        $scope.$apply('format');
-                    });
-
-                    $('#cke_'+ck.editor.name).on('click', '.cke_button__audio', function(){
-                        $scope.selectFiles = true;
-                        $scope.format = 'audio';
-                        $scope.$apply('selectFiles');
-                        $scope.$apply('format');
-                    });
-
-                    $('#cke_'+ck.editor.name).on('click', '.cke_button__video', function(){
-                        $scope.inputVideo = true;
-                        $scope.$apply('inputVideo');
-                    });
-
-                });
-            }
-        }
-    }
-})
-
 
 module.directive('loadingIcon', function($compile){
 	return {
@@ -2492,146 +2329,11 @@ module.directive('drawingZone', function(){
 	};
 });
 
-module.directive('resizableElement', function(){
-	return{
-		restrict: 'A',
-		link: function($scope, $element, $attributes){
-
-			if($scope.disableResizableElement === true)
-				return;
-
-			//Disable drag'n'drop
-			$element.on('dragstart', function(){
-				return false;
-			})
-
-			//True if the left mouse button is pressed
-			var clicked = false
-
-			//Get mouse position on screen
-			var mousePos = function(event){
-				return {
-					x: event.pageX,
-					y: event.pageY
-				}
-			}
-
-			//Get html element borders positions on screen
-			var getElementBorders = function(){
-				return {
-					right   : $element.offset().left + $element.width(),
-					left    : $element.offset().left,
-					top     : $element.offset().top,
-					bottom  : $element.offset().top + $element.height()
-				}
-			}
-
-			//Acceptable delta
-			var DELTA_BORDER = 5
-			//Tests if the mouse is moving over a border
-			var getMouseBorders = function(event){
-				var borders = getElementBorders()
-				var pos     = mousePos(event)
-
-				return {
-					left    : borders.left + DELTA_BORDER > pos.x && borders.left - DELTA_BORDER < pos.x,
-					right   : borders.right + DELTA_BORDER > pos.x && borders.right - DELTA_BORDER < pos.x,
-					top     : borders.top + DELTA_BORDER > pos.y && borders.top - DELTA_BORDER < pos.y,
-					bottom  : borders.bottom + DELTA_BORDER > pos.y && borders.bottom - DELTA_BORDER < pos.y
-				}
-
-			}
-
-			//Icon change
-			var changeIcon = function(e){
-				var resizeLimits = getMouseBorders(e)
-
-				var orientations = {
-					'ns': resizeLimits.top || resizeLimits.bottom,
-					'ew': resizeLimits.left || resizeLimits.right,
-					'nwse': (resizeLimits.bottom && resizeLimits.right) || (resizeLimits.top && resizeLimits.left),
-					'nesw': (resizeLimits.bottom && resizeLimits.left) || (resizeLimits.top && resizeLimits.right)
-
-				}
-
-				var cursor = ''
-				for(var orientation in orientations){
-					if(orientations[orientation]){
-						cursor = orientation;
-					}
-				}
-
-				if(cursor){
-					cursor = cursor + '-resize'
-				} else
-					cursor = 'auto'
-
-				$element.css({ cursor: cursor })
-			}
-
-			//Element size backup
-			var oldElement = {
-				width : $element.width(),
-				height : $element.height(),
-				offset: $element.offset()
-			}
-
-			//Resize function
-			var resizeElement = function(e){
-				var pos = mousePos(e)
-
-				if(clickBorder.bottom){
-					$element.height(pos.y - oldElement.offset.top)
-				} else if(clickBorder.top){
-					$element.height(oldElement.height + (oldElement.offset.top - pos.y))
-				}
-
-				if(clickBorder.left){
-					$element.width(oldElement.width + (oldElement.offset.left - pos.x))
-				} else if(clickBorder.right){
-					$element.width(pos.x - oldElement.offset.left)
-				}
-			}
-
-			$element.on('mouseover', function(e){
-				$element.on('mousemove', function(e){
-					if(!clicked)
-						changeIcon(e)
-				})
-
-				$element.on('mouseout', function(e){
-					$element.unbind('mousemove')
-					if(!clicked)
-						$element.css({ cursor: 'auto' })
-				})
-			})
-
-			$element.on('mousedown', function(e){
-				clicked = true
-				oldElement = {
-					width : $element.width(),
-					height : $element.height(),
-					offset: $element.offset()
-				}
-				clickBorder = getMouseBorders(e)
-				$(window).on('mousemove.resize.element', function(e){
-					resizeElement(e)
-				})
-			})
-			$(window).on('mouseup', function(e){
-				clicked = false
-				$element.css({ cursor: 'auto' })
-				$(window).unbind('mousemove.resize.element')
-			})
-
-		}
-	}
-});
-
 module.directive('resizable', function(){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
+
 			$('body').css({
 				'-webkit-user-select': 'none',
 				'-moz-user-select': 'none',
