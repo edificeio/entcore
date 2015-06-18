@@ -571,7 +571,21 @@ public class DefaultFolderService implements FolderService {
 			return;
 		}
 
-		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId()).and("file").exists(false);
+		String sharedMethod = "org-entcore-workspace-service-WorkspaceService|shareJsonSubmit";
+
+		List<DBObject> groups = new ArrayList<>();
+		groups.add(QueryBuilder.start("userId").is(owner.getUserId())
+				.put(sharedMethod).is(true).get());
+		for (String gpId: owner.getGroupsIds()) {
+			groups.add(QueryBuilder.start("groupId").is(gpId)
+					.put(sharedMethod).is(true).get());
+		}
+		QueryBuilder query = QueryBuilder.start("_id").is(id).put("file").exists(false).or(
+				QueryBuilder.start("owner").is(owner.getUserId()).get(),
+				QueryBuilder.start("shared").elemMatch(
+						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get()
+		);
+
 		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
 
 		Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>(){
