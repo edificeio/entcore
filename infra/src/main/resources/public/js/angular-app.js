@@ -1227,7 +1227,7 @@ module.directive('bindHtml', function($compile){
 				var htmlVal = $(newVal)
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
-				$element.html($compile('<div>' + htmlVal.html() + '</div>')($scope.$parent));
+				$element.html($compile($('<div>').append(htmlVal)[0].outerHTML)($scope.$parent));
 				//weird browser bug with audio tags
 				$element.find('audio').each(function(index, item){
 					var parent = $(item).parent();
