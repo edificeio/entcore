@@ -111,7 +111,7 @@
 				</div>
 			</td>
 			<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
-			<td class="user"><a ng-href="/userbook/annuaire#[[document.owner]]">[[document.ownerName]]</a></td>
+			<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
 			<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 			<td class="date small-font">[[shortDate(document.created)]]</td>
 			<td class="size small-font">
