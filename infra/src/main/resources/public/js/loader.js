@@ -129,10 +129,15 @@ var loader = (function(){
 		request.open('GET', path, false);
 		request.onload = function(){
 			if(request.status === 200){
-				var lib = new Function(request.responseText);
-				lib.name = script.path;
-				lib();
-				loadedScripts[path] = lib;
+				try{
+					var lib = new Function(request.responseText);
+					lib.name = script.path;
+					lib();
+					loadedScripts[path] = lib;
+				}
+				catch(e){
+
+				}
 			}
 		};
 
@@ -144,14 +149,19 @@ var loader = (function(){
 		request.open('GET', path);
 		request.onload = function(){
 			if(request.status === 200){
-				var lib = new Function(request.responseText);
-				lib.name = path;
-				lib();
+				try{
+					var lib = new Function(request.responseText);
+					lib.name = path;
+					lib();
 
-				if(typeof callback === 'function'){
-					callback();
+					if(typeof callback === 'function'){
+						callback();
+					}
+					loadedScripts[path] = lib;
 				}
-				loadedScripts[path] = lib;
+				catch(e){
+
+				}
 			}
 		};
 		request.send(null);
@@ -204,14 +214,21 @@ var loader = (function(){
 					request.open('GET', params.url);
 					request.onload = function(){
 						if(request.status === 200){
-							var lib = new Function(request.responseText);
-							lib.name = params.url;
-							lib();
+							try{
+								var lib = new Function(request.responseText);
+								lib.name = params.url;
+								lib();
 
-							if(typeof params.success === 'function'){
-								params.success();
+								if(typeof params.success === 'function'){
+									params.success();
+								}
+								loadedScripts[params.url] = lib;
 							}
-							loadedScripts[params.url] = lib;
+							catch(e){
+								if(typeof params.error === 'function'){
+									params.error();
+								}
+							}
 						}
 						if(request.status === 404){
 							if(typeof params.error === 'function'){
