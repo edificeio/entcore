@@ -376,7 +376,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.sendComment = function(){
 		ui.hideLightbox();
-		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + $scope.targetDocument.comment).done(function(result){
+		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + encodeURIComponent($scope.targetDocument.comment)).done(function(result){
 			if(!$scope.targetDocument.comments){
 				$scope.targetDocument.comments = [];
 			}
@@ -398,7 +398,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.targetFolder = folder;
 		}
 		ui.hideLightbox();
-		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + $scope.targetFolder.comment).done(function(result){
+		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + encodeURIComponent($scope.targetFolder.comment)).done(function(result){
 			if(!$scope.targetFolder.comments){
 				$scope.targetFolder.comments = [];
 			}
