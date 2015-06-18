@@ -644,7 +644,7 @@ public class DefaultConversationService implements ConversationService {
 							"<-[:AUTHORIZED]-(pg:Group)<-[:IN]-(u:User) " +
 							replyUserQuery + "AND app.name = {conversation} " +
 							"RETURN DISTINCT u.id as id, u.displayName as displayName, " +
-							"CASE labels(visibles)[0] WHEN 'User' THEN profile.name ELSE NULL END as profile";
+							"visibles.profiles[0] as profile";
 					findVisibleUsers(eb, user.getUserId(), true, true, users, params, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibleUsers) {
@@ -660,7 +660,7 @@ public class DefaultConversationService implements ConversationService {
 					"MATCH visibles<-[:IN*0..1]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:{true}}) " +
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-					"CASE labels(visibles)[0] WHEN 'User' THEN profile.name ELSE NULL END as profile";
+					"visibles.profiles[0] as profile";
 			findVisibles(eb, user.getUserId(), groups, params, true, true, true, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
