@@ -13,10 +13,10 @@
 			<button class="previous" ng-click="previousStep();" ng-if="currentStep > 0">
 				Précédent
 			</button>
-			<button class="next" ng-click="nextStep();" ng-if="currentStep < nbSteps - 1">
+			<button class="next" ng-click="nextStep();" ng-if="currentStep < nbSteps - 1" ng-disabled="!nextCondition()">
 				Suivant
 			</button>
-			<button class="finish" ng-if="currentStep === nbSteps - 1" ng-click="finish()">
+			<button class="finish" ng-if="currentStep === nbSteps - 1" ng-click="finish()" ng-disabled="!checkFinishCondition()">
 				Terminer
 			</button>
 		</nav>

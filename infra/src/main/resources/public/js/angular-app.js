@@ -3810,7 +3810,8 @@ module.directive('wizard', function(){
 		templateUrl: '/infra/public/template/wizard.html',
 		scope: {
 			onCancel: '&',
-			onFinish: '&'
+			onFinish: '&',
+			finishCondition: '&'
 		},
 		transclude: true,
 		compile: function(element, attributes, transclude){
@@ -3844,7 +3845,17 @@ module.directive('wizard', function(){
 					$(element.find('nav.steps li')[scope.currentStep]).addClass('active');
 				}
 
+				scope.nextCondition = function(){
+					var stepScope = angular.element(currentStepContent[0]).scope();
+					if(typeof stepScope.nextCondition() === 'undefined')
+						return true;
+					return stepScope.nextCondition();
+				};
+
 				scope.nextStep = function(){
+					if(!scope.nextCondition())
+						return
+
 					var stepScope = angular.element(currentStepContent[0]).scope();
 					stepScope.onNext();
 					scope.currentStep++;
@@ -3864,7 +3875,16 @@ module.directive('wizard', function(){
 					scope.onCancel();
 				};
 
+				scope.checkFinishCondition = function(){
+					if(typeof scope.finishCondition() === 'undefined')
+						return true;
+					return scope.finishCondition();
+				};
+
 				scope.finish = function(){
+					if(!scope.checkFinishCondition())
+						return
+
 					scope.currentStep = 0;
 					displayCurrentStep();
 					scope.onFinish();
@@ -3882,7 +3902,8 @@ module.directive('step', function(){
 		transclude: true,
 		scope: {
 			onNext: '&',
-			onPrevious: '&'
+			onPrevious: '&',
+			nextCondition: '&'
 		},
 		template: '<div class="step" ng-transclude></div>'
 	}
