@@ -47,13 +47,13 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	@Override
 	public void authorize(HttpServerRequest request, Binding binding,
 			UserInfos user, Handler<Boolean> handler) {
-		
+
 		//Super-admin "hack"
 		if(user.getFunctions().containsKey(SUPER_ADMIN)) {
 			handler.handle(true);
 			return;
 		}
-		
+
 		final String serviceMethod = binding.getServiceMethod();
 		if (serviceMethod != null && serviceMethod.startsWith(ClassController.class.getName())) {
 			String method = serviceMethod
@@ -119,6 +119,10 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "listAdmin" :
 					isAdmin(user, false, handler);
+					break;
+				case "unlinkUser" :
+				case "linkUser" :
+					isAdminOfStructureOrClass4(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}

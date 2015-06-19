@@ -63,7 +63,7 @@ public class StructureController extends BaseController {
 	}
 
 	@Put("/structure/:structureId/link/:userId")
-	@SecuredAction("structure.link.user")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void linkUser(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final String userId = request.params().get("userId");
@@ -94,7 +94,7 @@ public class StructureController extends BaseController {
 	}
 
 	@Delete("/structure/:structureId/unlink/:userId")
-	@SecuredAction("structure.unlink.user")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
