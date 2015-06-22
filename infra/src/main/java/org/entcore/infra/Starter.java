@@ -62,6 +62,13 @@ public class Starter extends BaseServer {
 				serverMap.put("swift", swift.encode());
 			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
+
+			/* sharedConf sub-object */
+			JsonObject sharedConf = config.getObject("sharedConf", new JsonObject());
+			for(String field : sharedConf.getFieldNames()){
+				serverMap.put(field, sharedConf.getValue(field));
+			}
+
 			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
 				protected void handle() {
