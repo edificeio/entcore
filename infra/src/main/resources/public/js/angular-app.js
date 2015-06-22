@@ -1837,7 +1837,7 @@ module.directive('htmlEditor', function($compile, $parse){
 			$scope.notify = null;
 		},
 		template: '<div class="twelve cell block-editor">' +
-			'<div contenteditable="true" loading-panel="ckeditor-image" drawing-zone>' +
+			'<div contenteditable="true" loading-panel="ckeditor-image">' +
 			'</div><div class="clear"></div>' +
 			'<linker editor="contextEditor" on-change="updateContent()"></linker>' +
 			'<lightbox show="editHtml" on-close="editHtml = false;">' +
@@ -4262,6 +4262,27 @@ module.directive('help', function(){
 		}
 	}
 });
+
+module.directive('stickToTop', function(){
+	return {
+		restrict: 'EA',
+		link: function(scope, element, attributes){
+			var initialPosition = element.offset();
+			$(window).scroll(function(){
+				if(initialPosition.top < $(window).scrollTop()){
+					element.offset({
+						top: $(window).scrollTop()
+					});
+				}
+				else{
+					element.position({
+						top: 0
+					});
+				}
+			})
+		}
+	}
+})
 
 $(document).ready(function(){
 	setTimeout(function(){
