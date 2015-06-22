@@ -217,7 +217,7 @@ function Collection(obj){
 				});
 			}
 		},
-		unbind: function(event){
+		unbind: function(event, cb){
 			var events = event.split(',');
 			var that = this;
 			events.forEach(function(e){
@@ -228,12 +228,23 @@ function Collection(obj){
 				if(!that.callbacks[eventName]){
 					that.callbacks[eventName] = [];
 				}
-				that.callbacks[eventName].pop();
+				if(!cb){
+					that.callbacks[eventName].pop();
+				}
+				else{
+					that.callbacks[eventName] = _.without(
+						that.callbacks[eventName], _.find(
+							that.callbacks[eventName], function(item){
+								return item.toString() === cb.toString()
+							}
+						)
+					);
+				}
 			}.bind(this));
 		},
 		one: function(event, cb){
 			this.on(event, function(){
-				this.unbind(event);
+				this.unbind(event, cb);
 				if(typeof cb === 'function'){
 					cb();
 				}
@@ -504,7 +515,7 @@ function Collection(obj){
 				(function(){
 					var path = methods[method];
 					col[method] = function(){
-						http().get(http().parseUrl(path)).done(function(data){
+						http().get(http().parseUrl(path, this.composer)).done(function(data){
 							this.load(data);
 						}.bind(this));
 					}
@@ -760,7 +771,7 @@ function Collection(obj){
 		}.bind(this));
 	};
 
-	Model.prototype.unbind = function(event){
+	Model.prototype.unbind = function(event, cb){
 		var events = event.split(',');
 		var that = this;
 		events.forEach(function(e){
@@ -771,7 +782,18 @@ function Collection(obj){
 			if(!that.callbacks[eventName]){
 				that.callbacks[eventName] = [];
 			}
-			that.callbacks[eventName].pop();
+			if(!cb){
+				that.callbacks[eventName].pop();
+			}
+			else{
+				that.callbacks[eventName] = _.without(
+					that.callbacks[eventName], _.find(
+						that.callbacks[eventName], function(item){
+							return item.toString() === cb.toString()
+						}
+					)
+				);
+			}
 
 			var propertiesChain = eventName.split('.');
 			if(propertiesChain.length > 1){
@@ -787,7 +809,7 @@ function Collection(obj){
 
 	Model.prototype.one = function(event, cb){
 		this.on(event, function(){
-			this.unbind(event);
+			this.unbind(event, cb);
 			if(typeof cb === 'function'){
 				cb();
 			}
@@ -1630,7 +1652,7 @@ function bootstrap(func){
 			});
 
 			var resourceRight = _.find(currentSharedRights, function(resourceRight){
-				return resourceRight[right.right];
+				return resourceRight[right.right] || resourceRight.manager;
 			}) !== undefined;
 
 			var workflowRight = this.hasWorkflow(right.workflow);
