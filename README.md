@@ -28,7 +28,7 @@ Installer le [Git](http://git-scm.com/) et lancer la commande suivante dans un t
 Reiseigner le dépôt mandataire de dépendances Maven d'ent-core.
 Ajouter au fichier `{VERTX_HOME}/conf/repos.txt` la ligne suivante :
 
-	maven:http://maven.web-education.net:8081/nexus/content/groups/public/
+	maven:http://maven.web-education.net/nexus/content/groups/public/
 
 _Remarques_ : L'utilisateur qui lance ent-core doit avoir les droits sur le dossier d'installation de Vert.x,
 pour permettre l'installation de modules (Vert.x) systèmes.

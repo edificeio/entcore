@@ -44,11 +44,11 @@ uploadArchives {
 
 			configuration = configurations.archives
 
-			repository(url: "http://maven.web-education.net:8081/nexus/content/repositories/releases/") {
+			repository(url: "http://maven.web-education.net/nexus/content/repositories/releases/") {
 				authentication(userName: sonatypeUsername, password: sonatypePassword)
 			}
 
-			snapshotRepository(url: "http://maven.web-education.net:8081/nexus/content/repositories/snapshots/") {
+			snapshotRepository(url: "http://maven.web-education.net/nexus/content/repositories/snapshots/") {
 				authentication(userName: sonatypeUsername, password: sonatypePassword)
 			}
 
