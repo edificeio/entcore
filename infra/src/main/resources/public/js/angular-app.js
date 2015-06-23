@@ -4372,6 +4372,10 @@ function Share($rootScope, $scope, ui, _, lang){
 		$scope.resources = [$scope.resources];
 	}
 
+	if(!($scope.resources instanceof Array)){
+		throw new TypeError('Resources in share panel must be instance of Model or Array');
+	}
+
 	$scope.sharing = {};
 	$scope.found = [];
 	$scope.maxResults = 5;
