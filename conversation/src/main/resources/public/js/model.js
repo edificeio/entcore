@@ -23,14 +23,12 @@ var hookCheck = function(hook){
 }
 
 function Launcher(countdown, action){
-	return {
-		count: countdown,
-		launch: function(){
-			if(!--this.count){
-				action()
-			}
+	this.count = countdown;
+	this.launch = function(){
+		if(!--this.count){
+			action()
 		}
-	}
+	};
 }
 ////////////////
 

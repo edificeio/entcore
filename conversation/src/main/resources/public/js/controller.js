@@ -184,12 +184,11 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	}
 
 	$scope.removeFromUserFolder = function(event, mail){
-		//Tooltip force removal
-		$(event.target).trigger('mouseout')
-		mail.removeFromFolder().done(function(){
-			$scope.folders.current.mails.sync()
-		})
-	}
+		model.folders.current.mails.selection().forEach(function(mail){
+			mail.removeFromFolder();
+		});
+		model.folders.current.mails.removeSelection();
+	};
 
 	$scope.nextPage = function(){
 		model.folders.current.nextPage();

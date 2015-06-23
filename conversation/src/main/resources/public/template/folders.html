@@ -84,7 +84,7 @@
 		<hr class="row" />
 		<h2><i18n>used.space</i18n></h2>
 		<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
-	</div>
+	</nav>
 
 </section>
 <section class="margin-four reduce-block-eight" ng-include="viewsContainers.main">
@@ -94,14 +94,17 @@
 <section class="toggle-buttons" ng-class="{ hide: folders.current.mails.selection().length === 0 && (!folders.current.userFolders || folders.current.userFolders.selection().length === 0) }">
 	<div class="toggle">
 		<div class="row">
-			<button class="cell" ng-click="removeSelection()" ng-if="folders.current.mails.selection().length || folders.current.userFolders.selection().length">
+			<button ng-click="removeSelection()" ng-if="folders.current.mails.selection().length || folders.current.userFolders.selection().length">
 				<i18n>remove</i18n>
 			</button>
-			<button class="cell" ng-click="restore()" ng-if="(folders.current.mails.selection().length || folders.current.userFolders.selection().length) && folders.current.folderName === 'trash'">
+			<button ng-click="restore()" ng-if="(folders.current.mails.selection().length || folders.current.userFolders.selection().length) && folders.current.folderName === 'trash'">
 				<i18n>restore</i18n>
 			</button>
-			<button class="cell" ng-click="moveSelection()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
+			<button ng-click="moveSelection()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
 				<i18n>move.inside.folder</i18n>
+			</button>
+			<button ng-click="removeFromUserFolder()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
+				<i18n>remove.from.folder</i18n>
 			</button>
 		</div>
 	</div>

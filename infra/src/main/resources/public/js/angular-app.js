@@ -4275,8 +4275,8 @@ module.directive('stickToTop', function(){
 					});
 				}
 				else{
-					element.position({
-						top: 0
+					element.offset({
+						top: initialPosition.top
 					});
 				}
 			})

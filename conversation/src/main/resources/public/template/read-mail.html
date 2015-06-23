@@ -1,57 +1,69 @@
-<article class="twelve cell">
+<div class="twelve cell">
 	<div class="row">
-		<div class="twelve cell line">
-			<div class="row">
-				<a class="cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
-				<strong class="small-header cell">[[mail.fromName]]</strong>
+		<plus class="right-magnet">
+			<button ng-click="replyAll()"><i18n>replyall</i18n></button>
+			<button ng-click="transfer()"><i18n>transfer</i18n></button>
+			<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
+		</plus>
+		<button class="right-magnet" ng-click="reply()">
+			<i18n>reply</i18n>
+		</button>
+	</div>
+
+	<article class="twelve cell vertical-spacing">
+		<div class="row">
+			<div class="twelve cell line">
+				<div class="row">
+					<a class="cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
+					<strong class="small-header cell">[[mail.fromName]]</strong>
 				<span class="cell right-magnet">
 					[[mail.sentDate()]]
 				</span>
-			</div>
-			<div class="row">
-				<strong class="medium-text">[[mail.subject]]</strong>
-			</div>
-			<div class="row">
-				<em class="medium-importance medium-text">
-					<span translate key="to"></span>
-					<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-						[[receiver.displayName]]<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
-					</a>
+				</div>
+				<div class="row">
+					<strong class="medium-text">[[mail.subject]]</strong>
+				</div>
+				<div class="row">
+					<em class="medium-importance medium-text">
+						<span translate key="to"></span>
+						<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
+							[[receiver.displayName]]<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+						</a>
 					<span ng-repeat="receiverName in mail.toName">
 						[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
 					</span>
-				</em>
-			</div>
-			<div class="row">
-				<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
-					<span translate key="cc"></span>
-					<a ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-						[[receiver.displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
-					</a>
+					</em>
+				</div>
+				<div class="row">
+					<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
+						<span translate key="cc"></span>
+						<a ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
+							[[receiver.displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
+						</a>
 					<span ng-repeat="receiverName in mail.ccName">
 						[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
 					</span>
-				</em>
-			</div>
-			<div class="row">
-				<hr />
-			</div>
-			<div class="row">
-				<div class="twelve cell escape_cke" bind-html="mail.body"></div>
-			</div>
-			<div class="row">
-				<hr />
+					</em>
+				</div>
+				<div class="row">
+					<hr />
+				</div>
+				<div class="row">
+					<div class="twelve cell escape_cke" bind-html="mail.body"></div>
+				</div>
+				<div class="row">
+					<hr />
+				</div>
 			</div>
 		</div>
-	</div>
-	<div class="row block-container medium-text" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
-		<p><h2><i18n>attachments</i18n></h2></p>
-		<article class="list-view">
-			<table class="list-view">
-				<thead>
+		<div class="row block-container medium-text" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
+			<p><h2><i18n>attachments</i18n></h2></p>
+			<article class="list-view">
+				<table class="list-view">
+					<thead>
 					<th colspan="4"></th>
-				</thead>
-				<tbody>
+					</thead>
+					<tbody>
 					<tr ng-repeat="attachment in mail.attachments | orderBy: columnOrder" class="element">
 						<td class="icon">
 							<div class="twelve cell">
@@ -68,19 +80,15 @@
 						</td>
 						<td>
 							<i class="remove-small center"
-							ng-click="deleteAttachment($event, attachment, mail)"
-							tooltip="remove.attachment">
+							   ng-click="deleteAttachment($event, attachment, mail)"
+							   tooltip="remove.attachment">
+							</i>
 						</td>
 					</tr>
-				</tbody>
-			</table>
-		</article>
-	</div>
-	<div class="row block-container medium-text">
-		<span translate key="clickhere"></span>
-		<a ng-click="reply()" translate key="reply"></a>,
-		<a ng-click="replyAll()" translate key="replyall"></a>,
-		<a ng-click="transfer()" translate key="transfer"></a>,
-		<a ng-click="mail.remove(); openFolder()" translate key="remove.link"></a> <span translate key="message"></span>
-	</div>
-</article>
+					</tbody>
+				</table>
+			</article>
+		</div>
+	</article>
+</div>
+

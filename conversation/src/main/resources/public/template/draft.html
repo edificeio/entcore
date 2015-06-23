@@ -12,6 +12,7 @@
 			<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 			<th class="user" ng-click="setSort(folders.draft, sortBy.name)"><i18n>to</i18n></th>
 			<th class="content" ng-click="setSort(folders.draft, sortBy.subject)"><i18n>subject</i18n></th>
+			<th class="icon"></th>
 			<th class="date" ng-click="setSort(folders.draft, sortBy.date)"><i18n>date</i18n></th>
 		</tr>
 		</thead>
@@ -30,6 +31,7 @@
 				<span ng-if="receivers.length > 2">...</span>
 			</td>
 			<td><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
+			<td><i class="attachment" ng-if="mail.attachments.length"></i></td>
 			<td>[[mail.sentDate()]]</td>
 		</tr>
 		</tbody>

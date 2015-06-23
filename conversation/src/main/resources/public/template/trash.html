@@ -9,10 +9,10 @@
 			<tr>
 				<th class="icon"><input type="checkbox" ng-model="selection.selectAll" ng-change="switchSelectAll()" /></th>
 				<th class="icon"></th>
-				<th translate key="from" ng-click="setSort(folders.trash, sortBy.name)"><i18n>from</i18n></th>
-				<th translate key="subject" ng-click="setSort(folders.trash, sortBy.subject)"><i18n>content</i18n></th>
-				<th></th>
-				<th translate key="date" ng-click="setSort(folders.trash, sortBy.date)"><i18n>date</i18n></th>
+				<th ng-click="setSort(folders.trash, sortBy.name)"><i18n>from</i18n></th>
+				<th ng-click="setSort(folders.trash, sortBy.subject)"><i18n>content</i18n></th>
+				<th class="icon"></th>
+				<th ng-click="setSort(folders.trash, sortBy.date)"><i18n>date</i18n></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -31,7 +31,7 @@
 				<td></td>
 				<td><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
 				<td><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
-				<td><i class="attachment"></i></td>
+				<td><i class="attachment" ng-if="mail.attachments.length"></i></td>
 				<td>[[mail.sentDate()]]</td>
 			</tr>
 		</tbody>
