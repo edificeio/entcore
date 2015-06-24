@@ -14,7 +14,7 @@
     "auth.mail": "Courriel",
     "auth.phone": "Téléphone mobile",
     "auth.error.authenticationFailed": "L'identifiant ou le mot de passe est incorrect.",
-    "auth.forgot.header": "Identifiant ou mot de passe oublié",
+    "auth.forgot.header": "Besoin d'aide",
     "auth.forgot.send": "Envoyer",
     "auth.forgot.title": "Identifiant ou mot de passe oublié",
     "auth.header": "Connexion",
