@@ -216,8 +216,12 @@ var ui = (function(){
 		//CSS transitions expansions
 		$('body').on('click', 'article.preview', function(e){
 			if($(this).hasClass('expanded')){
+				if(($(this).height() + parseInt($(this).css('padding-top')) + parseInt($(this).css('padding-bottom'))) === this.scrollHeight){
+					$(this).css({ transition: 'none', height: 'auto' });
+				}
 				setTimeout(function(){
 					$(this).height(this.scrollHeight);
+					$(this).css("transition", "");
 				}.bind(this), 100);
 			}
 			else{
