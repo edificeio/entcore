@@ -281,8 +281,15 @@ public class DuplicateUsers {
 		}
 		for (int i = 0; i < result.size(); i++) {
 			JsonObject json = result.get(i);
-			String luceneQuery = luceneAttribute("firstName", json.getString("firstName"), 0.4) + " AND " +
-					luceneAttribute("lastName", json.getString("lastName"), 0.4);
+			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.4);
+			final String lastNameAttr = luceneAttribute("lastName", json.getString("lastName"), 0.4);
+			String luceneQuery;
+			if (firstNameAttr != null && lastNameAttr != null &&
+					!firstNameAttr.trim().isEmpty() && !lastNameAttr.trim().isEmpty()) {
+				luceneQuery = firstNameAttr + " AND " + lastNameAttr;
+			} else {
+				continue;
+			}
 			tx.add(query, params.copy().putString("luceneQuery", luceneQuery).putString("id", json.getString("id")));
 		}
 		tx.commit(new Handler<Message<JsonObject>>() {
