@@ -65,7 +65,7 @@
     "missing.password": "Mot de passe oublié",
     "missing.id": "Identifiant oublié",
     "need.help": "Besoin d'aide ?",
-    "reset.error": "Erreur durant la réinitialisation",
+    "reset.error": "Erreur durant la réinitialisation du mot de passe.",
     "show.password": "Afficher le mot de passe",
     "complexity": "Sécurité",
     "weak": "Faible",

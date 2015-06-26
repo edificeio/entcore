@@ -20,6 +20,7 @@
 package org.entcore.auth.users;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -192,7 +193,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			"NOT(n.email IS NULL) " +
 			"AND n.activationCode IS NULL AND " +
 			"(NOT(HAS(n.federated)) OR n.federated = false) " +
-			(setResetCode ? "SET n.resetCode = {resetCode} " : "") +
+			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN n.email as email, n.mobile as mobile";
 
 		final String teacherQuery =
@@ -202,12 +203,13 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
 			"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
 			"(NOT(HAS(n.federated)) OR n.federated = false) " +
-			(setResetCode ? "SET n.resetCode = {resetCode} " : "") +
+			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN p.email as email";
 
 		final JsonObject params = new JsonObject().putString("login", login);
 		if(setResetCode)
-			params.putString("resetCode", resetCode);
+			params.putString("resetCode", resetCode)
+				.putNumber("today", new Date().getTime());
 
 		neo.execute(basicQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
 			public void handle(Either<String, JsonObject> result) {
@@ -357,14 +359,21 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void resetPassword(String login, String resetCode, String password, final Handler<Boolean> handler) {
+		final long codeDelay = container.config().getInteger("resetCodeDelay", 0);
+
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
-				"SET n.password = {password}, n.resetCode = null " +
+				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
+				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
 				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("resetCode", resetCode);
+		if(codeDelay > 0){
+			params.put("today", new Date().getTime());
+			params.put("delay", codeDelay);
+		}
 		updatePassword(handler, query, password, params);
 	}
 
@@ -387,10 +396,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode IS NULL AND " +
 				"(NOT(HAS(n.federated)) OR n.federated = false) " +
-				"SET n.resetCode = {resetCode} " +
+				"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
 				"RETURN count(n) as nb";
 		final String code = StringValidation.generateRandomCode(8);
-		JsonObject params = new JsonObject().putString("login", login).putString("resetCode", code);
+		JsonObject params = new JsonObject().putString("login", login).putString("resetCode", code).putNumber("today", new Date().getTime());
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
