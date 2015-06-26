@@ -138,6 +138,10 @@ function ForgotController($scope, route, template){
 		}
 	})
 
+	$scope.initUser = function(){
+		$scope.user = {}
+	}
+
 	$scope.forgot = function(){
 		http().post('/auth/forgot', http().serialize({
 			login: $scope.user.login,
@@ -160,6 +164,53 @@ function ForgotController($scope, route, template){
 				$scope.$apply('error');
 			});
 	};
+
+	$scope.passwordChannels = function(login){
+		http().get('/auth/password-channels', {login: login})
+			.done(function(data){
+				$scope.user.channels = {
+					mail: data.mail,
+					mobile: data.mobile
+				}
+				$scope.$apply()
+			})
+			.e400(function(data){
+				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.login'
+				$scope.$apply()
+			})
+	}
+
+	$scope.forgotPassword = function(login, service){
+		http().postJson('/auth/forgot-password', {login: login, service: service})
+			.done(function(data){
+				notify.info("auth.notify."+service+".sent")
+				$scope.user.channels = {}
+				$scope.$apply()
+			})
+			.e400(function(data){
+				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.login'
+				$scope.$apply()
+			})
+	}
+
+	$scope.forgotId = function(mail, service){
+		http().postJson('/auth/forgot-id', {mail: mail, service: service})
+			.done(function(data){
+				notify.info("auth.notify."+service+".sent")
+				if(data.mobile){
+					$scope.user.channels = {
+						mobile: data.mobile
+					}
+				} else {
+					$scope.user.channels = {}
+				}
+				$scope.$apply()
+			})
+			.e400(function(data){
+				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.mail'
+				$scope.$apply()
+			})
+	}
 }
 
 function ActivationController($scope, template){

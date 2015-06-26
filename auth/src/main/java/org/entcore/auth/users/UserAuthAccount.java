@@ -30,8 +30,6 @@ public interface UserAuthAccount {
 	void activateAccount(String login, String activationCode, String password, String email, String phone,
 			Handler<Either<String, String>> handler);
 
-	void forgotPassword(HttpServerRequest request, String login, Handler<Boolean> handler);
-
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
@@ -43,6 +41,23 @@ public interface UserAuthAccount {
 	void matchActivationCode(String login, String potentialActivationCode,
 			Handler<Boolean> handler);
 
+	void matchResetCode(String login, String potentialResetCode,
+			Handler<Boolean> handler);
+
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
+
+	void findByLogin(String login, String resetCode, Handler<Either<String, JsonObject>> handler);
+
+	void sendResetPasswordMail(HttpServerRequest request, String email,
+			String resetCode, Handler<Either<String, JsonObject>> handler);
+
+	void sendForgottenIdMail(HttpServerRequest request, String login,
+			String email, Handler<Either<String, JsonObject>> handler);
+
+	void sendResetPasswordSms(HttpServerRequest request, String phone,
+			String resetCode, Handler<Either<String, JsonObject>> handler);
+
+	void sendForgottenIdSms(HttpServerRequest request, String login,
+			String phone, Handler<Either<String, JsonObject>> handler);
 
 }

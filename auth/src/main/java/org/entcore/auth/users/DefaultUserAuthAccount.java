@@ -19,6 +19,7 @@
 
 package org.entcore.auth.users;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -30,13 +31,18 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
+import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.validation.StringValidation;
 
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
@@ -45,6 +51,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final Vertx vertx;
 	private final Container container;
 	private final NotificationHelper notification;
+	private final Renders render;
+
+	private String smsProvider;
+	private final String smsAddress = "entcore.sms";
 
 	public DefaultUserAuthAccount(Vertx vertx, Container container) {
 		EventBus eb = Server.getEventBus(vertx);
@@ -52,6 +62,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.vertx = vertx;
 		this.container = container;
 		notification = new NotificationHelper(vertx, eb, container);
+		render = new Renders(vertx, container);
+		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		if(server != null && server.get("smsProvider") != null)
+			smsProvider = (String) server.get("smsProvider");
 	}
 
 	@Override
@@ -136,94 +150,209 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
+	public void matchResetCode(final String login, String potentialResetCode,
+			final Handler<Boolean> handler) {
+		String query =
+				"MATCH (n:User) " +
+				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
+				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
+				"WHERE LENGTH(duplicates) = 0 " +
+				"RETURN true as exists";
+
+		JsonObject params = new JsonObject()
+			.putString("login", login)
+			.putString("resetCode", potentialResetCode);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+					handler.handle(false);
+				else
+					handler.handle(true);
+			}
+		}));
+	}
+
+	@Override
 	public void findByMail(final String email, final Handler<Either<String,JsonObject>> handler) {
-		String query = "MATCH (u:User) WHERE u.email = {mail} RETURN u.login as login";
+		String query = "MATCH (u:User) WHERE u.email = {mail} AND u.activationCode IS NULL RETURN u.login as login, u.mobile as mobile";
 		JsonObject params = new JsonObject().putString("mail", email);
 
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
 	}
 
 	@Override
-	public void forgotPassword(final HttpServerRequest request, final String login,
-			final Handler<Boolean> handler) {
-		String query =
-				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND NOT(n.email IS NULL) AND n.activationCode IS NULL AND " +
-				"(NOT(HAS(n.federated)) OR n.federated = false) " +
-				"SET n.resetCode = {resetCode} " +
-				"RETURN n.email as email";
-		final String query2 =
-				"MATCH (n:User)-[:IN]->(sg:ProfileGroup)-[:DEPENDS]->(m:Class)" +
-				"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
-				"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
-				"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-				"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
-				"(NOT(HAS(n.federated)) OR n.federated = false) " +
-				"SET n.resetCode = {resetCode} " +
-				"RETURN p.email as email";
-		final Map<String, Object> params = new HashMap<>();
-		params.put("login", login);
-		final String resetCode = UUID.randomUUID().toString();
-		params.put("resetCode", resetCode);
-		neo.send(query, params, new Handler<Message<JsonObject>>(){
+	public void findByLogin(final String login, final String resetCode, final Handler<Either<String,JsonObject>> handler) {
+		boolean setResetCode = resetCode != null && !resetCode.trim().isEmpty();
 
-			@Override
-			public void handle(Message<JsonObject> res) {
-				if ("ok".equals(res.body().getString("status"))) {
-					JsonObject json = res.body().getObject("result");
-					if (json.getObject("0") != null &&
-							json.getObject("0").getString("email") != null &&
-							!json.getObject("0").getString("email").trim().isEmpty()) {
-						sendResetPasswordLink(request, login, json.getObject("0")
-								.getString("email"), resetCode, handler);
-					} else if (container.config().getBoolean("teacherForgotPasswordEmail", false)) {
-						neo.send(query2, params, new Handler<Message<JsonObject>>(){
+		String basicQuery =
+			"MATCH (n:User) " +
+			"WHERE n.login = {login} AND " +
+			"NOT(n.email IS NULL) " +
+			"AND n.activationCode IS NULL AND " +
+			"(NOT(HAS(n.federated)) OR n.federated = false) " +
+			(setResetCode ? "SET n.resetCode = {resetCode} " : "") +
+			"RETURN n.email as email, n.mobile as mobile";
 
-							@Override
-							public void handle(Message<JsonObject> event) {
-								JsonObject j = event.body().getObject("result");
-								if ("ok".equals(event.body().getString("status")) &&
-										j.getObject("0") != null &&
-										j.getObject("0").getString("email") != null &&
-										!j.getObject("0").getString("email").trim().isEmpty()) {
-									sendResetPasswordLink(request, login, j.getObject("0")
-											.getString("email"), resetCode, handler);
-								} else {
-									handler.handle(false);
-								}
+		final String teacherQuery =
+			"MATCH (n:User)-[:IN]->(sg:ProfileGroup)-[:DEPENDS]->(m:Class)" +
+			"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
+			"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
+			"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
+			"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+			"(NOT(HAS(n.federated)) OR n.federated = false) " +
+			(setResetCode ? "SET n.resetCode = {resetCode} " : "") +
+			"RETURN p.email as email";
+
+		final JsonObject params = new JsonObject().putString("login", login);
+		if(setResetCode)
+			params.putString("resetCode", resetCode);
+
+		neo.execute(basicQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+			public void handle(Either<String, JsonObject> result) {
+				if(result.isLeft()){
+					handler.handle(result);
+					return;
+				}
+
+				final String mail = result.right().getValue().getString("email");
+				final String mobile = result.right().getValue().getString("mobile");
+
+				if(mail != null && container.config().getBoolean("teacherForgotPasswordEmail", false)){
+					neo.execute(teacherQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+						public void handle(Either<String, JsonObject> resultTeacher) {
+							if(resultTeacher.isLeft()){
+								handler.handle(resultTeacher);
+								return;
 							}
-						});
-					} else {
-						handler.handle(false);
+
+							resultTeacher.right().getValue().putString("mobile", mobile);
+							handler.handle(resultTeacher);
+						}
+					}));
+				}
+				handler.handle(result);
+			}
+		}));
+	}
+
+	@Override
+	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode,
+			final Handler<Either<String, JsonObject>> handler) {
+		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+			return;
+		}
+		JsonObject json = new JsonObject()
+				.putString("host", notification.getHost(request))
+				.putString("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode);
+		container.logger().debug(json.encode());
+		notification.sendEmail(
+				request,
+				email,
+				container.config().getString("email", "noreply@one1d.fr"),
+				null,
+				null,
+				"mail.reset.pw.subject",
+				"email/forgotPassword.html",
+				json,
+				true,
+				new Handler<Message<JsonObject>>() {
+					public void handle(Message<JsonObject> event) {
+						if("error".equals(event.body().getString("status"))){
+							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+						} else {
+							handler.handle(new Either.Right<String, JsonObject>(event.body()));
+						}
 					}
+				});
+	}
+
+	@Override
+	public void sendForgottenIdMail(HttpServerRequest request, String login, String email, final Handler<Either<String, JsonObject>> handler){
+		if (email == null || email.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+			return;
+		}
+
+		JsonObject json = new JsonObject()
+			.putString("login", login)
+			.putString("host", notification.getHost(request));
+		container.logger().debug(json.encode());
+		notification.sendEmail(
+				request,
+				email,
+				container.config().getString("email", "noreply@one1d.fr"),
+				null,
+				null,
+				"mail.reset.id.subject",
+				"email/forgotId.html",
+				json,
+				true,
+				new Handler<Message<JsonObject>>() {
+					public void handle(Message<JsonObject> event) {
+						if("error".equals(event.body().getString("status"))){
+							handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+						} else {
+							handler.handle(new Either.Right<String, JsonObject>(event.body()));
+						}
+					}
+				});
+	}
+
+	private void sendSms(HttpServerRequest request, final String phone, String template, JsonObject params, final Handler<Either<String, JsonObject>> handler){
+		if (phone == null || phone.trim().isEmpty()) {
+			handler.handle(new Either.Left<String, JsonObject>("invalid.phone"));
+			return;
+		}
+
+		final String formattedPhone = StringValidation.formatPhone(phone);
+
+		render.processTemplate(request, template, params, new Handler<String>() {
+			@Override
+			public void handle(String body) {
+				if (body != null) {
+					JsonObject smsObject = new JsonObject()
+						.putString("provider", smsProvider)
+		    			.putString("action", "send-sms")
+		    			.putObject("parameters", new JsonObject()
+		    				.putArray("receivers", new JsonArray().add(formattedPhone))
+		    				.putString("message", body)
+		    				.putBoolean("senderForResponse", true)
+		    				.putBoolean("noStopClause", true));
+
+					vertx.eventBus().send(smsAddress, smsObject, new Handler<Message<JsonObject>>() {
+						public void handle(Message<JsonObject> event) {
+							if("error".equals(event.body().getString("status"))){
+								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+							} else {
+								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+							}
+						}
+					});
 				} else {
-					handler.handle(false);
+					handler.handle(new Either.Left<String, JsonObject>("template.error"));
 				}
 			}
 		});
 	}
 
-	private void sendResetPasswordLink(HttpServerRequest request, String login, String email, String resetCode,
-			final Handler<Boolean> handler) {
-		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
-			handler.handle(false);
-			return;
-		}
-		JsonObject json = new JsonObject()
-				.putString("login", login)
-				.putString("host", notification.getHost(request))
-				.putString("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode);
-		container.logger().debug(json.encode());
-		notification.sendEmail(request, email, container.config()
-				.getString("email", "noreply@one1d.fr"), null, null,
-				"mail.reset.pw.subject", "email/forgotPassword.html", json, true,
-				new Handler<Message<JsonObject>>() {
+	@Override
+	public void sendResetPasswordSms(HttpServerRequest request, String phone, String resetCode, final Handler<Either<String, JsonObject>> handler){
+		JsonObject params = new JsonObject()
+			.putString("resetCode", resetCode)
+			.putString("resetUri", resetCode);
 
-				@Override
-				public void handle(Message<JsonObject> message) {
-					handler.handle("ok".equals(message.body().getString("status")));
-				}
-			});
+		sendSms(request, phone, "phone/forgotPassword.txt", params, handler);
+	}
+
+	@Override
+	public void sendForgottenIdSms(HttpServerRequest request, String login, String phone, final Handler<Either<String, JsonObject>> handler){
+		JsonObject params = new JsonObject()
+			.putString("login", login);
+
+		sendSms(request, phone, "phone/forgotId.txt", params, handler);
 	}
 
 	@Override
@@ -260,7 +389,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"(NOT(HAS(n.federated)) OR n.federated = false) " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN count(n) as nb";
-		final String code = UUID.randomUUID().toString();
+		final String code = StringValidation.generateRandomCode(8);
 		JsonObject params = new JsonObject().putString("login", login).putString("resetCode", code);
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -268,7 +397,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
 						1 == ((JsonObject) event.body().getArray("result").get(0)).getInteger("nb")) {
-					sendResetPasswordLink(request, login, email, code, handler);
+					sendResetPasswordMail(request, email, code, new Handler<Either<String, JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							handler.handle(event.isRight());
+						}
+					});
 				} else {
 					handler.handle(false);
 				}

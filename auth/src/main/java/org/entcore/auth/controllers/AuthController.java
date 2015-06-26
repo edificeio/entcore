@@ -39,6 +39,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.*;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.response.DefaultResponseHandler;
 import fr.wseduc.webutils.logging.Tracer;
 import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -73,6 +74,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
@@ -97,8 +99,10 @@ public class AuthController extends BaseController {
 	private static final Tracer trace = TracerFactory.getTracer("auth");
 	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
-	public enum AuthEvent { ACTIVATION, LOGIN }
+	public enum AuthEvent { ACTIVATION, LOGIN, SMS }
 	private Pattern passwordPattern;
+	private String smsProvider;
+
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -117,6 +121,9 @@ public class AuthController extends BaseController {
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		passwordPattern = Pattern.compile(container.config().getString("passwordRegex", ".{8}.*"));
+		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		if(server != null && server.get("smsProvider") != null)
+			smsProvider = (String) server.get("smsProvider");
 	}
 
 	@Get("/oauth2/auth")
@@ -301,8 +308,17 @@ public class AuthController extends BaseController {
 										});
 
 									} else {
-										trace.info("Erreur de connexion pour l'utilisateur " + login);
-										loginResult(request, "auth.error.authenticationFailed", c);
+										userAuthAccount.matchResetCode(login, password, new org.vertx.java.core.Handler<Boolean>() {
+											@Override
+											public void handle(Boolean passIsResetCode) {
+												if(passIsResetCode){
+													redirect(request, "/auth/reset/"+password);
+												} else {
+													trace.info("Erreur de connexion pour l'utilisateur " + login);
+													loginResult(request, "auth.error.authenticationFailed", c);
+												}
+											}
+										});
 									}
 								}
 							});
@@ -558,56 +574,127 @@ public class AuthController extends BaseController {
 		});
 	}
 
-	@Post("/forgot")
-	public void forgotPasswordSubmit(final HttpServerRequest request) {
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+	@Post("/forgot-id")
+	public void forgetId(final HttpServerRequest request){
+		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
+			public void handle(JsonObject data) {
+				final String mail = data.getString("mail");
+				final String service = data.getString("service");
+				if(mail == null || mail.trim().isEmpty()){
+					badRequest(request);
+					return;
+				}
 
-			@Override
-			protected void handle() {
-				String login = request.formAttributes().get("login");
-				String mail = request.formAttributes().get("mail");
-				final I18n i18n = I18n.getInstance();
-				final String language = request.headers().get("Accept-Language");
-
-				final org.vertx.java.core.Handler<Boolean> finalHandler = new org.vertx.java.core.Handler<Boolean>() {
+				userAuthAccount.findByMail(mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
 					@Override
-					public void handle(Boolean sent) {
-						if (Boolean.TRUE.equals(sent)) {
-							String message = i18n.translate("auth.resetCodeSent", language);
-							renderJson(request, new JsonObject()
-							.putString("message", message));
+					public void handle(Either<String, JsonObject> result) {
+						//No user with that email, or more than one found.
+						if(result.isLeft()){
+							badRequest(request, result.left().getValue());
+							return;
+						}
+						if(result.right().getValue().size() == 0){
+							badRequest(request, "no.match");
+							return;
+						}
+
+						final String id = result.right().getValue().getString("login", "");
+						final String mobile = result.right().getValue().getString("mobile", "");
+
+						//Force mail
+						if("mail".equals(service)){
+							userAuthAccount.sendForgottenIdMail(request, id, mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+								public void handle(Either<String, JsonObject> event) {
+									if(event.isLeft()){
+										badRequest(request, event.left().getValue());
+										return;
+									}
+									if(smsProvider != null && !smsProvider.isEmpty()){
+										final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
+										renderJson(request, new JsonObject().putString("mobile", obfuscatedMobile));
+									} else {
+										renderJson(request, new JsonObject());
+									}
+								}
+							});
+						} else if("mobile".equals(service) && !mobile.isEmpty() && smsProvider != null && !smsProvider.isEmpty()){
+							eventStore.createAndStoreEvent(AuthEvent.SMS.name(), id);
+							userAuthAccount.sendForgottenIdSms(request, id, mobile, DefaultResponseHandler.defaultResponseHandler(request));
 						} else {
-							error(request, i18n, "id", language);
+							badRequest(request);
 						}
 					}
-				};
-
-				if(mail != null && !mail.trim().isEmpty()){
-					userAuthAccount.findByMail(mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
-						public void handle(Either<String, JsonObject> event) {
-							if(event.isLeft()){
-								error(request, i18n, "mail", language);
-								return;
-							}
-							String login = event.right().getValue().getString("login", "");
-							userAuthAccount.forgotPassword(request, login, finalHandler);
-						}
-					});
-				} else if (login != null && !login.trim().isEmpty()) {
-					userAuthAccount.forgotPassword(request, login, finalHandler);
-				} else {
-					error(request, i18n, "id", language);
-				}
+				});
 			}
+		});
+	}
 
-			private void error(final HttpServerRequest request,
-					final I18n i18n, final String which, final String language) {
-				String message = i18n.translate("forgot."+which+".error", language);
-				JsonObject error = new JsonObject()
-				.putObject("error", new JsonObject()
-				.putString("message", message));
-				renderJson(request, error, 400);
+	@Get("/password-channels")
+	public void getForgotPasswordService(final HttpServerRequest request) {
+		userAuthAccount.findByLogin(request.params().get("login"), null, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+			public void handle(Either<String, JsonObject> result) {
+				if(result.isLeft()){
+					badRequest(request, result.left().getValue());
+					return;
+				}
+				if(result.right().getValue().size() == 0){
+					badRequest(request, "no.match");
+					return;
+				}
+
+				final String mail = result.right().getValue().getString("email", "");
+				final String mobile = result.right().getValue().getString("mobile", "");
+
+				final String obfuscatedMail = StringValidation.obfuscateMail(mail);
+				final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
+
+				if(smsProvider != null && !smsProvider.isEmpty())
+					renderJson(request, new JsonObject().putString("mobile", obfuscatedMobile).putString("mail", obfuscatedMail));
+				else
+					renderJson(request, new JsonObject().putString("mail", obfuscatedMail));
+			}
+		});
+	}
+
+	@Post("/forgot-password")
+	public void forgotPasswordSubmit(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
+			public void handle(JsonObject data) {
+				final String login = data.getString("login");
+				final String service = data.getString("service");
+				final String resetCode = StringValidation.generateRandomCode(8);
+				if(login == null || login.trim().isEmpty() || service == null || service.trim().isEmpty()){
+					badRequest(request, "invalid.login");
+					return;
+				}
+
+				userAuthAccount.findByLogin(login, resetCode, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> result) {
+						if(result.isLeft()){
+							badRequest(request, result.left().getValue());
+							return;
+						}
+						if(result.right().getValue().size() == 0){
+							badRequest(request, "no.match");
+							return;
+						}
+
+						final String mail = result.right().getValue().getString("email", "");
+						final String mobile = result.right().getValue().getString("mobile", "");
+
+						if("mail".equals(service)){
+							userAuthAccount.sendResetPasswordMail(request, mail, resetCode,
+									DefaultResponseHandler.defaultResponseHandler(request));
+						} else if("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()){
+							eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
+							userAuthAccount.sendResetPasswordSms(request, mobile, resetCode,
+									DefaultResponseHandler.defaultResponseHandler(request));
+						} else {
+							badRequest(request, "invalid.service");
+						}
+					}
+				});
+
 			}
 		});
 	}
@@ -629,8 +716,8 @@ public class AuthController extends BaseController {
 				} else {
 					badRequest(request);
 				}
-		  }
-				});
+			}
+		});
 	}
 
 	@Put("/block/:userId")
