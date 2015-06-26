@@ -234,7 +234,7 @@ public class UserController extends BaseController {
 														request.response().putHeader("Content-Type", "application/csv");
 														request.response().putHeader("Content-Disposition",
 																"attachment; filename=export.csv");
-														request.response().end('\ufeff' + export);
+														request.response().end('\ufeff' + export.replaceAll(", \"", "\""));
 													} else {
 														renderError(request);
 													}
