@@ -2594,9 +2594,7 @@ module.directive('gridResizable', function($compile){
 						return;
 					}
 
-					if(element.find('grid-cell, sniplet, [vertical-lock]').length > 0){
-						lock.vertical = true;
-					}
+					lock.vertical = (element.find('grid-cell, sniplet, [vertical-lock]').length > 0);
 
 					var mouse = { x: e.pageX, y: e.pageY };
 					resizeLimits = {
