@@ -4244,6 +4244,7 @@ module.directive('plus', function($compile){
 });
 
 module.directive('help', function(){
+	var helpText;
 	return {
 		restrict: 'E',
 		scope: {},
@@ -4251,20 +4252,35 @@ module.directive('help', function(){
 		'<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
 		link: function(scope, element){
 			scope.display = {};
-			if(appPrefix === '.'){
+			scope.helpPath = '/help/application/' + appPrefix + '/';
+			if(appPrefix === '.') {
 				scope.helpPath = '/help/application/portal/';
 			}
-			scope.helpPath = '/help/application/' + appPrefix + '/';
 
 			var helpContent;
-			http().get(scope.helpPath).done(function(content){
+
+			var setHtml = function(content){
 				helpContent = $('<div>' + content + '</div>');
-				helpContent.find('img').each(function(item){
+				helpContent.find('img').each(function(index, item){
 					$(item).attr('src', scope.helpPath + $(item).attr('src').split('../../')[0]);
 				});
 				helpContent.find('script').remove();
-				element.find('div').append(helpContent);
-			});
+				element.find('div').html(helpContent.html());
+				element.find('a').on('click', function(item){
+					element.find('.app-content-section').slideUp();
+					$('#' + $(item).attr('href').split('#')[1]).slideDown();
+				})
+			};
+
+			if(helpText){
+				setHtml(helpText);
+			}
+			else {
+				http().get(scope.helpPath).done(function (content) {
+					helpText = content;
+					setHtml(helpText);
+				});
+			}
 
 			element.children('i.help').on('click', function(){
 				scope.display.read = true;
