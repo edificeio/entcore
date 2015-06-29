@@ -4248,14 +4248,16 @@ module.directive('help', function(){
 		restrict: 'E',
 		scope: {},
 		template: '<i class="help"></i>' +
-		'<lightbox show="display.read" on-close="display.read = false"><iframe src="https://opendigitaleducation.com/application/' + appPrefix + '/?iframe=true#presentation"></iframe></lightbox>',
+		'<lightbox show="display.read" on-close="display.read = false"><div ng-include="helpPath"></div></lightbox>',
 		link: function(scope, element, attributes){
 			scope.display = {};
-			var iframeWindow = element.find('iframe')[0].contentWindow;
+			scope.helpPath = '/help/application/' + appPrefix + '/index.html?iframe=true';
+			if(appPrefix === '.'){
+				scope.helpPath = '/help/portal/index.html?iframe=true';
+			}
 			element.children('i.help').on('click', function(){
 				scope.display.read = true;
 				scope.$apply('display');
-				iframeWindow.postMessage(window.location.origin + skin.theme + 'theme.css', "https://opendigitaleducation.com")
 			});
 		}
 	}
