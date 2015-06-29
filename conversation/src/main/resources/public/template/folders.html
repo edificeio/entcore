@@ -103,7 +103,7 @@
 			<button ng-click="moveSelection()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
 				<i18n>move.inside.folder</i18n>
 			</button>
-			<button ng-click="removeFromUserFolder()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
+			<button ng-click="removeFromUserFolder()" ng-if="folders.current.mails.selection().length && folders.current.id">
 				<i18n>remove.from.folder</i18n>
 			</button>
 		</div>
