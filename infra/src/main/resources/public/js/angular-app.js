@@ -4251,9 +4251,9 @@ module.directive('help', function(){
 		'<lightbox show="display.read" on-close="display.read = false"><div ng-include="helpPath"></div></lightbox>',
 		link: function(scope, element, attributes){
 			scope.display = {};
-			scope.helpPath = '/help/application/' + appPrefix + '/index.html?iframe=true';
+			scope.helpPath = '/help/application/' + appPrefix + '/';
 			if(appPrefix === '.'){
-				scope.helpPath = '/help/portal/index.html?iframe=true';
+				scope.helpPath = '/help/portal/';
 			}
 			element.children('i.help').on('click', function(){
 				scope.display.read = true;
