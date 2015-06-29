@@ -4248,13 +4248,24 @@ module.directive('help', function(){
 		restrict: 'E',
 		scope: {},
 		template: '<i class="help"></i>' +
-		'<lightbox show="display.read" on-close="display.read = false"><div ng-include="helpPath"></div></lightbox>',
-		link: function(scope, element, attributes){
+		'<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
+		link: function(scope, element){
 			scope.display = {};
-			scope.helpPath = '/help/application/' + appPrefix + '/';
 			if(appPrefix === '.'){
-				scope.helpPath = '/help/portal/';
+				scope.helpPath = '/help/application/portal/';
 			}
+			scope.helpPath = '/help/application/' + appPrefix + '/';
+
+			var helpContent;
+			http().get(scope.helpPath).done(function(content){
+				helpContent = $('<div>' + content + '</div>');
+				helpContent.find('img').each(function(item){
+					$(item).attr('src', scope.helpPath + $(item).attr('src').split('../../')[0]);
+				});
+				helpContent.find('script').remove();
+				element.find('div').append(helpContent);
+			});
+
 			element.children('i.help').on('click', function(){
 				scope.display.read = true;
 				scope.$apply('display');
