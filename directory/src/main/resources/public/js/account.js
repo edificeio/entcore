@@ -214,6 +214,10 @@ function MyAccount($scope, lang, date, notify, route){
 		form[inputName].$setViewValue(form[inputName].$viewValue)
 	}
 
+	$scope.displayPassword = function(account, me) {
+		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
+	}
+
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
 	})

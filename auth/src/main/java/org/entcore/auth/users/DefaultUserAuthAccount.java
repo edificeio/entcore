@@ -148,7 +148,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND NOT(n.email IS NULL) AND n.activationCode IS NULL " +
+				"WHERE n.login = {login} AND NOT(n.email IS NULL) AND n.activationCode IS NULL AND " +
+				"(NOT(HAS(n.federated)) OR n.federated = false) " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN n.email as email";
 		final String query2 =
@@ -156,7 +157,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
 				"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
 				"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-				"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL " +
+				"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+				"(NOT(HAS(n.federated)) OR n.federated = false) " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN p.email as email";
 		final Map<String, Object> params = new HashMap<>();
@@ -254,7 +256,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode IS NULL " +
+				"WHERE n.login = {login} AND n.activationCode IS NULL AND " +
+				"(NOT(HAS(n.federated)) OR n.federated = false) " +
 				"SET n.resetCode = {resetCode} " +
 				"RETURN count(n) as nb";
 		final String code = UUID.randomUUID().toString();
