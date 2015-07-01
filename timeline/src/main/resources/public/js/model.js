@@ -25,9 +25,15 @@ model.build = function (){
 	this.makeModels([Notification, NotificationType, Widget, Skin]);
 
 	this.collection(Notification, {
-		sync: function(){
+		page: 0,
+		lastPage: false,
+		loading: false,
+		sync: function(paginate){
 			var that = this;
-			that.all = [];
+
+			if(that.loading || (paginate && that.lastPage))
+				return
+
 			var types = model.notificationTypes.selection();
 			if(model.notificationTypes.noFilter){
 				types = model.notificationTypes.all;
@@ -40,9 +46,29 @@ model.build = function (){
 			var params = { type: _.map(types, function(type){
 				return type.data;
 			})};
+			params.page = that.page;
 
-			http().get('/timeline/lastNotifications',params).done(function(response){
-				that.load(response.results);
+			if(paginate)
+				that.loading = true;
+
+			http().get('/timeline/lastNotifications', params).done(function(response){
+				that.loading = false;
+				if(paginate){
+					if(response.results.length > 0){
+						that.addRange(response.results);
+						that.page++;
+					} else {
+						that.lastPage = true;
+					}
+				} else {
+					that.page = 0;
+					that.lastPage = false;
+					that.load(response.results);
+				}
+
+			}).error(function(data){
+				that.loading = false;
+				notify.error(data);
 			});
 
 			http().putJson('/userbook/preference/timeline', params);

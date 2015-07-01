@@ -41,6 +41,10 @@ function Timeline($scope, date, model, lang){
 		}
 		model.notifications.sync();
 	};
+
+	$scope.loadPage = function(){
+		model.notifications.sync(true);
+	}
 }
 
 function Personalization($rootScope, $scope, model, ui){
