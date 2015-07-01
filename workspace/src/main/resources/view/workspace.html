@@ -169,7 +169,7 @@
 						<div class="hidden-content">
 		                    <input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
 		                </div>
-						<button ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && currentTree.name === 'documents'"
+						<button ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && currentTree.name !== 'trash'"
 							    ng-click="openHistory(selectedDocuments()[0])"
 								class="cell"
 								translate content="workspace.add.version"
