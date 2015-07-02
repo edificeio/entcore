@@ -4262,13 +4262,13 @@ module.directive('help', function(){
 			var setHtml = function(content){
 				helpContent = $('<div>' + content + '</div>');
 				helpContent.find('img').each(function(index, item){
-					$(item).attr('src', scope.helpPath + $(item).attr('src').split('../../')[0]);
+					$(item).attr('src', scope.helpPath + $(item).attr('src'));
 				});
 				helpContent.find('script').remove();
-				element.find('div').html(helpContent.html());
-				element.find('a').on('click', function(item){
+				element.find('div.content').html(helpContent.html());
+				element.find('a').on('click', function(e){
 					element.find('.app-content-section').slideUp();
-					$('#' + $(item).attr('href').split('#')[1]).slideDown();
+					$('#' + $(e.target).attr('href').split('#')[1]).slideDown();
 				})
 			};
 
