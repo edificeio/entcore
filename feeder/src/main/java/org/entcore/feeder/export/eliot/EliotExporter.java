@@ -78,6 +78,7 @@ public class EliotExporter implements Exporter {
 					final Date exportDate = new Date();
 					final String path = exportBasePath + File.separator +
 							tenant + "_Complet_" + datetime.format(exportDate) + "_Export";
+					log.info("Export path " + path);
 					vertx.fileSystem().mkdir(path, true, new Handler<AsyncResult<Void>>() {
 						@Override
 						public void handle(AsyncResult<Void> ar) {
@@ -90,6 +91,7 @@ public class EliotExporter implements Exporter {
 													if (exportDestination != null && !exportDestination.trim().isEmpty()) {
 														zipAndSend(path, handler);
 													} else {
+														log.warn("export not send");
 														message.body().putString("exportPath", path);
 														handler.handle(message);
 													}
@@ -120,6 +122,7 @@ public class EliotExporter implements Exporter {
 
 	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {
 		final String zipPath = path + ".zip";
+		log.info("Export zip : " + zipPath);
 		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
 			@Override
 			public void handle(AsyncResult<String[]> asyncResult) {
