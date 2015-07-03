@@ -52,16 +52,14 @@ public class Be1dFeeder implements Feed {
 			"birthDate", "gender", "address", "zipCode", "city", "country", "#skip#", "#skip#",
 			"#skip#", "#skip#", "sector", "level", "classes", "#break#" };
 	public static final String [] relativeHeader = new String[] { "title", "surname", "lastName", "firstName",
-			"address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
-			"#skip#", "mobile" };
+			"address", "zipCode", "city", "country", "email", "homePhone", "workPhone", "mobile" };
 	private static final String [] personnelHeader = new String[] { "title", "surname", "lastName", "firstName",
 			"address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
 	public static final String [] studentUpdateHeader = new String[] { "externalId", "lastName", "surname", "firstName",
 			"birthDate", "gender", "address", "zipCode", "city", "country", "#skip#", "#skip#",
 			"#skip#", "#skip#", "sector", "level", "classes", "#break#" };
 	public static final String [] relativeUpdateHeader = new String[] { "externalId", "title", "surname", "lastName",
-			"firstName", "address", "zipCode", "city", "country", "email", "homePhone", "workPhone",
-			"#skip#", "mobile" };
+			"firstName", "address", "zipCode", "city", "country", "email", "homePhone", "workPhone", "mobile" };
 	private static final String [] personnelUpdateHeader = new String[] { "externalId", "title", "surname", "lastName",
 			"firstName", "address", "zipCode", "city", "country", "email", "homePhone", "mobile", "#skip#" };
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
@@ -257,7 +255,7 @@ public class Be1dFeeder implements Feed {
 				.create();
 		//csv = csv.split("(;;;;;;;;;;;;;;;;;;;;|\n\n|\r\n\r\n)")[0];
 		final String [] header = isUpdate ? relativeUpdateHeader : relativeHeader;
-		final int startClassesMapping = isUpdate ? 14 : 13;
+		final int startClassesMapping = isUpdate ? 13 : 12;
 
 		csvParser.read(p + File.separator + fileNames[2], new CSVReadProc() {
 

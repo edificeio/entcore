@@ -629,7 +629,7 @@ public class ManualFeeder extends BusModBase {
 								i++;
 							}
 							JsonArray linkStudents = new JsonArray();
-							for (i = 13; i < values.length; i += 4) {
+							for (i = 12; i < values.length; i += 4) {
 								String mapping = structureExternalId + values[i].trim() +
 										values[i + 1].trim() + values[i + 2].trim() + values[i + 3].trim();
 								if (mapping.trim().isEmpty()) continue;
