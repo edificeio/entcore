@@ -4269,7 +4269,8 @@ module.directive('help', function(){
 				element.find('a').on('click', function(e){
 					element.find('.app-content-section').slideUp();
 					$('#' + $(e.target).attr('href').split('#')[1]).slideDown();
-				})
+				});
+				element.find('a').first().click();
 			};
 
 			if(helpText){
