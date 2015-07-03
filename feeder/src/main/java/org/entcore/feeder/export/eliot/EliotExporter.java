@@ -131,7 +131,7 @@ public class EliotExporter implements Exporter {
 							.putArray("path", new JsonArray(asyncResult.result()))
 							.putString("zipFile", zipPath)
 							.putBoolean("deletePath", true);
-					vertx.eventBus().send("entcore.zipper", j, new Handler<Message<JsonObject>>() {
+					vertx.eventBus().send(node + "entcore.zipper", j, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
