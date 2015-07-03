@@ -4294,7 +4294,11 @@ module.directive('stickToTop', function(){
 	return {
 		restrict: 'EA',
 		link: function(scope, element, attributes){
-			var initialPosition = element.offset();
+			var initialPosition;
+			setTimeout(function(){
+				initialPosition = element.offset();
+			}, 200);
+
 			$(window).scroll(function(){
 				if(initialPosition.top < $(window).scrollTop()){
 					element.offset({
@@ -4309,7 +4313,44 @@ module.directive('stickToTop', function(){
 			})
 		}
 	}
-})
+});
+
+module.directive('floatingNavigation', function(){
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		scope: {},
+		template: '<nav class="vertical hash-magnet floating" stick-to-top>' +
+		'<div class="previous arrow" ng-class="{ visible: step > 0 }"></div>' +
+		'<div class="content" ng-transclude></div>' +
+		'<div class="next arrow" ng-class="{ visible: step < stepsLength && stepsLength > 0 }"></div>' +
+		'</nav>',
+		link: function(scope, element, attributes){
+			var initialPosition;
+			scope.step = 0;
+			setTimeout(function(){
+				initialPosition = element.offset();
+				element.height($(window).height() - parseInt(element.css('margin-bottom')));
+				scope.stepsLength = parseInt(element.find('.content')[0].scrollHeight / element.height());
+			}, 200);
+			element.find('.arrow.next').on('click', function(){
+				scope.step ++;
+				scope.$apply();
+				element.find('.content').animate({
+					scrollTop: element.height() * scope.step
+				}, 250);
+			});
+			element.find('.arrow.previous').on('click', function(){
+				scope.step --;
+				scope.$apply();
+				element.find('.content').animate({
+					scrollTop: element.height() * scope.step
+				}, 250);
+			});
+		}
+	}
+});
 
 $(document).ready(function(){
 	setTimeout(function(){
