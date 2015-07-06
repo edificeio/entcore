@@ -449,6 +449,7 @@ nav.side-tabs{
 	}
 
 	&.content-flex{
+		display: -webkit-flex;
 		display: flex;
 	}
 }
@@ -715,8 +716,11 @@ nav.search-container{
 }
 
 nav.search-container-left{
+	display: -webkit-flex;
 	display: flex;
+  	-webkit-flex-direction: column;
   	flex-direction: column;
+	-webkitflex: 0.35;
 	flex: 0.35;
 	list-style: none;
 	font-family: Lato;
@@ -752,11 +756,13 @@ nav.search-container-left{
 
 div.search-container-view{
 	padding: 10px 15px 0px 20px;
+	-webkit-flex: 1;
 	flex: 1;
 }
 
 hr.separator{
-	margin: 15 0 15 0;
+	margin: 15px 0 15px 0;
+	padding: 0;
 	border: 1px solid black;
 }
 
