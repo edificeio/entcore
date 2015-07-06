@@ -625,8 +625,6 @@
   background: -moz-linear-gradient(#cccccc, #cccccc);
   background: -o-linear-gradient(#cccccc, #cccccc);
   background: linear-gradient(#cccccc, #cccccc);
-  -pie-background: linear-gradient(#cccccc, #cccccc);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
   color: #fff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -652,8 +650,6 @@
   background: -moz-linear-gradient(#cccccc, #cccccc);
   background: -o-linear-gradient(#cccccc, #cccccc);
   background: linear-gradient(#cccccc, #cccccc);
-  -pie-background: linear-gradient(#cccccc, #cccccc);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
   color: #fff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -695,6 +691,19 @@ input[type=submit] {
   margin: 0;
   margin-left: 1px;
   margin-right: 1px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+  position: relative;
+}
+a.button img,
+button img,
+input[type=button] img,
+input[type=submit] img {
+  max-width: 100%;
 }
 i {
   font-style: normal;
@@ -724,11 +733,24 @@ h1 i {
 help section.lightbox > div.content {
   width: 920px;
 }
+help section.lightbox > div.content iframe {
+  height: 550px;
+}
+.checkbox-filters {
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+.checkbox-filters ul {
+  margin: 0;
+}
+.checkbox-filters ul li {
+  list-style-type: none;
+  display: inline-block;
+  margin-right: 15px;
+}
 .app-single-post {
   background: #fff;
-}
-.app-single-post section.app-content-section:not(:target) {
-  display: none;
 }
 .app-single-post .app-menu {
   float: left;
@@ -737,11 +759,10 @@ help section.lightbox > div.content {
 .app-single-post .app-content-section {
   width: 640px;
   float: right;
-  overflow: auto;
-  height: 395px;
 }
 .app-single-post .app-content-section img {
   max-width: 100%;
+  display: block;
 }
 .app-single-post .app-content-container {
   margin-top: 15px;
@@ -813,10 +834,16 @@ nav.vertical ul li a i,
   display: block;
   float: right;
   margin-top: 2px;
+  opacity: 0;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
 }
 nav.vertical ul li a i.arrow,
 .app-menu ul li a i.arrow {
   float: left;
+  opacity: 1;
 }
 nav.vertical ul li a i.arrow::before,
 .app-menu ul li a i.arrow::before {
@@ -836,9 +863,17 @@ nav.vertical ul li a.selected,
 .app-menu ul li a.selected {
   background: #ccc;
 }
+nav.vertical ul li a.selected i,
+.app-menu ul li a.selected i {
+  opacity: 1;
+}
 nav.vertical ul li a.opened i.arrow::before,
 .app-menu ul li a.opened i.arrow::before {
   content: "v";
+}
+nav.vertical ul li a:hover i,
+.app-menu ul li a:hover i {
+  opacity: 1;
 }
 nav.vertical ul li input,
 .app-menu ul li input {
@@ -1004,7 +1039,7 @@ nav.horizontal {
   right: 0;
   bottom: 0px;
 }
-nav.horizontal a {
+nav.horizontal > a {
   display: inline-block;
   vertical-align: bottom;
 }
@@ -1501,18 +1536,30 @@ i.home {
   background-image: url("../img/icons/glyphicons_020_home.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   background-size: contain;
   display: inline-block;
   vertical-align: middle;
   float: none;
   margin-top: -3px;
   margin-right: 5px;
+}
+i.attachment {
+  height: 20px;
+  width: 20px;
+  background-image: url("../img/icons/glyphicons_062_paperclip.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  vertical-align: middle;
+  background-size: contain;
 }
 article.media {
   border: 2px dashed #ccc;
@@ -1677,12 +1724,10 @@ i.drag-anchor {
   background-image: url("../img/icons/glyphicons_186_move.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: contain;
   float: none;
@@ -1694,12 +1739,11 @@ i.fullscreen {
   background-image: url("../img/icons/glyphicons_215_resize_full.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.leave-fullscreen {
@@ -1708,12 +1752,11 @@ i.leave-fullscreen {
   background-image: url("../img/icons/glyphicons_214_resize_small.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.previous {
@@ -1722,12 +1765,11 @@ i.previous {
   background-image: url("../img/icons/glyphicons_210_left_arrow.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.next {
@@ -1736,12 +1778,11 @@ i.next {
   background-image: url("../img/icons/glyphicons_211_right_arrow.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.download {
@@ -1750,12 +1791,11 @@ i.download {
   background-image: url("../img/icons/glyphicons_181_download_alt.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 .embedded-viewer {
@@ -2536,7 +2576,7 @@ article h2:first-child {
 }
 hr {
   border: none;
-  margin: 15px;
+  padding: 10px;
 }
 .cell img {
   max-width: 100%;
@@ -2559,12 +2599,11 @@ section.lightbox-window .close-lightbox i {
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.remove {
@@ -2573,12 +2612,11 @@ i.remove {
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 .loading-panel {
@@ -3121,6 +3159,11 @@ section.lightbox {
   left: 0;
   right: 0;
   display: none;
+  text-align: left;
+  color: initial;
+  line-height: initial;
+  font-size: initial;
+  font-weight: normal;
 }
 section.lightbox .background {
   position: absolute;
@@ -3139,6 +3182,12 @@ section.lightbox > div.content {
   float: none !important;
 }
 section.lightbox .content::after {
+  clear: both;
+  content: " ";
+  display: block;
+  width: 100%;
+}
+section.lightbox::after {
   clear: both;
   content: " ";
   display: block;
@@ -3192,8 +3241,6 @@ section.lightbox .content::after {
   background: -moz-linear-gradient(#eeeeee, #e5e5e5);
   background: -o-linear-gradient(#eeeeee, #e5e5e5);
   background: linear-gradient(#eeeeee, #e5e5e5);
-  -pie-background: linear-gradient(#eeeeee, #e5e5e5);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
   border: 1px solid #555;
   border-bottom: 0;
   font-size: 20px;
@@ -3373,12 +3420,11 @@ a.cke_smile img {
   background-image: url("../img/icons/text-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
 }
@@ -3388,12 +3434,11 @@ a.cke_smile img {
   background-image: url("../img/icons/picture-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
 }
@@ -3403,12 +3448,11 @@ a.cke_smile img {
   background-image: url("../img/icons/music-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
 }
@@ -3418,12 +3462,11 @@ a.cke_smile img {
   background-image: url("../img/icons/video-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
 }
@@ -3474,8 +3517,6 @@ a.cke_smile img {
   background: -moz-linear-gradient(#383838, #333333);
   background: -o-linear-gradient(#383838, #333333);
   background: linear-gradient(#383838, #333333);
-  -pie-background: linear-gradient(#383838, #333333);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
   border: 1px solid #555;
   border-bottom: 0;
   font-size: 20px;
@@ -3636,32 +3677,33 @@ a.cke_smile img {
   table-layout: fixed;
   width: 100%;
 }
-.illustrated-article .illustration {
+.illustrated-article > .illustration {
+  position: relative;
   display: table-cell;
   width: 100px;
 }
-.illustrated-article .illustration .image {
+.illustrated-article > .illustration .image {
   overflow: hidden;
   height: 100px;
   width: 100px;
   margin-right: 15px;
   position: relative;
 }
-.illustrated-article .illustration .image img {
+.illustrated-article > .illustration .image img {
   position: absolute;
   height: 100%;
   width: 100%;
   top: 0;
   left: 0;
 }
-.illustrated-article .illustration legend {
+.illustrated-article > .illustration legend {
   min-height: 55px;
   width: 100px;
   margin-right: 15px;
   box-sizing: border-box;
   padding: 6px 6px 6px 10px;
 }
-.illustrated-article .illustration legend a {
+.illustrated-article > .illustration legend a {
   color: #fff;
   font-size: 14px;
 }
@@ -4029,7 +4071,7 @@ a.cke_smile img {
   background-size: 60% auto;
   background-color: transparent;
 }
-.square-menu ul.menu-items li input[type=button]:hover {
+.square-menu ul.menu-items li > li > div > input[type=button]:hover {
   background-color: transparent;
 }
 .square-menu-actions {
@@ -4204,12 +4246,11 @@ a.cke_smile img {
   background-image: url("../img/icons/draft.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   cursor: pointer;
 }
@@ -4220,12 +4261,11 @@ a.cke_smile img {
   background-image: url("../img/icons/submitted.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   cursor: pointer;
 }
@@ -4236,12 +4276,11 @@ a.cke_smile img {
   background-image: url("../img/icons/published.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   cursor: pointer;
 }
@@ -4250,11 +4289,11 @@ i.shared {
   width: 18px;
   background-image: url("../img/icons/shared.png");
   background-repeat: no-repeat;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-position: center;
   display: block;
@@ -4820,6 +4859,8 @@ nav.illustrated-links ul li {
   margin-bottom: 12px;
 }
 nav.illustrated-links ul li .illustration {
+  position: relative;
+  width: auto;
   display: table-cell;
   min-width: 120px;
   height: 120px;
@@ -4951,12 +4992,11 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/text-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
@@ -4969,12 +5009,11 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/picture-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 .menu-items i.sound,
@@ -4984,12 +5023,11 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/music-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 .menu-items i.video {
@@ -4998,12 +5036,11 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/video-icon.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-color: transparent;
   border: none;
@@ -5014,12 +5051,11 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/glyphicons_099_vector_path_all.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
@@ -5031,17 +5067,16 @@ ul.thought-out-actions > li p {
   background-image: url("../img/icons/glyphicons_155_show_big_thumbnails.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   background-size: 60% auto;
   background-color: transparent;
 }
-.menu-items input[type=button] {
+.menu-items > li > div > input[type=button] {
   background-position: 4px !important;
   padding-left: 29px;
   background-size: 19px;
@@ -5051,7 +5086,7 @@ ul.thought-out-actions > li p {
   text-align: left;
   font-size: 12px;
 }
-.menu-items input[type=button]:hover {
+.menu-items > li > div > input[type=button]:hover {
   color: #000;
 }
 .flexible {
@@ -5190,6 +5225,21 @@ table {
   min-height: 300px;
   position: relative;
   border: 1px solid #eee;
+}
+[contenteditable] {
+  height: auto;
+}
+.floating-navigation {
+  padding-left: 0;
+  padding-right: 20px;
+}
+.floating-navigation li {
+  list-style-type: none;
+  padding: 3px;
+  padding: 5px;
+}
+.floating-navigation li:first-child {
+  margin-top: 20px;
 }
 carousel .images {
   width: 100%;
@@ -5467,12 +5517,11 @@ recorder .controls .play {
   background-image: url("../img/icons/glyphicons_173_play.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 recorder .controls .record {
@@ -5481,12 +5530,11 @@ recorder .controls .record {
   background-image: url("../img/icons/glyphicons_169_record.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 recorder .controls .pause {
@@ -5495,12 +5543,11 @@ recorder .controls .pause {
   background-image: url("../img/icons/glyphicons_174_pause.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 recorder .controls .save {
@@ -5509,12 +5556,11 @@ recorder .controls .save {
   background-image: url("../img/icons/glyphicons_443_floppy_disk.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 recorder .controls .remove {
@@ -5523,12 +5569,11 @@ recorder .controls .remove {
   background-image: url("../img/icons/glyphicons_207_remove_2_accent.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 recorder .view {
@@ -5596,13 +5641,15 @@ input-password button {
   vertical-align: middle;
   border-left: none;
 }
-.hash-magnet {
+.hash-magnet,
+nav.hash-magnet.vertical {
   margin-top: -80px;
   padding-top: 80px;
   display: block;
   pointer-events: none;
 }
-.hash-magnet > * {
+.hash-magnet > *,
+nav.hash-magnet.vertical > * {
   pointer-events: all;
 }
 nav.double-content-stamps {
@@ -5809,6 +5856,82 @@ plus .opener.minus .plus {
 .cards-list .card h1:first-of-type,
 .cards-list .card h2:first-of-type {
   margin-top: 0;
+}
+.illustration {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  overflow: hidden;
+  left: 0;
+}
+.illustration img {
+  align-self: center;
+}
+.illustration input[type=checkbox] {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+nav.floating {
+  margin-bottom: 10px;
+}
+nav.floating .arrow.next {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  display: none;
+}
+nav.floating .arrow.next::after {
+  content: "\25B2";
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40px;
+  height: 40px;
+  background-color: #ccc;
+  text-align: center;
+  border-radius: 20px;
+  font-size: 26px;
+  line-height: 38px;
+}
+nav.floating .arrow.next.visible {
+  display: block;
+}
+nav.floating .arrow.previous {
+  position: absolute;
+  height: 40px;
+  width: 100%;
+  top: 80px;
+  z-index: 10;
+  display: none;
+}
+nav.floating .arrow.previous::after {
+  content: "\25B2";
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40px;
+  height: 40px;
+  background-color: #ccc;
+  text-align: center;
+  border-radius: 20px;
+  font-size: 26px;
+  line-height: 38px;
+  transform: rotate(180deg);
+}
+nav.floating .arrow.previous.visible {
+  display: block;
+}
+nav.floating .content {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 html,
 body {
@@ -6115,12 +6238,11 @@ i.ok {
   background-image: url("../img/icons/glyphicons_206_ok_2.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.nok {
@@ -6129,12 +6251,11 @@ i.nok {
   background-image: url("../img/icons/glyphicons_207_remove_2.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.folded-icon {
@@ -6144,12 +6265,11 @@ i.folded-icon {
   background-image: url("../img/icons/glyphicons_223_chevron-bottom.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.folded-icon.folded {
@@ -6158,12 +6278,11 @@ i.folded-icon.folded {
   background-image: url("../img/icons/glyphicons_223_chevron-right.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
 }
 i.disconnect {
@@ -6172,12 +6291,11 @@ i.disconnect {
   background-image: url("../img/icons/glyphicons_063_power_white.png");
   background-repeat: no-repeat;
   background-position: center;
-  display: block;
+  display: inline-block;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
   box-sizing: border-box;
-  float: left;
   vertical-align: middle;
   margin: 5px;
   float: right;
@@ -6731,8 +6849,6 @@ hr.separator {
   background: -moz-linear-gradient(#383838, #333333);
   background: -o-linear-gradient(#383838, #333333);
   background: linear-gradient(#383838, #333333);
-  -pie-background: linear-gradient(#383838, #333333);
-  behavior: url(/assets/themes/panda/css/PIE.htc);
   border: 1px solid #555;
   color: #666;
   border-bottom: none;
@@ -6982,6 +7098,7 @@ label.legend-label.marged {
   color: white;
 }
 nav.admin-bar {
+  min-height: 35px;
   overflow-y: hidden;
   transition: max-height 250ms ease;
   margin-top: 43px;
