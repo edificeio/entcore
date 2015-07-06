@@ -4231,11 +4231,11 @@ module.directive('plus', function($compile){
 				element.children('.opener').removeClass('plus').addClass('minus');
 				setTimeout(function(){
 					$('body').on('click.switch-plus-buttons', function(e){
-						if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
+						//if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
 							element.children('.toggle-buttons').addClass('hide');
 							element.children('.opener').removeClass('minus').addClass('plus');
 							$('body').off('click.switch-plus-buttons');
-						}
+						//}
 					});
 				}, 0);
 			});
