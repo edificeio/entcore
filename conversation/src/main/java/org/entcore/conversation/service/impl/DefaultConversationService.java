@@ -1039,6 +1039,7 @@ public class DefaultConversationService implements ConversationService {
 			"MATCH (attachment: MessageAttachment)<-[attachmentLink: HAS_ATTACHMENT]-(m: ConversationMessage)<-[r: HAS_CONVERSATION_MESSAGE]-(f: ConversationSystemFolder)" +
 			"<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation) " +
 			"WHERE m.id = {messageId} AND c.userId = {userId} AND c.active = {true} AND attachment.id = {attachmentId} AND {attachmentId} IN r.attachments " +
+			"WITH distinct attachment " +
 			"RETURN attachment.id as id, attachment.name as name, attachment.filename as filename, attachment.contentType as contentType, attachment.contentTransferEncoding as contentTransferEncoding, attachment.charset as charset, attachment.size as size";
 
 		JsonObject params = new JsonObject()
