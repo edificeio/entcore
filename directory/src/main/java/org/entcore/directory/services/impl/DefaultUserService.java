@@ -80,9 +80,6 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void update(final String id, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
-		//User name modification prevention.
-		user.removeField("lastName");
-		user.removeField("firstName");
 		JsonObject action = new JsonObject()
 				.putString("action", "manual-update-user")
 				.putString("userId", id)

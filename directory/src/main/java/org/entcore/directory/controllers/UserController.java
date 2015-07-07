@@ -21,6 +21,7 @@ package org.entcore.directory.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -29,13 +30,14 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
@@ -48,6 +50,7 @@ import org.vertx.java.core.json.JsonObject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -70,10 +73,24 @@ public class UserController extends BaseController {
 	public void update(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {
-				String userId = request.params().get("userId");
-				userService.update(userId, body, notEmptyResponseHandler(request));
-				UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+			public void handle(final JsonObject body) {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					public void handle(UserInfos user) {
+						String userId = request.params().get("userId");
+
+						//User name modification prevention for non-admins.
+						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
+						   !user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
+						   !user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
+							body.removeField("lastName");
+							body.removeField("firstName");
+						}
+						userService.update(userId, body, notEmptyResponseHandler(request));
+
+
+						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, null);
+					}
+				});
 			}
 		});
 	}
