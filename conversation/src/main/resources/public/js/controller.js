@@ -376,7 +376,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.filterUsers = function(mail){
 		return function(user){
 			var mapped = mail.map(user)
-			return typeof mapped !== 'undefined' && mapped.displayName !== 'undefined' && mapped.displayName.length > 0
+			return typeof mapped !== 'undefined' && typeof mapped.displayName !== 'undefined' && mapped.displayName.length > 0
 		}
 	}
 

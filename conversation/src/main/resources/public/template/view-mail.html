@@ -21,17 +21,17 @@
 				<div class="row">
 					<em class="medium-importance medium-text" ng-if="mail.to.length > 0">
 						<span translate key="to"></span>
-						<a ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-							[[mail.map(receiver).displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
-						</a>
+						<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
+							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
+						</span>
 					</em>
 				</div>
 				<div class="row">
 					<em class="medium-importance medium-text" ng-if="mail.cc.length > 0">
 						<span translate key="cc"></span>
-						<a ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))" href="/userbook/annuaire#[[mail.map(receiver).id]]">
-							[[mail.map(receiver).displayName]]<span ng-if="$index !== receivers.length - 1">,</span>
-						</a>
+						<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
+							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
+						</span>
 					</em>
 				</div>
 				<div class="row">
@@ -79,4 +79,3 @@
 		</div>
 	</article>
 </div>
-

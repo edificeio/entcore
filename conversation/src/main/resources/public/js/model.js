@@ -355,6 +355,7 @@ model.build = function(){
 	this.collection(User, {
 		sync: function(){
 			http().get('/conversation/visible').done(function(data){
+                _.forEach(data.groups, function(group){ group.isGroup = true });
 				this.addRange(data.groups);
 				this.addRange(data.users);
 				this.trigger('sync');
@@ -389,7 +390,10 @@ model.build = function(){
 			return _.reject(found, function(element){
 				return _.findWhere(exclude, {id :element.id });
 			});
-		}
+		},
+        isGroup: function(id){
+            return this.findWhere({isGroup: true, id: id})
+        }
 	});
 
 	this.collection(Folder, {
