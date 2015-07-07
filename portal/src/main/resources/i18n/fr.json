@@ -145,5 +145,7 @@
     "Student": "Elève",
     "Relative": "Parent",
     "Guest": "Invité",
-    "Relative": "Parent"
+    "Relative": "Parent",
+    "Structure": "Structure",
+    "Class": "Classe"
 }

@@ -185,13 +185,13 @@
                             <th><!--Name--></th>
                             <th>[[ lang.translate("communication.innerRelationships") ]]</th>
                             <th>[[ lang.translate("communication.relativesRelationships") ]]</th>
-                            <th ng-repeat="header in defaultRules">[[ header.name ]]</th>
+                            <th ng-repeat="header in defaultRules">[[ groupTranslation(header.name) ]]</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="line in defaultRules">
                             <td>
-                                [[ line.name ]]
+                                [[ groupTranslation(line.name) ]]
                             </td>
                             <td>
                                 [[ line.users ? lang.translate("communication.table."+line.users.toLowerCase()) : "" ]]

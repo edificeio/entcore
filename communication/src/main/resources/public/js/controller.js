@@ -100,6 +100,12 @@ function CommunicationAdminController($scope, $http){
 		}
 	}
 
+	$scope.groupTranslation = function(groupName){
+		return groupName.split('-').length > 1 ?
+			lang.translate(groupName.split('-')[0]) + '-' + lang.translate(groupName.split('-')[1]) :
+			groupName
+	}
+
 	$scope.groupStyling = function(group, listedGroup){
 		var otherGroup = _.findWhere(group.communiqueWith, { id: listedGroup.id })
 		var color = !otherGroup ? "gray" : otherGroup.communiqueWith && otherGroup.communiqueWith.indexOf(group.id) >= 0 ? "darkgreen" : "crimson"
@@ -132,6 +138,5 @@ function CommunicationAdminController($scope, $http){
 		group.removeLinkBetweenRelativeAndStudent("BOTH")
 		group.relativeCommuniqueStudent = ""
 	}
-
 
 }
