@@ -65,14 +65,14 @@
                         <input type="text" placeholder="[[lang.translate('communication.search')]]" ng-model="$parent.filterGroups"/>
                         <ul>
                             <li ng-repeat="group in structure.groups.all | filter: filterGroupsFunction(filterGroups) | orderBy: 'name'" ng-click="group.sync(); $root.group = group;" style="padding-left: 0">
-                                <span>[[group.name]]</span>
+                                <span>[[groupTranslation(group.name)]]</span>
                             </li>
                         </ul>
                     </nav>
 
                     <!-- Group data container -->
                     <div ng-if="group" class="search-container-view">
-                        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[group.name]]</h1></div>
+                        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[groupTranslation(group.name)]]</h1></div>
                         <hr class="separator">
                         <div style="text-align: center;">
                             <strong style="margin-right: 20;">[[lang.translate("communication.id")]]</strong><span>[[group.id]]</span>
@@ -109,13 +109,13 @@
                                                 ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
                                                 ng-change="commStructure.groups.sync()">
                                         </select>
-                                        <input class="large-dark-input" type="text" ng-model="$parent.filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]"/>
+                                        <input class="large-dark-input" type="text" ng-model="filterAccordionGroups" placeholder="[[lang.translate('communication.search')]]"/>
                                         <ul style="font-family: Lato; list-style-type: none; margin-top: 0; padding-left: 0;">
                                             <li ng-repeat="listedGroup in filterAllOtherGroups(commStructure.groups.all, group) | filter: filterGroupsFunction(filterAccordionGroups) | orderBy: 'name'"
                                                 ng-style="groupStyling(group, listedGroup)"
                                                 ng-click="toggleGroupCommunication(group, listedGroup)"
                                                 style="float: left; display: inline; width: 27%; margin-right: 1%;border-left: 10px solid gray;padding-left: 10; margin-bottom: 5px; transition: border-color 250ms ease;">
-                                                [[listedGroup.name]]
+                                                [[groupTranslation(listedGroup.name)]]
                                             </li>
                                         </ul>
                                     </div>

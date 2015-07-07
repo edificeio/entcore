@@ -84,7 +84,7 @@ function CommunicationAdminController($scope, $http){
 
 	$scope.filterGroupsFunction = function(input){
 		return function(group){
-			return !input ? true : group.name.toLowerCase().indexOf(input.toLowerCase()) >= 0
+			return !input ? true : lang.removeAccents($scope.groupTranslation(group.name).toLowerCase()).indexOf(lang.removeAccents(input.toLowerCase())) >= 0
 		}
 	}
 
@@ -101,8 +101,9 @@ function CommunicationAdminController($scope, $http){
 	}
 
 	$scope.groupTranslation = function(groupName){
-		return groupName.split('-').length > 1 ?
-			lang.translate(groupName.split('-')[0]) + '-' + lang.translate(groupName.split('-')[1]) :
+		var splittedName = groupName.split('-')
+		return splittedName.length > 1 ?
+			lang.translate(groupName.substring(0, groupName.lastIndexOf('-'))) + '-' + lang.translate(groupName.split('-')[splittedName.length - 1]) :
 			groupName
 	}
 
