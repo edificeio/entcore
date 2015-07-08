@@ -1,0 +1,22 @@
+{
+	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
+	"ENTPersonNom" : { "attribute" : "lastName", "type" : "string" },
+	"ENTPersonPrenom" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonAutresPrenoms" : { "attribute" : "otherNames", "type" : "array-string" },
+	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
+	"ENTPersonCivilite" : { "attribute" : "title", "type" : "string" },
+	"categoriePersonne" : { "attribute" : "category", "type" : "string" },
+	"ENTEleveAutoriteParentale" : { "attribute" : "relative", "type" : "array-string" },
+	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string" },
+	"ENTPersonClasses" : { "attribute" : "classes", "type" : "array-string" },
+	"ENTPersonGroupes" : { "attribute" : "groups", "type" : "array-string" },
+	"ENTEleveNiveau" : { "attribute" : "level", "type" : "string" },
+	"ENTEleveCycle" : { "attribute" : "sector", "type" : "string" },
+	"ENTEleveTypeClasse" : { "attribute" : "classType", "type" : "string" },
+	"ENTEleveRestaurantScolaire" : { "attribute" : "schoolCanteen", "type" : "boolean" },
+	"ENTEleveTransport" : { "attribute" : "transport", "type" : "boolean" },
+	"ENTEleveGarderieMatin" : { "attribute" : "morningChildcare", "type" : "boolean" },
+	"ENTEleveGarderieSoir" : { "attribute" : "afternoonChildcare", "type" : "boolean" },
+	"ENTEleveEtudesSurveillees" : { "attribute" : "supervisedStudy", "type" : "boolean" }
+}

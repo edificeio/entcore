@@ -103,6 +103,10 @@
 			"type" : "string",
 			"validator" : "notEmpty"
 		},
+		"classType" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
 		"accommodation" : {
 			"type" : "string",
 			"validator" : "notEmpty"
@@ -121,6 +125,18 @@
 		},
 		"transport" : {
 			"type" : "boolean"
+		},
+		"schoolCanteen" : {
+		  "type" : "boolean"
+		},
+		"supervisedStudy" : {
+		  "type" : "boolean"
+		},
+		"morningChildcare" : {
+		  "type" : "boolean"
+		},
+		"afternoonChildcare" : {
+		  "type" : "boolean"
 		},
 		"status" : {
 			"type" : "string",

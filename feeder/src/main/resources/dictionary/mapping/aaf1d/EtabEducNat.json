@@ -1,0 +1,22 @@
+{
+	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
+	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
+	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
+	"ENTStructureTypeStruct" : { "attribute" : "type", "type" : "string" },
+	"ENTEcoleMinistereTutelle" : { "attribute" : "ministry", "type" : "string" },
+	"ENTEtablissementContrat" : { "attribute" : "contract", "type" : "string" },
+	"ENTStructureBoitePostale" : { "attribute" : "postbox", "type" : "string" },
+	"ENTStructureAdresse" : { "attribute" : "address", "type" : "string" },
+	"ENTStructureCodePostal" : { "attribute" : "zipCode", "type" : "string" },
+	"ENTStructureVille" : { "attribute" : "city", "type" : "string" },
+	"ENTStructureTelephone" : { "attribute" : "phone", "type" : "string" },
+	"ENTStructureFax" : { "attribute" : "fax", "type" : "string" },
+	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
+	"ENTEcoleSecteur" : { "attribute" : "sector", "type" : "string" },
+	"ENTEcoleCirconscription" : { "attribute" : "district", "type" : "string" },
+	"ENTEcoleCommune" : { "attribute" : "town", "type" : "string" },
+	"ENTEcoleRPI" : { "attribute" : "rpi", "type" : "string" },
+	"ENTStructureEmail" : { "attribute" : "email", "type" : "string" },
+	"categorieStructure" : { "attribute" : "category", "type" : "string" }
+}

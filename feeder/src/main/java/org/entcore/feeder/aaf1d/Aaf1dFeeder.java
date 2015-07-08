@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2015
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,55 +15,35 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
-package org.entcore.feeder.aaf;
+package org.entcore.feeder.aaf1d;
 
+import org.entcore.feeder.Feed;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.Set;
+public class Aaf1dFeeder implements Feed {
 
-public class UserImportProcessing extends BaseImportProcessing {
+	private final Vertx vertx;
+	private final String path;
 
-	private final Importer importer = Importer.getInstance();
-	private final Set<String> resp;
-
-	protected UserImportProcessing(String path, Vertx vertx, Set<String> resp) {
-		super(path, vertx);
-		this.resp = resp;
+	public Aaf1dFeeder(Vertx vertx, String path) {
+		this.vertx = vertx;
+		this.path = path;
 	}
 
 	@Override
-	public void start(final Handler<Message<JsonObject>> handler) {
-			parse(handler, getNextImportProcessing());
+	public void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception {
+		new StructureImportProcessing1d(path,vertx).start(handler);
 	}
 
 	@Override
-	public String getMappingResource() {
-		return "dictionary/mapping/aaf/PersRelEleve.json";
-	}
-
-	protected ImportProcessing getNextImportProcessing() {
-		return new PersonnelImportProcessing(path, vertx);
-	}
-
-	@Override
-	public void process(JsonObject object) {
-		if (resp.contains(object.getString("externalId"))) {
-			object.putArray("profiles", new JsonArray().add("Relative"));
-			importer.createOrUpdateUser(object);
-		}
-	}
-
-	@Override
-	protected String getFileRegex() {
-		return ".*?PersRelEleve_[0-9]{4}\\.xml";
+	public String getSource() {
+		return "AAF1D";
 	}
 
 }

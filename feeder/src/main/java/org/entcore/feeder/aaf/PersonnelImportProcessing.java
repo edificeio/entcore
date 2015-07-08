@@ -35,7 +35,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		parse(handler, new PersonnelImportProcessing2(path, vertx));
+		parse(handler, getNextImportProcessing());
 	}
 
 	@Override
@@ -160,4 +160,9 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	protected String getFileRegex() {
 		return ".*?PersEducNat_[0-9]{4}\\.xml";
 	}
+
+	protected ImportProcessing getNextImportProcessing() {
+		return new PersonnelImportProcessing2(path, vertx);
+	}
+
 }

@@ -25,6 +25,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
+import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.dictionary.structures.*;
@@ -99,8 +100,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		defaultFeed = container.config().getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, container.config().getString("import-files"),
 				container.config().getBoolean("aafNeo4jPlugin", false)));
+		feeds.put("AAF1D", new Aaf1dFeeder(vertx, container.config().getString("import-files")));
 		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files"),
-				container.config().getString("uai-separator","_")));
+				container.config().getString("uai-separator", "_")));
 		feeds.put("CSV", new CsvFeeder(container.config().getObject("csvMappings", new JsonObject())));
 		switch (container.config().getString("exporter", "")) {
 			case "ELIOT" :

@@ -45,20 +45,24 @@ public class StudentImportProcessing extends BaseImportProcessing {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if ("ok".equals(message.body().getString("status"))) {
-						parse(handler, new UserImportProcessing(path, vertx, resp));
+						parse(handler, getNextImportProcessing());
 					} else {
 						error(message, handler);
 					}
 				}
 			});
 		} else {
-			parse(handler, new UserImportProcessing(path, vertx, resp));
+			parse(handler, getNextImportProcessing());
 		}
 	}
 
 	@Override
 	public String getMappingResource() {
 		return "dictionary/mapping/aaf/Eleve.json";
+	}
+
+	protected ImportProcessing getNextImportProcessing() {
+		return new UserImportProcessing(path, vertx, resp);
 	}
 
 	@Override

@@ -21,7 +21,6 @@ package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.Profile;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -50,7 +49,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 					if ("ok".equals(message.body().getString("status"))) {
 						createOrUpdateProfiles();
 						DefaultFunctions.createOrUpdateFunctions(importer);
-						parse(handler, new FieldOfStudyImportProcessing(path, vertx));
+						parse(handler, getNextImportProcessing());
 					} else {
 						error(message, handler);
 					}
@@ -59,8 +58,12 @@ public class StructureImportProcessing extends BaseImportProcessing {
 		} else {
 			createOrUpdateProfiles();
 			DefaultFunctions.createOrUpdateFunctions(importer);
-			parse(handler, new FieldOfStudyImportProcessing(path, vertx));
+			parse(handler, getNextImportProcessing());
 		}
+	}
+
+	protected ImportProcessing getNextImportProcessing() {
+		return new FieldOfStudyImportProcessing(path, vertx);
 	}
 
 	private void createOrUpdateProfiles() {

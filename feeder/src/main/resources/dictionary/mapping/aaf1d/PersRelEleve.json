@@ -1,0 +1,19 @@
+{
+	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
+	"ENTPersonNom" : { "attribute" : "lastName", "type" : "string" },
+	"ENTPersonPrenom" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
+	"ENTPersonAutresPrenoms" : { "attribute" : "otherNames", "type" : "array-string" },
+	"ENTPersonCivilite" : { "attribute" : "title", "type" : "string" },
+	"ENTPersonTelPerso" : { "attribute" : "homePhone", "type" : "string" },
+	"ENTPersRelEleveTelPro" : { "attribute" : "workPhone", "type" : "string" },
+	"ENTPersonAdresse" : { "attribute" : "address", "type" : "siecle-address" },
+	"ENTPersonCodePostal" : { "attribute" : "zipCode", "type" : "string" },
+	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
+	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
+	"ENTPersonAdresseDiffusion" : { "attribute" : "addressDiffusion", "type" : "boolean" },
+	"ENTPersonMail" : { "attribute" : "email", "type" : "string" },
+	"ENTPersRelEleveTelMobile" : { "attribute" : "mobile", "type" : "string" },
+	"categoriePersonne" : { "attribute" : "category", "type" : "string" }
+}

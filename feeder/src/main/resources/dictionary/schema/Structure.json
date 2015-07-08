@@ -84,6 +84,22 @@
 			"type" : "string",
 			"validator" : "notEmpty"
 		},
+		"town" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
+		"district" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
+		"sector" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
+		"rpi" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
 		"academy" : {
 			"type" : "string",
 			"validator" : "notEmpty"
