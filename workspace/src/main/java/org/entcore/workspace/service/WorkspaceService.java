@@ -648,11 +648,7 @@ public class WorkspaceService extends BaseController {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				String n = request.formAttributes().get("name");
-				if (n != null) {
-					n = n.replaceAll("_", "＿"); // "&#95;"
-				}
-				final String name = n;
+				final String name = replaceUnderscore(request.formAttributes().get("name"));
 				final String path = request.formAttributes().get("path");
 				if (name == null || name.trim().isEmpty()) {
 					badRequest(request);
@@ -682,7 +678,7 @@ public class WorkspaceService extends BaseController {
 			protected void handle() {
 				final String id = request.params().get("id");
 				final String path = request.formAttributes().get("path");
-				final String name = request.formAttributes().get("name");
+				final String name = replaceUnderscore(request.formAttributes().get("name"));
 				if (id == null || id.trim().isEmpty()) {
 					badRequest(request);
 					return;
@@ -2189,7 +2185,7 @@ public class WorkspaceService extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos userInfos) {
 						if(userInfos != null){
-							String name = body.getString("name");
+							final String name = replaceUnderscore(body.getString("name"));
 							String id = request.params().get("id");
 							folderService.rename(id, name, userInfos, defaultResponseHandler(request));
 						} else {
@@ -2381,6 +2377,15 @@ public class WorkspaceService extends BaseController {
 				}
 			}
 		}));
+	}
+
+
+	private String replaceUnderscore(String value) {
+		String n = value;
+		if (n != null) {
+			n = n.replaceAll("_", "＿"); // "&#95;"
+		}
+		return n;
 	}
 
 }
