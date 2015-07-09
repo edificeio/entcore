@@ -408,16 +408,20 @@ public class User {
 		String query =
 				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
 				"WITH r " +
-				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
-				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
-				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
-				"MATCH s-[relations]-r " +
+				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
+				"s-[relations]-r " +
 				"SET s.relative = FILTER(rId IN s.relative WHERE NOT(rId =~ (r.externalId + '.*'))) " +
 				"DELETE relations";
+		String query2 =
+				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class), " +
+				"(r:User {id : {relativeId}})-[r2:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
+				"WHERE NOT(r<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->c) " +
+				"DELETE r2";
 		JsonObject params = new JsonObject()
 			.putString("relativeId", relativeId)
 			.putString("studentId", studentId);
 		tx.add(query, params);
+		tx.add(query2, params);
 	}
 
 }
