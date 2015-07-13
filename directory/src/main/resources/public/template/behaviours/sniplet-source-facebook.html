@@ -17,17 +17,16 @@
 				</div>
 				<div class="row" ng-if="source.groups.length > 0">
 					<div class="twelve cell" ng-repeat="group in source.groups">
-						[[group.name]] <i class="close right-magnet" ng-click="removeGroup($index, group)"></i>
+						[[group.translatedName]] <i class="close right-magnet" ng-click="removeGroup($index, group)"></i>
 					</div>
 				</div>
 				<h2><i18n>sniplet.facebook.search.title</i18n></h2>
 				<input type="text" ng-model="search.text" i18n-placeholder="search" class="twelve cell" />
 
 				<div class="row search-results" ng-if="search.text !== ''">
-					<div class="group" ng-repeat="group in search.groups | filter:{ name: search.text }" ng-click="addGroup(group)">
-						[[group.name]]
+					<div class="group" ng-repeat="group in search.groups | filter:{ translatedName: search.text }" ng-click="addGroup(group)">
+						[[group.translatedName]]
 					</div>
 				</div>
 			</step>
 		</wizard>
-

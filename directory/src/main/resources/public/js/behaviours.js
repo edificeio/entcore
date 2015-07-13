@@ -32,8 +32,10 @@ Behaviours.register('directory', {
 					this.search.groups.splice(index, 1);
 				},
 				loadGroups: function(){
+					var that = this
 					http().get('/userbook/structure/' + this.search.structure.id).done(function(structure){
 						this.search.groups = structure.profileGroups.concat(structure.manualGroups);
+						_.map(this.search.groups, function(group){ group.translatedName = that.groupTranslation(group.name) })
 						this.$apply('search');
 					}.bind(this));
 				},
@@ -52,9 +54,14 @@ Behaviours.register('directory', {
 				colorFromType: function(type){
 					var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
 					return colorsMatch[type.toLowerCase()];
+				},
+				groupTranslation: function(groupName){
+					var splittedName = groupName.split('-')
+					return splittedName.length > 1 ?
+						lang.translate(groupName.substring(0, groupName.lastIndexOf('-'))) + '-' + lang.translate(groupName.split('-')[splittedName.length - 1]) :
+						groupName
 				}
 			}
 		}
 	}
 });
-
