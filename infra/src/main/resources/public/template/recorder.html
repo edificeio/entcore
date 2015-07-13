@@ -11,10 +11,10 @@
 		</div>
 	</div>
 	<div class="controls">
-		<i class="record" ng-click="switchRecord()" ng-class="{ pause: recorder.status === 'recording' }"></i>
-		<i class="play" ng-click="switchPlay()" ng-if="recorder.elapsedTime > 0" ng-class="{ pause: recorder.status === 'playing' }"></i>
-		<i class="remove" ng-click="recorder.flush()" ng-if="recorder.elapsedTime > 0"></i>
-		<i class="save" ng-click="saveRecord()" ng-if="recorder.elapsedTime > 0"></i>
+		<i class="record" ng-click="switchRecord()" ng-class="{ pause: recorder.status === 'recording' }" tooltip="[[recorder.status === 'recording' ? 'record.stop' : 'record.start']]"></i>
+		<i class="play" ng-click="switchPlay()" ng-if="recorder.elapsedTime > 0" ng-class="{ pause: recorder.status === 'playing' }" tooltip="record.play"></i>
+		<i class="remove" ng-click="recorder.flush()" ng-if="recorder.elapsedTime > 0" tooltip="record.remove"></i>
+		<i class="save" ng-click="saveRecord()" ng-if="recorder.elapsedTime > 0" tooltip="record.save"></i>
 	</div>
 </div>
 <div ng-if="!recorder.isCompatible()">

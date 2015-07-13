@@ -147,5 +147,10 @@
     "Guest": "Invité",
     "Relative": "Parent",
     "Structure": "Structure",
-    "Class": "Classe"
+    "Class": "Classe",
+    "record.start": "Démarrer l'enregistrement",
+    "record.stop": "Arrêter l'enregistrement",
+    "record.play": "Jouer le son",
+    "record.remove": "Annuler l'enregistrement",
+    "record.save": "Sauvegarder l'enregistrement dans l'espace documentaire"
 }
