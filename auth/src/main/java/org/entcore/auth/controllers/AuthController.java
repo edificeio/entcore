@@ -511,6 +511,8 @@ public class AuthController extends BaseController {
 								trace.info("Activation du compte utilisateur " + login);
 								eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
 								if (container.config().getBoolean("activationAutoLogin", false)) {
+									trace.info("Connexion de l'utilisateur " + login);
+									eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
 									createSession(activated.right().getValue(), request,
 											getScheme(request) + "://" + getHost(request));
 								} else {
