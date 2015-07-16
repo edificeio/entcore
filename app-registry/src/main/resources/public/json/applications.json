@@ -43,5 +43,14 @@
 		"target": "_blank",
 		"scope": "userinfo",
 		"icon": "maxicours-large"
+	}, {
+		"id": "4",
+		"name": "madmagz",
+		"displayName": "madmagz",
+		"password": "madmagz-secret",
+		"url": "",
+		"target": "_blank",
+		"scope": "userinfo",
+		"icon": "madmagz-large"
 	}
 ]
