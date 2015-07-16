@@ -39,8 +39,8 @@
 				<ul class="illustrated-list" ng-if="linker.search.text">
 					<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
 						<img skin-src="[[resource.icon]]" class="illustration" />
-						<a class="name">[[resource.title]]</a>
-						<em class="owner">[[resource.ownerName]]</em>
+						<a class="eight cell-ellipsis name">[[resource.title]]</a>
+						<em class="two cell-ellipsis owner">[[resource.ownerName]]</em>
 					</li>
 				</ul>
 			</article>
