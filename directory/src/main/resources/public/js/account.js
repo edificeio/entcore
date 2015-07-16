@@ -114,6 +114,11 @@ function MyAccount($scope, lang, date, notify, route){
 		ui.hideLightbox();
 	};
 
+	$scope.removePicture = function(){
+		$scope.account.picture = "";
+		$scope.saveChanges();
+	}
+
 	$scope.saveInfos = function(){
 		model.account.saveInfos();
 	};

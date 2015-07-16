@@ -385,5 +385,6 @@
     "password.errors": "Erreur(s) lors de la saisie du mot de passe",
     "password.identical": "Les mots de passe doivent être identiques",
     "origin": "Origine",
-    "properties": "Propriétés"
+    "properties": "Propriétés",
+    "userBook.remove.avatar": "Supprimer l'image de profil"
 }
