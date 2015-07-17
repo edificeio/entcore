@@ -1961,6 +1961,9 @@ public class WorkspaceService extends BaseController {
 					} else if ("protected".equals(filter)) {
 						query += "\"owner\": \"" + user.getUserId() + "\", \"protected\":true";
 						forApplication = "";
+					} else if ("public".equals(filter)) {
+						query += "\"owner\": \"" + user.getUserId() + "\", \"public\":true";
+						forApplication = "";
 					} else if ("shared".equals(filter)) {
 						query += "\"owner\": { \"$ne\":\"" + user.getUserId() +
 								"\"},\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user) + "}";

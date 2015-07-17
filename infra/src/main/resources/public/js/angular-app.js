@@ -5120,6 +5120,8 @@ function MediaLibrary($scope){
 					return lang.removeAccents(folder.name.toLowerCase()).indexOf(lang.removeAccents($scope.display.search.toLowerCase())) !== -1;
 				});
 				$scope.$apply('folders');
+			} else {
+				delete($scope.folders);
 			}
 
 			$scope.folder = model.mediaLibrary[$scope.display.listFrom];
