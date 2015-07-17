@@ -62,6 +62,10 @@
 				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
 			};
 
+			$scope.filterBookmark = function(item){
+				return _.findWhere($scope.bookmarkedApps, {name : item.name})
+			}
+
 			$scope.drag = function(item, event){
 				event.dataTransfer.setData('application/json', JSON.stringify(item));
 			};
