@@ -31,7 +31,7 @@
 				<div ng-include="'/' + prefix + '/public/template/behaviours/linker-notfound.html'"></div>
 			</div>
 			<ul class="illustrated-list" ng-if="attachments.display.search.text">
-				<li ng-repeat="resource in attachments.resources" ng-click="attachments.addAttachment(resource)">
+				<li ng-repeat="resource in attachments.resources" ng-click="attachments.addAttachment(resource)" class="cell-ellipsis">
 					<img skin-src="[[resource.icon]]" class="illustration" />
 					<a class="name">[[resource.title]]</a>
 					<em class="owner">[[resource.ownerName]]</em>
