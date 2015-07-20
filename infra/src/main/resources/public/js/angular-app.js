@@ -3432,12 +3432,14 @@ module.directive('datePicker', function($compile){
 				element.datepicker('hide');
 			});
 
-			$('body, lightbox').on('click', function(e){
+			var hideFunction = function(e){
 				if(e.originalEvent && (element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0)){
 					return;
 				}
 				element.datepicker('hide');
-			});
+			};
+			$('body, lightbox').on('click', hideFunction);
+			$('body, lightbox').on('focusin', hideFunction);
 
 			element.on('focus', function(){
 				var that = this;
