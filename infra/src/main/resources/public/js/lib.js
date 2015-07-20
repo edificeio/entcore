@@ -1331,19 +1331,10 @@ var calendar = {
 				}).length;
 			},
 			scheduleItemWidth: function(scheduleItem){
-				var nbConcurrentItems = 1;
-				var scheduleItemTime = calendar.getHours(scheduleItem, day);
-
-				for(var i = scheduleItemTime.startTime; i < scheduleItemTime.endTime; i++){
-					var nbScheduleItems = this.filter(function(item){
-						var itemHours = calendar.getHours(item, day);
-						return itemHours.startTime <= i && itemHours.endTime > i;
-					}).length;
-					if(nbConcurrentItems < nbScheduleItems){
-						nbConcurrentItems = nbScheduleItems;
-					}
-				}
-
+				var nbConcurrentItems = this.filter(function(item){
+					return item.beginning <= scheduleItem.end && item.end >= scheduleItem.beginning
+				}).length;
+				
 				return Math.floor(12 / nbConcurrentItems);
 			}
 		});
