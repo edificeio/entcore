@@ -171,7 +171,10 @@ public class PortalController extends BaseController {
 	@Get("/adapter")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void adapter(final HttpServerRequest request) {
-		renderView(request);
+		String eliotPrefix = request.params().get("eliot");
+		eliotPrefix = eliotPrefix == null ? "" : eliotPrefix;
+
+		renderView(request, new JsonObject().putString("eliotPrefix", eliotPrefix));
 		eventStore.createAndStoreEvent(PortalEvent.ACCESS_ADAPTER.name(),
 				request, new JsonObject().putString("adapter", request.uri()));
 	}
