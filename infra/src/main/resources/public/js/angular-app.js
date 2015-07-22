@@ -3577,7 +3577,7 @@ module.directive('alphabetical', function($compile, $parse){
 				'<div ng-if="matchingElements[letter].length > 0" class="row">' +
 				'<h1 class="letter-picker" ng-click="display.pickLetter = true;" id="alphabetical-[[letter]]">[[letter]]</h1><hr class="line" />' +
 				'<div class="row"><div ng-repeat="' + iterator + ' |filter: matching(letter)">' + iteratorContent + '</div></div>' +
-				'</div><div class="row"></div>' +
+				'</div><div ng-if="matchingElements[letter].length > 0" class="row"></div>' +
 				'</div>');
 			element.addClass('alphabetical');
 			var match = iterator.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+track\s+by\s+([\s\S]+?))?\s*$/);
