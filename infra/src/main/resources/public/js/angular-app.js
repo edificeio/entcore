@@ -1460,14 +1460,24 @@ module.directive('dropDown', function($compile, $timeout){
 					'</div>',
 		link: function(scope, element, attributes){
 			scope.limit = 6;
+			scope.setDropDownHeight = function(){
+				var liHeight = 0;
+				var max = Math.min(scope.limit, scope.options.length);
+				element.find('li').each(function(index, el){
+					liHeight += $(el).height();
+					return index < max;
+				})
+				element.height(liHeight)
+			}
 			scope.increaseLimit = function(){
 				scope.limit += 5;
-				element.height(
-						element.find('li').height() * scope.limit
-					);
+				$timeout(function(){
+					scope.setDropDownHeight()
+				});
 			};
 			scope.$watchCollection('options', function(newValue){
 				if(!scope.options || scope.options.length === 0){
+					element.height();
 					element.addClass('hidden');
 					scope.limit = 6;
 					element.attr('style', '');
@@ -1488,6 +1498,7 @@ module.directive('dropDown', function($compile, $timeout){
 				pos.top = pos.top + height;
 				element.offset(pos);
 				element.width(width);
+				scope.setDropDownHeight();
 			});
 			element.parent().on('remove', function(){
 				element.remove();
@@ -1521,7 +1532,7 @@ module.directive('dropDown', function($compile, $timeout){
 	}
 });
 
-module.directive('autocomplete', function($compile){
+module.directive('autocomplete', function($compile, $timeout){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -1549,9 +1560,20 @@ module.directive('autocomplete', function($compile){
 			var linkedInput = element.find('input');
 			scope.match = [];
 
+			scope.setDropDownHeight = function(){
+				var liHeight = 0;
+				var max = Math.min(10, scope.match.length);
+				dropDownContainer.find('li').each(function(index, el){
+					liHeight += $(el).height();
+					return index < max;
+				})
+				dropDownContainer.height(liHeight)
+			}
+
 			scope.$watch('search', function(newVal){
 				if(!newVal){
 					scope.match = [];
+					dropDownContainer.height("");
 					dropDownContainer.addClass('hidden');
 					return;
 				}
@@ -1564,6 +1586,7 @@ module.directive('autocomplete', function($compile){
 					}) === undefined;
 				});
 				if(!scope.match || scope.match.length === 0){
+					dropDownContainer.height("");
 					dropDownContainer.addClass('hidden');
 					return;
 				}
@@ -1582,6 +1605,9 @@ module.directive('autocomplete', function($compile){
 				pos.top = pos.top + height;
 				dropDownContainer.offset(pos);
 				dropDownContainer.width(width);
+				$timeout(function(){
+					scope.setDropDownHeight();
+				}, 1);
 			});
 
 			element.parent().on('remove', function(){
