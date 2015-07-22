@@ -1334,7 +1334,7 @@ var calendar = {
 				var nbConcurrentItems = this.filter(function(item){
 					return item.beginning <= scheduleItem.end && item.end >= scheduleItem.beginning
 				}).length;
-				
+
 				return Math.floor(12 / nbConcurrentItems);
 			}
 		});
@@ -1582,7 +1582,7 @@ var sniplets = {
 
 			var all = apps.length;
 			apps.forEach(function(app){
-				var appPrefix = app.address.split('/')[1];
+				var appPrefix = app.address ? app.address.split('/')[1] : app;
 				Behaviours.loadBehaviours(appPrefix, function(behaviours){
 					if(behaviours.sniplets){
 						sniplets.sniplets = sniplets.sniplets.concat(_.map(behaviours.sniplets, function(sniplet, name){ return { application: appPrefix, template: name, sniplet: sniplet } }));
