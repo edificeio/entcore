@@ -262,7 +262,7 @@ public class ManualFeeder extends BusModBase {
 				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WITH u, p " +
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
-				"CREATE UNIQUE pg<-[:IN]-u " +
+				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u " +
 				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
 				"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
 				"RETURN DISTINCT u.id as id";
@@ -358,7 +358,7 @@ public class ManualFeeder extends BusModBase {
 				"WITH u, p " +
 				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
 				"(pg:ProfileGroup)-[:HAS_PROFILE]->p, s-[:BELONGS]->(struct:Structure) " +
-				"CREATE UNIQUE pg<-[:IN]-u, cpg<-[:IN]-u " +
+				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u, cpg<-[:IN {source:'MANUAL'}]-u " +
 				"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
 				"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
 				"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +

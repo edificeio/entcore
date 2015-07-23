@@ -327,10 +327,11 @@ public class Importer {
 				transactionHelper.add(q1, p);
 				String qs =
 						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-						"WHERE NOT(s.externalId IN {structures}) " +
+						"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 						"DELETE r";
 				JsonObject ps = new JsonObject()
 						.putString("userExternalId", externalId)
+						.putString("source", currentSource)
 						.putArray("structures", structures);
 				transactionHelper.add(qs, ps);
 			}
@@ -358,10 +359,11 @@ public class Importer {
 				}
 				String q =
 						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
-						"WHERE NOT(c.externalId IN {classes}) " +
+						"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 						"DELETE r";
 				JsonObject p = new JsonObject()
 						.putString("userExternalId", externalId)
+						.putString("source", currentSource)
 						.putArray("classes", classes);
 				transactionHelper.add(q, p);
 			}
@@ -516,10 +518,11 @@ public class Importer {
 					transactionHelper.add(query, p);
 					String qs =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) " +
+							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject ps = new JsonObject()
 							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
 							.putArray("structures", structuresByFunctions);
 					transactionHelper.add(qs, ps);
 				}
@@ -547,10 +550,11 @@ public class Importer {
 					}
 					String q =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
-							"WHERE NOT(c.externalId IN {classes}) " +
+							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject p = new JsonObject()
 							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
 							.putArray("classes", classes);
 					transactionHelper.add(q, p);
 				}
@@ -640,10 +644,11 @@ public class Importer {
 					transactionHelper.add(query, p);
 					String qs =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) " +
+							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject ps = new JsonObject()
 							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
 							.putArray("structures", structures);
 					transactionHelper.add(qs, ps);
 				}
@@ -671,10 +676,11 @@ public class Importer {
 					}
 					String q =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
-							"WHERE NOT(c.externalId IN {classes}) " +
+							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject p = new JsonObject()
 							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
 							.putArray("classes", classes);
 					transactionHelper.add(q, p);
 				}
