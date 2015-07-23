@@ -263,7 +263,7 @@ public class Be1dFeeder implements Feed {
 			public void procRow(int rowIdx, String... values) {
 				int i = 0;
 				JsonObject props = new JsonObject();
-				while (i < header.length) {
+				while (i < header.length && i < values.length) {
 					if (!"#skip#".equals(header[i])) {
 						if (values[i] != null && !values[i].trim().isEmpty()) {
 							props.putString(header[i], values[i].trim());
