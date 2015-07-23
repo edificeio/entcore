@@ -325,6 +325,14 @@ public class Importer {
 				p.putArray("structuresAdmin", structures)
 						.putString("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
 				transactionHelper.add(q1, p);
+				String qs =
+						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
+						"WHERE NOT(s.externalId IN {structures}) " +
+						"DELETE r";
+				JsonObject ps = new JsonObject()
+						.putString("userExternalId", externalId)
+						.putArray("structures", structures);
+				transactionHelper.add(qs, ps);
 			}
 			if (externalId != null && linkClasses != null) {
 				JsonArray classes = new JsonArray();
@@ -352,18 +360,10 @@ public class Importer {
 						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
 						"WHERE NOT(c.externalId IN {classes}) " +
 						"DELETE r";
-				String qs =
-						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-						"WHERE NOT(s.externalId IN {structures}) " +
-						"DELETE r";
 				JsonObject p = new JsonObject()
 						.putString("userExternalId", externalId)
 						.putArray("classes", classes);
-				JsonObject ps = new JsonObject()
-						.putString("userExternalId", externalId)
-						.putArray("structures", structures);
 				transactionHelper.add(q, p);
-				transactionHelper.add(qs, ps);
 			}
 		}
 	}
@@ -514,6 +514,14 @@ public class Importer {
 								.putString("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
+					String qs =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
+							"WHERE NOT(s.externalId IN {structures}) " +
+							"DELETE r";
+					JsonObject ps = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("structures", structuresByFunctions);
+					transactionHelper.add(qs, ps);
 				}
 				if (externalId != null && linkClasses != null) {
 					JsonArray classes = new JsonArray();
@@ -541,18 +549,10 @@ public class Importer {
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) " +
 							"DELETE r";
-					String qs =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) " +
-							"DELETE r";
 					JsonObject p = new JsonObject()
 							.putString("userExternalId", externalId)
 							.putArray("classes", classes);
-					JsonObject ps = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putArray("structures", structures);
 					transactionHelper.add(q, p);
-					transactionHelper.add(qs, ps);
 				}
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -638,6 +638,14 @@ public class Importer {
 								.putString("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
+					String qs =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
+							"WHERE NOT(s.externalId IN {structures}) " +
+							"DELETE r";
+					JsonObject ps = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("structures", structures);
+					transactionHelper.add(qs, ps);
 				}
 				if (externalId != null && linkClasses != null) {
 					JsonArray classes = new JsonArray();
@@ -665,18 +673,10 @@ public class Importer {
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) " +
 							"DELETE r";
-					String qs =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(:Group)-[:DEPENDS]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) " +
-							"DELETE r";
 					JsonObject p = new JsonObject()
 							.putString("userExternalId", externalId)
 							.putArray("classes", classes);
-					JsonObject ps = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putArray("structures", structures);
 					transactionHelper.add(q, p);
-					transactionHelper.add(qs, ps);
 				}
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
