@@ -49,6 +49,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	public static final CharSequenceTranslator UNESCAPE_AAF =
 			new AggregateTranslator(
 					new LookupTranslator(OTHER_UNESCAPE),
+					new LookupTranslator(EntityArrays.APOS_UNESCAPE()),
 					new LookupTranslator(EntityArrays.ISO8859_1_UNESCAPE()),
 					new LookupTranslator(EntityArrays.HTML40_EXTENDED_UNESCAPE()),
 					new NumericEntityUnescaper()
