@@ -1380,5 +1380,155 @@ div.file-btn-container{
 		height: 25px;
 		cursor: pointer;
 	}
+}
 
+multi-combo{
+	display: block;
+	height: 25px;
+
+	.multi-combo-root-button{
+		min-width: 150px;
+		height: 25px;
+		font-size: 12px;
+		padding: 0px 10px;
+		text-align: left;
+		background-color: #494949;
+
+		&::after{
+			content: '▼';
+  			font-size: 10px;
+ 			float: right;
+			transition: transform 0.25s ease-in-out;
+			transition: -webkit-transform 0.25s ease-in-out
+		}
+
+		&.opened{
+			&::after{
+				transform: rotate(180deg);
+				-webkit-transform: rotate(180deg);
+			}
+		}
+	}
+	.multi-combo-root-panel{
+		position: absolute;
+		padding: 0px 10px;
+		margin-top: 2px;
+		border-bottom-left-radius: 20px;
+		border-bottom-right-radius: 20px;
+		border-top-right-radius: 20px;
+		box-shadow: 2px 2px 2px 0px #777;
+
+		background: white;
+
+		overflow: hidden;
+		max-height: 500px;
+		transition: max-height 0.25s ease-in-out;
+		&.hidden{
+			max-height: 0px;
+		}
+		div.multi-combo-panel-opts{
+			width: 100%;
+			margin-top: 10px;
+		    border-bottom: 1px solid @accent;
+			border-left: 1px solid @accent;
+			border-bottom-left-radius: 5px;
+
+			> * {
+				display: inline-block;
+				vertical-align: middle;
+				margin: 0;
+			}
+			> h4{
+				margin: 0;
+			    margin-right: 10px;
+			    font-size: 15px;
+			    padding: 5px 10px;
+			    border-right: 1px solid @accent;
+			}
+			> button{
+				float: none;
+			}
+			> button.multi-combo-select-all{
+				border: 0;
+				width: 26px;
+				height: 22px;
+				background-image: url(/public/img/glyphicons-halflings-white.png);
+				background-position: 15% 67%;
+				background-repeat: no-repeat;
+			}
+
+			> button.multi-combo-deselect-all{
+			    border: 0;
+			    width: 26px;
+			    height: 22px;
+			    background-image: url(/public/img/glyphicons-halflings-white.png);
+			    background-position: 9.5% 67%;
+			    background-repeat: no-repeat;
+			}
+		}
+		div.multi-combo-search-bar{
+			margin: 10px 0px;
+			width: 100%;
+			position: relative;
+
+			> input{
+				min-width: 250px;
+				width: 100%;
+				height: 30px;
+				box-sizing: border-box;
+				border: none;
+				border-bottom: 1px solid @accent;
+				transition: border 0.25s ease-in-out;
+
+				&:focus{
+					border-bottom: 2px solid @main;
+				}
+			}
+			> i.multi-icon-search-cancel{
+				background-image: url(/public/img/glyphicons_197_remove.png);
+				width: 15px;
+				height: 15px;
+				position: absolute;
+				background-repeat: no-repeat;
+				background-size: cover;
+				top: 8px;
+				right: 5px;
+				opacity: 0.5;
+			}
+		}
+		> ul{
+			list-style: none;
+  			padding: 0px;
+			max-height: 300px;
+			overflow-y: scroll;
+			margin-bottom: 10px;
+
+			> li{
+				line-height: 25px;
+				font-size: 13px;
+				transition:
+					background-color 0.25s,
+					color 0.25s;
+				white-space: nowrap;
+				margin-bottom: 5px;
+				padding: 0px 10px;
+				border-radius: 20px;
+
+				&.selected{
+					background-color: @secondary;
+					&::before{
+						content: "✓";
+					}
+				}
+				&:not(.selected):not([disabled]):hover{
+					color: white;
+					background-color: @accent;
+				}
+				&:not(.selected)[disabled]{
+					background-color: #CCC;
+				}
+
+			}
+		}
+	}
 }

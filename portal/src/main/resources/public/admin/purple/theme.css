@@ -4326,6 +4326,7 @@ portal .page-markers {
 .page-markers .marker .content {
   position: absolute;
   transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
   bottom: -69px;
   left: -66px;
   width: 80px;
@@ -5719,15 +5720,21 @@ side-panel .opener {
   vertical-align: middle;
   border-radius: 25px;
   transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
   font-size: 24px;
   margin-top: -6px;
   -o-transition: transform 250ms ease;
   -moz-transition: transform 250ms ease;
   -webkit-transition: transform 250ms ease;
   transition: transform 250ms ease;
+  -o-transition: -webkit-transform 250ms ease;
+  -moz-transition: -webkit-transform 250ms ease;
+  -webkit-transition: -webkit-transform 250ms ease;
+  transition: -webkit-transform 250ms ease;
 }
 side-panel .opener:hover {
   transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
 }
 side-panel .opener::after {
   content: "\25B2";
@@ -5739,9 +5746,11 @@ side-panel.hidden .toggle {
 }
 side-panel.hidden .opener {
   transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
 }
 side-panel.hidden .opener:hover {
   transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
 }
 side-panel .toggle {
   position: absolute;
@@ -5783,6 +5792,10 @@ plus .opener > div {
   -moz-transition: transform 250ms ease;
   -webkit-transition: transform 250ms ease;
   transition: transform 250ms ease;
+  -o-transition: -webkit-transform 250ms ease;
+  -moz-transition: -webkit-transform 250ms ease;
+  -webkit-transition: -webkit-transform 250ms ease;
+  transition: -webkit-transform 250ms ease;
   height: 100%;
   width: 100%;
   top: 0;
@@ -5921,6 +5934,7 @@ nav.floating .arrow.previous::after {
   font-size: 26px;
   line-height: 38px;
   transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
 }
 nav.floating .arrow.previous.visible {
   display: block;
@@ -7373,4 +7387,138 @@ div.file-btn-container > input[type=file] {
   left: -100%;
   height: 25px;
   cursor: pointer;
+}
+multi-combo {
+  display: block;
+  height: 25px;
+}
+multi-combo .multi-combo-root-button {
+  min-width: 150px;
+  height: 25px;
+  font-size: 12px;
+  padding: 0px 10px;
+  text-align: left;
+  background-color: #494949;
+}
+multi-combo .multi-combo-root-button::after {
+  content: '▼';
+  font-size: 10px;
+  float: right;
+  transition: transform 0.25s ease-in-out;
+  transition: -webkit-transform 0.25s ease-in-out;
+}
+multi-combo .multi-combo-root-button.opened::after {
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+multi-combo .multi-combo-root-panel {
+  position: absolute;
+  padding: 0px 10px;
+  margin-top: 2px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 2px 2px 2px 0px #777;
+  background: white;
+  overflow: hidden;
+  max-height: 500px;
+  transition: max-height 0.25s ease-in-out;
+}
+multi-combo .multi-combo-root-panel.hidden {
+  max-height: 0px;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts {
+  width: 100%;
+  margin-top: 10px;
+  border-bottom: 1px solid #9c27b0;
+  border-left: 1px solid #9c27b0;
+  border-bottom-left-radius: 5px;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > * {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > h4 {
+  margin: 0;
+  margin-right: 10px;
+  font-size: 15px;
+  padding: 5px 10px;
+  border-right: 1px solid #9c27b0;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > button {
+  float: none;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > button.multi-combo-select-all {
+  border: 0;
+  width: 26px;
+  height: 22px;
+  background-image: url(/public/img/glyphicons-halflings-white.png);
+  background-position: 15% 67%;
+  background-repeat: no-repeat;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > button.multi-combo-deselect-all {
+  border: 0;
+  width: 26px;
+  height: 22px;
+  background-image: url(/public/img/glyphicons-halflings-white.png);
+  background-position: 9.5% 67%;
+  background-repeat: no-repeat;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-search-bar {
+  margin: 10px 0px;
+  width: 100%;
+  position: relative;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-search-bar > input {
+  min-width: 250px;
+  width: 100%;
+  height: 30px;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid #9c27b0;
+  transition: border 0.25s ease-in-out;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-search-bar > input:focus {
+  border-bottom: 2px solid #9c27b0;
+}
+multi-combo .multi-combo-root-panel div.multi-combo-search-bar > i.multi-icon-search-cancel {
+  background-image: url(/public/img/glyphicons_197_remove.png);
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: cover;
+  top: 8px;
+  right: 5px;
+  opacity: 0.5;
+}
+multi-combo .multi-combo-root-panel > ul {
+  list-style: none;
+  padding: 0px;
+  max-height: 300px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+}
+multi-combo .multi-combo-root-panel > ul > li {
+  line-height: 25px;
+  font-size: 13px;
+  transition: background-color 0.25s, color 0.25s;
+  white-space: nowrap;
+  margin-bottom: 5px;
+  padding: 0px 10px;
+  border-radius: 20px;
+}
+multi-combo .multi-combo-root-panel > ul > li.selected {
+  background-color: #dcc9ff;
+}
+multi-combo .multi-combo-root-panel > ul > li.selected::before {
+  content: "✓";
+}
+multi-combo .multi-combo-root-panel > ul > li:not(.selected):not([disabled]):hover {
+  color: white;
+  background-color: #9c27b0;
+}
+multi-combo .multi-combo-root-panel > ul > li:not(.selected)[disabled] {
+  background-color: #CCC;
 }

@@ -4396,6 +4396,141 @@ module.directive('floatingNavigation', function(){
 	}
 });
 
+module.directive('multiCombo', function(){
+	return {
+		restrict: 'E',
+		replace: false,
+		scope: {
+			title: '@',
+			comboModel: '=',
+			filteredModel: '=',
+			filterOn: '@',
+			orderBy: '@',
+			searchPlaceholder: '@',
+			maxSelected: '@',
+			labels: '&'
+		},
+		templateUrl: '/' + infraPrefix + '/public/template/multi-combo.html',
+		controller: function($scope, $filter, $timeout){
+			/* Search input */
+			$scope.search = {
+				input: '',
+				reset: function(){ this.input = "" }
+			}
+
+			/* Combo box visibility */
+			$scope.show = false;
+			$scope.toggleVisibility = function(){
+				$scope.show = !$scope.show
+				if($scope.show){
+					$scope.addClickEvent()
+					$scope.search.reset()
+					$timeout(function(){
+						$scope.setComboPosition()
+					}, 1)
+				}
+			}
+
+			/* Item list selection & filtering */
+			if(!$scope.filteredModel || !($scope.filteredModel instanceof Array))
+				$scope.filteredModel = []
+
+			$scope.isSelected = function(item){
+				return $scope.filteredModel.indexOf(item) >= 0
+			}
+
+			$scope.toggleItem = function(item){
+				var idx = $scope.filteredModel.indexOf(item)
+				if(idx >= 0)
+					$scope.filteredModel.splice(idx, 1);
+				else if(!$scope.maxSelected || $scope.filteredModel.length < $scope.maxSelected)
+					$scope.filteredModel.push(item);
+			}
+
+			$scope.selectAll = function(){
+				$scope.filteredModel = []
+				for(var i = 0; i < $scope.comboModel.length; i++){
+					$scope.filteredModel.push($scope.comboModel[i])
+				}
+			}
+
+			$scope.deselectAll = function(){
+				$scope.filteredModel = []
+			}
+
+			$scope.fairInclusion = function(anyString, challenger){
+				return lang.removeAccents(anyString.toLowerCase()).indexOf(lang.removeAccents(challenger.toLowerCase())) >= 0
+			}
+
+			$scope.filteringFun = function(item){
+				if($scope.filterOn && item instanceof Object)
+					return $scope.fairInclusion(item[$scope.filterOn], $scope.search.input)
+				return $scope.fairInclusion(item, $scope.search.input)
+			}
+
+			/* Item display */
+			$scope.display = function(item){
+				return item instanceof Object ? item.toString() : item
+			}
+
+			/* Ensure that filtered elements are not obsolete */
+			$scope.$watchCollection('comboModel', function(){
+				for(var i = 0; i < $scope.filteredModel.length; i++){
+					var idx = $scope.comboModel.indexOf($scope.filteredModel[i])
+					if(idx < 0){
+						$scope.filteredModel.splice(idx, 1)
+						i--
+					}
+				}
+			})
+		},
+		link: function(scope, element, attributes){
+			if(!attributes.comboModel || !attributes.filteredModel){
+				throw '[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.'
+				return
+			}
+
+			/* Max n° of elements selected limit */
+			scope.maxSelected = parseInt(scope.maxSelected)
+			if(!isNaN(scope.maxSelected) && scope.maxSelected < 1){
+				throw '[<multi-combo> directive] Error: max-selected must be an integer grather than 0.'
+				return
+			}
+
+			/* Visibility mouse click event */
+			scope.addClickEvent = function(){
+				if(!scope.show)
+					return
+				$('body').on('click.multi-combo', function(e){
+					if(!(element.find(e.originalEvent.target).length)){
+						scope.show = false
+						$('body').off('click.multi-combo')
+						scope.$apply()
+					}
+				})
+			}
+
+			/* Drop down position */
+			scope.setComboPosition = function(){
+				element.css('position', 'relative');
+				element.find('.multi-combo-root-panel').css('top',
+					element.find('.multi-combo-root-button').outerHeight()
+				)
+			}
+			scope.setComboPosition()
+
+			/* Disabled attribute */
+			scope.$watchCollection(attributes, function(){
+				if(attributes.disabled){
+					element.find('.multi-combo-root-button').attr("disabled", "")
+				} else {
+					element.find('.multi-combo-root-button').removeAttr("disabled")
+				}
+			});
+		}
+	}
+})
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
