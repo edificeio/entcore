@@ -378,13 +378,17 @@ function Collection(obj){
 			//returning the new array systematically breaks the watcher
 			//due to the reference always being updated
 			var currentSelection = _.where(this.all, { selected: true }) || [];
-			var mismatch = !this._selection || this._selection.length !== currentSelection.length;
 			if(!this._selection || this._selection.length !== currentSelection.length){
 				this._selection = currentSelection;
 			}
 			return this._selection;
 		},
 		removeSelection: function(){
+			if(this.composer.api){
+				this.selection().forEach(function(item){
+					item.remove();
+				});
+			}
 			this.all = _.reject(this.all, function(item){ return item.selected });
 		},
 		addRange: function(data, cb, notify){
@@ -483,6 +487,43 @@ function Collection(obj){
 
 		for(var prop in fn.prototype){
 			ctr.prototype[prop] = fn.prototype[prop];
+		}
+
+		if(fn.prototype.api){
+			if(fn.prototype.api.get){
+				fn.prototype.sync = function(){
+					http().get(http().parseUrl(this.api.get, this)).done(function(data){
+						this.updateData(data);
+					}.bind(this));
+				};
+			}
+			if(fn.prototype.api.put){
+				fn.prototype.saveModifications = function(){
+					http().put(http().parseUrl(this.api.put, this), this);
+				};
+			}
+			if(fn.prototype.api.delete){
+				fn.prototype.remove = function(){
+					http().delete(http().parseUrl(this.api.delete, this));
+				};
+			}
+			if(fn.prototype.api.post){
+				fn.prototype.create = function(){
+					http().post(http().parseUrl(this.api.post, this), this).done(function(data){
+						this.updateData(data);
+					}.bind(this));
+				};
+			}
+			if(fn.prototype.api.post && fn.prototype.api.put && typeof fn.prototype.save !== 'function'){
+				fn.prototype.save = function(){
+					if(this._id){
+						this.saveModifications();
+					}
+					else{
+						this.create();
+					}
+				}
+			}
 		}
 		// overwrites fn with custom ctr
 		namespace[(ctr.name || ctr._name)] = ctr;
@@ -1443,10 +1484,10 @@ var recorder = (function(){
 			}, function(mediaStream){
 				context = new AudioContext();
 				var audioInput = context.createMediaStreamSource(mediaStream);
-				var gainNode = context.createGain();
+				gainNode = context.createGain();
 				audioInput.connect(gainNode);
 
-				recorder = context.createScriptProcessor(bufferSize, 1, 1);
+				recorder = context.createScriptProcessor(bufferSize, 2, 2);
 				recorder.onaudioprocess = function(e){
 					if(this.status !== 'recording' && this.status !== 'paused' && this.status !== 'playing'){
 						mediaStream.stop();
@@ -1457,9 +1498,11 @@ var recorder = (function(){
 					}
 					var left = e.inputBuffer.getChannelData (0);
 					leftChannel.push (new Float32Array(left));
+					var right = e.inputBuffer.getChannelData (1);
+					rightChannel.push (new Float32Array(left));
 
 					recordingLength += bufferSize;
-					this.elapsedTime += 0.04;
+					this.elapsedTime += e.inputBuffer.duration;
 					notifyFollowers(this.status);
 				}.bind(this);
 
