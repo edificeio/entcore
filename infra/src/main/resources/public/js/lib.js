@@ -1462,7 +1462,7 @@ var recorder = (function(){
 	var leftChannel = [],
 		rightChannel = [];
 
-	var bufferSize = 2048,
+	var bufferSize = 4096,
 		loaded = false,
 		recordingLength = 0,
 		followers = [];
@@ -1499,7 +1499,7 @@ var recorder = (function(){
 					var left = e.inputBuffer.getChannelData (0);
 					leftChannel.push (new Float32Array(left));
 					var right = e.inputBuffer.getChannelData (1);
-					rightChannel.push (new Float32Array(left));
+					rightChannel.push (new Float32Array(right));
 
 					recordingLength += bufferSize;
 					this.elapsedTime += e.inputBuffer.duration;
