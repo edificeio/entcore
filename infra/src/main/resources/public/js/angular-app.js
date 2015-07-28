@@ -820,8 +820,7 @@ module.directive('scheduleItem', function($compile){
 						if(scheduleItem === scope.item){
 							return;
 						}
-						if(scheduleItem.beginning.unix() >= scope.item.beginning.unix() && scheduleItem.beginning.unix() < scope.item.end.unix() - 1
-							|| scheduleItem.end.unix() >= scope.item.beginning.unix() + 1 && scheduleItem.end.unix() < scope.item.end.unix()){
+						if(scheduleItem.beginning <= scope.item.end && scheduleItem.end >= scope.item.beginning){
 							if(scheduleItem.calendarGutter === calendarGutter){
 								calendarGutter ++;
 								collision = true;

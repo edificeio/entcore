@@ -1372,11 +1372,17 @@ var calendar = {
 				}).length;
 			},
 			scheduleItemWidth: function(scheduleItem){
-				var nbConcurrentItems = this.filter(function(item){
+				var concurrentItems = this.filter(function(item){
 					return item.beginning <= scheduleItem.end && item.end >= scheduleItem.beginning
-				}).length;
-
-				return Math.floor(12 / nbConcurrentItems);
+				})
+				var maxGutter = 0
+				_.forEach(concurrentItems, function(item){
+					if(item.calendarGutter && item.calendarGutter > maxGutter){
+						maxGutter = item.calendarGutter
+					}
+				})
+				maxGutter++;
+				return Math.floor(12 / maxGutter);
 			}
 		});
 		this.collection(calendar.TimeSlot);
