@@ -4995,17 +4995,21 @@ function WidgetModel(){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
-						widget.hide = true;
+						widget.hide = that.preferences[widget.name].hide;
 						return widget;
 					});
 
 					that.load(data, function(widget){
 						if(widget.i18n){
+						    var temp = widget.path;
+						    widget.path = 'empty';
 							lang.addBundle(widget.i18n, function(){
 								if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
 									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 								}
-								widget.hide = that.preferences[widget.name].hide;
+								else{
+								    widget.path = temp;
+								}
 								loader.loadFile(widget.js);
 							})
 						}
