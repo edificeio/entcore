@@ -145,12 +145,13 @@
     "Student": "Elève",
     "Relative": "Parent",
     "Guest": "Invité",
-    "Relative": "Parent",
     "Structure": "Structure",
     "Class": "Classe",
     "record.start": "Démarrer l'enregistrement",
     "record.stop": "Arrêter l'enregistrement",
     "record.play": "Jouer le son",
     "record.remove": "Annuler l'enregistrement",
-    "record.save": "Sauvegarder l'enregistrement dans l'espace documentaire"
+    "record.save": "Sauvegarder l'enregistrement dans l'espace documentaire",
+	"help.notfound.title": "Aide non trouvée",
+	"help.notfound.text": "L'aide en ligne de cette application n'est pas disponible pour le moment."
 }

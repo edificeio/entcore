@@ -4295,8 +4295,11 @@ module.directive('help', function(){
 		link: function(scope, element){
 			scope.display = {};
 			scope.helpPath = '/help/application/' + appPrefix + '/';
-			if(appPrefix === '.') {
+			if(appPrefix === '.' && window.location.pathname !== '/adapter') {
 				scope.helpPath = '/help/application/portal/';
+			}
+			else{
+				scope.helpPath = '/help/application/' + window.location.search.split('helppath=')[1].split('&')[0] + '/'
 			}
 
 			var helpContent;
@@ -4319,10 +4322,14 @@ module.directive('help', function(){
 				setHtml(helpText);
 			}
 			else {
-				http().get(scope.helpPath).done(function (content) {
-					helpText = content;
-					setHtml(helpText);
-				});
+				http().get(scope.helpPath)
+					.done(function (content) {
+						helpText = content;
+						setHtml(helpText);
+					})
+					.e404(function(){
+						helpText = '<h2><i18n>help.notfound.title</i18n></h2><p><i18n>help.notfound.text</i18n></p>'
+					});
 			}
 
 			element.children('i.help').on('click', function(){
