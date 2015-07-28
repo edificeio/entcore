@@ -5005,8 +5005,8 @@ function WidgetModel(){
 								if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
 									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 								}
-								loader.loadFile(widget.js);
 								widget.hide = that.preferences[widget.name].hide;
+								loader.loadFile(widget.js);
 							})
 						}
 						else{
