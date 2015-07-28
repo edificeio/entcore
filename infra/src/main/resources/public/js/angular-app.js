@@ -4298,7 +4298,7 @@ module.directive('help', function(){
 			if(appPrefix === '.' && window.location.pathname !== '/adapter') {
 				scope.helpPath = '/help/application/portal/';
 			}
-			else{
+			else if(window.location.pathname === '/adapter'){
 				scope.helpPath = '/help/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
 			}
 
@@ -4328,7 +4328,8 @@ module.directive('help', function(){
 						setHtml(helpText);
 					})
 					.e404(function(){
-						helpText = '<h2><i18n>help.notfound.title</i18n></h2><p><i18n>help.notfound.text</i18n></p>'
+						helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
+						setHtml(helpText);
 					});
 			}
 
@@ -4994,7 +4995,7 @@ function WidgetModel(){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
-						widget.hide = true;
+						widget.hide = that.preferences[widget.name].hide;
 						return widget;
 					});
 
@@ -5005,7 +5006,7 @@ function WidgetModel(){
 									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 								}
 								loader.loadFile(widget.js);
-								widget.hide = that.preferences[widget.name].hide;
+
 							})
 						}
 						else{
