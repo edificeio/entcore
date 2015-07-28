@@ -4299,7 +4299,7 @@ module.directive('help', function(){
 				scope.helpPath = '/help/application/portal/';
 			}
 			else{
-				scope.helpPath = '/help/application/' + window.location.search.split('helppath=')[1].split('&')[0] + '/'
+				scope.helpPath = '/help/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
 			}
 
 			var helpContent;
@@ -4994,7 +4994,7 @@ function WidgetModel(){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
-						widget.hide = that.preferences[widget.name].hide;
+						widget.hide = true;
 						return widget;
 					});
 
@@ -5005,7 +5005,7 @@ function WidgetModel(){
 									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 								}
 								loader.loadFile(widget.js);
-
+								widget.hide = that.preferences[widget.name].hide;
 							})
 						}
 						else{
