@@ -4995,7 +4995,7 @@ function WidgetModel(){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
-						widget.hide = that.preferences[widget.name].hide;
+						widget.hide = true;
 						return widget;
 					});
 
@@ -5006,7 +5006,7 @@ function WidgetModel(){
 									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
 								}
 								loader.loadFile(widget.js);
-
+								widget.hide = that.preferences[widget.name].hide;
 							})
 						}
 						else{
