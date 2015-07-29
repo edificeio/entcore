@@ -1,5 +1,5 @@
 <div class="row" ng-repeat="group in source.groups">
-	<h2>[[group.translatedName]]</h2>
+	<h2 ng-if="group.users.length">[[group.translatedName]]</h2>
 	<div class="dominos">
 		<div class="item" ng-repeat="user in group.users">
 			<section class="domino" ng-class="colorFromType(user.type)">
