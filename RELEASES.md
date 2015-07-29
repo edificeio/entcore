@@ -1,6 +1,68 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.14.0 (29/07/2015)
+
+## Auth
+
+* Refonte du workflow d'activation
+* Support d'une authentification Basic pour des applications externes
+* Support de la fédération d'identité
+
+## Cas
+
+* Connecteur ProEPS
+* Connecteur la-vie-scolaire.fr
+* Connecteur Educagri
+
+## Conversation
+
+* Tri des messages par colonnes
+* Refonte ergo : liens répondre, transférer déplacés dans un toaster et changés en boutons
+
+## Directory
+
+* Affichage du quota max dans la console d'admin
+* Ajout de contraintes et de valitations dans les champs de "mon compte"
+* Export (xml ou json) des structures pour certains connecteurs
+
+## Feeder
+
+* Bloquer la mise à jour par l'importeur du nom d'affichage
+* Ajout des groupes manuels dans l'export Eliot
+* Support des fichiers AAF SDET v5
+* Mise à jour des champs de l'importeur BE1D
+
+## Infra
+
+* Ajout d'une directive pour les skins
+* Composant pour l'aide en ligne
+* Endpoint générique pour renvoyer un objet json contenant la configuration de l'ui
+* Support du marquage Xiti
+* Utilisation de deux channels au lieu d'un lors d'un enregistrement audio
+* Nouvelles directives : plus (pour afficher des boutons dans un toaster), side-panel (panneau déroulant sur le côté)
+* Fonctions CRUD automatiques pour les objets model
+
+## Timeline
+
+* Scroll infini
+
+## Workspace
+
+* Refonte ergo : versions de documents déplacées, commentaires déplacés dans une lightbox
+
+## Anomalies corrigées
+
+* Rafraichissement de la mignature lors de l'upload d'une nouvelle version d'une image
+* Eviter un potentiel deadlock dans neo4j lors de la sauvegarde d'un role
+* Suppression de multiples scrollbars dans l'admin
+* Erreur lors de l'envoi d'un message avec une pj supprimée
+* Crash du datepicker dans certains cas
+* Amélioration de la recherche dans l'annuaire
+* Encodage des commentaires de l'espace documentaire
+* Erreur lors de l'ouverture d'une pj avec un message envoyé à soi-même
+* Collision d'éléments dans le calendar
+
 # v1.13.2 (06/05/2015)
 
 ## Anomalies corrigées
