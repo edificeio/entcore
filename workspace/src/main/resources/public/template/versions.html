@@ -2,6 +2,19 @@
     <h1>
         <i18n>workspace.versions.list</i18n>
     </h1>
+	<resource-right resource="selectedItems()" name="postRevision">
+		<div class="select-file nomargin">
+			<div class="hidden-content">
+				<input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
+			</div>
+			<button ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && currentTree.name !== 'trash'"
+					ng-click="openHistory(selectedDocuments()[0])"
+					class="cell"
+					translate content="workspace.add.version"
+					ng-disabled="revisionInProgress.pending">
+			</button>
+		</div>
+	</resource-right>
     <table class="list-view">
         <thead>
             <tr>
