@@ -1222,14 +1222,15 @@ module.directive('bindHtml', function($compile){
 		scope: {
 			bindHtml: '='
 		},
-		link: function($scope, $element){
-			$scope.$watch('bindHtml', function(newVal){
+		link: function(scope, element){
+			scope.$watch('bindHtml', function(newVal){
 				var htmlVal = $(newVal)
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
-				$element.html($compile($('<div>').append(htmlVal)[0].outerHTML)($scope.$parent));
+				var htmlContent = _.map(htmlVal, function(el){return el.outerHTML }).join('');
+				element.html($compile($('<div>').append(htmlContent))(scope.$parent));
 				//weird browser bug with audio tags
-				$element.find('audio').each(function(index, item){
+				element.find('audio').each(function(index, item){
 					var parent = $(item).parent();
 					$(item)
 						.attr("src", item.src)
