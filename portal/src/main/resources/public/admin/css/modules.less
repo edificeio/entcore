@@ -108,10 +108,20 @@ h3{
 	color: @main;
 	text-align: left;
 	font-size: 22px;
+
+	&.subtitle{
+		height: 30px;
+		font-size: 18px;
+		margin: 5px 0px;
+	}
 }
 
 h4{
 	text-align: center;
+
+	&.subtitle{
+	    margin: 9px 10px;
+	}
 }
 
 h5{
@@ -193,6 +203,31 @@ i.disconnect{
 	float: right;
 	margin-bottom: -6px;
 }
+i.spinner{
+	.icon(glyphicons_081_refresh, 35px);
+	animation: spin 1000ms infinite linear;
+	transform-origin: 52% 52%;
+}
+@-webkit-keyframes spin {
+	0% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100% {
+		-webkit-transform: rotate(359deg);
+		transform: rotate(359deg);
+	}
+}
+@keyframes spin {
+	0% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100% {
+		-webkit-transform: rotate(359deg);
+		transform: rotate(359deg);
+	}
+}
 
 .preview{
 	padding-top: 15px;
@@ -267,6 +302,12 @@ select{
 	color: #999;
 	border: 1px solid #595959;
 	height: 25px;
+}
+select[disabled]{
+	color: #fff;
+    background: #BBB;
+    border: 1px solid #CCC;
+    cursor: default;
 }
 
 input[type=text], select, label{
@@ -1259,12 +1300,14 @@ div.users-search{
 }
 
 input[type=submit].check-button, button.check-button{
-	width: 10%;
 	padding: 0;
 	margin: 0;
 	width: 25px;
 	height: 25px;
 	border: none;
+	position: absolute;
+	top: 9px;
+	right: 10px;
 
 	&:after{
 		content: "✓"
@@ -1392,7 +1435,12 @@ multi-combo{
 		font-size: 12px;
 		padding: 0px 10px;
 		text-align: left;
-		background-color: #494949;
+		border-radius: 5px;
+		width: 100%;
+
+		&:not([disabled]){
+			background-color: #494949;
+		}
 
 		&::after{
 			content: '▼';
@@ -1411,6 +1459,7 @@ multi-combo{
 	}
 	.multi-combo-root-panel{
 		position: absolute;
+	    z-index: 10000;
 		padding: 0px 10px;
 		margin-top: 2px;
 		border-bottom-left-radius: 20px;
@@ -1479,6 +1528,7 @@ multi-combo{
 				border: none;
 				border-bottom: 1px solid @accent;
 				transition: border 0.25s ease-in-out;
+				outline: none;
 
 				&:focus{
 					border-bottom: 2px solid @main;
@@ -1527,8 +1577,173 @@ multi-combo{
 				&:not(.selected)[disabled]{
 					background-color: #CCC;
 				}
-
 			}
 		}
+	}
+}
+
+div.select-blocks{
+	margin: 10px 0px;
+
+	> div{
+		position: relative;
+		display: inline-block;
+		margin-right: 2px;
+		padding: 5px 10px;
+		padding-right: 30px;
+		border-radius: 10px;
+		margin-bottom: 5px;
+		background-color: #444;
+		color: white;
+
+		transition: all 0.25s ease-in-out;
+
+		&.partial{
+			background-color: #888;
+		}
+
+		&:hover{
+			background-color: @accent;
+
+			&::after{
+				opacity: 1;
+			}
+		}
+		&::after{
+			content: "";
+			background-image: url(/public/img/glyphicons_197_remove.png);
+			width: 16px;
+			height: 16px;
+			position: absolute;
+			background-repeat: no-repeat;
+			background-size: cover;
+			top: 7px;
+			right: 8px;
+			opacity: 0;
+			filter: invert(100%);
+			-webkit-filter: invert(100%);
+			transition: opacity 0.25s ease-in-out;
+		}
+	}
+}
+
+table.search-table{
+	table-layout: fixed;
+
+	thead {
+		vertical-align: top;
+
+		input[type=text]{
+			height: 30px;
+		    box-sizing: border-box;
+		    border: none;
+		    border-bottom: 1px solid #444;
+			border-radius: 0px;
+		    transition: border 0.25s ease-in-out;
+			outline: none;
+
+			&:focus{
+				border-bottom: 2px solid @accent;
+			}
+		}
+
+		tr{
+			border-top: none;
+			border-bottom:none;
+			border-left: 1px solid @main;
+			border-right: 1px solid @main;
+
+			&:first-child{
+  				border-top: 2px solid @main;
+			}
+			&:last-child{
+			  border-bottom:2px solid @main;
+			}
+
+			th{
+				font-size: 15px;
+
+				&[ng-click]{
+					transition:
+						color 0.25s ease-in-out,
+						background-color 0.25s ease-in-out;
+					&:hover{
+						color: @accent;
+					}
+				}
+			}
+		}
+	}
+	tbody{
+		> div{
+			max-height: 500px;
+			overflow-y: scroll;
+		}
+
+		tr{
+			td{
+				font-size: 14px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+	}
+}
+
+.slide-content{
+    padding: 20px;
+	padding-top: 0px;
+    border: 1px dashed black;
+    border-radius: 10px;
+
+	div.button-bar{
+		border-bottom: 2px solid @accent;
+    	padding: 5px 0px;
+
+		> span {
+			font-size: 16px;
+    		line-height: 32px;
+    		margin-right: 10px;
+		}
+
+		> button{
+			margin-right: 5px;
+		}
+	}
+}
+
+div.spinner-bar{
+	font-size: 30px;
+    padding: 10px 5px;
+    border-bottom: 2px solid @accent;
+
+	> *{
+		vertical-align: middle;
+	}
+}
+
+i.close-2x{
+	height: 15px;
+    width: 15px;
+    background-image: url("../img/icons/glyphicons_207_remove_2.png");
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: cover;
+    right: 0px;
+    top: 0px;
+}
+
+.lightbox{
+	div.content{
+		border: 2px solid @accent;
+	}
+
+	.top{
+		margin-bottom: 20px;
+	}
+
+	.bottom{
+		margin-top: 20px;
 	}
 }

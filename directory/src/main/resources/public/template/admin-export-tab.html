@@ -1,0 +1,276 @@
+<!--
+    |||||||||||||||||||||
+    |||     EXPORT    |||
+    |||||||||||||||||||||
+-->
+
+<div class="row">
+    <h3><i18n>directory.admin.exportTitle</i18n></h3>
+    <label class="five cell"><span>[[lang.translate("directory.launchUserExport")]]</span></label>
+    <button class="three cell" ng-click="openExport()">[[lang.translate("directory.export")]]</button>
+</div>
+<div class="row">
+    <h1 class="three" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
+    <select ng-model="exportData.export_mode" class="three cell padding-top-5 row-item">
+        <option value="all">[[lang.translate("directory.all")]]</option>
+        <option value="structureId">[[lang.translate("directory.structure")]]</option>
+        <option value="classId">[[lang.translate("directory.classe")]]</option>
+    </select>
+    <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+        <option value="">[[lang.translate("directory.allProfiles")]]</option>
+        <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+        <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+        <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+        <option value="Student">[[lang.translate("directory.Student")]]</option>
+        <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+    </select>
+    <div class="row" ng-if="exportData.export_mode !== 'all'">
+        <select class="three cell margin-top-5 row-item"
+                ng-model="exportData.structure"
+                ng-change="exportData.structureId = exportData.structure.id; refreshClasses(exportData.structure)"
+                ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+        <select class="three cell margin-top-5 row-item"
+                ng-if="exportData.export_mode === 'classId'"
+                ng-model="exportData.classId"
+                ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
+    </div>
+    <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
+        <select class="three cell" ng-model="exportData.params.filterActive">
+            <option value="">[[lang.translate("directory.ignoreActivation")]]</option>
+            <option value="active">[[lang.translate("directory.onlyActivatedUsers")]]</option>
+            <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+        </select>
+    </div>
+</div>
+<hr class="separator">
+<div class="row">
+    <h3><i18n>directory.admin.massMailing</i18n></h3>
+    <div class="row">
+        <div class="six cell">
+            <h3 class="subtitle"><i18n>directory.admin.user.selection</i18n></h3>
+
+            <!-- Structure selection -->
+            <div class="row vertical-spacing-twice">
+                <multi-combo
+                    title="[[lang.translate('directory.structure')]]"
+                    combo-model="structures.all"
+                    search-on="name"
+                    order-by="name"
+                    filtered-model="massmail.structure"
+                    labels="comboLabels"
+                    max-selected="1"
+                    selection-event="massmail.modify"
+                    class="six"
+                ></multi-combo>
+                <div class="select-blocks" ng-if="massmail.getStructure()" ng-click="massmail.removeElement('structure', massmail.getStructure())">
+                    <div>[[massmail.getStructure().toString()]]</div>
+                </div>
+            </div>
+
+            <!-- Profiles multi-selection -->
+            <div class="row vertical-spacing-twice">
+                <multi-combo
+                    title="[[lang.translate('directory.profiles')]]"
+                    combo-model="profileList"
+                    filtered-model="massmail.profiles"
+                    search-on="translatedLabel"
+                    order-by="translatedLabel"
+                    labels="comboLabels"
+                    selection-event="massmail.modify"
+                    class="six"
+                ></multi-combo>
+                <div class="select-blocks">
+                    <div ng-repeat="profile in massmail.profiles" ng-click="massmail.removeElement('profiles', profile)">
+                        [[profile.toString()]]
+                    </div>
+                </div>
+            </div>
+
+            <!-- Levels multi-selection -->
+            <div class="row vertical-spacing-twice">
+                <multi-combo
+                    title="[[lang.translate('directory.levels')]]"
+                    combo-model="massmail.getStructure().levels.all"
+                    filtered-model="massmail.levels"
+                    search-on="name"
+                    order-by="name"
+                    labels="comboLabels"
+                    disabled="!massmail.getStructure()"
+                    selection-event="massmail.modify"
+                    class="six"
+                ></multi-combo>
+                <div class="select-blocks">
+                    <div ng-repeat="level in massmail.levels" ng-click="massmail.removeElement('levels', level)" ng-class="{ 'partial': massmail.isPartialLevel(level) }">
+                        [[level.name]]
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes multi-selection -->
+            <div class="row vertical-spacing-twice">
+                <multi-combo
+                    title="[[lang.translate('directory.classes')]]"
+                    combo-model="massmail.getStructure().classes.all"
+                    filter-model="filterClasses"
+                    filtered-model="massmail.classes"
+                    search-on="name"
+                    order-by="name"
+                    labels="comboLabels"
+                    disabled="!massmail.getStructure()"
+                    selection-event="massmail.modify"
+                    class="six"
+                ></multi-combo>
+                <div class="select-blocks">
+                    <div ng-repeat="class in massmail.classes" ng-click="massmail.removeElement('classes', class)">
+                        [[class.name]]
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activation filter -->
+            <select class="six" ng-model="massmail.activated">
+                <option value="all" selected>[[lang.translate("directory.ignoreActivation")]]</option>
+                <option value="true">[[lang.translate("directory.onlyActivatedUsers")]]</option>
+                <option value="false">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+            </select>
+        </div>
+        <div class="six cell">
+            <h3 class="subtitle"><i18n>directory.admin.sort.options</i18n></h3>
+            <i18n>directory.admin.massmail.sort.text</i18n>
+
+            <div class="row vertical-spacing-twice">
+                <span class="two cell"><i18n>sort</i18n> 1 :</span>
+                <select class="four cell"
+                    ng-model="massmail.sort1"
+                    ng-options="sortmethod.label as sortmethod.translatedLabel for sortmethod in massmail.sortmethods">
+                    <option value="" selected>[[lang.translate("none")]]</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="two cell"><i18n>sort</i18n> 2 :</span>
+                <select class="four cell"
+                    ng-disabled="!massmail.sort1"
+                    ng-model="massmail.sort2"
+                    ng-options="sortmethod.label as sortmethod.translatedLabel for sortmethod in massmail.sortmethods | filter: massmail.filtermethod2">
+                    <option value="" selected>[[lang.translate("none")]]</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <hr/>
+    <h3 class="subtitle"><i18n>directory.admin.launch.massmail</i18n></h3>
+    <div class="row">
+        <button class="cell row-item" ng-click="massmail.fetchUsers()" ng-disabled="!massmail.getStructure() || massmail.fetchingUsers || massmail.processing">
+            <i18n>directory.massmail.launch.preroutine</i18n>
+        </button>
+    </div>
+    <div class="row vertical-spacing-twice spinner-bar" ng-if="massmail.fetchingUsers">
+        <i class="spinner horizontal-spacing-twice"></i><i18n>directory.massmail.preroutine.loading</i18n>
+    </div>
+    <hr/>
+    <div class="row vertical-spacing-twice slide-content"
+         slide="!massmail.modified && massmail.userList.length > 0"
+         bottom-scroll="massmail.incrementUserLimit()"
+         ng-if="!massmail.fetchingUsers">
+
+        <div class="row">
+            <h3 class="subtitle cell">
+                <i18n>directory.massmail.prereport</i18n>
+            </h3>
+            <h4 class="subtitle cell horizontal-spacing" ng-click="massmail.exportCSV()">
+                <a>(<i18n>directory.massmail.export.csv</i18n>)</a>
+            </h4>
+            <i class="nok right-magnet" ng-click="massmail.closeUserList()"></i>
+        </div>
+
+        <div class="row button-bar" ng-if="!massmail.processing">
+            <span class="cell"><i18n>directory.admin.launch.massmail</i18n> : </span>
+            <button class="cell" ng-click="massmail.process('pdf')"  ng-disabled="massmail.processing || massmail.fetchingUsers">
+                <i18n>directory.massmail.pdf</i18n>
+            </button>
+            <button class="cell" ng-click="massmail.confirmSendMail = true" ng-disabled="massmail.processing || massmail.fetchingUsers">
+                <i18n>directory.massmail.mail</i18n>
+            </button>
+            <lightbox show="massmail.confirmSendMail" on-close="massmail.confirmSendMail = false">
+                <h3 class="top"><i18n>directory.massmail.mail.confirm.text</i18n></h3>
+                <div class="info vertical-spacing-twice">[[massmail.countUsers()]] <i18n>directory.massmail.users.total</i18n></div>
+                <div class="warning vertical-spacing-twice" ng-if="massmail.countUsersWithoutMail() > 0">
+                    [[massmail.countUsersWithoutMail()]] <i18n>directory.massmail.users.nomail</i18n>
+                </div>
+                <div class="bottom row">
+                    <button class="horizontal-spacing" ng-click="massmail.confirmSendMail = false; massmail.process('mail')">
+                        <i18n>confirm</i18n>
+                    </button>
+                    <button class="horizontal-spacing" ng-click="massmail.confirmSendMail = false;">
+                        <i18n>cancel</i18n>
+                    </button>
+                </div>
+            </lightbox>
+        </div>
+
+        <div class="row vertical-spacing spinner-bar" ng-if="massmail.processing">
+            <i class="spinner horizontal-spacing-twice"></i><i18n>directory.massmail.loading</i18n>
+        </div>
+
+        <div ng-if="!massmail.processing && !massmail.fetchingUsers">
+            <div class="row vertical-spacing" ng-if="!massmail.processing">
+                <div class="info">[[massmail.countUsers()]] <i18n>directory.massmail.users.total</i18n></div>
+                <div class="warning" ng-if="massmail.countUsersWithoutMail() > 0">[[massmail.countUsersWithoutMail()]] <i18n>directory.massmail.users.nomail</i18n></div>
+            </div>
+
+            <table class="search-table" ng-if="!massmail.processing && !massmail.fetchingUsers">
+                <thead>
+                    <tr>
+                        <th ng-click="massmail.setUserOrder('lastName')"><i18n>directory.admin.name</i18n></th>
+                        <th ng-click="massmail.setUserOrder('firstName')"><i18n>directory.firstName</i18n></th>
+                        <th ng-click="massmail.setUserOrder('translatedProfile')"><i18n>directory.admin.profile</i18n></th>
+                        <th ng-click="massmail.setUserOrder('login')"><i18n>directory.userLogin</i18n></th>
+                        <th ng-click="massmail.setUserOrder('activationCode')"><i18n>directory.userCode</i18n></th>
+                        <th ng-click="massmail.setUserOrder('email')"><i18n>directory.admin.email</i18n></th>
+                        <th ng-click="massmail.setUserOrder('classesStr')"><i18n>directory.classes</i18n></th>
+                        <th rowspan="2" width="40px"><i18n>link</i18n></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input class="twelve" type="text" ng-model="massmail.sortObject.lastName" placeholder="[[lang.translate('search')]]"/></th>
+                        <th>
+                            <input type="text" ng-model="massmail.sortObject.firstName" placeholder="[[lang.translate('search')]]"/>
+                        </th>
+                        <th>
+                            <input type="text" ng-model="massmail.sortObject.translatedProfile" placeholder="[[lang.translate('search')]]"/>
+                        </th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th>
+                            <input type="text" ng-model="massmail.sortObject.classesStr" placeholder="[[lang.translate('search')]]"/>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="user in massmail.userList | filter: massmail.sortObject | orderBy: massmail.userOrder | limitTo: massmail.userLimit">
+                        <td>[[user.lastName]]</td>
+                        <td>[[user.firstName]]</td>
+                        <td>[[user.translatedProfile]]</td>
+                        <td>[[user.login]]</td>
+                        <td>[[user.activationCode]]</td>
+                        <td>[[user.email]]</td>
+                        <td>[[user.classesStr]]
+                            <!--span ng-repeat="class in user.classes">
+                                [[class]]&nbsp
+                            </span-->
+                        </td>
+                        <td>
+                            <a  ng-href="/directory/admin-console#/structureUser/[[massmail.getStructure().id]]/[[user.id]]"
+                                target="_blank"
+                                style="width: 25px; height: 25px; display: block; margin-left: auto; margin-right: auto;">
+                                <button class="directory-direct-link-button"></button>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

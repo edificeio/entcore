@@ -8,7 +8,7 @@
     <div>
         <form ng-submit="scrollOpts.reset(); refreshCrossUsers(filterCrossUsersInput)">
             <input type="text" ng-model="filterCrossUsersInput" placeholder="[[lang.translate('directory.search')]]" class="inline-middle"/>
-            <button class="inline-middle check-button" ng-disabled="!filterCrossUsersInput || filterCrossUsersInput.length < 2"></button>
+            <button class="check-button" ng-disabled="!filterCrossUsersInput || filterCrossUsersInput.length < 2"></button>
         </form>
     </div>
     <ul bottom-scroll-action="scrollOpts.increment()">

@@ -4412,11 +4412,15 @@ module.directive('multiCombo', function(){
 			title: '@',
 			comboModel: '=',
 			filteredModel: '=',
-			filterOn: '@',
-			orderBy: '@',
-			searchPlaceholder: '@',
-			maxSelected: '@',
-			labels: '&'
+			searchOn: '@',
+ 			orderBy: '@',
+			filterModel: '&',
+ 			searchPlaceholder: '@',
+ 			maxSelected: '@',
+			labels: '&',
+			disabled: '&',
+			selectionEvent: '&',
+			deselectionEvent: '&'
 		},
 		templateUrl: '/' + infraPrefix + '/public/template/multi-combo.html',
 		controller: function($scope, $filter, $timeout){
@@ -4427,7 +4431,7 @@ module.directive('multiCombo', function(){
 			}
 
 			/* Combo box visibility */
-			$scope.show = false;
+			$scope.show = false
 			$scope.toggleVisibility = function(){
 				$scope.show = !$scope.show
 				if($scope.show){
@@ -4449,16 +4453,22 @@ module.directive('multiCombo', function(){
 
 			$scope.toggleItem = function(item){
 				var idx = $scope.filteredModel.indexOf(item)
-				if(idx >= 0)
-					$scope.filteredModel.splice(idx, 1);
-				else if(!$scope.maxSelected || $scope.filteredModel.length < $scope.maxSelected)
-					$scope.filteredModel.push(item);
+				if(idx >= 0){
+ 					$scope.filteredModel.splice(idx, 1);
+					if($scope.deselectionEvent() instanceof Function)
+						$scope.deselectionEvent()()
+				}
+				else if(!$scope.maxSelected || $scope.filteredModel.length < $scope.maxSelected){
+ 					$scope.filteredModel.push(item);
+					if($scope.selectionEvent() instanceof Function)
+						$scope.selectionEvent()()
+				}
 			}
 
 			$scope.selectAll = function(){
 				$scope.filteredModel = []
-				for(var i = 0; i < $scope.comboModel.length; i++){
-					$scope.filteredModel.push($scope.comboModel[i])
+				for(var i = 0; i < $scope.filteredComboModel.length; i++){
+					$scope.filteredModel.push($scope.filteredComboModel[i])
 				}
 			}
 
@@ -4471,9 +4481,10 @@ module.directive('multiCombo', function(){
 			}
 
 			$scope.filteringFun = function(item){
-				if($scope.filterOn && item instanceof Object)
-					return $scope.fairInclusion(item[$scope.filterOn], $scope.search.input)
-				return $scope.fairInclusion(item, $scope.search.input)
+				var precondition = $scope.filterModel() ? $scope.filterModel()(item) : true
+				if($scope.searchOn && item instanceof Object)
+					return precondition && $scope.fairInclusion(item[$scope.searchOn], $scope.search.input)
+				return precondition && $scope.fairInclusion(item, $scope.search.input)
 			}
 
 			/* Item display */
@@ -4483,6 +4494,11 @@ module.directive('multiCombo', function(){
 
 			/* Ensure that filtered elements are not obsolete */
 			$scope.$watchCollection('comboModel', function(){
+				if(!$scope.comboModel){
+					$scope.filteredModel = []
+					return
+				}
+
 				for(var i = 0; i < $scope.filteredModel.length; i++){
 					var idx = $scope.comboModel.indexOf($scope.filteredModel[i])
 					if(idx < 0){
@@ -4509,10 +4525,12 @@ module.directive('multiCombo', function(){
 			scope.addClickEvent = function(){
 				if(!scope.show)
 					return
-				$('body').on('click.multi-combo', function(e){
+
+				var timeId = new Date().getTime()
+				$('body').on('click.multi-combo'+timeId, function(e){
 					if(!(element.find(e.originalEvent.target).length)){
 						scope.show = false
-						$('body').off('click.multi-combo')
+						$('body').off('click.multi-combo'+timeId)
 						scope.$apply()
 					}
 				})
@@ -4520,24 +4538,40 @@ module.directive('multiCombo', function(){
 
 			/* Drop down position */
 			scope.setComboPosition = function(){
-				element.css('position', 'relative');
+				element.css('position', 'relative')
 				element.find('.multi-combo-root-panel').css('top',
 					element.find('.multi-combo-root-button').outerHeight()
 				)
 			}
 			scope.setComboPosition()
-
-			/* Disabled attribute */
-			scope.$watchCollection(attributes, function(){
-				if(attributes.disabled){
-					element.find('.multi-combo-root-button').attr("disabled", "")
-				} else {
-					element.find('.multi-combo-root-button').removeAttr("disabled")
-				}
-			});
 		}
 	}
 })
+
+module.directive('slide', function () {
+	return {
+		restrict: 'A',
+		scope: false,
+		link: function (scope, element, attributes) {
+			 scope.$watch(
+				 function(){
+					 return scope.$eval(attributes.slide);
+				 },
+				 function(newVal) {
+					 if (newVal) {
+						 element.slideDown();
+					 } else {
+						 element.slideUp();
+					 }
+				 }
+			 )
+
+			if(!scope.$eval(attributes.slide)){
+				element.hide();
+			}
+		}
+	}
+});
 
 $(document).ready(function(){
 	setTimeout(function(){

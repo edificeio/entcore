@@ -229,6 +229,10 @@ function Classe(){
     }
 }
 
+Classe.prototype.toString = function(){
+    return this.name
+}
+
 //Manual groups
 function ManualGroup(){}
 ManualGroup.prototype = {
@@ -333,6 +337,16 @@ function Structure(){
             var that = this
             return http().get('duplicates', { inherit: "true", structure: that.model.id}, { requestName: 'duplicates-request'}).done(function(duplicates){
                 that.load(duplicates)
+                hookCheck(hook)
+            })
+        }
+    })
+
+    this.collection(Level, {
+        sync: function(hook){
+            var that = this
+            return http().get('structure/'+that.model.id+'/levels').done(function(levels){
+                that.load(levels)
                 hookCheck(hook)
             })
         }
@@ -458,8 +472,8 @@ Structure.prototype.importCSV = function(file, profile, charset, hook){
     var structure = this
     var form = new FormData();
     form.append('file', file);
-    http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile
-        + '&charset=' + charset, form)
+    http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile +
+        '&charset=' + charset, form)
     .done(function(){
         notify.info((lang.translate("directory.notify.csv.imported")))
         hookCheck(hook)
@@ -474,6 +488,14 @@ Structure.prototype.importCSV = function(file, profile, charset, hook){
         }
     });
 }
+
+Structure.prototype.toString = function(){
+    return this.name;
+}
+
+//Levels
+function Level(){}
+Level.prototype.toString = function(){ return this.name }
 
 //Collection of structures
 function Structures(){
@@ -527,7 +549,7 @@ function CrossUsers(){
 }
 
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate])
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate, Level])
 
     this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()

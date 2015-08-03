@@ -20,6 +20,7 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
+import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultSchoolService implements SchoolService {
@@ -162,6 +164,164 @@ public class DefaultSchoolService implements SchoolService {
 				.putString("structureId", structureId)
 				.putObject("data", body);
 		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
+		String filter =
+				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) ";
+		String condition =
+				"WHERE has(u.level) ";
+		String filter2 =
+				"MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(n) "+
+				"WITH distinct u.level as name, collect(distinct {id: class.id, name: class.name}) as classes "+
+				"RETURN distinct name, classes";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		//Admin check
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition += "AND s.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition = "AND class.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		}
+
+		String query = filter + condition + filter2;
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
+	@Override
+	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		this.massmailUsers(structureId, filterObj, true, true, userInfos, results);
+	}
+	@Override
+	public void massmailUsers(String structureId, JsonObject filterObj,
+			boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+
+		if(!filterObj.getArray("sort").contains("classname"))
+			groupClasses = true;
+
+		String filter =
+				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
+				"g-[:HAS_PROFILE]-(p: Profile) ";
+		String condition = "";
+		String optional =
+				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+				"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		//Activation
+		if(filterObj.containsField("activated")){
+			String activated = filterObj.getString("activated", "false");
+			if("false".equals(activated.toLowerCase())){
+				condition = "WHERE NOT(u.activationCode IS NULL) ";
+			} else if("true".equals(activated.toLowerCase())){
+				condition = "WHERE (u.activationCode IS NULL) ";
+			} else {
+				condition = "WHERE 1 = 1 ";
+			}
+		} else {
+			condition = "WHERE NOT(u.activationCode IS NULL) ";
+		}
+
+		//Profiles
+		if(filterObj.getArray("profiles").size() > 0){
+			condition += "AND p.name IN {profilesArray} ";
+			params.putArray("profilesArray", filterObj.getArray("profiles"));
+		}
+
+		//Levels
+		if(filterObj.getArray("levels").size() > 0){
+			condition += " AND u.level IN {levelsArray} ";
+			params.putArray("levelsArray", filterObj.getArray("levels"));
+		}
+
+		//Classes
+		if(filterObj.getArray("classes").size() > 0){
+			filter += ", (c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
+			optional = "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+			condition += " AND c.id IN {classesArray} ";
+			params.putArray("classesArray", filterObj.getArray("classes"));
+		}
+
+		//Admin check
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
+				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition += "AND s.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
+			if(filterObj.getArray("classes").size() < 1){
+				results.handle(new Either.Left<String, JsonArray>("forbidden"));
+				return;
+			}
+
+			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition = "AND c.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		}
+
+		//Return clause
+		String returnStr =
+				"RETURN distinct collect(p.name)[0] as profile, " +
+				"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+				"u.email as email, u.login as login, u.activationCode as activationCode ";
+
+		if(groupClasses){
+			returnStr += ", collect(c.name) as classes, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+		} else {
+			returnStr += ", c.name as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+		}
+
+		if(groupChildren){
+			returnStr += ", CASE child WHEN null THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+		} else {
+			returnStr += ", CASE child WHEN null THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
+			if(groupClasses)
+				returnStr += ", classname: c.name";
+			returnStr += "} END as child ";
+		}
+
+		//Order by
+		String sort = "ORDER BY ";
+		if(!groupClasses){
+			for(Object sortObj: filterObj.getArray("sort")){
+				String sortstr = (String) sortObj;
+				sort += sortstr + ",";
+			}
+		}
+		sort += "lastName";
+
+		String query = filter + condition + optional + returnStr + sort;
+
+		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
 }

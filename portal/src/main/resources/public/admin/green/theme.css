@@ -6185,8 +6185,16 @@ h3 {
   text-align: left;
   font-size: 22px;
 }
+h3.subtitle {
+  height: 30px;
+  font-size: 18px;
+  margin: 5px 0px;
+}
 h4 {
   text-align: center;
+}
+h4.subtitle {
+  margin: 9px 10px;
 }
 h5 {
   text-align: center;
@@ -6315,6 +6323,41 @@ i.disconnect {
   float: right;
   margin-bottom: -6px;
 }
+i.spinner {
+  height: 35px;
+  width: 35px;
+  background-image: url("../img/icons/glyphicons_081_refresh.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  box-sizing: border-box;
+  vertical-align: middle;
+  animation: spin 1000ms infinite linear;
+  transform-origin: 52% 52%;
+}
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
 .preview {
   padding-top: 15px;
   padding-bottom: 15px;
@@ -6398,6 +6441,12 @@ select {
   color: #999;
   border: 1px solid #595959;
   height: 25px;
+}
+select[disabled] {
+  color: #fff;
+  background: #BBB;
+  border: 1px solid #CCC;
+  cursor: default;
 }
 input[type=text],
 select,
@@ -7283,12 +7332,14 @@ div.users-search > ul {
 }
 input[type=submit].check-button,
 button.check-button {
-  width: 10%;
   padding: 0;
   margin: 0;
   width: 25px;
   height: 25px;
   border: none;
+  position: absolute;
+  top: 9px;
+  right: 10px;
 }
 input[type=submit].check-button:after,
 button.check-button:after {
@@ -7398,6 +7449,10 @@ multi-combo .multi-combo-root-button {
   font-size: 12px;
   padding: 0px 10px;
   text-align: left;
+  border-radius: 5px;
+  width: 100%;
+}
+multi-combo .multi-combo-root-button:not([disabled]) {
   background-color: #494949;
 }
 multi-combo .multi-combo-root-button::after {
@@ -7413,6 +7468,7 @@ multi-combo .multi-combo-root-button.opened::after {
 }
 multi-combo .multi-combo-root-panel {
   position: absolute;
+  z-index: 10000;
   padding: 0px 10px;
   margin-top: 2px;
   border-bottom-left-radius: 20px;
@@ -7478,6 +7534,7 @@ multi-combo .multi-combo-root-panel div.multi-combo-search-bar > input {
   border: none;
   border-bottom: 1px solid #319171;
   transition: border 0.25s ease-in-out;
+  outline: none;
 }
 multi-combo .multi-combo-root-panel div.multi-combo-search-bar > input:focus {
   border-bottom: 2px solid #319171;
@@ -7522,3 +7579,137 @@ multi-combo .multi-combo-root-panel > ul > li:not(.selected):not([disabled]):hov
 multi-combo .multi-combo-root-panel > ul > li:not(.selected)[disabled] {
   background-color: #CCC;
 }
+div.select-blocks {
+  margin: 10px 0px;
+}
+div.select-blocks > div {
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
+  padding: 5px 10px;
+  padding-right: 30px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  background-color: #444;
+  color: white;
+  transition: all 0.25s ease-in-out;
+}
+div.select-blocks > div.partial {
+  background-color: #888;
+}
+div.select-blocks > div:hover {
+  background-color: #319171;
+}
+div.select-blocks > div:hover::after {
+  opacity: 1;
+}
+div.select-blocks > div::after {
+  content: "";
+  background-image: url(/public/img/glyphicons_197_remove.png);
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: cover;
+  top: 7px;
+  right: 8px;
+  opacity: 0;
+  filter: invert(100%);
+  -webkit-filter: invert(100%);
+  transition: opacity 0.25s ease-in-out;
+}
+table.search-table {
+  table-layout: fixed;
+}
+table.search-table thead {
+  vertical-align: top;
+}
+table.search-table thead input[type=text] {
+  height: 30px;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid #444;
+  border-radius: 0px;
+  transition: border 0.25s ease-in-out;
+  outline: none;
+}
+table.search-table thead input[type=text]:focus {
+  border-bottom: 2px solid #319171;
+}
+table.search-table thead tr {
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #319171;
+  border-right: 1px solid #319171;
+}
+table.search-table thead tr:first-child {
+  border-top: 2px solid #319171;
+}
+table.search-table thead tr:last-child {
+  border-bottom: 2px solid #319171;
+}
+table.search-table thead tr th {
+  font-size: 15px;
+}
+table.search-table thead tr th[ng-click] {
+  transition: color 0.25s ease-in-out, background-color 0.25s ease-in-out;
+}
+table.search-table thead tr th[ng-click]:hover {
+  color: #319171;
+}
+table.search-table tbody > div {
+  max-height: 500px;
+  overflow-y: scroll;
+}
+table.search-table tbody tr td {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slide-content {
+  padding: 20px;
+  padding-top: 0px;
+  border: 1px dashed black;
+  border-radius: 10px;
+}
+.slide-content div.button-bar {
+  border-bottom: 2px solid #319171;
+  padding: 5px 0px;
+}
+.slide-content div.button-bar > span {
+  font-size: 16px;
+  line-height: 32px;
+  margin-right: 10px;
+}
+.slide-content div.button-bar > button {
+  margin-right: 5px;
+}
+div.spinner-bar {
+  font-size: 30px;
+  padding: 10px 5px;
+  border-bottom: 2px solid #319171;
+}
+div.spinner-bar > * {
+  vertical-align: middle;
+}
+i.close-2x {
+  height: 15px;
+  width: 15px;
+  background-image: url("../img/icons/glyphicons_207_remove_2.png");
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: cover;
+  right: 0px;
+  top: 0px;
+}
+.lightbox div.content {
+  border: 2px solid #319171;
+}
+.lightbox .top {
+  margin-bottom: 20px;
+}
+.lightbox .bottom {
+  margin-top: 20px;
+}
+

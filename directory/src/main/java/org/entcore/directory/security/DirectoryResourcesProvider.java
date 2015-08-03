@@ -118,6 +118,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					isAdminOfStructureOrClass4(request, user, handler);
 					break;
 				case "listAdmin" :
+				case "getLevels" :
+				case "getMassmailUsers" :
+				case "performMassmail" :
 					isAdmin(user, false, handler);
 					break;
 				case "unlinkUser" :

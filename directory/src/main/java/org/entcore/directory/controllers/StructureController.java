@@ -25,23 +25,39 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
+
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Config;
 import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.services.SchoolService;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+
+import com.samskivert.mustache.Mustache;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -49,6 +65,15 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 public class StructureController extends BaseController {
 
 	private SchoolService structureService;
+	private NotificationHelper notifHelper;
+	private String assetsPath = "../..";
+	private Map<String, String> skins = new HashMap<>();
+
+	@Override
+	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, container, rm, securedActions);
+		notifHelper = new NotificationHelper(vertx, eb, container);
+	}
 
 	@Put("/structure/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -182,6 +207,212 @@ public class StructureController extends BaseController {
 		} else {
 			structureService.list(fields, arrayResponseHandler(request));
 		}
+	}
+
+	@Get("/structure/:structureId/levels")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getLevels(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos infos) {
+				structureService.getLevels(request.params().get("structureId"), infos, arrayResponseHandler(request));
+			}
+		});
+	}
+
+	@Get("/structure/:structureId/massMail/users")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getMassmailUsers(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos infos) {
+				final JsonObject filter = new JsonObject();
+				final String structureId = request.params().get("structureId");
+
+				filter
+					.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
+					.putArray("levels", new JsonArray(request.params().getAll("l").toArray()))
+					.putArray("classes", new JsonArray(request.params().getAll("c").toArray()))
+					.putArray("sort", new JsonArray(request.params().getAll("s").toArray()));
+
+				if(request.params().contains("a")){
+					filter.putString("activated", request.params().get("a"));
+				}
+
+				structureService.massmailUsers(structureId, filter, infos, arrayResponseHandler(request));
+			}
+		});
+	}
+
+	@Get("/structure/:structureId/massMail/process/:type")
+	@SecuredAction(value="", type = ActionType.RESOURCE)
+	public void performMassmail(final HttpServerRequest request){
+		final String structureId = request.params().get("structureId");
+		final String type = request.params().get("type");
+		final JsonObject filter = new JsonObject();
+		final String filename = request.params().get("filename");
+		filter
+			.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
+			.putArray("levels", new JsonArray(request.params().getAll("l").toArray()))
+			.putArray("classes", new JsonArray(request.params().getAll("c").toArray()))
+			.putArray("sort", new JsonArray(request.params().getAll("s").toArray()));
+
+		if(request.params().contains("a")){
+			filter.putString("activated", request.params().get("a"));
+		}
+
+		this.assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath");
+		this.skins = vertx.sharedData().getMap("skins");
+
+		final String assetsPath = this.assetsPath + "/assets/themes/" + this.skins.get(Renders.getHost(request));
+		final String templatePath = assetsPath + "/template/directory/";
+		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + this.skins.get(Renders.getHost(request)) + "/img/";
+
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos infos) {
+
+				//PDF
+				if("pdf".equals(type)){
+					structureService.massmailUsers(structureId, filter, false, false, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
+							}
+
+							final JsonObject templateProps = new JsonObject().putArray("users", result.right().getValue());
+
+							vertx.fileSystem().readFile(templatePath + "massmail.pdf.xhtml", new Handler<AsyncResult<Buffer>>() {
+
+								@Override
+								public void handle(AsyncResult<Buffer> result) {
+									if(!result.succeeded()){
+										badRequest(request);
+										return;
+									}
+
+									StringReader reader = new StringReader(result.result().toString("UTF-8"));
+
+									processTemplate(request, templateProps, "massmail.pdf.xhtml", reader, new Handler<Writer>(){
+										public void handle(Writer writer) {
+											String processedTemplate = ((StringWriter) writer).getBuffer().toString();
+
+											if(processedTemplate == null){
+												badRequest(request);
+												return;
+											}
+
+											JsonObject actionObject = new JsonObject();
+					    		        	actionObject
+					    		        		.putBinary("content", processedTemplate.getBytes())
+					    		        		.putString("baseUrl", baseUrl);
+
+					        	        	eb.send("entcore.pdf.generator", actionObject, new Handler<Message<JsonObject>>() {
+												public void handle(Message<JsonObject> reply) {
+													JsonObject pdfResponse = reply.body();
+													if(!"ok".equals(pdfResponse.getString("status"))){
+														badRequest(request, pdfResponse.getString("message"));
+														return;
+													}
+
+													byte[] pdf = pdfResponse.getBinary("content");
+													request.response().putHeader("Content-Type", "application/pdf");
+													request.response().putHeader("Content-Disposition",
+															"attachment; filename="+filename+".pdf");
+													request.response().end(new Buffer(pdf));
+												}
+					        	        	});
+										}
+
+									});
+								}
+							});
+						}
+					});
+				}
+				//Mail
+				else if("mail".equals(type)){
+					structureService.massmailUsers(structureId, filter, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(final Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
+							}
+
+							final JsonArray users = result.right().getValue();
+
+							vertx.fileSystem().readFile(templatePath + "massmail.mail.txt", new Handler<AsyncResult<Buffer>>() {
+								@Override
+								public void handle(AsyncResult<Buffer> result) {
+									if(!result.succeeded()){
+										badRequest(request);
+										return;
+									}
+
+									StringReader reader = new StringReader(result.result().toString("UTF-8"));
+									final JsonArray mailHeaders = new JsonArray().addObject(
+											new JsonObject().putString("name", "Content-Type").putString("value", "text/plain; charset=\"UTF-8\""));
+
+									for(Object userObj : users){
+										final JsonObject user = (JsonObject) userObj;
+										final String userMail = user.getString("email");
+										if(userMail == null || userMail.trim().isEmpty()){
+											continue;
+										}
+
+										final String mailTitle = !user.containsField("activationCode") ||
+													user.getString("activationCode") == null ||
+													user.getString("activationCode").trim().isEmpty() ?
+												"directory.massmail.mail.subject.activated" :
+												"directory.massmail.mail.subject.not.activated";
+
+										try{
+											reader.reset();
+										} catch(IOException exc){
+											log.error("[MassMail] Error on StringReader ("+exc.toString()+")");
+										}
+
+										processTemplate(request, user, "massmail.pdf.xhtml", reader, new Handler<Writer>(){
+											public void handle(Writer writer) {
+												String processedTemplate = ((StringWriter) writer).getBuffer().toString();
+
+												if(processedTemplate == null){
+													badRequest(request);
+													return;
+												}
+
+												notifHelper.sendEmail(
+														request,
+														userMail, null, null,
+														mailTitle,
+														processedTemplate, null, true, mailHeaders,
+														new Handler<Message<JsonObject>>() {
+													public void handle(Message<JsonObject> event) {
+														if("error".equals(event.body().getString("status"))){
+															log.error("[MassMail] Error while sending mail ("+event.body().getString("message", "")+")");
+														}
+													}
+												});
+											}
+
+										});
+									}
+
+									ok(request);
+								}
+							});
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+
+			}
+		});
+
+
+
+
 	}
 
 	public void setStructureService(SchoolService structureService) {

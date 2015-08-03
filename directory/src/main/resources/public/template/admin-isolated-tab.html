@@ -8,7 +8,7 @@
     <div>
         <form ng-submit="$parent.filterIsolatedUsers = filterIsolatedUsersInput; scrollOpts.reset()">
             <input type="text" ng-model="filterIsolatedUsersInput" placeholder="[[lang.translate('directory.search')]]" class="inline-middle"/>
-            <button class="inline-middle check-button"></button>
+            <button class="check-button"></button>
         </form>
     </div>
     <ul bottom-scroll-action="scrollOpts.increment()">
@@ -30,9 +30,9 @@
     <hr class="separator cell">
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+isolatedUser.type)]]</div>
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]</strong> [[isolatedUser.login]]</div>
+    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[isolatedUser.login]]</div>
     <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(isolatedUser.source)]]</div>
-    <div class="twelve cell" ng-show="isolatedUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]</strong> [[isolatedUser.code]]</div>
+    <div class="twelve cell" ng-show="isolatedUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[isolatedUser.code]]</div>
     <div class="twelve cell" ng-if="isolatedUser.deleteDate"><strong class="four cell">[[lang.translate("directory.predeletionDate")]]</strong> [[formatLongDate(isolatedUser.deleteDate)]]</div>
     <hr class="separator cell"/>
     <div class="twelve cell">

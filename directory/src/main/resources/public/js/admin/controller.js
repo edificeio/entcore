@@ -245,10 +245,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			requestName : "groups-request"
 		},
 		{
+			name: "exportTab",
+			text: lang.translate("directory.export"),
+			templateName: 'admin-export-tab',
+			onClick: function(){ $scope.scrollOpts.reset() }
+		},
+		{
 			name: "maintenanceTab",
 			text: lang.translate("directory.feeding"),
 			templateName: 'admin-maintenance-tab',
-			onClick: function(){ $scope.scrollOpts.reset() }
+			onClick: function(){ $scope.scrollOpts.reset() },
+			showCondition: function(){ return $scope.isCentralAdmin() }
 		},
 		{
 			name: "isolatedTab",
@@ -798,5 +805,251 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.removeUserFromStructure = function(user, structure, hook){
 		new Structure(structure).unlinkUser(user, hook)
+	}
+
+	/* Mass mailing */
+	$scope.profileList = [{label: 'Student'}, {label: 'Relative'}, {label: 'Personnel'}, {label: 'Teacher'}, {label: 'Guest'}]
+	_.forEach($scope.profileList, function(profile){
+		profile.toString = function(){ return lang.translate(this.label) }
+		profile.translatedLabel = lang.translate(profile.label)
+	})
+
+	$scope.massmail = {
+		/* Modification flag */
+		modified: false,
+		modify: function(){
+			$scope.massmail.modified = true
+		},
+		/* Utility methods */
+		removeElement: function(prop , item){
+			$scope.massmail[prop].splice($scope.massmail[prop].indexOf(item), 1)
+			$scope.massmail.modify()
+		},
+		ajaxDownload: function(blob, filename){
+			var a = document.createElement('a');
+			a.style = "display: none";
+			var url = window.URL.createObjectURL(blob);
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			setTimeout(function(){
+				document.body.removeChild(a);
+				window.URL.revokeObjectURL(url);
+			}, 100);
+		},
+		/* Single structure */
+		structure: [],
+		getStructure: function(){
+			return this.structure.length === 1 ? this.structure[0] : null;
+		},
+		/* Profile list */
+		profiles: [],
+		/* Level list */
+		levels: [],
+		isPartialLevel: function(level){
+			level.partial = _.find(level.classes, function(classe){ return _.findWhere($scope.massmail.classes, {id: classe.id}) })
+			return level.partial
+		},
+		/* Class list */
+		classes: [],
+		/* Activation */
+		activated: "false",
+		/* Sort by */
+		sortmethods: [
+			{
+				label: 'profile',
+				translatedLabel: lang.translate('directory.admin.profile')
+			},
+			{
+				label: 'classname',
+				translatedLabel: lang.translate('directory.classe')
+			}
+		],
+		sort1: "",
+		sort2: "",
+		filtermethod2: function(item){
+			return $scope.massmail.sort1 !== item.label
+		},
+		/* User list */
+		userList: [],
+		userLimit: 20,
+		countUsers: function(){
+			return $scope.massmail.userList.length
+		},
+		countUsersWithoutMail: function(){
+			return _.filter($scope.massmail.userList, function(u){ return !u.email }).length
+		},
+		resetUserLimit: function(){
+			$scope.massmail.userLimit = 50
+		},
+		incrementUserLimit: function(){
+			$scope.massmail.userLimit += 50
+		},
+		userOrder: '',
+		setUserOrder: function(order){
+			$scope.massmail.userOrder = $scope.massmail.userOrder === order ? '-' + order : order;
+		},
+		fetchingUsers: false,
+		fetchUsers: function(){
+			var that = $scope.massmail
+			that.fetchingUsers = true
+
+			var sortArray =
+				that.sort1 && that.sort2 ? [that.sort1, that.sort2] :
+				that.sort1 ? [that.sort1] :
+				[]
+			var levelClassesId = _.chain(that.levels)
+				.filter(function(l){ return !l.partial })
+				.pluck('classes')
+				.flatten()
+				.pluck('id')
+				.value()
+			var joinClassesAndLevels = _.pluck(that.classes, 'id').concat(
+				_.chain(that.getStructure().classes.all)
+					.filter(function(c){ return levelClassesId.indexOf(c.id) >= 0 })
+					.pluck('id')
+					.value()
+			)
+			$http.get('/directory/structure/'+that.getStructure().id+'/massMail/users', {
+				params: {
+					a: that.activated,
+					p: _.map(that.profiles, function(p){ return p.label }),
+					//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
+					c: joinClassesAndLevels,
+					s: sortArray
+				}
+			}).success(function(data){
+				that.modified = false
+				that.userList = data
+				_.forEach(that.userList, function(user){
+					user.translatedProfile = lang.translate(user.profile)
+					user.classesStr = user.classes.join(" ")
+				})
+				that.resetUserLimit()
+				that.fetchingUsers = false
+			}).error(function(data, status){
+				notify.error('e'+status)
+				that.fetchingUsers = false
+			})
+		},
+		closeUserList: function(){
+			$scope.massmail.userList = []
+		},
+		sortObject: {
+			lastName: '',
+			firstName: '',
+			translatedProfile: '',
+			classesStr: ''
+		},
+		userToString: function(u){
+			var result = ""
+			var stringProperties = ["lastName", "firstName", "profile", "login", "activationCode", "email"]
+			var arrayProperties = ["classes"]
+			var i
+			for(i = 0; i < stringProperties.length; i++){
+				if(i > 0)
+					result += ";"
+				result += u[stringProperties[i]]
+			}
+			for(i = 0; i < arrayProperties.length; i++){
+				result += ";" + u[arrayProperties[i]].join(',')
+			}
+			return result
+		},
+		exportCSV: function(){
+			var csvHeader = ""
+			var i18nArray = ["directory.admin.name", "directory.firstName", "directory.admin.profile", "directory.userLogin", "directory.userCode", "directory.admin.email", "directory.classes"]
+			for(var i = 0; i < i18nArray.length; i++){
+				if(i > 0)
+					csvHeader += ";"
+				csvHeader += lang.translate(i18nArray[i])
+			}
+			var csvString = csvHeader + _.map($scope.massmail.userList, function(u){ return "\r\n" + $scope.massmail.userToString(u) }).join("")
+			$scope.massmail.ajaxDownload(new Blob([csvString]), lang.translate("directory.massmail.filename")+".csv")
+		},
+		/* Massmail processing */
+		processing: false,
+		process: function(type){
+			var that = $scope.massmail
+			that.processing = true
+			var sortArray =
+				that.sort1 && that.sort2 ? [that.sort1, that.sort2] :
+				that.sort1 ? [that.sort1] :
+				[]
+			var levelClassesId = _.chain(that.levels)
+				.filter(function(l){ return !l.partial })
+				.pluck('classes')
+				.flatten()
+				.pluck('id')
+				.value()
+			var joinClassesAndLevels = _.pluck(that.classes, 'id').concat(
+				_.chain(that.getStructure().classes.all)
+					.filter(function(c){ return levelClassesId.indexOf(c.id) >= 0 })
+					.pluck('id')
+					.value()
+			)
+			if(type === 'pdf'){
+				$http.get('/directory/structure/'+that.getStructure().id+'/massMail/process/pdf', {
+					params: {
+						a: that.activated,
+						p: _.map(that.profiles, function(p){ return p.label }),
+						//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
+						c: joinClassesAndLevels,
+						s: sortArray,
+						filename: lang.translate("directory.massmail.filename")
+					},
+					responseType: 'blob'
+				}).success(function(blob){
+					$scope.massmail.ajaxDownload(blob, lang.translate("directory.massmail.filename")+".pdf")
+					that.processing = false
+				}).error(function(data, status){
+					notify.error('e'+status)
+					that.processing = false
+				})
+			} else if(type === 'mail'){
+				$http.get('/directory/structure/'+that.getStructure().id+'/massMail/process/mail', {
+					params: {
+						a: that.activated,
+						p: _.map(that.profiles, function(p){ return p.label }),
+						//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
+						c: joinClassesAndLevels,
+						filename: lang.translate("directory.massmail.filename")
+					},
+					responseType: 'json'
+				}).success(function(json){
+					notify.success("directory.massmail.mail.done")
+					that.processing = false
+				}).error(function(data, status){
+					notify.error('e'+status)
+					that.processing = false
+				})
+			}
+
+		}
+	}
+
+	$scope.$watchCollection('massmail.structure', function(){
+		if($scope.massmail.structure.length == 1){
+			$scope.massmail.structure[0].classes.sync()
+			$scope.massmail.structure[0].levels.sync()
+		}
+	})
+
+	$scope.comboLabels = {
+		options: lang.translate('options'),
+		searchPlaceholder: lang.translate('search'),
+		selectAll: lang.translate('select.all'),
+		deselectAll: lang.translate('deselect.all')
+	}
+
+	$scope.filterClasses = function(classe){
+		if($scope.massmail.levels.length === 0)
+			return true
+
+		for(var i = 0; i < $scope.massmail.levels.length; i++){
+			if(_.findWhere($scope.massmail.levels[i].classes, {id: classe.id}))
+				return true
+		}
 	}
 }

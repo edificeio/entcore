@@ -20,6 +20,7 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
@@ -48,5 +49,10 @@ public interface SchoolService {
 	void list(JsonArray fields, Handler<Either<String, JsonArray>> results);
 
 	void update(String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
+
+	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
+	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 }
