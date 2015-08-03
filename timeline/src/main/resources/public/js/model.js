@@ -8,6 +8,7 @@ function Notification(){
 
 function NotificationType(){
 	this.apply = function(){
+		model.notifications.page = 0;
 		if(model.notificationTypes.selection().length > 0){
 			model.notificationTypes.noFilter = false;
 		}
@@ -53,17 +54,11 @@ model.build = function (){
 
 			http().get('/timeline/lastNotifications', params).done(function(response){
 				that.loading = false;
-				if(paginate){
-					if(response.results.length > 0){
-						that.addRange(response.results);
-						that.page++;
-					} else {
-						that.lastPage = true;
-					}
+				if(response.results.length > 0){
+					that.addRange(response.results);
+					that.page++;
 				} else {
-					that.page = 0;
-					that.lastPage = false;
-					that.load(response.results);
+					that.lastPage = true;
 				}
 
 			}).error(function(data){
