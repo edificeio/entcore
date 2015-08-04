@@ -49,7 +49,7 @@
 			<div class="row">
 				<div class="five cell"><label translate content="userBook.profile.email"></label></div>
 				<div class="seven cell">
-					<input class="twelve inline-editing" type="email" name="mail" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.email" />
+					<input class="twelve inline-editing" type="email" name="mail" complete-change="userForm.$valid ? saveInfos() : ''" ng-model="account.email" />
 						<span class="twelve input-errors" ng-if="userForm.mail.$invalid && userForm.mail.$dirty">
 							<span ng-repeat="(key, value) in userForm.mail.$error">
 								<label ng-if="value">[[lang.translate(key)]]</label>
