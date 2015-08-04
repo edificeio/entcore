@@ -26,9 +26,6 @@
 		<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
 		<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
 	</div>
-	<div ng-if="account.picture">
-		<button class="twelve" ng-click="removePicture()" translate content="userBook.remove.avatar"></button>
-	</div>
 </div>
 <div class="margin-four height-five reduce-block-six user-infos">
 	<article class="fluid cell twelve small-text">
