@@ -21,7 +21,7 @@
 <article class="icons-view" drop-files="newFile.files" on-drop="setFilesName();addLoadingFiles();">
 	<header>&nbsp;</header>
 	<div>
-		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
+		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }">
 			<a class="container" draggable="false">
 				<i class="folder-large" data-ng-click="openFolder(folder)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
 			</a>
@@ -86,7 +86,7 @@
 				</div>
 			</a>
 			<input type="checkbox" data-ng-model="document.selected" />
-			
+
 			<legend>
 				<a ng-href="[[document.link]]">
 					<i ng-if="document.shared.length > 0" class="shared inline"></i>

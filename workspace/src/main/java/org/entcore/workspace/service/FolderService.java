@@ -47,9 +47,12 @@ public interface FolderService {
 				Handler<Either<String, JsonArray>> results);
 
 	void restore(String id, UserInfos author, Handler<Either<String, JsonObject>> result);
-	
-	void shareFolderAction(String id, UserInfos owner, List<String> actions, String groupId, 
+
+	void shareFolderAction(String id, UserInfos owner, List<String> actions, String groupId,
 			String userId, ShareService shareService, boolean remove, Handler<Either<String, JsonObject>> result);
 
 	void rename(String id, String newName, UserInfos owner, Handler<Either<String, JsonObject>> result);
+
+	public void getParentRights(String parentName, String parentFolder, String owner, Handler<Either<String, JsonArray>> result);
+	public void getParentRights(String parentName, String parentFolder, UserInfos owner, Handler<Either<String, JsonArray>> result);
 }

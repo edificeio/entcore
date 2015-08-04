@@ -51,6 +51,7 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.Either.Right;
 
 public class DefaultFolderService implements FolderService {
 
@@ -63,6 +64,29 @@ public class DefaultFolderService implements FolderService {
 		this.mongo = mongo;
 		this.storage = storage;
 		this.format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+	}
+
+	public void getParentRights(final String parentName, final String parentFolder, final UserInfos owner, final Handler<Either<String, JsonArray>> result){
+		getParentRights(parentName, parentFolder, owner.getUserId(), result);
+	}
+	public void getParentRights(final String parentName, final String parentFolder, final String owner, final Handler<Either<String, JsonArray>> result){
+		QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(owner)
+				.and("name").is(parentName)
+				.and("folder").is(parentFolder);
+
+		mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status")) && event.body().containsField("result")){
+					JsonObject parent = event.body().getObject("result");
+					JsonArray parentSharedRights = parent != null ? parent.getArray("shared", null) : null;
+
+					result.handle(new Either.Right<String, JsonArray>(parentSharedRights));
+				} else {
+					result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
+				}
+			}
+		});
 	}
 
 	@Override
@@ -112,34 +136,24 @@ public class DefaultFolderService implements FolderService {
 								String parentName = splittedPath[splittedPath.length - 1];
 								String parentFolder = path;
 
-								QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(owner.getUserId())
-										.and("name").is(parentName)
-										.and("folder").is(parentFolder);
+								getParentRights(parentName, parentFolder, owner, new Handler<Either<String, JsonArray>>(){
+									public void handle(Either<String, JsonArray> event) {
+										final JsonArray parentSharedRights = event.right() == null || event.isLeft() ?
+												null : event.right().getValue();
 
-								mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
-									@Override
-									public void handle(Message<JsonObject> event) {
-										if ("ok".equals(event.body().getString("status")) && event.body().containsField("result")){
-											JsonObject parent = event.body().getObject("result");
-											JsonArray parentSharedRights = parent != null ? parent.getArray("shared", null) : null;
+										if(parentSharedRights != null)
+											doc.putArray("shared", parentSharedRights);
 
-											if(parentSharedRights != null)
-												doc.putArray("shared", parentSharedRights);
-
-											mongo.save(DOCUMENTS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
-												@Override
-												public void handle(Message<JsonObject> res) {
-													result.handle(Utils.validResult(res));
-												}
-											});
-										} else {
-											result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
-										}
+										mongo.save(DOCUMENTS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> res) {
+												result.handle(Utils.validResult(res));
+											}
+										});
 									}
+
 								});
 							}
-
-
 						} else {
 							result.handle(new Either.Left<String, JsonObject>("workspace.folder.already.exists"));
 						}
@@ -182,17 +196,17 @@ public class DefaultFolderService implements FolderService {
 										.put("folder").is(dest);
 								mongo.count(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
 										new Handler<Message<JsonObject>>() {
-											@Override
-											public void handle(Message<JsonObject> event) {
-												if ("ok".equals(event.body().getString("status")) &&
-														event.body().getInteger("count") == 0) {
-													recursiveMove(folder, name, owner, path, result);
-												} else {
-													result.handle(new Either.Left<String, JsonObject>(
-															"workspace.folder.already.exists"));
-												}
-											}
-										});
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if ("ok".equals(event.body().getString("status")) &&
+												event.body().getInteger("count") == 0) {
+											recursiveMove(folder, name, owner, path, result);
+										} else {
+											result.handle(new Either.Left<String, JsonObject>(
+													"workspace.folder.already.exists"));
+										}
+									}
+								});
 							}
 						} else {
 							result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
@@ -204,52 +218,73 @@ public class DefaultFolderService implements FolderService {
 	private void recursiveMove(final String folder, final String name, final UserInfos owner,
 				final String path, final Handler<Either<String, JsonObject>> result) {
 		final String folderAttr = "Trash".equals(path) ? "old-folder" : "folder";
-		QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
+		final QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
 				.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
-		mongo.distinct(DOCUMENTS_COLLECTION, folderAttr, MongoQueryBuilder.build(q),
-				new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> d) {
-						JsonArray directories = d.body().getArray("values", new JsonArray());
-						if ("ok".equals(d.body().getString("status")) && directories.size() > 0) {
-							final AtomicInteger remaining = new AtomicInteger(directories.size());
-							final AtomicInteger count = new AtomicInteger(0);
-							String dest;
-							if (path != null && !path.trim().isEmpty()) {
-								dest = path + "_" + name;
-							} else {
-								dest = name;
-							}
-							for (Object o : directories) {
-								if (!(o instanceof String)) continue;
-								String dir = (String) o;
-								QueryBuilder qf = QueryBuilder.start("owner").is(owner.getUserId())
-										.put(folderAttr).is(dir);
-								MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-								modifier.set("folder", dir.replaceFirst("^" + Pattern.quote(folder), Matcher.quoteReplacement(dest)));
-								if("Trash".equals(path))
-									modifier.unset("shared");
-								mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(qf),
-										modifier.build(), false, true, new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> res) {
-										count.getAndAdd(res.body().getInteger("number", 0));
-										if (remaining.decrementAndGet() == 0) {
-											res.body().putNumber("number", count.get());
-											result.handle(Utils.validResult(res));
+
+		//If the folder has a parent folder, replicate sharing rights
+		String[] splittedPath = path.split("_");
+		String parentName = splittedPath[splittedPath.length - 1];
+		String parentFolder = path;
+
+		getParentRights(parentName, parentFolder, owner, new Handler<Either<String, JsonArray>>(){
+			public void handle(Either<String, JsonArray> event) {
+				final JsonArray parentSharedRights = event.right() == null || event.isLeft() ?
+						null : event.right().getValue();
+
+				mongo.distinct(DOCUMENTS_COLLECTION, folderAttr, MongoQueryBuilder.build(q),
+					new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> d) {
+							JsonArray directories = d.body().getArray("values", new JsonArray());
+							if ("ok".equals(d.body().getString("status")) && directories.size() > 0) {
+								final AtomicInteger remaining = new AtomicInteger(directories.size());
+								final AtomicInteger count = new AtomicInteger(0);
+								String dest;
+								if (path != null && !path.trim().isEmpty()) {
+									dest = path + "_" + name;
+								} else {
+									dest = name;
+								}
+								for (Object o : directories) {
+									if (!(o instanceof String)) continue;
+									String dir = (String) o;
+									QueryBuilder qf = QueryBuilder.start("owner").is(owner.getUserId())
+											.put(folderAttr).is(dir);
+									MongoUpdateBuilder modifier = new MongoUpdateBuilder();
+									modifier.set("folder", dir.replaceFirst("^" + Pattern.quote(folder), Matcher.quoteReplacement(dest)));
+
+									if("Trash".equals(path) || parentSharedRights == null)
+										modifier.unset("shared");
+									else
+										modifier.set("shared", parentSharedRights);
+
+									mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(qf),
+											modifier.build(), false, true, new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> res) {
+											count.getAndAdd(res.body().getInteger("number", 0));
+											if (remaining.decrementAndGet() == 0) {
+												res.body().putNumber("number", count.get());
+												result.handle(Utils.validResult(res));
+											}
 										}
-									}
-								});
+									});
+								}
+							} else {
+								result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 							}
-						} else {
-							result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 						}
 					}
-				});
+				);
+			}
+
+		});
+
+
 	}
 
 	@Override
-	public void copy(String id, final String n, final String path, final UserInfos owner, final long emptySize,
+	public void copy(final String id, final String n, final String path, final UserInfos owner, final long emptySize,
 			final Handler<Either<String, JsonArray>> result) {
 		if (owner == null) {
 			result.handle(new Either.Left<String, JsonArray>("workspace.invalid.user"));
@@ -259,109 +294,124 @@ public class DefaultFolderService implements FolderService {
 			result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
 			return;
 		}
-		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
-		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
-				new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
-				final String n1 = event.body().getObject("result", new JsonObject()).getString("name");
-				if ("ok".equals(event.body().getString("status")) &&
-						folder != null && !folder.trim().isEmpty() && n1 != null && !n1.trim().isEmpty()) {
-					final String folderAttr = "folder";
-					QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
-							.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
-					mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
-							new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> src) {
-							final JsonArray origs = src.body().getArray("results", new JsonArray());
-							if ("ok".equals(src.body().getString("status")) && origs.size() > 0) {
-								long size = 0;
-								for (Object o: origs) {
-									if (!(o instanceof JsonObject)) continue;
-									JsonObject metadata = ((JsonObject) o).getObject("metadata");
-									if (metadata != null) {
-										size += metadata.getLong("size", 0l);
-									}
-								}
-								if (size > emptySize) {
-									result.handle(new Either.Left<String, JsonArray>("files.too.large"));
-									return;
-								}
-								final AtomicInteger number = new AtomicInteger(origs.size());
-								final JsonArray insert = new JsonArray();
-								String name = (n != null && !n.trim().isEmpty()) ? n : n1;
-								final String destFolderName = (path != null && !path.trim().isEmpty()) ?
-									path + "_" + name : name;
-								QueryBuilder alreadyExist = QueryBuilder.start("owner").is(owner.getUserId())
-										.put("folder").is(destFolderName);
-								mongo.count(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(alreadyExist),
-										new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> event) {
-										String destFolder;
-										if ("ok".equals(event.body().getString("status")) &&
-												event.body().getInteger("count") == 0) {
-											destFolder = destFolderName;
-										} else {
-											destFolder = destFolderName + "-" + format.format(new Date());
-										}
+
+		//If the folder has a parent folder, replicate sharing rights
+		String[] splittedPath = path.split("_");
+		String parentName = splittedPath[splittedPath.length - 1];
+		String parentFolder = path;
+
+		getParentRights(parentName, parentFolder, owner, new Handler<Either<String, JsonArray>>(){
+			public void handle(Either<String, JsonArray> event) {
+				final JsonArray parentSharedRights = event.right() == null || event.isLeft() ?
+						null : event.right().getValue();
+
+				QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
+				JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+
+				mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
+						new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+						final String n1 = event.body().getObject("result", new JsonObject()).getString("name");
+						if ("ok".equals(event.body().getString("status")) &&
+								folder != null && !folder.trim().isEmpty() && n1 != null && !n1.trim().isEmpty()) {
+							final String folderAttr = "folder";
+							QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
+									.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
+							mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q),
+									new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> src) {
+									final JsonArray origs = src.body().getArray("results", new JsonArray());
+									if ("ok".equals(src.body().getString("status")) && origs.size() > 0) {
+										long size = 0;
 										for (Object o: origs) {
 											if (!(o instanceof JsonObject)) continue;
-											JsonObject orig = (JsonObject) o;
-											final JsonObject dest = orig.copy();
-											String now = MongoDb.formatDate(new Date());
-											dest.removeField("_id");
-											dest.putString("created", now);
-											dest.putString("modified", now);
-											dest.putString("folder", dest.getString("folder", "")
-													.replaceFirst("^" + Pattern.quote(folder),  Matcher.quoteReplacement(destFolder)));
-											insert.add(dest);
-											String filePath = orig.getString("file");
-											if (filePath != null) {
-												storage.copyFile(filePath,
-														new Handler<JsonObject>() {
-													@Override
-													public void handle(JsonObject event) {
-														if (event != null && "ok".equals(event.getString("status"))) {
-															dest.putString("file", event.getString("_id"));
-															persist(insert, number.decrementAndGet());
-														}
-													}
-												});
-											} else {
-												persist(insert, number.decrementAndGet());
+											JsonObject metadata = ((JsonObject) o).getObject("metadata");
+											if (metadata != null) {
+												size += metadata.getLong("size", 0l);
 											}
 										}
-									}
-								});
-							} else {
-								result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
-							}
-						}
-
-						private void persist(final JsonArray insert, int remains) {
-							if (remains == 0) {
-								mongo.insert(DOCUMENTS_COLLECTION, insert,
-										new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> inserted) {
-										if ("ok".equals(inserted.body().getString("status"))) {
-											result.handle(new Either.Right<String, JsonArray>(insert));
-										} else {
-											result.handle(new Either.Left<String, JsonArray>(
-													inserted.body().getString("message")));
+										if (size > emptySize) {
+											result.handle(new Either.Left<String, JsonArray>("files.too.large"));
+											return;
 										}
+										final AtomicInteger number = new AtomicInteger(origs.size());
+										final JsonArray insert = new JsonArray();
+										String name = (n != null && !n.trim().isEmpty()) ? n : n1;
+										final String destFolderName = (path != null && !path.trim().isEmpty()) ?
+											path + "_" + name : name;
+										QueryBuilder alreadyExist = QueryBuilder.start("owner").is(owner.getUserId())
+												.put("folder").is(destFolderName);
+										mongo.count(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(alreadyExist),
+												new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> event) {
+												String destFolder;
+												if ("ok".equals(event.body().getString("status")) &&
+														event.body().getInteger("count") == 0) {
+													destFolder = destFolderName;
+												} else {
+													destFolder = destFolderName + "-" + format.format(new Date());
+												}
+												for (Object o: origs) {
+													if (!(o instanceof JsonObject)) continue;
+													JsonObject orig = (JsonObject) o;
+													final JsonObject dest = orig.copy();
+													String now = MongoDb.formatDate(new Date());
+													dest.removeField("_id");
+													dest.putString("created", now);
+													dest.putString("modified", now);
+													dest.putString("folder", dest.getString("folder", "")
+															.replaceFirst("^" + Pattern.quote(folder),  Matcher.quoteReplacement(destFolder)));
+													dest.putArray("shared", parentSharedRights);
+													insert.add(dest);
+													String filePath = orig.getString("file");
+													if (filePath != null) {
+														storage.copyFile(filePath,
+																new Handler<JsonObject>() {
+															@Override
+															public void handle(JsonObject event) {
+																if (event != null && "ok".equals(event.getString("status"))) {
+																	dest.putString("file", event.getString("_id"));
+																	persist(insert, number.decrementAndGet());
+																}
+															}
+														});
+													} else {
+														persist(insert, number.decrementAndGet());
+													}
+												}
+											}
+										});
+									} else {
+										result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
 									}
-								});
-							}
+								}
+
+								private void persist(final JsonArray insert, int remains) {
+									if (remains == 0) {
+										mongo.insert(DOCUMENTS_COLLECTION, insert,
+												new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> inserted) {
+												if ("ok".equals(inserted.body().getString("status"))) {
+													result.handle(new Either.Right<String, JsonArray>(insert));
+												} else {
+													result.handle(new Either.Left<String, JsonArray>(
+															inserted.body().getString("message")));
+												}
+											}
+										});
+									}
+								}
+							});
+						} else {
+							result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
 						}
-					});
-				} else {
-					result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
-				}
+					}
+				});
 			}
 		});
 	}

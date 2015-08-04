@@ -1282,37 +1282,28 @@ public class WorkspaceService extends BaseController {
 											parentFolder = folder.substring(0, folder.lastIndexOf("_"));
 										}
 
-										QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(owner == null ? user.getUserId() : owner)
-												.and("folder").is(parentFolder)
-												.and("name").is(parentName);
+										folderService.getParentRights(parentName, parentFolder, owner, new Handler<Either<String, JsonArray>>(){
+											public void handle(Either<String, JsonArray> event) {
+												final JsonArray parentSharedRights = event.right() == null || event.isLeft() ?
+														null : event.right().getValue();
 
-										mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
-											@Override
-											public void handle(Message<JsonObject> event) {
-												if ("ok".equals(event.body().getString("status"))){
-													JsonObject parent = event.body().getObject("result");
-													if(parent != null && parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
-														dest.putArray("shared", parent.getArray("shared"));
-
-													if (filePath != null) {
-														storage.copyFile(filePath, new Handler<JsonObject>() {
-															@Override
-															public void handle(JsonObject event) {
-																if (event != null && "ok".equals(event.getString("status"))) {
-																	dest.putString("file", event.getString("_id"));
-																	persist(insert, number.decrementAndGet());
-																}
+												if(parentSharedRights != null && parentSharedRights.size() > 0)
+													dest.putArray("shared", parentSharedRights);
+												if (filePath != null) {
+													storage.copyFile(filePath, new Handler<JsonObject>() {
+														@Override
+														public void handle(JsonObject event) {
+															if (event != null && "ok".equals(event.getString("status"))) {
+																dest.putString("file", event.getString("_id"));
+																persist(insert, number.decrementAndGet());
 															}
-														});
-													} else {
-														persist(insert, number.decrementAndGet());
-													}
+														}
+													});
 												} else {
-													renderJson(request, event.body(), 404);
+													persist(insert, number.decrementAndGet());
 												}
 											}
 										});
-
 									} else if (filePath != null) {
 										storage.copyFile(filePath, new Handler<JsonObject>() {
 
@@ -1883,40 +1874,32 @@ public class WorkspaceService extends BaseController {
 								parentFolder = folder;
 							}
 
-							QueryBuilder parentFolderQuery = QueryBuilder.start("owner").is(user.getUserId())
-									.and("folder").is(parentFolder)
-									.and("name").is(parentName);
+							folderService.getParentRights(parentName, parentFolder, user, new Handler<Either<String, JsonArray>>(){
+								public void handle(Either<String, JsonArray> event) {
+									final JsonArray parentSharedRights = event.right() == null || event.isLeft() ?
+											null : event.right().getValue();
 
-							mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> event) {
-									if ("ok".equals(event.body().getString("status"))) {
-										JsonObject parent = event.body().getObject("result");
-										String obj = "{ \"$set\" : { \"folder\": \"" + cleanedFolder +
-													"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"";
-										if(parent.getArray("shared") != null && parent.getArray("shared").size() > 0)
-											obj += ", \"shared\" : "+parent.getArray("shared").toString()+" }}";
-										else
-											obj += "}, \"$unset\" : { \"shared\": 1 }}";
+									String obj = "{ \"$set\" : { \"folder\": \"" + cleanedFolder +
+												"\", \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\"";
+									if(parentSharedRights != null && parentSharedRights.size() > 0)
+										obj += ", \"shared\" : "+parentSharedRights.toString()+" }}";
+									else
+										obj += "}, \"$unset\" : { \"shared\": 1 }}";
 
-										mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
-												new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
-													@Override
-													public void handle(Message<JsonObject> r) {
-														JsonObject res = r.body();
-														if ("ok".equals(res.getString("status"))) {
-															renderJson(request, res);
-														} else {
-															renderJson(request, res, 404);
-														}
-													}
-												});
-									} else {
-										renderJson(request, event.body(), 404);
-									}
+									mongo.update(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject(criteria),
+											new JsonObject(obj), false, true, new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> r) {
+											JsonObject res = r.body();
+											if ("ok".equals(res.getString("status"))) {
+												renderJson(request, res);
+											} else {
+												renderJson(request, res, 404);
+											}
+										}
+									});
 								}
 							});
-
 						} else {
 							String obj = "{ \"$set\" : { \"modified\" : \""+ MongoDb.formatDate(new Date()) + "\" }, " +
 									" \"$unset\" : { \"folder\" : 1, \"shared\": 1 }}";
