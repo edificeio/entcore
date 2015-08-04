@@ -22,6 +22,9 @@ routes.define(function($routeProvider){
 
 function AdminDirectoryController($scope, $rootScope, $http, $route, template, model, date, route){
 
+	$scope.display = {
+		filterStructureClasses: ''
+	};
 	$scope.themes = [
 		{
 			name: "pink",
@@ -548,7 +551,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.refreshStructures = function(){
 		$scope.structures.sync($scope.refreshScope)
-	}
+	};
+
+	$scope.filterByName = function(userClass){
+		return lang.removeAccents(userClass.name).toLowerCase().indexOf(lang.removeAccents($scope.display.filterStructureClasses).toLowerCase()) !== -1;
+	};
 
     $scope.getUserDetails = function(user){
 		if(!user)

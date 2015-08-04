@@ -10,9 +10,9 @@
 <article class="side-tabs-content content-flex unpadded nine cell" ng-if="structure">
     <!-- Class selection menu -->
     <nav class="vertical cell search-container-left">
-        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureClasses"/>
+        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="display.filterStructureClasses"/>
         <ul>
-            <li ng-repeat="class in structure.classes.all | filter: filterStructureClasses | orderBy: 'name'" ng-click="$parent.classSelected = class" style="padding-left: 0">
+            <li ng-repeat="class in structure.classes.all | filter: filterByName | orderBy: 'name'" ng-click="$parent.classSelected = class" style="padding-left: 0">
                 [[class.name]]
             </li>
         </ul>
