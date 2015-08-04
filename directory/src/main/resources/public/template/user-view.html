@@ -30,55 +30,64 @@
 <div class="margin-four reduce-block-six height-five user-infos">
 	<article class="fluid cell twelve">
 		<h2>[[account.displayName]]</h2>
-		<div class="row">
-			<div class="five cell">
-				<i18n>userBook.profile.login</i18n>
+		<form name="userForm" novalidate>
+			<div class="row">
+				<div class="five cell">
+					<i18n>userBook.profile.login</i18n>
+				</div>
+				<em class="six cell">[[account.login]]</em>
 			</div>
-			<em class="six cell">[[account.login]]</em>
-		</div>
-		<div class="row" ng-if="account.id === me.userId">
-			<div class="five cell">
-				<i18n>userBook.profile.password</i18n>
+			<div class="row" ng-if="account.id === me.userId">
+				<div class="five cell">
+					<i18n>userBook.profile.password</i18n>
+				</div>
+				<em class="eight cell">
+					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
+				</em>
 			</div>
-			<em class="eight cell">
-				<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
-				<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
-			</em>
-		</div>
-		<div class="row">
-			<div class="five cell"><label translate content="userBook.profile.email"></label></div>
-			<input type="text" class="six cell" data-complete-change="saveInfos()" data-ng-model="account.email" />
-			<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
-		</div>
-		<div class="row">
-			<div class="five cell"><label translate content="userBook.profile.telephone"></label></div>
-			<em class="six cell">[[account.homePhone]]</em>
-			<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
-			<div class="clear"></div>
-		</div>
-		<div class="row">
-			<div class="five cell"><label translate content="userBook.profile.mobilePhone"></label></div>
-			<em class="six cell">[[account.mobile]]</em>
-			<i class="[[account.visible.mobile]] right-magnet" title="[[translate(account.visible.mobile)]]" data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)"></i>
-		</div>
-		<!--div class="row">
-			<div class="five cell"><label translate content="userBook.profile.address"></label></div>
-			<em class="six cell">[[account.address]]</em>
-			<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
-		</div-->
-		<div class="row">
-			<div class="five cell">
-				<i18n>userBook.profile.birthdate</i18n>
+			<div class="row">
+				<div class="five cell"><label translate content="userBook.profile.email"></label></div>
+				<div class="seven cell">
+					<input class="twelve inline-editing" type="email" name="mail" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.email" />
+						<span class="twelve input-errors" ng-if="userForm.mail.$invalid && userForm.mail.$dirty">
+							<span ng-repeat="(key, value) in userForm.mail.$error">
+								<label ng-if="value">[[lang.translate(key)]]</label>
+							</span>
+						</span>
+				</div>
+				<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 			</div>
-			<em class="six cell">[[birthDate(account.birthDate)]]</em>
-			<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
-			<div class="clear"></div>
-		</div>
-		<div class="row">
-			<div class="five cell">
-				<i18n>userBook.profile.school</i18n>
+			<div class="row">
+				<div class="five cell"><label translate content="userBook.profile.telephone"></label></div>
+				<em class="six cell">[[account.homePhone]]</em>
+				<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
+				<div class="clear"></div>
 			</div>
-			<em class="six cell">[[account.schoolName]]</em>
-		</div>
+			<div class="row">
+				<div class="five cell"><label translate content="userBook.profile.mobilePhone"></label></div>
+				<em class="six cell">[[account.mobile]]</em>
+				<i class="[[account.visible.mobile]] right-magnet" title="[[translate(account.visible.mobile)]]" data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)"></i>
+			</div>
+			<!--div class="row">
+				<div class="five cell"><label translate content="userBook.profile.address"></label></div>
+				<em class="six cell">[[account.address]]</em>
+				<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
+			</div-->
+			<div class="row">
+				<div class="five cell">
+					<i18n>userBook.profile.birthdate</i18n>
+				</div>
+				<em class="six cell">[[birthDate(account.birthDate)]]</em>
+				<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
+				<div class="clear"></div>
+			</div>
+			<div class="row">
+				<div class="five cell">
+					<i18n>userBook.profile.school</i18n>
+				</div>
+				<em class="six cell">[[account.schoolName]]</em>
+			</div>
+		</form>
 	</article>
 </div>
