@@ -118,6 +118,8 @@ public class PortalController extends BaseController {
 		}
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 		adminConsoleEventStore = EventStoreFactory.getFactory().getEventStore(ADMIN_CONSOLE_MODULE);
+		vertx.sharedData().getMap("skins").putAll(skins.toMap());
+		vertx.sharedData().getMap("server").put("assetPath", assetsPath);
 	}
 
 	@Get("/welcome")
