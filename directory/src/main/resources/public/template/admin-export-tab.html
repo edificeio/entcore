@@ -62,8 +62,8 @@
                     selection-event="massmail.modify"
                     class="six"
                 ></multi-combo>
-                <div class="select-blocks" ng-if="massmail.getStructure()" ng-click="massmail.removeElement('structure', massmail.getStructure())">
-                    <div>[[massmail.getStructure().toString()]]</div>
+                <div class="select-blocks" ng-if="massmail.getStructure()">
+                    <div ng-click="massmail.removeElement('structure', massmail.getStructure())">[[massmail.getStructure().toString()]]</div>
                 </div>
             </div>
 
