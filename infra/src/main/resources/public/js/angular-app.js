@@ -4573,31 +4573,6 @@ module.directive('slide', function () {
 	}
 });
 
-module.directive('slide', function () {
-	return {
-		restrict: 'A',
-		scope: false,
-		link: function (scope, element, attributes) {
-			 scope.$watch(
-				 function(){
-					 return scope.$eval(attributes.slide);
-				 },
-				 function(newVal) {
-					 if (newVal) {
-						 element.slideDown();
-					 } else {
-						 element.slideUp();
-					 }
-				 }
-			 )
-
-			if(!scope.$eval(attributes.slide)){
-				element.hide();
-			}
-		}
-	}
-});
-
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
