@@ -959,13 +959,14 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		},
 		exportCSV: function(){
 			var csvHeader = ""
+			var bom = "\ufeff"
 			var i18nArray = ["directory.admin.name", "directory.firstName", "directory.admin.profile", "directory.userLogin", "directory.userCode", "directory.admin.email", "directory.classes"]
 			for(var i = 0; i < i18nArray.length; i++){
 				if(i > 0)
 					csvHeader += ";"
 				csvHeader += lang.translate(i18nArray[i])
 			}
-			var csvString = csvHeader + _.map($scope.massmail.userList, function(u){ return "\r\n" + $scope.massmail.userToString(u) }).join("")
+			var csvString = bom + csvHeader + _.map($scope.massmail.userList, function(u){ return "\r\n" + $scope.massmail.userToString(u) }).join("")
 			$scope.massmail.ajaxDownload(new Blob([csvString]), lang.translate("directory.massmail.filename")+".csv")
 		},
 		/* Massmail processing */
