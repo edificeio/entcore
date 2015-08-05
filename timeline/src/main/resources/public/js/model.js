@@ -8,6 +8,7 @@ function Notification(){
 
 function NotificationType(){
 	this.apply = function(){
+		model.notifications.all = [];
 		model.notifications.page = 0;
 		if(model.notificationTypes.selection().length > 0){
 			model.notificationTypes.noFilter = false;
