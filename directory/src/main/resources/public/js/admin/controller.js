@@ -825,18 +825,30 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			$scope.massmail[prop].splice($scope.massmail[prop].indexOf(item), 1)
 			$scope.massmail.modify()
 		},
+		downloadAnchor: null,
+		downloadObjectUrl: null,
+		createDownloadAnchor: function(){
+			$scope.massmail.downloadAnchor = document.createElement('a')
+			$scope.massmail.downloadAnchor.style = "display: none"
+			document.body.appendChild($scope.massmail.downloadAnchor)
+		},
 		ajaxDownload: function(blob, filename){
-			var a = document.createElement('a');
-			a.style = "display: none";
-			var url = window.URL.createObjectURL(blob);
-			a.href = url;
-			a.download = filename;
-			document.body.appendChild(a);
-			a.click();
-			setTimeout(function(){
-				document.body.removeChild(a);
-				window.URL.revokeObjectURL(url);
-			}, 100);
+			if(window.navigator.msSaveOrOpenBlob) {
+				//IE specific
+	            window.navigator.msSaveOrOpenBlob(blob, filename);
+        	} else {
+				//Other browsers
+				if($scope.massmail.downloadAnchor === null)
+					$scope.massmail.createDownloadAnchor()
+				if($scope.massmail.downloadObjectUrl !== null)
+					window.URL.revokeObjectURL($scope.massmail.downloadObjectUrl);
+
+				$scope.massmail.downloadObjectUrl = window.URL.createObjectURL(blob)
+				var anchor = $scope.massmail.downloadAnchor
+				anchor.href = $scope.massmail.downloadObjectUrl
+				anchor.download = filename
+				anchor.click()
+			}
 		},
 		/* Single structure */
 		structure: [],
