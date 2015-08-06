@@ -143,26 +143,11 @@ function ForgotController($scope, route, template){
 	}
 
 	$scope.forgot = function(){
-		http().post('/auth/forgot', http().serialize({
-			login: $scope.user.login,
-			mail: $scope.user.mail ? $scope.user.mail : ""
-		}))
-			.done(function(data){
-				if(data.message){
-					template.open('main', 'forgot-message')
-					$scope.message = data.message;
-					$scope.error = '';
-					$scope.$apply();
-				}
-				else{
-					$scope.error = data.error.message;
-					$scope.$apply('error');
-				}
-			})
-			.e400(function(req){
-				$scope.error = req.responseJSON.error.message;
-				$scope.$apply('error');
-			});
+		if($scope.user.mode === 'password'){
+			$scope.forgotPassword($scope.user.login, 'mail')
+		} else {
+			$scope.forgotId($scope.user.mail, 'mail')
+		}
 	};
 
 	$scope.passwordChannels = function(login){
