@@ -214,9 +214,6 @@ public class DefaultSchoolService implements SchoolService {
 	public void massmailUsers(String structureId, JsonObject filterObj,
 			boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 
-		if(!filterObj.getArray("sort").contains("classname"))
-			groupClasses = true;
-
 		String filter =
 				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
 				"g-[:HAS_PROFILE]-(p: Profile) ";
@@ -311,11 +308,9 @@ public class DefaultSchoolService implements SchoolService {
 
 		//Order by
 		String sort = "ORDER BY ";
-		if(!groupClasses){
-			for(Object sortObj: filterObj.getArray("sort")){
-				String sortstr = (String) sortObj;
-				sort += sortstr + ",";
-			}
+		for(Object sortObj: filterObj.getArray("sort")){
+			String sortstr = (String) sortObj;
+			sort += sortstr + ",";
 		}
 		sort += "lastName";
 

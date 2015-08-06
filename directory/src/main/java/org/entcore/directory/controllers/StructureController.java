@@ -57,6 +57,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -228,12 +229,16 @@ public class StructureController extends BaseController {
 			public void handle(UserInfos infos) {
 				final JsonObject filter = new JsonObject();
 				final String structureId = request.params().get("structureId");
+				final List<String> sorts = request.params().getAll("s");
+
+				//As we group by class, we cannot sort by class.
+				sorts.remove("classname");
 
 				filter
 					.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
 					.putArray("levels", new JsonArray(request.params().getAll("l").toArray()))
 					.putArray("classes", new JsonArray(request.params().getAll("c").toArray()))
-					.putArray("sort", new JsonArray(request.params().getAll("s").toArray()));
+					.putArray("sort", new JsonArray(sorts.toArray()));
 
 				if(request.params().contains("a")){
 					filter.putString("activated", request.params().get("a"));
@@ -268,12 +273,14 @@ public class StructureController extends BaseController {
 		final String templatePath = assetsPath + "/template/directory/";
 		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + this.skins.get(Renders.getHost(request)) + "/img/";
 
+		final boolean groupClasses = !filter.getArray("sort").contains("classname");
+
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			public void handle(final UserInfos infos) {
 
 				//PDF
 				if("pdf".equals(type)){
-					structureService.massmailUsers(structureId, filter, false, false, infos, new Handler<Either<String,JsonArray>>() {
+					structureService.massmailUsers(structureId, filter, groupClasses, false, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
