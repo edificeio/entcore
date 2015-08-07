@@ -227,7 +227,8 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.refresh = function(){
 		notify.info('updating');
 		model.folders.current.mails.refresh();
-	}
+		model.folders.inbox.countUnread();
+	};
 
 	$scope.readMail = function(mail){
 		$scope.openView('read-mail', 'main');
