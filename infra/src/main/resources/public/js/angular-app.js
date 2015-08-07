@@ -1442,8 +1442,6 @@ module.directive('recorder', function(){
 module.directive('dropDown', function($compile, $timeout){
 	return {
 		restrict: 'E',
-		transclude: true,
-		replace: true,
 		scope: {
 			options: '=',
 			ngChange: '&',
@@ -1460,15 +1458,16 @@ module.directive('dropDown', function($compile, $timeout){
 					'</div>',
 		link: function(scope, element, attributes){
 			scope.limit = 6;
+			var dropDown = element.find('[data-drop-down]');
 			scope.setDropDownHeight = function(){
 				var liHeight = 0;
 				var max = Math.min(scope.limit, scope.options.length);
-				element.find('li').each(function(index, el){
+				dropDown.find('li').each(function(index, el){
 					liHeight += $(el).height();
 					return index < max;
-				})
-				element.height(liHeight)
-			}
+				});
+				dropDown.height(liHeight)
+			};
 			scope.increaseLimit = function(){
 				scope.limit += 5;
 				$timeout(function(){
@@ -1477,13 +1476,13 @@ module.directive('dropDown', function($compile, $timeout){
 			};
 			scope.$watchCollection('options', function(newValue){
 				if(!scope.options || scope.options.length === 0){
-					element.height();
-					element.addClass('hidden');
+					dropDown.height();
+					dropDown.addClass('hidden');
 					scope.limit = 6;
-					element.attr('style', '');
+					dropDown.attr('style', '');
 					return;
 				}
-				element.removeClass('hidden');
+				dropDown.removeClass('hidden');
 				var linkedInput = $('#' + attributes.for);
 				var pos = linkedInput.offset();
 				var width = linkedInput.width() +
@@ -1496,21 +1495,19 @@ module.directive('dropDown', function($compile, $timeout){
 					parseInt(linkedInput.css('border-height') || 1) * 2;
 
 				pos.top = pos.top + height;
-				element.offset(pos);
-				element.width(width);
+				dropDown.offset(pos);
+				dropDown.width(width);
 				scope.setDropDownHeight();
 			});
-			element.parent().on('remove', function(){
-				element.remove();
-			});
-			element.detach().appendTo('body');
 
-			element.on('click', 'li', function(e){
+			dropDown.detach().appendTo('body');
+
+			dropDown.on('click', 'li', function(e){
 				if($(e.target).hasClass('display-more')){
 					return;
 				}
 				scope.limit = 6;
-				element.attr('style', '');
+				dropDown.attr('style', '');
 				scope.current = $(this).scope().option;
 				scope.ngModel = $(this).scope().option;
 				scope.$apply('ngModel');
@@ -1519,15 +1516,20 @@ module.directive('dropDown', function($compile, $timeout){
 				scope.$apply('ngModel');
 			});
 
-			$('body').on('click', function(e){
-				if(element.find(e.target).length > 0){
+			var closeDropDown = function(e){
+				if(dropDown.find(e.target).length > 0){
 					return;
 				}
 				scope.$eval(scope.onClose);
 				scope.$apply();
-			});
-			element.attr('data-opened-drop-down', true);
+			};
 
+			$('body').on('click', closeDropDown);
+			dropDown.attr('data-opened-drop-down', true);
+			element.on('$destroy', function(){
+				$('body').unbind('click', closeDropDown);
+				dropDown.remove();
+			});
 		}
 	}
 });
