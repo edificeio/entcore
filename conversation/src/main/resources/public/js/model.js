@@ -108,6 +108,12 @@ function Mail(data){
 		var data = { subject: this.subject, body: this.body };
 		data.to = _.pluck(this.to, 'id');
 		data.cc = _.pluck(this.cc, 'id');
+		if(data.to.indexOf(model.me.userId) !== -1){
+			model.folders.inbox.nbUnread ++;
+		}
+		if(data.cc.indexOf(model.me.userId) !== -1){
+			model.folders.inbox.nbUnread ++;
+		}
 		var path = '/conversation/send?';
 		if(!data.subject){
 			data.subject = lang.translate('nosubject');
