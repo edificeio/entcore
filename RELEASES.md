@@ -1,6 +1,20 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.14.1 (12/08/2015)
+
+## Auth
+
+* Réinitialisation du mot de passe par SMS
+
+## Directory
+
+* Envoi d'emails en masse
+
+## Feeder
+
+* Importeur AAF1D
+
 # v1.14.0 (29/07/2015)
 
 ## Auth
