@@ -244,7 +244,9 @@ function ClassAdminController($scope, date, notify){
 	$scope.display = {};
 
 	model.network.on('classrooms-sync', function(){
-		$scope.classrooms = model.network.schools.allClassrooms();
+		$scope.classrooms = _.filter(model.network.schools.allClassrooms(), function(classroom){
+			return model.me.classes.indexOf(classroom.id) !== -1;
+		});
 		model.classAdmin.sync();
 		$scope.$apply();
 	});
