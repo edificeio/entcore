@@ -48,6 +48,10 @@ function User(data){
 }
 
 User.prototype.saveUserbook = function(){
+	for(var i = 0; i < this.hobbies.length; i++)
+		if(this.hobbies[i].values === undefined)
+			this.hobbies[i].values = ""
+			
 	http().putJson('/directory/userbook/' + this.id, {
 		health: this.health,
 		hobbies: this.hobbies,
