@@ -625,11 +625,13 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			if($scope.newFile.quality > 0){
 				url += '&quality=' + $scope.newFile.quality / 100;
 			}
+
+			var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
+
 			var request = http().postFile(url,  formData, {
 					requestName: 'file-upload-' + file.file.name + '-' + index
 				}).done(function(e){
 					loadingFile.loading = false;
-					var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 					if(path !== ''){
 						http().put("documents/move/" + e._id + '/' + encodeURIComponent(path)).done(function(){
 							$scope.openFolder($scope.openedFolder.folder);
