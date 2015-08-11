@@ -211,10 +211,11 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		}
 	};
 
-	function setCurrentMail(mail){
+	function setCurrentMail(mail, doNotSelect){
 		model.folders.current.mails.current = mail;
 		model.folders.current.mails.deselectAll();
-		model.folders.current.mails.current.selected = true;
+		if(!doNotSelect)
+			model.folders.current.mails.current.selected = true;
 		$scope.mail = mail;
 	}
 
@@ -232,7 +233,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.readMail = function(mail){
 		$scope.openView('read-mail', 'main');
-		setCurrentMail(mail);
+		setCurrentMail(mail, true);
 		mail.open(function(){
 			if(!mail.state){
 				$scope.openView('e404', 'page');
@@ -448,7 +449,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.currentFolderDepth = function(){
 		if(!($scope.folders.current instanceof UserFolder))
 			return 0
-			
+
 		var depth = 1
 		var ancestor = $scope.folders.current.parentFolder
 		while(ancestor){
