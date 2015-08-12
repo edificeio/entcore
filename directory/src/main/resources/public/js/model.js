@@ -28,9 +28,7 @@ function User(data){
 				this.id = undefined;
 				return;
 			}
-			data.result[0].hobbies = _.map(data.result[0].category, function(cat, i){
-				return { category: cat, value: data.result[0].values[i] };
-			});
+			data.result[0].hobbies = data.result[0].hobbies;
 			data.result[0].relatives = _.map(data.result, function(item){
 				return new User({ displayName: item.relatedName, id: item.relatedId, type: item.relatedType });
 			})
@@ -51,7 +49,7 @@ User.prototype.saveUserbook = function(){
 	for(var i = 0; i < this.hobbies.length; i++)
 		if(this.hobbies[i].values === undefined)
 			this.hobbies[i].values = ""
-			
+
 	http().putJson('/directory/userbook/' + this.id, {
 		health: this.health,
 		hobbies: this.hobbies,
@@ -145,14 +143,8 @@ User.prototype.loadVisibility = function(){
 	http().get('/userbook/api/person').done(function(data){
 		model.me.email = data.result[0].email;
 		this.updateData({
-			schoolName: data.result[0].schoolName,
-			hobbies: _.map(data.result[0].category, function(category, index){
-				return {
-					visibility: data.result[0].visibility[index],
-					category: category,
-					values: data.result[0].values[index]
-				};
-			}),
+			schoolName: data.result[0].schools[0].name,
+			hobbies: data.result[0].hobbies,
 			visible: {
 				email: data.result[0].visibleInfos.indexOf("SHOW_EMAIL") !== -1 ? "public" : "prive",
 				mail: data.result[0].visibleInfos.indexOf("SHOW_MAIL") !== -1 ? "public" : "prive",

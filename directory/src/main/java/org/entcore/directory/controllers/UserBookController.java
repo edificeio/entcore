@@ -200,8 +200,9 @@ public class UserBookController extends BaseController {
 								+ "OPTIONAL MATCH (n)-[:RELATED]-(n2) "
 								+ "WITH DISTINCT h1 as h, s, collect(distinct c.name) as c, n, v, u, n2, p "
 								+ personnalInfos
-								+ "WITH h, collect(distinct {name: s.name, classes: c}) as schools, collect(s.name) as schoolNames, "
-								+ "n, v, u, n2, address, email, health, tel, mobile, birthdate, r,  COLLECT(p.name) as type "
+								+ "WITH COLLECT(DISTINCT {name: s.name, classes: c}) as schools, "
+								+ "n, u, n2, address, email, health, tel, mobile, birthdate, r,  COLLECT(p.name) as type, "
+								+ "COLLECT(DISTINCT {visibility: type(v), category: h.category, values: h.values}) as hobbies "
 								+ "RETURN DISTINCT "
 									+ "n.id as id,"
 									+ "n.login as login, "
@@ -214,7 +215,6 @@ public class UserBookController extends BaseController {
 									+ "birthdate, "
 									+ "HEAD(r) as visibleInfos, "
 									+ "schools, "
-									+ "schoolNames[0] as schoolName, "
 									+ "n2.displayName as relatedName, "
 									+ "n2.id as relatedId,"
 									+ "n2.type as relatedType,"
@@ -223,9 +223,7 @@ public class UserBookController extends BaseController {
 									+ "COALESCE(u.picture, {defaultAvatar}) as photo,"
 									+ "COALESCE(u.mood, {defaultMood}) as mood,"
 									+ "health,"
-									+ "COLLECT(type(v)) as visibility,"
-									+ "COLLECT(h.category) as category,"
-									+ "COLLECT(h.values) as values";
+									+ "hobbies";
 					params.put("defaultAvatar", userBookData.getString("default-avatar"));
 					params.put("defaultMood", userBookData.getString("default-mood"));
 					neo.send(query, params, new Handler<Message<JsonObject>>() {
