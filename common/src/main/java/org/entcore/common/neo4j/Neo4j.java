@@ -139,4 +139,8 @@ public class Neo4j {
 		eb.send(address, jo, handler);
 	}
 
+	public EventBus getEventBus() {
+		return eb;
+	}
+
 }

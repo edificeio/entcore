@@ -518,7 +518,7 @@ public class AuthController extends BaseController {
 					}
 					renderJson(request, error);
 				} else {
-					userAuthAccount.activateAccount(login, activationCode, password, email, phone,
+					userAuthAccount.activateAccount(login, activationCode, password, email, phone, request,
 							new org.vertx.java.core.Handler<Either<String, String>>() {
 
 						@Override

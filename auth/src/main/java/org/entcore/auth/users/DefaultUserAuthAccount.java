@@ -71,7 +71,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
-			String email, String phone, final Handler<Either<String, String>> handler) {
+			String email, String phone, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -79,7 +79,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
 				"WHERE LENGTH(duplicates) = 0 " +
 				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone} " +
-				"RETURN n.password as password, n.id as id";
+				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -92,9 +92,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))
 						&& res.body().getObject("result").getObject("0") != null) {
-					JsonObject jo = new JsonObject().putString(
-							"userId",
-							res.body().getObject("result").getObject("0").getString("id"));
+					JsonObject jo = new JsonObject()
+							.putString("userId", res.body().getObject("result").getObject("0").getString("id"))
+							.putString("profile", res.body().getObject("result").getObject("0").getString("profile"))
+							.putObject("request", new JsonObject()
+									.putObject("headers", new JsonObject()
+											.putString("Accept-Language",request.headers().get("Accept-Language"))
+											.putString("Host", Renders.getHost(request))
+									)
+							);
 					Server.getEventBus(vertx).publish("activation.ack", jo);
 					handler.handle(new Either.Right<String, String>(
 							res.body().getObject("result").getObject("0").getString("id")));

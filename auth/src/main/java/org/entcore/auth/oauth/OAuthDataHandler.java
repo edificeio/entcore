@@ -139,7 +139,9 @@ public class OAuthDataHandler extends DataHandler {
 	}
 
 	private void upgradeOldPassword(final String username, String password) {
-		String query = "MATCH (u:User {login: {login}}) SET u.password = {password} ";
+		String query =
+				"MATCH (u:User {login: {login}}) SET u.password = {password} " +
+				"RETURN u.id as id, HEAD(u.profiles) as profile ";
 		JsonObject params = new JsonObject()
 				.putString("login", username)
 				.putString("password", BCrypt.hashpw(password, BCrypt.gensalt()));
@@ -148,6 +150,19 @@ public class OAuthDataHandler extends DataHandler {
 			public void handle(Message<JsonObject> event) {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error updating old password for user " + username + " : " + event.body().getString("message"));
+				} else if (event.body().getArray("result") != null && event.body().getArray("result").size() == 1) {
+					// welcome message
+					JsonObject message = new JsonObject()
+							.putString("userId", event.body().getArray("result").<JsonObject>get(0).getString("id"))
+							.putString("profile", event.body().getArray("result").<JsonObject>get(0).getString("profile"))
+							.putObject("request", new JsonObject()
+									.putObject("headers", new JsonObject()
+													.putString("Accept-Language", getRequest().getHeader("Accept-Language"))
+													.putString("Host", getRequest().getHeader("Host"))
+													.putString("X-Forwarded-Host", getRequest().getHeader("X-Forwarded-Host"))
+									)
+							);
+					neo.getEventBus().publish("send.welcome.message", message);
 				}
 			}
 		});

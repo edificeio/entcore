@@ -76,6 +76,7 @@ public class Directory extends BaseServer {
 
 		UserBookController userBookController = new UserBookController();
 		userBookController.setSchoolService(schoolService);
+		userBookController.setConversationNotification(conversationNotification);
 		addController(userBookController);
 
 		StructureController structureController = new StructureController();

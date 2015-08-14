@@ -27,8 +27,8 @@ import org.vertx.java.core.json.JsonObject;
 
 public interface UserAuthAccount {
 
-	void activateAccount(String login, String activationCode, String password, String email, String phone,
-			Handler<Either<String, String>> handler);
+	void activateAccount(String login, String activationCode, String password, String email,
+			String phone, HttpServerRequest request, Handler<Either<String, String>> handler);
 
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 

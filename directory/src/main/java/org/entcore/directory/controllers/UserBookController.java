@@ -19,6 +19,7 @@
 
 package org.entcore.directory.controllers;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -27,10 +28,15 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -65,11 +71,13 @@ public class UserBookController extends BaseController {
 	private HttpClient client;
 	private SchoolService schoolService;
 	private EventStore eventStore;
+	private ConversationNotification conversationNotification;
 	private enum DirectoryEvent { ACCESS }
 	private static final String ANNUAIRE_MODULE = "Annuaire";
+	private Map<String, Map<String, String>> activationWelcomeMessage;
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(final Vertx vertx, Container container, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		pathPrefix = "/userbook";
 		super.init(vertx, container, rm, securedActions);
@@ -83,6 +91,41 @@ public class UserBookController extends BaseController {
 						.setKeepAlive(false);
 		getWithRegEx(".*", "proxyDocument");
 		eventStore = EventStoreFactory.getFactory().getEventStore(ANNUAIRE_MODULE);
+		if (config.getBoolean("activation-welcome-message", false)) {
+			activationWelcomeMessage = new HashMap<>();
+			String assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath");
+			Map<String, String> skins = vertx.sharedData().getMap("skins");
+			if (skins != null) {
+				activationWelcomeMessage = new HashMap<>();
+				for (final Map.Entry<String, String> e: skins.entrySet()) {
+					String path = assetsPath + "/assets/themes/" + e.getValue() + "/template/directory/welcome/";
+					vertx.fileSystem().readDir(path, new AsyncResultHandler<String[]>() {
+						@Override
+						public void handle(AsyncResult<String[]> event) {
+							if (event.succeeded()) {
+								final Map<String, String> messages = new HashMap<>();
+								activationWelcomeMessage.put(e.getKey(), messages);
+								for (final String file : event.result()) {
+									vertx.fileSystem().readFile(file, new Handler<AsyncResult<Buffer>>() {
+										@Override
+										public void handle(AsyncResult<Buffer> event) {
+											if (event.succeeded()) {
+												String filename = file.substring(
+														file.lastIndexOf(File.separator) + 1, file.lastIndexOf("."));
+												messages.put(filename, event.result().toString());
+												if (log.isDebugEnabled()) {
+													log.debug("Load welcome message " + file + " as " + filename);
+												}
+											}
+										}
+									});
+								}
+							}
+						}
+					});
+				}
+			}
+		}
 	}
 
 	@Get("/mon-compte")
@@ -450,6 +493,35 @@ public class UserBookController extends BaseController {
 			queries.add(Neo.toJsonObject(query2, j));
 		}
 		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
+
+		welcomeMessage(message);
+	}
+
+	@BusAddress("send.welcome.message")
+	public void welcomeMessage(Message<JsonObject> message) {
+		if (activationWelcomeMessage != null) {
+			final HttpServerRequest request = new JsonHttpServerRequest(message.body().getObject("request"));
+			Map<String, String> messages = activationWelcomeMessage.get(getHost(request));
+			if (messages != null) {
+				String welcomeMessage = messages.get(message.body().getString("profile"));
+				if (welcomeMessage == null) {
+					welcomeMessage = messages.get("default");
+				}
+				if (welcomeMessage != null) {
+					conversationNotification.notify(request, "", new JsonArray().add(message.body().getString("userId")),
+							null, I18n.getInstance().translate("welcome.subject", request.headers().get("Accept-Language")),
+							welcomeMessage, new Handler<Either<String, JsonObject>>() {
+
+								@Override
+								public void handle(Either<String, JsonObject> r) {
+									if (r.isLeft()) {
+										log.error(r.left().getValue());
+									}
+								}
+							});
+				}
+			}
+		}
 	}
 
 	@Get("/avatar/:id")
@@ -636,4 +708,9 @@ public class UserBookController extends BaseController {
 	public void setSchoolService(SchoolService schoolService) {
 		this.schoolService = schoolService;
 	}
+
+	public void setConversationNotification(ConversationNotification conversationNotification) {
+		this.conversationNotification = conversationNotification;
+	}
+
 }
