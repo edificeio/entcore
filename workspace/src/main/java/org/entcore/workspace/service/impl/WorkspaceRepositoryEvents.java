@@ -105,6 +105,9 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 									JsonObject j = documents.get(i);
 									ids[i] = j.getString("file");
 									String fileName = j.getString("name");
+									if (fileName != null && fileName.contains("/")) {
+										fileName = fileName.replaceAll("/", "-");
+									}
 									if (usedFileName.add(fileName)) {
 										alias.putString(ids[i], fileName);
 									} else {
@@ -115,6 +118,9 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 									JsonObject j = racks.get(i);
 									ids[i] = j.getString("file");
 									String fileName = j.getString("name");
+									if (fileName != null && fileName.contains("/")) {
+										fileName = fileName.replaceAll("/", "-");
+									}
 									if (usedFileName.add(fileName)) {
 										alias.putString(ids[i], fileName);
 									} else {
