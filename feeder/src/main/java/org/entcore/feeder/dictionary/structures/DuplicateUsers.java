@@ -341,7 +341,10 @@ public class DuplicateUsers {
 		StringBuilder sb = new StringBuilder().append("(");
 		String[] values = value.split("\\s+");
 		for (String v : values) {
-			if (v.length() < 4 && values.length > 1) continue;
+			if (v.startsWith("-")) {
+				v = v.replaceFirst("-+", "");
+			}
+			if (v.isEmpty() || (v.length() < 4 && values.length > 1)) continue;
 			sb.append(attributeName).append(":").append(v).append(d).append(" OR ");
 		}
 		int len = sb.length();
