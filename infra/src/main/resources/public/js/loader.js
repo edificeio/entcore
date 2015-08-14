@@ -71,6 +71,7 @@ var loader = (function(){
 			{ path: 'angular-route.min.js' },
 			{ path: 'underscore-min-1.4.4.js' },
 			{ path: 'idiom.js' },
+			{ path: 'editor.js' },
 			{ path: 'lib.js' },
 			{ path: 'ui.js' },
 			{ path: 'humane.min.js' },

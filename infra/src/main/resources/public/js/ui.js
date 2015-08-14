@@ -298,7 +298,8 @@ ui.extendElement = {
 		if(element.length > 1){
 			element.each(function(index, item){
 				ui.extendElement.resizable($(item), params);
-			})
+			});
+			return;
 		}
 
 		//cursor styles to indicate resizing possibilities
@@ -309,10 +310,17 @@ ui.extendElement = {
 				}
 				var mouse = { x: e.pageX, y: e.pageY };
 				var resizeLimits = {
-					horizontalRight:  element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
-					horizontalLeft: element.offset().left + 5 > mouse.x && mouse.x > element.offset().left - 15 && element.attr('horizontal-resize-lock') === undefined,
-					verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 5 && element.attr('vertical-resize-lock') === undefined,
-					verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5 && element.attr('vertical-resize-lock') === undefined
+					horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
+					&& params.lock.horizontal === undefined && params.lock.right === undefined,
+
+					horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
+					&& params.lock.horizontal === undefined && params.lock.left === undefined,
+
+					verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15
+					&& params.lock.vertical === undefined && params.lock.top === undefined,
+
+					verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5
+					&& params.lock.vertical === undefined && params.lock.bottom === undefined
 				};
 
 				var orientations = {
@@ -356,14 +364,21 @@ ui.extendElement = {
 
 			var interrupt = false;
 			var mouse = {
-				y: f.clientY || f.originalEvent.touches[0].clientY,
-				x: f.clientX || f.originalEvent.touches[0].clientX
+				y: e.clientY || e.originalEvent.touches[0].clientY,
+				x: e.clientX || e.originalEvent.touches[0].clientX
 			};
 			var resizeLimits = {
-				horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15 && element.attr('horizontal-resize-lock') === undefined,
-				horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15 && params.lock.horizontal === undefined,
-				verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15 && element.attr('vertical-resize-lock') === undefined,
-				verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5 && element.attr('vertical-resize-lock') === undefined
+				horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
+				&& params.lock.horizontal === undefined && params.lock.right === undefined,
+
+				horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
+				&& params.lock.horizontal === undefined && params.lock.left === undefined,
+
+				verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15
+				&& params.lock.vertical === undefined && params.lock.top === undefined,
+
+				verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5
+				&& params.lock.vertical === undefined && params.lock.bottom === undefined
 			};
 
 			var initial = {
@@ -389,6 +404,7 @@ ui.extendElement = {
 				$('.main').css({
 					'cursor': element.css('cursor')
 				});
+
 				$(window).unbind('mousemove.drag touchmove.start');
 				$(window).on('mousemove.resize touchmove.resize', function(e){
 					element.unbind("click");
@@ -470,6 +486,7 @@ ui.extendElement = {
 					}, 100);
 					$(window).unbind('mousemove.resize touchmove.resize');
 					$('body').unbind('mouseup.resize touchleave.resize touchend.resize');
+
 					$('.main').css({'cursor': ''})
 				});
 			}
@@ -486,10 +503,17 @@ ui.extendElement = {
 		if(element.length > 1){
 			element.each(function(index, item){
 				ui.extendElement.draggable($(item), params);
-			})
+			});
+			return;
 		}
 
 		element.on('touchstart mousedown', function(e){
+			if(element.length > 1){
+				element.each(function(index, item){
+					ui.extendElement.draggable($(item), params);
+				});
+			}
+
 			if(element.data('lock') === true || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))){
 				return;
 			}

@@ -862,13 +862,13 @@ function Collection(obj){
 		this.on(event, uniqueRun);
 	};
 
-	Model.prototype.trigger = function(event){
+	Model.prototype.trigger = function(event, eventData){
 		if(!this.callbacks || !this.callbacks[event]){
 			return;
 		}
 		for(var i = 0; i < this.callbacks[event].length; i++){
 			if(typeof this.callbacks[event][i] === 'function'){
-				this.callbacks[event][i].call(this);
+				this.callbacks[event][i].call(this, eventData);
 			}
 		}
 	};
