@@ -101,7 +101,7 @@
     "resid.art": "Résidence d'artiste",
     "restore": "Restaurer",
     "saturday": "samedi",
-    "save": "Sauvegarder",
+    "save": "Enregistrer",
     "school.website": "Site web de l'école",
     "scrapbook": "Cahier multimédia",
     "search": "Rechercher",
@@ -151,7 +151,7 @@
     "record.stop": "Arrêter l'enregistrement",
     "record.play": "Jouer le son",
     "record.remove": "Annuler l'enregistrement",
-    "record.save": "Sauvegarder l'enregistrement dans l'espace documentaire",
+    "record.save": "Enregistrer l'enregistrement dans l'espace documentaire",
 	"help.notfound.title": "Aide non trouvée",
 	"help.notfound.text": "L'aide en ligne de cette application n'est pas disponible pour le moment."
 }
