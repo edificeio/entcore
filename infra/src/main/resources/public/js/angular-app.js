@@ -1701,7 +1701,7 @@ var ckeEditorFixedPositionning = function(){
 	}
 };
 
-function createCKEditorInstance(editor, scope, $compile){
+function createCKEditorInstance(editor, scope, $compile, attributes){
 	var cke = { instance: null };
 	CKEDITOR.on('instanceReady', function(ck){
 		if(!(ck.editor.element.$ === editor[0])){
@@ -1728,6 +1728,9 @@ function createCKEditorInstance(editor, scope, $compile){
 			scope.ngModel.assign(scope, cke.instance.editor.getData());
 			editor.attr('style', '');
 			scope.$apply();
+		}
+		if(attributes.ngChange){
+			scope.$eval(attributes.ngChange);
 		}
 	});
 
@@ -1920,7 +1923,7 @@ module.directive('htmlEditor', function($compile, $parse){
 				var contextEditor = CKEDITOR.inline(editor[0]);
 				scope.contextEditor = contextEditor;
 
-				var cke = createCKEditorInstance(editor, scope, $compile);
+				var cke = createCKEditorInstance(editor, scope, $compile, attributes);
 
 				scope.$watch(function(){
 						return scope.ngModel(scope);
@@ -2027,6 +2030,9 @@ module.directive('htmlEditor', function($compile, $parse){
 
 				scope.updateContent = function(){
 					scope.ngModel.assign(scope, editor.html());
+					if(attributes.ngChange){
+						scope.$eval(attributes.ngChange);
+					}
 				};
 
 				scope.addContent = function(){
