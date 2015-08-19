@@ -144,7 +144,7 @@ public class ClassController extends BaseController {
 											request.response().putHeader("Content-Type", "application/csv");
 											request.response().putHeader("Content-Disposition",
 													"attachment; filename=" + name + ".csv");
-											request.response().end(export);
+											request.response().end('\ufeff' + export);
 										}
 									});
 								} else {
