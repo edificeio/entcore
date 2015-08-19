@@ -20,6 +20,7 @@
 package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.StudentImportProcessing2;
+import org.entcore.feeder.dictionary.structures.Structure;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -50,6 +51,29 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	@Override
 	protected JsonArray parseRelativeField(JsonArray relative) {
 		return StudentImportProcessing1d.parseRelativeField1d(relative);
+	}
+
+	@Override
+	protected String[][] createClasses(JsonArray classes) {
+		String [][] linkStructureClasses = null;
+		if (classes != null && classes.size() > 0) {
+			linkStructureClasses = new String[classes.size()][2];
+			int i = 0;
+			for (Object o : classes) {
+				if (!(o instanceof String)) continue;
+				String [] c = ((String) o).split("\\$");
+				if (c.length == 5) {
+					Structure s = importer.getStructure(c[0]);
+					if (s != null) {
+						String classExternalId = c[3];
+						s.createClassIfAbsent(classExternalId, c[4]);
+						linkStructureClasses[i][0] = s.getExternalId();
+						linkStructureClasses[i++][1] = classExternalId;
+					}
+				}
+			}
+		}
+		return linkStructureClasses;
 	}
 
 }
