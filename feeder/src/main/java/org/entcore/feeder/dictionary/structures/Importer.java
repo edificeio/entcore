@@ -728,6 +728,14 @@ public class Importer {
 					}
 				}
 				if (externalId != null && relative != null && relative.size() > 0) {
+					String query2 =
+							"MATCH (:User {externalId:{userExternalId}})-[r:RELATED]->(p:User) " +
+							"WHERE NOT(p.externalId IN {relatives}) " +
+							"DELETE r ";
+					JsonObject p2 = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("relatives", relative);
+					transactionHelper.add(query2, p2);
 					for (Object o : relative) {
 						if (!(o instanceof String)) continue;
 						String query =
