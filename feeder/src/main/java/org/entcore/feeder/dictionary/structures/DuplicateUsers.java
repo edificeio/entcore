@@ -265,7 +265,7 @@ public class DuplicateUsers {
 		});
 	}
 
-	private void scoreDuplicates(final String profile, final JsonArray result, final VoidHandler handler) {
+	private void scoreDuplicates(final String profile, final JsonArray search, final VoidHandler handler) {
 		final String query =
 				"START u=node:node_auto_index({luceneQuery}) " +
 				"WHERE HEAD(u.profiles) = {profile} AND u.id <> {id} AND NOT(HAS(u.deleteDate)) " +
@@ -279,18 +279,18 @@ public class DuplicateUsers {
 			log.error("Error when find duplicate users.", e);
 			return;
 		}
-		for (int i = 0; i < result.size(); i++) {
-			JsonObject json = result.get(i);
+		final JsonArray result = new JsonArray();
+		for (int i = 0; i < search.size(); i++) {
+			final JsonObject json = search.get(i);
 			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.4);
 			final String lastNameAttr = luceneAttribute("lastName", json.getString("lastName"), 0.4);
 			String luceneQuery;
 			if (firstNameAttr != null && lastNameAttr != null &&
 					!firstNameAttr.trim().isEmpty() && !lastNameAttr.trim().isEmpty()) {
 				luceneQuery = firstNameAttr + " AND " + lastNameAttr;
-			} else {
-				continue;
+				result.add(json);
+				tx.add(query, params.copy().putString("luceneQuery", luceneQuery).putString("id", json.getString("id")));
 			}
-			tx.add(query, params.copy().putString("luceneQuery", luceneQuery).putString("id", json.getString("id")));
 		}
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
@@ -344,6 +344,7 @@ public class DuplicateUsers {
 			if (v.startsWith("-")) {
 				v = v.replaceFirst("-+", "");
 			}
+			v = v.replaceAll("\\W+", "");
 			if (v.isEmpty() || (v.length() < 4 && values.length > 1)) continue;
 			sb.append(attributeName).append(":").append(v).append(d).append(" OR ");
 		}
