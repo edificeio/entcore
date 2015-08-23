@@ -1,6 +1,21 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.14.2 (24/08/2015)
+
+## Directory
+
+* Envoi d'un message de bienvenue lors de l'activation ou de la mise à jour du mot de passe (md5 vers bcrypt)
+
+## Anomalies corrigées
+
+* Feeder : correction dans la recherche de doublon pour prévenir un exception dans lucene
+* Feeder : correction de l'import des classes dans l'importeur AAF1D
+* Export : replacement des slash dans les noms de fichiers
+* Userbook : correction de hobbies pour un utilisateur dans plusieurs structures
+* Messagerie : pas de lien pour la création d'un dossier quand la profondeur est de 1
+
+
 # v1.14.1 (12/08/2015)
 
 ## Auth
