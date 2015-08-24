@@ -630,10 +630,13 @@ public class DefaultFolderService implements FolderService {
 			groups.add(QueryBuilder.start("groupId").is(gpId)
 					.put(sharedMethod).is(true).get());
 		}
+
+		final DBObject managerCheck = QueryBuilder.start("shared").elemMatch(
+			new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get();
+
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("file").exists(false).or(
-				QueryBuilder.start("owner").is(owner.getUserId()).get(),
-				QueryBuilder.start("shared").elemMatch(
-						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get()
+			QueryBuilder.start("owner").is(owner.getUserId()).get(),
+			managerCheck
 		);
 
 		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
@@ -643,9 +646,11 @@ public class DefaultFolderService implements FolderService {
 			public void handle(Message<JsonObject> event) {
 				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
 
-				QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId())
-						.put("folder").regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"))
-						.put("_id").notEquals(id);
+				QueryBuilder q = QueryBuilder.start().or(
+						QueryBuilder.start("owner").is(owner.getUserId()).get(),
+						managerCheck
+					).put("folder").regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"))
+					 .put("_id").notEquals(id);
 
 				mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(q), new Handler<Message<JsonObject>>() {
 
