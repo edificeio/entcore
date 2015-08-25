@@ -57,12 +57,13 @@
                 ||||||||||||||||||||
             -->
             <div ng-if="selected === 0" class="twelve"/>
-                <nav class="side-tabs three cell">
+                <nav class="side-tabs three cell recursive-list">
+                    <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps" />
                     <ul>
-                        <li ng-class="{ selected: !application.id }" ng-click="newApplication()">
+                        <li ng-class="{ selected: !application.id }" ng-click="newApplication()" class="top-item last">
                             <strong>[[lang.translate("appregistry.createApp")]]</strong>
                         </li>
-                        <li ng-repeat="application in applications.all | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+                        <li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
                             [[application.name]]
                         </li>
                     </ul>
@@ -105,7 +106,7 @@
                         <label class="three cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
                     </div>
                     <div class="row" ng-if="display.advanced">
-                        <hr style="width: 96%; border: inset; border-width: 1px;">
+                        <hr class="separator">
                         <div class="row">
                             <label class="four cell">[[lang.translate("appregistry.scope")]]</label>
                             <input class="four cell" type="text" ng-model="application.scope" />
@@ -123,7 +124,7 @@
                             </select>
                         </div>
                     </div>
-                    <hr style="width: 96%; border: inset; border-width: 1px;">
+                    <hr class="separator">
                     <div class="row">
                         <input type="button" class="left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.advancedParams')"/>
                         <input type="button" class="left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.simpleMode')"/>
@@ -139,16 +140,17 @@
                 ||||||||||||||||||||
             -->
             <div ng-if="selected === 1" class="twelve"/>
-                <nav class="side-tabs three cell">
+                <nav class="side-tabs three cell recursive-list">
+                    <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps" />
                     <ul>
-                        <li ng-repeat="application in applications.all | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+                        <li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
                             [[application.name]]
                         </li>
                     </ul>
                 </nav>
                 <article class="side-tabs-content nine cell" ng-if="application.id">
                     <div class="row"><h1 class="nine cell">[[application.name]]</h1></div>
-                    <hr style="width: 96%; border: inset; border-width: 1px;">
+                    <hr class="separator">
                     <div class="row">
                         <div class="row" ng-if="!role" style="margin-bottom: 15px">
                             <div class="four cell">&nbsp</div>
@@ -170,7 +172,7 @@
                             </ul>
                         </article>
                     </div>
-                    <hr style="width: 96%; border: inset; border-width: 1px; margin-top: 0">
+                    <hr class="separator" style="margin-top: 0">
                     <div class="row">
                         <article ng-repeat="role in roles.applicationRolesExclusive(application)">
                             <input type="text" ng-model="role.name" class="row angle-container-header">
@@ -200,12 +202,13 @@
                 |||||||||||||||||||||
             -->
             <div ng-if="selected === 2" class="twelve"/>
-                <nav class="side-tabs three cell">
+                <nav class="side-tabs three cell recursive-list">
+                    <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterCrossRoles"/>
                     <ul>
-                        <li ng-click="newRole()" ng-class="{ selected: !role.id }">
+                        <li ng-click="newRole()" ng-class="{ selected: !role.id }" class="top-item last">
                             <strong>[[lang.translate("appregistry.createRole")]]</strong>
                         </li>
-                        <li ng-repeat="listedRole in crossRoles | orderBy: 'name'" ng-click="viewRole(listedRole)" ng-class="{ selected: role === listedRole }">
+                        <li ng-repeat="listedRole in crossRoles | filter: {name: filterCrossRoles} | orderBy: 'name'" ng-click="viewRole(listedRole)" ng-class="{ selected: role === listedRole }">
                             [[listedRole.name]]
                         </li>
                     </ul>

@@ -733,8 +733,35 @@ h1 i {
 help section.lightbox > div.content {
   width: 920px;
 }
-help section.lightbox > div.content iframe {
-  height: 550px;
+help section.lightbox > div.content .app-single-post {
+  background: #fff;
+}
+help section.lightbox > div.content .app-single-post .app-menu {
+  float: left;
+  width: 250px;
+}
+help section.lightbox > div.content .app-single-post .app-content-section {
+  width: 640px;
+  float: right;
+}
+help section.lightbox > div.content .app-single-post .app-content-section img {
+  max-width: 100%;
+  display: block;
+}
+help section.lightbox > div.content .app-single-post .app-content-container {
+  margin-top: 15px;
+}
+help section.lightbox > div.content .app-single-post h2 {
+  width: 100%;
+}
+help section.lightbox > div.content .app-single-post .app-print {
+  display: none;
+}
+help section.lightbox > div.content .app-single-post::after {
+  content: " ";
+  display: block;
+  width: 100%;
+  clear: both;
 }
 .checkbox-filters {
   height: 50px;
@@ -748,30 +775,6 @@ help section.lightbox > div.content iframe {
   list-style-type: none;
   display: inline-block;
   margin-right: 15px;
-}
-.app-single-post {
-  background: #fff;
-}
-.app-single-post .app-menu {
-  float: left;
-  width: 250px;
-}
-.app-single-post .app-content-section {
-  width: 640px;
-  float: right;
-}
-.app-single-post .app-content-section img {
-  max-width: 100%;
-  display: block;
-}
-.app-single-post .app-content-container {
-  margin-top: 15px;
-}
-.app-single-post::after {
-  content: " ";
-  display: block;
-  width: 100%;
-  clear: both;
 }
 nav.vertical,
 .app-menu {
@@ -983,6 +986,7 @@ nav.half-stamps article > div:nth-child(1) img {
 textarea {
   width: 100%;
   height: 130px;
+  overflow: auto;
 }
 .centered-text {
   text-align: center !important;
@@ -4301,12 +4305,19 @@ i.shared {
   bottom: -2px;
   right: -3px;
 }
-portal .page-markers {
-  display: block;
+ul.toc {
+  padding: 0;
+  margin: 0;
+}
+ul.toc li {
+  list-style-type: none;
+  padding: 3px;
+}
+ul.toc li a {
+  font-size: 16px;
 }
 .page-markers {
   position: fixed;
-  display: none;
   right: 0;
   bottom: 0;
   z-index: 651;
@@ -4433,6 +4444,9 @@ popover popover-content {
 popover popover-content .content {
   z-index: 1;
   position: relative;
+}
+popover popover-content .content .more a {
+  display: block;
 }
 popover popover-content.hidden {
   opacity: 0;
@@ -5648,6 +5662,7 @@ nav.hash-magnet.vertical {
   padding-top: 80px;
   display: block;
   pointer-events: none;
+  clear: none;
 }
 .hash-magnet > *,
 nav.hash-magnet.vertical > * {
@@ -5864,6 +5879,7 @@ plus .opener.minus .plus {
   position: absolute;
   top: 5px;
   left: 5px;
+  z-index: 1;
 }
 .cards-list .card h3:first-of-type,
 .cards-list .card h1:first-of-type,
@@ -6581,6 +6597,9 @@ nav.side-tabs.recursive-list i.folded-icon.folded {
 nav.side-tabs.recursive-list li {
   transition: all 0.25s ease-in-out;
   padding-right: 0px;
+}
+nav.side-tabs.recursive-list li.top-item.last {
+  border-bottom: 1px solid #fd4a98;
 }
 nav.side-tabs.recursive-list li:hover {
   background: whitesmoke;
@@ -7712,4 +7731,3 @@ i.close-2x {
 .lightbox .bottom {
   margin-top: 20px;
 }
-
