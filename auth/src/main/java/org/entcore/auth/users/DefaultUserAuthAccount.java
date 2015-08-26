@@ -55,7 +55,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final Renders render;
 
 	private String smsProvider;
-	private final String smsAddress = "entcore.sms";
+	private final String smsAddress;
 
 	public DefaultUserAuthAccount(Vertx vertx, Container container) {
 		EventBus eb = Server.getEventBus(vertx);
@@ -65,8 +65,13 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		notification = new NotificationHelper(vertx, eb, container);
 		render = new Renders(vertx, container);
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
-		if(server != null && server.get("smsProvider") != null)
+		if(server != null && server.get("smsProvider") != null) {
 			smsProvider = (String) server.get("smsProvider");
+			final String node = (String) server.get("node");
+			smsAddress = (node != null ? node : "") + "entcore.sms";
+		} else {
+			smsAddress = "entcore.sms";
+		}
 	}
 
 	@Override
