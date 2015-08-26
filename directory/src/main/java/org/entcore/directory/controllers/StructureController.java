@@ -69,11 +69,16 @@ public class StructureController extends BaseController {
 	private NotificationHelper notifHelper;
 	private String assetsPath = "../..";
 	private Map<String, String> skins = new HashMap<>();
+	private String node;
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		notifHelper = new NotificationHelper(vertx, eb, container);
+		node = (String) vertx.sharedData().getMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
 	}
 
 	@Put("/structure/:structureId")
@@ -314,7 +319,7 @@ public class StructureController extends BaseController {
 					    		        		.putBinary("content", processedTemplate.getBytes())
 					    		        		.putString("baseUrl", baseUrl);
 
-					        	        	eb.send("entcore.pdf.generator", actionObject, new Handler<Message<JsonObject>>() {
+											eb.send(node + "entcore.pdf.generator", actionObject, new Handler<Message<JsonObject>>() {
 												public void handle(Message<JsonObject> reply) {
 													JsonObject pdfResponse = reply.body();
 													if(!"ok".equals(pdfResponse.getString("status"))){
