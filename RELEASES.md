@@ -1,6 +1,17 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.14.3 (27/08/2015)
+
+## Directory
+
+* Ajout d'une barre de recherche pour les applications et les roles
+
+## Anomalies corrigées
+
+* Workspace : partage récursif des fichiers lors d'un partage de dossier par un gestionnaire
+
+
 # v1.14.2 (24/08/2015)
 
 ## Directory
