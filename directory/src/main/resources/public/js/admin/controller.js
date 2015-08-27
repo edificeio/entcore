@@ -214,6 +214,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	$scope.currentLeaf = ""
+	$scope.getCurrentLeaf = function(){
+		return _.findWhere($scope.leafMenu, { name: $scope.currentLeaf })
+	}
 	$scope.leafMenu = [
 		{
 			name: "userTab",
@@ -223,25 +226,39 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				delete $scope.targetUser
 				$scope.scrollOpts.reset()
 			},
+			onStructureClick: function(structure){
+				$scope.viewStructure(structure)
+			},
 			requestName : "user-requests"
 		},
 		{
 			name: "structureTab",
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
-			onClick: function(){ $scope.scrollOpts.reset() }
+			onClick: function(){ $scope.scrollOpts.reset() },
+			onStructureClick: function(structure){
+				$scope.structure = structure
+			}
 		},
 		{
 			name: "classTab",
 			text: lang.translate("directory.classOps"),
 			templateName: 'admin-class-tab',
-			onClick: function(){ $scope.scrollOpts.reset() }
+			onClick: function(){ $scope.scrollOpts.reset() },
+			onStructureClick: function(structure){
+				$scope.structure = structure
+				structure.classes.sync($scope.refreshScope)
+			}
 		},
 		{
 			name: "groupTab",
 			text: lang.translate("directory.groupOps"),
 			templateName: 'admin-group-tab',
 			onClick: function(){ $scope.scrollOpts.reset() },
+			onStructureClick: function(structure){
+				$scope.viewStructure(structure)
+				structure.manualGroups.sync($scope.refreshScope)
+			},
 			requestName : "groups-request"
 		},
 		{
@@ -273,6 +290,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			text: lang.translate("directory.admin.duplicatesManagement"),
 			templateName: 'admin-duplicates-tab',
 			onClick: function(){ $scope.scrollOpts.reset() },
+			onStructureClick: function(structure){
+				$scope.structure = structure
+				structure.duplicates.sync($scope.refreshScope)
+			},
 			requestName : "duplicates-request"
 		},
 		{
@@ -290,6 +311,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var temp = leaf.onClick
 		leaf.onClick = function(){
 			$scope.currentLeaf = leaf.name
+			if(leaf.onStructureClick && $scope.structure){
+				leaf.onStructureClick($scope.structure)
+			}
 			temp()
 		}
 	})
@@ -583,8 +607,6 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     //Deep loading of a structure (classes + users + class flags on users) and view refresh
     $scope.viewStructure = function(structure){
         $scope.structure = structure
-		structure.manualGroups.sync($scope.refreshScope)
-		structure.duplicates.sync($scope.refreshScope)
         structure.loadStructure($scope.refreshScope, $scope.refreshScope)
     }
 
