@@ -664,7 +664,7 @@ public class Importer {
 									"USING INDEX p:Profile(externalId) " +
 									"WHERE s.externalId = {structure} AND c.externalId = {class} " +
 									"AND u.externalId = {userExternalId} AND p.externalId = {profileExternalId} " +
-									"CREATE UNIQUE u-[:IN]->g";
+									"MERGE u-[:IN]->g";
 							JsonObject p = new JsonObject()
 									.putString("userExternalId", externalId)
 									.putString("profileExternalId", profileExternalId)
@@ -695,7 +695,7 @@ public class Importer {
 									"USING INDEX u:User(externalId) " +
 									"WHERE s.externalId = {structure} AND g.externalId = {group} " +
 									"AND u.externalId = {userExternalId} " +
-									"CREATE UNIQUE u-[:IN]->g";
+									"MERGE u-[:IN]->g";
 							JsonObject p = new JsonObject()
 									.putString("userExternalId", externalId)
 									.putString("structure", structGroup[0])
