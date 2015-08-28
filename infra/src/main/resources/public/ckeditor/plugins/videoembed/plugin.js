@@ -6,7 +6,7 @@ CKEDITOR.plugins.add('videoembed', {
 			}
 		} ));
 		editor.ui.addButton( 'Video', {
-			label: 'Ajouter une vidéo',
+			label: 'Ajouter un code embed',
 			command: 'Video',
 			toolbar: 'insert'
 		});
