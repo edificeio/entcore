@@ -394,20 +394,20 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"MATCH (n:User {id : {id}}) " +
 				"WHERE HAS(n.login) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:DEPENDS]->(c:Class) " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
 				"RETURN distinct " +
 				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
-				"n.displayName as username, HEAD(COLLECT(distinct p.name)) as type, COLLECT(distinct child.id) as childrenIds, " +
+				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct child.id) as childrenIds, " +
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
 				"COLLECT(distinct gp.id) as groupsIds";
 		final String query2 =
-				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->()-[:AUTHORIZE]->a<-[:PROVIDE]-app " +
+				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
+				"<-[:PROVIDE]-(app:Application) " +
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix]) as apps";
