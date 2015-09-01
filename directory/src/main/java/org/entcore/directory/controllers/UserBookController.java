@@ -29,6 +29,7 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Either.Left;
 import fr.wseduc.webutils.http.BaseController;
 
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -50,6 +51,7 @@ import org.vertx.java.platform.Container;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4jResult;
 
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.HttpClientUtils;
@@ -640,26 +642,32 @@ public class UserBookController extends BaseController {
 	@Get("/preference/:application")
 	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
 	public void getPreference(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb,request,new Handler<UserInfos>() {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
 				if (user != null) {
-					String application = request.params().get("application").replaceAll("\\W+", "");
-					String query =
-							"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf)"
-									+" RETURN uac."+ application +" AS preference";
-					neo.execute(query,
-							new JsonObject().putString("userId", user.getUserId()),
-							validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-								@Override
-								public void handle(Either<String, JsonObject> result) {
-									if (result.isRight()) {
-										renderJson(request, result.right().getValue());
-									} else {
-										leftToResponse(request,result.left());
+					final String application = request.params().get("application").replaceAll("\\W+", "");
+
+					UserUtils.getSession(eb, request, new Handler<JsonObject>() {
+						public void handle(JsonObject session) {
+							final JsonObject cache = session.getObject("cache");
+
+							if(cache.containsField("preferences")){
+								renderJson(request, new JsonObject().putString("preference", cache.getObject("preferences").getString(application)));
+							} else {
+								refreshPreferences(user, request, new Handler<Either<String, JsonObject>>(){
+									public void handle(Either<String, JsonObject> event) {
+										if(event.isLeft()) {
+											log.error(event.left().getValue());
+											badRequest(request);
+										} else {
+											renderJson(request, new JsonObject().putString("preference", event.right().getValue().getString(application)));
+										}
 									}
-								}
-							}));
+								});
+							}
+						}
+					});
 				} else {
 					badRequest(request);
 				}
@@ -667,12 +675,38 @@ public class UserBookController extends BaseController {
 		});
 	}
 
+	private void refreshPreferences(final UserInfos user, final HttpServerRequest request, final Handler<Either<String, JsonObject>> handler){
+		String query =
+				"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf)"
+						+" RETURN uac AS preferences";
+
+		neo.execute(query,
+			new JsonObject().putString("userId", user.getUserId()),
+			Neo4jResult.fullNodeMergeHandler("preferences", new Handler<Either<String, JsonObject>>() {
+				@Override
+				public void handle(final Either<String, JsonObject> result) {
+					if (result.isRight()) {
+						UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", result.right().getValue(), new Handler<Boolean>() {
+							public void handle(Boolean event) {
+								if(event)
+									handler.handle(result);
+								else
+									handler.handle(new Either.Left<String, JsonObject>("Could not add preferences attribute to session."));
+							}
+						});
+					} else {
+						handler.handle(result);
+					}
+				}
+		}));
+	}
+
 	@Put("/preference/:application")
 	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
 	public void updatePreference(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>(){
 			@Override
-			public void handle(UserInfos user) {
+			public void handle(final UserInfos user) {
 				if (user != null) {
 					final JsonObject params = new JsonObject().putString("userId", user.getUserId());
 					final String application = request.params().get("application").replaceAll("\\W+", "");
@@ -690,6 +724,24 @@ public class UserBookController extends BaseController {
 								public void handle(Either<String, JsonObject> result) {
 									if (result.isRight()) {
 										renderJson(request, result.right().getValue());
+
+										UserUtils.getSession(eb, request, new Handler<JsonObject>() {
+											public void handle(JsonObject session) {
+												final JsonObject cache = session.getObject("cache");
+
+												if(cache.containsField("preferences")){
+													JsonObject prefs = cache.getObject("preferences");
+													prefs.putString(application, params.getString("conf"));
+
+													UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", prefs, new Handler<Boolean>() {
+														public void handle(Boolean event) {
+															if(!event)
+																log.error("Could not add preferences attribute to session.");
+														}
+													});
+												}
+											}
+										});
 									} else {
 										leftToResponse(request,result.left());
 									}
