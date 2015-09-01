@@ -142,9 +142,6 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
-				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
-				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
-				"WHERE LENGTH(duplicates) = 0 " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
@@ -167,9 +164,6 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
-				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
-				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
-				"WHERE LENGTH(duplicates) = 0 " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
