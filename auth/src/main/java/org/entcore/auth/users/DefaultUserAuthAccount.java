@@ -81,7 +81,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
-				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 2) as duplicates " +
+				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 3) as duplicates " +
 				"WHERE LENGTH(duplicates) = 0 " +
 				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone} " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile ";

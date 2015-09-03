@@ -282,8 +282,8 @@ public class DuplicateUsers {
 		final JsonArray result = new JsonArray();
 		for (int i = 0; i < search.size(); i++) {
 			final JsonObject json = search.get(i);
-			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.4);
-			final String lastNameAttr = luceneAttribute("lastName", json.getString("lastName"), 0.4);
+			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.6);
+			final String lastNameAttr = luceneAttribute("lastName", json.getString("lastName"), 0.6);
 			String luceneQuery;
 			if (firstNameAttr != null && lastNameAttr != null &&
 					!firstNameAttr.trim().isEmpty() && !lastNameAttr.trim().isEmpty()) {
