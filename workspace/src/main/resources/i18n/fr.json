@@ -17,6 +17,7 @@
 	"file.too.large": "Espace insuffisant pour stocker le fichier",
 	"file.too.large.limit": "Fichier(s) trop volumineux. Taille maximum autorisée : ",
     "file.too.large.max": "Espace insuffisant pour stocker le(s) fichier(s). Espace restant : ",
+    "max.file.size": "52428800",
     "files.header": "Charger plusieurs fichiers",
     "files.select": "Sélectionner les fichiers",
     "files.select.please": "Veuillez sélectionner un document",

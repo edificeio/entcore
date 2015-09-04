@@ -135,7 +135,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.folderTreeTemplate = 'folder-content';
 	$scope.quota = model.quota;
 
-	$scope.maxFileSize = 52428800
+	$scope.maxFileSize = parseInt(lang.translate('max.file.size'));
 
 	$scope.maxSize = function(){
 		var leftOvers = model.quota.max - model.quota.used;
