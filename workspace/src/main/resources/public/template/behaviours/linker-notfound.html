@@ -2,7 +2,7 @@
 
 <div class="twelve cell select-file input-block vertical-spacing-twice">
 	<div class="hidden-content">
-		<input type="file" files-input-change="linker.resource.title = linker.resource.title || linker.resource.file[0].name" ng-model="linker.resource.file"  />
+		<input type="file" files-input-change="linker.resource.title = linker.resource.file[0].name || linker.resource.title " ng-model="linker.resource.file"  />
 	</div>
 	<button class="file-button" translate content="library.file.choose"></button>
 	<input type="text" ng-model="linker.resource.title" data-display-file />

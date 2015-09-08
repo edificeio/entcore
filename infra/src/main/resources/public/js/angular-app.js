@@ -523,15 +523,14 @@ module.directive('linker', function($compile){
 						return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
 							resource._id === scope.linker.search.text);
 					});
-					scope.linker.resource.title = scope.linker.search.text;
 				});
 			};
 
 			scope.linker.createResource = function(){
 				Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
 					appBehaviour.create(scope.linker.resource, function(){
-						scope.linker.searchApplication();
 						scope.linker.search.text = scope.linker.resource.title;
+						scope.linker.searchApplication();
 						scope.$apply();
 					});
 				});
@@ -3828,7 +3827,6 @@ module.directive('attachments', function($parse){
 						return scope.attachments.display.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.attachments.display.search.text).toLowerCase()) !== -1 ||
 							resource._id === scope.attachments.display.search.text);
 					});
-					scope.linker.resource.title = scope.attachments.display.search.text;
 				});
 			};
 
