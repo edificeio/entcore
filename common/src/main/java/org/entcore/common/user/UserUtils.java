@@ -88,6 +88,12 @@ public class UserUtils {
 	}
 
 	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean itSelf, boolean profile,
+			String preFilter, String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = queryVisibleUsers(preFilter, customReturn, additionnalParams, itSelf, profile);
+		findUsers(eb, request, m, handler);
+	}
+
+	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean itSelf, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf, profile);
 		findUsers(eb, request, m, handler);
@@ -112,11 +118,19 @@ public class UserUtils {
 
 	private static JsonObject queryVisibleUsers(String customReturn, JsonObject additionnalParams, boolean itSelf,
 			boolean profile) {
+		return queryVisibleUsers(null, customReturn, additionnalParams, itSelf, profile);
+	}
+
+	private static JsonObject queryVisibleUsers(String preFilter, String customReturn,
+			JsonObject additionnalParams, boolean itSelf, boolean profile) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
 				.putBoolean("profile", profile)
 				.putString("action", "visibleUsers")
 				.putArray("expectedTypes", usersTypes);
+		if (preFilter != null) {
+			m.putString("preFilter", preFilter);
+		}
 		if (customReturn != null) {
 			m.putString("customReturn", customReturn);
 		}

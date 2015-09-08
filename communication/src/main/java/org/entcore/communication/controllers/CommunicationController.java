@@ -156,13 +156,14 @@ public class CommunicationController extends BaseController {
 			};
 			switch (action) {
 			case "visibleUsers":
+				String preFilter = message.body().getString("preFilter");
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
 				boolean myGroup = message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
-						profile, customReturn, ap, responseHandler);
+						profile, preFilter, customReturn, ap, responseHandler);
 				break;
 			case "usersCanSeeMe":
 				communicationService.usersCanSeeMe(userId, responseHandler);
@@ -194,7 +195,7 @@ public class CommunicationController extends BaseController {
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes, boolean itSelf,
 			String customReturn, JsonObject additionnalParams, Handler<Either<String, JsonArray>> handler) {
 		communicationService.visibleUsers(
-				userId, schoolId, expectedTypes, itSelf, false, true, customReturn, additionnalParams, handler);
+				userId, schoolId, expectedTypes, itSelf, false, true, null, customReturn, additionnalParams, handler);
 	}
 
 	@Put("/init/rules")

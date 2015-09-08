@@ -61,7 +61,7 @@ public interface CommunicationService {
 	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
 
 	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
-			boolean profile, String customReturn, JsonObject additionnalParams,
+			boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
 			Handler<Either<String, JsonArray>> handler);
 
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);

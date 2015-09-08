@@ -450,7 +450,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-			boolean myGroup, boolean profile, String customReturn, JsonObject additionnalParams,
+			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
 			final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
@@ -466,7 +466,11 @@ public class DefaultCommunicationService implements CommunicationService {
 					"XOR (type(r) = 'COMMUNIQUE'"+ l +
 					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
 		}
-		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ").append(condition);
+		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
+		if (preFilter != null) {
+			query.append(preFilter);
+		}
+		query.append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();

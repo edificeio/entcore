@@ -163,28 +163,28 @@ public class UserBookController extends BaseController {
 		String profile = request.params().get("profile");
 		String filter = "";
 		JsonObject params = new JsonObject();
-		if (name != null && !name.trim().isEmpty()) {
-			filter = "WHERE visibles.displayNameSearchField=~{regex} ";
-			params.putString("regex", "(?i)^.*?" +
-					Pattern.quote(StringValidation.removeAccents(name.trim()).toLowerCase()) + ".*?$");
+		if (name == null || name.trim().isEmpty()) {
+			badRequest(request, "empty.name");
+			return;
 		}
 		if(profile != null && !profile.trim().isEmpty()){
-			filter += filter.isEmpty() ? "WHERE " : "AND ";
-			filter += " profile.name = {profile} ";
+			filter += "AND HEAD(m.profiles) = {profile} ";
 			params.putString("profile", profile);
 		}
 		if(structure != null && !structure.trim().isEmpty()){
-			filter += filter.isEmpty() ? "WHERE " : "AND ";
-			filter += "(visibles)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
+			filter += "AND (m)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
 			params.putString("structureId", structure);
 		}
+		String preFilter = "AND m.displayNameSearchField=~{regex} " + filter;
+		params.putString("regex", "(?i)^.*?" +
+					Pattern.quote(StringValidation.removeAccents(name.trim()).toLowerCase()) + ".*?$");
 		String customReturn = filter +
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
 				"u.mood as mood, u.userid as userId, u.picture as photo, " +
-				"profile.name as type " +
+				"HEAD(visibles.profiles) as type " +
 				"ORDER BY displayName";
-		UserUtils.findVisibleUsers(eb, request, false, true, customReturn, params, new Handler<JsonArray>() {
+		UserUtils.findVisibleUsers(eb, request, false, false, preFilter, customReturn, params, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray users) {
 				renderJson(request, users);
