@@ -658,7 +658,9 @@ module.directive('calendar', function($compile){
 					if(moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7){
 						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() + 1 });
 					}
-					else{
+					else if(moment(model.calendar.dayForWeek).week() === 53 && moment(model.calendar.dayForWeek).dayOfYear() < 7){
+						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() - 1 });
+					} else{
 						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
 					}
 

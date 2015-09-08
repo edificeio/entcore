@@ -1373,7 +1373,7 @@ var calendar = {
 			},
 			scheduleItemWidth: function(scheduleItem){
 				var concurrentItems = this.filter(function(item){
-					return item.beginning <= scheduleItem.end && item.end >= scheduleItem.beginning
+					return item.beginning.unix() <= scheduleItem.end.unix() && item.end.unix() >= scheduleItem.beginning.unix()
 				})
 				var maxGutter = 0
 				_.forEach(concurrentItems, function(item){
@@ -1399,7 +1399,10 @@ var calendar = {
 		this.collection(calendar.Day);
 		this.dayForWeek = new Date();
 		if(data.week){
-			this.dayForWeek = moment().week(data.week).day(1).toDate();
+			if(data.year)
+				this.dayForWeek = moment().year(data.year).week(data.week).day(1).toDate();
+			else
+				this.dayForWeek = moment().week(data.week).day(1).toDate();
 		}
 		function dayOfYear(dayOfWeek){
 			var week = data.week;
@@ -1407,7 +1410,7 @@ var calendar = {
 			if(dayOfWeek === 0){
 				week ++;
 			}
-			return moment().week(week).year(year).day(dayOfWeek).dayOfYear();
+			return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
 		}
 
 		this.days.load([{ name: 'monday', index:  dayOfYear(1) },
@@ -1423,7 +1426,7 @@ var calendar = {
 			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
 		}
 
-		this.firstDay = moment().week(this.week).year(this.year).day(1);
+		this.firstDay = moment().year(this.year).week(this.week).day(1);
 	},
 	startOfDay: 7,
 	endOfDay: 20,
@@ -1437,15 +1440,15 @@ var calendar = {
 calendar.Calendar.prototype.addScheduleItems = function(items){
 	var schedule = this;
 	items.forEach(function(item){
-		var startDay = item.beginning.dayOfYear();
-		var endDay = item.end.dayOfYear();
+		var startDay = moment(item.beginning);
+		var endDay = moment(item.end);
 
-		for(var i = startDay; i <= endDay; i++){
-			var day = schedule.days.findWhere({index: i});
-			if(day){
+		var refDay = moment(schedule.firstDay)
+		schedule.days.forEach(function(day){
+			if(startDay.isBefore(moment(refDay).endOf('day')) && endDay.isAfter(moment(refDay).startOf('day')))
 				day.scheduleItems.push(item);
-			}
-		}
+			refDay.add('day', 1);
+		});
 	});
 };
 
