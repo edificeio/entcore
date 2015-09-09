@@ -237,13 +237,13 @@
     <hr class="separator cell">
     <h3 style="margin-top: 0;">[[lang.translate("directory.functionsManagement")]]</h3>
     <!-- Central admin attribution -->
-    <div ng-if="isCentralAdmin()">
+    <!--div ng-if="isCentralAdmin()">
         <h6>[[lang.translate("directory.centralAdmin")]]</h6>
         <div>
             <button ng-click="targetUser.setCentralAdmin()" class="text-flow small">[[lang.translate("directory.set")]]</button>
             <button ng-click="targetUser.removeCentralAdmin()" class="text-flow small">[[lang.translate("directory.delete")]]</button>
         </div>
-    </div>
+    </div-->
     <!-- Local admin attribution -->
     <h6 ng-if="notCrossSearchTab()">[[lang.translate("directory.localAdmin")]]</h6>
     <div ng-if="notCrossSearchTab()">
