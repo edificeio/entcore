@@ -36,15 +36,16 @@
 </div>
 
 <div class="row" translate content="directory.explaination"></div>
-<form ng-submit="searchDirectory()">
+<form name="searchForm" ng-submit="searchDirectory()" novalidate>
 	<div class="row">
 		<div class="twelve cell search reduce-block-six">
 			<input type="search"
 					ng-model="search.field"
 					translate attr="placeholder"
 					placeholder="userBook.search"
-					class="three" />
-			<input type="submit" value="OK" />
+					class="three"
+					required ng-minlength="1"/>
+			<input type="submit" value="OK" ng-disabled="searchForm.$invalid"/>
 			<div class="one cell">&nbsp</div>
 			<select class="three styled-combo-box" ng-model="filters.structure" ng-options="school.id as school.name for school in schools.all">
 				<option value="" selected="selected" translate content="directory.allStructures"></option>
