@@ -31,7 +31,10 @@
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[targetUser.login]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
 <div class="twelve cell" ng-show="targetUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[targetUser.code]]</div>
-<div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]"><strong class="four cell">[[lang.translate("directory.functions")]]</strong> [[formatUserFunctions(targetUser)]]</div>
+<div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]">
+    <strong class="four cell">[[lang.translate("directory.functions")]]</strong>
+    [[formatUserFunctions(targetUser)]]
+</div>
 <hr class="separator cell"/>
 <form name="userDetailsForm" novalidate>
     <div class="twelve cell">
