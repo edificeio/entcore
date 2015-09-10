@@ -178,7 +178,7 @@ public class UserBookController extends BaseController {
 		String preFilter = "AND m.displayNameSearchField=~{regex} " + filter;
 		params.putString("regex", "(?i)^.*?" +
 					Pattern.quote(StringValidation.removeAccents(name.trim()).toLowerCase()) + ".*?$");
-		String customReturn = filter +
+		String customReturn =
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
 				"u.mood as mood, u.userid as userId, u.picture as photo, " +
