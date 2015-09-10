@@ -209,7 +209,25 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	$scope.formatUserFunctions = function(user){
-		return _.chain(user.functions).map(function(f){ return f[0]}).uniq().map(function(f){ return lang.translate(f) }).value().join(", ")
+		if(!user.functions || user.functions.length === 0 || user.functions[0][0] === null)
+			return
+
+		var memo = []
+
+		return _.foldl(user.functions, function(str, fun){
+			if(memo.indexOf(fun[0]) > -1)
+				return str
+			memo.push(fun[0])
+
+			var strFun = lang.translate(fun[0])
+			if(fun[1].length > 0){
+				strFun += ' [' + _.chain(fun[1]).map(function(id){
+					return _.findWhere($scope.structures.all, {id : id}).name
+				}).value().join(' / ') + ']'
+			}
+
+			return str ? str + ', ' + strFun : strFun
+		}, "")
 	}
 
 	$scope.isAdminLocal = function(){
