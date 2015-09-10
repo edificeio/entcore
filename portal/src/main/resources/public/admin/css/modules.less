@@ -206,7 +206,7 @@ i.disconnect{
 i.spinner{
 	.icon(glyphicons_081_refresh, 35px);
 	animation: spin 1000ms infinite linear;
-	transform-origin: 52% 52%;
+	transform-origin: 51.5% 51.5%;
 }
 @-webkit-keyframes spin {
 	0% {
@@ -227,6 +227,17 @@ i.spinner{
 		-webkit-transform: rotate(359deg);
 		transform: rotate(359deg);
 	}
+}
+
+i.loader{
+	height: 10px;
+	width: 10px;
+	background-image: url("../img/icons/anim_loading_small.gif");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: inline-block;
+	.border-box;
+	vertical-align: middle;
 }
 
 .preview{

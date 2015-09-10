@@ -247,7 +247,12 @@
     <!-- Local admin attribution -->
     <h6 ng-if="notCrossSearchTab()">[[lang.translate("directory.localAdmin")]]</h6>
     <div ng-if="notCrossSearchTab()">
-        <button ng-click="targetUser.setLocalAdmin(structure)" class="text-flow small">[[lang.translate("directory.setLocalAdmin")]]</button>
-        <button ng-click="targetUser.removeLocalAdmin()" class="text-flow small">[[lang.translate("directory.deleteLocalAdmin")]]</button>
+        <button ng-click="loadingWrapper('localAdminRequest', targetUser.setLocalAdmin, targetUser, structure)" class="text-flow small" ng-disabled="localAdminRequest.loading">
+            [[lang.translate("directory.setLocalAdmin")]]
+            <i class="horizontal-spacing-twice loader" ng-if="localAdminRequest.loading"></i>
+        </button>
+        <button ng-click="targetUser.removeLocalAdmin()" class="text-flow small">
+            [[lang.translate("directory.deleteLocalAdmin")]]
+        </button>
     </div>
 </div>

@@ -116,7 +116,7 @@ User.prototype.setLocalAdmin = function(structure){
                     structureIds.push(localAdmin[1][i])
             }
         }
-        http().postJson("/directory/user/function/"+that.id, {
+        return http().postJson("/directory/user/function/"+that.id, {
             functionCode: "ADMIN_LOCAL",
             inherit: "s",
             scope: structureIds
@@ -128,7 +128,7 @@ User.prototype.setLocalAdmin = function(structure){
 
 User.prototype.removeLocalAdmin = function(){
     var that = this
-    http().delete("/directory/user/function/"+that.id+"/ADMIN_LOCAL").done(function(){
+    return http().delete("/directory/user/function/"+that.id+"/ADMIN_LOCAL").done(function(){
         notify.info(lang.translate("directory.notify.removeLocalAdmin"))
         that.get()
     })

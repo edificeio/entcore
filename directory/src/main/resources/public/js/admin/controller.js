@@ -153,6 +153,22 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.lang = lang
 	$scope.phonePattern = new RegExp("^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$")
 
+	$scope.loadingWrapper = function(name, fun, context){
+		if(typeof fun !== "function")
+			return
+		if(typeof $scope[name] !== "object")
+			$scope[name] = {}
+
+		var args = []
+		for(var i = 2; i < arguments.length; i++)
+			args.push(arguments[i])
+		$scope[name].loading = true
+		fun.apply(context, args).xhr.complete(function(){
+			$scope[name].loading = false
+			$scope.$apply()
+		})
+	}
+
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
 	$scope.maxQuotas = {}
 	//Get max quotas
