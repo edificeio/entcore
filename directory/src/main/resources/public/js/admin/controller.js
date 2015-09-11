@@ -160,7 +160,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			$scope[name] = {}
 
 		var args = []
-		for(var i = 2; i < arguments.length; i++)
+		for(var i = 3; i < arguments.length; i++)
 			args.push(arguments[i])
 		$scope[name].loading = true
 		fun.apply(context, args).xhr.complete(function(){
