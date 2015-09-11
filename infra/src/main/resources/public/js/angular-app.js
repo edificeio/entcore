@@ -742,13 +742,16 @@ module.directive('scheduleItem', function($compile){
 			}
 
 			var getTimeFromBoundaries = function(){
+				// compute element positon added to heiht of 7 hours ao avoid negative value side effect
+				var topPos = scheduleItemEl.position().top + (calendar.dayHeight * calendar.startOfDay);
+				
 				var startTime = moment().utc();
-				startTime.hour(Math.floor(scheduleItemEl.position().top / calendar.dayHeight) + calendar.startOfDay);
-				startTime.minute((scheduleItemEl.position().top % calendar.dayHeight) * 60 / calendar.dayHeight);
+				startTime.hour(Math.floor(topPos / calendar.dayHeight));
+				startTime.minute((topPos % calendar.dayHeight) * 60 / calendar.dayHeight);
 
 				var endTime = moment().utc();
-				endTime.hour(Math.floor((scheduleItemEl.position().top + scheduleItemEl.height()) / calendar.dayHeight) + calendar.startOfDay);
-				endTime.minute(((scheduleItemEl.position().top + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
+				endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
+				endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
 				var days = element.parents('.schedule').find('.day');
 				var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
