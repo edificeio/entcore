@@ -1373,7 +1373,7 @@ var calendar = {
 			},
 			scheduleItemWidth: function(scheduleItem){
 				var concurrentItems = this.filter(function(item){
-					return item.beginning.unix() <= scheduleItem.end.unix() && item.end.unix() >= scheduleItem.beginning.unix()
+					return item.beginning.unix() < scheduleItem.end.unix() && item.end.unix() > scheduleItem.beginning.unix()
 				})
 				var maxGutter = 0
 				_.forEach(concurrentItems, function(item){
