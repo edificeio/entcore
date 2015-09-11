@@ -258,30 +258,23 @@ public class User {
 			params.putArray("scope", scope);
 		}
 		transactionHelper.add(query, params);
-		if (scope != null) {
-			String q2 =
-					"MATCH (n), (f) " +
-					"WHERE (n:Structure OR n:Class) AND n.id = {scopeId} AND " +
-					"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-					"WITH n, f " +
-					"MERGE (fg:Group:FunctionGroup { externalId : {externalId}}) " +
-					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
-					"CREATE UNIQUE n<-[:DEPENDS]-fg";
-			String qu =
-					"MATCH (u:User { id : {userId}}), (fg:FunctionGroup { externalId : {externalId}}) " +
-							"CREATE UNIQUE fg<-[:IN]-u ";
-			for (Object o : scope) {
-				String extId = o.toString() + "-" + functionCode;
-				JsonObject p2 = new JsonObject()
-						.putString("scopeId", o.toString())
-						.putString("functionCode", functionCode)
-						.putString("externalId", extId);
-				transactionHelper.add(q2, p2);
-				JsonObject pu = new JsonObject()
-						.putString("userId", userId)
-						.putString("externalId", extId);
-				transactionHelper.add(qu, pu);
-			}
+		if(scope != null){
+			String query2 =
+				"MATCH (n), (f) " +
+				"WHERE (n:Structure OR n:Class) AND n.id IN {scope} AND " +
+				"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+				"WITH n, f " +
+				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
+				"WITH fg " +
+				"MATCH (u:User { id : {userId}}) " +
+				"CREATE UNIQUE fg<-[:IN]-u";
+			JsonObject p2 = new JsonObject()
+				.putArray("scope", scope)
+				.putString("functionCode", functionCode)
+				.putString("userId", userId);
+			transactionHelper.add(query2, p2);
 		}
 	}
 
