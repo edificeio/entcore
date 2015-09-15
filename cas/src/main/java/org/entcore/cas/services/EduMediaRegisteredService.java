@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 import fr.wseduc.cas.entities.User;
 
 public class EduMediaRegisteredService extends AbstractCas20ExtensionRegisteredService {
- private static final Logger log = LoggerFactory.getLogger(EducagriRegisteredService.class);
+ private static final Logger log = LoggerFactory.getLogger(EduMediaRegisteredService.class);
     
     protected static final String EM_ID = "uid";
     protected static final String EM_STRUCTURE_UAI = "ENTPersonStructRattachRNE";
