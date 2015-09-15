@@ -347,7 +347,7 @@ function ResetController($scope, template){
 
 	$scope.reset = function(){
 		http().post('/auth/reset', http().serialize({
-			login: $scope.user.login,
+			login: $scope.user.login.trim(),
 			password: $scope.user.password,
 			confirmPassword: $scope.user.confirmPassword,
 			resetCode: resetCode
