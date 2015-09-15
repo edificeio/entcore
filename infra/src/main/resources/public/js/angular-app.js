@@ -4638,7 +4638,10 @@ function Account($scope){
 	};
 
 	$scope.refreshMails = function(){
-		$scope.nbNewMessages = 0;
+		http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
+			$scope.nbNewMessages = nbMessages.count;
+			$scope.$apply('nbNewMessages');
+		});
 	};
 
 	http().get('/directory/userbook/' + model.me.userId).done(function(data){
