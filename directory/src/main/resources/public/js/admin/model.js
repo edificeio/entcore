@@ -123,6 +123,8 @@ User.prototype.setLocalAdmin = function(structure){
         }).done(function(){
             notify.info(lang.translate("directory.notify.setLocalAdmin"))
             that.get()
+        }).e504(function(){
+            notify.info(lang.translate("directory.notify.setLocalAdmin.504"))
         })
 }
 

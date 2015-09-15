@@ -199,6 +199,7 @@
     "directory.notify.removeLocalAdmin": "Rôle d'admin. local supprimé",
     "directory.notify.setCentralAdmin": "Rôle d'admin. central attribué",
     "directory.notify.setLocalAdmin": "Rôle d'admin. local attribué",
+    "directory.notify.setLocalAdmin.504": "Le rôle d'admin. local est en cours d'attribution. Merci de patienter jusqu'à ce qu'il apparaisse sur le profil de l'utilisateur.",
     "directory.notify.structureCreated": "Structure créée",
     "directory.notify.structureUpdate": "Structure mise à jour",
     "directory.notify.userCreated": "Utilisateur crée",
