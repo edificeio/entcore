@@ -5,7 +5,7 @@
 			<i18n>apps.drag</i18n>
 		</div>
 		<div class="list icons-view apps">
-			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in applications | filter: filterBookmark">
+			<div class="element reduce-block-six" dragstart ng-model="application" ng-repeat="application in bookmarkedApps | filter: filterBookmark">
 				<div class="container">
 					<a href="[[application.address]]" target="[[application.target]]" draggable="false">
 						<i class="[[application.icon]]" ng-if="application.icon.indexOf('/') === -1"></i>
@@ -17,7 +17,6 @@
 				</legend>
 			</div>
 		</div>
-		<div class="clear"></div>
 	</nav>
 </div>
 <div class="row">
@@ -38,6 +37,5 @@
 				</legend>
 			</div>
 		</div>
-		<div class="clear"></div>
 	</nav>
 </div>
