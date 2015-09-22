@@ -750,6 +750,9 @@ module.directive('scheduleItem', function($compile){
 				endTime.hour(Math.floor((scheduleItemEl.position().top + scheduleItemEl.height()) / calendar.dayHeight) + calendar.startOfDay);
 				endTime.minute(((scheduleItemEl.position().top + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
+                                startTime.year(model.calendar.year);
+                                endTime.year(model.calendar.year);
+
 				var days = element.parents('.schedule').find('.day');
 				var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
 				var dayWidth = days.first().width();
