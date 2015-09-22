@@ -269,7 +269,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			name: "structureTab",
 			text: lang.translate("directory.structureOps"),
 			templateName: 'admin-structure-tab',
-			onClick: function(){ $scope.scrollOpts.reset() },
+			onClick: function(){
+				$scope.scrollOpts.reset()
+				$scope.initExportData()
+			},
 			onStructureClick: function(structure){
 				$scope.structure = structure
 			}
@@ -278,11 +281,15 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			name: "classTab",
 			text: lang.translate("directory.classOps"),
 			templateName: 'admin-class-tab',
-			onClick: function(){ $scope.scrollOpts.reset() },
+			onClick: function(){
+				$scope.scrollOpts.reset()
+				$scope.initExportData()
+			},
 			onStructureClick: function(structure){
 				$scope.structure = structure
 				structure.classes.sync($scope.refreshScope)
-			}
+			},
+			requestName : "classes-request"
 		},
 		{
 			name: "groupTab",
@@ -299,7 +306,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			name: "exportTab",
 			text: lang.translate("directory.export"),
 			templateName: 'admin-export-tab',
-			onClick: function(){ $scope.scrollOpts.reset() }
+			onClick: function(){
+				$scope.scrollOpts.reset()
+				$scope.initExportData()
+			}
 		},
 		{
 			name: "maintenanceTab",
@@ -563,17 +573,55 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			delete object[property]
 	}
 
-	$scope.exportData = {
-		export_mode: "all",
-		classId : "",
-		structureId : "",
-		params: {}
+	$scope.formats = [
+		{
+			key: "",
+			label: 'directory.admin.export.type.default',
+			format: 'csv'
+		},
+		{
+			key: "Esidoc",
+			label: 'directory.admin.export.type.esidoc',
+			format: 'xml'
+		},
+		{
+			key: "Cerise-teacher",
+			label: 'directory.admin.export.type.cerise.teacher',
+			format: 'csv',
+			show: function(){
+				return $scope.exportData.params.profile === 'Teacher'
+			}
+		},
+		{
+			key: "Cerise-student",
+			label: 'directory.admin.export.type.cerise.student',
+			format: 'csv',
+			show: function(){
+				return $scope.exportData.params.profile === 'Student'
+			}
+		}
+	]
+	$scope.initExportData = function(){
+		$scope.exportData = {
+			export_mode: "structureId",
+			classId : "",
+			structureId : "",
+			filterFormat: function(format){
+				return !format.show || format.show()
+			},
+			findFormat: function(key){
+				return _.find($scope.formats, function(item){ return key === item.key })
+			},
+			params: {
+				type: ""
+			}
+		}
 	}
-    $scope.export_mode = "all"
+    $scope.initExportData()
 
     $scope.openExport = function(){
 		var exportData = $scope.exportData
-        var where = 'export/users?format=csv'
+        var where = 'export/users?format=' + $scope.exportData.findFormat(exportData.params.type).format
 		if(exportData.export_mode !== 'all'){
 			where += "&" + exportData.export_mode + "=" + exportData[exportData.export_mode]
 		}
@@ -666,7 +714,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
     //Refresh the classes list (inside a structure object)
     $scope.refreshClasses = function(structure){
-        structure.sync($scope.refreshScope)
+        structure.classes.sync($scope.refreshScope)
     }
 
     //Toggling used in the filtering menu.

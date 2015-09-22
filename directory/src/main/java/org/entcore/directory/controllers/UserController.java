@@ -237,33 +237,40 @@ public class UserController extends BaseController {
 					final String classId = request.params().get("classId");
 					JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
 					final String filterActive = request.params().get("filterActive");
+					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
+					final String format = request.params().get("format");
 					Handler<Either<String, JsonArray>> handler;
-					if ("csv".equals(request.params().get("format"))) {
+					if(format == null){
+						handler = arrayResponseHandler(request);
+					} else {
 						handler = new Handler<Either<String, JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
-									processTemplate(request, "text/export.id.txt",
-											new JsonObject().putArray("list", r.right().getValue()), new Handler<String>() {
-												@Override
-												public void handle(final String export) {
-													if (export != null) {
-														request.response().putHeader("Content-Type", "application/csv");
-														request.response().putHeader("Content-Disposition",
-																"attachment; filename=export.csv");
-														request.response().end('\ufeff' + export.replaceAll(", \"", "\""));
+									processTemplate(request, "text/export" + exportType + ".id.txt",
+										new JsonObject().putArray("list", r.right().getValue()), new Handler<String>() {
+											@Override
+											public void handle(final String export) {
+												if (export != null) {
+													String filename = "export"+exportType+"."+format;
+													if ("xml".equals(format)) {
+														request.response().putHeader("Content-Type", "text/xml");
 													} else {
-														renderError(request);
+														request.response().putHeader("Content-Type", "application/csv");
 													}
+													request.response().putHeader("Content-Disposition",
+															"attachment; filename="+filename);
+													request.response().end('\ufeff' + export);
+												} else {
+													renderError(request);
 												}
-											});
+											}
+										});
 								} else {
 									renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
 								}
 							}
 						};
-					} else {
-						handler = arrayResponseHandler(request);
 					}
 					userService.listAdmin(structureId, classId, null, types, filterActive, null, user, handler);
 				} else {

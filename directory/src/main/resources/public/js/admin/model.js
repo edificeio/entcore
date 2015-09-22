@@ -313,7 +313,7 @@ function Structure(){
     this.collection(Classe, {
         sync: function(hook){
             var that = this
-            return http().get('class/admin/list', { structureId: that.model.id }).done(function(classes){
+            return http().get('class/admin/list', { structureId: that.model.id }, { requestName: 'classes-request' }).done(function(classes){
                 that.load(classes)
                 that.selectAll()
                 hookCheck(hook)
