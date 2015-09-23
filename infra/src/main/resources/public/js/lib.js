@@ -485,10 +485,6 @@ function Collection(obj){
 			ctr.prototype[method] = methods[method];
 		}
 
-		for(var prop in fn.prototype){
-			ctr.prototype[prop] = fn.prototype[prop];
-		}
-
 		if(fn.prototype.api){
 			if(fn.prototype.api.get){
 				fn.prototype.sync = function(){
@@ -499,7 +495,7 @@ function Collection(obj){
 			}
 			if(fn.prototype.api.put){
 				fn.prototype.saveModifications = function(){
-					http().put(http().parseUrl(this.api.put, this), this);
+					http().putJson(http().parseUrl(this.api.put, this), this);
 				};
 			}
 			if(fn.prototype.api.delete){
@@ -509,7 +505,7 @@ function Collection(obj){
 			}
 			if(fn.prototype.api.post){
 				fn.prototype.create = function(){
-					http().post(http().parseUrl(this.api.post, this), this).done(function(data){
+					http().postJson(http().parseUrl(this.api.post, this), this).done(function(data){
 						this.updateData(data);
 					}.bind(this));
 				};
@@ -525,6 +521,11 @@ function Collection(obj){
 				}
 			}
 		}
+
+		for(var prop in fn.prototype){
+			ctr.prototype[prop] = fn.prototype[prop];
+		}
+
 		// overwrites fn with custom ctr
 		namespace[(ctr.name || ctr._name)] = ctr;
 		Model.prototype.models.push(ctr);
