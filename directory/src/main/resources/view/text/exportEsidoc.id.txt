@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FICHES_XML>
+	{{#list}}
+	<EMPRUNTEURS>
+		<EMPRUNTEUR_M>{{lastName}} {{firstName}}</EMPRUNTEUR_M>
+		<DATE_NAISSANCE_M>{{#formatBirthDate}}{{birthDate}}{{/formatBirthDate}}</DATE_NAISSANCE_M>
+		<STATUT_M_M>{{#i18n}}{{type}}{{/i18n}}</STATUT_M_M>
+		<CLASSE_M>{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}}</CLASSE_M>
+		<COMPTE_M>OUI</COMPTE_M>
+		<MOT_DE_PASSE_M>esidoc-pwd</MOT_DE_PASSE_M>
+		<IDENTITE_ENT_M>{{externalId}}</IDENTITE_ENT_M>
+		<TYPE_EMPRUNTEUR_M>Usager</TYPE_EMPRUNTEUR_M>
+	</EMPRUNTEURS>
+	{{/list}}
+</FICHES_XML>

@@ -1,0 +1,4 @@
+"Identifiant";"Nom";"Prénom";"Classe"
+{{#list}}
+"{{externalId}}";"{{lastName}}";"{{firstName}}";{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}}
+{{/list}}

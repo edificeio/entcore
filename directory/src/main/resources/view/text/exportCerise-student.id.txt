@@ -1,0 +1,4 @@
+"Identifiant";"Sconet";"Nom";"Prénom";"Classe";"Groupe Enseignement"
+{{#list}}
+"{{externalId}}";"{{attachmentId}}";"{{lastName}}";"{{firstName}}";{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}};
+{{/list}}
