@@ -582,12 +582,14 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		{
 			key: "Esidoc",
 			label: 'directory.admin.export.type.esidoc',
+            profiles: ['Teacher', 'Student', 'Personnel'],
 			format: 'xml'
 		},
 		{
 			key: "Cerise-teacher",
 			label: 'directory.admin.export.type.cerise.teacher',
 			format: 'csv',
+            profiles: ['Teacher'],
 			show: function(){
 				return $scope.exportData.params.profile === 'Teacher'
 			}
@@ -596,6 +598,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			key: "Cerise-student",
 			label: 'directory.admin.export.type.cerise.student',
 			format: 'csv',
+            profiles: ['Student'],
 			show: function(){
 				return $scope.exportData.params.profile === 'Student'
 			}
@@ -609,11 +612,21 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			filterFormat: function(format){
 				return !format.show || format.show()
 			},
+            filterProfiles: function(profile){
+                var format = this.findFormat(this.params.type)
+                return !format.profiles || format.profiles.indexOf(profile) > -1
+            },
 			findFormat: function(key){
 				return _.find($scope.formats, function(item){ return key === item.key })
 			},
+            onFormatChange: function(){
+                var format = this.findFormat(this.params.type)
+                if(format.profiles)
+                    this.params.profile = format.profiles[0]
+            },
 			params: {
-				type: ""
+				type: "",
+                profile: ""
 			}
 		}
 	}

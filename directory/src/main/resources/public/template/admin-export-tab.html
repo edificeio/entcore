@@ -7,7 +7,7 @@
 <div class="row">
     <h3><i18n>directory.admin.exportTitle</i18n></h3>
     <label class="five cell"><i18n>directory.launchUserExport</i18n></label>
-    <button class="three cell" ng-click="openExport()" ng-disabled="!exportData.structureId || (exportData.findFormat(exportData.params.type).show && !exportData.findFormat(exportData.params.type).show())">
+    <button class="three cell" ng-click="openExport()" ng-disabled="!exportData.structureId || exportData.params.profile === null">
         [[lang.translate("directory.export")]]
     </button>
 </div>
@@ -15,7 +15,8 @@
     <h1 class="three" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.type</i18n></h1>
     <label class="five cell"><i18n>directory.admin.select.export.type</i18n></label>
     <select ng-model="exportData.params.type" class="three cell padding-top-5 row-item"
-        ng-options="format.key as lang.translate(format.label) for format in formats | filter: exportData.filterFormat">
+        ng-options="format.key as lang.translate(format.label) for format in formats"
+        ng-change="exportData.onFormatChange()">
     </select>
 </div>
 <div class="row">
@@ -26,12 +27,24 @@
         <option value="classId">[[lang.translate("directory.classe")]]</option>
     </select>
     <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
-        <option value="">[[lang.translate("directory.allProfiles")]]</option>
-        <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
-        <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
-        <option value="Relative">[[lang.translate("directory.Relative")]]</option>
-        <option value="Student">[[lang.translate("directory.Student")]]</option>
-        <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+        <option value="" ng-if="exportData.filterProfiles('')">
+            [[lang.translate("directory.allProfiles")]]
+        </option>
+        <option value="Teacher" ng-if="exportData.filterProfiles('Teacher')">
+            [[lang.translate("directory.Teacher")]]
+        </option>
+        <option value="Personnel" ng-if="exportData.filterProfiles('Personnel')">
+            [[lang.translate("directory.Personnel")]]
+        </option>
+        <option value="Relative" ng-if="exportData.filterProfiles('Relative')">
+            [[lang.translate("directory.Relative")]]
+        </option>
+        <option value="Student" ng-if="exportData.filterProfiles('Student')">
+            [[lang.translate("directory.Student")]]
+        </option>
+        <option value="Guest" ng-if="exportData.filterProfiles('Guest')">
+            [[lang.translate("directory.Guest")]]
+        </option>
     </select>
     <div class="row" ng-if="exportData.export_mode !== 'all'">
         <select class="three cell margin-top-5 row-item"
