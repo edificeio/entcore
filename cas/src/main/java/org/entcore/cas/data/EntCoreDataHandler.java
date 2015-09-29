@@ -149,6 +149,7 @@ public class EntCoreDataHandler extends DataHandler {
 			handler.handle(false);
 			return;
 		}
+		doc.putObject("updatedAt", MongoDb.now());
 		mongoDb.update(COLLECTION, query, doc, true, false, new org.vertx.java.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -198,16 +199,20 @@ public class EntCoreDataHandler extends DataHandler {
 		try {
 			return new JsonObject(mapper.writeValueAsString(authCas));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
 
 	private AuthCas deserialize(JsonObject res) {
+		if (res == null) {
+			return null;
+		}
+		res.removeField("updatedAt");
 		try {
 			return mapper.readValue(res.encode(), AuthCas.class);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
