@@ -33,6 +33,9 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
 	protected boolean validConditions(Assertion assertion, Handler<Either<String, JsonObject>> handler) {
@@ -62,6 +65,24 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			}
 		}
 		return null;
+	}
+
+	protected List<String> getAttributes(Assertion assertion, String attr) {
+		List<String> attributes = new ArrayList<>();
+		if (assertion.getAttributeStatements() != null) {
+			for (AttributeStatement statement : assertion.getAttributeStatements()) {
+				for (Attribute attribute : statement.getAttributes()) {
+					if (attr.equals(attribute.getName())) {
+						for (XMLObject o : attribute.getAttributeValues()) {
+							if (o.getDOM() != null) {
+								attributes.add(o.getDOM().getTextContent());
+							}
+						}
+					}
+				}
+			}
+		}
+		return attributes;
 	}
 
 	protected void executeQuery(String query, final JsonObject params, final Handler<Either<String, JsonObject>> handler) {
