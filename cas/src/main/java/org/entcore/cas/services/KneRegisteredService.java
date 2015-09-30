@@ -1,5 +1,6 @@
 package org.entcore.cas.services;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -16,70 +17,104 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 
 	private static final Logger log = LoggerFactory.getLogger(KneRegisteredService.class);
 
-	protected static final String KNE_ROOT = "KNE";
-	protected static final String KNE_UID = "uid";
-	protected static final String KNE_STUDENT_CLASSES = "ENTEleveClasses";
-	protected static final String KNE_STUDENT_LEVEL = "ENTEleveNivFormation";
-	protected static final String KNE_STRUCTURE_UAI = "ENTPersonStructRattachRNE";
-	protected static final String KNE_PROFILES = "ENTPersonProfils";
+	private void addStringArray(String casLabel, String entLabel, JsonObject data, Document doc, List<Element> additionalAttributes){
+		Element root = createElement(entLabel+"s", doc);
+		for(Object item: data.getArray(entLabel)){
+			root.appendChild(createTextElement(casLabel, (String) item, doc));
+		}
+		additionalAttributes.add(root);
+	}
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
-		super.configure(eb, conf);
-		this.directoryAction = "getUserInfos";
-	};
+    public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf){
+        super.configure(eb, conf);
+        this.directoryAction = "getUserInfos";
+    }
 
 	@Override
-	protected void prepareUserCas20(User user, String userId, JsonObject data, Document doc, List<Element> additionnalAttributes) {
+	protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionalAttributes) {
 		user.setUser(data.getString(principalAttributeName));
 
 		try {
-			Element root = createElement(KNE_ROOT, doc);
 
-			// Uid
-			if (data.containsField("externalId")) {
-				root.appendChild(createTextElement(KNE_UID, data.getString("externalId"), doc));
-			}
-
-			// Structures
-			for (Object o : data.getArray("structures", new JsonArray()).toList()) {
-				Map<String, Object> structure = ((Map<String, Object>) o);
-				if (structure.containsKey("UAI")) {
-					root.appendChild(createTextElement(KNE_STRUCTURE_UAI, structure.get("UAI").toString(), doc));
-				}
-			}
-
-			// Profile
-			switch(data.getString("type")) {
-			case "Student" :
-				root.appendChild(createTextElement(KNE_PROFILES, "National_1", doc));
-
-				// Student : Classes
-				for (Object o : data.getArray("classes", new JsonArray()).toList()) {
-					Map<String, Object> classe = ((Map<String, Object>) o);
-					if (classe.containsKey("name")) {
-						root.appendChild(createTextElement(KNE_STUDENT_CLASSES, classe.get("name").toString(), doc));
+			String queryParams = new URI(service).getQuery();
+			String[] pairs;
+			if(queryParams != null && queryParams.length() > 0 && (pairs = queryParams.split("&")).length > 0){
+				for(String pair : pairs){
+					String key = pair.substring(0, pair.indexOf('='));
+					if("UAI".equals(key)){
+						String value = pair.substring(pair.indexOf('=') + 1);
+						additionalAttributes.add(createTextElement("ENTPersonStructRattachUAI", value, doc));
+						for (Object o : data.getArray("structures", new JsonArray()).toList()) {
+							@SuppressWarnings("unchecked")
+							Map<String, Object> structure = ((Map<String, Object>) o);
+							if(value.equals(structure.get("UAI").toString())){
+								additionalAttributes.add(createTextElement("ENTStructureTypeStruct", structure.get("type").toString(), doc));
+								break;
+							}
+						}
+						break;
 					}
 				}
-
-				// Student : Level
-				if (data.containsField("level")) {
-					root.appendChild(createTextElement(KNE_STUDENT_LEVEL, data.getString("level"), doc));
-				}
-
-				break;
-			case "Teacher" :
-				root.appendChild(createTextElement(KNE_PROFILES, "National_3", doc));
-				break;
-			case "Relative" :
-				root.appendChild(createTextElement(KNE_PROFILES, "National_2", doc));
-				break;
-			case "Personnel" :
-				root.appendChild(createTextElement(KNE_PROFILES, "National_4", doc));
-				break;
 			}
 
-			additionnalAttributes.add(root);
+			/*
+			for (Object o : data.getArray("structures", new JsonArray()).toList()) {
+				Map<String, Object> structure = ((Map<String, Object>) o);
+				additionnalAttributes.add(createTextElement("ENTPersonStructRattachUAI", structure.get("UAI").toString(), doc));
+				additionnalAttributes.add(createTextElement("ENTStructureTypeStruct", structure.get("type").toString(), doc));
+			}
+			*/
+
+			switch(data.getString("type")) {
+				case "Student" :
+					additionalAttributes.add(createTextElement("ENTPersonProfil", "National_ELV", doc));
+					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module"), doc));
+					addStringArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes);
+					addStringArray("ENTEleveClasse", "classes", data, doc, additionalAttributes);
+					addStringArray("ENTEleveGroupe", "groups", data, doc, additionalAttributes);
+					additionalAttributes.add(createTextElement("ENTAuxEnsClassesMatieres", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsGroupes", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsMEFs", "", doc));
+					break;
+				case "Teacher" :
+					Element root = createElement("ENTPersonProfils", doc);
+					root.appendChild(createTextElement("ENTPersonProfil", "National_ENS", doc));
+					root.appendChild(createTextElement("ENTPersonProfil", "National_TUT", doc));
+					additionalAttributes.add(root);
+					additionalAttributes.add(createTextElement("ENTEleveMEF", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveGroupes", "", doc));
+					addStringArray("ENTAuxEnsClassesMatiere", "classesFieldOfStudy", data, doc, additionalAttributes);
+					addStringArray("ENTAuxEnsGroupe", "groups", data, doc, additionalAttributes);
+					addStringArray("ENTAuxEnsClasse", "classes", data, doc, additionalAttributes);
+					addStringArray("ENTAuxEnsMEF", "modules", data, doc, additionalAttributes);
+					break;
+				case "Relative" :
+					additionalAttributes.add(createTextElement("ENTPersonProfil", "National_TUT", doc));
+					additionalAttributes.add(createTextElement("ENTEleveMEF", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveGroupes", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsClassesMatieres", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsGroupes", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsMEFs", "", doc));
+					break;
+				case "Personnel" :
+					additionalAttributes.add(createTextElement("ENTPersonProfil", "National_DOC", doc));
+					additionalAttributes.add(createTextElement("ENTEleveMEF", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTEleveGroupes", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsClassesMatieres", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsGroupes", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsClasses", "", doc));
+					additionalAttributes.add(createTextElement("ENTAuxEnsMEFs", "", doc));
+					break;
+			}
 
 		} catch (Exception e) {
 			log.error("Failed to transform User for KNE", e);

@@ -46,7 +46,7 @@ public class RegisteredServices {
 	public void getUser(String userId, String service, Handler<User> userHandler) {
 		RegisteredService registeredService = matches(service);
 		if (registeredService != null) {
-			registeredService.getUser(userId, userHandler);
+			registeredService.getUser(userId, service, userHandler);
 		} else {
 			userHandler.handle(null);
 		}

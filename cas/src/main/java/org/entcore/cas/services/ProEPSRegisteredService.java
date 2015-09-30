@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
+
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -41,8 +42,8 @@ public class ProEPSRegisteredService extends AbstractCas20ExtensionRegisteredSer
 	}
 
 	@Override
-	protected void prepareUserCas20(User user, String userId, JsonObject data, Document doc,
-			List<Element> additionnalAttributes) {
+	protected void prepareUserCas20(User user, String userId, String service, JsonObject data,
+			Document doc, List<Element> additionnalAttributes) {
 		user.setUser(data.getString(principalAttributeName));
 
 		try {
