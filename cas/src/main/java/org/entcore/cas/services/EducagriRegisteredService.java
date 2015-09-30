@@ -27,7 +27,7 @@ public class EducagriRegisteredService extends AbstractCas20ExtensionRegisteredS
     }
 
     @Override
-    protected void prepareUserCas20(User user, String userId, JsonObject data, Document doc, List<Element> additionnalAttributes) {
+    protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionnalAttributes) {
         user.setUser(data.getString(principalAttributeName));
         try{
             //uid

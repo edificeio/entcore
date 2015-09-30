@@ -81,7 +81,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	}
 
 	@Override
-	public void getUser(final String userId, final Handler<User> userHandler) {
+	public void getUser(final String userId, final String service, final Handler<User> userHandler) {
 		JsonObject jo = new JsonObject();
 		jo.putString("action", directoryAction).putString("userId", userId);
 		eb.send("directory", jo, new org.vertx.java.core.Handler<Message<JsonObject>>() {
@@ -91,7 +91,7 @@ public class DefaultRegisteredService implements RegisteredService {
 				log.debug("res : " + res);
 				if ("ok".equals(event.body().getString("status")) && res != null) {
 					User user = new User();
-					prepareUser(user, userId, res);
+					prepareUser(user, userId, service, res);
 					userHandler.handle(user);
 				} else {
 					userHandler.handle(null);
@@ -105,7 +105,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		return serviceUri;
 	}
 
-	protected void prepareUser(final User user, final String userId, final JsonObject data) {
+	protected void prepareUser(final User user, final String userId, String service, final JsonObject data) {
 		if (principalAttributeName != null) {
 			user.setUser(data.getString(principalAttributeName));
 			data.removeField(principalAttributeName);

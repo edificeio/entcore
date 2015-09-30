@@ -33,7 +33,7 @@ public class PronoteRegisteredService extends DefaultRegisteredService {
 	private static final Logger log = LoggerFactory.getLogger(PronoteRegisteredService.class);
 
 	@Override
-	protected void prepareUser(User user, String userId, JsonObject data) {
+	protected void prepareUser(User user, String userId, String service, JsonObject data) {
 		user.setUser(data.getString(principalAttributeName));
 		user.setAttributes(new HashMap<String, String>());
 
