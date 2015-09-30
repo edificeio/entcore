@@ -143,16 +143,16 @@
 						<i18n>workspace.share</i18n>
 					</button>
 				</resource-right>
-				<resource-right resource="selectedItems()" name="renameDocument">
+				<resource-right resource="selectedItems()" name="renameFolder">
 					<button ng-click="openRenameView(selectedFolders()[0])"
 							ng-if="selectedDocuments().length === 0 && selectedFolders().length == 1 && currentTree.name === 'documents'"
 							class="cell">
 						<i18n>workspace.rename</i18n>
 					</button>
 				</resource-right>
-				<resource-right resource="selectedItems()" name="renameFolder">
+				<resource-right resource="selectedItems()" name="renameDocument">
 					<button ng-click="openRenameView(selectedDocuments()[0])"
-							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && currentTree.name === 'documents'"
+							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && (currentTree.name === 'documents' || currentTree.name === 'appDocuments')"
 							class="cell">
 						<i18n>workspace.rename</i18n>
 					</button>
