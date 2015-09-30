@@ -161,17 +161,22 @@ Behaviours.register('workspace', {
 					});
 				},
 				init: function(){
+					var that = this;
+					this.documents = { inSource: [] };
 					this.source.document = {};
-					http().get('/workspace/documents', { filter: 'owner' }).done(function(data){
-						this.documents = data;
-						this.$apply();
-					}.bind(this))
+					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources) {
+						this.documents.inSource = _.filter(resources, function(doc){
+							return _.findWhere(that.source.documents, { _id: doc._id });
+						});
+					}.bind(this));
 				},
 				addDocument: function(document){
 					console.log('adding ' + document + ' in documents');
+					var that = this;
 					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
 						document = _.findWhere(resources, { _id: document.split('/document/')[1] });
 						this.source.documents.push(document);
+						this.documents.inSource.push(document);
 						if (typeof this.snipletResource.save === 'function') {
 							this.snipletResource.save();
 						}
@@ -179,8 +184,12 @@ Behaviours.register('workspace', {
 					}.bind(this));
 				},
 				removeDocument: function(document){
+					var that = this;
 					this.source.documents = _.reject(this.source.documents, function(doc){
 						return doc._id === document._id;
+					});
+					this.documents.inSource = _.filter(this.documents.inSource, function(doc){
+						return _.findWhere(that.source.documents, { _id: doc._id });
 					});
 					if(typeof this.snipletResource.save === 'function'){
 						this.snipletResource.save();
