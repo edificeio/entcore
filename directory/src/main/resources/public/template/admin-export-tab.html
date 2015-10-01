@@ -6,62 +6,64 @@
 
 <div class="row">
     <h3><i18n>directory.admin.exportTitle</i18n></h3>
-    <label class="five cell"><i18n>directory.launchUserExport</i18n></label>
-    <button class="three cell" ng-click="openExport()" ng-disabled="!exportData.structureId || exportData.params.profile === null">
-        [[lang.translate("directory.export")]]
-    </button>
-</div>
-<div class="row">
-    <h1 class="three" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.type</i18n></h1>
-    <label class="five cell"><i18n>directory.admin.select.export.type</i18n></label>
-    <select ng-model="exportData.params.type" class="three cell padding-top-5 row-item"
-        ng-options="format.key as lang.translate(format.label) for format in formats"
-        ng-change="exportData.onFormatChange()">
-    </select>
-</div>
-<div class="row">
-    <h1 class="three" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h1>
-    <select ng-model="exportData.export_mode" class="three cell padding-top-5 row-item">
-        <!--option value="all">[[lang.translate("directory.all")]]</option-->
-        <option value="structureId">[[lang.translate("directory.structure")]]</option>
-        <option value="classId">[[lang.translate("directory.classe")]]</option>
-    </select>
-    <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
-        <option value="" ng-if="exportData.filterProfiles('')">
-            [[lang.translate("directory.allProfiles")]]
-        </option>
-        <option value="Teacher" ng-if="exportData.filterProfiles('Teacher')">
-            [[lang.translate("directory.Teacher")]]
-        </option>
-        <option value="Personnel" ng-if="exportData.filterProfiles('Personnel')">
-            [[lang.translate("directory.Personnel")]]
-        </option>
-        <option value="Relative" ng-if="exportData.filterProfiles('Relative')">
-            [[lang.translate("directory.Relative")]]
-        </option>
-        <option value="Student" ng-if="exportData.filterProfiles('Student')">
-            [[lang.translate("directory.Student")]]
-        </option>
-        <option value="Guest" ng-if="exportData.filterProfiles('Guest')">
-            [[lang.translate("directory.Guest")]]
-        </option>
-    </select>
-    <div class="row" ng-if="exportData.export_mode !== 'all'">
-        <select class="three cell margin-top-5 row-item"
-                ng-model="exportData.structure"
-                ng-change="exportData.structureId = exportData.structure.id; refreshClasses(exportData.structure)"
-                ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
-        <select class="three cell margin-top-5 row-item"
-                ng-if="exportData.export_mode === 'classId'"
-                ng-model="exportData.classId"
-                ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
-    </div>
-    <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
-        <select class="three cell" ng-model="exportData.params.filterActive">
-            <option value="">[[lang.translate("directory.ignoreActivation")]]</option>
-            <option value="active">[[lang.translate("directory.onlyActivatedUsers")]]</option>
-            <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+    <div class="row vertical-spacing-twice">
+        <h3 class="subtitle"><i18n>directory.admin.export.type</i18n></h3>
+        <select ng-model="exportData.params.type" class="three cell padding-top-5 row-item"
+            ng-options="format.key as lang.translate(format.label) for format in formats"
+            ng-change="exportData.onFormatChange()">
         </select>
+    </div>
+    <div class="row vertical-spacing-twice">
+        <h3 class="subtitle" style="height: 30px; font-size: 18px; margin: 5px 0px;"><i18n>directory.admin.export.scope</i18n></h3>
+        <select ng-model="exportData.export_mode" class="three cell padding-top-5 row-item">
+            <!--option value="all">[[lang.translate("directory.all")]]</option-->
+            <option value="structureId">[[lang.translate("directory.structure")]]</option>
+            <option value="classId">[[lang.translate("directory.classe")]]</option>
+        </select>
+        <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+            <option value="" ng-if="exportData.filterProfiles('')">
+                [[lang.translate("directory.allProfiles")]]
+            </option>
+            <option value="Teacher" ng-if="exportData.filterProfiles('Teacher')">
+                [[lang.translate("directory.Teacher")]]
+            </option>
+            <option value="Personnel" ng-if="exportData.filterProfiles('Personnel')">
+                [[lang.translate("directory.Personnel")]]
+            </option>
+            <option value="Relative" ng-if="exportData.filterProfiles('Relative')">
+                [[lang.translate("directory.Relative")]]
+            </option>
+            <option value="Student" ng-if="exportData.filterProfiles('Student')">
+                [[lang.translate("directory.Student")]]
+            </option>
+            <option value="Guest" ng-if="exportData.filterProfiles('Guest')">
+                [[lang.translate("directory.Guest")]]
+            </option>
+        </select>
+        <div class="row" ng-if="exportData.export_mode !== 'all'">
+            <select class="three cell margin-top-5 row-item"
+                    ng-model="exportData.structure"
+                    ng-change="exportData.structureId = exportData.structure.id; refreshClasses(exportData.structure)"
+                    ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+            <select class="three cell margin-top-5 row-item"
+                    ng-if="exportData.export_mode === 'classId'"
+                    ng-model="exportData.classId"
+                    ng-options="class.id as class.name for class in exportData.structure.classes.all | orderBy: 'name'"></select>
+        </div>
+        <div class="row padding-top-5" ng-init="exportData.params.filterActive = ''">
+            <select class="three cell" ng-model="exportData.params.filterActive">
+                <option value="">[[lang.translate("directory.ignoreActivation")]]</option>
+                <option value="active">[[lang.translate("directory.onlyActivatedUsers")]]</option>
+                <option value="inactive">[[lang.translate("directory.onlyInactiveUsers")]]</option>
+            </select>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <h3 class="subtitle"><i18n>directory.launchUserExport</i18n></h3>
+        <button class="row-item" ng-click="openExport()" ng-disabled="!exportData.structureId || exportData.params.profile === null">
+            <i18n>directory.export</i18n>
+        </button>
     </div>
 </div>
 <hr class="separator">
