@@ -638,9 +638,13 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		if(exportData.export_mode !== 'all'){
 			where += "&" + exportData.export_mode + "=" + exportData[exportData.export_mode]
 		}
+        $scope.deleteIfEmpty(exportData.params, 'profile')
 		where += "&" + $.param(exportData.params)
 
         window.open(where, '_blank')
+        
+        if(!exportData.params.profile)
+            exportData.params.profile = ''
     }
 
 	$scope.exportItem = function(item, mode, params){

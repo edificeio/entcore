@@ -20,7 +20,7 @@
             <option value="structureId">[[lang.translate("directory.structure")]]</option>
             <option value="classId">[[lang.translate("directory.classe")]]</option>
         </select>
-        <select class="three cell row-item" ng-model="exportData.params.profile" ng-change="deleteIfEmpty(exportData.params, 'profile')">
+        <select class="three cell row-item" ng-model="exportData.params.profile">
             <option value="" ng-if="exportData.filterProfiles('')">
                 [[lang.translate("directory.allProfiles")]]
             </option>
