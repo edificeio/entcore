@@ -852,12 +852,14 @@ function Collection(obj){
 	};
 
 	Model.prototype.one = function(event, cb){
-		this.on(event, function(){
-			this.unbind(event, cb);
+		var that = this;
+		var uniqueRun = function(){
+			that.unbind(event, uniqueRun);
 			if(typeof cb === 'function'){
 				cb();
 			}
-		}.bind(this));
+		};
+		this.on(event, uniqueRun);
 	};
 
 	Model.prototype.trigger = function(event){
