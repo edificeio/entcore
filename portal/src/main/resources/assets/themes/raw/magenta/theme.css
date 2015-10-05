@@ -732,9 +732,38 @@ h1 i {
 }
 help section.lightbox > div.content {
   width: 920px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-help section.lightbox > div.content iframe {
-  height: 550px;
+help section.lightbox > div.content .app-single-post {
+  background: #fff;
+}
+help section.lightbox > div.content .app-single-post .app-menu {
+  float: left;
+  width: 250px;
+}
+help section.lightbox > div.content .app-single-post .app-content-section {
+  width: 640px;
+  float: right;
+}
+help section.lightbox > div.content .app-single-post .app-content-section img {
+  max-width: 100%;
+  display: block;
+}
+help section.lightbox > div.content .app-single-post .app-content-container {
+  margin-top: 15px;
+}
+help section.lightbox > div.content .app-single-post h2 {
+  width: 100%;
+}
+help section.lightbox > div.content .app-single-post .app-print {
+  display: none;
+}
+help section.lightbox > div.content .app-single-post::after {
+  content: " ";
+  display: block;
+  width: 100%;
+  clear: both;
 }
 .checkbox-filters {
   height: 50px;
@@ -748,30 +777,6 @@ help section.lightbox > div.content iframe {
   list-style-type: none;
   display: inline-block;
   margin-right: 15px;
-}
-.app-single-post {
-  background: #fff;
-}
-.app-single-post .app-menu {
-  float: left;
-  width: 250px;
-}
-.app-single-post .app-content-section {
-  width: 640px;
-  float: right;
-}
-.app-single-post .app-content-section img {
-  max-width: 100%;
-  display: block;
-}
-.app-single-post .app-content-container {
-  margin-top: 15px;
-}
-.app-single-post::after {
-  content: " ";
-  display: block;
-  width: 100%;
-  clear: both;
 }
 nav.vertical,
 .app-menu {
@@ -983,6 +988,7 @@ nav.half-stamps article > div:nth-child(1) img {
 textarea {
   width: 100%;
   height: 130px;
+  overflow: auto;
 }
 .centered-text {
   text-align: center !important;
@@ -2848,16 +2854,30 @@ span.no-style {
   left: 0;
   min-height: 100%;
 }
-.drawing-zone article img.extensible {
-  width: 100%;
-  height: 100%;
+.drawing-zone article.media .image-container,
+.drawing-zone article .image-container {
+  display: flex;
+  align-items: center;
 }
+.drawing-zone article.media .image-container img,
+.drawing-zone article .image-container img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+.drawing-zone article.media p,
 .drawing-zone article p,
+.drawing-zone article.media h1,
 .drawing-zone article h1,
+.drawing-zone article.media h2,
 .drawing-zone article h2,
+.drawing-zone article.media h3,
 .drawing-zone article h3,
+.drawing-zone article.media h4,
 .drawing-zone article h4,
+.drawing-zone article.media h5,
 .drawing-zone article h5,
+.drawing-zone article.media h6,
 .drawing-zone article h6 {
   padding: 5px;
 }
@@ -4301,12 +4321,19 @@ i.shared {
   bottom: -2px;
   right: -3px;
 }
-portal .page-markers {
-  display: block;
+ul.toc {
+  padding: 0;
+  margin: 0;
+}
+ul.toc li {
+  list-style-type: none;
+  padding: 3px;
+}
+ul.toc li a {
+  font-size: 16px;
 }
 .page-markers {
   position: fixed;
-  display: none;
   right: 0;
   bottom: 0;
   z-index: 651;
@@ -4434,6 +4461,9 @@ popover popover-content .content {
   z-index: 1;
   position: relative;
 }
+popover popover-content .content .more a {
+  display: block;
+}
 popover popover-content.hidden {
   opacity: 0;
   pointer-events: none;
@@ -4502,6 +4532,9 @@ popover popover-content.hidden {
   .panel a {
     clear: both;
     float: left !important;
+  }
+  .panel p {
+    clear: both;
   }
 }
 @media screen and (max-width: 420px) {
@@ -4880,7 +4913,8 @@ nav.illustrated-links ul li .content {
   position: relative;
   min-height: 0;
 }
-nav.illustrated-links ul li .content h1 {
+nav.illustrated-links ul li .content h1,
+nav.illustrated-links ul li .content h2 {
   margin: 0px;
   font-size: 22px;
 }
@@ -5648,6 +5682,7 @@ nav.hash-magnet.vertical {
   padding-top: 80px;
   display: block;
   pointer-events: none;
+  clear: none;
 }
 .hash-magnet > *,
 nav.hash-magnet.vertical > * {
@@ -5864,6 +5899,7 @@ plus .opener.minus .plus {
   position: absolute;
   top: 5px;
   left: 5px;
+  z-index: 1;
 }
 .cards-list .card h3:first-of-type,
 .cards-list .card h1:first-of-type,

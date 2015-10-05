@@ -30,7 +30,7 @@
     <div ng-if="showWhat === 'showGroupCreation'" ng-init="createdGroup = initGroup()" class="search-container-view">
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[createdGroup.name ? createdGroup.name : lang.translate('directory.lastName')]]</h1></div>
         <hr class="separator">
-        <div style="text-align:center">
+        <div class="button-horizontal-bar">
             <button ng-click="saveGroup(createdGroup)" ng-disabled="!createdGroup.name">[[lang.translate("directory.admin.create")]]</button>
         </div>
         <hr class="separator">
@@ -53,7 +53,7 @@
             <h5 ng-if="groupSelected.classes"><i18n>directory.admin.classGroup</i18n> ([[groupSelected.classes[0].name]])</h5>
         </div>
         <hr class="separator">
-        <div style="text-align:center">
+        <div class="button-horizontal-bar">
             <button ng-click="updateGroup(groupSelected)">[[lang.translate("directory.save")]]</button>
             <button ng-click="deleteGroup(groupSelected)">[[lang.translate("directory.delete")]]</button>
         </div>

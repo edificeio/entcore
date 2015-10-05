@@ -732,6 +732,8 @@ h1 i {
 }
 help section.lightbox > div.content {
   width: 920px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 help section.lightbox > div.content .app-single-post {
   background: #fff;
@@ -2852,16 +2854,30 @@ span.no-style {
   left: 0;
   min-height: 100%;
 }
-.drawing-zone article img.extensible {
-  width: 100%;
-  height: 100%;
+.drawing-zone article.media .image-container,
+.drawing-zone article .image-container {
+  display: flex;
+  align-items: center;
 }
+.drawing-zone article.media .image-container img,
+.drawing-zone article .image-container img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+.drawing-zone article.media p,
 .drawing-zone article p,
+.drawing-zone article.media h1,
 .drawing-zone article h1,
+.drawing-zone article.media h2,
 .drawing-zone article h2,
+.drawing-zone article.media h3,
 .drawing-zone article h3,
+.drawing-zone article.media h4,
 .drawing-zone article h4,
+.drawing-zone article.media h5,
 .drawing-zone article h5,
+.drawing-zone article.media h6,
 .drawing-zone article h6 {
   padding: 5px;
 }
@@ -4517,6 +4533,9 @@ popover popover-content.hidden {
     clear: both;
     float: left !important;
   }
+  .panel p {
+    clear: both;
+  }
 }
 @media screen and (max-width: 420px) {
   .drop-down-filters,
@@ -4894,7 +4913,8 @@ nav.illustrated-links ul li .content {
   position: relative;
   min-height: 0;
 }
-nav.illustrated-links ul li .content h1 {
+nav.illustrated-links ul li .content h1,
+nav.illustrated-links ul li .content h2 {
   margin: 0px;
   font-size: 22px;
 }
@@ -7743,5 +7763,12 @@ i.close-2x {
 }
 .lightbox .bottom {
   margin-top: 20px;
+}
+.button-horizontal-bar {
+  text-align: center;
+}
+.button-horizontal-bar > button {
+  float: none;
+  display: inline-block;
 }
 
