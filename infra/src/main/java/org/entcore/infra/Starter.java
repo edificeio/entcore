@@ -22,6 +22,7 @@ package org.entcore.infra;
 import fr.wseduc.mongodb.MongoDb;
 import org.entcore.common.http.BaseServer;
 import org.entcore.infra.controllers.EventStoreController;
+import org.entcore.infra.controllers.MonitoringController;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
@@ -93,6 +94,7 @@ public class Starter extends BaseServer {
 		EventStoreController eventStoreController = new EventStoreController();
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
+		addController(new MonitoringController());
 	}
 
 	private void deployPreRequiredModules(final JsonArray array, final VoidHandler handler) {
