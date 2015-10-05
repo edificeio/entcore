@@ -20,7 +20,7 @@ function Http(){
 }
 
 var http = (function(){
-	var statusEvents = ['done', 'error', 'e401', 'e404', 'e500', 'e400', 'e413', 'e504', 'e0'];
+	var statusEvents = ['done', 'error', 'e401', 'e404', 'e409', 'e500', 'e400', 'e413', 'e504', 'e0'];
 
 	Http.prototype = {
 		serialize: function(obj){
