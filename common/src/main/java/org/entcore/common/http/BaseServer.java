@@ -69,6 +69,27 @@ public abstract class BaseServer extends Server {
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 
 		Config.getInstance().setConfig(config);
+		initModulesHelpers(node);
+
+		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+		eventStoreFactory.setContainer(container);
+		eventStoreFactory.setVertx(vertx);
+
+		if (config.getString("integration-mode","BUS").equals("HTTP")) {
+			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
+		} else {
+			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
+		}
+		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
+
+		loadI18nAssetsFiles();
+
+		addController(new RightsController());
+		addController(new ConfController());
+		SecurityHandler.setVertx(vertx);
+	}
+
+	protected void initModulesHelpers(String node) {
 		if (config.getBoolean("neo4j", true)) {
 			Neo4j.getInstance().init(getEventBus(vertx), node +
 					config.getString("neo4j-address", "wse.neo4j.persistor"));
@@ -95,23 +116,6 @@ public abstract class BaseServer extends Server {
 		validator.setEventBus(getEventBus(vertx));
 		validator.setAddress(node + "json.schema.validator");
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
-
-		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setContainer(container);
-		eventStoreFactory.setVertx(vertx);
-
-		if (config.getString("integration-mode","BUS").equals("HTTP")) {
-			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
-		} else {
-			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
-		}
-		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
-
-		loadI18nAssetsFiles();
-
-		addController(new RightsController());
-		addController(new ConfController());
-		SecurityHandler.setVertx(vertx);
 	}
 
 	private void loadI18nAssetsFiles() {

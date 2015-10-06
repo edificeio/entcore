@@ -19,7 +19,6 @@
 
 package org.entcore.infra;
 
-import fr.wseduc.mongodb.MongoDb;
 import org.entcore.common.http.BaseServer;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
@@ -63,6 +62,7 @@ public class Starter extends BaseServer {
 				serverMap.put("swift", swift.encode());
 			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
+			initModulesHelpers(node);
 
 			/* sharedConf sub-object */
 			JsonObject sharedConf = config.getObject("sharedConf", new JsonObject());
@@ -88,8 +88,6 @@ public class Starter extends BaseServer {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
-		MongoDb.getInstance().init(getEventBus(vertx), node +
-				config.getString("mongo-address", "wse.mongodb.persistor"));
 		EventStoreService eventStoreService = new MongoDbEventStore();
 		EventStoreController eventStoreController = new EventStoreController();
 		eventStoreController.setEventStoreService(eventStoreService);
