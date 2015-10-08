@@ -68,7 +68,7 @@
                     ng-disabled="newFile.blockIdentical || totalFilesSize(newFile) >= maxFileSize || totalFilesSize(newFile) >= (maxSize() * 1024 * 1024)">
                 <i18n>import.file</i18n>
             </button>
-            <button class="cancel right-magnet" translate content="terminate"></button>
+            <button class="cancel right-magnet" ng-click="template.close('lightbox')"><i18n>terminate</i18n></button>
     	</div>
 	</div>
 </form>

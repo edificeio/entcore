@@ -106,12 +106,12 @@ function MyAccount($scope, lang, date, notify, route){
 	};
 
 	$scope.openPasswordDialog = function(){
-		ui.showLightbox();
+		$scope.display.password = true;
 		$scope.account.password = '';
 	};
 
 	$scope.closePassword = function(){
-		ui.hideLightbox();
+		$scope.display.password = false;
 	};
 
 	$scope.removePicture = function(){
@@ -137,7 +137,7 @@ function MyAccount($scope, lang, date, notify, route){
 				}
 				else{
 					$scope.resetErrors = false;
-					ui.hideLightbox();
+					$scope.display.password = false;
 				}
 				$scope.$apply();
 			})

@@ -31,7 +31,7 @@ routes.define(function($routeProvider) {
 		})
 });
 
-function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, template, model, lang){
+function Workspace($scope, date, notify, _, route, $rootScope, $timeout, template, model, lang){
 
 	route({
 		viewFolder: function(params){
@@ -142,11 +142,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		if(model.quota.unit === 'gb'){
 			leftOvers *= 1000;
 		}
-		/*
-		if(leftOvers > 50){
-			leftOvers = 50;
-		}
-		*/
 		return leftOvers;
 	};
 
@@ -214,13 +209,11 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.openNewDocumentView = function(){
-		ui.showLightbox();
 		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
 		template.open('lightbox', 'create-file');
 	};
 
 	$scope.openNewFolderView = function(){
-		ui.showLightbox();
 		$scope.newFolder = { name: '' };
 		template.open('lightbox', 'create-folder');
 	};
@@ -228,21 +221,18 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.targetDocument = {};
 	$scope.openCommentView = function(document){
 		$scope.targetDocument = document;
-		ui.showLightbox();
 		template.open('lightbox', 'comment');
 	};
 
 	$scope.targetFolder = {};
 	$scope.openCommentFolderView = function(folder){
 		$scope.targetFolder = folder;
-		ui.showLightbox();
 		template.open('lightbox', 'comment-folder');
 	};
 
 	$scope.openRenameView = function(document){
 		document.newName = document.name
-		$scope.renameTarget = document
-		ui.showLightbox()
+		$scope.renameTarget = document;
 		template.open('lightbox', 'rename');
 	};
 
@@ -279,7 +269,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 
 	$scope.toTrashConfirm = function(url){
 		template.open('lightbox', 'confirm');
-		ui.showLightbox();
 		$scope.confirm = function(){
 			$scope.selectedDocuments().forEach(function(document){
 				http().put(url + "/" + document._id);
@@ -287,7 +276,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			$scope.openedFolder.content = _.reject($scope.openedFolder.content, function(doc){ return doc.selected; });
 
 			notify.info('workspace.removed.message');
-			ui.hideLightbox();
+			template.close('lightbox');
 		};
 	};
 
@@ -326,7 +315,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	$scope.openMoveFileView = function(action){
 		targetFolders = [$scope.folder.children[0]];
 		$scope.newFolder = { name: '' };
-		ui.showLightbox();
 		template.open('lightbox', action);
 	};
 
@@ -375,7 +363,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.sendComment = function(){
-		ui.hideLightbox();
+		template.close('lightbox');
 		http().post('document/' + $scope.targetDocument._id + '/comment', 'comment=' + encodeURIComponent($scope.targetDocument.comment)).done(function(result){
 			if(!$scope.targetDocument.comments){
 				$scope.targetDocument.comments = [];
@@ -397,7 +385,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		if(folder){
 			$scope.targetFolder = folder;
 		}
-		ui.hideLightbox();
+		template.close('lightbox');
 		http().post('folder/' + $scope.targetFolder._id + '/comment', 'comment=' + encodeURIComponent($scope.targetFolder.comment)).done(function(result){
 			if(!$scope.targetFolder.comments){
 				$scope.targetFolder.comments = [];
@@ -905,7 +893,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	}
 
 	$scope.move = function(){
-		ui.hideLightbox();
+		template.close('lightbox');
 		var folderString = folderToString($scope.folder.children[0], targetFolders[0]);
 
 		var data = {};
@@ -943,7 +931,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.dragMove = function(origin, target){
-		ui.hideLightbox();
+		template.close('lightbox');
 		var folderString = folderToString($scope.folder.children[0], target);
 
 		var data = {};
@@ -976,10 +964,10 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 				refreshFolders();
 			});
 		}
-	}
+	};
 
 	$scope.copy = function(){
-		ui.hideLightbox();
+		template.close('lightbox');
 		var selectedDocumentsIds = _.pluck($scope.selectedDocuments(), '_id').join(',');
 		targetFolders.forEach(function(folder){
 			var basePath = 'documents';
@@ -1098,7 +1086,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	};
 
 	$scope.createFolder = function(){
-		ui.hideLightbox();
+		template.close('lightbox');
 		var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
 		if(path !== ''){
 			$scope.newFolder.path = path;
@@ -1191,7 +1179,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 	}
 
 	$scope.rename = function(item, newName){
-		ui.hideLightbox();
+		template.close('lightbox');
 		if(!item.file){
 			//Rename folder
 			http().putJson("/workspace/folder/rename/" + item._id, {name: newName}).done(function(){
@@ -1294,7 +1282,6 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 		$scope.refreshHistory(document, function(){
 			$scope.orderByField('date.$date');
 			$scope.order.desc = true;
-			ui.showLightbox();
 			template.open('lightbox', 'versions')
 			$scope.$apply()
 		})
@@ -1320,7 +1307,7 @@ function Workspace($scope, date, ui, notify, _, route, $rootScope, $timeout, tem
 			delete $scope.revisionInProgress;
 			$scope.openFolder($scope.openedFolder.folder);
 			model.quota.sync();
-			ui.hideLightbox();
+			template.close('lightbox');
 			//$scope.refreshHistory($scope.targetDocument);
 		}).e400(function(e){
 			delete $scope.revisionInProgress

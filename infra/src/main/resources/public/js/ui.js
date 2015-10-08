@@ -437,6 +437,19 @@ ui.extendElement = {
 		});
 	},
 	draggable: function(element, params){
+		if(!params){
+			params = {};
+		}
+		if(!params.lock){
+			params.lock = {};
+		}
+
+		if(element.length > 1){
+			element.each(function(index, item){
+				ui.extendElement.draggable($(item), params);
+			})
+		}
+
 		element.on('touchstart mousedown', function(e){
 			if(element.data('lock') === true || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))){
 				return;

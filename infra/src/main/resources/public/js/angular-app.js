@@ -4621,6 +4621,70 @@ module.directive('slide', function () {
 	}
 });
 
+module.directive('sideNav', function(){
+	return {
+		restrict: 'AE',
+		link: function(scope, element, attributes){
+			var maxWidth = 700;
+			var target = attributes.targetElement || '.navbar';
+
+			element.addClass('side-nav');
+			$('body').addClass('transition');
+
+			var opener = $('<div class="mobile-nav-opener"></div>');
+			opener.on('click', function(){
+				if(!element.hasClass('slide')){
+					$('body').addClass('slide');
+					element.addClass('slide');
+				}
+				else{
+					$('body').removeClass('slide');
+					element.removeClass('slide');
+				}
+
+			});
+
+			var draggableEvents = {
+				lock: {
+					vertical: true
+				},
+				startDrag: function(){
+					$('body').removeClass('transition');
+				},
+				mouseUp: function(){
+					if($('body').offset().left > element.width() / 2){
+						$('body').addClass('slide');
+						element.addClass('slide');
+					}
+					else{
+						$('body').removeClass('slide');
+						element.removeClass('slide');
+					}
+					$('body').attr('style', "");
+					$('body').addClass('transition')
+				}
+			};
+
+			if(attributes.maxWidth){
+				maxWidth = parseInt(attributes.maxWidth);
+			}
+			function addRemoveOpener(){
+				element.height($(window).height());
+				if($(window).width() <= maxWidth){
+					opener.prependTo(target);
+					ui.extendElement.draggable($('body'), draggableEvents);
+					ui.extendElement.draggable(element, draggableEvents);
+				}
+				else{
+					opener.detach();
+				}
+			}
+			addRemoveOpener();
+			$(window).on('resize', addRemoveOpener);
+		}
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){

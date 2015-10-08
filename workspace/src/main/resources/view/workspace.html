@@ -23,7 +23,7 @@
 	<head>
 		<title>{{#i18n}}workspace.title{{/i18n}}</title>
 		<meta charset="utf-8" />
-
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
 		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
@@ -55,31 +55,32 @@
 	<body data-ng-controller="Workspace">
 	<portal>
 		<div class="row rigid-grid">
-			<section class="four cell">
-				<h1><a data-reload><i class="storage"></i>{{#i18n}}workspace.header{{/i18n}}</a></h1>
-				<nav class="vertical">
+			<section class="four twelve-mobile cell">
+				<h1 data-reload><i class="storage"></i><i18n>workspace.header</i18n></h1>
+				<nav class="vertical mobile-navigation" side-nav>
 					<div data-ng-include="folderTreeTemplate"></div>
 					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
 					<a ng-click="emptyTrash()" ng-if="currentFolderTree.name === 'trash'" translate key="workspace.empty.trash" class="classic-link"></a>
-					<div class="row">
+					<div class="row zero-mobile">
 						<hr class="row" />
 						<h2><i18n>quota.title</i18n></h2>
 						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+						<hr class="row" />
 					</div>
 				</nav>
 
 
 			</section>
 			<section class="margin-four">
-				<nav class="contextual-buttons twelve cell">
-					<div class="action-buttons">
+				<nav class="twelve cell vertical-spacing">
+					<div class="cell">
 						<div class="cell" ng-repeat="button in currentTree.buttons"><button
 								ng-click="button.action(button.url)"
 								workflow="[[button.workflow]]">
 							<i class="add" ng-if="button.icon"></i> [[translate(button.text)]]
 						</button></div>
 					</div>
-					<div class="display-buttons">
+					<div class="cell right-magnet">
 						<i class="show-list"
 						   ng-class="{ selected: template.contains('documents', 'list') }"
 						   ng-click="template.open('documents', 'list')"></i>
@@ -96,12 +97,9 @@
 			</section>
 		</div>
 	</portal>
-	<section class="lightbox-window five cell" loading-panel="file-upload">
+	<lightbox show="!template.isEmpty('lightbox')" on-close="template.close('lightbox')">
 		<container template="lightbox"></container>
-		<div class="close-lightbox">
-			<i class="close-2x"></i>
-		</div>
-	</section>
+	</lightbox>
 	<lightbox show="display.share" on-close="display.share = false;">
 		<container template="share"></container>
 	</lightbox>
@@ -124,14 +122,7 @@
 				</resource-right>
 				<resource-right resource="selectedItems()" name="share">
 					<button ng-click="openShareView(selectedDocuments()[0])"
-							ng-if="selectedFolders().length === 0 && (currentTree.name === 'shared')"
-							ng-class="cell">
-						<i18n>workspace.share</i18n>
-					</button>
-				</resource-right>
-				<resource-right resource="selectedItems()" name="share">
-					<button ng-click="openShareView(selectedDocuments()[0])"
-							ng-if="selectedFolders().length === 0 && (currentTree.name === 'documents')"
+							ng-if="selectedFolders().length === 0 && (currentTree.name === 'documents' || currentTree.name === 'shared')"
 							ng-class="cell">
 						<i18n>workspace.share</i18n>
 					</button>
@@ -157,7 +148,7 @@
 						<i18n>workspace.rename</i18n>
 					</button>
 				</resource-right>
-				<resource-right resource="selectedItems()" name="showRevisions">
+				<resource-right resource="selectedItems()" name="showRevisions" class="zero-mobile">
 					<button ng-if="selectedFolders().length === 0 && selectedDocuments().length === 1 && (currentTree.name === 'shared' || currentTree.name === 'documents')"
 						    ng-click="openHistory(selectedDocuments()[0])"
 							class="cell">
@@ -173,7 +164,7 @@
 					</resource-right>
 				</div>
 
-				<span class="contextual-link"
+				<span class="contextual-link zero-mobile"
 					  ng-if="selectedDocuments().length === 1 && selectedDocuments()[0].comments.length > 0 &&  currentTree.name !== 'trash'">
 					<a ng-if="!selectedDocuments()[0].showComments" data-ng-click="toggleComments(selectedDocuments()[0])">
 						<i18n>workspace.document.comment.show</i18n> ([[selectedDocuments()[0].comments.length]])
@@ -187,6 +178,5 @@
 
 		</div>
 	</section>
-	<section class="lightbox-backdrop"></section>
 	</body>
 </html>

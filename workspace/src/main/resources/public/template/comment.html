@@ -21,14 +21,13 @@
 <div class="row">
 	<div class="twelve cell">
 		<form class="twelve fluid cell" ng-submit="sendComment()">
-			<h1 translate key="workspace.comment"></h1>
+			<h1><i18n>workspace.comment</i18n></h1>
 			<div class="row">
 				<textarea ng-model="targetDocument.comment"></textarea>
 			</div>
 			<div class="lightbox-buttons fluid">
-				<input type="submit" i18n-value="workspace.comment" />
-				<input class="cancel" type="button" i18n-value="cancel" />
-
+             <button><i18n>workspace.comment</i18n></button>
+             <button type="button" class="cancel" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
 			</div>
 		</form>
 	</div>
