@@ -140,17 +140,19 @@ public class DefaultUserService implements UserService {
 	public void get(String id, Handler<Either<String, JsonObject>> result) {
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
+				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) " +
 				"RETURN DISTINCT u.profiles as type, " +
+				"COLLECT(distinct s) as structureNodes, " +
 				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName}) END as children, " +
-				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName}) END as parents, " +
+				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) END as children, " +
+				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) END as parents, " +
 				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct {id: fgroup.id, name: fgroup.name}) END as functionalGroups, " +
 				"u";
-		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result));
+		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result, "structureNodes"));
 	}
 
 	@Override
