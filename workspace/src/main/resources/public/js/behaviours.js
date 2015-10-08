@@ -164,11 +164,8 @@ Behaviours.register('workspace', {
 					var that = this;
 					this.documents = { inSource: [] };
 					this.source.document = {};
-					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources) {
-						this.documents.inSource = _.filter(resources, function(doc){
-							return _.findWhere(that.source.documents, { _id: doc._id });
-						});
-					}.bind(this));
+
+					this.documents.inSource = this.source.documents;
 				},
 				addDocument: function(document){
 					console.log('adding ' + document + ' in documents');
