@@ -173,7 +173,6 @@ Behaviours.register('workspace', {
 					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
 						document = _.findWhere(resources, { _id: document.split('/document/')[1] });
 						this.source.documents.push(document);
-						this.documents.inSource.push(document);
 						if (typeof this.snipletResource.save === 'function') {
 							this.snipletResource.save();
 						}
@@ -185,9 +184,7 @@ Behaviours.register('workspace', {
 					this.source.documents = _.reject(this.source.documents, function(doc){
 						return doc._id === document._id;
 					});
-					this.documents.inSource = _.filter(this.documents.inSource, function(doc){
-						return _.findWhere(that.source.documents, { _id: doc._id });
-					});
+					this.documents.inSource = this.source.documents;
 					if(typeof this.snipletResource.save === 'function'){
 						this.snipletResource.save();
 					}

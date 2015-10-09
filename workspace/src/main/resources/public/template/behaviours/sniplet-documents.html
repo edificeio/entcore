@@ -4,7 +4,7 @@
 
 <article class="list icons-view">
 	<header>&nbsp;</header>
-	<div ng-repeat="document in documents.inSource" class="element" ng-class="{ selected: document.selected }">
+	<div ng-repeat="document in documents.inSource track by $index" class="element" ng-class="{ selected: document.selected }">
 		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
 			<div class="twelve cell">
 				<div class="clip absolute">
