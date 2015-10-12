@@ -174,7 +174,42 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 	})
 	.factory('ui', function(){
 		return ui;
-	});
+	})
+    .factory('xmlHelper', function(){
+        return {
+            xmlToJson: function(xml, accumulator, stripNamespaces, flatten) {
+                var nodeName;
+                var that = this;
+                if (!accumulator)
+                    accumulator = {};
+                if (!stripNamespaces)
+                    stripNamespaces = true;
+                if(flatten == null)
+                    flatten = true
+
+                if (stripNamespaces && xml.nodeName.indexOf(":") > -1) {
+                    nodeName = xml.nodeName.split(':')[1];
+                } else {
+                    nodeName = xml.nodeName;
+                }
+                if ($(xml).children().length > 0) {
+                    if(!flatten)
+                        accumulator[nodeName] = [];
+                    else
+                        accumulator[nodeName] = {};
+                    _.each($(xml).children(), function(child) {
+                        if(!flatten)
+                            accumulator[nodeName].push(that.xmlToJson(child, {}, stripNamespaces, flatten));
+                        else
+                            return that.xmlToJson(child, accumulator[nodeName], stripNamespaces, flatten);
+                    });
+                } else {
+                    accumulator[nodeName] = $(xml).text();
+                }
+                return accumulator;
+            }
+        }
+    });
 
 //routing
 if(routes.routing){
