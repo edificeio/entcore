@@ -333,12 +333,12 @@ public class User {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		if (profiles != null && profiles.size() > 0) {
-			query.append("MATCH (u:User) WHERE HEAD(u.profiles) IN {profiles} " +
+			query.append("MATCH (u:User) WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) " +
 					"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) " +
 					"WITH u, COLLECT(s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
 			params.putArray("profiles", profiles);
 		} else {
-			query.append("MATCH (u:User) ");
+			query.append("MATCH (u:User) WHERE NOT(HAS(u.deleteDate)) ");
 		}
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
