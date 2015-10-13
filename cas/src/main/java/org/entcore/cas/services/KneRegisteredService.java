@@ -58,9 +58,9 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 						for (Object o : data.getArray("structureNodes", new JsonArray()).toList()) {
 							@SuppressWarnings("unchecked")
 							Map<String, Object> structure = ((Map<String, Object>) o);
-							if(value.equals(structure.get("UAI").toString())){
+							if(value.equals(structure.get("UAI"))){
 								if(structure.containsKey("type")){
-									String type = structure.get("type").toString();
+									String type = (String) structure.get("type");
 									switch(type){
 										case "ECOLE DE NIVEAU ELEMENTAIRE":
 											additionalAttributes.add(createTextElement("ENTStructureTypeStruct", "1ORD", doc));
