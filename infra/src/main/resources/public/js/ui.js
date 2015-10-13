@@ -262,12 +262,6 @@ ui.extendElement = {
 			})
 		}
 
-		$('body').css({
-			'-webkit-user-select': 'none',
-			'-moz-user-select': 'none',
-			'user-select' : 'none'
-		});
-
 		//cursor styles to indicate resizing possibilities
 		element.on('mouseover', function(e){
 			element.on('mousemove', function(e){
@@ -314,6 +308,12 @@ ui.extendElement = {
 			if(element.data('lock') === true || element.data('resizing') === true){
 				return;
 			}
+
+			$('body').css({
+				'-webkit-user-select': 'none',
+				'-moz-user-select': 'none',
+				'user-select' : 'none'
+			});
 
 			var interrupt = false;
 			var mouse = {
