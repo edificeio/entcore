@@ -55,6 +55,7 @@ public class Importer {
 	private Neo4j neo4j;
 	private ConcurrentMap<String, Structure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
+	Set<String> importedGroups = new HashSet<>();
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -102,6 +103,7 @@ public class Importer {
 		structures.clear();
 		profiles.clear();
 		userImportedExternalId.clear();
+		importedGroups.clear();
 		transactionHelper = null;
 	}
 
@@ -785,6 +787,24 @@ public class Importer {
 				"WHERE NOT(s.id IN sIds) " +
 				"DELETE r";
 		transactionHelper.add(query3, j);
+	}
+
+	public void removeOldFunctionalGroup() {
+		String query =
+				"MATCH (g:FunctionalGroup) " +
+				"WHERE NOT(g.externalId IN {importedGroups}) " +
+				"OPTIONAL MATCH g-[r]-() " +
+				"DELETE g, r ";
+		transactionHelper.add(query, new JsonObject().putArray("importedGroups", new JsonArray(importedGroups.toArray())));
+	}
+
+	public void removeEmptyClasses() {
+		String query =
+				"MATCH (c:Class)<-[r1:DEPENDS]-(g:Group) " +
+				"WHERE NOT(g<-[:IN]-(:User)) " +
+				"OPTIONAL MATCH g-[r2]-(), c-[r3]-() " +
+				"DELETE c, g, r1, r2, r3 ";
+		transactionHelper.add(query, new JsonObject().putArray("importedGroups", new JsonArray(importedGroups.toArray())));
 	}
 
 	public Structure getStructure(String externalId) {

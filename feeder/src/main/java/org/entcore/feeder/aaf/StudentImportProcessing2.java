@@ -41,6 +41,8 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 	protected void preCommit() {
 		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
 		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
+		importer.removeOldFunctionalGroup();
+		importer.removeEmptyClasses();
 	}
 
 	@Override

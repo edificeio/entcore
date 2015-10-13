@@ -66,7 +66,7 @@ public class FeederTest extends TestVerticle {
 			.putObject("neo4j", new JsonObject()
 					.putString("node_keys_indexable", "externalId")
 					.putString("node_auto_indexing", "true"));
-		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.3-SNAPSHOT", neo4jConfig, 1,
+		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.5.1", neo4jConfig, 1,
 				new AsyncResultHandler<String>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
