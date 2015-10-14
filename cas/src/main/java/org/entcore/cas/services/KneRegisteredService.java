@@ -89,7 +89,8 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			Element rootProfiles;
-			switch(data.getString("type")) {
+			String profile = data.getArray("type").size() > 0 ? data.getArray("type").get(0).toString() : "";
+			switch(profile) {
 				case "Student" :
 					rootProfiles = createElement("ENTPersonProfils", doc);
 					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_ELV", doc));
