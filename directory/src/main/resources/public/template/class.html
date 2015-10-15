@@ -30,15 +30,11 @@
 					<i class="show-icons"
 					   ng-click="deselectUser('dominos')"
 					   ng-class="{ selected: template.contains('list', 'dominos') }" class="right-magnet"></i>
-					<i class="show-list"
-					   ng-click="deselectUser('table')"
-					   ng-class="{ selected: template.contains('list', 'table') }" class="right-magnet"
-					   ng-if="!myClass"></i>
 				</div>
 			</div>
 
 		</div>
-		<h1><a data-reload><i class="userbook"></i><span translate key="userBook.class.title"></span></a></h1>
+		<h1 data-reload><i class="userbook"></i><i18n>userBook.class.title</i18n></h1>
         <div class="row">
             <div class="six cell reduce-block-six"><h5 class="subtitle">[[myClass && myClass.length > 0 ? myClass[0].name : ""]]</h5></div>
 
