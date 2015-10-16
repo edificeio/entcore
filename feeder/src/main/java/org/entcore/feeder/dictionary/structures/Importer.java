@@ -800,11 +800,13 @@ public class Importer {
 
 	public void removeEmptyClasses() {
 		String query =
+				"MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) " +
+				"WITH COLLECT(distinct c.id) as usedClasses " +
 				"MATCH (c:Class)<-[r1:DEPENDS]-(g:Group) " +
-				"WHERE NOT(g<-[:IN]-(:User)) " +
+				"WHERE NOT(c.id IN usedClasses) " +
 				"OPTIONAL MATCH g-[r2]-(), c-[r3]-() " +
 				"DELETE c, g, r1, r2, r3 ";
-		transactionHelper.add(query, new JsonObject().putArray("importedGroups", new JsonArray(importedGroups.toArray())));
+		transactionHelper.add(query, null);
 	}
 
 	public Structure getStructure(String externalId) {
