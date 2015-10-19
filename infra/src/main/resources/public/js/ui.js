@@ -458,17 +458,18 @@ ui.extendElement = {
 			var interrupt = false;
 			if(element.data('resizing') !== true){
 
-				var mouse = mouse = {
+				var mouse = {
 					y: e.clientY || e.originalEvent.touches[0].clientY,
 					x: e.clientX || e.originalEvent.touches[0].clientX
-				};;
+				};
+				var initialMouse = JSON.parse(JSON.stringify(mouse));
 				var elementDistance = {
 					y: mouse.y - element.offset().top,
 					x: mouse.x - element.offset().left
 				};
 				var moved = false;
 
-				var moveElement = function(){
+				var moveElement = function(e){
 					var parent = element.parents('.drawing-zone');
 					var parentPosition = parent.offset();
 					var boundaries = {
@@ -514,17 +515,31 @@ ui.extendElement = {
 					element.offset(newOffset);
 
 					if(params && typeof params.tick === 'function'){
-						params.tick();
+						var delta = {
+							y: newOffset.top - elementDistance.y,
+							x: newOffset.left - elementDistance.x
+						};
+						params.tick(e);
 					}
 
 					if(!interrupt){
-						requestAnimationFrame(moveElement);
+						requestAnimationFrame(function(){
+							moveElement(e);
+						});
 					}
 				};
 
 				$(window).on('touchmove.drag mousemove.drag', function(f){
 					moved = true;
-					f.preventDefault();
+					if(!params.allowDefault){
+						f.preventDefault();
+					}
+					if(params.mouseMove && typeof params.mouseMove === 'function'){
+						params.mouseMove(f, {
+							x: f.clientX || f.originalEvent.touches[0].clientX,
+							y: f.clientY || f.originalEvent.touches[0].clientY
+						}, initialMouse);
+					}
 					if((f.clientX || f.originalEvent.touches[0].clientX) === mouse.x &&
 						(f.clientY || f.originalEvent.touches[0].clientY) === mouse.y){
 						return;
@@ -548,7 +563,7 @@ ui.extendElement = {
 							'transition': 'none'
 						});
 
-						setTimeout(moveElement, 5);
+						moveElement(f);
 					}
 					element.unbind("click");
 					element.data('dragging', true);

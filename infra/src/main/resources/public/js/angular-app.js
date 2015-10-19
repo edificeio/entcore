@@ -1157,24 +1157,25 @@ module.directive('filesPicker', function($compile){
 			ngChange: '&',
 			ngModel: '='
 		},
-		link: function($scope, $element, $attributes){
-			$element.on('click', function(){
+		link: function(scope, element, attributes){
+			element.on('click', function(){
 				var fileSelector = $('<input />', {
 					type: 'file'
 				})
 					.hide()
 					.appendTo('body');
-				if($attributes.multiple !== undefined){
+				if(attributes.multiple !== undefined){
 					fileSelector.attr('multiple', true);
 				}
 
 				fileSelector.on('change', function(){
-					$scope.ngModel = fileSelector[0].files;
-					$scope.$apply();
-					$scope.$eval($scope.ngChange);
-					$scope.$parent.$apply();
+					scope.ngModel = fileSelector[0].files;
+					scope.$apply();
+					scope.$eval(scope.ngChange);
+					scope.$parent.$apply();
 				});
 				fileSelector.click();
+				fileSelector.trigger('touchstart');
 			});
 		}
 	}
@@ -4648,6 +4649,7 @@ module.directive('sideNav', function(){
 				lock: {
 					vertical: true
 				},
+				allowDefault: true,
 				startDrag: function(){
 					$('body').removeClass('transition');
 				},
@@ -4661,7 +4663,19 @@ module.directive('sideNav', function(){
 						element.removeClass('slide');
 					}
 					$('body').attr('style', "");
+					$(element).attr('style', "");
 					$('body').addClass('transition')
+				},
+				mouseMove: function(event, newMouse, initialMouse){
+					if(Math.abs(newMouse.x - initialMouse.x) > Math.abs(newMouse.y - initialMouse.y)){
+						event.preventDefault();
+					}
+				},
+				tick: function(mouse, delta, e){
+
+					if($('body').offset().left < 0){
+						$('body').offset().left = 0;
+					}
 				}
 			};
 
@@ -4681,6 +4695,9 @@ module.directive('sideNav', function(){
 			}
 			addRemoveOpener();
 			$(window).on('resize', addRemoveOpener);
+			$(document).bind('scroll', function() {
+				$(document).scrollLeft(0);
+			});
 		}
 	}
 });

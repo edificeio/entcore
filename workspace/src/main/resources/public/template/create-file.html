@@ -42,12 +42,12 @@
 <form id="upload-form" method="post" enctype="multipart/form-data" class="twelve cell">
   <div class="row fixed-block">
     <h2 class="subtitle"><i18n>files.select</i18n></h2>
-		<div class="eight cell select-file input-block">
+		<div class="twelve cell select-file input-block">
+			<button class="file-button"><i18n>choose</i18n></button>
+			<input type="text" data-ng-model="newFile.name" data-display-file class="nomargin" />
 			<div class="hidden-content">
 				<input type="file" multiple files-input-change="setFilesName()" ng-model="newFile.files"/>
 			</div>
-			<button class="file-button"><i18n>choose</i18n></button>
-			<input type="text" data-ng-model="newFile.name" data-display-file class="nomargin" disabled/>
 		</div>
 	</div>
 	<div class="row">
