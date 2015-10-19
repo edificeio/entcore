@@ -384,7 +384,7 @@ function Collection(obj){
 			return this._selection;
 		},
 		removeSelection: function(){
-			if(this.composer.api){
+			if(this.obj.prototype.api){
 				this.selection().forEach(function(item){
 					item.remove();
 				});
