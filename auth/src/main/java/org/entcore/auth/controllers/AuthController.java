@@ -70,6 +70,7 @@ import jp.eisbahn.oauth2.server.models.Request;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -102,6 +103,7 @@ public class AuthController extends BaseController {
 	public enum AuthEvent { ACTIVATION, LOGIN, SMS }
 	private Pattern passwordPattern;
 	private String smsProvider;
+	private boolean slo;
 
 
 	@Override
@@ -124,6 +126,7 @@ public class AuthController extends BaseController {
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 		if(server != null && server.get("smsProvider") != null)
 			smsProvider = (String) server.get("smsProvider");
+		slo = container.config().getBoolean("slo", false);
 	}
 
 	@Get("/oauth2/auth")
@@ -352,8 +355,25 @@ public class AuthController extends BaseController {
 
 	@Get("/logout")
 	public void logout(final HttpServerRequest request) {
-		String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-		String c = request.params().get("callback");
+		final String c = request.params().get("callback");
+		if (slo) {
+			UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
+				@Override
+				public void handle(UserInfos event) {
+					if (event != null && event.getFederated()) {
+						redirect(request, "/auth/saml/slo?callback=" + c);
+					} else {
+						logoutCallback(request, c, container, eb);
+					}
+				}
+			});
+		} else {
+			logoutCallback(request, c, container, eb);
+		}
+	}
+
+	public static void logoutCallback(final HttpServerRequest request, String c, Container container, EventBus eb) {
+		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		final StringBuilder callback = new StringBuilder();
 		if (c != null && !c.trim().isEmpty()) {
 			if (c.contains("_current-domain_")) {

@@ -20,10 +20,13 @@
 package org.entcore.auth.security;
 
 import org.opensaml.saml2.core.Assertion;
+import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.saml2.core.impl.AssertionUnmarshaller;
 import org.opensaml.xml.Configuration;
+import org.opensaml.xml.XMLObjectBuilderFactory;
+import org.opensaml.xml.io.Marshaller;
 import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.io.Unmarshaller;
 import org.opensaml.xml.io.UnmarshallerFactory;
@@ -33,8 +36,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 public final class SamlUtils {
 
@@ -71,6 +76,25 @@ public final class SamlUtils {
 		Document document = getDocumentFromString(assertion);
 		AssertionUnmarshaller unmarshaller = new AssertionUnmarshaller();
 		return (Assertion) unmarshaller.unmarshall(document.getDocumentElement());
+	}
+
+
+	public static <T> T buildSAMLObjectWithDefaultName(final Class<T> clazz)
+			throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+		XMLObjectBuilderFactory builderFactory = Configuration.getBuilderFactory();
+
+		QName defaultElementName = (QName) clazz.getDeclaredField("DEFAULT_ELEMENT_NAME").get(null);
+		T object = (T) builderFactory.getBuilder(defaultElementName)
+				.buildObject(defaultElementName);
+		return object;
+	}
+
+	public static String marshallLogoutRequest(LogoutRequest logoutRequest) throws MarshallingException {
+		Marshaller marshaller = Configuration.getMarshallerFactory().getMarshaller(logoutRequest);
+		Element authDOM = marshaller.marshall(logoutRequest);
+		StringWriter rspWrt = new StringWriter();
+		XMLHelper.writeNode(authDOM, rspWrt);
+		return rspWrt.toString();
 	}
 
 }

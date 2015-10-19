@@ -19,6 +19,10 @@
 
 package org.entcore.common.user;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -211,6 +215,7 @@ public class UserInfos {
 	private Map<String, Object> cache;
 	private Boolean federated;
 	private List<Widget> widgets;
+	private Map<String, Object> otherProperties = new HashMap<>();
 
 	public Map<String, Function> getFunctions() {
 		return functions;
@@ -398,6 +403,16 @@ public class UserInfos {
 
 	public void setWidgets(List<Widget> widgets) {
 		this.widgets = widgets;
+  }
+
+	@JsonAnySetter
+	public void setOtherProperty(String key, Object value) {
+		otherProperties.put(key, value);
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getOtherProperties() {
+		return otherProperties;
 	}
 
 }

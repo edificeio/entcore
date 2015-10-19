@@ -330,11 +330,18 @@ public class UserUtils {
 		});
 	}
 
-	public static void createSession(EventBus eb, String userId,
-									 final Handler<String> handler) {
+	public static void createSession(EventBus eb, String userId, final Handler<String> handler) {
+		createSession(eb, userId, null, null, handler);
+	}
+
+	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId,
+			final Handler<String> handler) {
 		JsonObject json = new JsonObject()
 				.putString("action", "create")
 				.putString("userId", userId);
+		if (sessionIndex != null && nameId != null && !sessionIndex.trim().isEmpty() && !nameId.trim().isEmpty()) {
+			json.putString("SessionIndex", sessionIndex).putString("NameID", nameId);
+		}
 		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
 			@Override
@@ -361,6 +368,27 @@ public class UserUtils {
 			public void handle(Message<JsonObject> res) {
 				if (handler != null) {
 					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
+	public static void deleteSessionWithMetadata(EventBus eb, String sessionId,
+			final Handler<JsonObject> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "drop")
+				.putBoolean("sessionMetadata", true)
+				.putString("sessionId", sessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					if ("ok".equals(res.body().getString("status"))) {
+						handler.handle(res.body().getObject("sessionMetadata"));
+					} else {
+						handler.handle(null);
+					}
 				}
 			}
 		});

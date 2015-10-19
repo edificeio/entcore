@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -29,9 +30,11 @@ import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
+import org.opensaml.saml2.core.AuthnStatement;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.xml.ConfigurationException;
 import org.vertx.java.core.Handler;
@@ -41,6 +44,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 public class SamlController extends BaseController {
@@ -58,7 +63,7 @@ public class SamlController extends BaseController {
 	public void acs(final HttpServerRequest request) {
 		validateResponseAndGetAssertion(request, new Handler<Assertion>() {
 			@Override
-			public void handle(Assertion assertion) {
+			public void handle(final Assertion assertion) {
 				SamlServiceProvider sp = spFactory.serviceProvider(assertion);
 				sp.execute(assertion, new Handler<Either<String, JsonObject>>() {
 					@Override
@@ -73,11 +78,11 @@ public class SamlController extends BaseController {
 							final String email = res.getString("email");
 							final String mobile = res.getString("mobile");
 							if (activationCode != null && login != null) {
-								activateUser(activationCode, login, email, mobile, request);
+								activateUser(activationCode, login, email, mobile, assertion, request);
 							} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
 								log.info("Connexion de l'utilisateur fédéré " + login);
 								eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
-								createSession(userId, request);
+								createSession(userId, assertion, request);
 							} else {
 								redirect(request, LOGIN_PAGE);
 							}
@@ -88,8 +93,67 @@ public class SamlController extends BaseController {
 		});
 	}
 
-	private void createSession(String userId, final HttpServerRequest request) {
-		UserUtils.createSession(eb, userId,
+	@Get("/saml/slo")
+	public void slo(final HttpServerRequest request) {
+		final String c = request.params().get("callback");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null && user.getFederated()) {
+					final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+					UserUtils.deleteSessionWithMetadata(eb, sessionId, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							if (event != null) {
+								CookieHelper.set("oneSessionId", "", 0l, request);
+								request.headers().remove("Cookie");
+								event.putString("action", "generate-slo-request");
+								event.putString("IDP", (String) user.getOtherProperties().get("federatedIDP"));
+								if (log.isDebugEnabled()) {
+									log.debug("Session metadata : " + event.encodePrettily());
+								}
+								vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if (log.isDebugEnabled()) {
+											log.debug("slo request : " + event.body().encodePrettily());
+										}
+										String slo = event.body().getString("slo");
+										if (c != null && !c.isEmpty()) {
+											try {
+												slo = c + URLEncoder.encode(slo, "UTF-8");
+											} catch (UnsupportedEncodingException e) {
+												log.error(e.getMessage(), e);
+											}
+										}
+										AuthController.logoutCallback(request, slo, container, eb);
+									}
+								});
+							} else {
+								AuthController.logoutCallback(request, c, container, eb);
+							}
+						}
+					});
+				} else {
+					AuthController.logoutCallback(request, c, container, eb);
+				}
+			}
+		});
+	}
+
+	private void createSession(String userId, Assertion assertion, final HttpServerRequest request) {
+		String nameId = (assertion != null && assertion.getSubject() != null &&
+				assertion.getSubject().getNameID() != null) ? assertion.getSubject().getNameID().getValue() : null;
+		String sessionIndex = getSessionId(assertion);
+		if (log.isDebugEnabled()) {
+			log.debug("NameID : " + nameId);
+			log.debug("SessionIndex : " + sessionIndex);
+		}
+		if (nameId == null || sessionIndex == null || nameId.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
+			redirect(request, LOGIN_PAGE);
+			return;
+		}
+		UserUtils.createSession(eb, userId, sessionIndex, nameId,
 				new org.vertx.java.core.Handler<String>() {
 
 					@Override
@@ -107,8 +171,19 @@ public class SamlController extends BaseController {
 				});
 	}
 
+	private String getSessionId(Assertion assertion) {
+		if (assertion != null && assertion.getAuthnStatements() != null) {
+			for (AuthnStatement ans: assertion.getAuthnStatements()) {
+				if (ans.getSessionIndex() != null && !ans.getSessionIndex().trim().isEmpty()) {
+					return ans.getSessionIndex();
+				}
+			}
+		}
+		return null;
+	}
+
 	private void activateUser(final String activationCode, final String login, String email, String mobile,
-			final HttpServerRequest request) {
+			final Assertion assertion, final HttpServerRequest request) {
 		userAuthAccount.activateAccount(login, activationCode, UUID.randomUUID().toString(),
 				email, mobile, request, new Handler<Either<String, String>>() {
 			@Override
@@ -116,7 +191,7 @@ public class SamlController extends BaseController {
 				if (activated.isRight() && activated.right().getValue() != null) {
 					log.info("Activation du compte utilisateur " + login);
 					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login);
-						createSession(activated.right().getValue(), request);
+						createSession(activated.right().getValue(), assertion, request);
 				} else {
 					log.info("Echec de l'activation : compte utilisateur " + login +
 							" introuvable ou déjà activé.");

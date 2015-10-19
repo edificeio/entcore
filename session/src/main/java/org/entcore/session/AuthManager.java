@@ -229,7 +229,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					if ("ok".equals(event.body().getString("status")) && res != null &&
 							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
 						final String uId = userId;
-						createSession(userId, sessionId, new Handler<String>() {
+						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"),
+								new Handler<String>() {
 							@Override
 							public void handle(String sId) {
 								if (sId != null) {
@@ -275,12 +276,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	private void doCreate(final Message<JsonObject> message) {
 		final String userId = message.body().getString("userId");
+		final String sessionIndex = message.body().getString("SessionIndex");
+		final String nameID = message.body().getString("NameID");
 		if (userId == null || userId.trim().isEmpty()) {
 			sendError(message, "Invalid userId.");
 			return;
 		}
 
-		createSession(userId, null, new Handler<String>() {
+		createSession(userId, null, sessionIndex, nameID, new Handler<String>() {
 			@Override
 			public void handle(String sessionId) {
 				if (sessionId != null) {
@@ -294,7 +297,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void createSession(final String userId, final String sId, final Handler<String> handler) {
+	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId, final Handler<String> handler) {
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
@@ -323,9 +326,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					}
 					final JsonObject now = MongoDb.now();
 					if (sId == null) {
-						mongo.save(SESSIONS_COLLECTION, new JsonObject()
+						JsonObject json = new JsonObject()
 								.putString("_id", sessionId).putString("userId", userId)
-								.putObject("created", now).putObject("lastUsed",now));
+								.putObject("created", now).putObject("lastUsed", now);
+						if (sessionIndex != null && nameId != null) {
+							json.putString("SessionIndex", sessionId).putString("NameID", nameId);
+						}
+						mongo.save(SESSIONS_COLLECTION, json);
 					} else {
 						mongo.update(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId),
 								new JsonObject().putObject("$set", new JsonObject().putObject("lastUsed", now)));
@@ -338,13 +345,29 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	private void doDrop(Message<JsonObject> message) {
-		String sessionId = message.body().getString("sessionId");
+	private void doDrop(final Message<JsonObject> message) {
+		final String sessionId = message.body().getString("sessionId");
+		boolean sessionMeta =  message.body().getBoolean("sessionMetadata", false);
 		if (sessionId == null || sessionId.trim().isEmpty()) {
 			sendError(message, "Invalid sessionId.");
 			return;
 		}
 
+		if (sessionMeta) {
+			final JsonObject query = new JsonObject().putString("_id", sessionId);
+			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonObject res = event.body().getObject("result");
+					dropSession(message, sessionId, res);
+				}
+			});
+		} else {
+			dropSession(message, sessionId, null);
+		}
+	}
+
+	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta) {
 		mongo.delete(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId));
 		JsonObject session =  null;
 		try {
@@ -376,7 +399,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				vertx.cancelTimer(info.timerId);
 			}
 		}
-		sendOK(message, new JsonObject().putString("status", "ok"));
+		JsonObject res = new JsonObject().putString("status", "ok");
+		if (meta != null) {
+			res.putObject("sessionMetadata", meta);
+		}
+		sendOK(message, res);
 	}
 
 
@@ -480,7 +507,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct child.id) as childrenIds, " +
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
-				"COLLECT(distinct gp.id) as groupsIds";
+				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP";
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
 				"<-[:PROVIDE]-(app:Application) " +
