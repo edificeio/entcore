@@ -1776,6 +1776,10 @@ function createCKEditorInstance(editor, scope, $compile, attributes){
 		}
 	});
 
+	editor.on('keyup', function(){
+		editor.find('[bind-html], [ng-transclude]').removeAttr('bind-html').removeAttr('ng-transclude');
+	});
+
 	return cke;
 }
 
