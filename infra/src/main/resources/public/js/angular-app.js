@@ -4667,8 +4667,9 @@ module.directive('sideNav', function(){
 						element.removeClass('slide');
 					}
 					$('body').attr('style', "");
-					$(element).attr('style', "");
-					$('body').addClass('transition')
+					element.attr('style', "");
+					$('body').addClass('transition');
+					element.height($(window).height());
 				},
 				mouseMove: function(event, newMouse, initialMouse){
 					if(Math.abs(newMouse.x - initialMouse.x) > Math.abs(newMouse.y - initialMouse.y)){
@@ -4685,7 +4686,6 @@ module.directive('sideNav', function(){
 				if($(window).width() <= maxWidth){
 					opener.prependTo(target);
 					ui.extendElement.draggable($('body'), draggableEvents);
-					ui.extendElement.draggable(element, draggableEvents);
 				}
 				else{
 					opener.detach();
