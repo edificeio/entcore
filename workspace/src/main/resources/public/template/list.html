@@ -25,7 +25,7 @@
 			<th scope="col" class="icon">
 				<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
 			</th>
-			<th scope="col" class="icon">
+			<th scope="col" class="icon zero-mobile">
 
 			</th>
 			<th scope="col" class="content" ng-click="orderByField('name')">
@@ -44,7 +44,7 @@
 				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
 				<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
 			</th>
-			<th scope="col" class="size" ng-click="orderByField('metadata.size')">
+			<th scope="col" class="size zero-mobile" ng-click="orderByField('metadata.size')">
 				<span translate content="size"></span>
 				<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
 				<i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
@@ -54,7 +54,7 @@
 		<tbody>
 		<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 			<td class="icon"><input type="checkbox" data-ng-model="folder.selected" /></td>
-			<td class="icon">
+			<td class="icon zero-mobile">
 				<div class="twelve cell">
 					<i class="folder"></i>
 					<i ng-if="folder.shared.length > 0" class="shared"></i>
@@ -71,7 +71,7 @@
 				<span class="badge" ng-if="folder.comments.length > 0" translate-attr="title" title="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 			</td>
 			<td class="date small-font">[[shortDate(folder.created)]]</td>
-			<td></td>
+			<td class="zero-mobile"></td>
 		</tr>
 		<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="folder === selectedFolders()[0] && folder.showComments">
 			<td colspan="7" class="container-cell">
@@ -91,7 +91,7 @@
 		</tr>
 		<tr ng-repeat="file in loadingFiles | filter:{loading:true}">
 			<td class="icon"></td>
-			<td class="icon">
+			<td class="icon zero-mobile">
 				<div class="twelve cell">
 					<loading-icon default="loading"></loading-icon>
 				</div>
@@ -100,11 +100,11 @@
 			<td class="user"><a>[[me.username]]</a></td>
 			<td></td>
 			<td class="date"></td>
-			<td class="size"></td>
+			<td class="size zero-mobile"></td>
 		</tr>
 		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
-			<td class="icon">
+			<td class="icon zero-mobile">
 				<div class="twelve cell">
 					<i class="[[document.metadata.contentType]]"></i>
 					<i ng-if="document.shared.length > 0" class="shared"></i>
@@ -114,7 +114,7 @@
 			<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
 			<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
 			<td class="date small-font">[[shortDate(document.created)]]</td>
-			<td class="size small-font">
+			<td class="size small-font zero-mobile">
 				[[formatDocumentSize(document.metadata.size)]]
 			</td>
 		</tr>

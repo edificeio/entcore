@@ -4693,8 +4693,8 @@ module.directive('sideNav', function(){
 			}
 			addRemoveOpener();
 			$(window).on('resize', addRemoveOpener);
-			$(document).bind('scroll', function() {
-				$(document).scrollLeft(0);
+			$(window).on('scroll', function(){
+				window.scrollTo(0, window.scrollY);
 			});
 		}
 	}
