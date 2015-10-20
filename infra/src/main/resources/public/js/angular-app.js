@@ -4674,12 +4674,6 @@ module.directive('sideNav', function(){
 					if(Math.abs(newMouse.x - initialMouse.x) > Math.abs(newMouse.y - initialMouse.y)){
 						event.preventDefault();
 					}
-				},
-				tick: function(mouse, delta, e){
-
-					if($('body').offset().left < 0){
-						$('body').offset().left = 0;
-					}
 				}
 			};
 

@@ -469,56 +469,57 @@ ui.extendElement = {
 				};
 				var moved = false;
 
-				var moveElement = function(e){
-					var parent = element.parents('.drawing-zone');
-					var parentPosition = parent.offset();
-					var boundaries = {
-						left: -Infinity,
-						top: -Infinity,
-						right: Infinity,
-						bottom: Infinity
+				var parent = element.parents('.drawing-zone');
+				var parentWidth = parent.width();
+				var parentHeight = parent.height();
+				var parentPosition = parent.offset();
+				var boundaries = {
+					left: -Infinity,
+					top: -Infinity,
+					right: Infinity,
+					bottom: Infinity
+				};
+
+				if(parentPosition) {
+					boundaries = {
+						left: parseInt(parentPosition.left),
+						top: parseInt(parentPosition.top),
+						right: parseInt(parentPosition.left + parent.width() - element.width()),
+						bottom: parseInt(parentPosition.top + parent.height() - element.height())
 					};
+				}
 
-					if(parentPosition) {
-						boundaries = {
-							left: parentPosition.left,
-							top: parentPosition.top,
-							right: parentPosition.left + parent.width() - element.width(),
-							bottom: parentPosition.top + parent.height() - element.height()
-						};
-					}
+				var elementWidth = element.width();
+				var elementHeight = element.height();
 
+				var moveElement = function(e){
 					var newOffset = {
-						top: parseInt((mouse.y - elementDistance.y) + ($(window).scrollTop() - initialScroll)),
+						top: parseInt((mouse.y - elementDistance.y) + (window.scrollY - initialScroll)),
 						left: parseInt(mouse.x - elementDistance.x)
 					};
 
-					if(mouse.x < boundaries.left + elementDistance.x && element.width() < parent.width()){
+					if(mouse.x < boundaries.left + elementDistance.x && elementWidth < parentWidth){
 						newOffset.left = boundaries.left;
 					}
-					if(mouse.x > boundaries.right + elementDistance.x && element.width() < parent.width()){
+					if(mouse.x > boundaries.right + elementDistance.x && elementWidth < parentWidth){
 						newOffset.left = boundaries.right - 2
 					}
-					if(mouse.y < boundaries.top + elementDistance.y && element.height() < parent.height()){
+					if(mouse.y < boundaries.top + elementDistance.y && elementHeight < parentHeight){
 						newOffset.top = boundaries.top;
 					}
-					if(mouse.y > boundaries.bottom + elementDistance.y && element.height() < parent.height()){
+					if(mouse.y > boundaries.bottom + elementDistance.y && elementHeight < parentHeight){
 						newOffset.top = boundaries.bottom - 2;
 					}
 
 					if(params.lock && params.lock.vertical){
-						newOffset.top = element.offset().top;
+						newOffset.top = parseInt(element.offset().top);
 					}
 					if(params.lock && params.lock.horizontal){
-						newOffset.left = element.offset().left;
+						newOffset.left = parseInt(element.offset().left);
 					}
 					element.offset(newOffset);
 
 					if(params && typeof params.tick === 'function'){
-						var delta = {
-							y: newOffset.top - elementDistance.y,
-							x: newOffset.left - elementDistance.x
-						};
 						params.tick(e);
 					}
 
