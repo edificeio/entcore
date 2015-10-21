@@ -456,11 +456,16 @@ module.directive('linker', function($compile){
 
 			var linkNode = $('<a />');
 			var appendText = '';
-			scope.$watch(function(){ return scope.display.chooseLink}, function(newVal){
+			scope.$watch(function(){ return scope.display.chooseLink }, function(newVal){
 				if(newVal){
 					if(!scope.linker.editor){
 						scope.linker.editor = scope.$eval(attributes.editor);
 					}
+
+					if(!scope.display.chooseLink[scope.linker.editor.name]){
+						return;
+					}
+
 					var contextEditor = scope.linker.editor;
 					var bookmarks = contextEditor.getSelection().createBookmarks(),
 						range = contextEditor.getSelection().getRanges()[0],
@@ -634,13 +639,13 @@ module.directive('linker', function($compile){
 				linkNode.appendHtml(appendText);
 				scope.linker.editor.insertElement(linkNode);
 
-				scope.display.chooseLink = false;
+				scope.display.chooseLink[scope.linker.editor.name] = false;
 				scope.linker.onChange();
 				scope.$apply();
 			};
 
 			scope.linker.cancel = function(){
-				scope.display.chooseLink = false;
+				scope.display.chooseLink[scope.linker.editor.name] = false;
 			};
 		}
 	}
@@ -1809,6 +1814,9 @@ module.directive('textEditor', function($compile){
 				if(!scope.display){
 					scope.display = {};
 				}
+				if(!scope.display.chooseLink){
+					scope.display.chooseLink = {};
+				}
 				scope.selected = {};
 				var editor = element.find('[contenteditable=true]');
 				var parentElement = element.parents('grid-cell');
@@ -1884,7 +1892,7 @@ module.directive('textEditor', function($compile){
 
 				$('body').on('click', '#cke_' + instance.name + ' .cke_button__linker', function(){
 					$('#cke_' + instance.name).hide();
-					scope.display.chooseLink = true;
+					scope.display.chooseLink[instance.name] = true;
 					scope.$apply('display');
 				});
 				$('body').on('click', '#cke_' + instance.name + ' .cke_button__html', function(){
@@ -1949,6 +1957,10 @@ module.directive('htmlEditor', function($compile, $parse){
 				scope.notify = scope.$eval(attributes.notify);
 				if(!scope.display){
 					scope.display = {};
+				}
+
+				if(!scope.display.chooseLink){
+					scope.display.chooseLink = {};
 				}
 
 				scope.selected = { files: [], link: '' };
@@ -2028,7 +2040,7 @@ module.directive('htmlEditor', function($compile, $parse){
 					}
 				});
 
-				$('body').on('click', '.cke_button__upload', function(){
+				$('body').on('click', '#cke_' + contextEditor.name + ' .cke_button__upload', function(){
 					var resize = editor.width();
 					if(workspace.thumbnails.indexOf(resize) === -1){
 						workspace.thumbnails += '&thumbnail=' + resize + 'x0';
@@ -2039,24 +2051,24 @@ module.directive('htmlEditor', function($compile, $parse){
 					scope.$apply('format');
 				});
 
-				$('body').on('click', '.cke_button__audio', function(){
+				$('body').on('click', '#cke_' + contextEditor.name + ' .cke_button__audio', function(){
 					scope.selectFiles = true;
 					scope.format = 'audio';
 					scope.$apply('selectFiles');
 					scope.$apply('format');
 				});
 
-				$('body').on('click', '.cke_button__linker', function(){
-					scope.display.chooseLink = true;
+				$('body').on('click', '#cke_' + contextEditor.name + ' .cke_button__linker', function(){
+					scope.display.chooseLink[contextEditor.name] = true;
 					scope.$apply('chooseLink');
 				});
 
-                $('body').on('click', '.cke_button__video', function(){
+                $('body').on('click', '#cke_' + contextEditor.name + ' .cke_button__video', function(){
                     scope.inputVideo = true;
                     scope.$apply('inputVideo');
                 });
 
-				$('body').on('click', '.cke_button__html', function(){
+				$('body').on('click', '#cke_' + contextEditor.name + ' .cke_button__html', function(){
 					scope.editHtml = true;
 					scope.selected.html = editor.html();
 					scope.$apply('editHtml');
