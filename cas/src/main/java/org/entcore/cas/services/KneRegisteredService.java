@@ -127,7 +127,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 				case "Teacher" :
 					rootProfiles = createElement("ENTPersonProfils", doc);
 					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_ENS", doc));
-					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_TUT", doc));
+					//rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_TUT", doc));
 					additionalAttributes.add(rootProfiles);
 					additionalAttributes.add(createTextElement("ENTEleveMEF", "", doc));
 					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
