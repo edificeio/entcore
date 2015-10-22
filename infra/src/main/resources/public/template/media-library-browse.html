@@ -28,32 +28,32 @@
 
 <div class="row reduce-block-four search">
 	<h2 translate content="library.browse.title"></h2>
-	<input type="search" ng-model="display.search" translate attr="placeholder" placeholder="search" ng-change="updateSearch()" class="six cell" />
+	<input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="updateSearch()" class="six cell" />
 	<hr />
 </div>
 <div class="row browse">
 	<nav class="four cell vertical">
 		<ul>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }" translate content="workspace.myDocuments"></a>
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }"><i18n>workspace.myDocuments</i18n></a>
 				<div>
 					<ul ng-include="'list-folders'">
 					</ul>
 				</div>
 			</li>
 			<li>
-				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }" translate content="workspace.sharedDocuments"></a>
+				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }"><i18n>workspace.sharedDocuments</i18n></a>
 			</li>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }" translate content="workspace.appDocuments"></a>
+				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }"><i18n>workspace.appDocuments</i18n></a>
 			</li>
 			<li workflow="workspace.create" ng-if="visibility === 'public'">
-				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }" translate content="workspace.publicDocuments"></a>
+				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }"><i18n>workspace.publicDocuments</i18n></a>
 			</li>
 		</ul>
 	</nav>
 	<div class="cell eight height-five">
-		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center" translate content="library.browse.notfound"></div>
+		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
 		<div class="absolute icons-view" style="overflow: auto">
 			<div class="element reduce-block-six" ng-repeat="folder in folders">
 				<div class="container" ng-click="openFolder(folder)">
@@ -67,6 +67,9 @@
 				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
 					<div class="clip">
 						<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+						<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
+							<img skin-src="/img/illustrations/loading.gif" />
+						</div>
 					</div>
 				</div>
 				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
@@ -81,7 +84,7 @@
 		</div>
 	</div>
 	<div class="row" ng-if="multiple">
-		<input type="button" class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()" translate attr="value" value="library.browse.add" />
+		<input type="button" class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()" ng-disabled="display.loading" i18n-value="library.browse.add" />
 	</div>
 </div>
 <div class="row"></div>

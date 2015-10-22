@@ -5521,7 +5521,9 @@ function MediaLibrary($scope){
 			if($scope.visibility === 'public'){
 				copyFn = document.publicDuplicate;
 			}
-			copyFn.call(document, function(newFile){
+			$scope.display.loading = [document];
+				copyFn.call(document, function(newFile){
+				$scope.display.loading = [];
 				if($scope.multiple){
 					$scope.$parent.ngModel = [newFile];
 					$scope.$parent.$apply('ngModel');
@@ -5543,12 +5545,15 @@ function MediaLibrary($scope){
 		else{
 			var duplicateDocuments = [];
 			var documentsCount = 0;
+			$scope.display.loading = selectedDocuments;
 			selectedDocuments.forEach(function(doc){
 				var copyFn = doc.protectedDuplicate.bind(doc);
 				if($scope.visibility === 'public'){
 					copyFn = doc.publicDuplicate.bind(doc);
 				}
+
 				copyFn(function(newFile){
+					$scope.display.loading = [];
 					duplicateDocuments.push(newFile);
 					documentsCount++;
 					if(documentsCount === selectedDocuments.length){

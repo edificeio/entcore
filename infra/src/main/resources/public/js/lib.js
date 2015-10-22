@@ -411,7 +411,7 @@ function Collection(obj){
 			this.trigger('push');
 		},
 		load: function(data, cb, notify){
-			this.all = [];
+			this.all.splice(0, this.all.length);
 			this.addRange(data, cb, notify);
 			this.trigger('sync');
 		},
