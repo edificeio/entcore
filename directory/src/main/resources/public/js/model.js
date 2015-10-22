@@ -328,7 +328,7 @@ function Directory(){
 		match: function(){
 			return this.all;
 		},
-		searchDirectory: function(search, filters){
+		searchDirectory: function(search, filters, callback){
 			var searchTerm = encodeURIComponent(search.toLowerCase());
 			var structure = filters.structure ? filters.structure : "";
 			var profile = filters.profile ? filters.profile : "";
@@ -341,6 +341,10 @@ function Directory(){
 					}
 					return user;
 				}));
+
+				if(typeof callback === 'function'){
+					callback();
+				}
 			}.bind(this));
 		}
 	})

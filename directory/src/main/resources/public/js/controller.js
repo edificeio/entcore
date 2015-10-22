@@ -227,8 +227,6 @@ function DirectoryController($scope, route, date, template){
 }
 
 function ClassAdminController($scope, date, notify){
-	model.directory.users.searchDirectory('', '');
-
 	model.network.sync();
 	model.network.one('schools.sync', function(){
 		model.network.schools.forEach(function(school){
@@ -366,13 +364,16 @@ function ClassAdminController($scope, date, notify){
 
 	$scope.addUser = function(){
 		$scope.clearSearch();
-		$scope.existingMatchs = usersMatch.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
-		if($scope.existingMatchs.length > 0 && $scope.display.show === 'Student'){
-			$scope.openView('link-user', 'lightbox');
-			return;
-		}
-
-		$scope.createUser();
+		model.directory.users.searchDirectory($scope.newUser.lastName, '', function(){
+			$scope.existingMatchs = usersMatch.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
+			if($scope.existingMatchs.length > 0 && $scope.display.show === 'Student'){
+				$scope.openView('link-user', 'lightbox');
+				return;
+			}
+			$scope.$apply(function(){
+				$scope.createUser();
+			});
+		});
 	};
 
 	$scope.blockUsers = function(){
