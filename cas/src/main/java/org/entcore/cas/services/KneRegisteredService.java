@@ -89,13 +89,13 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			Element rootProfiles;
-			String profile = data.getArray("type").size() > 0 ? data.getArray("type").get(0).toString() : "";
+			String profile = data.getArray("type", new JsonArray()).size() > 0 ? data.getArray("type").get(0).toString() : "";
 			switch(profile) {
 				case "Student" :
 					rootProfiles = createElement("ENTPersonProfils", doc);
 					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_ELV", doc));
 					additionalAttributes.add(rootProfiles);
-					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module").length() > 5 ? data.getString("module").substring(0, 6) : data.getString("module"), doc));
+					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module", "").length() > 5 ? data.getString("module").substring(0, 6) : data.getString("module", ""), doc));
 					addStringArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							return input.length() > 5 ? input.substring(0, 6) : input;
