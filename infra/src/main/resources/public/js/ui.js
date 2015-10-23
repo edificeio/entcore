@@ -138,7 +138,7 @@ var ui = (function(){
 
 		$('.remove-fout').removeClass('remove-fout');
 
-		$('body').on('click', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
+		$('body').on('click touchstart', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
 			if($(this).attr('for')){
 				inputFile = $('#' + $(this).attr('for'));
@@ -150,10 +150,12 @@ var ui = (function(){
 			if($(this).attr('type') === 'text'){
 				if(!$(this).data('changed')){
 					inputFile.click();
+					inputFile.trigger('touchstart');
 				}
 			}
 			else{
 				inputFile.click();
+				inputFile.trigger('touchstart');
 			}
 			$('[data-display-file]').data('changed', true);
 
