@@ -51,10 +51,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 import org.vertx.java.platform.Container;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ArchiveController extends BaseController {
 
@@ -64,7 +61,7 @@ public class ArchiveController extends BaseController {
 	private enum ArchiveEvent { ACCESS }
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(Vertx vertx, final Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		String exportPath = container.config()
@@ -78,10 +75,10 @@ public class ArchiveController extends BaseController {
 		}
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 		Boolean cluster = (Boolean) server.get("cluster");
-		Map<String, Boolean> userExport;
+		final Map<String, Long> userExport;
 		if (Boolean.TRUE.equals(cluster)) {
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-			userExport = cm.getSyncMap("archives");
+			userExport = cm.getSyncMap(Archive.ARCHIVES);
 		} else {
 			userExport = new HashMap<>();
 		}
@@ -91,6 +88,21 @@ public class ArchiveController extends BaseController {
 		exportService = new FileSystemExportService(vertx.fileSystem(),
 				eb, exportPath, expectedExports, notification, storage, userExport);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
+		Long periodicUserClear = container.config().getLong("periodicUserClear");
+		if (periodicUserClear != null) {
+			vertx.setPeriodic(periodicUserClear, new Handler<Long>() {
+				@Override
+				public void handle(Long event) {
+					final long limit = System.currentTimeMillis() - container.config().getLong("userClearDelay", 3600000l);
+					Set<Map.Entry<String, Long>> entries = new HashSet<>(userExport.entrySet());
+					for (Map.Entry<String, Long> e: entries) {
+						if (e.getValue() == null || e.getValue() < limit) {
+							userExport.remove(e.getKey());
+						}
+					}
+				}
+			});
+		}
 	}
 
 	@Get("")

@@ -57,10 +57,10 @@ public class FileSystemExportService implements ExportService {
 	private final NotificationHelper notification;
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
-	private final Map<String, Boolean> userExportInProgress;
+	private final Map<String, Long> userExportInProgress;
 
 	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath, Set<String> expectedExports,
-			NotificationHelper notification, Storage storage, Map<String, Boolean> userExportInProgress) {
+			NotificationHelper notification, Storage storage, Map<String, Long> userExportInProgress) {
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
@@ -77,8 +77,9 @@ public class FileSystemExportService implements ExportService {
 			@Override
 			public void handle(Boolean event) {
 				if (Boolean.FALSE.equals(event)) {
-					final String exportId = System.currentTimeMillis() + "_" +user.getUserId();
-					userExportInProgress.put(user.getUserId(), true);
+					long now = System.currentTimeMillis();
+					final String exportId = now + "_" +user.getUserId();
+					userExportInProgress.put(user.getUserId(), now);
 					final String exportDirectory = exportPath + File.separator + exportId;
 					fs.mkdir(exportDirectory, true, new Handler<AsyncResult<Void>>() {
 						@Override
@@ -122,7 +123,7 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void waitingExport(String exportId, final Handler<Boolean> handler) {
-		handler.handle(userExportInProgress.get(getUserId(exportId)));
+		handler.handle(userExportInProgress.get(getUserId(exportId)) != null);
 	}
 
 	@Override
@@ -218,7 +219,7 @@ public class FileSystemExportService implements ExportService {
 											userExportInProgress.remove(getUserId(exportId));
 											publish(event);
 										} else {
-											userExportInProgress.put(getUserId(exportId), false);
+											userExportInProgress.put(getUserId(exportId), null);
 											MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject()
 													.putString("file_id", exportId)
 													.putObject("date", MongoDb.now()), new Handler<Message<JsonObject>>() {
