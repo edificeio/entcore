@@ -123,7 +123,7 @@ public class DefaultClassService implements ClassService {
 							String customReturn =
 									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 									"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {name : {profile}}), " +
-									"c-[:BELONGS]->(s:School) " +
+									"c-[:BELONGS]->(s:Structure) " +
 									"WHERE visibles.id = {uId} " +
 									"CREATE UNIQUE visibles-[:IN]->cpg " +
 									addRelativeToClassGroup +
