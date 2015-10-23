@@ -368,6 +368,7 @@ function ClassAdminController($scope, date, notify){
 			$scope.existingMatchs = usersMatch.call(model.directory.users, $scope.newUser.firstName + ' ' + $scope.newUser.lastName);
 			if($scope.existingMatchs.length > 0 && $scope.display.show === 'Student'){
 				$scope.openView('link-user', 'lightbox');
+                $scope.$apply();
 				return;
 			}
 			$scope.$apply(function(){
