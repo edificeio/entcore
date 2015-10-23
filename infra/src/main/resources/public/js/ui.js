@@ -248,6 +248,36 @@ var ui = (function(){
 
 
 ui.extendElement = {
+	touchEvents: function(element, params){
+		//swipes
+		element.on('touchstart', function(e){
+			var initialMouse = mouse = {
+				y: e.originalEvent.touches[0].clientY,
+				x: e.originalEvent.touches[0].clientX
+			};
+			element.on('touchmove', function(e){
+				mouse = {
+					y: e.originalEvent.touches[0].clientY,
+					x: e.originalEvent.touches[0].clientX
+				};
+			});
+			element.on('touchleave touchend', function(e){
+				if(initialMouse.x + 150 < mouse.x){
+					element.trigger('swipe-right');
+				}
+				if(initialMouse.x - 150 > mouse.x){
+					element.trigger('swipe-left');
+				}
+				if(initialMouse.y - 150 > mouse.y){
+					element.trigger('swipe-up');
+				}
+				if(initialMouse.y - 150 > mouse.y){
+					element.trigger('swipe-bottom');
+				}
+				element.off('touchleave touchend touchmove');
+			});
+		});
+	},
 	resizable: function(element, params){
 		if(!params){
 			params = {};

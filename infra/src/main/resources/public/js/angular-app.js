@@ -4661,35 +4661,6 @@ module.directive('sideNav', function(){
 
 			});
 
-			var draggableEvents = {
-				lock: {
-					vertical: true
-				},
-				allowDefault: true,
-				startDrag: function(){
-					$('body').removeClass('transition');
-				},
-				mouseUp: function(){
-					if($('body').offset().left > element.width() / 2){
-						$('body').addClass('slide');
-						element.addClass('slide');
-					}
-					else{
-						$('body').removeClass('slide');
-						element.removeClass('slide');
-					}
-					$('body').attr('style', "");
-					element.attr('style', "");
-					$('body').addClass('transition');
-					element.height($(window).height());
-				},
-				mouseMove: function(event, newMouse, initialMouse){
-					if(Math.abs(newMouse.x - initialMouse.x) > Math.abs(newMouse.y - initialMouse.y)){
-						event.preventDefault();
-					}
-				}
-			};
-
 			if(attributes.maxWidth){
 				maxWidth = parseInt(attributes.maxWidth);
 			}
@@ -4697,7 +4668,16 @@ module.directive('sideNav', function(){
 				element.height($(window).height());
 				if($(window).width() <= maxWidth){
 					opener.prependTo(target);
-					ui.extendElement.draggable($('body'), draggableEvents);
+					var body = $('body');
+					ui.extendElement.touchEvents(body);
+					body.on('swipe-right', function(){
+						$('body').addClass('slide');
+						element.addClass('slide');
+					});
+					body.on('swipe-left', function(){
+						$('body').removeClass('slide');
+						element.removeClass('slide');
+					});
 				}
 				else{
 					opener.detach();
