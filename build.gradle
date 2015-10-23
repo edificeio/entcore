@@ -173,6 +173,7 @@ project(':feeder') {
 project(':archive') {
   dependencies {
     compile project(':common')
+    compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
   }
 }
 

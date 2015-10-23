@@ -19,9 +19,11 @@
 
 package org.entcore.archive.services.impl;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.http.Renders;
+import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -30,9 +32,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.FileSystem;
@@ -216,11 +216,19 @@ public class FileSystemExportService implements ExportService {
 													+ res.getString("message"));
 											event.body().putString("message", "zip.saving.error");
 											userExportInProgress.remove(getUserId(exportId));
+											publish(event);
 										} else {
 											userExportInProgress.put(getUserId(exportId), false);
+											MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject()
+													.putString("file_id", exportId)
+													.putObject("date", MongoDb.now()), new Handler<Message<JsonObject>>() {
+												@Override
+												public void handle(Message<JsonObject> res) {
+													publish(event);
+												}
+											});
 										}
 										deleteTempZip(exportId);
-										publish(event);
 									}
 								});
 							}
@@ -262,6 +270,7 @@ public class FileSystemExportService implements ExportService {
 				}
 			}
 		});
+		MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().putString("file_id", exportId));
 		String userId = getUserId(exportId);
 		userExportInProgress.remove(userId);
 	}
