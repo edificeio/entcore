@@ -604,7 +604,7 @@ module.directive('linker', function($compile){
 
 					if(scope.linker.params.appPrefix){
 						linkNode.setAttribute('data-app-prefix', scope.linker.params.appPrefix);
-						if(scope.linker.params.appPrefix !== 'workspace' && !scope.linker.externalLink){
+						if(scope.linker.params.appPrefix === appPrefix && !scope.linker.externalLink){
 							linkNode.data('reload', true);
 						}
 					}
