@@ -2139,6 +2139,8 @@ module.directive('loadingIcon', function($compile){
 		restrict: 'E',
 		link: function($scope, $element, $attributes){
 			var addImage = function(){
+                if($('#theme').length === 0)
+                    return;
 				var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
 				$('<img>')
 					.attr('src', loadingIllustrationPath)
