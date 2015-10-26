@@ -479,8 +479,9 @@ module.directive('linker', function($compile){
 							scope.newNode = true;
 							return;
 						}
-
 					}
+
+                    scope.newNode = false;
 
 					scope.linker.params.link = node.attr('href');
 					scope.linker.externalLink = !node.attr('data-id');
@@ -619,25 +620,34 @@ module.directive('linker', function($compile){
 					}
 				}
 
-				var appendText = "",
-					childList = fragment.getChildren(),
-					childCount = childList.count();
-				for(var i = 0; i < childCount; i++){
-					var child = childList.getItem(i);
-					if(child.$.nodeName === 'A' || !child.getOuterHtml){
-						appendText += child.getText();
-					}
-					else{
-						appendText += child.getOuterHtml();
-					}
-				}
+                var appendText = "",
+                    childList = fragment.getChildren(),
+                    childCount = childList.count();
 
-				if(childCount === 0){
-					appendText = scope.linker.params.link;
-				}
+                if(!scope.newNode && childCount === 0){
+                    appendText = range.startContainer.getText();
+                } else {
+    				for(var i = 0; i < childCount; i++){
+    					var child = childList.getItem(i);
+    					if(child.$.nodeName === 'A' || !child.getOuterHtml){
+    						appendText += child.getText();
+    					}
+    					else{
+    						appendText += child.getOuterHtml();
+    					}
+    				}
+                    if(childCount === 0){
+                        appendText = scope.linker.params.link;
+                    }
+                }
 
 				linkNode.appendHtml(appendText);
-				scope.linker.editor.insertElement(linkNode);
+                if(!scope.newNode && childCount === 0){
+                    linkNode.insertAfter(range.startContainer);
+                    range.startContainer.remove(false);
+                } else {
+                    scope.linker.editor.insertElement(linkNode);
+                }
 
 				scope.display.chooseLink[scope.linker.editor.name] = false;
 				scope.linker.onChange();
