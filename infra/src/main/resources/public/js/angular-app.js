@@ -4660,14 +4660,12 @@ module.directive('sideNav', function(){
 			element.addClass('side-nav');
 			$('body').addClass('transition');
 
-			var opener = $('<div class="mobile-nav-opener"></div>');
+			var opener = $('.mobile-nav-opener');
 			opener.on('click', function(){
 				if(!element.hasClass('slide')){
-					$('body').addClass('slide');
 					element.addClass('slide');
 				}
 				else{
-					$('body').removeClass('slide');
 					element.removeClass('slide');
 				}
 
@@ -4676,30 +4674,22 @@ module.directive('sideNav', function(){
 			if(attributes.maxWidth){
 				maxWidth = parseInt(attributes.maxWidth);
 			}
-			function addRemoveOpener(){
+			function addRemoveEvents(){
 				element.height($(window).height());
 				if($(window).width() <= maxWidth){
-					opener.prependTo(target);
 					var body = $('body');
-					ui.extendElement.touchEvents(body);
+					ui.extendElement.touchEvents(body, { allowDefault: true });
+					ui.extendElement.touchEvents(element);
 					body.on('swipe-right', function(){
-						$('body').addClass('slide');
 						element.addClass('slide');
 					});
-					body.on('swipe-left', function(){
-						$('body').removeClass('slide');
+					element.on('swipe-left', function(){
 						element.removeClass('slide');
 					});
 				}
-				else{
-					opener.detach();
-				}
 			}
-			addRemoveOpener();
-			$(window).on('resize', addRemoveOpener);
-			$(window).on('scroll', function(){
-				window.scrollTo(0, window.scrollY);
-			});
+			addRemoveEvents();
+			$(window).on('resize', addRemoveEvents);
 		}
 	}
 });

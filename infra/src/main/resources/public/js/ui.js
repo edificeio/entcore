@@ -251,6 +251,9 @@ var ui = (function(){
 
 ui.extendElement = {
 	touchEvents: function(element, params){
+		if(!params){
+			params = {};
+		}
 		//swipes
 		element.on('touchstart', function(e){
 			var initialMouse = mouse = {
@@ -258,6 +261,9 @@ ui.extendElement = {
 				x: e.originalEvent.touches[0].clientX
 			};
 			element.on('touchmove', function(e){
+				if(!params.allowDefault){
+					e.preventDefault();
+				}
 				mouse = {
 					y: e.originalEvent.touches[0].clientY,
 					x: e.originalEvent.touches[0].clientX
