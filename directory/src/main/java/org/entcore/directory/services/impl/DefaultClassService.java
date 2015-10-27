@@ -20,7 +20,9 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.Directory;
@@ -104,29 +106,19 @@ public class DefaultClassService implements ClassService {
 			return;
 		}
 		neo.execute("MATCH (u:`User` {id : {id}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"RETURN p.name as type", new JsonObject().putString("id", userId),
+				"RETURN distinct p.name as type", new JsonObject().putString("id", userId),
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> r) {
 						JsonArray res = r.body().getArray("result");
 						if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
-							String t = ((JsonObject)res.get(0)).getString("type");
-							String addRelativeToClassGroup = " ";
-							if ("Student".equals(t)) {
-								addRelativeToClassGroup =
-										"WITH c, visibles, s " +
-										"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)" +
-										"-[:HAS_PROFILE]->(p:Profile {name : 'Relative'}), " +
-										"visibles-[:RELATED]->(relative:User)" +
-										"CREATE UNIQUE relative-[:IN]->cpg ";
-							}
+							final String t = ((JsonObject)res.get(0)).getString("type");
 							String customReturn =
 									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 									"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {name : {profile}}), " +
 									"c-[:BELONGS]->(s:Structure) " +
 									"WHERE visibles.id = {uId} " +
 									"CREATE UNIQUE visibles-[:IN]->cpg " +
-									addRelativeToClassGroup +
 									"RETURN DISTINCT visibles.id as id, s.id as schoolId";
 							JsonObject params = new JsonObject()
 									.putString("classId", classId)
@@ -136,10 +128,33 @@ public class DefaultClassService implements ClassService {
 									new Handler<JsonArray>() {
 
 								@Override
-								public void handle(JsonArray users) {
+								public void handle(final JsonArray users) {
 									if (users != null && users.size() == 1) {
-										result.handle(new Either.Right<String, JsonObject>(
-												(JsonObject) users.get(0)));
+										if ("Student".equals(t)) {
+											String query =
+													"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)" +
+													"-[:HAS_PROFILE]->(p:Profile {name : 'Relative'}), " +
+													"(u:User {id: {uId}})-[:RELATED]->(relative: User) " +
+													"CREATE UNIQUE relative-[:IN]->cpg " +
+													"RETURN count(relative) as relativeNb";
+
+											JsonObject params = new JsonObject()
+												.putString("classId", classId)
+												.putString("uId", userId);
+
+											neo.execute(query, params, Neo4jResult.validEmptyHandler(new Handler<Either<String,JsonObject>>() {
+												public void handle(Either<String, JsonObject> event) {
+													if(event.isLeft()){
+														result.handle(new Either.Left<String, JsonObject>("error.while.attaching.relatives"));
+													} else {
+														result.handle(new Either.Right<String, JsonObject>((JsonObject) users.get(0)));
+													}
+												}
+											}));
+										} else {
+											result.handle(new Either.Right<String, JsonObject>(
+													(JsonObject) users.get(0)));
+										}
 									} else {
 										result.handle(new Either.Left<String, JsonObject>("user.not.visible"));
 									}
