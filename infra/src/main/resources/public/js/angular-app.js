@@ -730,6 +730,11 @@ module.directive('calendar', function($compile){
 					refreshCalendar();
 				};
 			};
+
+			model.calendar.on('date-change', function(){
+				refreshCalendar();
+			})
+
 			$timeout(function(){
 				refreshCalendar();
 				$scope.$watchCollection('items', refreshCalendar);

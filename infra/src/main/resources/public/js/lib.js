@@ -1399,37 +1399,46 @@ var calendar = {
 		}
 		this.week = data.week;
 		this.year = data.year;
-		this.collection(calendar.Day);
-		this.dayForWeek = new Date();
+
+		var that = this;
+		this.dayForWeek = moment();
+
 		if(data.week){
 			if(data.year)
-				this.dayForWeek = moment().year(data.year).week(data.week).day(1).toDate();
+				that.dayForWeek = moment().year(data.year).week(data.week).day(1);
 			else
-				this.dayForWeek = moment().week(data.week).day(1).toDate();
-		}
-		function dayOfYear(dayOfWeek){
-			var week = data.week;
-			var year = data.year;
-			if(dayOfWeek === 0){
-				week ++;
-			}
-			return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
+				that.dayForWeek = moment().week(data.week).day(1);
 		}
 
-		this.days.load([{ name: 'monday', index:  dayOfYear(1) },
-			{ name: 'tuesday', index: dayOfYear(2) },
-			{ name: 'wednesday', index: dayOfYear(3) },
-			{ name: 'thursday', index: dayOfYear(4) },
-			{ name: 'friday', index: dayOfYear(5) },
-			{ name: 'saturday', index: dayOfYear(6) },
-			{ name: 'sunday', index: dayOfYear(0) }]);
+		this.collection(calendar.Day, {
+			sync: function(){
+				function dayOfYear(dayOfWeek){
+					var week = that.dayForWeek.week();
+					var year = that.dayForWeek.year();
+					if(dayOfWeek === 0){
+						week ++;
+					}
+					return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
+				}
+
+				that.days.load([{ name: 'monday', index:  dayOfYear(1) },
+					{ name: 'tuesday', index: dayOfYear(2) },
+					{ name: 'wednesday', index: dayOfYear(3) },
+					{ name: 'thursday', index: dayOfYear(4) },
+					{ name: 'friday', index: dayOfYear(5) },
+					{ name: 'saturday', index: dayOfYear(6) },
+					{ name: 'sunday', index: dayOfYear(0) }]);
+
+				that.firstDay = moment().year(that.dayForWeek.year()).week(that.dayForWeek.week()).day(1);
+			}
+		});
+
+		this.days.sync();
 
 		this.collection(calendar.TimeSlot);
 		for(var i = calendar.startOfDay; i < calendar.endOfDay; i++){
 			this.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i+1 }))
 		}
-
-		this.firstDay = moment().year(this.year).week(this.week).day(1);
 	},
 	startOfDay: 7,
 	endOfDay: 20,
@@ -1453,6 +1462,12 @@ calendar.Calendar.prototype.addScheduleItems = function(items){
 			refDay.add('day', 1);
 		});
 	});
+};
+
+calendar.Calendar.prototype.setDate = function(momentDate){
+	this.dayForWeek = momentDate;
+	this.days.sync();
+	this.trigger('date-change');
 };
 
 calendar.Calendar.prototype.clearScheduleItems = function(){
