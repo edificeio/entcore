@@ -957,7 +957,7 @@ module.directive('colorSelect', function($compile){
 				'</div>' +
 			'</div>',
 		link: function(scope, element, attributes){
-			scope.colors = ['transparent', 'white', 'pink', 'orange', 'black', 'blue', 'green', 'purple'];
+			scope.colors = ['orange', 'pink', 'purple', 'blue', 'green', 'black', 'white', 'transparent'];
 			scope.setColor = function(color){
 				scope.ngModel = color;
 			};
