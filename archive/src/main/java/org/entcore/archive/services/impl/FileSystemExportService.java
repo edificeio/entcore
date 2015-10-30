@@ -123,7 +123,8 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void waitingExport(String exportId, final Handler<Boolean> handler) {
-		handler.handle(userExportInProgress.get(getUserId(exportId)) != null);
+		Long v = userExportInProgress.get(getUserId(exportId));
+		handler.handle(v != null && v > 0);
 	}
 
 	@Override
@@ -219,7 +220,7 @@ public class FileSystemExportService implements ExportService {
 											userExportInProgress.remove(getUserId(exportId));
 											publish(event);
 										} else {
-											userExportInProgress.put(getUserId(exportId), null);
+											userExportInProgress.put(getUserId(exportId), -1l);
 											MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject()
 													.putString("file_id", exportId)
 													.putObject("date", MongoDb.now()), new Handler<Message<JsonObject>>() {
