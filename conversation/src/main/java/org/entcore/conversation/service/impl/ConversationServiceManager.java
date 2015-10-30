@@ -188,7 +188,12 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 				.add(
 				"MATCH (c:Conversation) " +
 				"WHERE NOT(c.userId IN ['" + Joiner.on("','").join(userIds) + "']) AND c.active <> {false} " + filter +
-				"SET c.active = {false} ", disableParams);
+				"SET c.active = {false} ", disableParams)
+				.add(
+				"MATCH (:Application {name : {application}})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(:Role)" +
+				"<-[:AUTHORIZED]-(:Group)<-[:IN]-(u:User)-[:HAS_CONVERSATION]->(c:Conversation {active:false}) " +
+				"SET c.active = true;", new JsonObject().putString("application", applicationName)
+				);
 		Handler<Message<JsonObject>> h = null;
 		if (message != null) {
 			h = new Handler<Message<JsonObject>>() {
@@ -218,8 +223,10 @@ public class ConversationServiceManager implements AppRegistryEventsService {
 						a.size() == 1 && a.get(0) != null) {
 					JsonObject j = a.get(0);
 					users.handle(j.getArray("users"));
-				} else {
+				} else if ("ok".equals(message.body().getString("status"))) {
 					users.handle(null);
+				} else {
+					users.handle(new JsonArray());
 				}
 			}
 		});
