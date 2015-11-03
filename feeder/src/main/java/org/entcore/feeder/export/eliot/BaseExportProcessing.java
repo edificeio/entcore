@@ -44,11 +44,15 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 	private final int nbByFile;
 	protected final JsonObject exportMapping;
 	protected final String path;
+	protected final boolean concat;
+	private XMLEventWriter xmlEventWriter;
+	private XMLEventFactory xmlEventFactory;
 
-	protected BaseExportProcessing(String exportMapping, int nbByFile, String path) {
+	protected BaseExportProcessing(String exportMapping, int nbByFile, String path, boolean concat) {
 		this.path = path;
 		this.exportMapping = JsonUtil.loadFromResource(exportMapping);
 		this.nbByFile = nbByFile;
+		this.concat = concat;
 	}
 
 	protected void export(final Handler<Message<JsonObject>> handler, final ExportProcessing exportProcessing) {
@@ -64,6 +68,14 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 				handlers[handlers.length - 1] = new VoidHandler() {
 					@Override
 					protected void handle() {
+						if (concat && xmlEventWriter != null) {
+							try {
+								closeDocument();
+							} catch (IOException | XMLStreamException e) {
+								error(e, handler);
+								return;
+							}
+						}
 						if (exportProcessing != null) {
 							exportProcessing.start(handler);
 						} else {
@@ -81,7 +93,18 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 								public void handle(JsonArray objects) {
 									if (objects != null && objects.size() > 0) {
 										try {
-											writeDocument(j, objects);
+											if (!concat) {
+												writeDocument(j, objects);
+											} else {
+												if (xmlEventWriter == null) {
+													xmlEventFactory = XMLEventFactory.newInstance();
+													openDocument();
+												}
+												for (Object o : objects) {
+													if (!(o instanceof JsonObject)) continue;
+													writeElement(xmlEventWriter, xmlEventFactory, (JsonObject) o);
+												}
+											}
 										} catch (IOException | XMLStreamException e) {
 											error(e, handler);
 											return;
@@ -97,6 +120,24 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 				handlers[0].handle(null);
 			}
 		});
+	}
+
+	private void openDocument() throws IOException, XMLStreamException {
+		final String p = path + "0000.xml";
+		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+		xmlEventWriter = outputFactory.createXMLEventWriter(new FileWriter(p));
+		xmlEventWriter.add(xmlEventFactory.createStartDocument());
+		xmlEventWriter.add(xmlEventFactory.createDTD("\n<!DOCTYPE ficAlimMENESR SYSTEM \"ficAlimMENESR.dtd\">\n"));
+		xmlEventWriter.add(xmlEventFactory.createStartElement("", "", "ficAlimMENESR"));
+		xmlEventWriter.add(xmlEventFactory.createDTD("\n\n"));
+	}
+
+
+	private void closeDocument() throws IOException, XMLStreamException {
+		xmlEventWriter.add(xmlEventFactory.createEndElement("", "", "ficAlimMENESR"));
+		xmlEventWriter.add(xmlEventFactory.createEndDocument());
+		xmlEventWriter.flush();
+		xmlEventWriter.close();
 	}
 
 	private void writeDocument(int j, JsonArray objects) throws IOException, XMLStreamException {

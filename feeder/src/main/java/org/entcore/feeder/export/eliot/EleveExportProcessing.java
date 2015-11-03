@@ -29,15 +29,16 @@ public class EleveExportProcessing extends UserExportProcessing {
 	private final String date;
 	private final String stdPrefix;
 
-	public EleveExportProcessing(String path, String date, String stdPrefix) {
-		super("dictionary/export/eliot/Eleve.json", 5000, path, new JsonArray().add("Student"), "Eleve", date, stdPrefix);
+	public EleveExportProcessing(String path, String date, String stdPrefix, boolean concat) {
+		super("dictionary/export/eliot/Eleve.json", 5000, path, new JsonArray().add("Student"),
+				"Eleve", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new PersRelEleveExportProcessing(basePath, date, stdPrefix));
+		export(handler, new PersRelEleveExportProcessing(basePath, date, stdPrefix, concat));
 	}
 
 }

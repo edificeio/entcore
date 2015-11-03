@@ -37,8 +37,8 @@ public class PersALExportProcessing extends BaseExportProcessing {
 
 	private static final JsonArray function = new JsonArray().add("ADMIN_LOCAL");
 
-	public PersALExportProcessing(String path, String date) {
-		super("dictionary/export/eliot/PersAL.json", 5000, path + File.separator + "Complet_" + date + "_PersAL_");
+	public PersALExportProcessing(String path, String date, boolean concat) {
+		super("dictionary/export/eliot/PersAL.json", 5000, path + File.separator + "Complet_" + date + "_PersAL_", concat);
 	}
 
 	@Override

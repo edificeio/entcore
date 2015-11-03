@@ -39,8 +39,9 @@ public class PorteurENTExportProcessing extends BaseExportProcessing {
 	private final String basePath;
 	private final String date;
 
-	public PorteurENTExportProcessing(String path, String date) {
-		super("dictionary/export/eliot/PorteurENT.json", 5000, path + File.separator + "Complet_" + date + "_PorteurENT_");
+	public PorteurENTExportProcessing(String path, String date, boolean concat) {
+		super("dictionary/export/eliot/PorteurENT.json", 5000,
+				path + File.separator + "Complet_" + date + "_PorteurENT_", concat);
 		this.basePath = path;
 		attributes = new JsonArray(exportMapping.getFieldNames().toArray()).add("externalId");
 		this.date = date;
@@ -48,7 +49,7 @@ public class PorteurENTExportProcessing extends BaseExportProcessing {
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new PersALExportProcessing(basePath, date));
+		export(handler, new PersALExportProcessing(basePath, date, concat));
 	}
 
 	@Override

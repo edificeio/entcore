@@ -29,16 +29,16 @@ public class PersEducNatExportProcessing extends UserExportProcessing {
 	private final String date;
 	private final String stdPrefix;
 
-	public PersEducNatExportProcessing(String path, String date, String stdPrefix) {
+	public PersEducNatExportProcessing(String path, String date, String stdPrefix, boolean concat) {
 		super("dictionary/export/eliot/PersEducNat.json", 5000, path,
-				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix);
+				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new EtabEducNatExportProcessing(basePath, date, stdPrefix));
+		export(handler, new EtabEducNatExportProcessing(basePath, date, stdPrefix, concat));
 	}
 
 }

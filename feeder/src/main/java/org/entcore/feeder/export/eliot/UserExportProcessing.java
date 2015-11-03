@@ -41,8 +41,8 @@ public abstract class UserExportProcessing extends BaseExportProcessing {
 	protected final String basePath;
 
 	protected UserExportProcessing(String mapping, int nbByFile, String basePath, JsonArray profiles,
-			String category, String date, String stdPrefix) {
-		super(mapping, nbByFile, basePath + File.separator + stdPrefix + "_Complet_" + date + "_" + category + "_");
+			String category, String date, String stdPrefix, boolean concat) {
+		super(mapping, nbByFile, basePath + File.separator + stdPrefix + "_Complet_" + date + "_" + category + "_", concat);
 		attributes = new JsonArray(exportMapping.getFieldNames().toArray()).add("externalId");
 		this.profiles = profiles;
 		this.category = category;
