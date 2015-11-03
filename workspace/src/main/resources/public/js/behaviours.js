@@ -161,18 +161,39 @@ Behaviours.register('workspace', {
 					});
 				},
 				init: function(){
-					var that = this;
-					this.documents = { inSource: [] };
-					this.source.document = {};
-
-					this.documents.inSource = this.source.documents;
+					this.create = {
+						document: {},
+						folder: {
+							documents: []
+						}
+					};
+					this.cursor = {
+						currentFolder: this.source,
+						parentFolders: []
+					};
+				},
+				addFolder: function(){
+					console.log('adding new folder in documents');
+					this.cursor.currentFolder.documents.push(this.create.folder);
+					this.cursor.parentFolders.push(this.cursor.currentFolder);
+					this.cursor.currentFolder = this.create.folder;
+					this.create.folder = {
+						title: '',
+						documents: []
+					};
+					if (typeof this.snipletResource.save === 'function') {
+						this.snipletResource.save();
+					}
+				},
+				openFolder: function(folder){
+					this.cursor.parentFolders.push(this.cursor.currentFolder);
+					this.cursor.currentFolder = folder;
 				},
 				addDocument: function(document){
 					console.log('adding ' + document + ' in documents');
-					var that = this;
 					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
 						document = _.findWhere(resources, { _id: document.split('/document/')[1] });
-						this.source.documents.push(document);
+						this.cursor.currentFolder.documents.push(document);
 						if (typeof this.snipletResource.save === 'function') {
 							this.snipletResource.save();
 						}
@@ -180,22 +201,23 @@ Behaviours.register('workspace', {
 					}.bind(this));
 				},
 				removeDocument: function(document){
-					var that = this;
-					this.source.documents = _.reject(this.source.documents, function(doc){
+					this.cursor.currentFolder.documents = _.reject(this.cursor.currentFolder.documents, function(doc){
 						return doc._id === document._id;
 					});
-					this.documents.inSource = this.source.documents;
 					if(typeof this.snipletResource.save === 'function'){
 						this.snipletResource.save();
 					}
 				},
 				getReferencedResources: function(source){
-					return _.map(source.documents, function(doc){
+					return _.map(_.filter(source.documents, function(doc){ return doc.icon }), function(doc){
 						var spl = doc.icon.split('/');
 						return spl[spl.length - 1];
 					});
 				},
 				documentIcon: function(doc){
+					if(!doc.metadata){
+						return '/img/icons/folder-large.png';
+					}
 					if(doc.metadata['content-type'].indexOf('image') !== -1){
 						return '/workspace/document/' + doc._id + '?thumbnail=150x150';
 					}

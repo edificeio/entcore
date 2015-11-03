@@ -105,6 +105,7 @@
     "workspace.document.file": "Fichier",
     "workspace.document.get": "Lire un document",
     "workspace.document.name": "Nom du document",
+    "workspace.folder.name": "Nom du dossier",
     "workspace.documents.warning.move": "Le déplacement d'un fichier supprimera tous les partages attribués au fichier et lui réattribuera les droits du dossier de destination.",
     "workspace.empty.trash": "Vider la corbeille",
     "workspace.folder.already.exists": "Le dossier existe déjà.",

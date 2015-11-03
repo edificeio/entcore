@@ -1,10 +1,33 @@
-<resource-right name="update" resource="snipletResource">
-	<media-select ng-model="source.document" ng-change="addDocument(source.document)" label="workspace.sniplet.documents.add" file-format="'any'" class="right-magnet"></media-select>
-</resource-right>
+<lightbox show="display.createFolder" on-close="display.createFolder = false;">
+	<h2><i18n>folder.new</i18n></h2>
+	<div class="row">
+		<input type="text" i18n-placeholder="workspace.folder.name" class="twelve cell" ng-model="create.folder.title" />
+	</div>
+	<div class="row">
+		<button class="right-magnet" ng-click="addFolder(); display.createFolder = false;">
+			<i18n>create</i18n>
+		</button>
+		<button type="button" class="right-magnet" ng-click="display.createFolder = false;">
+			<i18n>cancel</i18n>
+		</button>
+	</div>
+</lightbox>
+
+<div class="row">
+	<div class="cell">
+		<div class="cell" ng-repeat="folder in cursor.parentFolders"><a>[[folder.title]]</a> > </div> [[cursor.currentFolder.title]]
+	</div>
+	<resource-right name="update" resource="snipletResource" class="right-magnet cell">
+		<plus class="right-magnet cell">
+			<media-select ng-model="create.document" ng-change="addDocument(create.document)" label="workspace.sniplet.documents.add" file-format="'any'"></media-select>
+			<button ng-click="display.createFolder = true;"><i18n>folder.new</i18n></button>
+		</plus>
+	</resource-right>
+</div>
 
 <article class="list icons-view">
 	<header>&nbsp;</header>
-	<div ng-repeat="document in documents.inSource track by $index" class="element" ng-class="{ selected: document.selected }">
+	<div ng-repeat="document in cursor.currentFolder.documents track by $index" class="element" ng-class="{ selected: document.selected }">
 		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
 			<div class="twelve cell">
 				<div class="clip absolute">
