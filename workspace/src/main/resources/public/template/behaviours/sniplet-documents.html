@@ -1,3 +1,11 @@
+<script type="text/ng-template" id="list-folder">
+	<a ng-click="display.targetFolder = folder" ng-class="{ selected: display.targetFolder === folder }">[[folder.title]]</a>
+	<ul ng-if="folder.documents.length > 0">
+		<li ng-repeat="folder in folder.documents | filter:isFolder" ng-include="'list-folder'">
+		</li>
+	</ul>
+</script>
+
 <lightbox show="display.createFolder" on-close="display.createFolder = false;">
 	<h2><i18n>folder.new</i18n></h2>
 	<div class="row">
@@ -13,10 +21,48 @@
 	</div>
 </lightbox>
 
+<lightbox show="display.moveDocuments" on-close="display.moveDocuments = false;">
+	<h2><i18n>document.move</i18n></h2>
+	<div class="row">
+		<nav class="vertical">
+			<ul>
+				<li ng-include="'list-folder'"></li>
+			</ul>
+		</nav>
+	</div>
+	<div class="row">
+		<button class="right-magnet" ng-click="moveDocuments(); display.moveDocuments = false;">
+			<i18n>move</i18n>
+		</button>
+		<button type="button" class="right-magnet" ng-click="display.moveDocuments = false;">
+			<i18n>cancel</i18n>
+		</button>
+	</div>
+</lightbox>
+
+<lightbox show="display.confirmRemove" on-close="display.confirmRemove = false;">
+	<h2><i18n>remove</i18n></h2>
+	<p><i18n>workspace.sniplet.documents.confirm.remove</i18n></p>
+	<div class="row">
+		<button class="right-magnet" ng-click="removeDocuments(); display.confirmRemove = false;">
+			<i18n>remove</i18n>
+		</button>
+		<button type="button" class="right-magnet" ng-click="display.confirmRemove = false;">
+			<i18n>cancel</i18n>
+		</button>
+	</div>
+</lightbox>
+
 <div class="row">
 	<div class="cell">
-		<div class="cell" ng-repeat="folder in cursor.parentFolders"><a>[[folder.title]]</a> > </div> [[cursor.currentFolder.title]]
+		<div class="row" style="min-height: 0">
+			<h2>Documents</h2>
+		</div>
+		<div class="row" ng-if="cursor.parentFolders.length" style="min-height: 0;">
+			<div class="cell" ng-repeat="folder in cursor.parentFolders"><a ng-click="openFolder(folder)"> [[folder.title]]&nbsp;</a>> </div> [[cursor.currentFolder.title]]
+		</div>
 	</div>
+
 	<resource-right name="update" resource="snipletResource" class="right-magnet cell">
 		<plus class="right-magnet cell">
 			<media-select ng-model="create.document" ng-change="addDocument(create.document)" label="workspace.sniplet.documents.add" file-format="'any'"></media-select>
@@ -27,23 +73,28 @@
 
 <article class="list icons-view">
 	<header>&nbsp;</header>
-	<div ng-repeat="document in cursor.currentFolder.documents track by $index" class="element" ng-class="{ selected: document.selected }">
-		<a ng-href="/workspace/document/[[document._id]]" class="img container cell">
+	<div ng-repeat="document in cursor.currentFolder.documents track by $index" class="element"
+		 ng-class="{ selected: document.selected }" dragdrop="dropTo(document, $originalEvent)" dragstart="drag(document, $originalEvent)">
+		<a ng-click="openDocument(document)" class="img container cell">
 			<div class="twelve cell">
 				<div class="clip absolute">
 					<img skin-src="[[documentIcon(document)]]" alt="thumbnail" />
 				</div>
 			</div>
 		</a>
-
+		<input type="checkbox" ng-model="document.selected" ng-change="updateSelection()" />
 		<legend>
 			<a ng-href="/workspace/document/[[document._id]]">
 				[[document.title]]
 			</a>
 			<a ng-href="/userbook/annuaire#[[document.owner.id]]"><strong>[[document.owner.name]]</strong></a>
-			<resource-right name="update" resource="snipletResource">
-				<i class="close" ng-click="removeDocument(document)"></i>
-			</resource-right>
 		</legend>
 	</div>
 </article>
+
+<section class="toggle-buttons" ng-class="{ hide: cursor.selection.length === 0 }">
+	<div class="toggle">
+		<button ng-click="display.moveDocuments = true"><i18n>move</i18n></button>
+		<button ng-click="display.confirmRemove = true"><i18n>remove</i18n></button>
+	</div>
+</section>

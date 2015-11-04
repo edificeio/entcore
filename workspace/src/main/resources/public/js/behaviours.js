@@ -167,10 +167,16 @@ Behaviours.register('workspace', {
 							documents: []
 						}
 					};
+					this.source.title = 'Documents';
 					this.cursor = {
 						currentFolder: this.source,
-						parentFolders: []
+						parentFolders: [],
+						selection: []
 					};
+					this.folder = this.source;
+				},
+				isFolder: function(document){
+					return document.metadata === undefined;
 				},
 				addFolder: function(){
 					console.log('adding new folder in documents');
@@ -185,9 +191,28 @@ Behaviours.register('workspace', {
 						this.snipletResource.save();
 					}
 				},
+				updateSelection: function(){
+					this.cursor.selection = _.where(this.cursor.currentFolder.documents, { selected: true });
+				},
 				openFolder: function(folder){
-					this.cursor.parentFolders.push(this.cursor.currentFolder);
+					if(this.cursor.parentFolders.indexOf(folder) !== -1){
+						var folderIndex = this.cursor.parentFolders.indexOf(folder);
+						this.cursor.parentFolders.splice(folderIndex, this.cursor.parentFolders.length - folderIndex);
+					}
+					else{
+						this.cursor.parentFolders.push(this.cursor.currentFolder);
+					}
+
 					this.cursor.currentFolder = folder;
+					this.cursor.selection = [];
+				},
+				openDocument: function(document){
+					if(!document.metadata){
+						this.openFolder(document);
+					}
+					else{
+						window.location = '/workspace/document/' + document._id;
+					}
 				},
 				addDocument: function(document){
 					console.log('adding ' + document + ' in documents');
@@ -200,10 +225,43 @@ Behaviours.register('workspace', {
 						this.$apply();
 					}.bind(this));
 				},
-				removeDocument: function(document){
-					this.cursor.currentFolder.documents = _.reject(this.cursor.currentFolder.documents, function(doc){
-						return doc._id === document._id;
+				drag: function(item, $originalEvent){
+					$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
+				},
+				dropTo: function(targetItem, $originalEvent){
+					var originalItem = JSON.parse($originalEvent.dataTransfer.getData('Text'));
+					var foundItem = _.find(this.cursor.currentFolder.documents, function(document){
+						return (document._id === originalItem._id && originalItem.metadata) || (document._id === undefined && originalItem.title === document.title);
 					});
+
+					this.display.targetFolder = targetItem;
+					this.clearSelection();
+					foundItem.selected = true;
+					this.updateSelection();
+					this.moveDocuments();
+					this.$apply();
+				},
+				clearSelection: function(){
+					this.cursor.selection.forEach(function(doc){
+						doc.selected = false;
+					});
+					this.cursor.selection = [];
+				},
+				removeDocuments: function(document){
+					this.cursor.currentFolder.documents = _.reject(this.cursor.currentFolder.documents, function(doc){
+						return doc.selected;
+					});
+					this.cursor.selection = [];
+					if(typeof this.snipletResource.save === 'function'){
+						this.snipletResource.save();
+					}
+				},
+				moveDocuments: function(){
+					this.cursor.currentFolder.documents = _.reject(this.cursor.currentFolder.documents, function(doc){
+						return doc.selected;
+					});
+					this.display.targetFolder.documents = this.display.targetFolder.documents.concat(this.cursor.selection);
+					this.clearSelection();
 					if(typeof this.snipletResource.save === 'function'){
 						this.snipletResource.save();
 					}

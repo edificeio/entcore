@@ -59,8 +59,8 @@
 				<h1 data-reload><i class="storage"></i><i18n>workspace.header</i18n></h1>
 				<nav class="vertical mobile-navigation" side-nav>
 					<div data-ng-include="folderTreeTemplate"></div>
-					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" translate key="folder.new" class="classic-link"></a>
-					<a ng-click="emptyTrash()" ng-if="currentFolderTree.name === 'trash'" translate key="workspace.empty.trash" class="classic-link"></a>
+					<a ng-click="openNewFolderView()" ng-if="currentFolderTree.name === 'documents'" class="classic-link"><i18n>folder.new</i18n></a>
+					<a ng-click="emptyTrash()" ng-if="currentFolderTree.name === 'trash'" class="classic-link"><i18n>workspace.empty.trash</i18n></a>
 					<div class="row zero-mobile">
 						<hr class="row" />
 						<h2><i18n>quota.title</i18n></h2>
