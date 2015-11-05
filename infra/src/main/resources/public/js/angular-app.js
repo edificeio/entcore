@@ -4659,6 +4659,7 @@ module.directive('sideNav', function(){
 	return {
 		restrict: 'AE',
 		link: function(scope, element, attributes){
+			$('.mobile-nav-opener').addClass('visible');
 			var maxWidth = 700;
 			var target = attributes.targetElement || '.navbar';
 
