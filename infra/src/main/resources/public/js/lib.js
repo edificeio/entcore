@@ -911,13 +911,6 @@ var skin = (function(){
 					that.skin = data.skin;
 					that.theme = '/assets/themes/' + data.skin + '/default/';
 					that.basePath = that.theme + '../';
-					http().get('/assets/themes/' + data.skin + '/i18n/' + (currentLanguage || 'en') + '.json', { token: rand }, {
-						async: false,
-						disableNotifications: true,
-						success: function(translations){
-							lang.addKeys(translations);
-						}
-					}).e404(function(){});
 
 					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
 						async: false,
@@ -950,15 +943,7 @@ var skin = (function(){
 					that.basePath = that.theme + '../';
 					that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 					that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
-					that.logoutCallback = data.logoutCallback
-
-					http().get('/assets/themes/' + that.skin + '/i18n/' + (window.currentLanguage || 'en') + '.json', { token: rand }, {
-						async: false,
-						disableNotifications: true,
-						success: function(translations){
-							lang.addKeys(translations);
-						}
-					});
+					that.logoutCallback = data.logoutCallback;
 
 					http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }, {
 						async: false,
