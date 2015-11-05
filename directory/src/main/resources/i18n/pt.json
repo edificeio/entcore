@@ -373,5 +373,6 @@
     "welcome.info": "Bienvenue dans votre ENT !",
     "welcome.regards": "Bonne découverte !",
     "welcome.signature": "L'équipe Ent-Core",
-    "welcome.subject": "Bienvenue dans l'ENT"
+    "welcome.subject": "Bienvenue dans l'ENT",
+    "unmodifiable.externalId" : "Erreur, le fichier contient des identifiants non modifiables :"
 }

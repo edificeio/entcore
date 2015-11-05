@@ -25,6 +25,8 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.Joiner;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -57,6 +59,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
 
+	public static final String UNMODIFIABLE_EXTERNAL_ID = "unmodifiable.externalId";
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
@@ -129,7 +132,13 @@ public class DirectoryController extends BaseController {
 									if ("ok".equals(event.body().getString("status"))) {
 										request.response().end();
 									} else {
-										badRequest(request, event.body().getString("message"));
+										String message = event.body().getString("message");
+										if (message != null && message.startsWith(UNMODIFIABLE_EXTERNAL_ID)) {
+											JsonArray ids = new JsonArray(message
+													.substring(UNMODIFIABLE_EXTERNAL_ID.length() + 1));
+											message = UNMODIFIABLE_EXTERNAL_ID + " " + Joiner.on(",").join(ids);
+										}
+										badRequest(request, message);
 									}
 								}
 							});

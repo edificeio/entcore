@@ -26,9 +26,7 @@ import org.entcore.feeder.PartialFeed;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.entcore.feeder.utils.Hash;
-import org.entcore.feeder.utils.ResultMessage;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.utils.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -42,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
 import static org.entcore.feeder.be1d.Be1dFeeder.generateUserExternalId;
@@ -133,7 +132,74 @@ public class CsvFeeder implements PartialFeed {
 				}
 			});
 		} else {
-			start(profile, structureId, content, charset, importer, handler);
+			checkNotModifiableExternalId(content, charset, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> m) {
+					if ("ok".equals(m.body().getString("status"))) {
+						start(profile, structureId, content, charset, importer, handler);
+					} else {
+						handler.handle(m);
+					}
+				}
+			});
+		}
+	}
+
+	private void checkNotModifiableExternalId(String content, String charset, final Handler<Message<JsonObject>> handler) {
+		CSV csvParser = CSV
+				.ignoreLeadingWhiteSpace()
+				.separator(';')
+				.skipLines(0)
+				.charset(charset)
+				.create();
+		final List<String> columns = new ArrayList<>();
+		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
+		final JsonArray externalIds = new JsonArray();
+		csvParser.readAndClose(new StringReader(content), new CSVReadProc() {
+			@Override
+			public void procRow(int i, String... strings) {
+				if (i == 0) {
+					getColumsNames(strings, columns, handler);
+					if (columns.isEmpty()) {
+						handler.handle(new ResultMessage().error("invalid.columns"));
+						return;
+					}
+					for (int j = 0; j < columns.size(); j++) {
+						if ("externalId".equals(columns.get(j))) {
+							externalIdIdx.set(j);
+							break;
+						}
+					}
+				} else if (externalIdIdx.get() >= 0) {
+					externalIds.add(strings[externalIdIdx.get()]);
+				}
+			}
+		});
+		if (externalIds.size() > 0) {
+			String query =
+					"MATCH (u:User) where u.externalId IN {ids} AND u.source IN ['AAF', 'AAF1D'] " +
+					"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
+					"RETURN COLLECT(u.externalId) as ids";
+			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().putArray("ids", externalIds),
+					new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						JsonArray res = event.body().getArray("result");
+						JsonArray ids;
+						if (res != null && res.size() > 0 && res.<JsonObject>get(0) != null &&
+								(ids = res.<JsonObject>get(0).getArray("ids")) != null && ids.size() > 0) {
+							handler.handle(new ResultMessage().error("unmodifiable.externalId-" + ids.encode()));
+						} else {
+							handler.handle(new ResultMessage());
+						}
+					} else {
+						handler.handle(event);
+					}
+				}
+			});
+		} else {
+			handler.handle(new ResultMessage());
 		}
 	}
 
@@ -164,15 +230,7 @@ public class CsvFeeder implements PartialFeed {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					for (int j = 0; j < strings.length; j++) {
-						String cm = columnsNameMapping(strings[j]);
-						if (namesMapping.containsValue(cm)) {
-							columns.add(j, cm);
-						} else {
-							handler.handle(new ResultMessage().error("invalid.column " + cm));
-							return;
-						}
-					}
+					getColumsNames(strings, columns, handler);
 				} else {
 					JsonObject user = new JsonObject();
 					user.putArray("structures", new JsonArray().add(structureExternalId));
@@ -342,6 +400,18 @@ public class CsvFeeder implements PartialFeed {
 //			}
 //		});
 		importer.persist(handler);
+	}
+
+	private void getColumsNames(String[] strings, List<String> columns, Handler<Message<JsonObject>> handler) {
+		for (int j = 0; j < strings.length; j++) {
+			String cm = columnsNameMapping(strings[j]);
+			if (namesMapping.containsValue(cm)) {
+				columns.add(j, cm);
+			} else {
+				handler.handle(new ResultMessage().error("invalid.column " + cm));
+				return;
+			}
+		}
 	}
 
 	private String columnsNameMapping(String columnName) {

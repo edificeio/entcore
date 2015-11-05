@@ -366,5 +366,6 @@
     "welcome.info": "Welcome in your Virtuel Learning Environnement !",
     "welcome.regards": "Have a nice tour !",
     "welcome.signature": "Ent-Core team",
-    "welcome.subject": "Welcome in your VLE"
+    "welcome.subject": "Welcome in your VLE",
+    "unmodifiable.externalId" : "Erreur, le fichier contient des identifiants non modifiables :"
 }

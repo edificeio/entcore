@@ -426,5 +426,6 @@
     "none": "Aucun",
     "confirm": "Confirmer",
     "directory.massmail.mail.confirm.text": "Voulez-vous vraiment lancer le publipostage mail ?",
-    "directory.massmail.export.csv": "Exporter les utilisateurs au format CSV"
+    "directory.massmail.export.csv": "Exporter les utilisateurs au format CSV",
+    "unmodifiable.externalId" : "Erreur, le fichier contient des identifiants non modifiables :"
 }
