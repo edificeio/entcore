@@ -29,12 +29,15 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.LinkRoleGroupFilter;
 import org.entcore.registry.filters.RoleFilter;
+import org.entcore.registry.filters.RoleGroupFilter;
+import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.services.AppRegistryService;
 import org.entcore.registry.services.impl.DefaultAppRegistryService;
 import org.vertx.java.core.Handler;
@@ -178,6 +181,24 @@ public class AppRegistryController extends BaseController {
 		});
 	}
 
+	@Put("/authorize/group/:groupId/role/:roleId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(RoleGroupFilter.class)
+	public void addGroupLink(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		final String roleId = request.params().get("roleId");
+		appRegistryService.addGroupLink(groupId, roleId, defaultResponseHandler(request));
+	}
+
+	@Delete("/authorize/group/:groupId/role/:roleId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(RoleGroupFilter.class)
+	public void removeGroupLink(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		final String roleId = request.params().get("roleId");
+		appRegistryService.deleteGroupLink(groupId, roleId, defaultResponseHandler(request, 204));
+	}
+
 	@Get("/roles")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listRoles(HttpServerRequest request) {
@@ -206,6 +227,19 @@ public class AppRegistryController extends BaseController {
 				} else {
 					leftToResponse(request, r.left());
 				}
+			}
+		});
+	}
+
+	@Post("/application")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void createApplication(final HttpServerRequest request){
+		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				String structureId = request.params().get("structureId");
+				appRegistryService.createApplication(structureId, body, null, notEmptyResponseHandler(request, 201, 409));
 			}
 		});
 	}
@@ -251,16 +285,12 @@ public class AppRegistryController extends BaseController {
 		}
 	}
 
-	@Post("/application/external")
+	@Put("/application/:id/lock")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void createExternalApp(final HttpServerRequest request) {
-		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject body) {
-				String structureId = request.params().get("structureId");
-				appRegistryService.createApplication(structureId, body, null, notEmptyResponseHandler(request, 201, 409));
-			}
-		});
+	@ResourceFilter(SuperAdminFilter.class)
+	public void lockExternalApp(final HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		appRegistryService.toggleLock(structureId, defaultResponseHandler(request));
 	}
 
 	@BusAddress("wse.app.registry")

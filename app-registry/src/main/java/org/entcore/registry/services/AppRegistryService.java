@@ -20,6 +20,7 @@
 package org.entcore.registry.services;
 
 import fr.wseduc.webutils.Either;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -47,6 +48,10 @@ public interface AppRegistryService {
 
 	void linkRolesToGroup(String groupId, JsonArray rolesIds, Handler<Either<String, JsonObject>> handler);
 
+	void addGroupLink(String groupId, String roleId, Handler<Either<String, JsonObject>> handler);
+
+	void deleteGroupLink(String groupId, String roleId, Handler<Either<String, JsonObject>> handler);
+
 	// if structureId is null => global application
 	void createApplication(String structureId, JsonObject application, JsonArray actions,
 			Handler<Either<String, JsonObject>> handler);
@@ -63,5 +68,7 @@ public interface AppRegistryService {
 	void applicationAllowedProfileGroups(String application, Handler<Either<String, JsonArray>> handler);
 
 	void setDefaultClassRoles(String classId, Handler<Either<String, JsonObject>> handler);
+
+	void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler);
 
 }

@@ -41,20 +41,20 @@
 <body>
 <portal-styles></portal-styles>
 	<div class="row">
-	<ul class="list icons-view apps" ng-controller="Preview" style="margin: 0;">
-		<li class="element">
-			<div class="fixed twelve cell">
-				<a href="[[path]]" target="[[target]]">
-					<i class="[[icon]]" ng-if="icon.indexOf('/') === -1"></i>
-					<img skin-src="[[icon]]" ng-if="icon.indexOf('/') !== -1" />
-				</a>
-				<legend>
-					<a href="[[path]]" target="[[target]]">[[displayName]]</a>
-				</legend>
+		<nav class="list icons-view apps" ng-controller="Preview" style="margin: 0;">
+			<div class="element">
+				<div class="container fixed twelve cell">
+					<a href="[[path]]" target="[[target]]">
+						<i class="[[icon]]" ng-if="icon.indexOf('/') === -1"></i>
+						<img skin-src="[[icon]]" ng-if="icon.indexOf('/') !== -1" />
+					</a>
+					<legend>
+						<a href="[[path]]" target="[[target]]">[[displayName]]</a>
+					</legend>
+				</div>
 			</div>
-		</li>
-		<li class="clear"></li>
-	</ul>
+			<div class="clear"></div>
+		</nav>
 	</div>
 </body>
 </html>

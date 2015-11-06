@@ -21,7 +21,9 @@ package org.entcore.registry.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
+
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.registry.services.AppRegistryService;
 import org.vertx.java.core.Handler;
@@ -219,6 +221,36 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
+	public void addGroupLink(String groupId, String roleId, Handler<Either<String, JsonObject>> handler) {
+		JsonObject params = new JsonObject();
+		params.putString("groupId", groupId);
+		params.putString("roleId", roleId);
+		if (groupId != null && !groupId.trim().isEmpty() && roleId != null && !roleId.trim().isEmpty()) {
+			String query = "MATCH (r:Role), (g:Group) " +
+					"WHERE r.id = {roleId} and g.id = {groupId} " +
+					"CREATE UNIQUE (g)-[:AUTHORIZED]->(r)";
+			neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
+		}  else {
+			handler.handle(new Either.Left<String, JsonObject>("invalid.arguments"));
+		}
+	}
+
+	@Override
+	public void deleteGroupLink(String groupId, String roleId, Handler<Either<String, JsonObject>> handler) {
+		JsonObject params = new JsonObject();
+		params.putString("groupId", groupId);
+		params.putString("roleId", roleId);
+		if (groupId != null && !groupId.trim().isEmpty() && roleId != null && !roleId.trim().isEmpty()) {
+			String query = "MATCH (g:Group)-[auth:AUTHORIZED]->(r:Role) " +
+					"WHERE r.id = {roleId} and g.id = {groupId} " +
+					"DELETE auth";
+			neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
+		}  else {
+			handler.handle(new Either.Left<String, JsonObject>("invalid.arguments"));
+		}
+	}
+
+	@Override
 	public void createApplication(String structureId, JsonObject application, JsonArray actions,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (defaultValidationParamsNull(handler, application, application.getString("name"))) return;
@@ -233,7 +265,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"WHERE n.name = {applicationName} " +
 				"WITH count(*) AS exists " +
 				"WHERE exists=0 " +
-				"CREATE (m:Application {props}) " +
+				"CREATE (m:Application:External {props}) " +
 				"RETURN m.id as id";
 		final JsonObject params = new JsonObject().putString("applicationName", applicationName);
 		if (structureId != null && !structureId.trim().isEmpty()) {
@@ -329,7 +361,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:Application) " +
-				"WHERE n.id = {applicationId} " +
+				"WHERE n.id = {applicationId} AND coalesce(n.locked, false) = false " +
 				"SET " + nodeSetPropertiesFromJson("n", application) +
 				"RETURN n.id as id";
 		application.putString("applicationId", applicationId);
@@ -342,6 +374,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	public void deleteApplication(String applicationId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:Application { id : {id}}) " +
+				"WHERE coalesce(n.locked, false) = false " +
 				"OPTIONAL MATCH n-[r1:PROVIDE]->(a:Action) " +
 				"OPTIONAL MATCH a<-[r2:AUTHORIZE]-(r:Role) " +
 				"DELETE n, r1 " +
@@ -398,6 +431,16 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"AND pr.name =~ '^[A-Za-z0-9]+-(personnel|all)-default$' " +
 				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr, cpg-[:AUTHORIZED]->pr";
 		neo.execute(query, new JsonObject().putString("id", classId), validEmptyHandler(handler));
+	}
+
+	@Override
+	public void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler) {
+		if (defaultValidationParamsNull(handler, structureId)) return;
+		String query =
+				"MATCH (app:Application:External) WHERE app.id = {structureId} " +
+				"SET app.locked = NOT coalesce(app.locked, false) " +
+				"RETURN app.locked as locked";
+		neo.execute(query, new JsonObject().putString("structureId", structureId), validUniqueResultHandler(handler));
 	}
 
 }

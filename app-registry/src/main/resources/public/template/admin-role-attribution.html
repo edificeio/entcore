@@ -1,0 +1,58 @@
+<!--
+	||||||||||||||||||||||||||
+	|||  ROLE ATTRIBUTION  |||
+	||||||||||||||||||||||||||
+-->
+<div class="twelve">
+	<div ng-include="'structure-tree'"></div>
+	<article class="side-tabs-content content-flex nine cell" style="flex-wrap: wrap;" ng-if="school">
+		<div style="flex: 0 0 100%"><h1 class="nine cell">[[school.name]]</h1></div>
+
+		<nav class="vertical cell search-container" style="min-height: 500px; width: 32%">
+			<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterGroups"/>
+			<ul bottom-scroll-action="incrementGroupsLimit()">
+				<li ng-repeat="group in school.groups.all | filter: filterGroups | orderBy: 'name' | limitTo: groupsLimit" ng-click="$parent.group = group">
+					<a ng-class="{ selected: $parent.group === group }" style="border: 0;">[[group.name]]</a>
+				</li>
+			</ul>
+		</nav>
+
+		<div class="right-magnet" ng-if="group" style="width: 66%;">
+			<ul class="selectable-list" style="margin-top: 0">
+				<h3 style="padding-bottom: 5px; text-align: center; border-bottom: 2px solid #444; font-style: inherit; margin-bottom: 0; margin-top: 7px">
+					[[group.name]]
+				</h3>
+				<div class="leaf-bordered-container">
+					<div class="leaf-menu" ng-class="{ selected: roleMode === 0 }"><a ng-click="roleMode=0">[[lang.translate("appregistry.crossRoles")]]</a></div>
+					<div class="leaf-menu" ng-class="{ selected: roleMode === 1 }"><a ng-click="roleMode=1">[[lang.translate("appregistry.appRoles")]]</a></div>
+					<div style="border-top: 2px solid crimson;">
+						<h4><i18n>app.registry.role.explanation</i18n></h4>
+					</div>
+				</div>
+				<div ng-if="roleMode === 0" style="overflow-y: scroll; padding: 10">
+					<li ng-repeat="crossrole in crossRoles | orderBy: 'name'"
+						ng-click="switchGroupRole($parent.group, crossrole)"
+						ng-class="{ selected: groupContains($parent.group, crossrole) }">
+						[[crossrole.name]]
+					</li>
+				</div>
+				<div ng-if="roleMode === 1" style="overflow-y: scroll; padding: 10">
+					<div style="text-align:center; background: #444; padding: 5; border-radius: 30px; border: 2px solid crimson; width: 100px; position: absolute; right: 0px;">
+						<button ng-click="selectAllGroupRoles(group)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll" style="margin-left: 10;width: 30px; height: 25px;"></button>
+						<button ng-click="deselectAllGroupRoles(group)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll" style=" width: 30px; height: 25px;"></button>
+					</div>
+					<div ng-repeat="application in applications.all | orderBy: 'name'" style="font-family: Lato;">
+						<span style="text-decoration: underline;">[[application.name]]</span>
+						<div style="font-size: 14px; margin-top: 10px;">
+							<li ng-repeat="appRole in roles.applicationRolesExclusive(application) | orderBy: 'name'"
+								ng-click="switchGroupRole($parent.$parent.group, appRole)"
+								ng-class="{ selected: groupContains($parent.$parent.group, appRole) }">
+								[[appRole.name]]
+							</li>
+						</div>
+					</div>
+				</div>
+			</ul>
+		</div>
+	</article>
+</div>

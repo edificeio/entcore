@@ -1,0 +1,182 @@
+<div>
+	<h1 class="link-previous"><a ng-click="showExternalAppList()"><i18n>appregistry.external.apps</i18n></a></h1>
+	<h3>
+		[[externalApp.data.displayName]]
+		<i class="linked square-icon" style="margin-left: 5px; width: 25px; height: 25px" ng-if="inherited(externalApp)" tooltip="appregistry.inherited.application"/>
+        <i class="lock square-icon" style="margin-left: 5px; width: 25px; height: 25px" ng-if="externalApp.data.locked" tooltip="appregistry.app.is.locked"></i>
+    </h3>
+</div>
+<form name="externalAppForm" novalidate ng-init="showPanel('config')">
+    <div class="leaf-menu-container small" ng-if="externalApp.data.id">
+        <div class="leaf-menu" ng-class="{ selected: showPanel() === 'config' }">
+            <a ng-click="showPanel('config')"><i18n>appregistry.app.properties</i18n></a>
+        </div>
+        <div class="leaf-menu" ng-class="{ selected: showPanel() === 'attribution' }">
+            <a ng-click="showPanel('attribution')"><i18n>appregistry.groups.attribution</i18n></a>
+        </div>
+        <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="school.children && scopeable(externalApp) && !externalApp.data.locked">
+            <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
+        </div>
+    </div>
+    <!-- APP CONFIG -->
+    <div ng-if="showPanel() === 'config'">
+        <div class="toolbar" ng-if="!externalApp.data.id">
+            <button ng-click="createExternalApp(externalApp)" ng-disabled="externalAppForm.$invalid">
+                <i18n>appregistry.create</i18n>
+            </button>
+        </div>
+        <div class="toolbar" ng-if="externalApp.data.id">
+            <button ng-click="updateExternalApp(externalApp)" ng-disabled="externalAppForm.$invalid || externalApp.data.locked || !scopeable(externalApp)">
+    			<i18n>appregistry.save</i18n>
+    		</button>
+    		<button ng-click="deleteExternalApp(externalApp)" ng-disabled="externalApp.data.locked || !scopeable(externalApp)">
+    			<i18n>appregistry.delete</i18n>
+    		</button>
+    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.locked" ng-if="isCentralAdmin() && !externalApp.data.locked">
+    			<i18n>appregistry.do.lock</i18n>
+    		</button>
+    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.unlocked" ng-if="isCentralAdmin() && externalApp.data.locked">
+    			<i18n>appregistry.do.unlock</i18n>
+    		</button>
+    	</div>
+        <fieldset class="preview-external vertical-spacing-twice">
+    		<legend>
+    			<i18n>appregistry.preview</i18n>
+    			<i class="refresh square-icon" ng-click="refreshPreview()" tooltip="appregistry.refresh.preview"
+    			   style="width: 20px; height: 20px; vertical-align: top;"></i>
+    		</legend>
+    		<div>
+    			<iframe id="previewFrame" ng-src="[[getPreviewContent(externalApp)]]"></iframe>
+    		</div>
+    	</fieldset>
+    	<fieldset ng-disabled="externalApp.data.locked || !scopeable(externalApp)">
+    		<legend class="warning" ng-if="externalApp.data.locked">
+    			<i18n>appregistry.app.is.locked</i18n>
+    		</legend>
+    		<legend class="warning" ng-if="!externalApp.data.locked && !scopeable(externalApp)">
+    			<i18n>appregistry.app.is.not.scopeable</i18n>
+    		</legend>
+    		<div class="row bottom-spacing">
+    			<label class="four cell"><span tooltip="tooltip.inherits">[[lang.translate("appregistry.inherits")]]</span></label>
+    			<input type="checkbox" ng-model="externalApp.data.inherits" class="four cell"/>
+    		</div>
+    		<div class="row">
+    			<label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
+    			<input type="text" ng-model="externalApp.data.name" required class="four cell"/>
+    		</div>
+    		<div class="row">
+    			<label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
+    			<input type="text" ng-model="externalApp.data.displayName" complete-change="refreshPreview()" class="four cell" />
+    		</div>
+    		<div class="row">
+    			<label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
+    			<input type="text" ng-model="externalApp.data.icon" complete-change="refreshPreview()" class="four cell" />
+    		</div>
+    		<div class="row">
+    			<label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
+    			<input type="text" ng-model="externalApp.data.address" required ng-blur="refreshPreview()" class="four cell" />
+    		</div>
+    		<div class="row">
+    			<label class="four cell"><span tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
+    			<select ng-model="externalApp.data.target" ng-change="refreshPreview()" class="four cell">
+    				<option value="">[[lang.translate("appregistry.portal")]]</option>
+    				<option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
+    				<option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
+    			</select>
+    		</div>
+    		<fieldset>
+    			<legend translate content="appregistry.cas.fields"></legend>
+    			<div class="row bottom-spacing">
+    				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
+    				<select class="four cell" ng-model="externalApp.data.casType">
+    					<option value="" translate content="appregistry.cas.type.default" selected></option>
+    				</select>
+    			</div>
+    			<div class="row">
+    				<label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
+    				<input type="text" ng-model="externalApp.data.casPattern" class="four cell" />
+    			</div>
+    		</fieldset>
+    		<fieldset>
+    			<legend translate content="appregistry.oauth.fields"></legend>
+    			<div class="row bottom-spacing">
+    				<label class="four cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
+    				<input type="checkbox" ng-model="externalApp.data.transferSession" ng-change="setUserinfoScope(externalApp.data)" />
+    			</div>
+    			<div class="row">
+    				<label class="four cell"><span tooltip="tooltip.scope"><i18n>appregistry.scope</i18n></span></label>
+    				<input class="four cell" type="text" ng-model="externalApp.data.scope" />
+    			</div>
+    			<div class="row">
+    				<label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
+    				<input type="text" ng-model="externalApp.data.secret" class="four cell" />
+    			</div>
+    			<div class="row">
+    				<label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
+    				<select class="four cell" ng-model="externalApp.data.grantType">
+    					<option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
+    					<option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
+    					<option value="Basic">[[lang.translate("appregistry.basic")]]</option>
+    				</select>
+    			</div>
+    		</fieldset>
+    	</fieldset>
+    </div>
+    <!-- APP ATTRIBUTION -->
+    <div ng-if="showPanel() === 'attribution'" ng-init="linkedGroupsOpts.reorderGroups()">
+        <h4><i18n>appregistry.groups.attribution.header</i18n></h4>
+        <div>
+            <div class="nine inline-middle">
+                <input type="text" class="search-input" i18n-placeholder="search" ng-model="filterGroups">
+            </div>
+            <div class="two filterbar inline-middle">
+                <i class="funnel square-icon" ng-click="linkedGroupsOpts.showLinked = !linkedGroupsOpts.showLinked" tooltip="show.linked.groups"
+                    ng-class="{'selected': linkedGroupsOpts.showLinked}"></i>
+                <i class="sort square-icon" ng-click="linkedGroupsOpts.orderLinked = !linkedGroupsOpts.orderLinked" tooltip="order.linked.groups"
+                    ng-class="{'selected': linkedGroupsOpts.orderLinked}"></i>
+            </div>
+        </div>
+
+        <ul class="checklist">
+            <li ng-repeat="group in school.groups.all | filter: {name: filterGroups} | filter: linkedGroupsOpts.filterLinked(externalApp) | orderBy: 'name' | orderBy: linkedGroupsOpts.orderByLinked(externalApp)"
+                ng-click="switchExternalAppGroupLink(group, externalApp)"
+                ng-class="{'checked': isLinked(group, externalApp), 'disabled': externalApp.data.locked}">
+                [[group.name]]
+            </li>
+        </ul>
+    </div>
+    <!-- MASS ATTRIBUTION -->
+    <div ng-if="showPanel() === 'massAttribution'" ng-init="profilesCombo.reset()">
+        <h4><i18n>appregistry.groups.massAttribution.header</i18n></h4>
+        <div class="toolbar">
+            <button ng-click="loadingWrapper('_masslink', massLinkExternalApp, null, externalApp, profilesCombo.selectedProfiles)"
+                    ng-disabled="_masslink.loading || _massunlink.loading || profilesCombo.selectedProfiles.length === 0">
+                <i18n class="inline-middle">appregistry.mass.link.external.app</i18n>
+                <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
+            </button>
+            <button ng-click="loadingWrapper('_massunlink', massUnlinkExternalApp, null, externalApp, profilesCombo.selectedProfiles)"
+                    ng-disabled="_massunlink.loading || _masslink.loading || profilesCombo.selectedProfiles.length === 0">
+                <i18n class="inline-middle">appregistry.mass.unlink.external.app</i18n>
+                <i class="horizontal-spacing-twice loader" ng-if="_massunlink.loading"></i>
+            </button>
+        </div>
+        <multi-combo
+            title="[[lang.translate('appregistry.choose.profiles')]]"
+            combo-model="profilesCombo.profiles"
+            filtered-model="profilesCombo.selectedProfiles"
+            search-on="name"
+            order-by="translatedName"
+            labels="profilesCombo.comboLabels"
+            class="six"
+        ></multi-combo>
+        <fieldset>
+            <legend translate content="appregistry.selected.profiles"></legend>
+            <div class="select-blocks">
+                <div ng-repeat="profile in profilesCombo.selectedProfiles" ng-click="profilesCombo.removeElement(profile)">
+                    [[profile.toString()]]
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</form>

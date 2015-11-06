@@ -20,7 +20,7 @@ routes.define(function($routeProvider){
 		})
 })
 
-function AdminDirectoryController($scope, $rootScope, $http, $route, template, model, date, route){
+function AdminDirectoryController($scope, $rootScope, $http, $route, template, model, date, route, httpWrapper){
 
 	$scope.display = {
 		filterStructureClasses: ''
@@ -152,29 +152,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.structures = model.structures.structures
     $scope.lang = lang
 	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")
-
-	$scope.loadingWrapper = function(name, fun, context){
-		if(typeof fun !== "function")
-			return
-		if(typeof $scope[name] !== "object")
-			$scope[name] = {}
-
-		var args = []
-		for(var i = 3; i < arguments.length; i++)
-			args.push(arguments[i])
-		$scope[name].loading = true
-
-		var completion = function(){
-			$scope[name].loading = false
-			$scope.$apply()
-		}
-
-		if(context){
-			fun.apply(context, args).xhr.complete(completion)
-		} else {
-			fun.apply($scope, args).xhr.complete(completion)
-		}
-	}
+    $scope.loadingWrapper = httpWrapper.wrap
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
 	$scope.maxQuotas = {}

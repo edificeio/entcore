@@ -20,6 +20,7 @@
 package org.entcore.registry.filters;
 
 import fr.wseduc.webutils.http.Binding;
+
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
@@ -42,6 +43,7 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 	public void authorize(final HttpServerRequest resourceRequest, Binding binding, UserInfos user,
 						  final Handler<Boolean> handler) {
 		Map<String, UserInfos.Function> functions = user.getFunctions();
+
 		if (functions == null || functions.isEmpty()) {
 			handler.handle(false);
 			return;
@@ -67,7 +69,11 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 						roleIds.size() > 0 && !groupId.trim().isEmpty()) {
 					String query =
 							"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(:Group {id : {groupId}}), (r:Role) " +
-							"WHERE s.id IN {structures} AND r.id IN {roles} AND (NOT(HAS(r.structureId)) OR r.structureId IN {structures}) " +
+							"WHERE s.id IN {structures} AND r.id IN {roles} " +
+							"AND NOT((:Application {locked: true})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r)) " +
+							"WITH r " +
+							"MATCH r WHERE " +
+							"(NOT(HAS(r.structureId)) OR r.structureId IN {structures} " +
 							"RETURN count(distinct r) = {nb} as exists ";
 					params.putString("groupId", groupId);
 					params.putArray("roles", roleIds);

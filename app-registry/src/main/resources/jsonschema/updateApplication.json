@@ -26,6 +26,12 @@
     },
     "scope": {
       "type": "string"
+    },
+	"pattern": {
+		"type": "string"
+	},
+    "inherits": {
+      "type": "boolean"
     }
   }
 }

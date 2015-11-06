@@ -14,9 +14,12 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-function Action(data){
 
-}
+//////// ACTION ////////
+
+function Action(data){}
+
+//////// APPLICATION ////////
 
 function Application(data){
 	this.grantType = 'authorization_code';
@@ -59,7 +62,7 @@ Application.prototype.open = function(){
 };
 
 Application.prototype.createApplication = function(){
-	http().postJson('/appregistry/application/external', {
+	http().postJson('/appregistry/application', {
 		grantType: this.grantType || '',
 		displayName: this.displayName,
 		secret: this.secret || '',
@@ -106,11 +109,79 @@ Application.prototype.save = function(){
 };
 
 Application.prototype.delete = function(){
-	http().delete('/appregistry/application/conf/'+this.id).done(function(){
+	http().delete('/appregistry/application/conf/' + this.id).done(function(){
 		model.applications.sync();
 		notify.info(lang.translate('appregistry.notify.deleteApp'));
 	})
 }
+
+//////// EXTERNAL APPLICATION ////////
+
+function ExternalApplication(){}
+ExternalApplication.prototype.lock = function(){
+	return http().put('/appregistry/application/' + this.data.id + "/lock")
+}
+ExternalApplication.prototype.createApplication = function(structureId){
+	return http().postJson('/appregistry/application/external?structureId=' + structureId, {
+		grantType: this.data.grantType || '',
+		displayName: this.data.displayName,
+		secret: this.data.secret || '',
+		address: this.data.address,
+		icon: this.data.icon || '',
+		target: this.data.target || '',
+		scope: this.data.scope || '',
+		name: this.data.name,
+		inherits: this.data.inherits
+	})
+};
+ExternalApplication.prototype.saveChanges = function(){
+	return http().putJson('/appregistry/application/conf/' + this.data.id + '?structureId=' + this.data.structureId, {
+		grantType: this.data.grantType || '',
+		displayName: this.data.displayName,
+		secret: this.data.secret || '',
+		address: this.data.address,
+		icon: this.data.icon || '',
+		target: this.data.target || '',
+		scope: this.data.scope || '',
+		name: this.data.name,
+		inherits: this.data.inherits
+	})
+};
+ExternalApplication.prototype.save = function(structureId){
+	if(this.data.target === 'adapter' && this.data.target.indexOf('/adapter#') === -1){
+		this.data.target = '';
+		this.data.address = '/adapter#' + this.data.address;
+	}
+	if(this.data.id){
+		return this.saveChanges();
+	}
+	else{
+		return this.createApplication(structureId);
+	}
+};
+ExternalApplication.prototype.delete = function(){
+    return http().delete('/appregistry/application/external/' + this.data.id)
+}
+ExternalApplication.prototype.massAuthorize = function(profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().put('/appregistry/application/external/' + this.data.id + '/authorize' + profilesParams)
+}
+ExternalApplication.prototype.massUnauthorize = function(profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().delete('/appregistry/application/external/' + this.data.id + '/authorize' + profilesParams)
+}
+
+//////// ROLE ////////
 
 function Role(data){
 	this.switch = function(action){
@@ -219,14 +290,23 @@ Role.prototype.saveCross = function(hook, skipNotify){
 	}
 }
 
-function Group(){
-	this.link = function(){
-		http().postJson('/appregistry/authorize/group', {
-			groupId: this.id,
-			roleIds: this.roles
-		})
-	}
+//////// GROUP ////////
+
+function Group(){}
+Group.prototype.link = function(){
+    return http().postJson('/appregistry/authorize/group', {
+        groupId: this.id,
+        roleIds: this.roles
+    })
 }
+Group.prototype.addLink = function(roleId){
+    return http().put('/appregistry/authorize/group/' + this.id + '/role/' + roleId)
+}
+Group.prototype.removeLink = function(roleId){
+    return http().delete('/appregistry/authorize/group/' + this.id + '/role/' + roleId)
+}
+
+//////// SCHOOL ////////
 
 function School(){
 	this.collection(Group, {
@@ -239,20 +319,41 @@ function School(){
 		}
 	});
 }
+School.prototype.syncExternalApps = function(hook){
+	http().get('/appregistry/external-applications', {structureId: this.id}).done(function(data){
+		this.externalApplications = _.map(data, function(item){
+			var app = new ExternalApplication()
+			app.updateData(item)
+            if(app.data.address && app.data.address.indexOf('/adapter#') !== -1){
+    			app.data.target = 'adapter';
+    			app.data.address = app.data.address.split('/adapter#')[1];
+    		}
+			if(app.data.scope)
+				app.data.transferSession = data.scope.indexOf('userinfo') !== -1
+			return app
+		})
+		if(typeof hook === 'function')
+			hook()
+	}.bind(this))
+}
+
+//////// MODEL BUILD ////////
 
 model.build = function(){
-	this.makeModels([Application, Role, Action, School, Group]);
+	this.makeModels([Application, ExternalApplication, Role, Action, School, Group]);
 
 	this.collection(Application, {
-		sync: function(){
+		syncApps: function(hook){
 			http().get('/appregistry/applications/actions?actionType=WORKFLOW').done(function(data){
 				this.load(data)
+				if(typeof hook === "function")
+					hook()
 			}.bind(this))
 		}
 	});
 
 	this.collection(Role, {
-		sync: function(hook){
+		syncRoles: function(hook){
 			http().get('/appregistry/roles/actions').done(function(data){
 				this.load(_.map(data, function(role){
 					return {
@@ -297,24 +398,26 @@ model.build = function(){
 	});
 
 	this.collection(School, {
-		sync: function(){
+		organizeParents: function(){
 			var that = this
-			http().get('/directory/structure/admin/list').done(function(data){
-				that.load(data)
-				//this.forEach(function(school){ school.sync() })
-				_.forEach(that.all, function(struct){
-					struct.parents = _.filter(struct.parents, function(parent){
-						var parentMatch = _.findWhere(that.all, {id: parent.id})
-						if(parentMatch){
-							parentMatch.children = parentMatch.children ? parentMatch.children : []
-							parentMatch.children.push(struct)
-							return true
-						} else
-							return false
-					})
-					if(struct.parents.length === 0)
-						delete struct.parents
+			_.forEach(this.all, function(struct){
+				struct.parents = _.filter(struct.parents, function(parent){
+					var parentMatch = _.findWhere(that.all, {id: parent.id})
+					if(parentMatch){
+						parentMatch.children = parentMatch.children ? parentMatch.children : []
+						parentMatch.children.push(struct)
+						return true
+					} else
+						return false
 				})
+				if(struct.parents.length === 0)
+					delete struct.parents
+			})
+		},
+		sync: function(){
+			http().get('/directory/structure/admin/list').done(function(data){
+				this.load(data)
+				this.organizeParents()
 			}.bind(this));
 		}
 	});

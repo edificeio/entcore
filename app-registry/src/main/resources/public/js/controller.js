@@ -14,7 +14,18 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-function AppRegistry($scope, $sce, model){
+function AppRegistry($scope, $sce, model, template, httpWrapper){
+
+	/////// VARS ///////
+	$scope.template = template
+	$scope.lang = lang
+    $scope.loadingWrapper = httpWrapper.wrap
+
+	$scope.applications = model.applications
+	$scope.roles = model.roles
+	$scope.schools = model.schools
+
+	/////// THEMES ///////
 
 	$scope.themes = [
 		{
@@ -54,43 +65,103 @@ function AppRegistry($scope, $sce, model){
 		})
 	}
 
-	$scope.lang = lang
-	$scope.SCROLL_INCREMENT = 100
-	$scope.groupsLimit = $scope.SCROLL_INCREMENT
-	$scope.incrementGroupsLimit = function(){
-		$scope.groupsLimit += $scope.SCROLL_INCREMENT
+	/////// MENU ////////
+
+	$scope.filterLeafMenuItems = function(item, index){
+		return typeof item.showCondition !== "function" || item.showCondition()
+	}
+	$scope.isCentralAdmin = function(){
+		return _.findWhere(model.me.functions, {code: "SUPER_ADMIN"}) !== undefined
+	}
+	$scope.isAdminLocal = function(){
+		return _.findWhere(model.me.functions, {code: "ADMIN_LOCAL"}) !== undefined
 	}
 
-	var previewPath = '';
-	$scope.display = {
-		advanced: false
-	};
-	$scope.application = new Application({ name: 'Application', displayName: 'application', external: true });
-
-	$scope.showAdvanced = function(){
-		$scope.display.advanced = true;
-	};
-
-	$scope.hideAdvanced = function(){
-		$scope.display.advanced = false;
-	};
-
-	$scope.applications = model.applications;
-	model.on('applications.change', function(){
-		if(!$scope.$$phase){
-			$scope.$apply('applications');
+	$scope.currentLeaf = ""
+	$scope.getCurrentLeaf = function(){
+		return _.findWhere($scope.leafMenu, { name: $scope.currentLeaf })
+	}
+	$scope.leafMenu = [
+		{
+			name: "appParam",
+			text: lang.translate("appregistry.appParam"),
+			templateName: 'admin-app-param',
+			onClick: function(){},
+			showCondition: function(){ return $scope.isCentralAdmin() }
+		},
+		{
+			name: "appRoles",
+			text: lang.translate("appregistry.appRoles"),
+			templateName: 'admin-app-roles',
+			onClick: function(){
+				 $scope.setCrossRoles($scope.flagCrossRoles())
+				 $scope.viewRole(null)
+			},
+			showCondition: function(){ return $scope.isCentralAdmin() }
+		},
+		{
+			name: "structureTab",
+			text: lang.translate("appregistry.crossRoles"),
+			templateName: 'admin-cross-roles',
+			onClick: function(){
+				$scope.setCrossRoles($scope.flagCrossRoles())
+				$scope.newRole()
+			},
+			showCondition: function(){ return $scope.isCentralAdmin() }
+		},
+		{
+			name: "roleAttribution",
+			text: lang.translate("appregistry.roleAttribution"),
+			templateName: 'admin-role-attribution',
+			onClick: function(){
+				$scope.setCrossRoles($scope.flagCrossRoles())
+			},
+			selectSchoolAction: function(school){
+				school.groups.sync($scope.$apply)
+			},
+			showCondition: function(){ return $scope.isCentralAdmin() }
+		},
+		{
+			name: "externalApps",
+			text: lang.translate("appregistry.external.apps"),
+			templateName: 'admin-external-apps',
+			onClick: function(){},
+			selectSchoolAction: function(school){
+				school.syncExternalApps(function(){
+                    if(!$scope.externalApp || !_.find($scope.school.externalApplications, function(app){ return app.data.id === $scope.externalApp.data.id})){
+                        template.open("externalAppView", "admin-external-apps-list")
+                        $scope.$apply()
+                    } else if($scope.showPanel() === 'massAttribution' && !school.children){
+                        $scope.showPanel('attribution')
+                    }
+                })
+                school.groups.sync(function(){
+                    if($scope.externalApp && _.find($scope.school.externalApplications, function(app){ return app.data.id === $scope.externalApp.data.id})){
+                        $scope.linkedGroupsOpts.reorderGroups()
+                        $scope.$apply()
+                    }
+                })
+                if(!template.containers.externalAppView || template.containers.externalAppView == "empty")
+				    template.open("externalAppView", "admin-external-apps-list")
+			}
 		}
-	});
-
-	$scope.roles = model.roles;
-	model.on('roles.change', function(){
-		if(!$scope.$$phase){
-			$scope.$apply('roles');
+	]
+	_.forEach($scope.leafMenu, function(leaf){
+		var temp = leaf.onClick
+		leaf.onClick = function(){
+			$scope.currentLeaf = leaf.name
+			if(leaf.selectSchoolAction && $scope.school){
+				leaf.selectSchoolAction($scope.school)
+			}
+			temp()
 		}
-	});
+	})
 
-	$scope.schools = model.schools;
+	/////// SCHOOLS ///////
+
 	$scope.setSchool = function(school){
+		if($scope.getCurrentLeaf().selectSchoolAction)
+			$scope.getCurrentLeaf().selectSchoolAction(school)
 		$scope.school = school
 	}
 	$scope.filterTopStructures = function(structure){
@@ -101,61 +172,285 @@ function AppRegistry($scope, $sce, model){
 		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
 	}
 
+	/////// APPLICATIONS ///////
+
+	$scope.application = new Application({ name: 'Application', displayName: 'application', external: true })
+
 	$scope.viewApplication = function(application){
-		$scope.role = undefined;
-		$scope.application = application;
-		$scope.updatePath();
-		$scope.application.open();
+		$scope.role = undefined
+		$scope.application = application
+		$scope.updatePath()
+		$scope.application.open()
 		$scope.application.on('change', function(){
-			$scope.updatePath();
-			$scope.$apply('application');
-		});
-	};
-
-	$scope.updatePath = function(){
-		var path = $scope.application.address;
-		if($scope.application.target === 'adapter'){
-			path = '/adapter#' + path;
-		}
-		previewPath = $sce.trustAsResourceUrl('/appregistry/app-preview?displayName=' + lang.translate($scope.application.displayName) + '&icon=' + $scope.application.icon + '&target=' + $scope.application.target + '&path=' + path);
-		if(!$scope.$$phase){
-			$scope.$apply('application');
-		}
-	};
-	$scope.updatePath();
-
-	$scope.previewPath = function(){
-		return previewPath;
-	};
-
-	$scope.refreshPreview = function(){
-		$('#previewFrame').attr('src', $('#previewFrame').attr('src')+'')
+			$scope.updatePath()
+			$scope.$apply('application')
+		})
 	}
 
 	$scope.newApplication = function(){
-		$scope.application = new Application({ name: 'Application', displayName: 'application', external: true });
-		$scope.updatePath();
+		$scope.application = new Application({ name: 'Application', displayName: 'application', external: true })
+		$scope.updatePath()
 		$scope.application.on('change', function(){
-			$scope.updatePath();
+			$scope.updatePath()
 			if(!$scope.$$phase){
-				$scope.$apply('application');
+				$scope.$apply('application')
 			}
-		});
-	};
+		})
+	}
 
 	$scope.deleteApplication = function(){
 		$scope.application.delete()
 		delete $scope.application
 	}
 
-	$scope.setUserinfoScope = function(){
-		if((!$scope.application.scope || $scope.application.scope.indexOf('userinfo') === -1)  && $scope.application.transferSession){
-			$scope.application.scope = 'userinfo' + ($scope.application.scope || '');
+	$scope.showAdvanced = function(){
+		$scope.display.advanced = true
+	}
+
+	$scope.hideAdvanced = function(){
+		$scope.display.advanced = false
+	}
+
+	var previewPath = ''
+	$scope.display = {
+		advanced: false
+	}
+	$scope.updatePath = function(){
+		var path = $scope.application.address
+		if($scope.application.target === 'adapter'){
+			path = '/adapter#' + path
 		}
-		if($scope.application.scope && $scope.application.scope.indexOf('userinfo') !== -1 && !$scope.application.transferSession){
-			$scope.application.scope = $scope.application.scope.replace('userinfo', '');
+		previewPath = $sce.trustAsResourceUrl('/appregistry/app-preview?displayName=' + lang.translate($scope.application.displayName) + '&icon=' + encodeURIComponent($scope.application.icon) + '&target=' + $scope.application.target + '&path=' + encodeURIComponent(path))
+		if(!$scope.$$phase){
+			$scope.$apply('application')
 		}
-	};
+	}
+	$scope.updatePath()
+
+	$scope.previewPath = function(){
+		return previewPath
+	}
+
+	$scope.refreshPreview = function(){
+		$('#previewFrame').attr('src', $('#previewFrame').attr('src')+'')
+	}
+
+	$scope.setUserinfoScope = function(application){
+		if(!application)
+			application = $scope.application
+		if((!application.scope || application.scope.indexOf('userinfo') === -1)  && application.transferSession){
+			application.scope = 'userinfo' + (application.scope || '')
+		}
+		if(application.scope && application.scope.indexOf('userinfo') !== -1 && !application.transferSession){
+			application.scope = application.scope.replace('userinfo', '')
+		}
+	}
+
+	/////// EXTERNAL APPS ///////
+    $scope.showPanelValue = ''
+    $scope.showPanel = function(panelValue){
+        if(!panelValue){
+            return $scope.showPanelValue
+        } else {
+            $scope.showPanelValue = panelValue
+        }
+    }
+
+	$scope.showExternalAppList = function(){
+		delete $scope.externalApp
+		template.open("externalAppView", "admin-external-apps-list")
+	}
+
+	$scope.selectExternalApp = function(app){
+		$scope.externalApp = app
+		template.open("externalAppView", "admin-external-app-detail")
+	}
+    $scope.initExternalApp = function(){
+        $scope.externalApp = new ExternalApplication()
+        $scope.externalApp.data = { structureId: $scope.school.id }
+        template.open("externalAppView", "admin-external-app-detail")
+    }
+
+	$scope.getPreviewContent = function(app){
+		var path = app.data.address
+		if(app.data.target === 'adapter'){
+			path = '/adapter#' + path
+		}
+		return $sce.trustAsResourceUrl('/appregistry/app-preview?displayName=' + lang.translate(app.data.displayName) + '&icon=' + encodeURIComponent(app.data.icon) + '&target=' + app.data.target + '&path=' + encodeURIComponent(path))
+	}
+
+	$scope.inherited = function(app){
+		return app && app.data.structureId !== $scope.school.id
+	}
+
+	$scope.scopeable = function(app){
+		return app && (
+            $scope.isCentralAdmin() ||
+		    _.chain(model.me.functions).filter(function(item){return item.code === "ADMIN_LOCAL"}).pluck("scope").flatten().value().indexOf(app.data.structureId) > -1
+        )
+	}
+
+	$scope.lockExternalApp = function(app){
+		app.lock().done(function(data){
+			app.data.locked = data.locked
+			$scope.$apply()
+		})
+	}
+
+    $scope.isLinked = function(group, app){
+        if(!group || !app)
+            return false
+        var roleId = app.roles[0].role.id
+        return group.roles.indexOf(roleId) >= 0
+    }
+
+    $scope.getLinkedGroups = function(groups, app){
+        var roleId = app.roles[0].role.id
+        return groups.filter(function(group){
+            return group.roles.indexOf(roleId) >= 0
+        })
+    }
+    $scope.getUnlinkedGroups = function(groups, app){
+        var roleId = app.roles[0].role.id
+        return groups.filter(function(group){
+            return group.roles.indexOf(roleId) < 0
+        })
+    }
+
+    $scope.linkedGroupsOpts = {
+        showLinked: false,
+        orderLinked: false,
+        filterLinked: function(app){
+            if(!this.showLinked)
+                return function(){ return true }
+            return function(group){
+                return $scope.isLinked(group, app)
+            }
+        },
+        orderByLinked: function(app){
+            if(!this.orderLinked)
+                return function(group){
+                    return group && group._order && group._order.linked ? 0 : 1
+                }
+            return function(group){
+                return $scope.isLinked(group, app) ? 0 : 1
+            }
+        },
+        reorderGroups: function(){
+            $scope.school.groups.all.forEach(function(group){
+                if(!group)
+                    return
+                if(group._order)
+                    group._order.linked = $scope.isLinked(group, $scope.externalApp)
+                else
+                    group._order = {linked: $scope.isLinked(group, $scope.externalApp)}
+            })
+        }
+    }
+
+    $scope.switchExternalAppGroupLink = function(group, app){
+        if(!app || !group || app.data.locked)
+            return
+        if($scope.isLinked(group, app)){
+            var idx = group.roles.indexOf(app.roles[0].role.id)
+            group.roles.splice(idx, 1)
+            group.removeLink(app.roles[0].role.id).error(function(){
+                group.roles.push(app.roles[0].role.id)
+                notify.error('appregistry.notify.attribution.error')
+                $scope.$apply()
+            })
+        } else {
+            group.roles.push(app.roles[0].role.id)
+            group.addLink(app.roles[0].role.id).error(function(){
+                group.roles.splice(group.roles.indexOf(app.roles[0].role.id), 1)
+                notify.error('appregistry.notify.attribution.error')
+                $scope.$apply()
+            })
+        }
+    }
+
+    $scope.createExternalApp = function(app){
+        app.save($scope.school.id).done(function(){
+            notify.message('success', lang.translate('appregistry.notify.createApp'));
+            $scope.school.syncExternalApps($scope.$apply)
+            $scope.showExternalAppList()
+        })
+    }
+
+    $scope.updateExternalApp = function(app){
+        app.save().done(function(){
+            notify.info('appregistry.notify.modified');
+        })
+    }
+
+    $scope.deleteExternalApp = function(app){
+        app.delete().done(function(){
+            $scope.school.syncExternalApps($scope.$apply)
+        })
+    }
+
+    $scope.massLinkExternalApp = function(app, profiles){
+        var request = app.massAuthorize(_.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.mass.link.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.mass.link.notify.ko')
+        })
+        return request
+    }
+    $scope.massUnlinkExternalApp = function(app, profiles){
+        var request = app.massUnauthorize(_.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.mass.unlink.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.mass.unlink.notify.ko')
+        })
+        return request
+    }
+
+    $scope.profilesCombo = {
+        profiles: [
+            {
+                name: "Teacher",
+                translatedName: lang.translate("Teacher"),
+                toString: function(){ return this.translatedName }
+            },
+            {
+                name: "Student",
+                translatedName: lang.translate("Student"),
+                toString: function(){ return this.translatedName }
+            },
+            {
+                name: "Relative",
+                translatedName: lang.translate("Relative"),
+                toString: function(){ return this.translatedName }
+            },
+            {
+                name: "Personnel",
+                translatedName: lang.translate("Personnel"),
+                toString: function(){ return this.translatedName }
+            },
+            {
+                name: "Guest",
+                translatedName: lang.translate("Guest"),
+                toString: function(){ return this.translatedName }
+            }
+        ],
+        selectedProfiles: [],
+        reset: function(){ this.selectedProfiles = [] },
+        removeElement: function(elt){
+            this.selectedProfiles.splice(this.selectedProfiles.indexOf(elt), 1)
+        },
+        comboLabels: {
+    		options: lang.translate('options'),
+    		searchPlaceholder: lang.translate('search'),
+    		selectAll: lang.translate('select.all'),
+    		deselectAll: lang.translate('deselect.all')
+    	}
+    }
+
+	/////// ROLES ///////
+	$scope.roleMode = 0
 
 	$scope.setCrossRoles = function(roles){
 		$scope.crossRoles = roles
@@ -170,7 +465,7 @@ function AppRegistry($scope, $sce, model){
 	$scope.createRole = function(prefix){
 		$scope.role.name = prefix ? prefix + " - " + $scope.role.name : $scope.role.name
 		$scope.role.save(function(){
-			$scope.roles.sync(function(){
+			$scope.roles.syncRoles(function(){
 				$scope.crossRoles = $scope.flagCrossRoles()
 			})
 		})
@@ -181,7 +476,7 @@ function AppRegistry($scope, $sce, model){
 		//Deletion process
 		var deletion = function(){
 			role.delete(function(){
-				$scope.roles.sync(function(){
+				$scope.roles.syncRoles(function(){
 					$scope.crossRoles = $scope.flagCrossRoles()
 				})
 			})
@@ -244,7 +539,7 @@ function AppRegistry($scope, $sce, model){
 
 	$scope.saveCrossRole = function(role){
 		role.saveCross(function(){
-			$scope.roles.sync(function(){
+			$scope.roles.syncRoles(function(){
 				$scope.crossRoles = $scope.flagCrossRoles()
 				$scope.role = $scope.roles.findWhere({name: role.name})
 			})
@@ -276,6 +571,44 @@ function AppRegistry($scope, $sce, model){
 
 	$scope.crossRoleContains = function(approle){
 		return _.contains($scope.role.appRoles, approle)
+	}
+
+	$scope.flagCrossRoles = function(){
+		return $scope.roles.crossAppRoles($scope.applications).map(function(role){
+			role.appRoles = []
+			$scope.applications.forEach(function(app){
+				var approles = $scope.roles.applicationRolesExclusive(app)
+				_.forEach(approles, function(approle){
+					if(role.crossRoleContains(approle)){
+						role.appRoles.push(approle)
+					}
+				})
+			})
+			return role
+		})
+	}
+
+	$scope.validateCrossRole = function(crossRole){
+		if(crossRole.appRoles.length > 0){
+			var applicationReference = $scope.applications.find(function(application){
+				return application.actions.findWhere({name: crossRole.appRoles[0].actions.all[0].name})
+			})
+			var differentAppsCheck = _.every(crossRole.appRoles, function(role){
+				return role.actions.every(function(action){
+					return applicationReference.actions.findWhere({name: action.name})
+				})
+			})
+			return !differentAppsCheck && crossRole.name
+		}
+		return false
+	}
+
+	/////// GROUPS ///////
+
+	$scope.SCROLL_INCREMENT = 100
+	$scope.groupsLimit = $scope.SCROLL_INCREMENT
+	$scope.incrementGroupsLimit = function(){
+		$scope.groupsLimit += $scope.SCROLL_INCREMENT
 	}
 
 	$scope.groupContains = function(group, role){
@@ -317,36 +650,10 @@ function AppRegistry($scope, $sce, model){
 		group.link()
 	}
 
-	$scope.flagCrossRoles = function(){
-		return $scope.roles.crossAppRoles($scope.applications).map(function(role){
-			role.appRoles = []
-			$scope.applications.forEach(function(app){
-				var approles = $scope.roles.applicationRolesExclusive(app)
-				_.forEach(approles, function(approle){
-					if(role.crossRoleContains(approle)){
-						role.appRoles.push(approle)
-					}
-				})
-			})
-			return role
-		})
+	// INIT //
+	if($scope.isCentralAdmin()){
+		model.roles.syncRoles()
+		model.applications.syncApps()
 	}
-
-	$scope.validateCrossRole = function(crossRole){
-		if(crossRole.appRoles.length > 0){
-			var applicationReference = $scope.applications.find(function(application){
-				return application.actions.findWhere({name: crossRole.appRoles[0].actions.all[0].name})
-			})
-			var differentAppsCheck = _.every(crossRole.appRoles, function(role){
-				return role.actions.every(function(action){
-					return applicationReference.actions.findWhere({name: action.name})
-				})
-			})
-			return !differentAppsCheck && crossRole.name
-		}
-		return false
-	}
-
-	$scope.roleMode = 0
 
 }

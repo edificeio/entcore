@@ -209,6 +209,33 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
                 return accumulator;
             }
         }
+    })
+    .factory('httpWrapper', function(){
+        return {
+            wrap: function(name, fun, context){
+                var scope = this
+        		if(typeof fun !== "function")
+        			return
+        		if(typeof scope[name] !== "object")
+        			scope[name] = {}
+
+        		var args = []
+        		for(var i = 3; i < arguments.length; i++)
+        			args.push(arguments[i])
+        		scope[name].loading = true
+
+        		var completion = function(){
+        			scope[name].loading = false
+        			scope.$apply()
+        		}
+
+        		if(context){
+        			fun.apply(context, args).xhr.complete(completion)
+        		} else {
+        			fun.apply(scope, args).xhr.complete(completion)
+        		}
+        	}
+        }
     });
 
 //routing
@@ -1375,7 +1402,7 @@ module.directive('skinSrc', function($compile){
 			var skinPath = $('#theme').attr('href').split('/');
 			var path = skinPath.slice(0, skinPath.length - 2).join('/');
 			$attributes.$observe('skinSrc', function(){
-				if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
+				if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('https://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
 					$element.attr('src', path + $attributes.skinSrc);
 				}
 				else{

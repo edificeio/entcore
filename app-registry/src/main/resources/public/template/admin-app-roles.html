@@ -1,0 +1,61 @@
+<!--
+	||||||||||||||||||||
+	||| ROLES BY APP |||
+	||||||||||||||||||||
+-->
+<div class="twelve">
+	<nav class="side-tabs three cell recursive-list">
+		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps" />
+		<ul>
+			<li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+				[[application.name]]
+			</li>
+		</ul>
+	</nav>
+	<article class="side-tabs-content nine cell" ng-if="application.id">
+		<div class="row"><h1 class="nine cell">[[application.name]]</h1></div>
+		<hr class="separator">
+		<div class="row">
+			<div class="row" ng-if="!role" style="margin-bottom: 15px">
+				<div class="four cell">&nbsp</div>
+				<button class="four" ng-click="newRole();">[[lang.translate("appregistry.createRole")]]</button>
+			</div>
+			<article ng-if="role" style="margin-bottom: 0">
+				<input type="text" ng-model="role.name" class="row angle-container-header" placeholder="[[lang.translate('appregistry.newRoleName')]]"/>
+				<div class="row angle-container">
+					<button ng-click="selectAllActions()"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
+					<button ng-click="deselectAllActions()" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
+					<button class="three right-magnet" ng-click="createRole(application.name);" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
+					<button class="three right-magnet" ng-click="hideRoleCreationPanel()" style="margin-right: 10px">[[lang.translate("appregistry.cancel")]]</button>
+				</div>
+				<h3>[[lang.translate("appregistry.authorizations")]]</h3>
+				<ul class="selectable-list">
+					<li ng-repeat="action in application.actions.all | orderBy: 'name'" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+						[[lang.translate(action.displayName)]]
+					</li>
+				</ul>
+			</article>
+		</div>
+		<hr class="separator" style="margin-top: 0">
+		<div class="row">
+			<article ng-repeat="role in roles.applicationRolesExclusive(application)">
+				<input type="text" ng-model="role.name" class="row angle-container-header">
+				<div class="twelve cell toggle">
+				<div class="row angle-container">
+					<button ng-click="selectAllActions(role)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
+					<button ng-click="deselectAllActions(role)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
+					<button class="two right-magnet" ng-click="saveAppRole(role)" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
+					<button class="two right-magnet" ng-click="deleteRole(role)" style="margin-right: 10px;">[[lang.translate("appregistry.delete")]]</button>
+				</div>
+					<div class="row content">
+						<ul class="selectable-list">
+							<li ng-repeat="action in application.actions.all | orderBy: 'name'" ng-click="role.switch(action)" ng-class="{ selected: role.hasAction(action) }">
+								[[lang.translate(action.displayName)]]
+							</li>
+						</ul>
+					</div>
+				</div>
+			</article>
+		</div>
+	</article>
+</div>

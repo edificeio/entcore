@@ -1,0 +1,25 @@
+<h1>
+    <i18n class="inline-middle">appregistry.external.apps</i18n>
+    <button class="glyph-button plus-icon inline-middle horizontal-spacing" ng-click="initExternalApp()" tooltip="app.registry.createExternalApp"></button>
+</h1>
+<p>
+	<i18n>appregistry.external.apps.list.header</i18n>
+</p>
+<input type="text" class="search-input" i18n-placeholder="search" ng-model="filterExternalApps">
+<div class="flex-list squares">
+	<div ng-repeat="app in school.externalApplications | filter: {data.displayName: filterExternalApps} | orderBy: data.displayName"
+		 ng-class="{selected: externalApp === app, inherited: inherited(app), locked: app.data.locked }">
+		 <a ng-click="selectExternalApp(app)">
+		 	[[app.data.displayName]]
+		 </a>
+		 <div class="pictos">
+			<i class="linked" ng-if="inherited(app)" tooltip="appregistry.inherited.application"/>
+			<i class="lock" ng-if="app.data.locked" tooltip="appregistry.app.is.locked"/>
+		 </div>
+		 <div class="actions">
+			<i class="remove" ng-click="deleteExternalApp(app)" ng-if="!externalAppForm.data.locked && scopeable(app)" tooltip="appregistry.delete.application"></i>
+			<i class="lock" ng-click="lockExternalApp(app)" ng-if="!app.data.locked && isCentralAdmin()" tooltip="tooltip.locked"></i>
+			<i class="unlock" ng-click="lockExternalApp(app)" ng-if="app.data.locked && isCentralAdmin()" tooltip="tooltip.unlocked"></i>
+		 </div>
+	</div>
+</div>

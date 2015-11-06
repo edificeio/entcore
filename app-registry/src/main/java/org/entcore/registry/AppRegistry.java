@@ -21,6 +21,7 @@ package org.entcore.registry;
 
 import org.entcore.common.http.BaseServer;
 import org.entcore.registry.controllers.AppRegistryController;
+import org.entcore.registry.controllers.ExternalApplicationController;
 import org.entcore.registry.filters.AppRegistryFilter;
 
 public class AppRegistry extends BaseServer {
@@ -29,6 +30,7 @@ public class AppRegistry extends BaseServer {
 	public void start() {
 		super.start();
 		addController(new AppRegistryController());
+		addController(new ExternalApplicationController());
 		setDefaultResourceFilter(new AppRegistryFilter());
 	}
 
