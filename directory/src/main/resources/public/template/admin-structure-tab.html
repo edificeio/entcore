@@ -88,10 +88,11 @@
                 <label>[[ importCSVData.csv && importCSVData.csv.length > 0 ? importCSVData.csv[0].name : lang.translate("choose.file") ]]</label>
             </div>
             <button class="three cell"
-                    ng-click="importCSV(structure)"
-                    ng-disabled="!importCSVData.profile || !importCSVData.csv || importCSVData.csv.length < 1"
+                    ng-click="loadingWrapper('csvImport', importCSV, null, structure)"
+                    ng-disabled="csvImport.loading || !importCSVData.profile || !importCSVData.csv || importCSVData.csv.length < 1"
                     style="margin-left: 10px; font-size: 12; padding: 2; height: 25px;">
                 [[lang.translate("directory.import")]]
+				<i class="horizontal-spacing-twice loader" ng-if="csvImport.loading"></i>
             </button>
         </div>
         <!-- Structure grouping -->

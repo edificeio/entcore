@@ -163,10 +163,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		for(var i = 3; i < arguments.length; i++)
 			args.push(arguments[i])
 		$scope[name].loading = true
-		fun.apply(context, args).xhr.complete(function(){
+
+		var completion = function(){
 			$scope[name].loading = false
 			$scope.$apply()
-		})
+		}
+
+		if(context){
+			fun.apply(context, args).xhr.complete(completion)
+		} else {
+			fun.apply($scope, args).xhr.complete(completion)
+		}
 	}
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
@@ -642,7 +649,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		where += "&" + $.param(exportData.params)
 
         window.open(where, '_blank')
-        
+
         if(!exportData.params.profile)
             exportData.params.profile = ''
     }
@@ -662,7 +669,13 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	$scope.importCSV = function(structure){
-		structure.importCSV($scope.importCSVData.csv[0], $scope.importCSVData.profile, $scope.importCSVData.charset)
+		return structure.importCSV($scope.importCSVData.csv[0], $scope.importCSVData.profile, $scope.importCSVData.charset, function(){
+			$scope.importCSVData = {
+				profile : "",
+				charset : ""
+			}
+			$scope.$apply()
+		})
 	};
 
     //Refresh the isolated users list.

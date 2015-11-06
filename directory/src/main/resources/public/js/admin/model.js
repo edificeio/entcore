@@ -474,7 +474,7 @@ Structure.prototype.importCSV = function(file, profile, charset, hook){
     var structure = this
     var form = new FormData();
     form.append('file', file);
-    http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile +
+    return http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile +
         '&charset=' + charset, form)
     .done(function(){
         notify.info((lang.translate("directory.notify.csv.imported")))
