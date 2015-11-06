@@ -904,7 +904,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		group.delete(function(){ $scope.refreshGroups($scope.structure)})
 	}
 	$scope.addUserToGroup = function(user, group){
-		if(_.some(group.data.users, function(x){ return user.displayName === x.username }))
+		if(_.some(group.data.users, function(x){ return user.id === x.id }))
 			return
 		group.addUser(user, function(){
 			group.getUsers($scope.refreshScope)

@@ -467,7 +467,7 @@ public class DefaultUserService implements UserService {
 				"WHERE n.id = {groupId} " + condition +
 				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				"RETURN distinct u.id as id, u.login as login," +
-				" u.displayName as username, profile.name as type " +
+				" u.displayName as username, u.firstName as firstName, u.lastName as lastName, profile.name as type " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.putString("groupId", groupId);

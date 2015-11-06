@@ -91,7 +91,9 @@
         <div style="width:60%; float: left">
             <h3 style="text-align: center">[[lang.translate("directory.groupUsers")]]</h3>
             <ul style="list-style-type: decimal; font-family: Lato;">
-                <li ng-repeat="user in groupSelected.data.users" ng-click="removeUserFromGroup(user, groupSelected)">[[user.username]]</li>
+                <li ng-repeat="user in groupSelected.data.users | orderBy: 'lastName'" ng-click="removeUserFromGroup(user, groupSelected)">
+					[[user.lastName]] [[user.firstName]]
+				</li>
             </ul>
         </div>
     </div>
