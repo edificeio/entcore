@@ -1377,15 +1377,15 @@ var calendar = {
 			scheduleItemWidth: function(scheduleItem){
 				var concurrentItems = this.filter(function(item){
 					return item.beginning.unix() < scheduleItem.end.unix() && item.end.unix() > scheduleItem.beginning.unix()
-				})
+				});
 				var maxGutter = 0
 				_.forEach(concurrentItems, function(item){
 					if(item.calendarGutter && item.calendarGutter > maxGutter){
 						maxGutter = item.calendarGutter
 					}
-				})
+				});
 				maxGutter++;
-				return Math.floor(12 / maxGutter);
+				return Math.floor(99 / maxGutter);
 			}
 		});
 		this.collection(calendar.TimeSlot);

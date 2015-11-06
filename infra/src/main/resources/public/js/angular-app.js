@@ -786,8 +786,8 @@ module.directive('scheduleItem', function($compile){
 		},
 		link: function(scope, element, attributes){
 			var parentSchedule = element.parents('.schedule');
-			var cssClasses = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			var scheduleItemEl = element.children('.schedule-item');
+			var dayWidth = parentSchedule.find('.day').width();
 			if(scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || scope.item.locked){
 				scheduleItemEl.removeAttr('resizable');
 				scheduleItemEl.removeAttr('draggable');
@@ -807,8 +807,8 @@ module.directive('scheduleItem', function($compile){
 				endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
 				endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
-                                startTime.year(model.calendar.year);
-                                endTime.year(model.calendar.year);
+				startTime.year(model.calendar.year);
+				endTime.year(model.calendar.year);
 
 				var days = element.parents('.schedule').find('.day');
 				var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
@@ -871,8 +871,7 @@ module.directive('scheduleItem', function($compile){
 				var hours = calendar.getHours(scope.item, scope.day);
 
 				var itemWidth = scope.day.scheduleItems.scheduleItemWidth(scope.item);
-				scheduleItemEl.removeClass('twelve six four three two');
-				scheduleItemEl.addClass(cssClasses[itemWidth]);
+				scheduleItemEl.css({ width: itemWidth + '%' });
 				var calendarGutter = 0;
 				var collision = true;
 				while(collision){
@@ -896,7 +895,7 @@ module.directive('scheduleItem', function($compile){
 				scheduleItemEl.height(((hours.endTime - hours.startTime) * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
 				scheduleItemEl.css({
 					top: top + 'px',
-					left: (scope.item.calendarGutter * (itemWidth * cellWidth)) + 'px'
+					left: (scope.item.calendarGutter * (itemWidth * dayWidth / 100)) + 'px'
 				});
 				var container = element.find('container')
 				if(top < 0){
