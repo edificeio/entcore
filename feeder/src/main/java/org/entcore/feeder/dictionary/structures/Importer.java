@@ -796,6 +796,19 @@ public class Importer {
 				"OPTIONAL MATCH g-[r]-() " +
 				"DELETE g, r ";
 		transactionHelper.add(query, new JsonObject().putArray("importedGroups", new JsonArray(importedGroups.toArray())));
+		// prevent difference between relationships and properties
+		String query2 =
+				"MATCH (u:User) " +
+				"WHERE NOT(HAS(u.deleteDate)) AND has(u.groups) AND LENGTH(u.groups) > 0 " +
+				"AND NOT(u-[:IN]->(:FunctionalGroup)) " +
+				"SET u.groups = [];";
+		transactionHelper.add(query2, null);
+		String query3 =
+				"MATCH (u:User)-[:IN]->(g:FunctionalGroup) " +
+				"WHERE has(u.groups) " +
+				"WITH u, collect(g.externalId) as groups " +
+				"SET u.groups = groups";
+		transactionHelper.add(query3, null);
 	}
 
 	public void removeEmptyClasses() {
@@ -807,6 +820,13 @@ public class Importer {
 				"OPTIONAL MATCH g-[r2]-(), c-[r3]-() " +
 				"DELETE c, g, r1, r2, r3 ";
 		transactionHelper.add(query, null);
+		// prevent difference between relationships and properties
+		String query2 =
+				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WHERE has(u.classes) " +
+				"WITH u, collect(c.externalId) as classes " +
+				"SET u.classes = classes";
+		transactionHelper.add(query2, null);
 	}
 
 	public Structure getStructure(String externalId) {
