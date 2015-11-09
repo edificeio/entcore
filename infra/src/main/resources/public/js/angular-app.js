@@ -4676,6 +4676,13 @@ module.directive('sideNav', function(){
 
 			});
 
+			$('body').on('click', function(e){
+				if(element[0] === e.target || element.find(e.target).length || $('.mobile-nav-opener')[0] === e.target){
+					return;
+				}
+				element.removeClass('slide');
+			})
+
 			if(attributes.maxWidth){
 				maxWidth = parseInt(attributes.maxWidth);
 			}
@@ -4683,6 +4690,7 @@ module.directive('sideNav', function(){
 				element.height($(window).height());
 				if($(window).width() <= maxWidth){
 					var body = $('body');
+					body.find('.application-title').addClass('move-right');
 					ui.extendElement.touchEvents(body, { allowDefault: true });
 					ui.extendElement.touchEvents(element);
 					body.on('swipe-right', function(){
