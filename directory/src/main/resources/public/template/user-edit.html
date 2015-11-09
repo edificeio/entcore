@@ -71,7 +71,7 @@
 			<div class="row" ng-if="account.type.indexOf('Student') < 0">
 				<label translate content="userBook.profile.telephone" class="four cell"></label>
 				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(0|\+33)\s*[0-9]([-. ]?[0-9]{2}){4}$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.homePhone" />
+					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.homePhone" />
 					<span class="twelve input-errors" ng-if="userForm.phone.$invalid && userForm.phone.$dirty">
 						<span ng-repeat="(key, value) in userForm.phone.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>
@@ -84,7 +84,7 @@
 			<div class="row" ng-if="account.type.indexOf('Student') < 0">
 				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
 				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(0|\+33)\s*[6-7]([-. ]?[0-9]{2}){4}$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
+					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
 					<span class="twelve input-errors" ng-if="userForm.mobilePhone.$invalid && userForm.mobilePhone.$dirty">
 						<span ng-repeat="(key, value) in userForm.mobilePhone.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>

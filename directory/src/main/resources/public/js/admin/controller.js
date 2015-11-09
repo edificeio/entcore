@@ -151,7 +151,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	template.open('userDetails', 'admin-user-details')
     $scope.structures = model.structures.structures
     $scope.lang = lang
-	$scope.phonePattern = new RegExp("^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$")
+	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")
 
 	$scope.loadingWrapper = function(name, fun, context){
 		if(typeof fun !== "function")

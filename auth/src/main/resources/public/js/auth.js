@@ -203,7 +203,7 @@ function ActivationController($scope, template){
 	$scope.lang = lang;
 	$scope.template.open('main', 'activation-form');
 	$scope.user = {};
-	$scope.phonePattern = new RegExp("^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$");
+	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$");
 
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
