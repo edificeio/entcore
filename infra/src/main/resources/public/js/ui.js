@@ -261,9 +261,6 @@ ui.extendElement = {
 				x: e.originalEvent.touches[0].clientX
 			};
 			element.on('touchmove', function(e){
-				if(!params.allowDefault){
-					e.preventDefault();
-				}
 				mouse = {
 					y: e.originalEvent.touches[0].clientY,
 					x: e.originalEvent.touches[0].clientX
