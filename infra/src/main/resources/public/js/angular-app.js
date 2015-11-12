@@ -4260,6 +4260,15 @@ module.directive('popoverOpener', function(){
 			var parentElement = element.parents('popover');
 			var popover = parentElement.find('popover-content');
 			parentElement.on('mouseover', function(e){
+				if(popover.offset().left + popover.width() > $(window).width()){
+					popover.addClass('right');
+				}
+				if(popover.offset().left < 0){
+					popover.addClass('left');
+				}
+				if(popover.offset().top + popover.height() > $(window).height()){
+					popover.addClass('bottom');
+				}
 				popover.removeClass("hidden");
 			});
 			parentElement.on('mouseout', function(e){
@@ -4769,6 +4778,12 @@ function Account($scope){
 			$scope.$apply('nbNewMessages');
 		});
 	};
+
+	$scope.openApps = function(event){
+		if($(window).width() <= 700){
+			event.preventDefault();
+		}
+	}
 
 	http().get('/directory/userbook/' + model.me.userId).done(function(data){
 		model.me.userbook = data;
