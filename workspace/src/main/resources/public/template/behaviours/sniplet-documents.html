@@ -53,6 +53,10 @@
 	</div>
 </lightbox>
 
+<lightbox show="display.pickFile" on-close="display.pickFile = false">
+	<media-library ng-change="addDocument(create.document)" ng-model="create.document" file-format="'any'"></media-library>
+</lightbox>
+
 <div class="row">
 	<div class="cell">
 		<div class="row" style="min-height: 0">
@@ -65,7 +69,7 @@
 
 	<resource-right name="update" resource="snipletResource" class="right-magnet cell">
 		<plus class="right-magnet cell">
-			<media-select ng-model="create.document" ng-change="addDocument(create.document)" label="workspace.sniplet.documents.add" file-format="'any'"></media-select>
+			<button ng-click="display.pickFile = true;"><i18n>workspace.sniplet.documents.add</i18n></button>
 			<button ng-click="display.createFolder = true;"><i18n>folder.new</i18n></button>
 		</plus>
 	</resource-right>
