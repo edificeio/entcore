@@ -221,12 +221,16 @@ var ui = (function(){
 				if(($(this).height() + parseInt($(this).css('padding-top')) + parseInt($(this).css('padding-bottom'))) === this.scrollHeight){
 					$(this).css({ transition: 'none', height: 'auto' });
 				}
-				setTimeout(function(){
+				var request;
+				var setHeight = function(){
 					$(this).height(this.scrollHeight);
 					$(this).css("transition", "");
-				}.bind(this), 100);
+					request = setTimeout(setHeight, 200);
+				}.bind(this);
+				request = setTimeout(setHeight, 200);
 			}
 			else{
+				clearTimeout(request);
 				$(this).removeAttr('style');
 			}
 		});
