@@ -75,6 +75,8 @@ public class SamlController extends BaseController {
 							if (activationCode != null && login != null) {
 								activateUser(activationCode, login, email, mobile, request);
 							} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
+								log.info("Connexion de l'utilisateur fédéré " + login);
+								eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
 								createSession(userId, request);
 							} else {
 								redirect(request, LOGIN_PAGE);
