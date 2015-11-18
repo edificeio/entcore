@@ -4508,7 +4508,7 @@ module.directive('multiCombo', function(){
  			searchPlaceholder: '@',
  			maxSelected: '@',
 			labels: '&',
-			disabled: '&',
+			disable: '&',
 			selectionEvent: '&',
 			deselectionEvent: '&'
 		},
