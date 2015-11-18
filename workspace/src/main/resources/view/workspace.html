@@ -29,7 +29,7 @@
 		<script src="{{#static}}js/controller.js{{/static}}" type="text/javascript"></script>
 
 		<script type="text/ng-template" id="folder-content">
-			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name"
+			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name !== undefined"
 			   class="folder-list-item"
 			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)">
