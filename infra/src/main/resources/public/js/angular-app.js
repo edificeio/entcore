@@ -2275,7 +2275,7 @@ module.directive('tooltip', function($compile){
 				tip.fadeIn();
 				element.one('mouseout', function(){
 					tip.fadeOut(200, function(){
-						tip.remove();
+						$(this).remove();
 					})
 				});
 			});
