@@ -108,7 +108,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "ELIOT" :
 				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
 						container.config().getString("export-destination"),
-						container.config().getBoolean("concat-export", true), vertx);
+						container.config().getBoolean("concat-export", false), vertx);
 				break;
 		}
 
