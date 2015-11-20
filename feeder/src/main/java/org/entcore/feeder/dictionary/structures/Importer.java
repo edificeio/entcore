@@ -829,6 +829,14 @@ public class Importer {
 		transactionHelper.add(query2, null);
 	}
 
+	public void addRelativeProperties(String source) {
+		String query =
+				"MATCH (u:User {source: {source}})-[:RELATED]->(u2:User) " +
+				"WHERE HEAD(u.profiles) = 'Student' AND NOT(HAS(u.relative)) " +
+				"SET u.relative = coalesce(u.relative, []) + (u2.externalId + '$1$1$1$1$0')";
+		transactionHelper.add(query, new JsonObject().putString("source", source));
+	}
+
 	public Structure getStructure(String externalId) {
 		return structures.get(externalId);
 	}

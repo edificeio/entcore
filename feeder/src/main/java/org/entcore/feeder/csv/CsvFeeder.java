@@ -391,6 +391,7 @@ public class CsvFeeder implements PartialFeed {
 			case "Relative":
 				importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
 				importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
+				importer.addRelativeProperties(getSource());
 				break;
 		}
 //		importer.markMissingUsers(structure.getExternalId(), new Handler<Void>() {
