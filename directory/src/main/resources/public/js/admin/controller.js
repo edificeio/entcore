@@ -614,6 +614,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			key: "Sacoche",
 			label: 'directory.admin.export.type.sacoche',
 			format: 'csv'
+		},
+		{
+			key: "Gepi",
+			label: 'directory.admin.export.type.gepi',
+			filename: 'ENT-Identifiants.csv',
+			format: 'csv'
 		}
 	]
 	$scope.initExportData = function(){
@@ -646,7 +652,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
     $scope.openExport = function(){
 		var exportData = $scope.exportData
-        var where = 'export/users?format=' + $scope.exportData.findFormat(exportData.params.type).format
+		var exportFormat = $scope.exportData.findFormat(exportData.params.type)
+        var where = 'export/users?format=' + exportFormat.format
+		if (!!exportFormat.filename) {
+				where += "&filename" + "=" + exportFormat.filename
+		}
 		if(exportData.export_mode !== 'all'){
 			where += "&" + exportData.export_mode + "=" + exportData[exportData.export_mode]
 		}

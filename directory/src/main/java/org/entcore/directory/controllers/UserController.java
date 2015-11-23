@@ -252,7 +252,8 @@ public class UserController extends BaseController {
 											@Override
 											public void handle(final String export) {
 												if (export != null) {
-													String filename = "export"+exportType+"."+format;
+													String filename = request.params().get("filename") != null ?
+															request.params().get("filename") : "export"+exportType+"."+format;
 													if ("xml".equals(format)) {
 														request.response().putHeader("Content-Type", "text/xml");
 													} else {
