@@ -609,6 +609,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			show: function(){
 				return $scope.exportData.params.profile === 'Student'
 			}
+		},
+		{
+			key: "Sacoche",
+			label: 'directory.admin.export.type.sacoche',
+			format: 'csv'
 		}
 	]
 	$scope.initExportData = function(){

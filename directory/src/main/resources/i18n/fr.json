@@ -64,6 +64,7 @@
     "directory.admin.export.type.esidoc": "Export e-sidoc",
     "directory.admin.export.type.cerise.teacher": "Export Cerise enseignant",
     "directory.admin.export.type.cerise.student": "Export Cerise élève",
+    "directory.admin.export.type.sacoche": "Export Sacoche",
     "directory.admin.exportTitle": "Export",
     "directory.admin.exports": "Exporter les données d'authentification",
     "directory.admin.firstname": "Prénom",
