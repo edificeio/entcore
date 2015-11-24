@@ -24,5 +24,8 @@
   "UidRegisteredService.name" : "Uid",
   "UidRegisteredService.description" :  "Renvoie uniquement l'identifiant externe au client CAS.",
   "DefaultRegisteredService.name" : "Défaut",
-  "DefaultRegisteredService.description" : "Service CAS par défaut, renvoie l'intégralité des informations utilisateur au client CAS (exhaustif)."
+  "DefaultRegisteredService.description" : "Service CAS par défaut, renvoie l'intégralité des informations utilisateur au client CAS (exhaustif).",
+  "GRRRegisteredService.name" : "GRR",
+  "GRRRegisteredService.description" : "Service CAS spécifique <a href='http://grr.devome.com/' target='_blank'>GRR</a>, logiciel de réservation de ressource."
+
 }
