@@ -26,7 +26,7 @@
 				<textarea ng-model="targetFolder.comment"></textarea>
 			</div>
 			<div class="lightbox-buttons fluid">
-                <button class="right-magnet">
+                <button class="right-magnet" ng-disabled="!targetFolder.comment.length">
                     <i18n>workspace.comment</i18n>
                 </button>
 				<button class="cancel right-magnet" type="button" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
