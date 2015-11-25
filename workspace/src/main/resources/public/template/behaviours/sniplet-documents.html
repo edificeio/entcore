@@ -1,27 +1,27 @@
 <script type="text/ng-template" id="list-folder">
-	<a ng-click="display.targetFolder = folder" ng-class="{ selected: display.targetFolder === folder }">[[folder.title]]</a>
+	<a ng-click="displaySniplet.targetFolder = folder" ng-class="{ selected: displaySniplet.targetFolder === folder }">[[folder.title]]</a>
 	<ul ng-if="folder.documents.length > 0">
 		<li ng-repeat="folder in folder.documents | filter:isFolder" ng-include="'list-folder'">
 		</li>
 	</ul>
 </script>
 
-<lightbox show="display.createFolder" on-close="display.createFolder = false;">
+<lightbox show="displaySniplet.createFolder" on-close="displaySniplet.createFolder = false;">
 	<h2><i18n>folder.new</i18n></h2>
 	<div class="row">
 		<input type="text" i18n-placeholder="workspace.folder.name" class="twelve cell" ng-model="create.folder.title" />
 	</div>
 	<div class="row">
-		<button class="right-magnet" ng-click="addFolder(); display.createFolder = false;">
+		<button class="right-magnet" ng-click="addFolder(); displaySniplet.createFolder = false;">
 			<i18n>create</i18n>
 		</button>
-		<button type="button" class="right-magnet" ng-click="display.createFolder = false;">
+		<button type="button" class="right-magnet" ng-click="displaySniplet.createFolder = false;">
 			<i18n>cancel</i18n>
 		</button>
 	</div>
 </lightbox>
 
-<lightbox show="display.moveDocuments" on-close="display.moveDocuments = false;">
+<lightbox show="displaySniplet.moveDocuments" on-close="displaySniplet.moveDocuments = false;">
 	<h2><i18n>document.move</i18n></h2>
 	<div class="row">
 		<nav class="vertical">
@@ -31,29 +31,29 @@
 		</nav>
 	</div>
 	<div class="row">
-		<button class="right-magnet" ng-click="moveDocuments(); display.moveDocuments = false;">
+		<button class="right-magnet" ng-click="moveDocuments(); displaySniplet.moveDocuments = false;">
 			<i18n>move</i18n>
 		</button>
-		<button type="button" class="right-magnet" ng-click="display.moveDocuments = false;">
+		<button type="button" class="right-magnet" ng-click="displaySniplet.moveDocuments = false;">
 			<i18n>cancel</i18n>
 		</button>
 	</div>
 </lightbox>
 
-<lightbox show="display.confirmRemove" on-close="display.confirmRemove = false;">
+<lightbox show="displaySniplet.confirmRemove" on-close="displaySniplet.confirmRemove = false;">
 	<h2><i18n>remove</i18n></h2>
 	<p><i18n>workspace.sniplet.documents.confirm.remove</i18n></p>
 	<div class="row">
-		<button class="right-magnet" ng-click="removeDocuments(); display.confirmRemove = false;">
+		<button class="right-magnet" ng-click="removeDocuments(); displaySniplet.confirmRemove = false;">
 			<i18n>remove</i18n>
 		</button>
-		<button type="button" class="right-magnet" ng-click="display.confirmRemove = false;">
+		<button type="button" class="right-magnet" ng-click="displaySniplet.confirmRemove = false;">
 			<i18n>cancel</i18n>
 		</button>
 	</div>
 </lightbox>
 
-<lightbox show="display.pickFile" on-close="display.pickFile = false">
+<lightbox show="displaySniplet.pickFile" on-close="displaySniplet.pickFile = false">
 	<media-library ng-change="addDocument(create.document)" ng-model="create.document" file-format="'any'"></media-library>
 </lightbox>
 
@@ -69,8 +69,8 @@
 
 	<resource-right name="update" resource="snipletResource" class="right-magnet cell">
 		<plus class="right-magnet cell">
-			<button ng-click="display.pickFile = true;"><i18n>workspace.sniplet.documents.add</i18n></button>
-			<button ng-click="display.createFolder = true;"><i18n>folder.new</i18n></button>
+			<button ng-click="displaySniplet.pickFile = true;"><i18n>workspace.sniplet.documents.add</i18n></button>
+			<button ng-click="displaySniplet.createFolder = true;"><i18n>folder.new</i18n></button>
 		</plus>
 	</resource-right>
 </div>
@@ -98,7 +98,7 @@
 
 <section class="toggle-buttons" ng-class="{ hide: cursor.selection.length === 0 }">
 	<div class="toggle">
-		<button ng-click="display.moveDocuments = true"><i18n>move</i18n></button>
-		<button ng-click="display.confirmRemove = true"><i18n>remove</i18n></button>
+		<button ng-click="displaySniplet.moveDocuments = true"><i18n>move</i18n></button>
+		<button ng-click="displaySniplet.confirmRemove = true"><i18n>remove</i18n></button>
 	</div>
 </section>

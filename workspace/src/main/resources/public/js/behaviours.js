@@ -161,6 +161,7 @@ Behaviours.register('workspace', {
 					});
 				},
 				init: function(){
+					this.displaySniplet = {};
 					this.create = {
 						document: {},
 						folder: {
@@ -220,7 +221,7 @@ Behaviours.register('workspace', {
 					if (typeof this.snipletResource.save === 'function') {
 						this.snipletResource.save();
 					}
-					this.display.pickFile = false;
+					this.displaySniplet.pickFile = false;
 				},
 				drag: function(item, $originalEvent){
 					$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
@@ -231,7 +232,7 @@ Behaviours.register('workspace', {
 						return (document._id === originalItem._id && originalItem.metadata) || (document._id === undefined && originalItem.title === document.title);
 					});
 
-					this.display.targetFolder = targetItem;
+					this.displaySniplet.targetFolder = targetItem;
 					this.clearSelection();
 					foundItem.selected = true;
 					this.updateSelection();
@@ -257,7 +258,7 @@ Behaviours.register('workspace', {
 					this.cursor.currentFolder.documents = _.reject(this.cursor.currentFolder.documents, function(doc){
 						return doc.selected;
 					});
-					this.display.targetFolder.documents = this.display.targetFolder.documents.concat(this.cursor.selection);
+					this.displaySniplet.targetFolder.documents = this.displaySniplet.targetFolder.documents.concat(this.cursor.selection);
 					this.clearSelection();
 					if(typeof this.snipletResource.save === 'function'){
 						this.snipletResource.save();
