@@ -19,6 +19,9 @@
 
 package org.entcore.session;
 
+import com.hazelcast.core.BaseMap;
+import com.hazelcast.core.IMap;
+import com.hazelcast.nio.serialization.HazelcastSerializationException;
 import fr.wseduc.mongodb.MongoDb;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -173,7 +176,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			});
 			return;
 		}
-		JsonObject session = unmarshal(sessions.get(info.sessionId));
+		JsonObject session = null;
+		try {
+			session = unmarshal(sessions.get(info.sessionId));
+		} catch (HazelcastSerializationException e) {
+			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
+		}
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return;
@@ -195,7 +203,22 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		JsonObject session =  unmarshal(sessions.get(sessionId));
+		JsonObject session = null;
+		try {
+			session = unmarshal(sessions.get(sessionId));
+		} catch (HazelcastSerializationException e) {
+			logger.warn("Error in deserializing hazelcast session " + sessionId);
+			try {
+				if (sessions instanceof BaseMap) {
+					((BaseMap) sessions).delete(sessionId);
+				} else {
+					sessions.remove(sessionId);
+				}
+			} catch (HazelcastSerializationException e1) {
+				logger.warn("Error getting object after removing hazelcast session " + sessionId);
+			}
+		}
+
 		if (session == null) {
 			final JsonObject query = new JsonObject().putString("_id", sessionId);
 			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
@@ -205,16 +228,35 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					String userId;
 					if ("ok".equals(event.body().getString("status")) && res != null &&
 							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
+						final String uId = userId;
 						createSession(userId, sessionId, new Handler<String>() {
 							@Override
 							public void handle(String sId) {
 								if (sId != null) {
-									JsonObject s =  unmarshal(sessions.get(sId));
-									if (s != null) {
-										sendOK(message, new JsonObject().putString("status", "ok")
-												.putObject("session", s));
-									} else {
-										sendError(message, "Session not found.");
+									try {
+										JsonObject s = unmarshal(sessions.get(sId));
+										if (s != null) {
+											JsonObject sessionResponse = new JsonObject().putString("status", "ok")
+													.putObject("session", s);
+											sendOK(message, sessionResponse);
+										} else {
+											sendError(message, "Session not found.");
+										}
+									} catch (HazelcastSerializationException e) {
+										logger.warn("Error in deserializing new hazelcast session " + sId);
+										generateSessionInfos(uId, new Handler<JsonObject>() {
+
+											@Override
+											public void handle(JsonObject event) {
+												if (event != null) {
+													logger.info("Session with hazelcast problem : " + event.encode());
+													sendOK(message, new JsonObject().putString("status", "ok")
+															.putObject("session", event));
+												} else {
+													sendError(message, "Session not found.");
+												}
+											}
+										});
 									}
 								} else {
 									sendError(message, "Session not found.");
@@ -261,12 +303,24 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if (infos != null) {
 					long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
 						public void handle(Long timerId) {
-							sessions.remove(sessionId);
 							logins.remove(userId);
+							sessions.remove(sessionId);
 						}
 					});
-					sessions.put(sessionId, infos.encode());
-					logins.put(userId, new LoginInfo(timerId, sessionId));
+					try {
+						sessions.put(sessionId, infos.encode());
+						logins.put(userId, new LoginInfo(timerId, sessionId));
+					} catch (HazelcastSerializationException e) {
+						logger.error("Error putting session in hazelcast map");
+						try {
+							if (sessions instanceof IMap) {
+								((IMap) sessions).putAsync(sessionId, infos.encode());
+							}
+							logins.put(userId, new LoginInfo(timerId, sessionId));
+						} catch (HazelcastSerializationException e1) {
+							logger.error("Error putting async session in hazelcast map", e1);
+						}
+					}
 					final JsonObject now = MongoDb.now();
 					if (sId == null) {
 						mongo.save(SESSIONS_COLLECTION, new JsonObject()
@@ -292,7 +346,20 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		mongo.delete(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId));
-		JsonObject session =  unmarshal(sessions.get(sessionId));
+		JsonObject session =  null;
+		try {
+			session = unmarshal(sessions.get(sessionId));
+		} catch (HazelcastSerializationException e) {
+			try {
+				if (sessions instanceof BaseMap) {
+					((BaseMap) sessions).delete(sessionId);
+				} else {
+					sessions.remove(sessionId);
+				}
+			} catch (HazelcastSerializationException e1) {
+				logger.error("In doDrop - Error getting object after removing hazelcast session " + sessionId, e);
+			}
+		}
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return;
@@ -349,7 +416,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "Invalid userId.");
 			return null;
 		}
-		JsonObject session =  unmarshal(sessions.get(info.sessionId));
+		JsonObject session =  null;
+		try {
+			session = unmarshal(sessions.get(info.sessionId));
+		} catch (HazelcastSerializationException e) {
+			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
+		}
 		if (session == null) {
 			sendError(message, "Session not found.");
 			return null;
@@ -369,7 +441,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "Invalid userId.");
 			return;
 		}
-		sessions.put(info.sessionId, session.encode());
+		try {
+			sessions.put(info.sessionId, session.encode());
+		} catch (HazelcastSerializationException e) {
+			logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
+		}
 	}
 
 	private void doRemoveAttribute(Message<JsonObject> message) {
