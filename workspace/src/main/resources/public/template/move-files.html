@@ -34,7 +34,7 @@
 			</nav>
 		</nav>
 		<a ng-if="anyTargetFolder() && !newFolder.editing" ng-click="editFolder()" class="twelve cell vertical-spacing">Créer un nouveau dossier</a>
-		<div class="row vertical-spacing" ng-if="newFolder.editing">
+		<div class="row vertical-spacing input-block" ng-if="newFolder.editing">
 			<input type="text" ng-model="newFolder.name" />
 			<button ng-click="createEditFolder()">[[translate('workspace.folder.create')]]</button>
 		</div>
