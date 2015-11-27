@@ -209,6 +209,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 	};
 
 	$scope.openNewDocumentView = function(){
+		$scope.loadingFiles = [];
 		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
 		template.open('lightbox', 'create-file');
 	};
