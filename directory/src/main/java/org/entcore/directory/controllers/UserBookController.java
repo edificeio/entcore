@@ -29,7 +29,6 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.Either.Left;
 import fr.wseduc.webutils.http.BaseController;
 
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -688,15 +687,13 @@ public class UserBookController extends BaseController {
 					if (result.isRight()) {
 						UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", result.right().getValue(), new Handler<Boolean>() {
 							public void handle(Boolean event) {
-								if(event)
-									handler.handle(result);
-								else
-									handler.handle(new Either.Left<String, JsonObject>("Could not add preferences attribute to session."));
+								if(Boolean.FALSE.equals(event)) {
+									log.error("Could not add preferences attribute to session.");
+								}
 							}
 						});
-					} else {
-						handler.handle(result);
 					}
+					handler.handle(result);
 				}
 		}));
 	}
