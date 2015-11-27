@@ -3666,6 +3666,7 @@ module.directive('alphabetical', function($compile, $parse){
 			var collection = match[2];
 			return function(scope, element, attributes){
 				scope.title = attributes.title || 'title';
+				element.removeAttr('title');
 				scope.collection = $parse(collection);
 				scope.$watchCollection(collection, function(newVal){
 					scope.updateElements();
