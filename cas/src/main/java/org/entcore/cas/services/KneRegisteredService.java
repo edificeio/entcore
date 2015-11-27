@@ -28,6 +28,11 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private abstract class Mapper<IN, OUT>{
 		abstract OUT map(IN input);
 	}
+	private class DefaultMapper<A> extends Mapper<A, A>{
+		A map(A input){
+			return input;
+		}
+	}
 
 	private void addStringArray(String casLabel, String entLabel, JsonObject data, Document doc, List<Element> additionalAttributes, Mapper<String, String> mapper){
 		Element root = createElement(casLabel+"s", doc);
@@ -95,12 +100,8 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					rootProfiles = createElement("ENTPersonProfils", doc);
 					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_ELV", doc));
 					additionalAttributes.add(rootProfiles);
-					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module", "").length() > 5 ? data.getString("module").substring(0, 6) : data.getString("module", ""), doc));
-					addStringArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes, new Mapper<String, String>(){
-						String map(String input) {
-							return input.length() > 5 ? input.substring(0, 6) : input;
-						}
-					});
+					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module", ""), doc));
+					addStringArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes, new DefaultMapper<String>());
 					addStringArray("ENTEleveClasse", "classes", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = classGroupPattern.matcher(input);
