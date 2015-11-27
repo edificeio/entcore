@@ -29,10 +29,12 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.file.FileProps;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Starter extends BaseServer {
@@ -80,6 +82,7 @@ public class Starter extends BaseServer {
 							if (event.succeeded()) {
 								deployModules(config.getArray("external-modules", new JsonArray()), false);
 								deployModules(config.getArray("one-modules", new JsonArray()), true);
+								registerGlobalWidgets(config.getString("widgets-path", "../../assets/widgets"));
 							}
 						}
 					});
@@ -194,6 +197,51 @@ public class Starter extends BaseServer {
 			container.deployModule(module.getString("name"),
 					conf, module.getInteger("instances", 1));
 		}
+	}
+
+	private void registerWidget(final String widgetPath){
+		final String widgetName = new File(widgetPath).getName();
+		JsonObject widget = new JsonObject()
+				.putString("name", widgetName)
+				.putString("js", "/assets/widgets/"+widgetName+"/"+widgetName+".js")
+				.putString("path", "/assets/widgets/"+widgetName+"/"+widgetName+".html");
+
+		JsonObject message = new JsonObject()
+				.putObject("widget", widget);
+		vertx.eventBus().send("wse.app.registry.widgets", message, new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				if("error".equals(event.body().getString("status"))){
+					log.error("Error while registering widget "+widgetName+". "+event.body().getString("message"));
+					return;
+				}
+				log.info("Successfully registered widget "+widgetName);
+			}
+		});
+	}
+
+	private void registerGlobalWidgets(String widgetsPath) {
+		vertx.fileSystem().readDir(widgetsPath, new Handler<AsyncResult<String[]>>() {
+			public void handle(AsyncResult<String[]> asyn) {
+				if(asyn.failed()){
+					log.error("Error while registering global widgets.", asyn.cause());
+					return;
+				}
+				String[] paths = asyn.result();
+				for(final String path: paths){
+					vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
+						public void handle(AsyncResult<FileProps> asyn) {
+							if(asyn.failed()){
+								log.error("Error while registering global widget " + path, asyn.cause());
+								return;
+							}
+							if(asyn.result().isDirectory()){
+								registerWidget(path);
+							}
+						}
+					});
+				}
+			}
+		});
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {

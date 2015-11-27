@@ -69,6 +69,4 @@ public interface AppRegistryService {
 
 	void setDefaultClassRoles(String classId, Handler<Either<String, JsonObject>> handler);
 
-	void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler);
-
 }

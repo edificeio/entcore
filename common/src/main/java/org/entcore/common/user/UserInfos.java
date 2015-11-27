@@ -117,6 +117,52 @@ public class UserInfos {
 		}
 	}
 
+	public static class Widget {
+		private String id;
+		private String name;
+		private String path;
+		private String js;
+		private String application;
+		private boolean mandatory;
+
+		public String getId(){
+			return id;
+		}
+		public void setId(String id){
+			this.id = id;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getPath() {
+			return path;
+		}
+		public void setPath(String path) {
+			this.path = path;
+		}
+		public String getJs() {
+			return js;
+		}
+		public void setJs(String js) {
+			this.js = js;
+		}
+		public String getApplication() {
+			return application;
+		}
+		public void setApplication(String application) {
+			this.application = application;
+		}
+		public boolean isMandatory() {
+			return mandatory;
+		}
+		public void setMandatory(boolean mandatory) {
+			this.mandatory = mandatory;
+		}
+	}
+
 	public static class Function {
 		private String code;
 		private List<String> scope;
@@ -157,6 +203,7 @@ public class UserInfos {
 	private List<String> structures;
 	private Map<String, Object> cache;
 	private Boolean federated;
+	private List<Widget> widgets;
 
 	public Map<String, Function> getFunctions() {
 		return functions;
@@ -336,6 +383,14 @@ public class UserInfos {
 
 	public void setFederated(Boolean federated) {
 		this.federated = federated;
+	}
+
+	public List<Widget> getWidgets() {
+		return widgets;
+	}
+
+	public void setWidgets(List<Widget> widgets) {
+		this.widgets = widgets;
 	}
 
 }

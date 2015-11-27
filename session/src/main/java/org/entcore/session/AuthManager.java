@@ -487,20 +487,32 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"WHERE HAS(n.login) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix]) as apps";
+		final String query3 =
+				"MATCH (u:User {id: {id}})-[:IN]->()-[auth:AUTHORIZED]->(w:Widget) " +
+				"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(app:Application) " +
+				"WHERE HAS(u.login) " +
+				"WITH w, app, collect(auth) as authorizations " +
+				"RETURN DISTINCT COLLECT({" +
+					"id: w.id, name: w.name, path: w.path, "+
+					"js: w.js, application: app.id, "+
+					"mandatory: ANY(a IN authorizations WHERE HAS(a.mandatory) AND a.mandatory = true)"+
+				"}) as widgets";
 		JsonObject params = new JsonObject();
 		params.putString("id", userId);
 		JsonArray statements = new JsonArray()
 				.add(new JsonObject().putString("statement", query).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query2).putObject("parameters", params));
+				.add(new JsonObject().putString("statement", query2).putObject("parameters", params))
+				.add(new JsonObject().putString("statement", query3).putObject("parameters", params));
 		executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonArray results = message.body().getArray("results");
-				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 2 &&
+				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 3 &&
 						results.<JsonArray>get(0).size() > 0 && results.<JsonArray>get(1).size() > 0) {
 					JsonObject j = results.<JsonArray>get(0).get(0);
 					JsonObject j2 = results.<JsonArray>get(1).get(0);
+					JsonObject j3 = results.<JsonArray>get(2).get(0);
 					j.putString("userId", userId);
 					JsonObject functions = new JsonObject();
 					JsonArray actions = new JsonArray();
@@ -541,6 +553,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);
 					j.putObject("cache", new JsonObject());
+					j.putArray("widgets", j3.getArray("widgets", new JsonArray()));
 					handler.handle(j);
 				} else {
 					handler.handle(null);

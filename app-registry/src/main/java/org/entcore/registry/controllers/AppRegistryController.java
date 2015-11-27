@@ -285,14 +285,6 @@ public class AppRegistryController extends BaseController {
 		}
 	}
 
-	@Put("/application/:id/lock")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
-	public void lockExternalApp(final HttpServerRequest request) {
-		String structureId = request.params().get("id");
-		appRegistryService.toggleLock(structureId, defaultResponseHandler(request));
-	}
-
 	@BusAddress("wse.app.registry")
 	public void collectApps(final Message<JsonObject> message) {
 		final JsonObject app = message.body().getObject("application");

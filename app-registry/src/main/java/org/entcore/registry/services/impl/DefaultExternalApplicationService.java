@@ -3,6 +3,7 @@ package org.entcore.registry.services.impl;
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import java.util.List;
 import java.util.UUID;
@@ -171,6 +172,16 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
+	public void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler) {
+		if (defaultValidationParamsNull(handler, structureId)) return;
+		String query =
+				"MATCH (app:Application:External) WHERE app.id = {structureId} " +
+				"SET app.locked = NOT coalesce(app.locked, false) " +
+				"RETURN app.locked as locked";
+		neo.execute(query, new JsonObject().putString("structureId", structureId), validUniqueResultHandler(handler));
+	}
+
+	@Override
 	public void massAuthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
 		String query =
 			"MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
@@ -184,6 +195,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
+
 	@Override
 	public void massUnauthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
 		String query =
@@ -199,4 +211,5 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 			neo.execute(query, params, validEmptyHandler(handler));
 	}
+
 }

@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.registry.filters.ApplicationFilter;
+import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.services.ExternalApplicationService;
 import org.entcore.registry.services.impl.DefaultExternalApplicationService;
 import org.vertx.java.core.Handler;
@@ -52,6 +53,14 @@ public class ExternalApplicationController extends BaseController {
 				externalAppService.createExternalApplication(structureId, body, notEmptyResponseHandler(request, 201, 409));
 			}
 		});
+	}
+
+	@Put("/application/external/:id/lock")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void lockExternalApp(final HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		externalAppService.toggleLock(structureId, defaultResponseHandler(request));
 	}
 
 	@Put("/application/external/:id/authorize")

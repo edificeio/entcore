@@ -265,7 +265,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"WHERE n.name = {applicationName} " +
 				"WITH count(*) AS exists " +
 				"WHERE exists=0 " +
-				"CREATE (m:Application:External {props}) " +
+				"CREATE (m:Application {props}) " +
 				"RETURN m.id as id";
 		final JsonObject params = new JsonObject().putString("applicationName", applicationName);
 		if (structureId != null && !structureId.trim().isEmpty()) {
@@ -431,16 +431,6 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"AND pr.name =~ '^[A-Za-z0-9]+-(personnel|all)-default$' " +
 				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr, cpg-[:AUTHORIZED]->pr";
 		neo.execute(query, new JsonObject().putString("id", classId), validEmptyHandler(handler));
-	}
-
-	@Override
-	public void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler) {
-		if (defaultValidationParamsNull(handler, structureId)) return;
-		String query =
-				"MATCH (app:Application:External) WHERE app.id = {structureId} " +
-				"SET app.locked = NOT coalesce(app.locked, false) " +
-				"RETURN app.locked as locked";
-		neo.execute(query, new JsonObject().putString("structureId", structureId), validUniqueResultHandler(handler));
 	}
 
 }

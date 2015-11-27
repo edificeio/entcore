@@ -13,6 +13,7 @@ public interface ExternalApplicationService {
 	void listExternalApps(String structureId, Handler<Either<String, JsonArray>> handler);
 	void deleteExternalApplication(String applicationId, Handler<Either<String, JsonObject>> handler);
 	void createExternalApplication(String structureId, JsonObject application, Handler<Either<String, JsonObject>> handler);
+	void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler);
 	void massAuthorize(String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 	void massUnauthorize(String appId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 

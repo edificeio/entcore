@@ -119,7 +119,7 @@ Application.prototype.delete = function(){
 
 function ExternalApplication(){}
 ExternalApplication.prototype.lock = function(){
-	return http().put('/appregistry/application/' + this.data.id + "/lock")
+	return http().put('/appregistry/application/external/' + this.data.id + "/lock")
 }
 ExternalApplication.prototype.createApplication = function(structureId){
 	return http().postJson('/appregistry/application/external?structureId=' + structureId, {
