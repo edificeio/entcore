@@ -4679,9 +4679,11 @@ module.directive('sideNav', function(){
 			opener.on('click', function(){
 				if(!element.hasClass('slide')){
 					element.addClass('slide');
+					$('body').addClass('point-out');
 				}
 				else{
 					element.removeClass('slide');
+					$('body').removeClass('point-out');
 				}
 
 			});
@@ -4691,6 +4693,8 @@ module.directive('sideNav', function(){
 					return;
 				}
 				element.removeClass('slide');
+				$('body').removeClass('point-out');
+
 			})
 
 			if(attributes.maxWidth){
@@ -4708,6 +4712,7 @@ module.directive('sideNav', function(){
 					});
 					element.on('swipe-left', function(){
 						element.removeClass('slide');
+						$('body').removeClass('point-out');
 					});
 				}
 			}
