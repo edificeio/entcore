@@ -917,7 +917,6 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 			$scope.openedFolder.folder.children = _.reject($scope.openedFolder.folder.children, function(child){
 				return child._id === folder._id;
 			});
-			refreshFolders();
 			http().put('/workspace/folder/move/' + folder._id, data)
 				.done(function(){
 					$scope.reloadFolderView()
