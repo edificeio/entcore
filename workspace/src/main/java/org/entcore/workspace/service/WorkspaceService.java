@@ -562,6 +562,10 @@ public class WorkspaceService extends BaseController {
 		updateStorage(null, new JsonArray().add(removed));
 	}
 
+	private void decrementStorage(JsonObject removed, Handler<Either<String, JsonObject>> handler) {
+		updateStorage(null, new JsonArray().add(removed), handler);
+	}
+
 	private void incrementStorage(JsonArray added) {
 		updateStorage(added, null);
 	}
@@ -575,6 +579,10 @@ public class WorkspaceService extends BaseController {
 	}
 
 	private void updateStorage(JsonArray addeds, JsonArray removeds) {
+		updateStorage(addeds, removeds, null);
+	}
+
+	private void updateStorage(JsonArray addeds, JsonArray removeds, final Handler<Either<String, JsonObject>> handler) {
 		Map<String, Long> sizes = new HashMap<>();
 		if (addeds != null) {
 			for (Object o : addeds) {
@@ -628,6 +636,9 @@ public class WorkspaceService extends BaseController {
 						}
 					} else {
 						log.error(r.left().getValue());
+					}
+					if (handler != null) {
+						handler.handle(r);
 					}
 				}
 			});
@@ -1145,11 +1156,15 @@ public class WorkspaceService extends BaseController {
 									if (event != null && "ok".equals(event.getString("status"))) {
 										dao.delete(id, new Handler<JsonObject>() {
 											@Override
-											public void handle(JsonObject result2) {
+											public void handle(final JsonObject result2) {
 												if ("ok".equals(result2.getString("status"))) {
-													decrementStorage(result);
 													deleteAllRevisions(id, new JsonArray().add(file));
-													renderJson(request, result2, 204);
+													decrementStorage(result, new Handler<Either<String, JsonObject>>() {
+														@Override
+														public void handle(Either<String, JsonObject> event) {
+															renderJson(request, result2, 204);
+														}
+													});
 												} else {
 													renderError(request, result2);
 												}
