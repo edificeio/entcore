@@ -323,10 +323,20 @@ public class Structure {
 				"(ps:Structure { id : {parentStructureId}}) " +
 				"CREATE UNIQUE s-[r:HAS_ATTACHMENT]->ps " +
 				"RETURN id(r) as id";
-		transactionHelper.add(query, new JsonObject()
+		String query2 =
+				"MATCH (s:Structure { id : {structureId}})-[:HAS_ATTACHMENT*1..]->(ps:Structure)" +
+				"<-[:DEPENDS]-(fg:FunctionGroup {name : ps.name + '-AdminLocal'})<-[:IN]-(u:User)" +
+				"-[rf:HAS_FUNCTION]-(f:Function {name : 'AdminLocal'}) " +
+				"SET rf.scope = coalesce(rf.scope, []) + s.id " +
+				"WITH s as n, f, u " +
+				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+				"CREATE UNIQUE n<-[:DEPENDS]-fg, fg<-[:IN]-u ";
+		JsonObject params =  new JsonObject()
 				.putString("structureId", structureId)
-				.putString("parentStructureId", parentStructureId)
-		);
+				.putString("parentStructureId", parentStructureId);
+		transactionHelper.add(query, params);
+		transactionHelper.add(query2, params);
 	}
 
 	public static void removeAttachment(String structureId, String parentStructureId,
@@ -334,9 +344,20 @@ public class Structure {
 		String query =
 				"MATCH (s:Structure { id : {structureId}})-[r:HAS_ATTACHMENT]->(ps:Structure { id : {parentStructureId}}) " +
 				"DELETE r";
-		transactionHelper.add(query, new JsonObject()
+		String query2 =
+				"MATCH (s:Structure { id : {structureId}})-[r:HAS_ATTACHMENT*0..]->(s2:Structure)" +
+				"<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+				"WITH COLLECT(distinct u.id) as ids " +
+				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(:FunctionGroup {externalId: s.id + '-ADMIN_LOCAL'})" +
+				"<-[r:IN]-(u:User)-[rf:HAS_FUNCTION]-(:Function {name : 'AdminLocal'}) " +
+				"WHERE NOT(u.id IN ids) " +
+				"SET rf.scope = FILTER(sId IN rf.scope WHERE sId <> s.id) " +
+				"DELETE r";
+		JsonObject params = new JsonObject()
 				.putString("structureId", structureId)
-				.putString("parentStructureId", parentStructureId));
+				.putString("parentStructureId", parentStructureId);
+		transactionHelper.add(query, params);
+		transactionHelper.add(query2, params);
 	}
 
 }
