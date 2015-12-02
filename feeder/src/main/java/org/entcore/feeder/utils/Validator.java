@@ -20,21 +20,28 @@
 package org.entcore.feeder.utils;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
+import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 public class Validator {
 
 	private static final Logger log = LoggerFactory.getLogger(Validator.class);
-	private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
+	//private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
+	private static ConcurrentMap<Object, Object> logins;
 	private static final String[] alphabet =
 			{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 	private static final Map<String, Pattern> patterns = new HashMap<>();
@@ -274,7 +281,7 @@ public class Validator {
 						.replaceAll("'", "");
 				int i = 2;
 				String l = login + "";
-				while (!logins.add(l)) {
+				while (logins.putIfAbsent(l, "") != null) {
 					l = login + i++;
 				}
 				object.putString(attr, l);
@@ -336,8 +343,19 @@ public class Validator {
 		return a != null ? a.getString("type", "") : "";
 	}
 
-	public static void initLogin(Neo4j neo4j) {
-		logins.clear();
+	public static void initLogin(Neo4j neo4j, Vertx vertx) {
+		if (logins == null) {
+			ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+			Boolean cluster = (Boolean) server.get("cluster");
+			if (Boolean.TRUE.equals(cluster)) {
+				ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+				logins = (ConcurrentMap<Object, Object>) cm.getSyncMap("usedLogins");
+			} else {
+				logins = new ConcurrentHashMap<>();
+			}
+		} else {
+			logins.clear();
+		}
 		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
@@ -348,7 +366,7 @@ public class Validator {
 					if (l != null) {
 						for (Object o : l) {
 							if (!(o instanceof String)) continue;
-							logins.add((String) o);
+							logins.putIfAbsent(o, "");
 						}
 					}
 				}

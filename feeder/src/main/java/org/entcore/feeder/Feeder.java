@@ -92,7 +92,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			vertx.stop();
 			return;
 		}
-		Validator.initLogin(neo4j);
+		Validator.initLogin(neo4j, vertx);
 		manual = new ManualFeeder(neo4j);
 		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"));
 		vertx.eventBus().registerLocalHandler(
@@ -290,12 +290,15 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										}
 									});
 									sendOK(message);
-								} else if (m != null) {
-									logger.error(m.body().getString("message"));
-									sendError(message, m.body().getString("message"));
 								} else {
-									logger.error("Import return null value.");
-									sendError(message, "Import return null value.");
+									Validator.initLogin(neo4j, vertx);
+									if (m != null) {
+										logger.error(m.body().getString("message"));
+										sendError(message, m.body().getString("message"));
+									} else {
+										logger.error("Import return null value.");
+										sendError(message, "Import return null value.");
+									}
 								}
 								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 								importer.clear();
