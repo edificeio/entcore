@@ -4075,6 +4075,8 @@ module.directive('carousel', function(){
 					scope.current.image = item;
 					scope.current.index = index;
 				}
+				cancelAnimationFrame(animrequest);
+				imageHeight();
 				interrupt --;
 				setTimeout(infiniteRun, 5000);
 			};
@@ -4086,7 +4088,13 @@ module.directive('carousel', function(){
 					return 100 - index;
 				}
 			};
+			var animrequest;
+			var imageHeight = function(){
+				element.find('.current img').height(element.find('.current .image-container').height());
+				animrequest = requestAnimationFrame(imageHeight);
+			}
 			var infiniteRun = function(){
+				cancelAnimationFrame(animrequest);
 				if(interrupt < 0){
 					interrupt ++;
 					return;
@@ -4097,6 +4105,9 @@ module.directive('carousel', function(){
 				}
 				scope.current.image = scope.items[scope.current.index];
 				scope.$apply('current');
+
+				imageHeight();
+
 				setTimeout(infiniteRun, 4000);
 			};
 			infiniteRun();
