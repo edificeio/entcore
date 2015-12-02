@@ -217,11 +217,17 @@ Behaviours.register('workspace', {
 				},
 				addDocument: function(document){
 					console.log('adding ' + JSON.stringify(document) + ' in documents');
-					this.cursor.currentFolder.documents.push(document);
-					if (typeof this.snipletResource.save === 'function') {
-						this.snipletResource.save();
-					}
-					this.displaySniplet.pickFile = false;
+					Behaviours.applicationsBehaviours.workspace.loadResources(function(resources){
+						document = _.findWhere(resources, { _id: document._id });
+
+						this.cursor.currentFolder.documents.push(document);
+						if (typeof this.snipletResource.save === 'function') {
+							this.snipletResource.save();
+						}
+						this.displaySniplet.pickFile = false;
+
+						this.$apply();
+					}.bind(this));
 				},
 				drag: function(item, $originalEvent){
 					$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
