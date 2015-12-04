@@ -1582,6 +1582,12 @@ public class WorkspaceService extends BaseController {
 												pathPrefix + "/workspace#/shared");
 									}
 
+									// don't send comment with share uri at owner
+									final String o = document.getString("owner");
+									if(o != null && recipients.contains(o)) {
+										recipients.remove(o);
+									}
+
 									notification.notifyTimeline(
 											request,
 											user,
