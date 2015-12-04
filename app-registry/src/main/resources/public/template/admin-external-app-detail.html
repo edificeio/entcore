@@ -2,8 +2,8 @@
 	<h1 class="link-previous"><a ng-click="showExternalAppList()"><i18n>appregistry.external.apps</i18n></a></h1>
 	<h3>
 		[[externalApp.data.displayName]]
-		<i class="linked square-icon" style="margin-left: 5px; width: 25px; height: 25px" ng-if="inherited(externalApp)" tooltip="appregistry.inherited.application"/>
-        <i class="lock square-icon" style="margin-left: 5px; width: 25px; height: 25px" ng-if="externalApp.data.locked" tooltip="appregistry.app.is.locked"></i>
+		<i class="linked square-icon medium" style="margin-left: 5px;" ng-if="inherited(externalApp)" tooltip="appregistry.inherited.application"/>
+        <i class="lock square-icon medium" style="margin-left: 5px;" ng-if="externalApp.data.locked" tooltip="appregistry.app.is.locked"></i>
     </h3>
 </div>
 <form name="externalAppForm" novalidate ng-init="showPanel('config')">
@@ -126,13 +126,13 @@
     <div ng-if="showPanel() === 'attribution'" ng-init="linkedGroupsOpts.reorderGroups()">
         <h4><i18n>appregistry.groups.attribution.header</i18n></h4>
         <div>
-            <div class="nine inline-middle">
+            <div class="ten inline-middle">
                 <input type="text" class="search-input" i18n-placeholder="search" ng-model="filterGroups">
             </div>
-            <div class="two filterbar inline-middle">
-                <i class="funnel square-icon" ng-click="linkedGroupsOpts.showLinked = !linkedGroupsOpts.showLinked" tooltip="show.linked.groups"
+            <div class="filterbar inline-middle">
+                <i class="funnel square-icon small" ng-click="linkedGroupsOpts.showLinked = !linkedGroupsOpts.showLinked" tooltip="show.linked.groups"
                     ng-class="{'selected': linkedGroupsOpts.showLinked}"></i>
-                <i class="sort square-icon" ng-click="linkedGroupsOpts.orderLinked = !linkedGroupsOpts.orderLinked" tooltip="order.linked.groups"
+                <i class="sort square-icon medium" ng-click="linkedGroupsOpts.orderLinked = !linkedGroupsOpts.orderLinked" tooltip="order.linked.groups"
                     ng-class="{'selected': linkedGroupsOpts.orderLinked}"></i>
             </div>
         </div>

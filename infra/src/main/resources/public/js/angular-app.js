@@ -4967,6 +4967,8 @@ function Admin($scope){
 function Widget(){}
 
 Widget.prototype.switchHide = function(){
+    if(this.mandatory)
+        return
 	if(!this.hide){
 		this.hide = false;
 	}
@@ -4990,61 +4992,35 @@ function WidgetModel(){
 		},
 		sync: function(){
 			var that = this;
+            var data = model.me.widgets
 
-			http().get('/widgets').done(function(data){
-				http().get('/userbook/preference/widgets').done(function(pref){
-					if(!pref.preference){
-						this.preferences = {};
+			http().get('/userbook/preference/widgets').done(function(pref){
+				if(!pref.preference){
+					this.preferences = {};
+				}
+				else{
+					this.preferences = JSON.parse(pref.preference);
+				}
+
+				data = data.map(function(widget, i){
+					if(!that.preferences[widget.name]){
+						that.preferences[widget.name] = { index: i, show: true };
+					}
+					widget.index = that.preferences[widget.name].index;
+					widget.hide = widget.mandatory ? false : that.preferences[widget.name].hide;
+					return widget;
+				});
+
+				that.load(data, function(widget){
+					if(widget.i18n){
+						lang.addTranslations(widget.i18n);
+                        loader.loadFile(widget.js);
 					}
 					else{
-						this.preferences = JSON.parse(pref.preference);
+						loader.loadFile(widget.js);
 					}
-
-					data = data.filter(function(widget){
-						if(widget.workflows){
-							var allow = true;
-							widget.workflows.forEach(function(workflow){
-								allow = allow && model.me.hasWorkflow(workflow);
-							});
-							return allow;
-						}
-						else{
-							return true;
-						}
-					});
-
-					data = data.map(function(widget, i){
-						if(!that.preferences[widget.name]){
-							that.preferences[widget.name] = { index: i, show: true };
-						}
-						widget.index = that.preferences[widget.name].index;
-						widget.hide = that.preferences[widget.name].hide;
-						return widget;
-					});
-
-					that.load(data, function(widget){
-						if(widget.i18n){
-						    var temp = widget.path;
-						    widget.path = 'empty';
-							lang.addBundle(widget.i18n, function(){
-								if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
-									widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
-								}
-								else{
-								    widget.path = temp;
-								}
-								loader.loadFile(widget.js);
-							})
-						}
-						else{
-							if(skin.templateMapping.widgets && skin.templateMapping.widgets.indexOf(widget.name) !== -1){
-								widget.path = '/assets/themes/' + skin.skin + '/template/widgets/' + widget.name + '.html';
-							}
-							loader.loadFile(widget.js);
-						}
-					});
-				}.bind(this))
-			}.bind(this));
+				});
+			}.bind(this))
 		},
 		findWidget: function(name){
 			return this.findWhere({name: name});

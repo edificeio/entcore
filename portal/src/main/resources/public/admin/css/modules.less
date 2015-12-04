@@ -100,6 +100,11 @@ h2{
 	a{
 		color: #444;
 	}
+    &.subtitle{
+		height: 30px;
+		font-size: 18px;
+		margin: 5px 0px;
+	}
 }
 
 h3{
@@ -318,8 +323,18 @@ i.sort{
 	border-radius: 5px;
 	box-shadow: 1px 1px 2px #444;
 	box-sizing: border-box;
-	background-size: 70% !important;
+	background-size: 50% !important;
 	background-position: center;
+}
+
+i.small{
+    width: 23px;
+    height: 23px;
+}
+
+i.medium{
+    width: 25px;
+    height: 25px;
 }
 
 h1.link-previous{
@@ -357,6 +372,13 @@ div.filterbar{
 
         &.selected{
             background-color: @main;
+        }
+
+        &[disabled]{
+            box-shadow: none;
+            border: 1px solid #AAA;
+            opacity: 0.6;
+            background-color: #CCC;
         }
     }
 }
@@ -532,12 +554,36 @@ input[type=text].search-input{
 	}
 }
 
-nav.side-tabs{
+nav.recursive-list{
+	border-right: none;
+	margin-top: 10px;
 	font-size: 12px;
-	width: 25%;
+
+    background: #444;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-bottom: 3px solid @main;
+
+	ul{
+		margin: 0;
+		padding: 0;
+		li{
+			list-style-type: none;
+			padding: 7px;
+			padding-left: 17px;
+			background: #ddd;
+		}
+		li.selected{
+			background: #eee;
+			border: 1px solid #ccc;
+			border-right: none;
+			border-left-width: 5px;
+			box-sizing: content-box;
+			margin-left: -5px;
+		}
+	}
 
 	> ul{
-
 		/*max-height: 550px;*/
 		overflow-y: scroll;
 
@@ -565,94 +611,85 @@ nav.side-tabs{
 			border-bottom: 1px solid @main;
 			.border-radius(0);
 		}
+
+        ul {
+			li:first-child{
+				//border-top: 4px solid @main;
+			}
+
+			li.selected{
+				border: none;
+				background: @main;
+				color: white;
+				box-shadow: 0px 0px 3px;
+			}
+		}
 	}
 
-	&.recursive-list{
-
+	input[type=text]{
+		display: block;
+		width: 95%;
+		height: 29px;
 		background: #444;
-  		border-top-right-radius: 10px;
-  		border-top-left-radius: 10px;
-		border-bottom: 3px solid @main;
+		color: white;
+        outline: none;
+		margin: 10px auto;
+		border-bottom: 2px solid @main;
+		border-radius: 0px;
+		transition: border-color 0.25s ease;
 
-		input[type=text]{
-			display: block;
-			width: 95%;
-			height: 29px;
-			background: #444;
-			color: white;
-			margin: 10px auto;
-			border-bottom: 2px solid @main;
-			border-radius: 0px;
-			transition: border-color 0.25s ease;
+		&:focus{
+			border-color: white;
+		}
+	}
 
-			&:focus{
-				border-color: white;
+	i.folded-icon{
+		transition: all .25s ease-in-out;
+		margin-right: 10px;
+		background-size: contain;
+		height: 14px;
+		width: 14px;
+		-webkit-filter: invert(0);
+		filter: invert(0);
+
+		&.folded{
+			-webkit-filter: invert(1);
+			filter: invert(1);
+		}
+	}
+
+	li{
+		transition: all .25s ease-in-out;
+		padding-right: 0px;
+
+		&.top-item{
+			&.last{
+				border-bottom: 1px solid @accent;
 			}
 		}
 
-		i.folded-icon{
-			transition: all .25s ease-in-out;
-			margin-right: 10px;
-			background-size: contain;
-			height: 14px;
-			width: 14px;
-			-webkit-filter: invert(0);
-			filter: invert(0);
+		&:hover{
+			background: whitesmoke;
+			color: @main;
 
-			&.folded{
-				-webkit-filter: invert(1);
-				filter: invert(1);
+			> i.folded-icon{
+				-webkit-filter: invert(0);
+				filter: invert(0);
 			}
 		}
 
-		li{
-			transition: all .25s ease-in-out;
-			padding-right: 0px;
-
-			&.top-item{
-				&.last{
-					border-bottom: 1px solid @accent;
-				}
-			}
+		&.selected{
 
 			&:hover{
-				background: whitesmoke;
+				background: white;
 				color: @main;
-
-				> i.folded-icon{
-					-webkit-filter: invert(0);
-					filter: invert(0);
-				}
 			}
 
-			&.selected{
+			ul{
+				box-shadow: 0px 0px 3px;
 
-				&:hover{
-					background: white;
-					color: @main;
-				}
-
-				ul{
-					box-shadow: 0px 0px 3px;
-
-					li{
-						border-radius: 0px !important;
-					}
-				}
-			}
-		}
-
-		> ul {
-			ul {
-				li:first-child{
-					//border-top: 4px solid @main;
-				}
-
-				li.selected{
-					border: none;
-					background: @main;
-					color: white;
-					box-shadow: 0px 0px 3px;
+				li{
+					border-radius: 0px !important;
 				}
 			}
 		}
@@ -947,7 +984,7 @@ ul.angle-list{
        width: 18px;
        height: 18px;
        border: 1px solid black;
-       vertical-align: top;
+       vertical-align: middle;
        margin-right: 5px;
        transition: transform 0.35s ease-in-out, border 0.55s ease-in-out, border-width 0.15s ease-in-out, border-color 0.25s ease-in-out;
     }
@@ -998,11 +1035,18 @@ ul.checklist {
 
     li {
         display: inline-block;
+        vertical-align: middle;
         margin: 5px;
         padding: 6px 15px;
         flex-basis: 25%;
         flex-grow: 1;
         .check-item()
+    }
+
+    &.fullrow{
+        li{
+            flex-basis: 100%;
+        }
     }
 }
 

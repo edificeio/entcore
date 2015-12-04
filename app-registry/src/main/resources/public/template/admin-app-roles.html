@@ -4,7 +4,7 @@
 	||||||||||||||||||||
 -->
 <div class="twelve">
-	<nav class="side-tabs three cell recursive-list">
+	<nav class="three cell recursive-list">
 		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps" />
 		<ul>
 			<li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">

@@ -24,6 +24,7 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 	$scope.applications = model.applications
 	$scope.roles = model.roles
 	$scope.schools = model.schools
+    $scope.widgets = model.widgetApps
 
 	/////// THEMES ///////
 
@@ -144,6 +145,19 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
                 if(!template.containers.externalAppView || template.containers.externalAppView == "empty")
 				    template.open("externalAppView", "admin-external-apps-list")
 			}
+		},
+		{
+			name: "widgets",
+			text: lang.translate("appregistry.widgets"),
+			templateName: 'admin-widgets',
+			onClick: function(){},
+            selectSchoolAction: function(school){
+                school.groups.sync(function(){
+                    if($scope.widget){
+                        $scope.getWidget(school.id)
+                    }
+                })
+            }
 		}
 	]
 	_.forEach($scope.leafMenu, function(leaf){
@@ -447,6 +461,91 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     		selectAll: lang.translate('select.all'),
     		deselectAll: lang.translate('deselect.all')
     	}
+    }
+
+    /////// WIDGETS ///////
+    $scope.viewWidget = function(widget){
+        $scope.widget = widget
+        if($scope.school){
+            $scope.getWidget($scope.school.id)
+        }
+    }
+    $scope.getWidget = function(structureId){
+        $scope.widget.get(structureId, function(){
+            $scope.linkedWidgetGroupsOpts.reorderGroups()
+            $scope.$apply()
+        })
+    }
+
+    $scope.isLinkedWidget = function(group, widget){
+        return widget.infos && _.some(widget.infos.groups, function(g){ return g.id === group.id })
+    }
+
+    $scope.linkedWidgetGroupsOpts = {
+        orderByLinked: function(widget){
+            return function(group){
+                return group && group._order && group._order.linkedWidget ? 0 : 1
+            }
+        },
+        reorderGroups: function(){
+            $scope.school.groups.all.forEach(function(group){
+                if(!group)
+                    return
+                if(group._order)
+                    group._order.linkedWidget = $scope.isLinkedWidget(group, $scope.widget)
+                else
+                    group._order = {linkedWidget: $scope.isLinkedWidget(group, $scope.widget)}
+            })
+        }
+    }
+
+    $scope.switchWidgetGroupLink = function(group, widget){
+        if(!widget || !widget.infos || !group)
+            return
+
+        if($scope.isLinkedWidget(group, widget)){
+            var backup = _.findWhere(widget.infos.groups, {id: group.id})
+            widget.infos.groups.splice(widget.infos.groups.indexOf(backup), 1)
+            widget.unlinkWidget(group.id)
+                .done(function(){ $scope.$apply() })
+                .error(function(){
+                    widget.infos.groups.push(backup)
+                    notify.error('appregistry.notify.attribution.error')
+                    $scope.$apply()
+                })
+        } else {
+            newElt = {id: group.id, mandatory: false}
+            widget.infos.groups.push(newElt)
+            widget.linkWidget(group.id)
+                .done(function(){ $scope.$apply() })
+                .error(function(){
+                    widget.infos.groups.splice(widget.infos.groups.indexOf(newElt), 1)
+                    notify.error('appregistry.notify.attribution.error')
+                    $scope.$apply()
+                })
+        }
+    }
+
+    $scope.isWidgetLinkLocked = function(group, widget){
+        var matchingGroup = widget.infos && _.findWhere(widget.infos.groups, {id: group.id})
+        return matchingGroup ? matchingGroup.mandatory : false
+    }
+
+    $scope.lockWidgetGroupLink = function(group, widget){
+        var matchingGroup = _.findWhere(widget.infos.groups, {id: group.id})
+        if(!matchingGroup)
+            return
+        if(!matchingGroup.mandatory){
+            widget.setMandatory(group.id).done(function(){
+                matchingGroup.mandatory = true
+                $scope.$apply()
+            })
+        } else {
+            widget.removeMandatory(group.id).done(function(){
+                matchingGroup.mandatory = false
+                $scope.$apply()
+            })
+        }
     }
 
 	/////// ROLES ///////

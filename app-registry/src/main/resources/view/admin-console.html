@@ -23,7 +23,7 @@
             </div>
 
             <script type="text/ng-template" id="structure-tree">
-                <nav class="side-tabs three cell recursive-list">
+                <nav class="twelve recursive-list">
                     <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="structureFilteringInput" />
                     <ul ng-if="!structureFilteringInput">
                         <li ng-repeat="struct in levelStructures = schools.all | filter: filterTopStructures | orderBy: 'name'" ng-click="setSchool(struct); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">

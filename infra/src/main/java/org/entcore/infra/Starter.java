@@ -206,12 +206,16 @@ public class Starter extends BaseServer {
 				.putString("js", "/assets/widgets/"+widgetName+"/"+widgetName+".js")
 				.putString("path", "/assets/widgets/"+widgetName+"/"+widgetName+".html");
 
+		if(vertx.fileSystem().existsSync("/assets/widgets/"+widgetName+"/i18n")){
+			widget.putString("i18n", "/assets/widgets/"+widgetName+"/i18n");
+		}
+
 		JsonObject message = new JsonObject()
 				.putObject("widget", widget);
 		vertx.eventBus().send("wse.app.registry.widgets", message, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				if("error".equals(event.body().getString("status"))){
-					log.error("Error while registering widget "+widgetName+". "+event.body().getString("message"));
+					log.error("Error while registering widget "+widgetName+". "+event.body().getArray("errors"));
 					return;
 				}
 				log.info("Successfully registered widget "+widgetName);

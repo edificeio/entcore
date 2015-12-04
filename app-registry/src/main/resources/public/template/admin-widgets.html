@@ -1,0 +1,78 @@
+<!--
+	||||||||||||||||||||||
+	|||     WIDGETS    |||
+	||||||||||||||||||||||
+-->
+<div class="row">
+	<nav class="three cell recursive-list">
+		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterWidgets" />
+		<ul>
+			<li ng-repeat="widget in widgets.all | filter: {name: filterWidgets} | orderBy: 'name'"
+                ng-click="viewWidget(widget)" ng-class="{ selected: $parent.widget === widget }">
+				[[widget.name]]
+			</li>
+		</ul>
+	</nav>
+	<article class="side-tabs-content nine cell" style="padding: 25px" ng-if="widget">
+
+        <div class="vertical-spacing-twice">
+            <h1>[[widget.name]]</h1>
+            <h2 ng-if="widget.application.name" class="small-text">
+                <i18n>appregistry.widget.linked.to.app</i18n> <strong>[[widget.application.name]]</strong>
+            </h2>
+            <h2 ng-if="!widget.application.name" class="small-text">
+                <i18n>appregistry.widget.is.global</i18n>
+            </h2>
+        </div>
+
+        <div class="vertical-spacing-twice">
+            <fieldset disabled>
+                <legend><i18n>appregistry.widget.fields</i18n></legend>
+                <div class="row">
+                    <span class="five cell"><label translate content="appregistry.widget.id" tooltip="appregistry.widget.tooltip.id"></label></span>
+                    <input class="seven cell" type="text" ng-model="widget.id" disabled />
+                </div>
+                <div class="row">
+                    <span class="five cell"><label translate content="appregistry.widget.name" tooltip="appregistry.widget.tooltip.name"></label></span>
+                    <input class="seven cell" type="text" ng-model="widget.name" disabled />
+                </div>
+                <div class="row">
+                    <span class="five cell"><label translate content="appregistry.widget.js" tooltip="appregistry.widget.tooltip.js"></label></span>
+                    <input class="seven cell" type="text" ng-model="widget.js" disabled />
+                </div>
+                <div class="row">
+                    <span class="five cell"><label translate content="appregistry.widget.path" tooltip="appregistry.widget.tooltip.path"></label></span>
+                    <input class="seven cell" type="text" ng-model="widget.path" disabled />
+                </div>
+                <div class="row">
+                    <span class="five cell"><label translate content="appregistry.widget.i18n" tooltip="appregistry.widget.tooltip.i18n"></label></span>
+                    <input class="seven cell" type="text" ng-model="widget.i18n" disabled />
+                </div>
+            </fieldset>
+        </div>
+
+
+        <div class="vertical-spacing-twice">
+            <div>
+                <h4><i18n>appregistry.widgets.attribution.header</i18n></h4>
+            </div>
+            <div class="row">
+                <div class="four cell" ng-include="'structure-tree'"></div>
+                <article class="eight cell">
+                    <input type="text" class="search-input" i18n-placeholder="search" ng-model="filterGroups">
+                    <ul class="checklist fullrow">
+                        <li ng-repeat="group in school.groups.all | filter: {name: filterGroups} | orderBy: 'name' | orderBy: linkedWidgetGroupsOpts.orderByLinked(widget)"
+                            ng-class="{'checked': isLinkedWidget(group, widget)}">
+                            <div class="inline-middle" ng-click="switchWidgetGroupLink(group, widget)">[[group.name]]</div>
+                            <div class="filterbar right-magnet">
+                                <i class="lock square-icon small right-magnet" ng-click="lockWidgetGroupLink(group, widget)" tooltip="appregistry.widget.tooltip.lock"
+                                   ng-class="{selected: isWidgetLinkLocked(group, widget)}" ng-disabled="!isLinkedWidget(group, widget)"></i>
+                            </div>
+                        </li>
+                    </ul>
+                </article>
+            </div>
+        </div>
+
+    </article>
+</div>

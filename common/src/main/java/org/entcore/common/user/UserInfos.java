@@ -122,6 +122,7 @@ public class UserInfos {
 		private String name;
 		private String path;
 		private String js;
+		private String i18n;
 		private String application;
 		private boolean mandatory;
 
@@ -148,6 +149,12 @@ public class UserInfos {
 		}
 		public void setJs(String js) {
 			this.js = js;
+		}
+		public String getI18n() {
+			return i18n;
+		}
+		public void setI18n(String i18n) {
+			this.i18n = i18n;
 		}
 		public String getApplication() {
 			return application;

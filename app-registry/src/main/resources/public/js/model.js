@@ -181,6 +181,33 @@ ExternalApplication.prototype.massUnauthorize = function(profiles){
     return http().delete('/appregistry/application/external/' + this.data.id + '/authorize' + profilesParams)
 }
 
+//////// WIDGETS ////////
+
+function WidgetApp(){}
+WidgetApp.prototype.get = function(structureId, hook){
+    return http().get('/appregistry/widget/' + this.id, { structureId: structureId }).done(function(data){
+        this.infos = data
+        if(typeof hook === 'function'){
+            hook()
+        }
+    }.bind(this))
+}
+WidgetApp.prototype.delete = function(){
+    return http().delete('/appregistry/widget/' + this.id)
+}
+WidgetApp.prototype.linkWidget = function(groupId){
+    return http().post('/appregistry/widget/' + this.id + '/link/' + groupId)
+}
+WidgetApp.prototype.unlinkWidget = function(groupId){
+    return http().delete('/appregistry/widget/' + this.id + '/link/' + groupId)
+}
+WidgetApp.prototype.setMandatory = function(groupId){
+    return http().put('/appregistry/widget/' + this.id + '/mandatory/' + groupId)
+}
+WidgetApp.prototype.removeMandatory = function(groupId){
+    return http().delete('/appregistry/widget/' + this.id + '/mandatory/' + groupId)
+}
+
 //////// ROLE ////////
 
 function Role(data){
@@ -340,7 +367,7 @@ School.prototype.syncExternalApps = function(hook){
 //////// MODEL BUILD ////////
 
 model.build = function(){
-	this.makeModels([Application, ExternalApplication, Role, Action, School, Group]);
+	this.makeModels([Application, ExternalApplication, WidgetApp, Action, Role, School, Group]);
 
 	this.collection(Application, {
 		syncApps: function(hook){
@@ -421,4 +448,12 @@ model.build = function(){
 			}.bind(this));
 		}
 	});
+
+    this.collection(WidgetApp, {
+        sync: function(){
+            http().get('/appregistry/widgets').done(function(data){
+				this.load(data.widgets)
+			}.bind(this));
+        }
+    })
 };

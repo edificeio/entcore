@@ -493,8 +493,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"WHERE HAS(u.login) " +
 				"WITH w, app, collect(auth) as authorizations " +
 				"RETURN DISTINCT COLLECT({" +
-					"id: w.id, name: w.name, path: w.path, "+
-					"js: w.js, application: app.id, "+
+					"id: w.id, name: w.name, " +
+					"path: coalesce(app.address, '') + w.path, " +
+					"js: coalesce(app.address, '') + w.js, "+
+					"i18n: coalesce(app.address, '') + w.i18n, "+
+					"application: app.name, " +
 					"mandatory: ANY(a IN authorizations WHERE HAS(a.mandatory) AND a.mandatory = true)"+
 				"}) as widgets";
 		JsonObject params = new JsonObject();
