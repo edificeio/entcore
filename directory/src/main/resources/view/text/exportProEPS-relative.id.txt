@@ -1,0 +1,4 @@
+Identifiant_ENT,Profil,nom,prenom,Date de naissance,Sexe,Classe,ID_Sconet_Eleve1,ID_Sconet_Eleve2,ID_Sconet_Eleve3,ID_Sconet_Eleve4,ID_Sconet_Eleve5
+{{#list}}
+{{externalId}},Parent,{{lastName}},{{firstName}},{{birthDate}},,{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}},{{#children}}{{^-first}}, {{/-first}}{{attachmentId}}{{/children}}
+{{/list}}

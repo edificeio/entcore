@@ -620,6 +620,24 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			label: 'directory.admin.export.type.gepi',
 			filename: 'ENT-Identifiants.csv',
 			format: 'csv'
+		},
+		{
+			key: "ProEPS-student",
+			label: 'directory.admin.export.type.proeps.student',
+			format: 'csv',
+			profiles: ['Student'],
+			show: function(){
+				return $scope.exportData.params.profile === 'Student'
+			}
+		},
+		{
+			key: "ProEPS-relative",
+			label: 'directory.admin.export.type.proeps.relative',
+			format: 'csv',
+			profiles: ['Relative'],
+			show: function(){
+				return $scope.exportData.params.profile === 'Relative'
+			}
 		}
 	]
 	$scope.initExportData = function(){

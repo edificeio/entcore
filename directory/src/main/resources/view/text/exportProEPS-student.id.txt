@@ -1,0 +1,4 @@
+Identifiant ENT,Profil,nom,prénom,Date de naissance,Sexe,Classe,id sconet
+{{#list}}
+{{externalId}},Eleve,{{lastName}},{{firstName}},{{birthDate}},,{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}},{{attachmentId}}
+{{/list}}
