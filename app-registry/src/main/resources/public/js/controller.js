@@ -185,6 +185,9 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 		_.forEach(structure.children, function(s){ s.selected = false })
 		_.forEach(structureList, function(s){ s.selected = s.id === structure.id ? true : false })
 	}
+    $scope.schools.on('sync', function(){
+        $scope.schools.parentStructures = $scope.schools.filter(function(s){ return s.children })
+    })
 
 	/////// APPLICATIONS ///////
 
@@ -422,7 +425,7 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
         return request
     }
 
-    $scope.profilesCombo = {
+    $scope.multipleCombo = {
         profiles: [
             {
                 name: "Teacher",
@@ -450,10 +453,20 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
                 toString: function(){ return this.translatedName }
             }
         ],
-        selectedProfiles: [],
-        reset: function(){ this.selectedProfiles = [] },
-        removeElement: function(elt){
-            this.selectedProfiles.splice(this.selectedProfiles.indexOf(elt), 1)
+        selected: {
+            profiles: [],
+            structure: null
+        },
+        reset: function(){
+            for(var prop in this.selected){
+                if(this.selected instanceof Array)
+                    this.selected[prop] = []
+                else
+                    this.selected[prop] = null
+            }
+        },
+        removeElement: function(elt, type){
+            this.selected[type].splice(this.selected[type].indexOf(elt), 1)
         },
         comboLabels: {
     		options: lang.translate('options'),
@@ -546,6 +559,43 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
                 $scope.$apply()
             })
         }
+    }
+
+    $scope.massLinkWidget = function(widget, structure, profiles){
+        var request = widget.massAuthorize(structure[0].id, _.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.mass.link.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.mass.link.notify.ko')
+        })
+        return request
+    }
+    $scope.massUnlinkWidget = function(widget, structure, profiles){
+        var request = widget.massUnauthorize(structure[0].id, _.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.mass.unlink.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.mass.unlink.notify.ko')
+        })
+        return request
+    }
+    $scope.massSetMandatoryWidget = function(widget, structure, profiles){
+        var request = widget.massSetMandatory(structure[0].id, _.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.notify.ko')
+        })
+        return request
+    }
+    $scope.massRemoveMandatoryWidget = function(widget, structure, profiles){
+        var request = widget.massRemoveMandatory(structure[0].id, _.map(profiles, function(p){ return p.name }))
+        request.done(function(){
+            notify.info('appregistry.notify.ok')
+        }).error(function(){
+            notify.error('appregistry.notify.ko')
+        })
+        return request
     }
 
 	/////// ROLES ///////

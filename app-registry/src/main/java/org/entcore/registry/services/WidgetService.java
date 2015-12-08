@@ -17,5 +17,9 @@ public interface WidgetService {
 	public void unlinkWidget(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);
 	public void setMandatory(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);
 	public void removeMandatory(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);
+	public void massAuthorize(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
+	public void massUnauthorize(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
+	public void massSetMandatory(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
+	public void massRemoveMandatory(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 
 }

@@ -488,9 +488,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix]) as apps";
 		final String query3 =
-				"MATCH (u:User {id: {id}})-[:IN]->()-[auth:AUTHORIZED]->(w:Widget) " +
-				"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(app:Application) " +
+				"MATCH (u:User {id: {id}})-[:IN]->(g:Group)-[auth:AUTHORIZED]->(w:Widget) " +
 				"WHERE HAS(u.login) " +
+				"AND ( NOT(w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)) " +
+				"XOR w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)<-[:AUTHORIZE]-(:Role)<-[:AUTHORIZED]-g )  " +
+				"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(app:Application) " +
 				"WITH w, app, collect(auth) as authorizations " +
 				"RETURN DISTINCT COLLECT({" +
 					"id: w.id, name: w.name, " +

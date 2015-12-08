@@ -195,7 +195,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	public void massAuthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
 		String query =
 			"MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-			"(appStruct:Structure)<-[:HAS_ATTACHMENT*1..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+			"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 			"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
 			"AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
 			"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
@@ -210,7 +210,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	public void massUnauthorize(String appId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
 		String query =
 				"MATCH (app:Application:External {id: {appId}})-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role), " +
-				"(appStruct:Structure)<-[:HAS_ATTACHMENT*1..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"(appStruct:Structure)<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"WHERE coalesce(app.locked, false) = false AND appStruct.id = app.structureId AND r.structureId = app.structureId " +
 				"AND p.name IN {profiles} " +
 				"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +

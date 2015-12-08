@@ -94,6 +94,46 @@ public class WidgetController extends BaseController {
 		service.removeMandatory(widgetId, groupIds, defaultResponseHandler(request));
 	}
 
+	@Put("/widget/:id/authorize/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void authorizeProfiles(final HttpServerRequest request) {
+		final String widgetId = request.params().get("id");
+		final String structureId = request.params().get("structureId");
+		List<String> profiles = request.params().getAll("profile");
+
+		service.massAuthorize(widgetId, structureId, profiles, defaultResponseHandler(request));
+	}
+
+	@Delete("/widget/:id/authorize/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void unauthorizeProfiles(final HttpServerRequest request) {
+		final String widgetId = request.params().get("id");
+		final String structureId = request.params().get("structureId");
+		List<String> profiles = request.params().getAll("profile");
+
+		service.massUnauthorize(widgetId, structureId, profiles, defaultResponseHandler(request));
+	}
+
+	@Put("/widget/:id/mandatory/:structureId/mass")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void setMandatoryProfiles(final HttpServerRequest request) {
+		final String widgetId = request.params().get("id");
+		final String structureId = request.params().get("structureId");
+		List<String> profiles = request.params().getAll("profile");
+
+		service.massSetMandatory(widgetId, structureId, profiles, defaultResponseHandler(request));
+	}
+
+	@Delete("/widget/:id/mandatory/:structureId/mass")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void removeMandatoryProfiles(final HttpServerRequest request) {
+		final String widgetId = request.params().get("id");
+		final String structureId = request.params().get("structureId");
+		List<String> profiles = request.params().getAll("profile");
+
+		service.massRemoveMandatory(widgetId, structureId, profiles, defaultResponseHandler(request));
+	}
+
 	@Post("/widget")
 	public void recordWidget(final HttpServerRequest request) {
 		if (("localhost:"+ container.config().getInteger("port", 8012))

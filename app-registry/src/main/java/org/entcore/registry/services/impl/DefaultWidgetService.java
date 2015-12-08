@@ -1,6 +1,7 @@
 package org.entcore.registry.services.impl;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
+import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +51,8 @@ public class DefaultWidgetService implements WidgetService {
 	public void listWidgets(final Handler<Either<String, JsonObject>> handler){
 		String query =
 			"MATCH (w:Widget) OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) "+
-			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, application: {id: a.id, name: a.name}}) as widgets";
+			"WITH w, a, length(a-[:PROVIDE]->(:WorkflowAction)) > 0 as workflowLinked " +
+			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, application: {id: a.id, name: a.name, strongLink: workflowLinked}}) as widgets";
 		neo.execute(query, new JsonObject(), Neo4jResult.validUniqueResultHandler(handler));
 	}
 
@@ -59,12 +61,12 @@ public class DefaultWidgetService implements WidgetService {
 		if(widgetId == null || widgetId.trim().isEmpty() || structureId == null || structureId.trim().isEmpty())
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
 		String query =
-				"MATCH (w:Widget) " +
-				"WHERE w.id = {widgetId} " +
-				"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) " +
-				"OPTIONAL MATCH (w)<-[rel:AUTHORIZED]-(g:Group)-[:DEPENDS]->()-[:BELONGS*0..1]->(s:Structure {id: {structureId}}) " +
-				"WITH w, a, COLLECT({id: g.id, mandatory: coalesce(rel.mandatory, false)}) as groups " +
-				"RETURN w, a, groups ";
+			"MATCH (w:Widget) " +
+			"WHERE w.id = {widgetId} " +
+			"OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) " +
+			"OPTIONAL MATCH (w)<-[rel:AUTHORIZED]-(g:Group)-[:DEPENDS]->()-[:BELONGS*0..1]->(s:Structure {id: {structureId}}) " +
+			"WITH w, a, COLLECT({id: g.id, mandatory: coalesce(rel.mandatory, false)}) as groups " +
+			"RETURN w, a, groups ";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
 				.putString("structureId", structureId);
@@ -96,8 +98,6 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (w:Widget {id: {widgetId}}), (g:Group) " +
 			"WHERE g.id IN {groupIds} AND NOT(g-[:AUTHORIZED]->w) " +
-			"AND ( NOT(w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)) " +
-			"OR w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)<-[:AUTHORIZE]-(:Role)<-[:AUTHORIZED]-g ) " +
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
@@ -115,8 +115,6 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (g:Group)-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE g.id IN {groupIds} " +
-			"AND ( NOT(w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)) "+
-			"OR NOT(w<-[:HAS_WIDGET]-(:Application)-[:PROVIDE]->(:WorkflowAction)<-[:AUTHORIZE]-(:Role)<-[:AUTHORIZED]-g) ) " +
 			"DELETE rel";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
@@ -149,14 +147,98 @@ public class DefaultWidgetService implements WidgetService {
 		}
 
 		String query =
-				"MATCH (g:Group)-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
-				"WHERE g.id IN {groupIds} " +
-				"REMOVE rel.mandatory";
+			"MATCH (g:Group)-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE g.id IN {groupIds} " +
+			"REMOVE rel.mandatory";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
 				.putArray("groupIds", new JsonArray(groupIds.toArray()));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
+	}
+
+	@Override
+	public void massAuthorize(String widgetId, String structureId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		if(structureId == null || structureId .trim().isEmpty() ||
+				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+			"MATCH (w:Widget {id: {widgetId}}), " +
+			"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+			"WHERE p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->w) " +
+			"CREATE UNIQUE g-[:AUTHORIZED]->w";
+
+		JsonObject params = new JsonObject()
+				.putString("widgetId", widgetId)
+				.putString("structureId", structureId)
+				.putArray("profiles", new JsonArray(profiles.toArray()));
+
+		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void massUnauthorize(String widgetId, String structureId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		if(structureId == null || structureId .trim().isEmpty() ||
+				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE p.name IN {profiles} " +
+			"DELETE rel";
+
+		JsonObject params = new JsonObject()
+				.putString("widgetId", widgetId)
+				.putString("structureId", structureId)
+				.putArray("profiles", new JsonArray(profiles.toArray()));
+
+			neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void massSetMandatory(String widgetId, String structureId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		if(structureId == null || structureId .trim().isEmpty() ||
+				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE p.name IN {profiles} " +
+			"SET rel.mandatory = true";
+
+		JsonObject params = new JsonObject()
+				.putString("widgetId", widgetId)
+				.putString("structureId", structureId)
+				.putArray("profiles", new JsonArray(profiles.toArray()));
+
+		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void massRemoveMandatory(String widgetId, String structureId, List<String> profiles, final Handler<Either<String, JsonObject>> handler){
+		if(structureId == null || structureId .trim().isEmpty() ||
+				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE p.name IN {profiles} " +
+			"REMOVE rel.mandatory";
+
+		JsonObject params = new JsonObject()
+				.putString("widgetId", widgetId)
+				.putString("structureId", structureId)
+				.putArray("profiles", new JsonArray(profiles.toArray()));
+
+		neo.execute(query, params, validEmptyHandler(handler));
 	}
 
 }

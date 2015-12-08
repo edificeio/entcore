@@ -7827,8 +7827,8 @@ i.sort {
   width: 22px;
   background-color: #EEE;
   border-radius: 5px;
-  box-shadow: 1px 1px 2px #444;
-  box-sizing: border-box;
+  border: 1px solid #444;
+  box-sizing: content-box;
   background-size: 50% !important;
   background-position: center;
 }
@@ -7852,20 +7852,22 @@ h1.link-previous > a:hover::before {
   transform: rotate(-180deg);
   transform-origin: 50% 56%;
 }
-div.filterbar > i {
+.filterbar > i {
   display: inline-block;
   vertical-align: middle;
   margin-left: 10px;
   transition: all 0.25s ease-in-out;
+  box-shadow: 1px 1px 2px #444;
+  border: none;
 }
-div.filterbar > i:hover {
+.filterbar > i:hover {
   background-color: #ffaeaa;
-  box-shadow: 0px 0px 1px black;
+  box-shadow: 0px 0px 0px 1px #DDD;
 }
-div.filterbar > i.selected {
+.filterbar > i.selected {
   background-color: #ff483e;
 }
-div.filterbar > i[disabled] {
+.filterbar > i[disabled] {
   box-shadow: none;
   border: 1px solid #AAA;
   opacity: 0.6;
@@ -8396,8 +8398,8 @@ ul.angle-list.small > li {
   width: 22px;
   background-color: #EEE;
   border-radius: 5px;
-  box-shadow: 1px 1px 2px #444;
-  box-sizing: border-box;
+  border: 1px solid #444;
+  box-sizing: content-box;
   background-size: 50% !important;
   background-position: center;
 }

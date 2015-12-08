@@ -4,6 +4,7 @@
 	||||||||||||||||||||||
 -->
 <div class="row">
+    <!-- LEFT WIDGET MENU -->
 	<nav class="three cell recursive-list">
 		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterWidgets" />
 		<ul>
@@ -15,6 +16,7 @@
 	</nav>
 	<article class="side-tabs-content nine cell" style="padding: 25px" ng-if="widget">
 
+        <!-- HEADER -->
         <div class="vertical-spacing-twice">
             <h1>[[widget.name]]</h1>
             <h2 ng-if="widget.application.name" class="small-text">
@@ -23,9 +25,26 @@
             <h2 ng-if="!widget.application.name" class="small-text">
                 <i18n>appregistry.widget.is.global</i18n>
             </h2>
+            <h2 ng-if="widget.application.strongLink" class="small-text" style="font-weight: bold">
+                <i18n>appregistry.widget.workflow.linked</i18n>
+            </h2>
         </div>
 
-        <div class="vertical-spacing-twice">
+        <!-- LEAF MENU -->
+        <div class="leaf-menu-container small">
+            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'config' }">
+                <a ng-click="showPanel('config')"><i18n>appregistry.widget.properties</i18n></a>
+            </div>
+            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'attribution' }">
+                <a ng-click="showPanel('attribution'); viewWidget(widget)"><i18n>appregistry.widget.attribution</i18n></a>
+            </div>
+            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }">
+                <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
+            </div>
+        </div>
+
+        <!-- WIDGET CONFIG -->
+        <div class="vertical-spacing-twice" ng-if="showPanel() === 'config'">
             <fieldset disabled>
                 <legend><i18n>appregistry.widget.fields</i18n></legend>
                 <div class="row">
@@ -51,8 +70,8 @@
             </fieldset>
         </div>
 
-
-        <div class="vertical-spacing-twice">
+        <!-- WIDGET ATTRIBUTION -->
+        <div class="vertical-spacing-twice" ng-if="showPanel() === 'attribution'">
             <div>
                 <h4><i18n>appregistry.widgets.attribution.header</i18n></h4>
             </div>
@@ -72,6 +91,70 @@
                     </ul>
                 </article>
             </div>
+        </div>
+
+        <!-- MASS ATTRIBUTION -->
+        <div ng-if="showPanel() === 'massAttribution'">
+            <h4><i18n>appregistry.groups.massAttribution.header</i18n></h4>
+            <div class="toolbar">
+                <button ng-click="loadingWrapper('_masslink', massLinkWidget, null, widget, multipleCombo.selected.structure, multipleCombo.selected.profiles)"
+                        ng-disabled="_masslink.loading || multipleCombo.selected.profiles.length === 0 || multipleCombo.selected.structure.length === 0">
+                    <i18n class="inline-middle">appregistry.mass.link</i18n>
+                    <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
+                </button>
+                <button ng-click="loadingWrapper('_masslink', massUnlinkWidget, null, widget, multipleCombo.selected.structure, multipleCombo.selected.profiles)"
+                        ng-disabled="_masslink.loading || multipleCombo.selected.profiles.length === 0 || multipleCombo.selected.structure.length === 0">
+                    <i18n class="inline-middle">appregistry.mass.unlink</i18n>
+                    <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
+                </button>
+                <button ng-click="loadingWrapper('_masslink', massSetMandatoryWidget, null, widget, multipleCombo.selected.structure, multipleCombo.selected.profiles)"
+                        ng-disabled="_masslink.loading || multipleCombo.selected.profiles.length === 0 || multipleCombo.selected.structure.length === 0">
+                    <i18n class="inline-middle">appregistry.mass.set.mandatory</i18n>
+                    <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
+                </button>
+                <button ng-click="loadingWrapper('_masslink', massRemoveMandatoryWidget, null, widget, multipleCombo.selected.structure, multipleCombo.selected.profiles)"
+                        ng-disabled="_masslink.loading ||  multipleCombo.selected.profiles.length === 0 || multipleCombo.selected.structure.length === 0">
+                    <i18n class="inline-middle">appregistry.mass.remove.mandatory</i18n>
+                    <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
+                </button>
+            </div>
+            <article>
+                <multi-combo
+                    title="[[lang.translate('appregistry.choose.structure')]]"
+                    combo-model="schools.parentStructures"
+                    search-on="name"
+                    order-by="name"
+                    filtered-model="multipleCombo.selected.structure"
+                    labels="multipleCombo.comboLabels"
+                    max-selected="1"
+                    class="six"
+                ></multi-combo>
+                <fieldset>
+                    <legend translate content="appregistry.selected.structure"></legend>
+                    <div class="select-blocks" ng-if="multipleCombo.selected.structure.length > 0">
+                        <div ng-repeat="structure in multipleCombo.selected.structure" ng-click="multipleCombo.removeElement(structure, 'structure')">
+                            [[structure.toString()]]
+                        </div>
+                    </div>
+                </fieldset>
+                <multi-combo
+                    title="[[lang.translate('appregistry.choose.profiles')]]"
+                    combo-model="multipleCombo.profiles"
+                    filtered-model="multipleCombo.selected.profiles"
+                    search-on="name"
+                    order-by="translatedName"
+                    labels="multipleCombo.comboLabels"
+                    class="six"
+                ></multi-combo>
+                <fieldset>
+                    <legend translate content="appregistry.selected.profiles"></legend>
+                    <div class="select-blocks">
+                        <div ng-repeat="profile in multipleCombo.selected.profiles" ng-click="multipleCombo.removeElement(profile, 'profiles')">
+                            [[profile.toString()]]
+                        </div>
+                    </div>
+                </fieldset>
+            </article>
         </div>
 
     </article>

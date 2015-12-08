@@ -206,7 +206,7 @@ public class Starter extends BaseServer {
 				.putString("js", "/assets/widgets/"+widgetName+"/"+widgetName+".js")
 				.putString("path", "/assets/widgets/"+widgetName+"/"+widgetName+".html");
 
-		if(vertx.fileSystem().existsSync("/assets/widgets/"+widgetName+"/i18n")){
+		if(vertx.fileSystem().existsSync(widgetPath+"/i18n")){
 			widget.putString("i18n", "/assets/widgets/"+widgetName+"/i18n");
 		}
 

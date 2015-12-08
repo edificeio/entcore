@@ -1,3 +1,4 @@
+<!-- HEADER -->
 <div>
 	<h1 class="link-previous"><a ng-click="showExternalAppList()"><i18n>appregistry.external.apps</i18n></a></h1>
 	<h3>
@@ -7,6 +8,8 @@
     </h3>
 </div>
 <form name="externalAppForm" novalidate ng-init="showPanel('config')">
+
+    <!-- LEAF MENU -->
     <div class="leaf-menu-container small" ng-if="externalApp.data.id">
         <div class="leaf-menu" ng-class="{ selected: showPanel() === 'config' }">
             <a ng-click="showPanel('config')"><i18n>appregistry.app.properties</i18n></a>
@@ -18,6 +21,7 @@
             <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
         </div>
     </div>
+
     <!-- APP CONFIG -->
     <div ng-if="showPanel() === 'config'">
         <div class="toolbar" ng-if="!externalApp.data.id">
@@ -40,10 +44,10 @@
     		</button>
     	</div>
         <fieldset class="preview-external vertical-spacing-twice">
-    		<legend>
+    		<legend class="filterbar">
     			<i18n>appregistry.preview</i18n>
     			<i class="refresh square-icon" ng-click="refreshPreview()" tooltip="appregistry.refresh.preview"
-    			   style="width: 20px; height: 20px; vertical-align: top;"></i>
+    			   style="width: 20px; height: 20px; vertical-align: top; margin-left: 2px;"></i>
     		</legend>
     		<div>
     			<iframe id="previewFrame" ng-src="[[getPreviewContent(externalApp)]]"></iframe>
@@ -122,6 +126,7 @@
     		</fieldset>
     	</fieldset>
     </div>
+
     <!-- APP ATTRIBUTION -->
     <div ng-if="showPanel() === 'attribution'" ng-init="linkedGroupsOpts.reorderGroups()">
         <h4><i18n>appregistry.groups.attribution.header</i18n></h4>
@@ -145,34 +150,35 @@
             </li>
         </ul>
     </div>
+
     <!-- MASS ATTRIBUTION -->
-    <div ng-if="showPanel() === 'massAttribution'" ng-init="profilesCombo.reset()">
+    <div ng-if="showPanel() === 'massAttribution'" ng-init="multipleCombo.reset()">
         <h4><i18n>appregistry.groups.massAttribution.header</i18n></h4>
         <div class="toolbar">
-            <button ng-click="loadingWrapper('_masslink', massLinkExternalApp, null, externalApp, profilesCombo.selectedProfiles)"
-                    ng-disabled="_masslink.loading || _massunlink.loading || profilesCombo.selectedProfiles.length === 0">
-                <i18n class="inline-middle">appregistry.mass.link.external.app</i18n>
+            <button ng-click="loadingWrapper('_masslink', massLinkExternalApp, null, externalApp, multipleCombo.selected.profiles)"
+                    ng-disabled="_masslink.loading || _massunlink.loading || multipleCombo.selected.profiles.length === 0">
+                <i18n class="inline-middle">appregistry.mass.link</i18n>
                 <i class="horizontal-spacing-twice loader" ng-if="_masslink.loading"></i>
             </button>
-            <button ng-click="loadingWrapper('_massunlink', massUnlinkExternalApp, null, externalApp, profilesCombo.selectedProfiles)"
-                    ng-disabled="_massunlink.loading || _masslink.loading || profilesCombo.selectedProfiles.length === 0">
-                <i18n class="inline-middle">appregistry.mass.unlink.external.app</i18n>
+            <button ng-click="loadingWrapper('_massunlink', massUnlinkExternalApp, null, externalApp, multipleCombo.selected.profiles)"
+                    ng-disabled="_massunlink.loading || _masslink.loading || multipleCombo.selected.profiles.length === 0">
+                <i18n class="inline-middle">appregistry.mass.unlink</i18n>
                 <i class="horizontal-spacing-twice loader" ng-if="_massunlink.loading"></i>
             </button>
         </div>
         <multi-combo
             title="[[lang.translate('appregistry.choose.profiles')]]"
-            combo-model="profilesCombo.profiles"
-            filtered-model="profilesCombo.selectedProfiles"
+            combo-model="multipleCombo.profiles"
+            filtered-model="multipleCombo.selected.profiles"
             search-on="name"
             order-by="translatedName"
-            labels="profilesCombo.comboLabels"
+            labels="multipleCombo.comboLabels"
             class="six"
         ></multi-combo>
         <fieldset>
             <legend translate content="appregistry.selected.profiles"></legend>
             <div class="select-blocks">
-                <div ng-repeat="profile in profilesCombo.selectedProfiles" ng-click="profilesCombo.removeElement(profile)">
+                <div ng-repeat="profile in multipleCombo.selected.profiles" ng-click="multipleCombo.removeElement(profile, 'profiles')">
                     [[profile.toString()]]
                 </div>
             </div>

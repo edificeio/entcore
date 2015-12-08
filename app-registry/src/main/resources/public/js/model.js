@@ -207,6 +207,42 @@ WidgetApp.prototype.setMandatory = function(groupId){
 WidgetApp.prototype.removeMandatory = function(groupId){
     return http().delete('/appregistry/widget/' + this.id + '/mandatory/' + groupId)
 }
+WidgetApp.prototype.massAuthorize = function(structureId, profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().put('/appregistry/widget/' + this.data.id + '/authorize/' + structureId + profilesParams)
+}
+WidgetApp.prototype.massUnauthorize = function(structureId, profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().delete('/appregistry/widget/' + this.data.id + '/authorize/' + structureId + profilesParams)
+}
+WidgetApp.prototype.massSetMandatory = function(structureId, profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().put('/appregistry/widget/' + this.data.id + '/mandatory/' + structureId + '/mass' + profilesParams)
+}
+WidgetApp.prototype.massRemoveMandatory = function(structureId, profiles){
+    var profilesParams = ""
+    profiles.forEach(function(p){
+        if(profilesParams)
+            profilesParams += "&profile=" + p
+        else profilesParams += "?profile=" + p
+    })
+    return http().delete('/appregistry/widget/' + this.data.id + '/mandatory/' + structureId + '/mass' +  profilesParams)
+}
 
 //////// ROLE ////////
 
@@ -363,6 +399,7 @@ School.prototype.syncExternalApps = function(hook){
 			hook()
 	}.bind(this))
 }
+School.prototype.toString = function(){ return this.name }
 
 //////// MODEL BUILD ////////
 
