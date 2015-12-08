@@ -19,14 +19,12 @@
 
 package org.entcore.cas.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import fr.wseduc.webutils.I18n;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -39,7 +37,8 @@ import fr.wseduc.cas.entities.User;
 
 public class DefaultRegisteredService implements RegisteredService {
 
-	protected final List<Pattern> patterns = new ArrayList<Pattern>();
+	protected final I18n i18n = I18n.getInstance();
+	protected final Set<Pattern> patterns = new HashSet<>();
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
 	protected String directoryAction = "getUser";
@@ -53,15 +52,9 @@ public class DefaultRegisteredService implements RegisteredService {
 		this.eb = eb;
 		try {
 			List<String> patterns = (List<String>) conf.get(CONF_PATTERNS);
-			for (String pattern : patterns) {
-				try {
-					this.patterns.add(Pattern.compile(pattern));
-				}
-				catch (PatternSyntaxException pe) {
-					log.error("Bad service configuration : failed to compile regex : " + pattern);
-				}
+			if (patterns != null && !patterns.isEmpty()) {
+				addPatterns(patterns.toArray(new String[patterns.size()]));
 			}
-
 			this.principalAttributeName = String.valueOf(conf.get(CONF_PRINCIPAL_ATTR_NAME));
 		}
 		catch (Exception e) {
@@ -103,6 +96,32 @@ public class DefaultRegisteredService implements RegisteredService {
 	@Override
 	public String formatService(String serviceUri, ServiceTicket st) {
 		return serviceUri;
+	}
+
+	@Override
+	public void addPatterns(String... patterns) {
+		for (String pattern : patterns) {
+			try {
+				this.patterns.add(Pattern.compile(pattern));
+			}
+			catch (PatternSyntaxException pe) {
+				log.error("Bad service configuration : failed to compile regex : " + pattern);
+			}
+		}
+	}
+
+	@Override
+	public JsonObject getInfos(String acceptLanguage) {
+		String baseKey = getId();
+		return new JsonObject()
+				.putString("id", baseKey)
+				.putString("name", i18n.translate(baseKey + ".name", acceptLanguage))
+				.putString("description", i18n.translate(baseKey + ".description", acceptLanguage));
+	}
+
+	@Override
+	public String getId() {
+		return this.getClass().getSimpleName();
 	}
 
 	protected void prepareUser(final User user, final String userId, String service, final JsonObject data) {

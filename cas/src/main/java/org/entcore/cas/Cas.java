@@ -19,10 +19,7 @@
 
 package org.entcore.cas;
 
-import org.entcore.cas.controllers.CredentialController;
-import org.entcore.cas.controllers.EntCoreCredentialResponse;
-import org.entcore.cas.controllers.SamlValidatorController;
-import org.entcore.cas.controllers.ValidatorController;
+import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
 import org.entcore.cas.http.VertxHttpClientFactory;
 import org.entcore.common.http.BaseServer;
@@ -32,6 +29,7 @@ import fr.wseduc.cas.endpoint.CasValidator;
 import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.cas.endpoint.SamlValidator;
 import fr.wseduc.cas.http.HttpClientFactory;
+import org.vertx.java.core.Handler;
 
 
 public class Cas extends BaseServer {
@@ -40,8 +38,13 @@ public class Cas extends BaseServer {
 	public void start() {
 		super.start();
 
-		DataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
+		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 		HttpClientFactory httpClientFactory = new VertxHttpClientFactory(vertx);
+
+		final ConfigurationController configurationController = new ConfigurationController();
+		configurationController.setRegisteredServices(dataHandlerFactory.getServices());
+		addController(configurationController);
+		configurationController.loadPatterns();
 
 		Credential credential = new Credential();
 		credential.setDataHandlerFactory(dataHandlerFactory);
@@ -61,6 +64,14 @@ public class Cas extends BaseServer {
 		SamlValidatorController samlvalidatorController = new SamlValidatorController();
 		samlvalidatorController.setValidator(samlValidator);
 		addController(samlvalidatorController);
+
+		vertx.setPeriodic(config.getLong("refreshPatterns", 3600l * 1000l), new Handler<Long>() {
+			@Override
+			public void handle(Long event) {
+				configurationController.loadPatterns();
+			}
+		});
+
 	}
 
 }

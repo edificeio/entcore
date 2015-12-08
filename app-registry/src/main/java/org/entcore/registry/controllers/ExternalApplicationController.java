@@ -1,18 +1,21 @@
 package org.entcore.registry.controllers;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 import java.util.List;
 
+import fr.wseduc.bus.BusAddress;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.services.ExternalApplicationService;
 import org.entcore.registry.services.impl.DefaultExternalApplicationService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
@@ -91,6 +94,21 @@ public class ExternalApplicationController extends BaseController {
 		}
 
 		externalAppService.massUnauthorize(applicationId, profiles, defaultResponseHandler(request, 204));
+	}
+
+	@BusAddress("external-application")
+	public void externalApplications(Message<JsonObject> message) {
+		final String structureId = message.body().getString("structureId");
+		switch (message.body().getString("action", "")) {
+			case "list" :
+				externalAppService.listExternalApps(structureId, busArrayHandler(message));
+				break;
+			case "list-cas-connectors" :
+				externalAppService.listCasConnectors(busArrayHandler(message));
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
+		}
 	}
 
 }

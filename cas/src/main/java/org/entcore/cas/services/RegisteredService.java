@@ -27,6 +27,7 @@ import org.vertx.java.core.eventbus.EventBus;
 
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.User;
+import org.vertx.java.core.json.JsonObject;
 
 public interface RegisteredService {
 
@@ -37,5 +38,11 @@ public interface RegisteredService {
 	void getUser(String userId, String service, Handler<User> userHandler);
 
 	String formatService(String serviceUri, ServiceTicket st);
+
+	void addPatterns(String... pattern);
+
+	JsonObject getInfos(String acceptLanguage);
+
+	String getId();
 
 }

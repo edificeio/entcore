@@ -72,4 +72,9 @@ public class EntCoreDataHandlerFactory implements DataHandlerFactory {
 		dataHandler.setServices(services);
 		return dataHandler;
 	}
+
+	public RegisteredServices getServices() {
+		return services;
+	}
+
 }

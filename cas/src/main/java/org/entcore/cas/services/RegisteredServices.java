@@ -25,6 +25,7 @@ import java.util.Set;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
+import org.vertx.java.core.json.JsonArray;
 
 public class RegisteredServices {
 
@@ -58,6 +59,26 @@ public class RegisteredServices {
 			return registeredService.formatService(service, st);
 		}
 		return null;
+	}
+
+	public JsonArray getInfos(String acceptLanguage) {
+		JsonArray infos = new JsonArray();
+		for (RegisteredService registeredService: services) {
+			infos.add(registeredService.getInfos(acceptLanguage));
+		}
+		return infos;
+	}
+
+	public boolean addPatterns(String service, String... patterns) {
+		if (service != null && !service.trim().isEmpty() && patterns != null && patterns.length > 0) {
+			for (RegisteredService registeredService: services) {
+				if (service.equals(registeredService.getId())) {
+					registeredService.addPatterns(patterns);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }
