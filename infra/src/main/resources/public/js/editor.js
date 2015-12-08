@@ -1,4 +1,22 @@
-window.RTE = (function(){
+window.RTE = (function () {
+
+    loader.openFile({
+        url: '/infra/public/js/prism/prism.js',
+        callback: function () {
+
+        },
+        error: function () {
+
+        }
+    });
+
+    $('body').append(
+        $('<link />')
+            .attr('rel', 'stylesheet')
+            .attr('type', 'text/css')
+            .attr('href', '/infra/public/js/prism/prism.css')
+   );
+
 	return {
 		Instance: function(data){
 			var that = this;
@@ -150,7 +168,7 @@ window.RTE = (function(){
 						}
 					}
 					else{
-						if(range.startContainer !== that.editZone[0]){
+						if(range.startContainer !== that.editZone[0] && range.startOffset !== range.endOffset){
 							selector.push(range.startContainer);
 						}
 						else{
@@ -187,7 +205,7 @@ window.RTE = (function(){
 				if(!same && selectedElements){
 					this.selectedElements = selectedElements || this.selectedElements;
 				}
-				if(!same){
+				if (!same && this.editZone.is(':focus')) {
 					this.range = range;
 				}
 				return !same;
@@ -245,8 +263,17 @@ window.RTE = (function(){
 				if(!this.selectedElements.length){
 					element.html('<br />');
 					var elementAtCaret = this.range.startContainer;
-					$(elementAtCaret).wrapInner(element);
-					this.moveCaret(element[0]);
+					if (elementAtCaret.nodeType === 3) {
+					    element.text(elementAtCaret.textContent);
+					    elementAtCaret.parentElement.parentElement.insertBefore(element[0], elementAtCaret.parentElement);
+					    elementAtCaret.parentElement.remove();
+					}
+					else {
+					    element.text(elementAtCaret.innerText);
+					    elementAtCaret.parentElement.insertBefore(element[0], elementAtCaret);
+					    elementAtCaret.remove();
+					}
+					this.moveCaret(element[0], element.text().length);
 				}
 				else{
 					this.selectedElements.forEach(function(item){
@@ -1109,7 +1136,7 @@ window.RTE = (function(){
 
 			RTE.baseToolbarConf.option('linker', function(instance){
 				return {
-					template: '<i ng-click="display.chooseLink = true" tooltip="editor.option.link"></i>' +
+					template: '<i ng-click="linker.display.chooseLink = true" tooltip="editor.option.link"></i>' +
 					'<div ng-include="\'/infra/public/template/linker.html\'"></div>',
 					link: function(scope, element, attributes){
 						scope.linker = {
@@ -1209,11 +1236,11 @@ window.RTE = (function(){
 								instance.selection.wrapText(linkNode);
 							}
 
-							scope.display.chooseLink = false;
+							scope.linker.display.chooseLink = false;
 						};
 
 						scope.linker.cancel = function(){
-							scope.display.chooseLink = false;
+							scope.linker.display.chooseLink = false;
 						};
 
 						http().get('/resources-applications').done(function(apps){
@@ -1591,11 +1618,13 @@ window.RTE = (function(){
 					'</popover-content>' +
 					'</popover>' +
 					'<div contenteditable="true"></div>' +
-					'<textarea></textarea>',
+					'<textarea></textarea>' +
+                    '<code class="language-html"></code>',
 					link: function(scope, element, attributes){
 						element.addClass('edit');
 						var editZone = element.children('[contenteditable=true]');
 						var htmlZone = element.children('textarea');
+						var highlightZone = element.children('code');
 						document.execCommand('styleWithCSS', true);
 						document.execCommand('enableInlineTableEditing', true);
 
@@ -1628,11 +1657,15 @@ window.RTE = (function(){
 							},
 							function(newValue){
 								if(newValue !== editZone.html() && !editZone.is(':focus')){
-									editZone.html(newValue);
+								    editZone.html(newValue);
+								    highlightZone.text(newValue);
+								    Prism.highlightAll();
 								}
 								if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
 									if(window.html_beautify){
-										htmlZone.val(html_beautify(newValue));
+									    htmlZone.val(html_beautify(newValue));
+									    highlightZone.text(html_beautify(newValue));
+									    Prism.highlightAll();
 									}
 								}
 							}
@@ -1757,7 +1790,7 @@ window.RTE = (function(){
 							editingTimer = setTimeout(editingDone, 1000);
 						});
 
-						editZone.on('keydown', function(e){
+						editZone.on('keydown', function (e) {
 							clearTimeout(typingTimer);
 							if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
 								editorInstance.undo();
@@ -1808,7 +1841,8 @@ window.RTE = (function(){
 							}
 						});
 
-						htmlZone.on('keyup', function(e){
+						htmlZone.on('keyup', function (e) {
+						    highlightZone.show();
 							var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
@@ -1823,7 +1857,8 @@ window.RTE = (function(){
 							});
 						});
 
-						htmlZone.on('keydown', function(e){
+						htmlZone.on('keydown', function (e) {
+						    highlightZone.hide();
 							if(e.keyCode === 9){
 								e.preventDefault();
 								var start = this.selectionStart;
