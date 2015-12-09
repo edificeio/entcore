@@ -412,6 +412,7 @@ public class Importer {
 		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.id IS UNIQUE;", j);
 		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.externalId IS UNIQUE;", j);
 		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.login IS UNIQUE;", j);
+		transactionHelper.add("CREATE INDEX ON :User(displayNameSearchField);", j);
 	}
 
 	public void profileConstraints() {

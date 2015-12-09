@@ -21,7 +21,6 @@ package org.entcore.directory.controllers;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
@@ -174,9 +173,8 @@ public class UserBookController extends BaseController {
 			filter += "AND (m)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
 			params.putString("structureId", structure);
 		}
-		String preFilter = "AND m.displayNameSearchField=~{regex} " + filter;
-		params.putString("regex", "(?i)^.*?" +
-					Pattern.quote(StringValidation.removeAccents(name.trim()).toLowerCase()) + ".*?$");
+		String preFilter = "AND m.displayNameSearchField CONTAINS {search} " + filter;
+		params.putString("search", StringValidation.removeAccents(name.trim()).toLowerCase());
 		String customReturn =
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
