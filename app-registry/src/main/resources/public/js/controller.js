@@ -486,6 +486,7 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     $scope.getWidget = function(structureId){
         $scope.widget.get(structureId, function(){
             $scope.linkedWidgetGroupsOpts.reorderGroups()
+            $scope.refreshPreview()
             $scope.$apply()
         })
     }
@@ -596,6 +597,10 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
             notify.error('appregistry.notify.ko')
         })
         return request
+    }
+
+    $scope.getWidgetPreviewUrl = function(){
+        return $sce.trustAsResourceUrl('/appregistry/widget-preview?widget=' + encodeURIComponent($scope.widget.name))
     }
 
 	/////// ROLES ///////

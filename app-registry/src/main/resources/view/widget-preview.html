@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<html class="print">
+<head>
+	<title></title>
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<script type="text/javascript">
+		function Preview($scope, $http){
+            $http.get('/appregistry/widgets').success(function(data){
+                var location = decodeURIComponent(window.location.href)
+    			$scope.widget = _.findWhere(data.widgets, { name: location.split('widget=')[1].split('&')[0]})
+
+                if(!$scope.widget)
+                    return
+
+                if($scope.widget.application.address){
+                    $scope.widget.i18n = $scope.widget.application.address + $scope.widget.i18n
+                    $scope.widget.js = $scope.widget.application.address + $scope.widget.js
+                    $scope.widget.path = $scope.widget.application.address + $scope.widget.path
+                }
+
+                model.widgets = data.widgets
+                model.widgets.findWidget = function(name){
+        			return _.findWhere(this, {name: name})
+        		}
+        		model.widgets.apply = function(){
+        			$scope.$apply()
+        		}
+
+                if($scope.widget.i18n){
+                    lang.addTranslations($scope.widget.i18n)
+                    loader.loadFile($scope.widget.js)
+                }
+                else{
+                    loader.loadFile(widget.js)
+                }
+            })
+		}
+	</script>
+</head>
+<body>
+    <portal-styles></portal-styles>
+    <div class="row widget-container" ng-controller="Preview">
+        <div ng-include="widget.path"></div>
+    </div>
+</body>
+</html>

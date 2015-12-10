@@ -3,7 +3,7 @@
 	|||     WIDGETS    |||
 	||||||||||||||||||||||
 -->
-<div class="row">
+<div class="row" ng-init="showPanel('config')">
     <!-- LEFT WIDGET MENU -->
 	<nav class="three cell recursive-list">
 		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterWidgets" />
@@ -44,8 +44,16 @@
         </div>
 
         <!-- WIDGET CONFIG -->
-        <div class="vertical-spacing-twice" ng-if="showPanel() === 'config'">
-            <fieldset disabled>
+        <div class="row" ng-if="showPanel() === 'config'">
+            <fieldset class="five cell">
+        		<legend class="filterbar">
+        			<i18n>appregistry.preview</i18n>
+        		</legend>
+        		<div>
+        			<iframe id="previewFrame" ng-src="[[getWidgetPreviewUrl()]]" style="width: 100%"></iframe>
+        		</div>
+        	</fieldset>
+            <fieldset disabled class="seven cell">
                 <legend><i18n>appregistry.widget.fields</i18n></legend>
                 <div class="row">
                     <span class="five cell"><label translate content="appregistry.widget.id" tooltip="appregistry.widget.tooltip.id"></label></span>

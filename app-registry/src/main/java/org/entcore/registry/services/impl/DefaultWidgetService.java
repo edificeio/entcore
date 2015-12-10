@@ -52,7 +52,7 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (w:Widget) OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) "+
 			"WITH w, a, length(a-[:PROVIDE]->(:WorkflowAction)) > 0 as workflowLinked " +
-			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, application: {id: a.id, name: a.name, strongLink: workflowLinked}}) as widgets";
+			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, application: {id: a.id, name: a.name, address: a.address, strongLink: workflowLinked}}) as widgets";
 		neo.execute(query, new JsonObject(), Neo4jResult.validUniqueResultHandler(handler));
 	}
 

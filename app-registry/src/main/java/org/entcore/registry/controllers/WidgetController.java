@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.registry.filters.AnyAdmin;
 import org.entcore.registry.filters.SuperAdminFilter;
@@ -28,6 +29,13 @@ import fr.wseduc.webutils.http.BaseController;
 
 public class WidgetController extends BaseController {
 	private final WidgetService service = new DefaultWidgetService();
+
+	@Get("/widget-preview")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void widgetPreview(final HttpServerRequest request) {
+		renderView(request);
+	}
 
 	@Get("/widgets")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
