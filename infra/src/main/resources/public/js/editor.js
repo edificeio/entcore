@@ -1,6 +1,8 @@
-window.RTE = (function () {
+/// <reference path="./jquery-1.10.2.min.js" />
 
-    loader.openFile({
+var RTE;
+window.RTE = (function(){
+	loader.openFile({
         url: '/infra/public/js/prism/prism.js',
         callback: function () {
 
@@ -16,7 +18,7 @@ window.RTE = (function () {
             .attr('type', 'text/css')
             .attr('href', '/infra/public/js/prism/prism.css')
    );
-
+   
 	return {
 		Instance: function(data){
 			var that = this;
@@ -336,7 +338,7 @@ window.RTE = (function () {
 				that.instance.addState(that.editZone.html());
 				if(!that.selectedElements.length){
 					var el = $('<span></span>');
-					el.css(style);
+					el.css(css);
 					that.editZone.append(el);
 					that.moveCaret(el[0]);
 				}
@@ -884,7 +886,6 @@ window.RTE = (function () {
 							function rgb(r, g, b){
 								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 							}
-							var rgba = rgb;
 							scope.backColor = eval(document.queryCommandValue('backColor'));
 							scope.foreColor = document.queryCommandValue('foreColor');
 							element.children('input').val(eval(scope.foreColor));
@@ -1061,9 +1062,15 @@ window.RTE = (function () {
 				return {
 					template: '<i ng-click="display.pickFile = true" tooltip="editor.option.image"></i>' +
 					'<lightbox show="display.pickFile" on-close="display.pickFile = false;">' +
-					'<media-library ng-change="updateContent()" ng-model="display.file" file-format="\'img\'"></media-library>' +
+					'<media-library ng-change="updateContent()" ng-model="display.file" file-format="\'img\'" visibility="[[visibility]]"></media-library>' +
 					'</lightbox>',
 					link: function(scope, element, attributes){
+						if(instance.element.attr('public')){
+							scope.visibility = 'public'
+						}
+						else{
+							scope.visibility = 'protected';
+						}
 						instance.editZone.addClass('drawing-zone');
 						scope.display = {};
 						scope.updateContent = function(){
@@ -1752,12 +1759,30 @@ window.RTE = (function () {
 						});
 
 						element.on('click', function(){
-							element.children('editor-toolbar').addClass('show');
+							if(attributes.inline !== undefined){
+								element.children('editor-toolbar').offset({
+									left: 0,
+									top: -element.children('editor-toolbar').height()
+								});
+								element.css({
+									'margin-top': element.children('editor-toolbar').height() + 'px'
+								});
+							}
+							
+							element.addClass('focus');
 						});
 
 						$('body').on('mousedown', function(e){
 							if(element.find(e.target).length === 0){
+								if(attributes.inline !== undefined){
+									element.css({
+										'margin-top': 0
+									});
+									element.children('editor-toolbar').attr('style', '');
+								}
+								
 								element.children('editor-toolbar').removeClass('show');
+								element.removeClass('focus');
 							}
 						});
 
