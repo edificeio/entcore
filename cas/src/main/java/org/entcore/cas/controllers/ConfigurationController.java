@@ -55,7 +55,7 @@ public class ConfigurationController extends BaseController {
 		});
 	}
 
-	@BusAddress("cas")
+	@BusAddress(value = "cas.configuration", local = false)
 	public void cas(Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
 			case "list-services" :
