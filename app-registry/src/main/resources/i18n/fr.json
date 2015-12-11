@@ -119,7 +119,7 @@
     "support.ticket.list": "Aide et support : lister les demandes",
     "support.view": "Aide et support : accéder au module",
     "tooltip.displayName": "La clef utilisée dans les fichiers de traduction pour afficher le nom de l'application dans l'ENT.",
-    "tooltip.icon": "Icône à affichier dans la page des applications, sous la forme &lt;i class='icone'&gt;.",
+    "tooltip.icon": "Icône à affichier dans la page des applications, sous la forme &lt;i class='icone'&gt; ou un lien web vers une image sous la forme http(s)://[lien-vers-image].",
     "tooltip.name": "Nom technique de l'application",
     "tooltip.password": "Code secret OAuth permettant de communiquer avec ENT Core",
     "tooltip.target": "Manière dont l'application sera affichée dans l'ENT. 'Portail' ouvre l'application dans la même page, 'Adaptateur' inclut l'application dans une iframe et 'Nouvelle page' ouvre l'application dans un onglet séparé.",
@@ -163,7 +163,6 @@
 	"appregistry.oauth.fields": "Champs spécifiques OAuth",
 	"appregistry.cas.server.type": "Type de CAS",
 	"tooltip.cas.server.type": "Spécifie la réponse et donc les champs renvoyés au client CAS lorsqu'il appelle la route /serviceValidate.",
-	"appregistry.cas.type.default": "CAS par défaut",
 	"tooltip.scope": "Ensemble de fonctions appelables. L'authentification OAuth donne le droit au client OAuth d'appeler les fonctions contenues dans le scope.",
 	"appregistry.app.is.locked": "L'application est verrouillée",
 	"appregistry.do.lock": "Verrouiller",
@@ -219,6 +218,7 @@
     "appregistry.mass.set.mandatory": "Rendre obligatoire",
     "appregistry.mass.remove.mandatory": "Rendre optionnel",
     "appregistry.notify.ok": "Opération terminée avec succès",
-    "appregistry.notify.ko": "Erreur lors de l'opération"
-
+    "appregistry.notify.ko": "Erreur lors de l'opération",
+    "appregistry.activate.CAS": "Activer le CAS pour l'application",
+    "optional": "Optionnel"
 }

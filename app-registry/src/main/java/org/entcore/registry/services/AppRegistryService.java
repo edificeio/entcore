@@ -69,4 +69,6 @@ public interface AppRegistryService {
 
 	void setDefaultClassRoles(String classId, Handler<Either<String, JsonObject>> handler);
 
+	void listCasConnectors(Handler<Either<String, JsonArray>> handler);
+
 }

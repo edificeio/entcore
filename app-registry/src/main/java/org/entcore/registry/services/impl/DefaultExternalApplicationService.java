@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.validation.StringValidation;
 import org.entcore.registry.services.ExternalApplicationService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -92,15 +91,6 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
-	public void listCasConnectors(Handler<Either<String, JsonArray>> handler) {
-		String query =
-				"MATCH (app:External) " +
-				"WHERE has(app.casType) " +
-				"RETURN app.casType as service, COLLECT(app.pattern) as patterns";
-		neo.execute(query, (JsonObject) null, validResultHandler(handler));
-	}
-
-	@Override
 	public void deleteExternalApplication(String applicationId,  Handler<Either<String, JsonObject>> handler) {
 		String query =
 			"MATCH (n:Application:External {id : {id}}) " +
@@ -115,7 +105,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
-	public void createExternalApplication(String structureId, JsonObject application, final Handler<Either<String, JsonObject>> handler) {
+	public void createExternalApplication(String structureId, final JsonObject application, final Handler<Either<String, JsonObject>> handler) {
 		if (defaultValidationParamsNull(
 				handler,
 				application,

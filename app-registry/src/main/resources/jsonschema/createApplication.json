@@ -27,6 +27,9 @@
     "scope": {
       "type": "string"
     },
+    "casType": {
+        "type": "string"
+    },
 	"pattern": {
 		"type": "string"
 	},

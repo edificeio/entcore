@@ -335,7 +335,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"RETURN n.id as id, n.name as name, " +
 				"n.grantType as grantType, n.secret as secret, n.address as address, " +
 				"n.icon as icon, n.target as target, n.displayName as displayName, " +
-				"n.scope as scope";
+				"n.scope as scope, n.pattern as pattern, n.casType as casType";
 		JsonObject params = new JsonObject()
 				.putString("id", applicationId);
 		neo.execute(query,params, new Handler<Message<JsonObject>>() {
@@ -431,6 +431,15 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"AND pr.name =~ '^[A-Za-z0-9]+-(personnel|all)-default$' " +
 				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr, cpg-[:AUTHORIZED]->pr";
 		neo.execute(query, new JsonObject().putString("id", classId), validEmptyHandler(handler));
+	}
+
+	@Override
+	public void listCasConnectors(Handler<Either<String, JsonArray>> handler) {
+		String query =
+				"MATCH (app:Application) " +
+				"WHERE has(app.casType) " +
+				"RETURN app.casType as service, COLLECT(app.pattern) as patterns";
+		neo.execute(query, (JsonObject) null, validResultHandler(handler));
 	}
 
 }

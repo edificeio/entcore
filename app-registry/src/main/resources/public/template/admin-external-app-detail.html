@@ -88,17 +88,18 @@
     				<option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
     			</select>
     		</div>
-    		<fieldset>
-    			<legend translate content="appregistry.cas.fields"></legend>
+    		<fieldset ng-disabled="!externalApp.data.hasCas">
+    			<legend>
+                    <i18n>appregistry.cas.fields</i18n>
+                    <input type="checkbox" ng-model="externalApp.data.hasCas" ng-change="switchCas(externalApp.data)"></input>
+                </legend>
     			<div class="row bottom-spacing">
     				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
-    				<select class="four cell" ng-model="externalApp.data.casType">
-    					<option value="" translate content="appregistry.cas.type.default" selected></option>
-    				</select>
+    				<select class="four cell" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
     			</div>
     			<div class="row">
     				<label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
-    				<input type="text" ng-model="externalApp.data.casPattern" class="four cell" />
+    				<input type="text" ng-model="externalApp.data.pattern" class="four cell" i18n-placeholder="optional"/>
     			</div>
     		</fieldset>
     		<fieldset>

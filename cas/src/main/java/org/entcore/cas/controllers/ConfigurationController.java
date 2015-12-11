@@ -21,6 +21,9 @@ package org.entcore.cas.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.webutils.http.BaseController;
+
+import java.util.Arrays;
+
 import org.entcore.cas.services.RegisteredServices;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -33,7 +36,7 @@ public class ConfigurationController extends BaseController {
 	private RegisteredServices services;
 
 	public void loadPatterns() {
-		eb.send("external-application", new JsonObject().putString("action", "list-cas-connectors"),
+		eb.send("wse.app.registry.bus", new JsonObject().putString("action", "list-cas-connectors"),
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -45,7 +48,7 @@ public class ConfigurationController extends BaseController {
 						String service = j.getString("service");
 						JsonArray patterns = j.getArray("patterns");
 						if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-							services.addPatterns(service, (String[]) patterns.toArray());
+							services.addPatterns(service,Arrays.copyOf(patterns.toArray(), patterns.size(), String[].class));
 						}
 					}
 				} else {
@@ -66,7 +69,7 @@ public class ConfigurationController extends BaseController {
 				String service = message.body().getString("service");
 				JsonArray patterns = message.body().getArray("patterns");
 				message.reply(new JsonObject().putString("status",
-						services.addPatterns(service, (String[]) patterns.toArray()) ? "ok" : "error"));
+						services.addPatterns(service, Arrays.copyOf(patterns.toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));

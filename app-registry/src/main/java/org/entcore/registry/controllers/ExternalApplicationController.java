@@ -9,6 +9,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyRe
 import java.util.List;
 
 import fr.wseduc.bus.BusAddress;
+
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.SuperAdminFilter;
@@ -17,11 +18,14 @@ import org.entcore.registry.services.impl.DefaultExternalApplicationService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
 public class ExternalApplicationController extends BaseController {
@@ -51,9 +55,22 @@ public class ExternalApplicationController extends BaseController {
 	public void createExternalApp(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {
+			public void handle(final JsonObject body) {
 				String structureId = request.params().get("structureId");
-				externalAppService.createExternalApplication(structureId, body, notEmptyResponseHandler(request, 201, 409));
+				final String casType = body.getString("casType","");
+				final String pattern = body.getString("pattern", "");
+				final boolean updateCas = !casType.trim().isEmpty() && !pattern.trim().isEmpty();
+				externalAppService.createExternalApplication(structureId, body, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isRight() && updateCas){
+							Server.getEventBus(vertx).send("cas.configuration", new JsonObject()
+								.putString("action", "add-patterns")
+								.putString("service",casType)
+								.putArray("patterns", new JsonArray().add(pattern)));
+						}
+						notEmptyResponseHandler(request, 201).handle(event);
+					}
+				});
 			}
 		});
 	}
@@ -102,9 +119,6 @@ public class ExternalApplicationController extends BaseController {
 		switch (message.body().getString("action", "")) {
 			case "list" :
 				externalAppService.listExternalApps(structureId, busArrayHandler(message));
-				break;
-			case "list-cas-connectors" :
-				externalAppService.listCasConnectors(busArrayHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));

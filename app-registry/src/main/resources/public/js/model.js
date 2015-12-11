@@ -15,6 +15,14 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+var formatUrl = function(url){
+    try{
+        return new URL(url).origin
+    } catch(e) {
+        return url
+    }
+}
+
 //////// ACTION ////////
 
 function Action(data){}
@@ -70,6 +78,8 @@ Application.prototype.createApplication = function(){
 		icon: this.icon || '',
 		target: this.target || '',
 		scope: this.scope || '',
+        casType: this.casType || '',
+        pattern: this.pattern || (this.casType && '^' + formatUrl(this.address) + '.*') || '',
 		name: this.name
 	})
 	.done(function(){
@@ -87,6 +97,8 @@ Application.prototype.saveChanges = function(){
 		icon: this.icon || '',
 		target: this.target || '',
 		scope: this.scope || '',
+        casType: this.casType || '',
+        pattern: this.pattern || (this.casType && '^' + formatUrl(this.address) + '.*') || '',
 		name: this.name
 	})
 	.done(function(){
@@ -130,6 +142,8 @@ ExternalApplication.prototype.createApplication = function(structureId){
 		icon: this.data.icon || '',
 		target: this.data.target || '',
 		scope: this.data.scope || '',
+        casType: this.data.casType || '',
+        pattern: this.data.pattern || (this.data.casType && '^' + formatUrl(this.data.address) + '.*') || '',
 		name: this.data.name,
 		inherits: this.data.inherits
 	})
@@ -143,6 +157,8 @@ ExternalApplication.prototype.saveChanges = function(){
 		icon: this.data.icon || '',
 		target: this.data.target || '',
 		scope: this.data.scope || '',
+        casType: this.data.casType || '',
+        pattern: this.data.pattern || (this.data.casType && '^' + formatUrl(this.data.address) + '.*') || '',
 		name: this.data.name,
 		inherits: this.data.inherits
 	})
@@ -293,7 +309,7 @@ Role.prototype.createRole = function(hook){
 		})
 	}).done(function(){
 		notify.message('success', lang.translate("appregistry.notify.createRole"))
-		typeof hook === "function" ? hook() : null
+		if(typeof hook === "function") hook();
 	});
 }
 
@@ -306,14 +322,14 @@ Role.prototype.updateRole = function(hook, skipNotify){
 	}).done(function(){
 		if(!skipNotify)
 			notify.info(lang.translate("appregistry.notify.modifyRole"))
-		typeof hook === "function" ? hook() : null
+		if(typeof hook === "function") hook();
 	})
 }
 
 Role.prototype.delete = function(hook){
 	http().delete('/appregistry/role/' + this.id).done(function(){
 		notify.info(lang.translate("appregistry.notify.deleteRole"))
-		typeof hook === "function" ? hook() : null
+		if(typeof hook === "function") hook();
 	})
 }
 
@@ -393,6 +409,9 @@ School.prototype.syncExternalApps = function(hook){
     		}
 			if(app.data.scope)
 				app.data.transferSession = data.scope.indexOf('userinfo') !== -1
+            if(app.data.casType){
+                app.data.hasCas = true
+            }
 			return app
 		})
 		if(typeof hook === 'function')
@@ -408,7 +427,12 @@ model.build = function(){
 
 	this.collection(Application, {
 		syncApps: function(hook){
-			http().get('/appregistry/applications/actions?actionType=WORKFLOW').done(function(data){
+			http().get('/appregistry/applications/actions?actionType=WORKFLOW&structureId=0').done(function(data){
+                data.forEach(function(app){
+                    if(app.casType){
+                        app.hasCas = true
+                    }
+                })
 				this.load(data)
 				if(typeof hook === "function")
 					hook()
@@ -418,7 +442,7 @@ model.build = function(){
 
 	this.collection(Role, {
 		syncRoles: function(hook){
-			http().get('/appregistry/roles/actions').done(function(data){
+			http().get('/appregistry/roles/actions?structureId=0').done(function(data){
 				this.load(_.map(data, function(role){
 					return {
 						id: role.id,

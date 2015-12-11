@@ -28,6 +28,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
 import org.entcore.common.http.filter.AdminFilter;
@@ -264,8 +265,21 @@ public class AppRegistryController extends BaseController {
 			@Override
 			public void handle(JsonObject body) {
 				String applicationId = request.params().get("id");
+				final String casType = body.getString("casType","");
+				final String pattern = body.getString("pattern", "");
+				final boolean updateCas = !casType.trim().isEmpty() && !pattern.trim().isEmpty();
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
-					appRegistryService.updateApplication(applicationId, body, notEmptyResponseHandler(request));
+					appRegistryService.updateApplication(applicationId, body, new Handler<Either<String,JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							if(event.isRight() && updateCas){
+								Server.getEventBus(vertx).send("cas.configuration", new JsonObject()
+									.putString("action", "add-patterns")
+									.putString("service",casType)
+									.putArray("patterns", new JsonArray().add(pattern)));
+							}
+							notEmptyResponseHandler(request).handle(event);;
+						}
+					});
 				} else {
 					badRequest(request, "invalid.application.id");
 				}
@@ -283,6 +297,22 @@ public class AppRegistryController extends BaseController {
 		} else {
 			badRequest(request, "invalid.application.id");
 		}
+	}
+
+	@Get("/cas-types")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void listCasTypes(final HttpServerRequest request) {
+		Server.getEventBus(vertx).send("cas.configuration", new JsonObject().putString("action", "list-services"),
+				new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					renderJson(request, event.body().getArray("result"));
+				} else {
+					log.error(event.body().getString("message"));
+				}
+			}
+		});
 	}
 
 	@BusAddress("wse.app.registry")
@@ -414,6 +444,9 @@ public class AppRegistryController extends BaseController {
 				break;
 			case "list-roles" :
 				appRegistryService.listRoles(structureId, busArrayHandler(message));
+				break;
+			case "list-cas-connectors" :
+				appRegistryService.listCasConnectors(busArrayHandler(message));
 				break;
 			default:
 				message.reply(new JsonObject().putString("status", "error")

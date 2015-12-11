@@ -190,6 +190,9 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     })
 
 	/////// APPLICATIONS ///////
+	http().get('/appregistry/cas-types').done(function(data){
+        $scope.casTypes = data
+    })
 
 	$scope.application = new Application({ name: 'Application', displayName: 'application', external: true })
 
@@ -262,6 +265,15 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 			application.scope = application.scope.replace('userinfo', '')
 		}
 	}
+
+    $scope.switchCas = function(application){
+        if(application.hasCas){
+            application.casType = application.casType ? application.casType : "DefaultRegisteredService"
+        } else {
+            delete application.pattern
+            delete application.casType
+        }
+    }
 
 	/////// EXTERNAL APPS ///////
     $scope.showPanelValue = ''
