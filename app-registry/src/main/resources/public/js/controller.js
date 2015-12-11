@@ -26,6 +26,21 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 	$scope.schools = model.schools
     $scope.widgets = model.widgetApps
 
+    /////// TOP NOTIFICATIONS ///////
+    $scope.topNotification = {
+        show: false,
+        message: "",
+        confirm: null
+    }
+    $scope.notifyTop = function(text, action){
+        $scope.topNotification.message = "<p>"+text+"</p>"
+        $scope.topNotification.confirm = action
+        $scope.topNotification.show = true
+    }
+    $scope.colourText = function(text){
+        return '<span class="colored">'+text+'</span>'
+    }
+
 	/////// THEMES ///////
 
 	$scope.themes = [
@@ -416,9 +431,12 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     }
 
     $scope.deleteExternalApp = function(app){
-        app.delete().done(function(){
-            $scope.school.syncExternalApps($scope.$apply)
-        })
+        var action = function(){
+            app.delete().done(function(){
+                $scope.school.syncExternalApps($scope.$apply)
+            })
+        }
+        $scope.notifyTop(lang.translate('appregistry.confirm.app.deletion') + ' ' + $scope.colourText(app.data.displayName) + '.', action)
     }
 
     $scope.massLinkExternalApp = function(app, profiles){
