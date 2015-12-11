@@ -565,6 +565,7 @@ nav.recursive-list{
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
     border-bottom: 3px solid @main;
+    padding-top: 1px;
 
 	ul{
 		margin: 0;
@@ -2168,5 +2169,39 @@ div.spinner-bar{
     > button {
         float: none;
         display: inline-block;
+    }
+}
+
+span.colored{
+    color: @accent;
+}
+
+top-notification{
+    position: fixed;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0px 0px 15px 20px;
+    background: #333;
+    color: #EEE;
+    box-shadow: @accent 0px 2px 5px;
+    opacity: 0.95;
+    z-index: 11000;
+
+    div.notify-top-content{
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    div.notify-top-actions > span{
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 20px;
+        border-bottom: 2px solid white;
+        padding: 5px 5px;
+        transition: border 0.25s ease-in-out;
+
+        &:hover{
+            border-color: @accent;
+        }
     }
 }

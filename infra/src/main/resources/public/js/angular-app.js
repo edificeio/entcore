@@ -1472,6 +1472,55 @@ module.directive('pullDownContent', function($compile, $timeout){
 	}
 });
 
+module.directive('topNotification', function(){
+    return {
+		restrict: 'E',
+		template:
+            '<div class="notify-top">'+
+                '<div class="notify-top-content" ng-bind-html="content"></div>'+
+                '<div class="notify-top-actions">'+
+                    '<span ng-click="cancel()">[[doConfirm ? labels().cancel : labels().ok]]</span>'+
+                    '<span ng-click="ok()" ng-show="doConfirm">[[labels().confirm]]</span> '+
+                '</div>'+
+            '</div>',
+        scope: {
+            trigger: '=',
+            confirm: '=',
+            content: '=',
+            labels: '&'
+        },
+		link: function(scope, element, attributes){
+            element.css('display', 'none')
+            scope.doConfirm = false
+            scope.cancel = function(){
+                scope.trigger = false
+            }
+            scope.ok = function(){
+                scope.trigger = false
+                scope.confirm()
+            }
+            if(!scope.labels()){
+                scope.labels = function(){
+                    return {
+                        confirm: lang.translate('confirm'),
+                        cancel: lang.translate('cancel'),
+                        ok: lang.translate('ok')
+                    }
+                }
+            }
+            scope.$watch('trigger', function(newVal){
+                if(newVal)
+                    element.slideDown()
+                else
+                    element.slideUp()
+            });
+            scope.$watch('confirm', function(newVal){
+                scope.doConfirm = newVal ? true : false
+            })
+		}
+	}
+});
+
 module.directive('recorder', function(){
 	return {
 		restrict: 'E',

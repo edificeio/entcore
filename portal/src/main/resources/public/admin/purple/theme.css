@@ -8051,6 +8051,7 @@ nav.recursive-list {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   border-bottom: 3px solid #9c27b0;
+  padding-top: 1px;
 }
 nav.recursive-list ul {
   margin: 0;
@@ -9478,4 +9479,33 @@ div.spinner-bar > * {
 .button-horizontal-bar > button {
   float: none;
   display: inline-block;
+}
+span.colored {
+  color: #9c27b0;
+}
+top-notification {
+  position: fixed;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0px 0px 15px 20px;
+  background: #333;
+  color: #EEE;
+  box-shadow: #9c27b0 0px 2px 5px;
+  opacity: 0.95;
+  z-index: 11000;
+}
+top-notification div.notify-top-content {
+  font-weight: bold;
+  font-size: 16px;
+}
+top-notification div.notify-top-actions > span {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 20px;
+  border-bottom: 2px solid white;
+  padding: 5px 5px;
+  transition: border 0.25s ease-in-out;
+}
+top-notification div.notify-top-actions > span:hover {
+  border-color: #9c27b0;
 }
