@@ -64,6 +64,9 @@ Application.prototype.open = function(){
 			data.target = 'adapter';
 			data.address = data.address.split('/adapter#')[1];
 		}
+        if(data.casType){
+            data.hasCas = true
+        }
 		this.updateData(data);
 
 	}.bind(this));
@@ -428,11 +431,6 @@ model.build = function(){
 	this.collection(Application, {
 		syncApps: function(hook){
 			http().get('/appregistry/applications/actions?actionType=WORKFLOW&structureId=0').done(function(data){
-                data.forEach(function(app){
-                    if(app.casType){
-                        app.hasCas = true
-                    }
-                })
 				this.load(data)
 				if(typeof hook === "function")
 					hook()

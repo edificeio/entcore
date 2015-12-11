@@ -193,6 +193,9 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 	http().get('/appregistry/cas-types').done(function(data){
         $scope.casTypes = data
     })
+    $scope.casDescription = function(casType){
+        return _.findWhere($scope.casTypes, {id: casType}).description
+    }
 
 	$scope.application = new Application({ name: 'Application', displayName: 'application', external: true })
 
@@ -268,7 +271,7 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 
     $scope.switchCas = function(application){
         if(application.hasCas){
-            application.casType = application.casType ? application.casType : "DefaultRegisteredService"
+            application.casType = application.casType ? application.casType : "UidRegisteredService"
         } else {
             delete application.pattern
             delete application.casType

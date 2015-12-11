@@ -93,6 +93,9 @@
                     <i18n>appregistry.cas.fields</i18n>
                     <input type="checkbox" ng-model="externalApp.data.hasCas" ng-change="switchCas(externalApp.data)"></input>
                 </legend>
+                <div class="row bottom-spacing" ng-if="externalApp.data.casType">
+                    <strong class="small-text" ng-bind-html="casDescription(externalApp.data.casType)"></strong>
+                </div>
     			<div class="row bottom-spacing">
     				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
     				<select class="four cell" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
