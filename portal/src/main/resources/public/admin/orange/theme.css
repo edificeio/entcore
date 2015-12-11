@@ -3328,12 +3328,6 @@ span.no-style {
   background: transparent;
   overflow: hidden;
 }
-.drawing-zone article [contenteditable=true] {
-  padding: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
 .drawing-zone article.media {
   border: 1px dashed #666;
   min-width: 30px;
@@ -3368,13 +3362,6 @@ span.no-style {
 .drawing-zone article.media > div {
   width: 100%;
   height: 100%;
-}
-.drawing-zone article.media div[contenteditable=true] {
-  height: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  min-height: 100%;
 }
 .drawing-zone article.media .image-container,
 .drawing-zone article .image-container {
@@ -4272,25 +4259,10 @@ a.cke_smile img {
   outline: 1px dotted black;
   outline-offset: -1px;
 }
-.media text-editor {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  min-height: 50px;
+.media editor.focus {
+  margin-top: 46px;
 }
 .media [contenteditable] {
-  border: none;
-  background: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -o-box-sizing: border-box;
-  box-sizing: border-box;
-  min-height: 100%;
   cursor: inherit !important;
 }
 .media [contenteditable] p,
@@ -4305,14 +4277,6 @@ a.cke_smile img {
 .media [contenteditable] p {
   margin-top: 9px;
   margin-bottom: 9px;
-}
-.media .articles-sniplet [contenteditable] {
-  position: relative;
-  min-height: 200px;
-}
-.media .wiki-sniplet [contenteditable] {
-  position: relative;
-  min-height: 200px;
 }
 .media i.close {
   position: absolute;
@@ -5726,14 +5690,6 @@ table {
   bottom: 10px;
   right: 10px;
 }
-.media sniplet [contenteditable] {
-  min-height: 300px;
-  position: relative;
-  border: 1px solid #eee;
-}
-[contenteditable] {
-  height: auto;
-}
 .floating-navigation {
   padding-left: 0;
   padding-right: 20px;
@@ -6443,29 +6399,33 @@ nav.floating .content {
   padding-top: 20px;
   padding-bottom: 20px;
 }
-editor.drawing-zone {
+[contenteditable].drawing-zone {
   height: auto;
 }
-editor {
+body editor {
+  -o-transition: margin 250ms ease;
+  -moz-transition: margin 250ms ease;
+  -webkit-transition: margin 250ms ease;
+  transition: margin 250ms ease;
   display: block;
   position: relative;
   float: left;
   width: 100%;
 }
-editor > popover {
+body editor > popover {
   position: absolute;
   right: 10px;
   top: 10px;
   z-index: 10;
 }
-editor > popover > [popover-opener] {
+body editor > popover > [popover-opener] {
   width: 39px;
 }
-editor > popover ul {
+body editor > popover ul {
   padding: 0;
   margin: 10px 0 10px 0;
 }
-editor > popover ul li {
+body editor > popover ul li {
   list-style-type: none;
   line-height: 30px;
   text-align: left;
@@ -6476,19 +6436,19 @@ editor > popover ul li {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
-editor > popover ul li:hover {
+body editor > popover ul li:hover {
   background: #eee;
 }
-editor > popover popover-content {
+body editor > popover popover-content {
   width: 180px;
   left: -165px;
   margin-top: 15px;
 }
-editor > popover popover-content::before {
+body editor > popover popover-content::before {
   left: auto;
   right: 0;
 }
-editor > [contenteditable] {
+body editor > [contenteditable] {
   overflow: hidden;
   float: left;
   box-sizing: border-box;
@@ -6497,11 +6457,12 @@ editor > [contenteditable] {
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
   min-height: 300px;
+  border: 1px solid #ddd !important;
 }
-editor > [contenteditable] a img {
+body editor > [contenteditable] a img {
   border: 1px dashed;
 }
-editor > textarea {
+body editor > textarea {
   float: left;
   box-sizing: border-box;
   -o-transition: width 250ms ease;
@@ -6510,39 +6471,66 @@ editor > textarea {
   transition: width 250ms ease;
   margin: 0;
   min-height: 300px;
+  line-height: 1.5em;
+  font-family: Consolas;
+  tab-size: 4;
+  font-size: 16px;
+  border: 1px solid #ddd !important;
 }
-editor.edit > [contenteditable] {
+body editor > code.language-html {
+  position: absolute;
+  border-left-width: 0;
+  right: 0;
+  z-index: 1;
+  top: 47px;
+  pointer-events: none;
+  white-space: pre;
+  background-color: transparent;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid #ddd !important;
+}
+body editor > code.language-html .tag {
+  padding-left: 0;
+}
+body editor.edit > [contenteditable] {
   width: 100%;
 }
-editor.edit > textarea {
+body editor.edit > textarea,
+body editor.edit > code {
   width: 0;
   padding: 0;
   border: 0;
 }
-editor.html > [contenteditable] {
+body editor.html > [contenteditable] {
   width: 0;
   padding: 0;
   border: 0;
   min-height: 0 !important;
   height: 0 !important;
 }
-editor.html > textarea {
+body editor.html > textarea {
   width: 100%;
 }
-editor.both > [contenteditable] {
+body editor.html > code {
+  width: 100%;
+}
+body editor.both > [contenteditable] {
   width: 50%;
 }
-editor.both > textarea {
+body editor.both > textarea,
+body editor.both > code {
   width: 50%;
   border-left-width: 0;
 }
-editor::after {
+body editor::after {
   content: " ";
   display: block;
   width: 100%;
   clear: both;
 }
-editor contextual-menu {
+body editor contextual-menu {
   position: absolute;
   overflow: hidden;
   width: 0;
@@ -6553,21 +6541,21 @@ editor contextual-menu {
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
 }
-editor contextual-menu ul {
+body editor contextual-menu ul {
   margin: 0;
   padding: 0;
 }
-editor contextual-menu ul li {
+body editor contextual-menu ul li {
   padding: 5px;
   list-style-type: none;
 }
-editor contextual-menu ul li:hover {
+body editor contextual-menu ul li:hover {
   background: #eee;
 }
-editor contextual-menu.show {
+body editor contextual-menu.show {
   width: 200px;
 }
-editor editor-toolbar {
+body editor editor-toolbar {
   display: block;
   float: left;
   width: 100%;
@@ -6576,36 +6564,32 @@ editor editor-toolbar {
   box-sizing: border-box;
   border-bottom: 0;
 }
-editor editor-toolbar.inline {
+body editor editor-toolbar.inline {
   position: absolute;
+  height: 46px;
   top: 0;
-  bottom: 0;
   -o-transition: bottom 250ms ease;
   -moz-transition: bottom 250ms ease;
   -webkit-transition: bottom 250ms ease;
   transition: bottom 250ms ease;
 }
-editor editor-toolbar.inline select-list,
-editor editor-toolbar.inline popover {
+body editor editor-toolbar.inline select-list,
+body editor editor-toolbar.inline popover {
   display: none;
 }
-editor editor-toolbar.inline.show {
-  top: auto;
-  bottom: 100%;
-}
-editor editor-toolbar.inline.show select-list {
+body editor editor-toolbar.inline.show select-list {
   display: inline;
 }
-editor editor-toolbar.inline.show popover {
+body editor editor-toolbar.inline.show popover {
   display: inline-block;
 }
-editor editor-toolbar .sp-replacer {
+body editor editor-toolbar .sp-replacer {
   display: none;
 }
-editor editor-toolbar .sp-replacer:first-of-type {
+body editor editor-toolbar .sp-replacer:first-of-type {
   display: inline-block;
 }
-editor editor-toolbar .option {
+body editor editor-toolbar .option {
   display: inline-block;
   padding: 6px 5px;
   -webkit-user-select: none;
@@ -6622,7 +6606,7 @@ editor editor-toolbar .option {
   vertical-align: middle;
   border-bottom: 3px solid transparent;
 }
-editor editor-toolbar .option i {
+body editor editor-toolbar .option i {
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -6637,19 +6621,19 @@ editor editor-toolbar .option i {
   -ms-user-select: none;
   user-select: none;
 }
-editor editor-toolbar .option.disabled {
+body editor editor-toolbar .option.disabled {
   opacity: 0.3;
   pointer-events: none;
 }
-editor editor-toolbar .option:hover {
+body editor editor-toolbar .option:hover {
   background-color: #eee;
   cursor: pointer;
 }
-editor editor-toolbar .option.toggled {
+body editor editor-toolbar .option.toggled {
   background-color: #e4e4e4;
   box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
-editor editor-toolbar .option.undo > i {
+body editor editor-toolbar .option.undo > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/undo.png");
@@ -6662,7 +6646,7 @@ editor editor-toolbar .option.undo > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.redo > i {
+body editor editor-toolbar .option.redo > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/redo.png");
@@ -6675,7 +6659,7 @@ editor editor-toolbar .option.redo > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.bold > i {
+body editor editor-toolbar .option.bold > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/bold.png");
@@ -6688,7 +6672,7 @@ editor editor-toolbar .option.bold > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.italic > i {
+body editor editor-toolbar .option.italic > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/italic.png");
@@ -6701,7 +6685,7 @@ editor editor-toolbar .option.italic > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.underline > i {
+body editor editor-toolbar .option.underline > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/underline.png");
@@ -6714,7 +6698,7 @@ editor editor-toolbar .option.underline > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.justify-left > i {
+body editor editor-toolbar .option.justify-left > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/justify-left.png");
@@ -6727,7 +6711,7 @@ editor editor-toolbar .option.justify-left > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.justify-right > i {
+body editor editor-toolbar .option.justify-right > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/justify-right.png");
@@ -6740,7 +6724,7 @@ editor editor-toolbar .option.justify-right > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.justify-center > i {
+body editor editor-toolbar .option.justify-center > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/justify-center.png");
@@ -6753,7 +6737,7 @@ editor editor-toolbar .option.justify-center > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.justify-full > i {
+body editor editor-toolbar .option.justify-full > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/justify-full.png");
@@ -6766,7 +6750,7 @@ editor editor-toolbar .option.justify-full > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.subscript > i {
+body editor editor-toolbar .option.subscript > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/subscript.png");
@@ -6779,7 +6763,7 @@ editor editor-toolbar .option.subscript > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.superscript > i {
+body editor editor-toolbar .option.superscript > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/superscript.png");
@@ -6792,7 +6776,7 @@ editor editor-toolbar .option.superscript > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.quote > i {
+body editor editor-toolbar .option.quote > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/quote.png");
@@ -6805,7 +6789,7 @@ editor editor-toolbar .option.quote > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.ulist i {
+body editor editor-toolbar .option.ulist i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/ulist.png");
@@ -6818,7 +6802,7 @@ editor editor-toolbar .option.ulist i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.olist > i {
+body editor editor-toolbar .option.olist > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/olist.png");
@@ -6831,7 +6815,7 @@ editor editor-toolbar .option.olist > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.remove-format > i {
+body editor editor-toolbar .option.remove-format > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/remove-format.png");
@@ -6844,7 +6828,7 @@ editor editor-toolbar .option.remove-format > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.image > i {
+body editor editor-toolbar .option.image > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/image.png");
@@ -6857,7 +6841,7 @@ editor editor-toolbar .option.image > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.sound > i {
+body editor editor-toolbar .option.sound > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/sound.png");
@@ -6870,7 +6854,7 @@ editor editor-toolbar .option.sound > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.mathjax > i {
+body editor editor-toolbar .option.mathjax > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/mathjax.png");
@@ -6883,7 +6867,7 @@ editor editor-toolbar .option.mathjax > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.templates > i {
+body editor editor-toolbar .option.templates > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/templates.png");
@@ -6896,37 +6880,40 @@ editor editor-toolbar .option.templates > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.font {
+body editor editor-toolbar .option.font {
   width: 120px;
 }
-editor editor-toolbar .option.font:hover {
+body editor editor-toolbar .option.font:hover {
   background: none;
   border: none;
 }
-editor editor-toolbar .option.font-size:hover {
+body editor editor-toolbar .option.font-size:hover {
   background: none;
   border: none;
 }
-editor editor-toolbar .option.format:hover {
+body editor editor-toolbar .option.format:hover {
   background: none;
   border: none;
 }
-editor editor-toolbar .option.format h1,
-editor editor-toolbar .option.format h2,
-editor editor-toolbar .option.format h3,
-editor editor-toolbar .option.format p {
+body editor editor-toolbar .option.format h1,
+body editor editor-toolbar .option.format h2,
+body editor editor-toolbar .option.format h3,
+body editor editor-toolbar .option.format p {
   margin: 0;
 }
-editor editor-toolbar .option.table .draw-table .cell {
+body editor editor-toolbar .option.table .draw-table .row {
+  min-height: none;
+}
+body editor editor-toolbar .option.table .draw-table .cell {
   height: 10px;
   width: 10px;
   border: 1px solid #fff;
   background: #efefef;
 }
-editor editor-toolbar .option.table .draw-table .cell.match {
+body editor editor-toolbar .option.table .draw-table .cell.match {
   background: #ddd;
 }
-editor editor-toolbar .option.table popover > i {
+body editor editor-toolbar .option.table popover > i {
   height: 21px;
   width: 21px;
   background-image: url("../img/icons/editor/table.png");
@@ -6939,12 +6926,12 @@ editor editor-toolbar .option.table popover > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.table popover popover-content {
+body editor editor-toolbar .option.table popover popover-content {
   width: 120px;
   left: -58px;
   margin-top: 15px;
 }
-editor editor-toolbar .option.linker > i {
+body editor editor-toolbar .option.linker > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/linker.png");
@@ -6957,7 +6944,7 @@ editor editor-toolbar .option.linker > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.smileys > i {
+body editor editor-toolbar .option.smileys > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/smileys.png");
@@ -6970,11 +6957,11 @@ editor editor-toolbar .option.smileys > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.smileys lightbox img {
+body editor editor-toolbar .option.smileys lightbox img {
   width: 50px;
   height: 50px;
 }
-editor editor-toolbar .option.unlink > i {
+body editor editor-toolbar .option.unlink > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/unlink.png");
@@ -6987,7 +6974,7 @@ editor editor-toolbar .option.unlink > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.embed > i {
+body editor editor-toolbar .option.embed > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/embed.png");
@@ -7000,7 +6987,7 @@ editor editor-toolbar .option.embed > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-editor editor-toolbar .option.audio > i {
+body editor editor-toolbar .option.audio > i {
   height: 15px;
   width: 15px;
   background-image: url("../img/icons/editor/audio.png");
@@ -7827,8 +7814,8 @@ i.sort {
   width: 22px;
   background-color: #EEE;
   border-radius: 5px;
-  box-shadow: 1px 1px 2px #444;
-  box-sizing: border-box;
+  border: 1px solid #444;
+  box-sizing: content-box;
   background-size: 50% !important;
   background-position: center;
 }
@@ -7852,20 +7839,22 @@ h1.link-previous > a:hover::before {
   transform: rotate(-180deg);
   transform-origin: 50% 56%;
 }
-div.filterbar > i {
+.filterbar > i {
   display: inline-block;
   vertical-align: middle;
   margin-left: 10px;
   transition: all 0.25s ease-in-out;
+  box-shadow: 1px 1px 2px #444;
+  border: none;
 }
-div.filterbar > i:hover {
+.filterbar > i:hover {
   background-color: #ffcbb2;
-  box-shadow: 0px 0px 1px black;
+  box-shadow: 0px 0px 0px 1px #DDD;
 }
-div.filterbar > i.selected {
+.filterbar > i.selected {
   background-color: #ff7f5f;
 }
-div.filterbar > i[disabled] {
+.filterbar > i[disabled] {
   box-shadow: none;
   border: 1px solid #AAA;
   opacity: 0.6;
@@ -8396,8 +8385,8 @@ ul.angle-list.small > li {
   width: 22px;
   background-color: #EEE;
   border-radius: 5px;
-  box-shadow: 1px 1px 2px #444;
-  box-sizing: border-box;
+  border: 1px solid #444;
+  box-sizing: content-box;
   background-size: 50% !important;
   background-position: center;
 }
