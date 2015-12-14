@@ -56,7 +56,7 @@ window.RTE = (function(){
 				e.preventDefault();
 				return false;
 			});
-			this.bindContextualMenu = function(selector, items){
+			this.bindContextualMenu = function(scope, selector, items){
 				this.editZone.on('contextmenu', selector, function(e){
 					e.preventDefault();
 					return false;
@@ -67,7 +67,8 @@ window.RTE = (function(){
 						items.forEach(function(item){
 							var node = $('<li></li>');
 							node.on('click', function(event){
-								item.action(e);
+							    item.action(e);
+							    scope.$apply();
 							});
 							node.html(lang.translate(item.label));
 							contextualMenu.children('ul').append(node)
@@ -126,7 +127,7 @@ window.RTE = (function(){
 			};
 
 			this.redo = function(){
-				if(this.stateIndex === this.states.length || this.stateIndex === 0){
+				if(this.stateIndex === this.states.length){
 					return;
 				}
 				this.stateIndex ++;
@@ -174,7 +175,7 @@ window.RTE = (function(){
 							selector.push(range.startContainer);
 						}
 						else{
-							return;
+							return [];
 						}
 					}
 				}
@@ -233,8 +234,14 @@ window.RTE = (function(){
 				var range = document.createRange();
 				var sel = getSelection();
 
-				if(!start && !end){
-					range.selectNode(element);
+				if (!start && !end) {
+				    if (element.innerHTML) {
+				        range.selectNodeContents(element);
+				    }
+				    else {
+				        range.selectNode(element);
+				    }
+					
 					this.range = range;
 
 					sel.removeAllRanges();
@@ -263,15 +270,23 @@ window.RTE = (function(){
 			this.wrap = function(element){
 				that.instance.addState(that.editZone.html());
 				if(!this.selectedElements.length){
-					element.html('<br />');
+					element.html('&nbsp;');
 					var elementAtCaret = this.range.startContainer;
+					if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable')) {
+					    var newEl = document.createElement('div');
+					    elementAtCaret.appendChild(newEl);
+					    elementAtCaret = newEl;
+					}
 					if (elementAtCaret.nodeType === 3) {
 					    element.text(elementAtCaret.textContent);
 					    elementAtCaret.parentElement.parentElement.insertBefore(element[0], elementAtCaret.parentElement);
 					    elementAtCaret.parentElement.remove();
 					}
 					else {
-					    element.text(elementAtCaret.innerText);
+					    if (elementAtCaret.innerHTML) {
+					        element.html(elementAtCaret.innerHTML);
+					    }
+					    
 					    elementAtCaret.parentElement.insertBefore(element[0], elementAtCaret);
 					    elementAtCaret.remove();
 					}
@@ -337,10 +352,10 @@ window.RTE = (function(){
 			function applyCSS(css){
 				that.instance.addState(that.editZone.html());
 				if(!that.selectedElements.length){
-					var el = $('<span></span>');
+					var el = $('<span>&nbsp;</span>');
 					el.css(css);
 					that.editZone.append(el);
-					that.moveCaret(el[0]);
+					that.moveCaret(el[0], 1);
 				}
 				else{
 					var addedNodes = [];
@@ -349,7 +364,7 @@ window.RTE = (function(){
 							$(item).css(css);
 						}
 						else{
-							var el = $('<span></span>');
+						    var el = $(document.createElement('span'));
 							el.css(css);
 
 							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
@@ -373,7 +388,9 @@ window.RTE = (function(){
 							addedNodes.push(el[0]);
 						}
 					});
-					addedNodes.forEach(that.selectNode);
+					addedNodes.forEach(function (item) {
+					    that.moveCaret(item, item.innerText.length);
+					});
 				}
 
 				that.instance.trigger('contentupdated');
@@ -383,8 +400,39 @@ window.RTE = (function(){
 				if(typeof params === 'object'){
 					applyCSS(params);
 				}
-				else{
-					getCSS(params);
+				else {
+				    if (!this.selectedElements.length) {
+				        if (!this.range) {
+				            return;
+				        }
+				        var node = this.range.startContainer;
+				        if (node.nodeType === 1) {
+				            return $(node).css(params);
+				        }
+				        else {
+				            return $(node.parentElement).css(params);
+				        }
+				    }
+				    var different = false;
+				    var val = undefined;
+				    this.selectedElements.forEach(function (item) {
+				        var itemVal;
+				        if (item.nodeType === 1) {
+				            itemVal = $(item).css(params);
+				        }
+				        else{
+				            itemVal = $(item.parentElement).css(params);
+				        }
+
+				        if (itemVal !== val && val !== undefined) {
+				            different = true;
+				        }
+				        val = itemVal;
+				    });
+				    if (different) {
+				        val = undefined;
+				    }
+				    return val;
 				}
 			};
 
@@ -392,12 +440,14 @@ window.RTE = (function(){
 				that.instance.addState(that.editZone.html());
 				var wrapper = $('<div></div>');
 				wrapper.html(htmlContent);
-				if(this.range){
+				if (this.range) {
+				    this.range.deleteContents();
 					this.range.insertNode(wrapper[0]);
 				}
 				else{
 					this.editZone.append(wrapper);
 				}
+				
 				this.instance.trigger('contentupdated');
 			};
 
@@ -483,7 +533,7 @@ window.RTE = (function(){
 						element.addClass('disabled');
 						element.on('click', function(){
 							instance.redo();
-							if(instance.stateIndex === instance.states.length - 1){
+							if(instance.stateIndex === instance.states.length){
 								element.addClass('disabled');
 							}
 							else{
@@ -493,7 +543,7 @@ window.RTE = (function(){
 						});
 
 						instance.on('contentupdated', function(e){
-							if(!document.queryCommandEnabled('redo')){
+						    if (instance.stateIndex === instance.states.length) {
 								element.addClass('disabled');
 							}
 							else{
@@ -613,15 +663,14 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.justify.left"></i>',
 					link: function(scope, element, attributes){
 						element.addClass('toggled');
-						element.on('click', function(){
+						element.on('click', function () {
 							instance.execCommand('justifyLeft');
 							if(document.queryCommandState('justifyLeft')){
-								element.addClass('toggled');
-								instance.trigger('justify-changed');
-							}
+								element.addClass('toggled');							}
 							else{
 								element.removeClass('toggled');
 							}
+							instance.trigger('justify-changed');
 						});
 
 						instance.on('selectionchange', function(e){
@@ -649,7 +698,7 @@ window.RTE = (function(){
 				return {
 					template: '<i tooltip="editor.option.justify.right"></i>',
 					link: function(scope, element, attributes){
-						element.on('click', function(){
+					    element.on('click', function () {
 							if(!document.queryCommandState('justifyRight')){
 								instance.execCommand('justifyRight');
 								element.addClass('toggled');
@@ -657,8 +706,8 @@ window.RTE = (function(){
 							else{
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
-								instance.trigger('justify-changed');
 							}
+							instance.trigger('justify-changed');
 						});
 
 						instance.on('selectionchange', function(e){
@@ -694,8 +743,8 @@ window.RTE = (function(){
 							else{
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
-								instance.trigger('justify-changed');
 							}
+							instance.trigger('justify-changed');
 						});
 
 						instance.on('selectionchange', function(e){
@@ -886,6 +935,9 @@ window.RTE = (function(){
 							function rgb(r, g, b){
 								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 							}
+							function rgba(a, r, g, b) {
+							    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+							}
 							scope.backColor = eval(document.queryCommandValue('backColor'));
 							scope.foreColor = document.queryCommandValue('foreColor');
 							element.children('input').val(eval(scope.foreColor));
@@ -932,8 +984,9 @@ window.RTE = (function(){
 			RTE.baseToolbarConf.option('font', function(instance){
 				return {
 					template:
-					'<select-list ng-model="font" display-as="fontFamily" placeholder="Police" ng-change="setFontFamily()">' +
-					'<opt ng-repeat="font in fonts" value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
+					'<select-list display="font" display-as="fontFamily" placeholder="Police" change="setFontFamily()">' +
+					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' + 
+                    'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
 						var importedFonts =
@@ -962,12 +1015,13 @@ window.RTE = (function(){
 							);
 						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }].concat(importedFonts);
 						scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
-						scope.setFontFamily = function(){
+						scope.setFontFamily = function (font) {
+						    scope.font = font;
 							instance.execCommand('fontName', false, scope.font.fontFamily);
 						};
 
 						instance.on('selectionchange', function(e){
-							scope.font = _.findWhere(scope.fonts, { fontFamily: document.queryCommandValue('fontName') });
+						    scope.font = _.findWhere(scope.fonts, { fontFamily: instance.selection.css('font-family') });
 						});
 					}
 				};
@@ -975,18 +1029,39 @@ window.RTE = (function(){
 
 			RTE.baseToolbarConf.option('fontSize', function(instance) {
 				return {
-					template: '<select-list ng-model="fontSize" placeholder="Taille" ng-change="setSize()">' +
-					'<opt ng-repeat="fontSize in fontSizes" value="fontSize" style="font-size: [[fontSize]]px; line-height: [[fontSize]]px">[[fontSize]]</opt>' +
+					template: '<select-list placeholder="Taille" display="font.fontSize.size">' +
+					'<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
+                        'style="font-size: [[fontSize.size]]px; line-height: [[fontSize.size]]px">' +
+                            '[[fontSize.size]]' +
+                        '</opt>' +
 					'</select-list>',
-					link: function(scope, element, attributes){
-						scope.fontSizes = [8,10,12,14,16,18,20,24,28,34,42,64,72];
-						scope.setSize = function(){
+					link: function (scope, element, attributes) {
+					    scope.font = {
+					        fontSizes: [{ size: 8 }, { size: 10 }, { size: 12 }, { size: 14 },
+                                { size: 16 }, { size: 18 }, { size: 20 }, { size: 24 }, { size: 28 },
+                                { size: 34 }, { size: 42 }, { size: 64 }, { size: 72 }],
+                            fontSize: {}
+					    };
+
+					    scope.setSize = function (fontSize) {
+					        scope.font.fontSize = { size: fontSize.size };
 							instance.selection.css({
-								'font-size': scope.fontSize + 'px'
+								'font-size': fontSize.size + 'px'
 							});
-						};
-						instance.on('selectionchange', function(e){
-							scope.fontSize = parseInt(instance.selection.$().css('font-size'));
+					    };
+
+					    instance.on('selectionchange', function (e) {
+					        if (instance.selection.css('font-size')) {
+					            scope.font.fontSize = { size: parseInt(instance.selection.css('font-size')) };
+					        }
+					        else {
+					            scope.font.fontSize = { size: undefined };
+					        }
+					        
+						});
+
+						element.children('.options').on('click', 'opt', function () {
+						    element.children('.options').addClass('hidden');
 						});
 					}
 				}
@@ -994,8 +1069,8 @@ window.RTE = (function(){
 
 			RTE.baseToolbarConf.option('format', function(instance) {
 				return {
-					template: '<select-list ng-model="format" placeholder="Paragraphe" display-as="label" ng-change="wrap()">' +
-					'<opt ng-repeat="format in formats" value="format"><div bind-html="format.option"></div></opt>' +
+					template: '<select-list model="format" placeholder="Paragraphe" display-as="label" display="format">' +
+					'<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
 						scope.formats = [
@@ -1044,7 +1119,8 @@ window.RTE = (function(){
 							}
 						});
 
-						scope.wrap = function(){
+						scope.wrap = function (format) {
+						    scope.format = format;
 							var newEl = $('<' + scope.format.apply.tag + '></' + scope.format.apply.tag + '>');
 							if(scope.format.apply.classes){
 								scope.format.apply.classes.forEach(function(element){
@@ -1060,23 +1136,50 @@ window.RTE = (function(){
 
 			RTE.baseToolbarConf.option('image', function(instance){
 				return {
-					template: '<i ng-click="display.pickFile = true" tooltip="editor.option.image"></i>' +
-					'<lightbox show="display.pickFile" on-close="display.pickFile = false;">' +
-					'<media-library ng-change="updateContent()" ng-model="display.file" file-format="\'img\'" visibility="[[visibility]]"></media-library>' +
+				    template: '<i ng-click="imageOption.display.pickFile = true" tooltip="editor.option.image"></i>' +
+					'<lightbox show="imageOption.display.pickFile" on-close="imageOption.display.pickFile = false;">' +
+					'<media-library ng-change="updateContent()" multiple="true" ng-model="imageOption.display.files" file-format="\'img\'" visibility="imageOption.visibility"></media-library>' +
 					'</lightbox>',
-					link: function(scope, element, attributes){
+				    link: function (scope, element, attributes) {
+				        scope.imageOption = {
+				            display: { pickFile: false },
+				            visibility: 'protected'
+				        }
+
 						if(instance.element.attr('public')){
 							scope.visibility = 'public'
 						}
-						else{
-							scope.visibility = 'protected';
-						}
+
+						instance.bindContextualMenu(scope, 'img', [
+							{
+							    label: 'editor.edit.image',
+							    action: function (e) {
+							        instance.selection.selectNode(e.target);
+							        scope.imageOption.display.pickFile = true;
+							    }
+
+							},
+							{
+							    label: 'editor.remove.image',
+							    action: function (e) {
+							        $(e.target).remove();
+							    }
+							}
+						]);
+
 						instance.editZone.addClass('drawing-zone');
 						scope.display = {};
-						scope.updateContent = function(){
-							instance.selection.replaceHTML('<img src="/workspace/document/' + scope.display.file._id + '" draggable native />')
-							scope.display.pickFile = false;
-							scope.display.file = undefined;
+						scope.updateContent = function () {
+						    var html = '<div>';
+						    scope.imageOption.display.files.forEach(function (file) {
+						        html += '<img src="/workspace/document/' + file._id + '" draggable native />';
+						    });
+
+						    html += '</div>';
+						    instance.selection.replaceHTML(html);
+							scope.imageOption.display.pickFile = false;
+							scope.imageOption.display.files = [];
+							
 						};
 
 						instance.element.on('drop', function(e){
@@ -1143,7 +1246,7 @@ window.RTE = (function(){
 
 			RTE.baseToolbarConf.option('linker', function(instance){
 				return {
-					template: '<i ng-click="linker.display.chooseLink = true" tooltip="editor.option.link"></i>' +
+					template: '<i ng-click="linker.openLinker()" tooltip="editor.option.link"></i>' +
 					'<div ng-include="\'/infra/public/template/linker.html\'"></div>',
 					link: function(scope, element, attributes){
 						scope.linker = {
@@ -1155,6 +1258,40 @@ window.RTE = (function(){
 							},
 							params: {},
 							resource: {}
+						};
+
+						instance.bindContextualMenu(scope, 'a', [
+							{
+							    label: 'editor.edit.link',
+							    action: function (e) {
+							        instance.selection.selectNode(e.target);
+							        scope.linker.display.chooseLink = true;
+							        scope.linker.openLinker($(e.target).data('app-prefix'), $(e.target).attr('href'));
+							    }
+
+							},
+							{
+							    label: 'editor.remove.link',
+							    action: function (e) {
+							        var content = document.createTextNode($(e.target).text());
+							        e.target.parentElement.insertBefore(content, e.target);
+							        $(e.target).remove();
+							    }
+							}
+						]);
+
+						scope.linker.openLinker = function (appPrefix, address) {
+						    scope.linker.display.chooseLink = true;
+						    if (appPrefix) {
+						        scope.linker.search.application.address = '/' + appPrefix;
+						        scope.linker.loadApplicationResources(function () {
+						            scope.linker.searchApplication(function () {
+						                var resource = _.findWhere(scope.linker.resources, { path: address });
+						                scope.linker.applyResource(resource);
+						                scope.$apply();
+						            });
+						        });
+						    }
 						};
 
 						scope.linker.loadApplicationResources = function(cb){
@@ -1211,7 +1348,15 @@ window.RTE = (function(){
 								scope.linker.params.target = '_blank';
 							}
 
-							var linkNode = $('<a></a>');
+							var linkNode;
+							var selectedNode = instance.selection.range.startContainer;
+							if (selectedNode && selectedNode.nodeName === 'A') {
+							    linkNode = $(selectedNode);
+							}
+							else {
+							    linkNode = $('<a></a>');
+							}
+
 							if(scope.linker.params.link){
 								linkNode.attr('href', scope.linker.params.link);
 
@@ -1234,6 +1379,13 @@ window.RTE = (function(){
 							}
 
 							instance.focus();
+							scope.linker.display.chooseLink = false;
+
+							if (selectedNode && selectedNode.nodeName === 'A') {
+							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
+							    that.instance.trigger('contentupdated');
+							    return;
+							}
 
 							if(instance.selection.selectedElements.length === 0){
 								linkNode.text(scope.linker.params.link);
@@ -1242,8 +1394,6 @@ window.RTE = (function(){
 							else{
 								instance.selection.wrapText(linkNode);
 							}
-
-							scope.linker.display.chooseLink = false;
 						};
 
 						scope.linker.cancel = function(){
@@ -1377,7 +1527,7 @@ window.RTE = (function(){
 							element.find('popover-content').addClass('hidden');
 						});
 
-						instance.bindContextualMenu('td', [
+						instance.bindContextualMenu(scope, 'td', [
 							{
 								label: 'editor.add.row',
 								action: function(e){
@@ -1425,7 +1575,9 @@ window.RTE = (function(){
 					'<li ng-repeat="template in templates" ng-click="applyTemplate(template)">[[template.title]]</li>' +
 					'</ul>' +
 					'</lightbox>',
-					link: function(scope, element, attributes){
+					link: function (scope, element, attributes) {
+					    var split = $('#theme').attr('href').split('/');
+					    var skinPath = split.slice(0, split.length - 2).join('/') + '/img/illustrations';
 						scope.templates = [
 							{
 								title: 'Page blanche',
@@ -1479,7 +1631,7 @@ window.RTE = (function(){
 								'<div class="row">' +
 									'<div class="three cell column">' +
 										'<article>' +
-											'<img skin-src="/img/illustrations/image-default.png" />' +
+											'<img src="' + skinPath + '/image-default.png" />' +
 										'</article>' +
 
 									'</div>' +
@@ -1499,7 +1651,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino pink">' +
 										'<div class="top">' +
-											'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+											'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 										'</div>' +
 										'<div class="bottom">' +
 											'<div class="content">' +
@@ -1511,7 +1663,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino blue">' +
 											'<div class="top">' +
-												'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1523,7 +1675,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino orange">' +
 											'<div class="top">' +
-												'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
@@ -1535,7 +1687,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino purple">' +
 											'<div class="top">' +
-												'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1547,7 +1699,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino green">' +
 											'<div class="top">' +
-												'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1559,7 +1711,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino white">' +
 											'<div class="top">' +
-												'<img skin-src="/img/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
@@ -1665,8 +1817,6 @@ window.RTE = (function(){
 							function(newValue){
 								if(newValue !== editZone.html() && !editZone.is(':focus')){
 								    editZone.html(newValue);
-								    highlightZone.text(newValue);
-								    Prism.highlightAll();
 								}
 								if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
 									if(window.html_beautify){
@@ -1698,6 +1848,8 @@ window.RTE = (function(){
 							http().get('/infra/public/js/beautify-html.js').done(function(content){
 								eval(content);
 								htmlZone.val(html_beautify(ngModel(scope)));
+								highlightZone.text(html_beautify(ngModel(scope)));
+								Prism.highlightAll();
 							});
 						});
 
@@ -1711,6 +1863,8 @@ window.RTE = (function(){
 							http().get('/infra/public/js/beautify-html.js').done(function(content){
 								eval(content);
 								htmlZone.val(html_beautify(ngModel(scope)));
+								highlightZone.text(html_beautify(ngModel(scope)));
+								Prism.highlightAll();
 							});
 						});
 
@@ -1867,7 +2021,8 @@ window.RTE = (function(){
 						});
 
 						htmlZone.on('keyup', function (e) {
-						    highlightZone.show();
+						    highlightZone.text($(this).val());
+						    Prism.highlightAll();
 							var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
@@ -1883,7 +2038,11 @@ window.RTE = (function(){
 						});
 
 						htmlZone.on('keydown', function (e) {
-						    highlightZone.hide();
+                            // free main thread so it can render textarea changes
+						    setTimeout(function () {
+						        highlightZone.text($(this).val());
+						        Prism.highlightAll();
+						    }.bind(this), 0);
 							if(e.keyCode === 9){
 								e.preventDefault();
 								var start = this.selectionStart;
@@ -1948,27 +2107,22 @@ window.RTE = (function(){
 					restrict: 'E',
 					transclude: true,
 					scope: {
-						ngModel: '=',
 						displayAs: '@',
 						placeholder: '@',
-						ngChange: '&'
+                        display: '='
 					},
 					template: '' +
 					'<div class="selected-value">[[showValue()]]</div>' +
 					'<div class="options hidden" ng-transclude></div>',
 					link: function(scope, element, attributes){
-						if(scope.default){
-							scope.ngModel = scope.$eval(scope.default);
-						}
-
 						scope.showValue = function(){
-							if(!scope.ngModel){
+							if(!scope.display){
 								return scope.placeholder;
 							}
 							if(!scope.displayAs){
-								return scope.ngModel;
+								return scope.display;
 							}
-							return scope.ngModel[scope.displayAs];
+							return scope.display[scope.displayAs];
 						};
 
 						element.children('.selected-value').on('click', function(){
@@ -1980,16 +2134,9 @@ window.RTE = (function(){
 								element.children('.options').addClass('hidden');
 							}
 						});
-						element.children('.options').on('click', 'opt', function(){
-							scope.ngModel = angular.element(this).scope().$eval($(this).attr('value'));
-							element.children('.options').addClass('hidden');
-							scope.$apply('ngModel');
-							scope.ngChange();
-							scope.$apply();
-						});
 
 						$('body').click(function(e){
-							if(element.find(e.originalEvent.target).length){
+							if(e.originalEvent.target === element.find('.selected-value')[0]){
 								return;
 							}
 
@@ -2050,11 +2197,14 @@ window.RTE = (function(){
 					scope: {
 						formula: '@'
 					},
-					link: function(scope, element, attributes){
-						http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done(function(data){
-							eval(data);
-							MathJax.Hub.Typeset();
-						});
+					link: function (scope, element, attributes) {
+					    if (!window.MathJax) {
+					        http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done(function (data) {
+					            eval(data);
+					            MathJax.Hub.Typeset();
+					        });
+					    }
+						
 						attributes.$observe('formula', function(newVal){
 							element.text('$$' + newVal + '$$');
 							if(window.MathJax && window.MathJax.Hub){

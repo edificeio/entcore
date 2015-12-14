@@ -183,5 +183,9 @@
     "editor.add.row": "Ajouter une ligne",
     "editor.add.column": "Ajouter une colonne",
     "editor.remove.row": "Supprimer la ligne",
-    "editor.remove.column": "Supprimer la colonne"
+    "editor.remove.column": "Supprimer la colonne",
+    "editor.remove.image": "Supprimer l'image",
+    "editor.edit.image": "Modifier l'image",
+    "editor.remove.link": "Supprimer le lien",
+    "editor.edit.link":  "Modifier le lien"
 }
