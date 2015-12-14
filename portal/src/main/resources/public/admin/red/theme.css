@@ -8392,8 +8392,8 @@ ul.angle-list.small > li {
   background-position: center;
 }
 .flex-list.squares > * div.actions {
-  margin-right: -200px;
-  transition: margin 0.25s ease-in-out;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
   overflow: hidden;
   float: right;
 }
@@ -8426,7 +8426,7 @@ ul.angle-list.small > li {
   color: #ff483e;
 }
 .flex-list.squares > div:hover div.actions {
-  margin-right: 0px;
+  opacity: 1;
 }
 .check-item {
   border-bottom: 1px solid transparent;

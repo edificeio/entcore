@@ -15,9 +15,12 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+var escapeRegExp = function(string){
+    return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\\$&");
+}
 var formatUrl = function(url){
     try{
-        return new URL(url).origin
+        return escapeRegExp(new URL(url).origin)
     } catch(e) {
         return url
     }

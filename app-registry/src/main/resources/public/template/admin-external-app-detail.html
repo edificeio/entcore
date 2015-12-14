@@ -70,7 +70,7 @@
     		</div>
     		<div class="row">
     			<label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
-    			<input type="text" ng-model="externalApp.data.displayName" required complete-change="refreshPreview()" class="four cell" />
+    			<input type="text" ng-model="externalApp.data.displayName" required ng-blur="refreshPreview()" class="four cell" />
     		</div>
     		<div class="row">
     			<label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
