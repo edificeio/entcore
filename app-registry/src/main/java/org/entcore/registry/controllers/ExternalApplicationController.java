@@ -68,7 +68,7 @@ public class ExternalApplicationController extends BaseController {
 								.putString("service",casType)
 								.putArray("patterns", new JsonArray().add(pattern)));
 						}
-						notEmptyResponseHandler(request, 201).handle(event);
+						notEmptyResponseHandler(request, 201, 409).handle(event);
 					}
 				});
 			}

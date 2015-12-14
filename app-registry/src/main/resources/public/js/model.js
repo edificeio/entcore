@@ -91,7 +91,10 @@ Application.prototype.createApplication = function(){
 	.done(function(){
 		model.applications.sync();
 		notify.message('success', lang.translate('appregistry.notify.createApp'));
-	});
+	})
+    .e409(function(){
+        notify.error('appregistry.failed.app')
+    });
 };
 
 Application.prototype.saveChanges = function(){
@@ -110,7 +113,10 @@ Application.prototype.saveChanges = function(){
 	.done(function(){
 		model.applications.sync();
 		notify.info(lang.translate('appregistry.notify.modified'));
-	});
+	})
+    .e400(function(){
+        notify.error('appregistry.failed.app')
+    });
 };
 
 Application.prototype.save = function(){

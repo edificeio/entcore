@@ -421,12 +421,16 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
             notify.message('success', lang.translate('appregistry.notify.createApp'));
             $scope.school.syncExternalApps($scope.$apply)
             $scope.showExternalAppList()
-        })
+        }).e409(function(){
+            notify.error('appregistry.failed.app')
+        });
     }
 
     $scope.updateExternalApp = function(app){
         app.save().done(function(){
             notify.info('appregistry.notify.modified');
+        }).e400(function(){
+            notify.error('appregistry.failed.app')
         })
     }
 
