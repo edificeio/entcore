@@ -133,19 +133,19 @@ object AppRegistryScenario {
       "secret":"clientSecret", "address" : "http://localhost"}"""))
       .check(status.is(400)))
     .exec(http("Create external application")
-    .post("""/appregistry/application/external""")
+    .post("""/appregistry/application/external?structureId=${schoolId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"grantType" : "authorization_code", "name":"test""" + now +
           """", "secret":"clientSecret", "address" : "http://localhost"}"""))
       .check(status.is(201), jsonPath("$.id").find.saveAs("app-id")))
     .exec(http("Create external applications with client_credentials")
-    .post("""/appregistry/application/external""")
+    .post("""/appregistry/application/external?structureId=${schoolId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"grantType" : "client_credentials", "name":"MyExternalApp""" + now +
           """", "secret":"clientSecret",  "address" : "http://localhost", "scope" : "org.entcore.timeline.controllers.TimelineController|publish"}"""))
       .check(status.is(201)))
     .exec(http("Create external application twice")
-      .post("""/appregistry/application/external""")
+      .post("""/appregistry/application/external?structureId=${schoolId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"grantType" : "authorization_code", "name":"test""" + now +
         """", "secret":"clientSecret", "address" : "http://localhost", "scope" : "userinfo"}"""))
