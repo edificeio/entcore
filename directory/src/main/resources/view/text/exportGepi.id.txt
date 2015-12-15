@@ -1,4 +1,4 @@
 "RNE";"UID";"Classe";"Profil";"Prénom";"Nom";"Login";"Mot de passe";"Clé de jointure";"UID Responsable 1";"UID Responsable 2";"UID tuteur 1";"UID tuteur 2"
 {{#list}}
-"";"{{externalId}}";"{{#allClasses}}{{^-first}}, {{/-first}}{{name}}{{/allClasses}}";"{{type}}";"{{firstName}}";"{{lastName}}";"";"";"";"{{parent1ExternalId}}";"";"";""
+"";"{{externalId}}";"{{#allClasses}}{{^-first}}, {{/-first}}{{name}}{{/allClasses}}";"{{type}}";"{{firstName}}";"{{lastName}}";"";"";"";"{{parent1ExternalId}}";"{{parent2ExternalId}}";"";""
 {{/list}}
