@@ -1074,7 +1074,7 @@
   display: inline-block;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 6px solid #ffffff;
+  border-bottom: 6px solid #fff;
   position: absolute;
   top: -6px;
   left: 7px;
@@ -1093,22 +1093,22 @@
   height: 20px;
 }
 .datepicker td.day:hover {
-  background: #eeeeee;
+  background: #eee;
   cursor: pointer;
 }
 .datepicker td.day.disabled {
-  color: #eeeeee;
+  color: #eee;
 }
 .datepicker td.old,
 .datepicker td.new {
-  color: #cccccc;
+  color: #ccc;
 }
 .datepicker td.active,
 .datepicker td.active:hover {
-  background: -webkit-linear-gradient(#cccccc, #cccccc);
-  background: -moz-linear-gradient(#cccccc, #cccccc);
-  background: -o-linear-gradient(#cccccc, #cccccc);
-  background: linear-gradient(#cccccc, #cccccc);
+  background: -webkit-linear-gradient(#ccc, #cccccc);
+  background: -moz-linear-gradient(#ccc, #cccccc);
+  background: -o-linear-gradient(#ccc, #cccccc);
+  background: linear-gradient(#ccc, #cccccc);
   color: #fff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -1127,18 +1127,18 @@
   border-radius: 4px;
 }
 .datepicker td span:hover {
-  background: #eeeeee;
+  background: #eee;
 }
 .datepicker td span.active {
-  background: -webkit-linear-gradient(#cccccc, #cccccc);
-  background: -moz-linear-gradient(#cccccc, #cccccc);
-  background: -o-linear-gradient(#cccccc, #cccccc);
-  background: linear-gradient(#cccccc, #cccccc);
+  background: -webkit-linear-gradient(#ccc, #cccccc);
+  background: -moz-linear-gradient(#ccc, #cccccc);
+  background: -o-linear-gradient(#ccc, #cccccc);
+  background: linear-gradient(#ccc, #cccccc);
   color: #fff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker td span.old {
-  color: #cccccc;
+  color: #ccc;
 }
 .datepicker th.switch {
   width: 145px;
@@ -1151,7 +1151,7 @@
   cursor: pointer;
 }
 .datepicker thead tr:first-child th:hover {
-  background: #eeeeee;
+  background: #eee;
 }
 .input-append.date .add-on i,
 .input-prepend.date .add-on i {
@@ -3768,10 +3768,10 @@ section.lightbox::after {
   padding: 4px;
   padding-left: 10px;
   padding-right: 10px;
-  background: -webkit-linear-gradient(#eeeeee, #e5e5e5);
-  background: -moz-linear-gradient(#eeeeee, #e5e5e5);
-  background: -o-linear-gradient(#eeeeee, #e5e5e5);
-  background: linear-gradient(#eeeeee, #e5e5e5);
+  background: -webkit-linear-gradient(#eee, #e5e5e5);
+  background: -moz-linear-gradient(#eee, #e5e5e5);
+  background: -o-linear-gradient(#eee, #e5e5e5);
+  background: linear-gradient(#eee, #e5e5e5);
   border: 1px solid #555;
   border-bottom: 0;
   font-size: 20px;
@@ -4044,10 +4044,10 @@ a.cke_smile img {
   margin: 0;
 }
 .accordions .accordion h2 {
-  background: -webkit-linear-gradient(#383838, #333333);
-  background: -moz-linear-gradient(#383838, #333333);
-  background: -o-linear-gradient(#383838, #333333);
-  background: linear-gradient(#383838, #333333);
+  background: -webkit-linear-gradient(#383838, #333);
+  background: -moz-linear-gradient(#383838, #333);
+  background: -o-linear-gradient(#383838, #333);
+  background: linear-gradient(#383838, #333);
   border: 1px solid #555;
   border-bottom: 0;
   font-size: 20px;
@@ -7474,19 +7474,19 @@ div.admin-theme-picker.orange {
   background: #ff7f5f;
 }
 div.admin-theme-picker.blue {
-  background: #1776b2;
+  background: #1776B2;
 }
 div.admin-theme-picker.purple {
-  background: #9c27b0;
+  background: #9C27B0;
 }
 div.admin-theme-picker.red {
-  background: #ff483e;
+  background: #FF483E;
 }
 div.admin-theme-picker.green {
   background: #319171;
 }
 div.admin-theme-picker.grey {
-  background: #607d8b;
+  background: #607D8B;
 }
 html,
 body {
@@ -7848,7 +7848,7 @@ h1.link-previous > a:hover::before {
   border: none;
 }
 .filterbar > i:hover {
-  background-color: #ffc0cb;
+  background-color: pink;
   box-shadow: 0px 0px 0px 1px #DDD;
 }
 .filterbar > i.selected {
@@ -7881,7 +7881,7 @@ h1.link-previous > a:hover::before {
   -ms-border-radius: 5px;
   -o-border-radius: 5px;
   border-radius: 5px;
-  border: 2px dashed #a9a9a9;
+  border: 2px dashed darkgray;
 }
 .preview-external > div {
   height: 5px;
@@ -8300,7 +8300,7 @@ nav.vertical a.classic-link:hover {
   font-weight: 300;
 }
 .humane-original-info {
-  background: #628cd6;
+  background: #628CD6;
 }
 .tooltip .content {
   color: white;
@@ -8392,8 +8392,8 @@ ul.angle-list.small > li {
   background-position: center;
 }
 .flex-list.squares > * div.actions {
-  margin-right: -200px;
-  transition: margin 0.25s ease-in-out;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
   overflow: hidden;
   float: right;
 }
@@ -8426,7 +8426,7 @@ ul.angle-list.small > li {
   color: #fd4a98;
 }
 .flex-list.squares > div:hover div.actions {
-  margin-right: 0px;
+  opacity: 1;
 }
 .check-item {
   border-bottom: 1px solid transparent;
@@ -8552,10 +8552,10 @@ div.leaf-menu {
   transition: background 200ms ease-in;
 }
 div.leaf-menu:hover {
-  background-color: #ffc0cb;
+  background-color: pink;
 }
 div.leaf-menu.selected {
-  background-color: #ffc0cb;
+  background-color: pink;
 }
 div.leaf-menu-container.small {
   border-width: 2px;
@@ -8691,10 +8691,10 @@ hr.separator {
   border: 1px solid black;
 }
 .accordions .accordion h2 {
-  background: -webkit-linear-gradient(#383838, #333333);
-  background: -moz-linear-gradient(#383838, #333333);
-  background: -o-linear-gradient(#383838, #333333);
-  background: linear-gradient(#383838, #333333);
+  background: -webkit-linear-gradient(#383838, #333);
+  background: -moz-linear-gradient(#383838, #333);
+  background: -o-linear-gradient(#383838, #333);
+  background: linear-gradient(#383838, #333);
   border: 1px solid #555;
   color: #666;
   border-bottom: none;
@@ -9338,7 +9338,7 @@ multi-combo .multi-combo-root-panel > ul > li {
   border-radius: 20px;
 }
 multi-combo .multi-combo-root-panel > ul > li.selected {
-  background-color: #ffc0cb;
+  background-color: pink;
 }
 multi-combo .multi-combo-root-panel > ul > li.selected::before {
   content: "✓";
