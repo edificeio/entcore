@@ -438,6 +438,7 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
         var action = function(){
             app.delete().done(function(){
                 $scope.school.syncExternalApps($scope.$apply)
+                $scope.showExternalAppList()
             })
         }
         $scope.notifyTop(lang.translate('appregistry.confirm.app.deletion') + ' ' + $scope.colourText(app.data.displayName) + '.', action)

@@ -141,7 +141,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				"name:{name}, displayName:{displayName}}) " +
 				"WITH a " +
 				"CREATE UNIQUE (r:Role {id: {roleId}, name: {roleName}, structureId: {structureId}})-[:AUTHORIZE]->(a) " +
-				"RETURN a.name as name";
+				"RETURN r.id as roleId";
 		b.add(createActionsAndRolesQuery, new JsonObject()
 				.putString("id", id)
 				.putString("roleId", UUID.randomUUID().toString())
@@ -156,13 +156,11 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 			public void handle(Message<JsonObject> m) {
 				JsonArray results = m.body().getArray("results");
 				if ("ok".equals(m.body().getString("status")) && results != null) {
-					JsonArray r = results.get(0);
-					JsonObject j;
-					if (r.size() > 0) {
-						j = r.get(0);
-					} else {
-						j = new JsonObject();
-					}
+					JsonArray appRes = results.get(0);
+					JsonArray roleRes = results.get(1);
+					JsonObject j = new JsonObject()
+							.mergeIn(appRes.size() > 0 ? (JsonObject) appRes.get(0) : new JsonObject())
+							.mergeIn(roleRes.size() > 0 ? (JsonObject) roleRes.get(0) : new JsonObject());
 					handler.handle(new Either.Right<String, JsonObject>(j));
 				} else {
 					handler.handle(new Either.Left<String, JsonObject>(m.body().getString("message")));
