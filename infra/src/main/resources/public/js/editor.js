@@ -938,6 +938,7 @@ window.RTE = (function(){
 							function rgba(a, r, g, b) {
 							    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 							}
+							var transparent = 'rgba(255, 255, 255, 0)';
 							scope.backColor = eval(document.queryCommandValue('backColor'));
 							scope.foreColor = document.queryCommandValue('foreColor');
 							element.children('input').val(eval(scope.foreColor));
@@ -989,8 +990,9 @@ window.RTE = (function(){
                     'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
-						var importedFonts =
-							_.map(
+						
+						function loadImportedFonts(){
+							return _.map(
 								_.flatten(
 									_.map(
 										document.styleSheets,
@@ -999,9 +1001,9 @@ window.RTE = (function(){
 												stylesheet.cssRules,
 												function(cssRule){
 													return cssRule instanceof CSSFontFaceRule &&
-														cssRule.style.fontFamily.toLowerCase().indexOf('fontello') === -1 &&
-														cssRule.style.fontFamily.toLowerCase().indexOf('glyphicon') === -1 &&
-														cssRule.style.fontFamily.toLowerCase().indexOf('fontawesome') === -1;
+														cssRule.style.cssText.toLowerCase().indexOf('fontello') === -1 &&
+														cssRule.style.cssText.toLowerCase().indexOf('glyphicon') === -1 &&
+														cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1;
 												}
 											)
 										}
@@ -1009,12 +1011,21 @@ window.RTE = (function(){
 								),
 								function(fontFace){
 									return {
-										fontFamily: fontFace.style.fontFamily
+										fontFamily: fontFace.style.cssText.split('font-family:')[1].split(';')[0]
 									}
 								}
 							);
-						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }].concat(importedFonts);
-						scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
+						}
+						
+						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }];
+						scope.font = '';
+						
+						setTimeout(function() {
+							var importedFonts = loadImportedFonts();
+							scope.fonts = scope.fonts.concat(importedFonts);
+							scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
+						}, 0);
+						
 						scope.setFontFamily = function (font) {
 						    scope.font = font;
 							instance.execCommand('fontName', false, scope.font.fontFamily);
@@ -1525,6 +1536,7 @@ window.RTE = (function(){
 							}
 							instance.selection.replaceHTML(table.outerHTML);
 							element.find('popover-content').addClass('hidden');
+							instance.trigger('contentupdated');
 						});
 
 						instance.bindContextualMenu(scope, 'td', [
@@ -1764,6 +1776,8 @@ window.RTE = (function(){
 				return {
 					restrict: 'E',
 					template: '' +
+					'<div class="editor-toolbar-opener">+</div>' +
+					'<div class="close-focus"></div>' +
 					'<editor-toolbar></editor-toolbar>' +
 					'<contextual-menu><ul></ul></contextual-menu>' +
 					'<popover>' +
@@ -1780,6 +1794,14 @@ window.RTE = (function(){
 					'<textarea></textarea>' +
                     '<code class="language-html"></code>',
 					link: function(scope, element, attributes){
+						element.find('.close-focus').on('click', function(){
+							element.removeClass('focus');
+						});
+						
+						element.find('.editor-toolbar-opener').on('click', function(){
+							element.find('editor-toolbar').addClass('opened');
+						});
+						
 						element.addClass('edit');
 						var editZone = element.children('[contenteditable=true]');
 						var htmlZone = element.children('textarea');
@@ -2019,10 +2041,15 @@ window.RTE = (function(){
 								}
 							}
 						});
+						
+						editZone.on('keyup', function(e){
+							var newHeight = htmlZone[0].scrollHeight + 2;
+							if(newHeight > htmlZone.height()){
+								htmlZone.height(newHeight);
+							}
+						});
 
-						htmlZone.on('keyup', function (e) {
-						    highlightZone.text($(this).val());
-						    Prism.highlightAll();
+						editorInstance.on('contentupdated', function (e) {
 							var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
