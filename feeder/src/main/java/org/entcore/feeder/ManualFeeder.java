@@ -445,12 +445,31 @@ public class ManualFeeder extends BusModBase {
 			sendError(message, "Missing users.");
 			return;
 		}
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+		String query =
+				"MATCH (u:User)" +
+				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV'] OR HAS(u.disappearanceDate)) " +
+				"return count(*) as count ";
+		neo4j.execute(query, new JsonObject().putArray("users", users), new Handler<Message<JsonObject>>() {
 			@Override
-			public void apply(TransactionHelper tx) {
-				for (Object o : users) {
-					User.backupRelationship(o.toString(), tx);
-					User.preDelete(o.toString(), tx);
+			public void handle(Message<JsonObject> event) {
+				JsonArray res = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
+					JsonObject j = res.get(0);
+					if (users.size() == j.getInteger("count", 0)) {
+						executeTransaction(message, new VoidFunction<TransactionHelper>() {
+							@Override
+							public void apply(TransactionHelper tx) {
+								for (Object o : users) {
+									User.backupRelationship(o.toString(), tx);
+									User.preDelete(o.toString(), tx);
+								}
+							}
+						});
+					} else {
+						sendError(message, "unauthorized.user");
+					}
+				} else {
+					message.reply(event.body());
 				}
 			}
 		});

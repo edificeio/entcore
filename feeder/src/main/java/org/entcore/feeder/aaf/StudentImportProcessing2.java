@@ -43,6 +43,7 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
 		importer.removeOldFunctionalGroup();
 		importer.removeEmptyClasses();
+		importer.restorePreDeletedUsers();
 	}
 
 	@Override
