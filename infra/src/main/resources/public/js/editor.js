@@ -1988,9 +1988,9 @@ window.RTE = (function(){
 
 						element.on('click', function(e){
 							if(attributes.inline !== undefined){
-								element.children('editor-toolbar').offset({
+								element.children('editor-toolbar').css({
 									left: 0,
-									top: -element.children('editor-toolbar').height()
+									top: -element.children('editor-toolbar').height() + 'px'
 								});
 								element.css({
 									'margin-top': element.children('editor-toolbar').height() + 'px'
