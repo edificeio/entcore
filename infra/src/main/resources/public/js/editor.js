@@ -559,6 +559,9 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.bold"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
 							instance.execCommand('bold');
 							if(document.queryCommandState('bold')){
 								element.addClass('toggled');
@@ -585,6 +588,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.italic"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							instance.execCommand('italic');
 							if(document.queryCommandState('italic')){
 								element.addClass('toggled');
@@ -637,6 +644,9 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.removeformat"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
 							instance.execCommand('removeFormat');
 							if(document.queryCommandEnabled('removeFormat')){
 								element.removeClass('disabled');
@@ -664,6 +674,9 @@ window.RTE = (function(){
 					link: function(scope, element, attributes){
 						element.addClass('toggled');
 						element.on('click', function () {
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
 							instance.execCommand('justifyLeft');
 							if(document.queryCommandState('justifyLeft')){
 								element.addClass('toggled');							}
@@ -699,6 +712,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.justify.right"></i>',
 					link: function(scope, element, attributes){
 					    element.on('click', function () {
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							if(!document.queryCommandState('justifyRight')){
 								instance.execCommand('justifyRight');
 								element.addClass('toggled');
@@ -736,6 +753,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.justify.center"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							if(!document.queryCommandState('justifyCenter')){
 								instance.execCommand('justifyCenter');
 								element.addClass('toggled');
@@ -773,6 +794,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.justify.full"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							if(!document.queryCommandState('justifyFull')){
 								element.addClass('toggled');
 								instance.execCommand('justifyFull');
@@ -810,6 +835,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.subscript"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							instance.execCommand('subscript');
 							if(document.queryCommandState('subscript')){
 								element.addClass('toggled');
@@ -836,6 +865,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.superscript"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							instance.execCommand('superscript');
 							if(document.queryCommandState('superscript')){
 								element.addClass('toggled');
@@ -862,6 +895,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.ulist"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							instance.execCommand('insertUnorderedList');
 							if(document.queryCommandState('insertUnorderedList')){
 								element.addClass('toggled');
@@ -888,6 +925,10 @@ window.RTE = (function(){
 					template: '<i tooltip="editor.option.olist"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
+							if(!instance.editZone.is(':focus')){
+								instance.focus();
+							}
+							
 							instance.execCommand('insertOrderedList');
 							if(document.queryCommandState('insertOrderedList')){
 								element.addClass('toggled');
@@ -1394,7 +1435,7 @@ window.RTE = (function(){
 
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
-							    that.instance.trigger('contentupdated');
+							    instance.trigger('contentupdated');
 							    return;
 							}
 
@@ -1776,8 +1817,8 @@ window.RTE = (function(){
 				return {
 					restrict: 'E',
 					template: '' +
-					'<div class="editor-toolbar-opener">+</div>' +
-					'<div class="close-focus"></div>' +
+					'<button class="editor-toolbar-opener"></button>' +
+					'<button class="close-focus">OK</button>' +
 					'<editor-toolbar></editor-toolbar>' +
 					'<contextual-menu><ul></ul></contextual-menu>' +
 					'<popover>' +
@@ -1799,7 +1840,14 @@ window.RTE = (function(){
 						});
 						
 						element.find('.editor-toolbar-opener').on('click', function(){
-							element.find('editor-toolbar').addClass('opened');
+							if(!$(this).hasClass('active')){
+								$(this).addClass('active');
+								element.find('editor-toolbar').addClass('opened');
+							}
+							else{
+								$(this).removeClass('active')
+								element.find('editor-toolbar').removeClass('opened');
+							}
 						});
 						
 						element.addClass('edit');
@@ -1845,6 +1893,10 @@ window.RTE = (function(){
 									    htmlZone.val(html_beautify(newValue));
 									    highlightZone.text(html_beautify(newValue));
 									    Prism.highlightAll();
+									}
+									//beautifier is not loaded on mobile
+									else{
+										htmlZone.val(newValue);
 									}
 								}
 							}
@@ -1934,7 +1986,7 @@ window.RTE = (function(){
 							});
 						});
 
-						element.on('click', function(){
+						element.on('click', function(e){
 							if(attributes.inline !== undefined){
 								element.children('editor-toolbar').offset({
 									left: 0,
@@ -1945,10 +1997,18 @@ window.RTE = (function(){
 								});
 							}
 							
+							if(e.target === element.find('.close-focus')[0]){
+								return;
+							}
+							
 							element.addClass('focus');
 						});
 
 						$('body').on('mousedown', function(e){
+							if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
+								element.find('editor-toolbar').removeClass('opened');
+								element.find('.editor-toolbar-opener').removeClass('active');
+							}
 							if(element.find(e.target).length === 0){
 								if(attributes.inline !== undefined){
 									element.css({
