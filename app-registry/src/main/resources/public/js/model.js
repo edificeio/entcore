@@ -521,6 +521,9 @@ model.build = function(){
         sync: function(){
             http().get('/appregistry/widgets').done(function(data){
 				this.load(data.widgets)
+                data.widgets.forEach(function(widget){
+                    lang.addTranslations((widget.application.address ? widget.application.address : '') + widget.i18n)
+                })
 			}.bind(this));
         }
     })

@@ -10,7 +10,7 @@
 		<ul>
 			<li ng-repeat="widget in widgets.all | filter: {name: filterWidgets} | orderBy: 'name'"
                 ng-click="viewWidget(widget)" ng-class="{ selected: $parent.widget === widget }">
-				[[widget.name]]
+				[[lang.translate(widget.name)]]
 			</li>
 		</ul>
 	</nav>
@@ -18,7 +18,7 @@
 
         <!-- HEADER -->
         <div class="vertical-spacing-twice">
-            <h1>[[widget.name]]</h1>
+            <h1>[[lang.translate(widget.name)]]</h1>
             <h2 ng-if="widget.application.name" class="small-text">
                 <i18n>appregistry.widget.linked.to.app</i18n> <strong>[[widget.application.name]]</strong>
             </h2>
