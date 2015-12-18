@@ -60,9 +60,9 @@
     		<legend class="warning" ng-if="!externalApp.data.locked && !scopeable(externalApp)">
     			<i18n>appregistry.app.is.not.scopeable</i18n>
     		</legend>
-    		<div class="row bottom-spacing">
-    			<label class="four cell"><span tooltip="tooltip.inherits">[[lang.translate("appregistry.inherits")]]</span></label>
-    			<input type="checkbox" ng-model="externalApp.data.inherits" class="four cell"/>
+    		<div class="row bottom-spacing" ng-if="school.children">
+    			<label class="inline-middle"><span tooltip="tooltip.inherits">[[lang.translate("appregistry.inherits")]]</span></label>
+    			<input class="inline-middle" style="margin-left: 10px" type="checkbox" ng-model="externalApp.data.inherits"/>
     		</div>
     		<div class="row">
     			<label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
