@@ -154,7 +154,7 @@
 	"appregistry.external.app.type": "Type d'application",
 	"appregistry.cas.pattern": "Pattern CAS",
 	"tooltip.cas.pattern": "Expression régulière pour authentification SSO par protocole CAS. Si vide, le domaine de l'url cible sera utilisée comme pattern de base.",
-	"appregistry.inherits": "Hériter l'application",
+	"appregistry.inherits": "Partager l'application avec les sous-structures",
 	"tooltip.inherits": "Définit si l'application est visible, affectable et modifiable par les administrateurs des structures sous-jacentes.",
 	"appregistry.locked": "Verrouiller l'application",
 	"tooltip.locked": "Empêche les modifications et les affectations.",
