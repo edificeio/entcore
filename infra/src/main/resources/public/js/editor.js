@@ -686,7 +686,7 @@ window.RTE = (function(){
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).style('text-align') === 'left') {
+							    if ($(item).css('text-align') === 'left') {
 							        $(item).css({ 'float': 'left' });
 							    }
 							});
@@ -734,7 +734,7 @@ window.RTE = (function(){
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).style('text-align') === 'right') {
+							    if ($(item).css('text-align') === 'right') {
 							        $(item).css({ 'float': 'right' });
 							    }
 							});
@@ -782,7 +782,7 @@ window.RTE = (function(){
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).style('text-align') === 'center') {
+							    if ($(item).css('text-align') === 'center') {
 							        $(item).css({ 'float': 'none', 'margin': 'auto' });
 							    }
 							});
