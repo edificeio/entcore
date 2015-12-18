@@ -53,82 +53,94 @@
     			<iframe id="previewFrame" ng-src="[[getPreviewContent(externalApp)]]"></iframe>
     		</div>
     	</fieldset>
-    	<fieldset ng-disabled="externalApp.data.locked || !scopeable(externalApp)">
+    	<fieldset ng-disabled="externalApp.data.locked || !scopeable(externalApp)" class="unstyled">
     		<legend class="warning" ng-if="externalApp.data.locked">
     			<i18n>appregistry.app.is.locked</i18n>
     		</legend>
     		<legend class="warning" ng-if="!externalApp.data.locked && !scopeable(externalApp)">
     			<i18n>appregistry.app.is.not.scopeable</i18n>
     		</legend>
-    		<div class="row bottom-spacing" ng-if="school.children">
-    			<label class="inline-middle"><span tooltip="tooltip.inherits">[[lang.translate("appregistry.inherits")]]</span></label>
-    			<input class="inline-middle" style="margin-left: 10px" type="checkbox" ng-model="externalApp.data.inherits"/>
-    		</div>
-    		<div class="row">
-    			<label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
-    			<input type="text" ng-model="externalApp.data.name" required class="four cell"/>
-    		</div>
-    		<div class="row">
-    			<label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
-    			<input type="text" ng-model="externalApp.data.displayName" required ng-blur="refreshPreview()" class="four cell" />
-    		</div>
-    		<div class="row">
-    			<label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
-    			<input type="text" ng-model="externalApp.data.icon" complete-change="refreshPreview()" class="four cell" />
-    		</div>
-    		<div class="row">
-    			<label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
-    			<input type="text" ng-model="externalApp.data.address" required ng-blur="refreshPreview()" class="four cell" />
-    		</div>
-    		<div class="row">
-    			<label class="four cell"><span tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
-    			<select ng-model="externalApp.data.target" ng-change="refreshPreview()" class="four cell">
-    				<option value="">[[lang.translate("appregistry.portal")]]</option>
-    				<option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
-    				<option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
-    			</select>
-    		</div>
-    		<fieldset ng-disabled="!externalApp.data.hasCas">
-    			<legend>
-                    <i18n>appregistry.cas.fields</i18n>
-                    <input type="checkbox" ng-model="externalApp.data.hasCas" ng-change="switchCas(externalApp.data)"></input>
+            <fieldset>
+                <legend ng-if="!externalApp.data.locked && scopeable(externalApp)">
+                    <i18n>appregistry.link.parameters</i18n>
                 </legend>
-                <div class="row bottom-spacing" ng-if="externalApp.data.casType">
-                    <strong class="small-text" ng-bind-html="casDescription(externalApp.data.casType)"></strong>
-                </div>
-    			<div class="row bottom-spacing">
-    				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
-    				<select class="four cell" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
-    			</div>
-    			<div class="row">
-    				<label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
-    				<input type="text" ng-model="externalApp.data.pattern" class="four cell" i18n-placeholder="optional"/>
-    			</div>
-    		</fieldset>
-    		<fieldset>
-    			<legend translate content="appregistry.oauth.fields"></legend>
-    			<div class="row bottom-spacing">
-    				<label class="four cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
-    				<input type="checkbox" ng-model="externalApp.data.transferSession" ng-change="setUserinfoScope(externalApp.data)" />
-    			</div>
-    			<div class="row">
-    				<label class="four cell"><span tooltip="tooltip.scope"><i18n>appregistry.scope</i18n></span></label>
-    				<input class="four cell" type="text" ng-model="externalApp.data.scope" />
-    			</div>
-    			<div class="row">
-    				<label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
-    				<input type="text" ng-model="externalApp.data.secret" class="four cell" />
-    			</div>
-    			<div class="row">
-    				<label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
-    				<select class="four cell" ng-model="externalApp.data.grantType">
-    					<option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
-    					<option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
-    					<option value="Basic">[[lang.translate("appregistry.basic")]]</option>
-    				</select>
-    			</div>
-    		</fieldset>
+                <div class="row bottom-spacing" ng-if="school.children">
+        			<label class="inline-middle"><span tooltip="tooltip.inherits">[[lang.translate("appregistry.inherits")]]</span></label>
+        			<input class="inline-middle" style="margin-left: 10px" type="checkbox" ng-model="externalApp.data.inherits"/>
+        		</div>
+        		<div class="row">
+        			<label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
+        			<input type="text" ng-model="externalApp.data.name" required class="six cell"/>
+        		</div>
+        		<div class="row">
+        			<label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
+        			<input type="text" ng-model="externalApp.data.displayName" required ng-blur="refreshPreview()" class="six cell" />
+        		</div>
+        		<div class="row">
+        			<label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
+        			<input type="text" ng-model="externalApp.data.icon" complete-change="refreshPreview()" class="six cell" />
+        		</div>
+        		<div class="row">
+        			<label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
+        			<input type="text" ng-model="externalApp.data.address" required ng-blur="refreshPreview()" class="six cell" />
+        		</div>
+        		<div class="row">
+        			<label class="four cell"><span tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
+        			<select ng-model="externalApp.data.target" ng-change="refreshPreview()" class="six cell">
+        				<option value="">[[lang.translate("appregistry.portal")]]</option>
+        				<option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
+        				<option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
+        			</select>
+        		</div>
+            </fieldset>
+            <div ng-if="display.advanced">
+                <fieldset ng-disabled="!externalApp.data.hasCas">
+                    <legend>
+                        <i18n>appregistry.cas.fields</i18n>
+                        <input type="checkbox" ng-model="externalApp.data.hasCas" ng-change="switchCas(externalApp.data)"></input>
+                    </legend>
+                    <div class="row bottom-spacing" ng-if="externalApp.data.casType">
+                        <strong class="small-text" ng-bind-html="casDescription(externalApp.data.casType)"></strong>
+                    </div>
+                    <div class="row bottom-spacing">
+                        <label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
+                        <select class="six cell" ng-model="externalApp.data.casType" ng-options="type.id as type.name for type in casTypes"></select>
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
+                        <input type="text" ng-model="externalApp.data.pattern" class="six cell" i18n-placeholder="optional"/>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend translate content="appregistry.oauth.fields"></legend>
+                    <div class="row bottom-spacing">
+                        <label class="four cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
+                        <input type="checkbox" ng-model="externalApp.data.transferSession" ng-change="setUserinfoScope(externalApp.data)" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.scope"><i18n>appregistry.scope</i18n></span></label>
+                        <input class="six cell" type="text" ng-model="externalApp.data.scope" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
+                        <input type="text" ng-model="externalApp.data.secret" class="six cell" />
+                    </div>
+                    <div class="row">
+                        <label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
+                        <select class="six cell" ng-model="externalApp.data.grantType">
+                            <option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
+                            <option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
+                            <option value="Basic">[[lang.translate("appregistry.basic")]]</option>
+                        </select>
+                    </div>
+                </fieldset>
+            </div>
     	</fieldset>
+        <hr class="separator">
+        <div class="row">
+            <input type="button" class="small left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.show.connector.opts')"/>
+            <input type="button" class="small left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.hide.connector.opts')"/>
+        </div>
     </div>
 
     <!-- APP ATTRIBUTION -->
