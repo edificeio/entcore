@@ -160,7 +160,8 @@ window.RTE = (function(){
 					return;
 				}
 				var range = selection.getRangeAt(0);
-				if(!range.intersectsNode(that.editZone[0])){
+				if (!(that.editZone.find(range.startContainer.parentElement).length && range.startContainer.parentElement !== that.editZone[0]) ||
+                    !that.editZone.find(range.endContainer.parentElement).length && range.endContainer.parentElement !== that.editZone[0]) {
 					return;
 				}
 				var selector = [];
