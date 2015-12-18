@@ -165,5 +165,8 @@
     "editor.remove.image": "Supprimer l'image",
     "editor.edit.image": "Modifier l'image",
     "editor.remove.link": "Supprimer le lien",
-    "editor.edit.link":  "Modifier le lien"
+    "editor.edit.link": "Modifier le lien",
+    "editor.align.left": "Texte à droite",
+    "editor.align.right": "Texte à gauche",
+    "editor.align.center":  "Centrer"
 }

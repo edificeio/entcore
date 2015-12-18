@@ -1239,7 +1239,25 @@ window.RTE = (function(){
 							    action: function (e) {
 							        $(e.target).remove();
 							    }
-							}
+							},
+                            {
+                                label: 'editor.align.right',
+                                action: function (e) {
+                                    $(e.target).css({ float: 'right', margin: '10px'  });
+                                }
+                            },
+                            {
+                                label: 'editor.align.left',
+                                action: function (e) {
+                                    $(e.target).css({ float: 'left', margin: '10px' });
+                                }
+                            },
+                            {
+                                label: 'editor.align.center',
+                                action: function (e) {
+                                    $(e.target).css({ float: 'none', margin: 'auto' });
+                                }
+                            }
 						]);
 
 						instance.editZone.addClass('drawing-zone');
@@ -1257,10 +1275,15 @@ window.RTE = (function(){
 							
 						};
 
-						instance.element.on('drop', function(e){
+						instance.element.on('drop', function (e) {
+						    if (e.originalEvent.dataTransfer.mozSourceNode) {
+						        e.originalEvent.dataTransfer.mozSourceNode.remove();
+						    }
+
 							//delay to account for image destruction and recreation
 							setTimeout(function(){
-								ui.extendElement.resizable(instance.editZone.find('img'), { moveWithResize: false });
+							    ui.extendElement.resizable(instance.editZone.find('img'), { moveWithResize: false });
+
 							}, 200)
 						});
 					}
@@ -1286,7 +1309,11 @@ window.RTE = (function(){
 							scope.display.file = undefined;
 						};
 
-						instance.element.on('drop', function(e){
+						instance.element.on('drop', function (e) {
+						    if (e.originalEvent.dataTransfer.mozSourceNode) {
+						        e.originalEvent.dataTransfer.mozSourceNode.remove();
+						    }
+
 							//delay to account for sound destruction and recreation
 							setTimeout(function(){
 								ui.extendElement.resizable(instance.editZone.find('audio'), { moveWithResize: false });
@@ -1925,7 +1952,7 @@ window.RTE = (function(){
 							}
 						);
 
-						element.on('dragenter', function(e){
+						element.on('dragenter dragover', function(e){
 							e.preventDefault();
 						});
 
