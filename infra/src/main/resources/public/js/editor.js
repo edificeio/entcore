@@ -1917,6 +1917,7 @@ window.RTE = (function(){
 							element.removeClass('edit');
 							element.removeClass('both');
 							element.addClass('html');
+							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
 							if(window.html_beautify){
 								return;
 							}
@@ -1932,6 +1933,7 @@ window.RTE = (function(){
 							element.removeClass('edit');
 							element.removeClass('html');
 							element.addClass('both');
+							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
 							if(window.html_beautify){
 								return;
 							}
@@ -1965,7 +1967,7 @@ window.RTE = (function(){
 									top: true
 								}
 							});
-							htmlZone.css({ 'min-height': 0, height: 0 });
+							htmlZone.css({ 'min-height': '250px', height: 0 });
 							var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
@@ -2105,7 +2107,7 @@ window.RTE = (function(){
 						});
 						
 						editZone.on('keyup', function(e){
-						    htmlZone.css({ 'min-height': 0, height: 0 });
+						    htmlZone.css({ 'min-height': '250px', height: 0 });
 						    var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
@@ -2113,8 +2115,8 @@ window.RTE = (function(){
 						});
 
 						editorInstance.on('contentupdated', function (e) {
-						    htmlZone.css({ 'min-height': 0, height: 0 });
-						    editZone.css({ 'min-height': 0 });
+						    htmlZone.css({ 'min-height': '250px', height: 0 });
+						    editZone.css({ 'min-height': '250px' });
 						    var newHeight = htmlZone[0].scrollHeight + 2;
 						    if (newHeight > htmlZone.height()) {
 						        htmlZone.height(newHeight);
