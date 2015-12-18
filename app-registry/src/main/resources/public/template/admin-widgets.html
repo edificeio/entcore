@@ -38,7 +38,7 @@
             <div class="leaf-menu" ng-class="{ selected: showPanel() === 'attribution' }">
                 <a ng-click="showPanel('attribution'); viewWidget(widget)"><i18n>appregistry.widget.attribution</i18n></a>
             </div>
-            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }">
+            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="schools.parentStructures.length > 0">
                 <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
             </div>
         </div>
