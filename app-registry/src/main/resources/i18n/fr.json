@@ -229,5 +229,6 @@
     "appregistry.link.parameters": "Paramètres du lien",
     "appregistry.connector.parameters": "Paramètres du connecteur",
     "appregistry.show.connector.opts": "Afficher les paramètres du connecteur",
-    "appregistry.hide.connector.opts": "Cacher les paramètres du connecteur"
+    "appregistry.hide.connector.opts": "Cacher les paramètres du connecteur",
+    "appregistry.connector.opts.header" : "<p>Les paramètres du connecteur permettent de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de se réauthentifier. Cela l'empêche donc de saisir une nouvelle fois un identifiant et un mot de passe.</p><p>Ce type de lien n'est possible qu'avec certains sites web. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaitre les paramétrages à effectuer.</p>"
 }

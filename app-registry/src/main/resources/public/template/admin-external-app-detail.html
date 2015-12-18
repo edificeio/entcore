@@ -137,9 +137,12 @@
             </div>
     	</fieldset>
         <hr class="separator">
+        <div>
+            <i18n>appregistry.connector.opts.header</i18n>
+        </div>
         <div class="row">
-            <input type="button" class="small left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.show.connector.opts')"/>
-            <input type="button" class="small left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.hide.connector.opts')"/>
+            <a class="left-magnet" ng-if="!display.advanced" ng-click="showAdvanced()" translate content="appregistry.show.connector.opts"></a>
+            <a class="left-magnet" ng-if="display.advanced" ng-click="hideAdvanced()" translate content="appregistry.hide.connector.opts"></a>
         </div>
     </div>
 
