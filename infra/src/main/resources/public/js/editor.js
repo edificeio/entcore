@@ -1968,6 +1968,7 @@ window.RTE = (function(){
 							element.removeClass('both');
 							element.addClass('html');
 							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+							editorInstance.trigger('contentupdated');
 							if(window.html_beautify){
 								return;
 							}
@@ -1984,6 +1985,7 @@ window.RTE = (function(){
 							element.removeClass('html');
 							element.addClass('both');
 							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+							editorInstance.trigger('contentupdated');
 							if(window.html_beautify){
 								return;
 							}
