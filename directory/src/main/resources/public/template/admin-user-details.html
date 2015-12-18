@@ -113,6 +113,9 @@
         <ul class="angle-list small" style="padding-left: 5%">
             <li ng-repeat="structure in targetUser.data.structures | orderBy: 'name'">
                 <a href="[['/directory/admin-console#/structure/'+structure.id]]" target="_blank">[[structure.name]]</a>
+                <em ng-if="isMainStructure(targetUser, structure)" class="horizontal-spacing">
+                    (<i18n>directory.main.structure</i18n>)
+                </em>
                 <button ng-click="removeUserFromStructure(targetUser, structure, reloadStructureAndRetrieveUser(targetUser))" class="right-magnet close"></button>
             </li>
         </ul>

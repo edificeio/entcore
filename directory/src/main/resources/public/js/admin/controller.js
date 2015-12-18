@@ -1210,4 +1210,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				return true
 		}
 	}
+
+    $scope.isMainStructure = function(user, structure){
+        return _.findWhere(user.administrativeStructures, {id: structure.id})
+    }
 }
