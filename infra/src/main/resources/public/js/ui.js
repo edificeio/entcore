@@ -364,8 +364,8 @@ ui.extendElement = {
 
 			var interrupt = false;
 			var mouse = {
-				y: e.clientY || e.originalEvent.touches[0].clientY,
-				x: e.clientX || e.originalEvent.touches[0].clientX
+			    y: e.pageY || e.originalEvent.touches[0].pageY,
+			    x: e.pageX || e.originalEvent.touches[0].pageX
 			};
 			var resizeLimits = {
 				horizontalRight:  element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
