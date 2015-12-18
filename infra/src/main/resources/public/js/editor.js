@@ -1026,7 +1026,7 @@ window.RTE = (function(){
 			RTE.baseToolbarConf.option('font', function(instance){
 				return {
 					template:
-					'<select-list display="font" display-as="fontFamily" placeholder="Police" change="setFontFamily()">' +
+					'<select-list display="font" display-as="fontFamily" placeholder="Police">' +
 					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' + 
                     'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
@@ -1910,6 +1910,7 @@ window.RTE = (function(){
 							element.removeClass('html');
 							element.removeClass('both');
 							element.addClass('edit');
+							editorInstance.trigger('contentupdated');
 						});
 
 						element.children('popover').find('li:nth-child(2)').on('click', function(){
@@ -1964,12 +1965,13 @@ window.RTE = (function(){
 									top: true
 								}
 							});
+							htmlZone.css({ 'min-height': 0, height: 0 });
 							var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
 							}
 
-							if(htmlZone[0].scrollHeight + 2 > parseInt(htmlZone.css('min-height'))){
+							if (htmlZone[0].scrollHeight > parseInt(htmlZone.css('min-height')) && !element.hasClass('edit')) {
 								editZone.css('min-height', htmlZone[0].scrollHeight + 2 + 'px');
 							}
 
@@ -2103,20 +2105,24 @@ window.RTE = (function(){
 						});
 						
 						editZone.on('keyup', function(e){
-							var newHeight = htmlZone[0].scrollHeight + 2;
+						    htmlZone.css({ 'min-height': 0, height: 0 });
+						    var newHeight = htmlZone[0].scrollHeight + 2;
 							if(newHeight > htmlZone.height()){
 								htmlZone.height(newHeight);
 							}
 						});
 
 						editorInstance.on('contentupdated', function (e) {
-							var newHeight = htmlZone[0].scrollHeight + 2;
-							if(newHeight > htmlZone.height()){
-								htmlZone.height(newHeight);
-							}
-							if(newHeight > parseInt(editZone.css('min-height'))){
-								editZone.css('min-height', newHeight);
-							}
+						    htmlZone.css({ 'min-height': 0, height: 0 });
+						    editZone.css({ 'min-height': 0 });
+						    var newHeight = htmlZone[0].scrollHeight + 2;
+						    if (newHeight > htmlZone.height()) {
+						        htmlZone.height(newHeight);
+						    }
+						    if (newHeight > parseInt(editZone.css('min-height')) && !element.hasClass('edit')) {
+						        editZone.css('min-height', newHeight);
+						    }
+						    
 
 							scope.$apply(function(){
 								scope.$eval(attributes.ngChange);
