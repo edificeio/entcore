@@ -953,6 +953,21 @@ ul.angle-list{
 			}
 		}
 
+        &.twocols{
+            > * {
+                box-sizing: border-box;
+                flex-basis: calc(~"50% - 10px");
+            }
+        }
+
+        &.singlecol{
+            > *{
+                box-sizing: border-box;
+                flex-basis: 100%;
+                margin-right: 0px;
+            }
+        }
+
 		> div:hover{
 			border-color: @main;
 			background: white;

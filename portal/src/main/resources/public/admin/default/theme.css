@@ -8489,6 +8489,15 @@ ul.angle-list.small > li {
 .flex-list.squares > * a {
   color: #ccc;
 }
+.flex-list.squares.twocols > * {
+  box-sizing: border-box;
+  flex-basis: calc(50% - 10px);
+}
+.flex-list.squares.singlecol > * {
+  box-sizing: border-box;
+  flex-basis: 100%;
+  margin-right: 0px;
+}
 .flex-list.squares > div:hover {
   border-color: #fd4a98;
   background: white;

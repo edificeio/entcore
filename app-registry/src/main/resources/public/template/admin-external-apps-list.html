@@ -6,8 +6,8 @@
 	<i18n>appregistry.external.apps.list.header</i18n>
 </p>
 <input type="text" class="search-input" i18n-placeholder="search" ng-model="filterExternalApps">
-<div class="flex-list squares">
-	<div ng-repeat="app in school.externalApplications | filter: {data.displayName: filterExternalApps} | orderBy: data.displayName"
+<div class="flex-list squares twocols">
+	<div ng-repeat="app in school.externalApplications | filter: {data.displayName: filterExternalApps} | orderBy: 'data.displayName'"
 		 ng-class="{selected: externalApp === app, inherited: inherited(app), locked: app.data.locked }">
 		 <a ng-click="selectExternalApp(app)">
 		 	[[app.data.displayName]]
