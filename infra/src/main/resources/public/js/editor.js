@@ -2231,7 +2231,7 @@ window.RTE = (function(){
 						});
 
 						$('body').click(function(e){
-							if(e.originalEvent.target === element.find('.selected-value')[0]){
+							if(e.target === element.find('.selected-value')[0]){
 								return;
 							}
 
