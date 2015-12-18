@@ -684,6 +684,13 @@ window.RTE = (function(){
 							else{
 								element.removeClass('toggled');
 							}
+
+							instance.editZone.find('img').each(function (index, item) {
+							    if ($(item).style('text-align') === 'left') {
+							        $(item).css({ 'float': 'left' });
+							    }
+							});
+
 							instance.trigger('justify-changed');
 						});
 
@@ -725,6 +732,13 @@ window.RTE = (function(){
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
 							}
+
+							instance.editZone.find('img').each(function (index, item) {
+							    if ($(item).style('text-align') === 'right') {
+							        $(item).css({ 'float': 'right' });
+							    }
+							});
+
 							instance.trigger('justify-changed');
 						});
 
@@ -766,6 +780,13 @@ window.RTE = (function(){
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
 							}
+
+							instance.editZone.find('img').each(function (index, item) {
+							    if ($(item).style('text-align') === 'center') {
+							        $(item).css({ 'float': 'none', 'margin': 'auto' });
+							    }
+							});
+
 							instance.trigger('justify-changed');
 						});
 
@@ -806,8 +827,9 @@ window.RTE = (function(){
 							else{
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
-								instance.trigger('justify-changed');
 							}
+
+							instance.trigger('justify-changed');
 						});
 
 						instance.on('selectionchange', function(e){
