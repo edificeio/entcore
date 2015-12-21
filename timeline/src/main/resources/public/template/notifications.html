@@ -17,7 +17,7 @@
 		<article ng-class="{ 'unread': isUnRead(notification) }">
 			<div class="row">
 				<div class="avatar">
-					<img class="system-avatar" ng-if="!notification.sender" />
+					<i class="system-avatar" ng-if="!notification.sender"></i>
 					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
 				</div>
 				<div class="content horizontal-spacing">
