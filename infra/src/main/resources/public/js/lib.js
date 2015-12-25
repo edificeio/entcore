@@ -1387,16 +1387,12 @@ var calendar = {
 		}
 		this.week = data.week;
 		this.year = data.year;
+        this.dayForWeek = moment(
+            this.year +
+            "-W" + (this.week < 10 ? "0" + this.week : this.week) +
+            "-1")
 
 		var that = this;
-		this.dayForWeek = moment();
-
-		if(data.week){
-			if(data.year)
-				that.dayForWeek = moment().year(data.year).week(data.week).day(1);
-			else
-				that.dayForWeek = moment().week(data.week).day(1);
-		}
 
 		this.collection(calendar.Day, {
 			sync: function(){
@@ -1404,9 +1400,9 @@ var calendar = {
 					var week = that.dayForWeek.week();
 					var year = that.dayForWeek.year();
 					if(dayOfWeek === 0){
-						week ++;
+                        return moment(that.dayForWeek).day(dayOfWeek).add(1, 'w').dayOfYear()
 					}
-					return moment().year(year).week(week).day(dayOfWeek).dayOfYear();
+					return moment(that.dayForWeek).day(dayOfWeek).dayOfYear()
 				}
 
 				that.days.load([{ name: 'monday', index:  dayOfYear(1) },
@@ -1417,7 +1413,7 @@ var calendar = {
 					{ name: 'saturday', index: dayOfYear(6) },
 					{ name: 'sunday', index: dayOfYear(0) }]);
 
-				that.firstDay = moment().year(that.dayForWeek.year()).week(that.dayForWeek.week()).day(1);
+				that.firstDay = moment(that.dayForWeek).day(1)
 			}
 		});
 
