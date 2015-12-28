@@ -5974,7 +5974,28 @@ side-panel .toggle .content {
 }
 [contenteditable] img,
 [bind-html] img {
-  display: inline-block;
+  display: block;
+}
+[contenteditable] blockquote.quotation,
+[bind-html] blockquote.quotation {
+  background: #f5f5f5;
+  padding: 15px;
+  border-left: 5px solid #444;
+}
+[contenteditable] blockquote.quotation footer,
+[bind-html] blockquote.quotation footer {
+  text-align: right;
+  font-style: italic;
+  color: #666;
+}
+body editor .quote.option [contenteditable] {
+  height: 200px;
+  overflow: auto;
+  margin-top: 50px;
+}
+body editor .quote.option select-list .selected-value {
+  width: 100%;
+  box-sizing: border-box;
 }
 .navbar {
   height: 40px;
@@ -6414,6 +6435,12 @@ body editor .editor-toolbar-opener,
 body editor .close-focus {
   display: none;
 }
+body editor.focus editor-toolbar.inline select-list {
+  display: inline;
+}
+body editor.focus editor-toolbar.inline popover {
+  display: inline-block;
+}
 body editor > popover {
   position: absolute;
   right: 10px;
@@ -6458,11 +6485,14 @@ body editor > [contenteditable] {
   -moz-transition: width 250ms ease;
   -webkit-transition: width 250ms ease;
   transition: width 250ms ease;
-  min-height: 300px;
+  height: 300px;
   border: 1px solid #ddd !important;
 }
 body editor > [contenteditable] a img {
   border: 1px dashed;
+}
+body editor[inline] code.language-html {
+  top: 0 !important;
 }
 body editor > textarea {
   float: left;
@@ -6484,7 +6514,7 @@ body editor > code.language-html {
   border-left-width: 0;
   right: 0;
   z-index: 1;
-  top: 47px;
+  top: 0;
   pointer-events: none;
   background-color: transparent;
   padding: 10px;
@@ -6505,6 +6535,7 @@ body editor.edit > code {
   width: 0;
   padding: 0;
   border: 0;
+  height: 0 !important;
 }
 body editor.html > [contenteditable] {
   width: 0;
@@ -6575,7 +6606,6 @@ body editor editor-toolbar {
 }
 body editor editor-toolbar.inline {
   position: absolute;
-  height: 46px;
   top: 0;
   -o-transition: bottom 250ms ease;
   -moz-transition: bottom 250ms ease;
@@ -6585,12 +6615,6 @@ body editor editor-toolbar.inline {
 body editor editor-toolbar.inline select-list,
 body editor editor-toolbar.inline popover {
   display: none;
-}
-body editor editor-toolbar.inline.show select-list {
-  display: inline;
-}
-body editor editor-toolbar.inline.show popover {
-  display: inline-block;
 }
 body editor editor-toolbar .sp-replacer {
   display: none;
@@ -8530,7 +8554,7 @@ ul.angle-list.small > li {
   border: 1px solid black;
   vertical-align: middle;
   margin-right: 5px;
-  transition: transform 0.35s ease-in-out, border 0.55s ease-in-out, border-width 0.15s ease-in-out, border-color 0.25s ease-in-out;
+  transition: transform 0.35s ease-in-out, border 0.55s ease-in-out, border-width 0.15s ease-in-out, border-color 0.25s ease-in-out, width 0.25s ease-in-out;
 }
 .check-item:hover {
   color: #ff7f5f;
@@ -8547,8 +8571,8 @@ ul.angle-list.small > li {
   border-top-color: transparent;
   border-left-color: transparent;
   border-width: 2px;
-  height: 13px;
-  transform: rotate(30deg) translate(-5px, 0px);
+  width: 13px;
+  transform: rotate(30deg) translate(-5px, -5px);
 }
 .check-item.disabled {
   color: #888;
@@ -8586,7 +8610,7 @@ ul.checklist li::before {
   border: 1px solid black;
   vertical-align: middle;
   margin-right: 5px;
-  transition: transform 0.35s ease-in-out, border 0.55s ease-in-out, border-width 0.15s ease-in-out, border-color 0.25s ease-in-out;
+  transition: transform 0.35s ease-in-out, border 0.55s ease-in-out, border-width 0.15s ease-in-out, border-color 0.25s ease-in-out, width 0.25s ease-in-out;
 }
 ul.checklist li:hover {
   color: #ff7f5f;
@@ -8603,8 +8627,8 @@ ul.checklist li.checked::before {
   border-top-color: transparent;
   border-left-color: transparent;
   border-width: 2px;
-  height: 13px;
-  transform: rotate(30deg) translate(-5px, 0px);
+  width: 13px;
+  transform: rotate(30deg) translate(-5px, -5px);
 }
 ul.checklist li.disabled {
   color: #888;
