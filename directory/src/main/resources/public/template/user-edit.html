@@ -27,34 +27,47 @@
 		<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
 	</div>
 </div>
-<div class="margin-four height-five reduce-block-six user-infos">
+<div class="margin-four reduce-block-six user-infos">
 	<article class="fluid cell twelve small-text">
 		<h2>[[account.displayName]]</h2>
 		<form name="userForm" novalidate>
+
 			<div class="row">
-				<label translate content="userBook.profile.login" class="four cell"></label>
+				<div class="four cell">
+					<i18n>userBook.profile.login</i18n>
+				</div>
 				<em class="seven cell">[[account.login]]</em>
 			</div>
 
 			<div class="row" ng-if="displayPassword(account,me)">
-				<label class="four cell"><i18n>userBook.profile.password</i18n></label>
-				<em class="eight cell">
+				<div class="four cell">
+					<i18n>userBook.profile.password</i18n>
+				</div>
+				<em class="seven cell">
 					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
 					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
 				</em>
 			</div>
+
 			<div class="row">
-				<label translate content="userBook.profile.firstName" class="four cell"></label>
-				<label class="seven cell">[[account.firstName]]</label>
+				<div class="four cell">
+					<i18n>userBook.profile.firstName</i18n>
+				</div>
+				<em class="seven cell">[[account.firstName]]</em>
 			</div>
+
 			<div class="row">
-				<label translate content="userBook.profile.lastName" class="four cell"></label>
-				<label class="seven cell">[[account.lastName]]</label>
+				<div class="four cell">
+					<i18n>userBook.profile.lastName</i18n>
+				</div>
+				<em class="seven cell">[[account.lastName]]</em>
 			</div>
+
 			<div class="row">
 				<label translate content="userBook.profile.displayName" class="four cell"></label>
 				<input class="seven cell inline-editing" type="text" ng-model="account.displayName" complete-change="saveChanges()" />
 			</div>
+
 			<div class="row">
 				<label translate content="userBook.profile.email" class="four cell"></label>
 				<div class="seven cell">
@@ -68,7 +81,8 @@
 				<i class="[[account.visible.email]] right-magnet" title="[[translate(account.visible.email)]]" data-ng-click="changeInfosVisibility('email', account.visible.email)"></i>
 				<div class="clear"></div>
 			</div>
-			<div class="row" ng-if="account.type.indexOf('Student') < 0">
+
+			<div class="row">
 				<label translate content="userBook.profile.telephone" class="four cell"></label>
 				<div class="seven cell">
 					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.homePhone" />
@@ -81,7 +95,8 @@
         		<i class="[[account.visible.phone]] right-magnet" title="[[translate(account.visible.phone)]]" data-ng-click="changeInfosVisibility('phone', account.visible.phone)"></i>
 				<div class="clear"></div>
       		</div>
-			<div class="row" ng-if="account.type.indexOf('Student') < 0">
+
+			<div class="row">
 				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
 				<div class="seven cell">
 					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
@@ -94,14 +109,11 @@
 				<i class="[[account.visible.mobile]] right-magnet" title="[[translate(account.visible.mobile)]]" data-ng-click="changeInfosVisibility('mobile', account.visible.mobile)"></i>
 				<div class="clear"></div>
 			</div>
-			<!--div class="row">
-				<label translate content="userBook.profile.address" class="four cell"></label>
-				<input type="text" class="seven cell inline-editing" complete-change="saveChanges()" ng-model="account.address" />
-				<i class="[[account.visible.mail]] right-magnet" title="[[translate(account.visible.mail)]]" data-ng-click="changeInfosVisibility('mail', account.visible.mail)"></i>
-				<div class="clear"></div>
-			</div-->
+
 			<div class="row">
-				<label translate content="userBook.profile.birthdate" class="four cell"></label>
+				<div class="four cell">
+					<i18n>userBook.profile.birthdate</i18n>
+				</div>
 				<date-picker
 						ng-if="account.type.indexOf('Student') !== -1"
 						ng-model="account.birthDate"
@@ -112,8 +124,11 @@
 				<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
 				<div class="clear"></div>
 			</div>
+			
 			<div class="row">
-				<div class="four cell"><label translate content="userBook.profile.school"></label></div>
+				<div class="four cell">
+					<i18n>userBook.profile.school</i18n>
+				</div>
 				<em class="six cell">[[account.schoolName]]</em>
 			</div>
 		</form>

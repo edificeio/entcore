@@ -20,12 +20,15 @@
 
 <div class="row rigid-grid">
 	<div class="four cell" style="height: 115px;">
+		
 		<div class="row horizontal-spacing-twice" style="z-index: 1">
 			<div class="twelve cell centered">
 				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
 				<button type="button" i18n-value="remove" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
 			</div>
 		</div>
+
+
 		<div class="cell absolute twelve bottom-magnet">
 			<div class="twelve cell bottom-magnet reduce-block-six">
 				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
