@@ -237,8 +237,16 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 	}
 
 	$scope.deleteApplication = function(){
-		$scope.application.delete()
-		delete $scope.application
+        var app = $scope.application
+        var action = function(){
+            app.delete(function(){
+                if($scope.application === app)
+                    delete $scope.application
+                $scope.applications.remove(app)
+                $scope.$apply()
+            })
+        }
+        $scope.notifyTop(lang.translate('appregistry.confirm.app.deletion') + ' ' + $scope.colourText(app.displayName) + '.', action)
 	}
 
 	$scope.showAdvanced = function(){

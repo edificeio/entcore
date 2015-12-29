@@ -132,10 +132,12 @@ Application.prototype.save = function(){
 	}
 };
 
-Application.prototype.delete = function(){
-	http().delete('/appregistry/application/conf/' + this.id).done(function(){
+Application.prototype.delete = function(callback){
+	return http().delete('/appregistry/application/conf/' + this.id).done(function(){
 		model.applications.sync();
 		notify.info(lang.translate('appregistry.notify.deleteApp'));
+        if(typeof callback === 'function')
+            callback()
 	})
 }
 
