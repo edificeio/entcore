@@ -141,6 +141,8 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.openUserFolder = function(folder, obj){
 		$scope.mail = undefined
 		model.folders.current = folder
+        folder.mails.full = false
+        folder.pageNumber = 0
 		obj.template = ''
 		folder.userFolders.sync(function(){
 			$timeout(function(){

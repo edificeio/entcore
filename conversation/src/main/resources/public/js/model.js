@@ -413,6 +413,8 @@ model.build = function(){
 		openFolder: function(folderName, cb){
 			this.current = this[folderName];
 			this.current.mails.sync();
+            this.current.pageNumber = 0;
+            this.current.mails.full = false;
 			if(this.current.userFolders){
 				this.current.userFolders.sync()
 			}
