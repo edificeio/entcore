@@ -90,7 +90,7 @@
                     <ul class="checklist fullrow">
                         <li ng-repeat="group in school.groups.all | filter: {name: filterGroups} | orderBy: 'name' | orderBy: linkedWidgetGroupsOpts.orderByLinked(widget)"
                             ng-class="{'checked': isLinkedWidget(group, widget)}" ng-click="switchWidgetGroupLink(group, widget)">
-                            <div class="inline-middle">[[group.name]]</div>
+                            <div class="inline-middle" style="width: calc(100% - 65px)">[[group.name]]</div>
                             <div class="filterbar right-magnet">
                                 <i class="lock square-icon small right-magnet" ng-click="lockWidgetGroupLink(group, widget); $event.stopPropagation()" tooltip="appregistry.widget.tooltip.lock"
                                    ng-class="{selected: isWidgetLinkLocked(group, widget)}" ng-disabled="!isLinkedWidget(group, widget)"></i>
