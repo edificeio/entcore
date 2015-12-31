@@ -216,21 +216,18 @@ var ui = (function(){
 		});
 
 		//CSS transitions expansions
+        var animationTimer;
 		$('body').on('click', 'article.preview', function(e){
 			if($(this).hasClass('expanded')){
 				if(($(this).height() + parseInt($(this).css('padding-top')) + parseInt($(this).css('padding-bottom'))) === this.scrollHeight){
 					$(this).css({ transition: 'none', height: 'auto' });
 				}
-				var request;
-				var setHeight = function(){
-					$(this).height(this.scrollHeight);
-					$(this).css("transition", "");
-					request = setTimeout(setHeight, 200);
-				}.bind(this);
-				request = setTimeout(setHeight, 200);
+				animationTimer = setTimeout(function(){
+                    $(this).height(this.scrollHeight)
+                }.bind(this), 200);
 			}
 			else{
-				clearTimeout(request);
+				clearTimeout(animationTimer);
 				$(this).removeAttr('style');
 			}
 		});
@@ -612,7 +609,7 @@ ui.extendElement = {
 						if(params && typeof params.startDrag === 'function'){
 							params.startDrag();
 						}
-						
+
 						element.trigger('startDrag');
 						$('body').css({
 							'-webkit-user-select': 'none',
