@@ -437,7 +437,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	public void listCasConnectors(Handler<Either<String, JsonArray>> handler) {
 		String query =
 				"MATCH (app:Application) " +
-				"WHERE has(app.casType) " +
+				"WHERE has(app.casType) and has(app.pattern) and app.casType <> '' and app.pattern <> '' " +
 				"RETURN app.casType as service, COLLECT(app.pattern) as patterns";
 		neo.execute(query, (JsonObject) null, validResultHandler(handler));
 	}
