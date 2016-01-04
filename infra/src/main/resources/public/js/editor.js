@@ -1758,7 +1758,7 @@ window.RTE = (function(){
 										'</div>' +
 										'<div class="bottom">' +
 											'<div class="content">' +
-
+                                                'Entrez ici votre texte' +
 											'</div>' +
 										'</div>' +
 										'</section>' +
