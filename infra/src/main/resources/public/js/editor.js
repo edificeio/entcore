@@ -1069,7 +1069,8 @@ window.RTE = (function(){
 													return cssRule instanceof CSSFontFaceRule &&
 														cssRule.style.cssText.toLowerCase().indexOf('fontello') === -1 &&
 														cssRule.style.cssText.toLowerCase().indexOf('glyphicon') === -1 &&
-														cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1;
+														cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1 &&
+													    cssRule.style.cssText.toLowerCase().indexOf('mathjax') === -1;
 												}
 											)
 										}
