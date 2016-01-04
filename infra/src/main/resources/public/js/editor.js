@@ -235,21 +235,6 @@ window.RTE = (function(){
 				var range = document.createRange();
 				var sel = getSelection();
 
-				if (!start && !end) {
-				    if (element.innerHTML) {
-				        range.selectNodeContents(element);
-				    }
-				    else {
-				        range.selectNode(element);
-				    }
-					
-					this.range = range;
-
-					sel.removeAllRanges();
-					sel.addRange(range);
-					return;
-				}
-
 				if(!element.innerText){
 					return;
 				}
@@ -262,6 +247,8 @@ window.RTE = (function(){
 
 				range.setStart(element.firstChild || element, start);
 				range.setEnd(element.firstChild || element, end);
+
+				this.selectedElements = [element.firstChild || element];
 				this.range = range;
 
 				sel.removeAllRanges();
@@ -300,8 +287,11 @@ window.RTE = (function(){
 						if(!item.parentNode){
 							return;
 						}
+						if (item.nodeType !== 1 && item.parentNode.nodeName !== 'DIV') {
+						    item = item.parentNode;
+						}
 						item.parentNode.replaceChild(el[0], item);
-						that.selectNode(el[0])
+						that.selectNode(el[0]);
 					});
 				}
 
