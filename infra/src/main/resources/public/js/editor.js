@@ -296,7 +296,7 @@ window.RTE = (function(){
 					});
 				}
 
-				this.trigger('contentupdated');
+				this.instance.trigger('contentupdated');
 			};
 
 			this.wrapText = function(el){
