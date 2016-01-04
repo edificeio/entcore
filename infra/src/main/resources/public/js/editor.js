@@ -227,6 +227,7 @@ window.RTE = (function(){
 				this.range = range;
 
 				var sel = getSelection();
+				this.selectedElements = [];
 				sel.removeAllRanges();
 				sel.addRange(range);
 			};
@@ -341,11 +342,22 @@ window.RTE = (function(){
 			};
 
 			function applyCSS(css){
-				that.instance.addState(that.editZone.html());
+			    that.instance.addState(that.editZone.html());
+
 				if(!that.selectedElements.length){
 					var el = $('<span>&nbsp;</span>');
 					el.css(css);
-					that.editZone.append(el);
+					var elementAtCaret = that.range.startContainer;
+					if (elementAtCaret.nodeType !== 1) {
+					    elementAtCaret = elementAtCaret.parentNode;
+					}
+					if (elementAtCaret.nodeName === 'SPAN') {
+					    elementAtCaret = elementAtCaret.parentNode;
+					}
+					if (that.editZone.find(elementAtCaret).length === 0) {
+					    elementAtCaret = that.editZone[0];
+					}
+					$(elementAtCaret).append(el);
 					that.moveCaret(el[0], 1);
 				}
 				else{
@@ -1111,7 +1123,8 @@ window.RTE = (function(){
 					    scope.setSize = function (fontSize) {
 					        scope.font.fontSize = { size: fontSize.size };
 							instance.selection.css({
-								'font-size': fontSize.size + 'px'
+							    'font-size': fontSize.size + 'px',
+                                'line-height': fontSize.size + 'px'
 							});
 					    };
 
@@ -2090,15 +2103,12 @@ window.RTE = (function(){
 						var typingTimer;
 						var editingTimer;
 
-						editZone.on('keypress', function(e){
-							clearTimeout(typingTimer);
-							clearTimeout(editingTimer);
-							typingTimer = setTimeout(wrapFirstLine, 10);
-							editingTimer = setTimeout(editingDone, 1000);
-						});
-
 						editZone.on('keydown', function (e) {
-							clearTimeout(typingTimer);
+						    clearTimeout(typingTimer);
+						    clearTimeout(editingTimer);
+						    typingTimer = setTimeout(wrapFirstLine, 10);
+						    editingTimer = setTimeout(editingDone, 1000);
+
 							if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
 								editorInstance.undo();
 								e.preventDefault();
