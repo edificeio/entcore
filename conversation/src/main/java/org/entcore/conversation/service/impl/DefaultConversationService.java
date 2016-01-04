@@ -34,7 +34,6 @@ import org.entcore.conversation.service.ConversationService;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
-import fr.wseduc.webutils.Either.Right;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -382,6 +381,9 @@ public class DefaultConversationService implements ConversationService {
 						.putString("messageId", messageId)
 						.putArray("sentIds", sentIds)
 						.putNumber("sentIdsLength", sentIds.size());
+					if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
+						params.putString("parentMessageId", parentMessageId);
+					}
 
 					findVisibles(eb, user.getUserId(), query, params, true, true, false, new Handler<JsonArray>() {
 						@Override
