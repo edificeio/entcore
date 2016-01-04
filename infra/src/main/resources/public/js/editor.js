@@ -1098,7 +1098,9 @@ window.RTE = (function(){
 						};
 
 						instance.on('selectionchange', function(e){
-						    scope.font = _.findWhere(scope.fonts, { fontFamily: instance.selection.css('font-family') });
+						    scope.font = _.find(scope.fonts, function (font) {
+						        return font.fontFamily.trim() === instance.selection.css('font-family');
+						    });
 						});
 					}
 				};
