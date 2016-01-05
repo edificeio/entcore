@@ -1001,9 +1001,7 @@ window.RTE = (function(){
 							function rgb(r, g, b){
 								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 							}
-							function rgba(a, r, g, b) {
-							    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-							}
+							var rgba = rgb;
 							var transparent = 'rgba(255, 255, 255, 0)';
 							scope.backColor = eval(document.queryCommandValue('backColor'));
 							scope.foreColor = document.queryCommandValue('foreColor');
@@ -1040,6 +1038,7 @@ window.RTE = (function(){
 								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 							}
 							var rgba = rgb;
+							var transparent = 'rgba(255, 255, 255, 0)';
 							scope.backColor = eval(document.queryCommandValue('backColor'));
 							scope.backColor = document.queryCommandValue('backColor');
 							element.children('input').val(eval(scope.backColor));
@@ -1957,6 +1956,10 @@ window.RTE = (function(){
 								}
 							}
 						);
+
+						$(window).on('resize', function () {
+						    highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+						});
 
 						element.on('dragenter dragover', function(e){
 							e.preventDefault();
