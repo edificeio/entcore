@@ -1941,7 +1941,7 @@ window.RTE = (function(){
 							},
 							function(newValue){
 								if(newValue !== editZone.html() && !editZone.is(':focus')){
-								    editZone.html(newValue);
+								    editZone.html($compile(ngModel(scope))(scope));
 								}
 								if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
 									if(window.html_beautify){
