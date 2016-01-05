@@ -360,6 +360,14 @@ window.RTE = (function(){
 					$(elementAtCaret).append(el);
 					that.moveCaret(el[0], 1);
 				}
+				else if (that.selectedElements.length === 1 && that.range.startOffset === 0) {
+				    var element = that.selectedElements[0];
+				    if (element.nodeType !== 1) {
+				        element = element.parentNode;
+				    }
+				    $(element).css(css);
+				    that.moveCaret(element, element.innerText.length);
+				}
 				else{
 					var addedNodes = [];
 					that.selectedElements.forEach(function(item, index){
