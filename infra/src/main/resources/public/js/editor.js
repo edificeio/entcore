@@ -987,6 +987,9 @@ window.RTE = (function(){
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
+						else if ($.spectrum && $.spectrum.palettes) {
+						    $("input[type=color]").spectrum();
+						}
 						scope.foreColor = "#000000";
 						element.children('input').on('change', function(){
 							scope.foreColor = $(this).val();
@@ -1023,7 +1026,9 @@ window.RTE = (function(){
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
-
+						else if($.spectrum && $.spectrum.palettes){
+						    $("input[type=color]").spectrum();
+						}
 						element.children('input').on('change', function(){
 							scope.backColor = $(this).val();
 							scope.$apply('backColor');
