@@ -28,6 +28,7 @@ import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Zip;
@@ -43,9 +44,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.Deflater;
 
 public class FileSystemExportService implements ExportService {
@@ -58,9 +57,10 @@ public class FileSystemExportService implements ExportService {
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
 	private final Map<String, Long> userExportInProgress;
+	private final TimelineHelper timeline;
 
 	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath, Set<String> expectedExports,
-			NotificationHelper notification, Storage storage, Map<String, Long> userExportInProgress) {
+			NotificationHelper notification, Storage storage, Map<String, Long> userExportInProgress, TimelineHelper timeline) {
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
@@ -68,6 +68,7 @@ public class FileSystemExportService implements ExportService {
 		this.notification = notification;
 		this.storage = storage;
 		this.userExportInProgress = userExportInProgress;
+		this.timeline = timeline;
 	}
 
 	@Override
@@ -247,11 +248,23 @@ public class FileSystemExportService implements ExportService {
 								});
 							}
 
-							private void publish(Message<JsonObject> event) {
-								eb.publish("export." + exportId, event.body());
-								if (notification != null) {
-									sendExportEmail(exportId, locale, event.body().getString("status"), host);
-								}
+							private void publish(final Message<JsonObject> event) {
+								final String address = "export." + exportId;
+								eb.sendWithTimeout(address, event.body(), 5000l,
+										new Handler<AsyncResult<Message<JsonObject>>>() {
+
+									@Override
+									public void handle(AsyncResult<Message<JsonObject>> res) {
+										if (!res.succeeded()) {
+											if (notification != null) {
+												sendExportEmail(exportId, locale, event.body().getString("status"), host);
+											} else {
+												notifyOnTimeline(exportId, locale, event.body().getString("status"));
+											}
+										}
+									}
+								});
+
 							}
 						});
 					}
@@ -281,14 +294,25 @@ public class FileSystemExportService implements ExportService {
 		return exportId.substring(exportId.indexOf('_') + 1);
 	}
 
+
+	private void notifyOnTimeline(String exportId, String locale, String status) {
+		final String userId = getUserId(exportId);
+		List<String> recipients = new ArrayList<>();
+		recipients.add(userId);
+		final JsonObject params = new JsonObject()
+				.putString("resourceUri", "/archive/export/" + exportId)
+				.putString("resourceName", exportId + ".zip");
+
+		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject()
+				.putObject("headers", new JsonObject().putString("Accept-Language", locale))), null,
+				Archive.ARCHIVES.toUpperCase(), Archive.ARCHIVES.toUpperCase() + "_" + status.toUpperCase(),
+				recipients, null, "notify-" + status + ".html", params);
+	}
+
 	private void sendExportEmail(final String exportId, final String locale, final String status, final String host) {
-		final String [] userId = exportId.split("_");
-		if (userId.length != 2) {
-			log.error("Invalid  exportId");
-			return;
-		}
+		final String userId = getUserId(exportId);
 		String query = "MATCH (u:User {id : {userId}}) RETURN u.email as email ";
-		JsonObject params = new JsonObject().putString("userId", userId[1]);
+		JsonObject params = new JsonObject().putString("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -317,17 +341,17 @@ public class FileSystemExportService implements ExportService {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (event == null || !"ok".equals(event.body().getString("status"))) {
-									log.error("Error sending export email for user " + userId[1]);
+									log.error("Error sending export email for user " + userId);
 								}
 							}
 						});
 					} else {
-						log.info("User " + userId[1] + " hasn't email.");
+						log.info("User " + userId + " hasn't email.");
 					}
 				} else if (res != null) {
-					log.warn("User " + userId[1] + " not found.");
+					log.warn("User " + userId + " not found.");
 				} else {
-					log.error("Error finding user " + userId[1] +
+					log.error("Error finding user " + userId +
 							" email : " + event.body().getString("message"));
 				}
 			}

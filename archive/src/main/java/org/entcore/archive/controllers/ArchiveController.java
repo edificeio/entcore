@@ -33,6 +33,7 @@ import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserInfos;
@@ -86,7 +87,7 @@ public class ArchiveController extends BaseController {
 				new NotificationHelper(vertx, eb, container) : null;
 		storage = new StorageFactory(vertx, container.config()).getStorage();
 		exportService = new FileSystemExportService(vertx.fileSystem(),
-				eb, exportPath, expectedExports, notification, storage, userExport);
+				eb, exportPath, expectedExports, notification, storage, userExport, new TimelineHelper(vertx, eb, container));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 		Long periodicUserClear = container.config().getLong("periodicUserClear");
 		if (periodicUserClear != null) {
@@ -149,19 +150,31 @@ public class ArchiveController extends BaseController {
 				if (Boolean.TRUE.equals(event)) {
 					log.debug("waiting export true");
 					final String address = "export." + exportId;
-					eb.registerHandler(address, new Handler<Message<JsonObject>>() {
+					final Handler<Message<JsonObject>> downloadHandler = new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							String path = event.body().getString("destZip");
 							if ("ok".equals(event.body().getString("status")) && path != null) {
 								log.debug("Download export " + exportId);
+								event.reply(new JsonObject().putString("status", "ok"));
 								downloadExport(request, exportId);
 							} else {
+								event.reply(new JsonObject().putString("status", "error"));
 								renderError(request, event.body());
 							}
 							eb.unregisterHandler(address, this);
 						}
+					};
+					request.response().closeHandler(new Handler<Void>() {
+						@Override
+						public void handle(Void event) {
+							eb.unregisterHandler(address, downloadHandler);
+							if (log.isDebugEnabled()) {
+								log.debug("Unregister handler : " + address);
+							}
+						}
 					});
+					eb.registerHandler(address, downloadHandler);
 				} else {
 					log.debug("waiting export false");
 					downloadExport(request, exportId);
@@ -191,7 +204,7 @@ public class ArchiveController extends BaseController {
 						message.body().getString("status"),
 						message.body().getString("locale", "fr"),
 						message.body().getString("host", container.config().getString("host", ""))
-						);
+				);
 				break;
 			default: log.error("Archive : invalid action " + action);
 		}
