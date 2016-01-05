@@ -1404,13 +1404,37 @@ window.RTE = (function(){
 						    scope.linker.display.chooseLink = true;
 						    if (appPrefix) {
 						        scope.linker.search.application.address = '/' + appPrefix;
-						        scope.linker.loadApplicationResources(function () {
-						            scope.linker.searchApplication(function () {
-						                var resource = _.findWhere(scope.linker.resources, { path: address });
-						                scope.linker.applyResource(resource);
-						                scope.$apply();
+						        Behaviours.loadBehaviours(appPrefix, function (appBehaviour) {
+						            scope.linker.loadApplicationResources(function () {
+						                scope.linker.searchApplication(function () {
+						                    var resource = _.findWhere(scope.linker.resources, { path: address });
+						                    scope.linker.applyResource(resource);
+						                    scope.$apply();
+						                });
 						            });
 						        });
+						    }
+						    else {
+						        if (instance.selection.selectedElements.length === 1) {
+						            var element = instance.selection.selectedElements[0];
+						            if (element.nodeType !== 1) {
+						                element = element.parentNode;
+						            }
+						            if (element.nodeName === 'A') {
+						                var link = $(element).attr('href');
+						                scope.linker.params.blank = $(element).attr('target') === '_blank';
+						                scope.linker.params.tooltip = $(element).attr('tooltip') || '';
+
+						                if (link.startsWith('http')) {
+						                    scope.linker.externalLink = true;
+						                    scope.linker.params.link = link;
+						                }
+						                else {
+						                    scope.linker.externalLink = false;
+						                    scope.linker.openLinker(link.split('/')[1], link);
+						                }
+						            }
+						        }
 						    }
 						};
 
@@ -1498,22 +1522,22 @@ window.RTE = (function(){
 								}
 							}
 
-							instance.focus();
-							scope.linker.display.chooseLink = false;
-
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
 							    instance.trigger('contentupdated');
 							    return;
 							}
 
-							if(instance.selection.selectedElements.length === 0){
-								linkNode.text(scope.linker.params.link);
-								instance.selection.replaceHTML(linkNode[0].outerHTML);
+							if (instance.selection.selectedElements.length === 0) {
+							    linkNode.text(scope.linker.params.link);
+							    instance.selection.replaceHTML(linkNode[0].outerHTML);
 							}
-							else{
-								instance.selection.wrapText(linkNode);
+							else {
+							    instance.selection.wrapText(linkNode);
 							}
+
+							instance.focus();
+							scope.linker.display.chooseLink = false;
 						};
 
 						scope.linker.cancel = function(){
