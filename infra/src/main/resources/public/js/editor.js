@@ -2354,14 +2354,16 @@ window.RTE = (function(){
 					    if (!window.MathJax) {
 					        http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done(function (data) {
 					            eval(data);
+					            MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
 					            MathJax.Hub.Typeset();
 					        });
 					    }
 						
 						attributes.$observe('formula', function(newVal){
 							element.text('$$' + newVal + '$$');
-							if(window.MathJax && window.MathJax.Hub){
-								MathJax.Hub.Typeset();
+							if (window.MathJax && window.MathJax.Hub) {
+							    MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+							    MathJax.Hub.Typeset();
 							}
 						});
 					}
