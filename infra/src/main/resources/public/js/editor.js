@@ -872,12 +872,13 @@ window.RTE = (function(){
 								instance.focus();
 							}
 							
-							instance.execCommand('subscript');
 							if(document.queryCommandState('subscript')){
 								element.addClass('toggled');
+								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
 							}
 							else{
 								element.removeClass('toggled');
+								instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
 							}
 						});
 
@@ -902,12 +903,13 @@ window.RTE = (function(){
 								instance.focus();
 							}
 							
-							instance.execCommand('superscript');
 							if(document.queryCommandState('superscript')){
 								element.addClass('toggled');
+								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
 							}
 							else{
 								element.removeClass('toggled');
+								instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
 							}
 						});
 
