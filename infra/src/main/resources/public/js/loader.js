@@ -75,8 +75,7 @@ var loader = (function(){
 			{ path: 'lib.js' },
 			{ path: 'ui.js' },
 			{ path: 'humane.min.js' },
-			{ path: 'angular-app.js' },
-			{ path: '../mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML' }]
+			{ path: 'angular-app.js' }]
 	};
 
 	var loadedScripts = {};

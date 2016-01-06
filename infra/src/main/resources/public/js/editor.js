@@ -2391,11 +2391,15 @@ window.RTE = (function(){
 					},
 					link: function (scope, element, attributes) {
 					    if (!window.MathJax) {
-					        http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done(function (data) {
-					            eval(data);
-					            MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
-					            MathJax.Hub.Typeset();
-					        });
+							loader.openFile({ 
+								async: true, 
+								ajax: false, 
+								url: '/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+								success: function(){
+									MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+					            	MathJax.Hub.Typeset();
+								}
+							});
 					    }
 						
 						attributes.$observe('formula', function(newVal){
