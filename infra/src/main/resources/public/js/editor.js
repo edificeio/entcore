@@ -407,6 +407,26 @@ window.RTE = (function(){
 				that.instance.trigger('contentupdated');
 			}
 
+			this.isEmpty = function () {
+			    return !this.range || this.range.startContainer === this.range.endContainer && this.startOffset === this.endOffset;
+			};
+
+			this.elementAtCaret = function () {
+			    if (!this.range || !this.editZone.is(':focus')) {
+			        return $();
+			    }
+			    var element = this.range.startContainer;
+			    if (element.nodeType !== 1) {
+			        element = element.parentNode;
+			    }
+			    if (element.nodeType === 1 && element.getAttribute('contenteditable')) {
+			        var newEl = document.createElement('div');
+			        element.appendChild(newEl);
+			        element = newEl;
+			    }
+			    return $(element);
+			}
+
 			this.css = function(params){
 				if(typeof params === 'object'){
 					applyCSS(params);
@@ -1201,10 +1221,21 @@ window.RTE = (function(){
 							}
 						];
 
-						instance.on('selectionchange', function(e){
+						instance.on('selectionchange', function (e) {
+						    var testElement = e.selection.$();
+						    if (instance.selection.isEmpty()) {
+						        testElement = instance.selection.elementAtCaret();
+						    }
 							var found = false;
-							scope.formats.forEach(function(format){
-								if(e.selection.$().is(format.apply.tag)){
+							scope.formats.forEach(function (format) {
+							    var hasClass = true;
+							    if (format.apply.classes) {
+							        format.apply.classes.forEach(function (className) {
+							            hasClass = hasClass && testElement.hasClass(className);
+							        });
+							    }
+							    
+							    if (testElement.is(format.apply.tag) && hasClass) {
 									scope.format = format;
 									found = true;
 								}
@@ -2188,17 +2219,6 @@ window.RTE = (function(){
 								}
 								else{
 									document.execCommand('indent');
-								}
-							}
-							if(e.keyCode === 13){
-								if(editorInstance.selection.$().is('h1, h2, h3, h4, h5, .info, .warning')
-									&& editorInstance.selection.range.startContainer === editorInstance.selection.range.endContainer
-									&& editorInstance.selection.range.startOffset === editorInstance.selection.range.endOffset){
-									var p = $('<p></p>');
-									p.insertAfter(editorInstance.selection.$);
-									this.moveCaret(p[0]);
-
-									e.preventDefault()
 								}
 							}
 						});
