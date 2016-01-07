@@ -2831,7 +2831,7 @@ module.directive('gridDraggable', function($compile){
 			element.attr('draggable', false);
 			element.on('mousedown', function(e){
 				var parent = element.parents('.drawing-grid');
-				if(element.data('lock') === true || parent.first().hasClass('blur-grid')){
+				if(element.data('lock') === true  || element.find('editor').data('lock') === true || parent.first().hasClass('blur-grid')){
 					return;
 				}
 

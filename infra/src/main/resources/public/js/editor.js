@@ -2137,6 +2137,7 @@ window.RTE = (function(){
 							}
 							
 							element.addClass('focus');
+							element.data('lock', true);
 						});
 
 						$('body').on('mousedown', function(e){
@@ -2154,6 +2155,7 @@ window.RTE = (function(){
 								
 								element.children('editor-toolbar').removeClass('show');
 								element.removeClass('focus');
+								element.data('lock', false);
 							}
 						});
 
