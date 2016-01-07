@@ -1322,6 +1322,7 @@ module.directive('bindHtml', function($compile){
 					var parent = $(item).parent();
 					$(item)
 						.attr("src", item.src)
+                        .attr('preload', 'none')
 						.detach()
 						.appendTo(parent);
 				});
