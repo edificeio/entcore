@@ -386,9 +386,10 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
             if(!this.orderLinked)
                 return function(group){
                     var score = 3
-                    if(group._order)
+                    if(group._order){
                         score += group._order.structGroup ? -1 : 0
                         score += group._order.linked ? -2 : 0
+                    }
                     return score
                 }
             return function(group){
@@ -557,9 +558,10 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
         orderByLinked: function(widget){
             return function(group){
                 var score = 3
-                if(group._order)
+                if(group._order){
                     score += group._order.structGroup ? -1 : 0
                     score += group._order.linkedWidget ? -2 : 0
+                }
                 return score
             }
         },
