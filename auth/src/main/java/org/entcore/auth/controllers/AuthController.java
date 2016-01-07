@@ -360,10 +360,18 @@ public class AuthController extends BaseController {
 			UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 				@Override
 				public void handle(UserInfos event) {
-					if (event != null && event.getFederated()) {
+					if (event != null && Boolean.TRUE.equals(event.getFederated())) {
 						redirect(request, "/auth/saml/slo?callback=" + c);
 					} else {
-						logoutCallback(request, c, container, eb);
+						String c1 = c;
+						if (c1 != null && c1.endsWith("service=")) { // OMT hack
+							try {
+								c1 += URLEncoder.encode(getScheme(request) + "://" + getHost(request), "UTF-8");
+							} catch (UnsupportedEncodingException e) {
+								log.error(e.getMessage(), e);
+							}
+						}
+						logoutCallback(request, c1, container, eb);
 					}
 				}
 			});
