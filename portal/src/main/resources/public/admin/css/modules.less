@@ -91,9 +91,6 @@ h1{
 
 h2{
 	font-size: 30px;
-	max-width: 930px;
-	margin-left: auto;
-	margin-right: auto;
 	strong{
 		color: @main;
 	}
@@ -385,6 +382,11 @@ a.link-previous:hover::before {
     }
 }
 
+.stripes-background{
+    background-color: #EEE;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.5) 35px, rgba(255,255,255,.5) 70px);
+}
+
 .preview{
 	padding-top: 15px;
 	padding-bottom: 15px;
@@ -410,9 +412,11 @@ a.link-previous:hover::before {
 	> div {
 		height: 115px;
 		overflow: hidden;
+        /*
 		background: white;
 		border: 2px dashed darkgray;
 		transition: height 0.5s ease-in-out;
+        */
 	}
     /*
 	&:hover{
@@ -438,7 +442,7 @@ h1:first-child{
 
 html section.main, body section.main{
 	min-height: 100%;
-	max-width: 1300px;
+	max-width: 1500px;
 	margin: 0px;
 	padding: 0px;
 	margin-left: auto;
@@ -456,7 +460,7 @@ article{
 	border: none;
 	background: transparent;
 	padding: 15px;
-	max-width: 1300px;
+	/*max-width: 1300px;*/
 	margin-left: auto;
 	margin-right: auto;
 }

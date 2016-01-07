@@ -385,7 +385,11 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
         orderByLinked: function(app){
             if(!this.orderLinked)
                 return function(group){
-                    return group && group._order && group._order.linked ? 0 : 1
+                    var score = 3
+                    if(group._order)
+                        score += group._order.structGroup ? -1 : 0
+                        score += group._order.linked ? -2 : 0
+                    return score
                 }
             return function(group){
                 return $scope.isLinked(group, app) ? 0 : 1
@@ -395,10 +399,10 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
             $scope.school.groups.all.forEach(function(group){
                 if(!group)
                     return
-                if(group._order)
-                    group._order.linked = $scope.isLinked(group, $scope.externalApp)
-                else
-                    group._order = {linked: $scope.isLinked(group, $scope.externalApp)}
+                group._order = {
+                    linked: $scope.isLinked(group, $scope.externalApp),
+                    structGroup: group.name.indexOf($scope.school.name) > -1
+                }
             })
         }
     }
@@ -542,19 +546,31 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     }
 
     $scope.linkedWidgetGroupsOpts = {
+        showLinked: false,
+        filterLinked: function(widget){
+            if(!this.showLinked)
+                return function(){ return true }
+            return function(group){
+                return $scope.isLinkedWidget(group, widget)
+            }
+        },
         orderByLinked: function(widget){
             return function(group){
-                return group && group._order && group._order.linkedWidget ? 0 : 1
+                var score = 3
+                if(group._order)
+                    score += group._order.structGroup ? -1 : 0
+                    score += group._order.linkedWidget ? -2 : 0
+                return score
             }
         },
         reorderGroups: function(){
             $scope.school.groups.all.forEach(function(group){
                 if(!group)
                     return
-                if(group._order)
-                    group._order.linkedWidget = $scope.isLinkedWidget(group, $scope.widget)
-                else
-                    group._order = {linkedWidget: $scope.isLinkedWidget(group, $scope.widget)}
+                group._order = {
+                    linkedWidget: $scope.isLinkedWidget(group, $scope.widget),
+                    structGroup: group.name.indexOf($scope.school.name) > -1
+                }
             })
         }
     }
