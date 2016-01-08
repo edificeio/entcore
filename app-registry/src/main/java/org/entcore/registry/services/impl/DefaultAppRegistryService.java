@@ -31,6 +31,8 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
@@ -434,12 +436,35 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void listCasConnectors(Handler<Either<String, JsonArray>> handler) {
+	public void listCasConnectors(final Handler<Either<String, JsonArray>> handler) {
 		String query =
 				"MATCH (app:Application) " +
-				"WHERE has(app.casType) and has(app.pattern) and app.casType <> '' and app.pattern <> '' " +
-				"RETURN app.casType as service, COLLECT(app.pattern) as patterns";
-		neo.execute(query, (JsonObject) null, validResultHandler(handler));
+				"WHERE has(app.casType) and app.casType <> '' " +
+				"RETURN app.casType as service, app.address as address, COLLECT(app.pattern) as patterns";
+		neo.execute(query, (JsonObject) null, validResultHandler(new Handler<Either<String, JsonArray>>(){
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isLeft()){
+					handler.handle(event);
+					return;
+				}
+				JsonArray results = event.right().getValue();
+				for(Object o : results){
+					JsonObject app = (JsonObject) o;
+					JsonArray patterns = app.getArray("patterns", new JsonArray());
+					if(patterns.size() == 0){
+						String pattern;
+						try {
+							URL addressURL = new URL(app.getString("address", ""));
+							pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
+						} catch (MalformedURLException e) {
+							pattern = "";
+						}
+						patterns.add(pattern);
+					}
+				}
+				handler.handle(new Either.Right<String, JsonArray>(results));
+			}
+		}));
 	}
 
 }

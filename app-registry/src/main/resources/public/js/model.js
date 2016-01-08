@@ -15,17 +15,6 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-var escapeRegExp = function(string){
-    return string.replace(/([.*+?^${}()|\[\]\/\\])/g, "\\$&");
-}
-var formatUrl = function(url){
-    try{
-        return escapeRegExp(new URL(url).origin)
-    } catch(e) {
-        return url
-    }
-}
-
 //////// ACTION ////////
 
 function Action(data){}
@@ -85,7 +74,7 @@ Application.prototype.createApplication = function(){
 		target: this.target || '',
 		scope: this.scope || '',
         casType: this.casType || '',
-        pattern: this.pattern || (this.casType && '^' + formatUrl(this.address) + '.*') || '',
+        pattern: this.pattern || '',
 		name: this.name
 	})
 	.done(function(){
@@ -107,7 +96,7 @@ Application.prototype.saveChanges = function(){
 		target: this.target || '',
 		scope: this.scope || '',
         casType: this.casType || '',
-        pattern: this.pattern || (this.casType && '^' + formatUrl(this.address) + '.*') || '',
+        pattern: this.pattern || '',
 		name: this.name
 	})
 	.done(function(){
@@ -157,7 +146,7 @@ ExternalApplication.prototype.createApplication = function(structureId){
 		target: this.data.target || '',
 		scope: this.data.scope || '',
         casType: this.data.casType || '',
-        pattern: this.data.pattern || (this.data.casType && '^' + formatUrl(this.data.address) + '.*') || '',
+        pattern: this.data.pattern || '',
 		name: this.data.name,
 		inherits: this.data.inherits
 	})
@@ -172,7 +161,7 @@ ExternalApplication.prototype.saveChanges = function(){
 		target: this.data.target || '',
 		scope: this.data.scope || '',
         casType: this.data.casType || '',
-        pattern: this.data.pattern || (this.data.casType && '^' + formatUrl(this.data.address) + '.*') || '',
+        pattern: this.data.pattern || '',
 		name: this.data.name,
 		inherits: this.data.inherits
 	})

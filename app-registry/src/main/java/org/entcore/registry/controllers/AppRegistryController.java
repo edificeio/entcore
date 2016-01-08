@@ -54,6 +54,9 @@ import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class AppRegistryController extends BaseController {
 
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
@@ -263,15 +266,24 @@ public class AppRegistryController extends BaseController {
 	public void applicationConf(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "updateApplication", new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {
+			public void handle(final JsonObject body) {
 				String applicationId = request.params().get("id");
 				final String casType = body.getString("casType","");
-				final String pattern = body.getString("pattern", "");
-				final boolean updateCas = !casType.trim().isEmpty() && !pattern.trim().isEmpty();
+				final String address = body.getString("address", "");
+				final boolean updateCas = !casType.trim().isEmpty();
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
 					appRegistryService.updateApplication(applicationId, body, new Handler<Either<String,JsonObject>>() {
 						public void handle(Either<String, JsonObject> event) {
 							if(event.isRight() && updateCas){
+								String pattern = body.getString("pattern", "");
+								if(pattern.isEmpty() && !address.isEmpty()){
+									try {
+										URL addressURL = new URL(address);
+										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
+									} catch (MalformedURLException e) {
+										pattern = "";
+									}
+								}
 								Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
 									.putString("action", "add-patterns")
 									.putString("service",casType)
