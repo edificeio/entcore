@@ -63,7 +63,7 @@ public class ExternalApplicationController extends BaseController {
 				externalAppService.createExternalApplication(structureId, body, new Handler<Either<String,JsonObject>>() {
 					public void handle(Either<String, JsonObject> event) {
 						if(event.isRight() && updateCas){
-							Server.getEventBus(vertx).send("cas.configuration", new JsonObject()
+							Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
 								.putString("action", "add-patterns")
 								.putString("service",casType)
 								.putArray("patterns", new JsonArray().add(pattern)));
