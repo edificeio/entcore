@@ -1437,13 +1437,11 @@ window.RTE = (function(){
 						    scope.linker.display.chooseLink = true;
 						    if (appPrefix) {
 						        scope.linker.search.application.address = '/' + appPrefix;
-						        Behaviours.loadBehaviours(appPrefix, function (appBehaviour) {
-						            scope.linker.loadApplicationResources(function () {
-						                scope.linker.searchApplication(function () {
-						                    var resource = _.findWhere(scope.linker.resources, { path: address });
-						                    scope.linker.applyResource(resource);
-						                    scope.$apply();
-						                });
+						        scope.linker.loadApplicationResources(function () {
+						            scope.linker.searchApplication(function () {
+						                var resource = _.findWhere(scope.linker.resources, { path: address });
+						                scope.linker.applyResource(resource);
+						                scope.$apply();
 						            });
 						        });
 						    }
@@ -1464,7 +1462,7 @@ window.RTE = (function(){
 						                }
 						                else {
 						                    scope.linker.externalLink = false;
-						                    scope.linker.openLinker(link.split('/')[1], link);
+						                    scope.linker.openLinker(link.split('/')[1].split('#')[0], link);
 						                }
 						            }
 						        }
@@ -1571,10 +1569,22 @@ window.RTE = (function(){
 
 							instance.focus();
 							scope.linker.display.chooseLink = false;
+							scope.linker.params = {};
+							scope.linker.display.search = {
+							    application: {},
+							    text: ''
+							};
+							scope.linker.externalLink = false;
 						};
 
 						scope.linker.cancel = function(){
-							scope.linker.display.chooseLink = false;
+						    scope.linker.display.chooseLink = false;
+						    scope.linker.params = {};
+						    scope.linker.display.search = {
+						        application: {},
+						        text: ''
+						    };
+						    scope.linker.externalLink = false;
 						};
 
 						http().get('/resources-applications').done(function(apps){
