@@ -2019,7 +2019,14 @@ window.RTE = (function(){
 							function(){
 								return ngModel(scope);
 							},
-							function(newValue){
+							function (newValue) {
+							    $(newValue).find('.math-tex').each(function (index, item) {
+							        var mathItem = $('<mathjax></mathjax>');
+							        mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
+							        $(item).removeClass('math-tex');
+							        $(item).text('');
+							        $(item).append(mathItem);
+							    });
 								if(newValue !== editZone.html() && !editZone.is(':focus')){
 								    editZone.html($compile(ngModel(scope))(scope));
 								}
@@ -2145,14 +2152,6 @@ window.RTE = (function(){
 							if(e.target === element.find('.close-focus')[0]){
 								return;
 							}
-
-							element.find('.math-tex').each(function (index, item) {
-							    var mathItem = $('<mathjax></mathjax>');
-							    mathItem.attr('formula', item.innerText);
-							    $(item).removeClass('math-tex');
-							    $(item).text('');
-							    $(item).append(mathItem);
-							});
 							
 							element.addClass('focus');
 							element.data('lock', true);

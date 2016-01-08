@@ -1316,6 +1316,13 @@ module.directive('bindHtml', function($compile){
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				var htmlContent = htmlVal[0].outerHTML;
+				$(htmlContent).find('.math-tex').each(function (index, item) {
+				    var mathItem = $('<mathjax></mathjax>');
+				    mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
+				    $(item).removeClass('math-tex');
+				    $(item).text('');
+				    $(item).append(mathItem);
+				});
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
 				element.find('audio').each(function(index, item){
@@ -1326,13 +1333,7 @@ module.directive('bindHtml', function($compile){
 						.detach()
 						.appendTo(parent);
 				});
-				element.find('.math-tex').each(function (index, item) {
-				    var mathItem = $('<mathjax></mathjax>');
-				    mathItem.attr('formula', item.innerText);
-				    $(item).removeClass('math-tex');
-				    $(item).text('');
-                    $(item).append(mathItem);
-				});
+				
 				if(window.MathJax && window.MathJax.Hub){
 					MathJax.Hub.Typeset();
 				}
