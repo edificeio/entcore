@@ -2145,6 +2145,14 @@ window.RTE = (function(){
 							if(e.target === element.find('.close-focus')[0]){
 								return;
 							}
+
+							element.find('.math-tex').each(function (index, item) {
+							    var mathItem = $('<mathjax></mathjax>');
+							    mathItem.attr('formula', item.innerText);
+							    $(item).removeClass('math-tex');
+							    $(item).text('');
+							    $(item).append(mathItem);
+							});
 							
 							element.addClass('focus');
 							element.data('lock', true);

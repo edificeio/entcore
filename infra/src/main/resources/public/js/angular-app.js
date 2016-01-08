@@ -1326,6 +1326,13 @@ module.directive('bindHtml', function($compile){
 						.detach()
 						.appendTo(parent);
 				});
+				element.find('.math-tex').each(function (index, item) {
+				    var mathItem = $('<mathjax></mathjax>');
+				    mathItem.attr('formula', item.innerText);
+				    $(item).removeClass('math-tex');
+				    $(item).text('');
+                    $(item).append(mathItem);
+				});
 				if(window.MathJax && window.MathJax.Hub){
 					MathJax.Hub.Typeset();
 				}
