@@ -330,12 +330,6 @@ public class PortalController extends BaseController {
 		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
 	}
 
-	@Get("/widgets")
-	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
-	public void widgets(HttpServerRequest request){
-		renderJson(request, container.config().getArray("widgets", new JsonArray()));
-	}
-
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
