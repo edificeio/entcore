@@ -2346,10 +2346,8 @@ window.RTE = (function(){
                         display: '='
 					},
 					template: '' +
-					'<div class="selected-value">[[showValue()]]</div>' +
-					'<div class="wrapper">' +
-                        '<div class="options hidden" ng-transclude></div>' +
-                    '</div>',
+					    '<div class="selected-value">[[showValue()]]</div>' +
+                        '<div class="options hidden" ng-transclude></div>',
 					link: function(scope, element, attributes){
 						scope.showValue = function(){
 							if(!scope.display){
