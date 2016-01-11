@@ -454,7 +454,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 					if(patterns.size() == 0){
 						String pattern;
 						try {
-							URL addressURL = new URL(app.getString("address", ""));
+							URL addressURL;
+							String address = app.getString("address", "");
+							if(address.startsWith("/adapter#")){
+								addressURL = new URL(address.substring(address.indexOf("#") + 1));
+							} else {
+								addressURL = new URL(address);
+							}
 							pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 						} catch (MalformedURLException e) {
 							pattern = "";
