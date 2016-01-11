@@ -2597,7 +2597,7 @@ module.directive('gridCell', function($compile){
 		},
 		template: '<div class="media-wrapper"><div class="media-container" ng-class="className" ng-transclude></div></div>',
 		transclude: true,
-		link: function(scope, element, attributes){
+		link: function (scope, element, attributes) {
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 			scope.$watch('w', function(newVal, oldVal){
 				element.addClass(cellSizes[newVal]);
@@ -2617,6 +2617,16 @@ module.directive('gridCell', function($compile){
 				newVal.forEach(function(cls){
 					element.addClass(cls);
 				});
+			});
+
+			element.on('editor-focus', 'editor', function () {
+			    element.css({ overflow: 'visible', height: 'auto' });
+			    element.find('.media-wrapper').css({ position: 'relative', overflow: 'visible', height: 'auto' });
+			});
+
+			element.on('editor-blur', 'editor', function () {
+			    element.css({ overflow: '', height: '' });
+			    element.find('.media-wrapper').css({ position: '', overflow: '', height: '' });
 			});
 		}
 	}

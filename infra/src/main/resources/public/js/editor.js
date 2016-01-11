@@ -1969,9 +1969,10 @@ window.RTE = (function(){
 					'<div contenteditable="true"></div>' +
 					'<textarea></textarea>' +
                     '<code class="language-html"></code>',
-					link: function(scope, element, attributes){
+					link: function (scope, element, attributes) {
 						element.find('.close-focus').on('click', function(){
-							element.removeClass('focus');
+						    element.removeClass('focus');
+						    element.trigger('editor-blur');
 						});
 						
 						element.find('.editor-toolbar-opener').on('click', function(){
@@ -2153,6 +2154,7 @@ window.RTE = (function(){
 								return;
 							}
 							
+							element.trigger('editor-focus');
 							element.addClass('focus');
 							element.data('lock', true);
 						});
@@ -2171,6 +2173,7 @@ window.RTE = (function(){
 								}
 								
 								element.children('editor-toolbar').removeClass('show');
+								element.trigger('editor-blur');
 								element.removeClass('focus');
 								element.data('lock', false);
 							}
@@ -2344,7 +2347,9 @@ window.RTE = (function(){
 					},
 					template: '' +
 					'<div class="selected-value">[[showValue()]]</div>' +
-					'<div class="options hidden" ng-transclude></div>',
+					'<div class="wrapper">' +
+                        '<div class="options hidden" ng-transclude></div>' +
+                    '</div>',
 					link: function(scope, element, attributes){
 						scope.showValue = function(){
 							if(!scope.display){
