@@ -100,8 +100,11 @@
                             ng-class="{'checked': isLinkedWidget(group, widget)}" ng-click="switchWidgetGroupLink(group, widget)">
                             <div class="inline-middle" style="width: calc(100% - 65px)">[[group.name]]</div>
                             <div class="filterbar right-magnet">
-                                <i class="lock square-icon small right-magnet" ng-click="lockWidgetGroupLink(group, widget); $event.stopPropagation()" tooltip="appregistry.widget.tooltip.lock"
-                                   ng-class="{selected: isWidgetLinkLocked(group, widget)}" ng-disabled="!isLinkedWidget(group, widget)"></i>
+                                <i class="lock square-icon small right-magnet" tooltip="appregistry.widget.tooltip.lock"
+                                   ng-click="loadingWrapper('_lockwidget', lockWidgetGroupLink, null, group, widget); $event.stopPropagation()"
+                                   ng-if="!_lockwidget.loading"
+                                   ng-disabled="!isLinkedWidget(group, widget)"
+                                   ng-class="{selected: isWidgetLinkLocked(group, widget), loader: _lockwidget.loading, lock: !_lockwidget.loading}"></i>
                             </div>
                         </li>
                     </ul>

@@ -327,6 +327,8 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     }
 
 	$scope.getPreviewContent = function(app){
+        if(!app || !app.data)
+            return
 		var path = app.data.address
 		if(app.data.target === 'adapter'){
 			path = '/adapter#' + path
@@ -613,17 +615,17 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
         var matchingGroup = _.findWhere(widget.infos.groups, {id: group.id})
         if(!matchingGroup)
             return
+        var request
         if(!matchingGroup.mandatory){
-            widget.setMandatory(group.id).done(function(){
+            request = widget.setMandatory(group.id).done(function(){
                 matchingGroup.mandatory = true
-                $scope.$apply()
             })
         } else {
-            widget.removeMandatory(group.id).done(function(){
+            request = widget.removeMandatory(group.id).done(function(){
                 matchingGroup.mandatory = false
-                $scope.$apply()
             })
         }
+        return request
     }
 
     $scope.massLinkWidget = function(widget, structure, profiles){

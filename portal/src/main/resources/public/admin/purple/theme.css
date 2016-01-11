@@ -6435,11 +6435,24 @@ body editor .editor-toolbar-opener,
 body editor .close-focus {
   display: none;
 }
-body editor.focus editor-toolbar.inline select-list {
+body editor.focus.edit editor-toolbar.inline select-list,
+body editor.focus.both body editor.focus.html editor-toolbar.inline select-list {
   display: inline;
+  opacity: 1;
+  pointer-events: all;
 }
-body editor.focus editor-toolbar.inline popover {
+body editor.focus.edit editor-toolbar.inline popover,
+body editor.focus.both body editor.focus.html editor-toolbar.inline popover,
+body editor.focus.edit editor-toolbar.inline > popover,
+body editor.focus.both body editor.focus.html editor-toolbar.inline > popover {
   display: inline-block;
+  opacity: 1;
+  pointer-events: all;
+}
+body editor.focus.edit editor-toolbar.inline,
+body editor.focus.both editor-toolbar.inline,
+body editor.focus.html editor-toolbar.inline {
+  opacity: 1;
 }
 body editor > popover {
   position: absolute;
@@ -6449,6 +6462,9 @@ body editor > popover {
 }
 body editor > popover > [popover-opener] {
   width: 39px;
+}
+body editor > popover > [popover-opener].tools {
+  background-image: url("../img/icons/editor/glyphicons_280_settings.png");
 }
 body editor > popover ul {
   padding: 0;
@@ -6494,6 +6510,15 @@ body editor > [contenteditable] a img {
 body editor[inline] code.language-html {
   top: 0 !important;
 }
+body editor[inline] popover {
+  display: none;
+}
+body editor[inline] > popover {
+  top: -35px;
+}
+body editor[inline].focus popover {
+  display: inline-block;
+}
 body editor > textarea {
   float: left;
   box-sizing: border-box;
@@ -6508,6 +6533,7 @@ body editor > textarea {
   tab-size: 4;
   font-size: 16px;
   border: 1px solid #ddd;
+  padding: 10px;
 }
 body editor > code.language-html {
   position: absolute;
@@ -6536,6 +6562,7 @@ body editor.edit > code {
   padding: 0;
   border: 0;
   height: 0 !important;
+  min-height: 0 !important;
 }
 body editor.html > [contenteditable] {
   width: 0;
@@ -6595,7 +6622,9 @@ body editor contextual-menu ul li:hover {
 body editor contextual-menu.show {
   width: 200px;
 }
-body editor editor-toolbar {
+body editor.edit editor-toolbar,
+body editor.both editor-toolbar,
+body editor.html editor-toolbar {
   display: block;
   float: left;
   width: 100%;
@@ -6603,26 +6632,42 @@ body editor editor-toolbar {
   border: 1px solid #ddd;
   box-sizing: border-box;
   border-bottom: 0;
+  border-right: 52px solid #eee;
 }
-body editor editor-toolbar.inline {
+body editor.edit editor-toolbar.inline,
+body editor.both editor-toolbar.inline,
+body editor.html editor-toolbar.inline {
   position: absolute;
   top: 0;
-  -o-transition: bottom 250ms ease;
-  -moz-transition: bottom 250ms ease;
-  -webkit-transition: bottom 250ms ease;
-  transition: bottom 250ms ease;
+  opacity: 0;
+  -o-transition: opacity 250ms ease;
+  -moz-transition: opacity 250ms ease;
+  -webkit-transition: opacity 250ms ease;
+  transition: opacity 250ms ease;
 }
-body editor editor-toolbar.inline select-list,
-body editor editor-toolbar.inline popover {
+body editor.edit editor-toolbar.inline select-list,
+body editor.both editor-toolbar.inline select-list,
+body editor.html editor-toolbar.inline select-list,
+body editor.edit editor-toolbar.inline popover,
+body editor.both editor-toolbar.inline popover,
+body editor.html editor-toolbar.inline popover {
+  display: inline-block;
+  opacity: 0;
+  pointer-events: none;
+}
+body editor.edit editor-toolbar .sp-replacer,
+body editor.both editor-toolbar .sp-replacer,
+body editor.html editor-toolbar .sp-replacer {
   display: none;
 }
-body editor editor-toolbar .sp-replacer {
-  display: none;
-}
-body editor editor-toolbar .sp-replacer:first-of-type {
+body editor.edit editor-toolbar .sp-replacer:first-of-type,
+body editor.both editor-toolbar .sp-replacer:first-of-type,
+body editor.html editor-toolbar .sp-replacer:first-of-type {
   display: inline-block;
 }
-body editor editor-toolbar .option {
+body editor.edit editor-toolbar .option,
+body editor.both editor-toolbar .option,
+body editor.html editor-toolbar .option {
   display: inline-block;
   padding: 6px 5px;
   -webkit-user-select: none;
@@ -6639,36 +6684,48 @@ body editor editor-toolbar .option {
   vertical-align: middle;
   border-bottom: 3px solid transparent;
 }
-body editor editor-toolbar .option i {
-  width: 15px;
-  height: 15px;
+body editor.edit editor-toolbar .option i,
+body editor.both editor-toolbar .option i,
+body editor.html editor-toolbar .option i {
   display: inline-block;
-  margin: 1px;
   -o-transition: all 250ms ease;
   -moz-transition: all 250ms ease;
   -webkit-transition: all 250ms ease;
   transition: all 250ms ease;
-  background-size: contain;
+  background-size: 15px;
+  background-repeat: no-repeat;
+  background-position: center;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-body editor editor-toolbar .option.disabled {
+body editor.edit editor-toolbar .option.disabled,
+body editor.both editor-toolbar .option.disabled,
+body editor.html editor-toolbar .option.disabled {
   opacity: 0.3;
   pointer-events: none;
 }
-body editor editor-toolbar .option:hover {
+body editor.edit editor-toolbar .option:hover,
+body editor.both editor-toolbar .option:hover,
+body editor.html editor-toolbar .option:hover {
   background-color: #eee;
   cursor: pointer;
 }
-body editor editor-toolbar .option.toggled {
+body editor.edit editor-toolbar .option.toggled,
+body editor.both editor-toolbar .option.toggled,
+body editor.html editor-toolbar .option.toggled {
   background-color: #e4e4e4;
   box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
-body editor editor-toolbar .option.undo > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.undo > i,
+body editor.both editor-toolbar .option.undo > i,
+body editor.html editor-toolbar .option.undo > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/undo.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6679,9 +6736,11 @@ body editor editor-toolbar .option.undo > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.redo > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.redo > i,
+body editor.both editor-toolbar .option.redo > i,
+body editor.html editor-toolbar .option.redo > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/redo.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6692,9 +6751,11 @@ body editor editor-toolbar .option.redo > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.bold > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.bold > i,
+body editor.both editor-toolbar .option.bold > i,
+body editor.html editor-toolbar .option.bold > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/bold.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6705,9 +6766,11 @@ body editor editor-toolbar .option.bold > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.italic > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.italic > i,
+body editor.both editor-toolbar .option.italic > i,
+body editor.html editor-toolbar .option.italic > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/italic.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6718,9 +6781,11 @@ body editor editor-toolbar .option.italic > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.underline > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.underline > i,
+body editor.both editor-toolbar .option.underline > i,
+body editor.html editor-toolbar .option.underline > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/underline.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6731,9 +6796,11 @@ body editor editor-toolbar .option.underline > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.justify-left > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.justify-left > i,
+body editor.both editor-toolbar .option.justify-left > i,
+body editor.html editor-toolbar .option.justify-left > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/justify-left.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6744,9 +6811,11 @@ body editor editor-toolbar .option.justify-left > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.justify-right > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.justify-right > i,
+body editor.both editor-toolbar .option.justify-right > i,
+body editor.html editor-toolbar .option.justify-right > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/justify-right.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6757,9 +6826,11 @@ body editor editor-toolbar .option.justify-right > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.justify-center > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.justify-center > i,
+body editor.both editor-toolbar .option.justify-center > i,
+body editor.html editor-toolbar .option.justify-center > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/justify-center.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6770,9 +6841,11 @@ body editor editor-toolbar .option.justify-center > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.justify-full > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.justify-full > i,
+body editor.both editor-toolbar .option.justify-full > i,
+body editor.html editor-toolbar .option.justify-full > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/justify-full.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6783,9 +6856,11 @@ body editor editor-toolbar .option.justify-full > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.subscript > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.subscript > i,
+body editor.both editor-toolbar .option.subscript > i,
+body editor.html editor-toolbar .option.subscript > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/subscript.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6796,9 +6871,11 @@ body editor editor-toolbar .option.subscript > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.superscript > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.superscript > i,
+body editor.both editor-toolbar .option.superscript > i,
+body editor.html editor-toolbar .option.superscript > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/superscript.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6809,9 +6886,11 @@ body editor editor-toolbar .option.superscript > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.quote > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.quote > i,
+body editor.both editor-toolbar .option.quote > i,
+body editor.html editor-toolbar .option.quote > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/quote.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6822,9 +6901,11 @@ body editor editor-toolbar .option.quote > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.ulist i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.ulist i,
+body editor.both editor-toolbar .option.ulist i,
+body editor.html editor-toolbar .option.ulist i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/ulist.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6835,9 +6916,11 @@ body editor editor-toolbar .option.ulist i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.olist > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.olist > i,
+body editor.both editor-toolbar .option.olist > i,
+body editor.html editor-toolbar .option.olist > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/olist.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6848,9 +6931,11 @@ body editor editor-toolbar .option.olist > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.remove-format > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.remove-format > i,
+body editor.both editor-toolbar .option.remove-format > i,
+body editor.html editor-toolbar .option.remove-format > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/remove-format.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6861,9 +6946,11 @@ body editor editor-toolbar .option.remove-format > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.image > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.image > i,
+body editor.both editor-toolbar .option.image > i,
+body editor.html editor-toolbar .option.image > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/image.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6874,9 +6961,11 @@ body editor editor-toolbar .option.image > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.sound > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.sound > i,
+body editor.both editor-toolbar .option.sound > i,
+body editor.html editor-toolbar .option.sound > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/sound.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6887,9 +6976,11 @@ body editor editor-toolbar .option.sound > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.mathjax > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.mathjax > i,
+body editor.both editor-toolbar .option.mathjax > i,
+body editor.html editor-toolbar .option.mathjax > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/mathjax.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6900,9 +6991,11 @@ body editor editor-toolbar .option.mathjax > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.templates > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.templates > i,
+body editor.both editor-toolbar .option.templates > i,
+body editor.html editor-toolbar .option.templates > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/templates.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6913,42 +7006,79 @@ body editor editor-toolbar .option.templates > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.font {
-  width: 120px;
+body editor.edit editor-toolbar .option.font,
+body editor.both editor-toolbar .option.font,
+body editor.html editor-toolbar .option.font {
+  width: 140px;
 }
-body editor editor-toolbar .option.font:hover {
+body editor.edit editor-toolbar .option.font select-list .selected-value,
+body editor.both editor-toolbar .option.font select-list .selected-value,
+body editor.html editor-toolbar .option.font select-list .selected-value {
+  width: 115px;
+}
+body editor.edit editor-toolbar .option.font:hover,
+body editor.both editor-toolbar .option.font:hover,
+body editor.html editor-toolbar .option.font:hover {
   background: none;
   border: none;
 }
-body editor editor-toolbar .option.font-size:hover {
+body editor.edit editor-toolbar .option.font-size:hover,
+body editor.both editor-toolbar .option.font-size:hover,
+body editor.html editor-toolbar .option.font-size:hover {
   background: none;
   border: none;
 }
-body editor editor-toolbar .option.format:hover {
+body editor.edit editor-toolbar .option.format:hover,
+body editor.both editor-toolbar .option.format:hover,
+body editor.html editor-toolbar .option.format:hover {
   background: none;
   border: none;
 }
-body editor editor-toolbar .option.format h1,
-body editor editor-toolbar .option.format h2,
-body editor editor-toolbar .option.format h3,
-body editor editor-toolbar .option.format p {
+body editor.edit editor-toolbar .option.format h1,
+body editor.both editor-toolbar .option.format h1,
+body editor.html editor-toolbar .option.format h1,
+body editor.edit editor-toolbar .option.format h2,
+body editor.both editor-toolbar .option.format h2,
+body editor.html editor-toolbar .option.format h2,
+body editor.edit editor-toolbar .option.format h3,
+body editor.both editor-toolbar .option.format h3,
+body editor.html editor-toolbar .option.format h3,
+body editor.edit editor-toolbar .option.format p,
+body editor.both editor-toolbar .option.format p,
+body editor.html editor-toolbar .option.format p {
   margin: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
-body editor editor-toolbar .option.table .draw-table .row {
-  min-height: none;
+body editor.edit editor-toolbar .option.table .draw-table .row,
+body editor.both editor-toolbar .option.table .draw-table .row,
+body editor.html editor-toolbar .option.table .draw-table .row {
+  min-height: 0;
 }
-body editor editor-toolbar .option.table .draw-table .cell {
+body editor.edit editor-toolbar .option.table .draw-table .cell,
+body editor.both editor-toolbar .option.table .draw-table .cell,
+body editor.html editor-toolbar .option.table .draw-table .cell {
   height: 10px;
   width: 10px;
   border: 1px solid #fff;
   background: #efefef;
 }
-body editor editor-toolbar .option.table .draw-table .cell.match {
+body editor.edit editor-toolbar .option.table .draw-table .cell.match,
+body editor.both editor-toolbar .option.table .draw-table .cell.match,
+body editor.html editor-toolbar .option.table .draw-table .cell.match {
   background: #ddd;
 }
-body editor editor-toolbar .option.table popover > i {
-  height: 21px;
-  width: 21px;
+body editor.edit editor-toolbar .option.table popover,
+body editor.both editor-toolbar .option.table popover,
+body editor.html editor-toolbar .option.table popover {
+  width: 100%;
+  height: 100%;
+}
+body editor.edit editor-toolbar .option.table popover > i,
+body editor.both editor-toolbar .option.table popover > i,
+body editor.html editor-toolbar .option.table popover > i {
+  height: 15px;
+  width: 15px;
   background-image: url("../img/icons/editor/table.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6958,15 +7088,22 @@ body editor editor-toolbar .option.table popover > i {
   -o-box-sizing: border-box;
   box-sizing: border-box;
   vertical-align: middle;
+  top: 7px;
+  left: 3px;
 }
-body editor editor-toolbar .option.table popover popover-content {
+body editor.edit editor-toolbar .option.table popover popover-content,
+body editor.both editor-toolbar .option.table popover popover-content,
+body editor.html editor-toolbar .option.table popover popover-content {
   width: 120px;
   left: -58px;
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-left: 14px;
 }
-body editor editor-toolbar .option.linker > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.linker > i,
+body editor.both editor-toolbar .option.linker > i,
+body editor.html editor-toolbar .option.linker > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/linker.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6977,9 +7114,11 @@ body editor editor-toolbar .option.linker > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.smileys > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.smileys > i,
+body editor.both editor-toolbar .option.smileys > i,
+body editor.html editor-toolbar .option.smileys > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/smileys.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -6990,13 +7129,17 @@ body editor editor-toolbar .option.smileys > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.smileys lightbox img {
+body editor.edit editor-toolbar .option.smileys lightbox img,
+body editor.both editor-toolbar .option.smileys lightbox img,
+body editor.html editor-toolbar .option.smileys lightbox img {
   width: 50px;
   height: 50px;
 }
-body editor editor-toolbar .option.unlink > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.unlink > i,
+body editor.both editor-toolbar .option.unlink > i,
+body editor.html editor-toolbar .option.unlink > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/unlink.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7007,9 +7150,11 @@ body editor editor-toolbar .option.unlink > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.embed > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.embed > i,
+body editor.both editor-toolbar .option.embed > i,
+body editor.html editor-toolbar .option.embed > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/embed.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7020,9 +7165,11 @@ body editor editor-toolbar .option.embed > i {
   box-sizing: border-box;
   vertical-align: middle;
 }
-body editor editor-toolbar .option.audio > i {
-  height: 15px;
-  width: 15px;
+body editor.edit editor-toolbar .option.audio > i,
+body editor.both editor-toolbar .option.audio > i,
+body editor.html editor-toolbar .option.audio > i {
+  height: 100%;
+  width: 100%;
   background-image: url("../img/icons/editor/audio.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -7064,7 +7211,7 @@ select-list .options.hidden {
 }
 select-list .selected-value {
   border-bottom: 1px solid #ddd;
-  min-width: 82px;
+  min-width: 100px;
   min-height: 24px;
   pointer-events: all;
   line-height: 28px;
@@ -7089,7 +7236,9 @@ select-list .selected-value {
     height: 100%;
     z-index: 10001;
   }
-  body editor.focus editor-toolbar {
+  body editor.focus.edit editor-toolbar,
+  body editor.focus.both editor-toolbar,
+  body editor.focus.html editor-toolbar {
     height: 100%;
     overflow: hidden;
     position: fixed;
@@ -7103,13 +7252,19 @@ select-list .selected-value {
     -webkit-transition: width 250ms ease;
     transition: width 250ms ease;
   }
-  body editor.focus editor-toolbar.opened {
+  body editor.focus.edit editor-toolbar.opened,
+  body editor.focus.both editor-toolbar.opened,
+  body editor.focus.html editor-toolbar.opened {
     width: 44px;
   }
-  body editor.focus editor-toolbar.opened .option {
+  body editor.focus.edit editor-toolbar.opened .option,
+  body editor.focus.both editor-toolbar.opened .option,
+  body editor.focus.html editor-toolbar.opened .option {
     width: 44px;
   }
-  body editor.focus editor-toolbar.opened .option i {
+  body editor.focus.edit editor-toolbar.opened .option i,
+  body editor.focus.both editor-toolbar.opened .option i,
+  body editor.focus.html editor-toolbar.opened .option i {
     width: 29px;
   }
   body editor.focus .close-focus {
@@ -7955,6 +8110,7 @@ h1.link-previous > a:hover::before {
   border: 1px solid #AAA;
   opacity: 0.6;
   background-color: #CCC;
+  pointer-events: none;
 }
 .stripes-background {
   background-color: #EEE;

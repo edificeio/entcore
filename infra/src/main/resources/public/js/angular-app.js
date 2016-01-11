@@ -218,22 +218,29 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
         			return
         		if(typeof scope[name] !== "object")
         			scope[name] = {}
+                if(scope[name].loading)
+                    return
+        		scope[name].loading = true
 
         		var args = []
         		for(var i = 3; i < arguments.length; i++)
         			args.push(arguments[i])
-        		scope[name].loading = true
 
         		var completion = function(){
         			scope[name].loading = false
         			scope.$apply()
         		}
 
+                var xhrReq
         		if(context){
-        			fun.apply(context, args).xhr.complete(completion)
+        			xhrReq = fun.apply(context, args)
         		} else {
-        			fun.apply(scope, args).xhr.complete(completion)
+        			xhrReq =  fun.apply(scope, args)
         		}
+                if(xhrReq && xhrReq.xhr)
+                    xhrReq.xhr.complete(completion)
+                else
+                    completion()
         	}
         }
     });
@@ -1333,7 +1340,7 @@ module.directive('bindHtml', function($compile){
 						.detach()
 						.appendTo(parent);
 				});
-				
+
 				if(window.MathJax && window.MathJax.Hub){
 					MathJax.Hub.Typeset();
 				}
