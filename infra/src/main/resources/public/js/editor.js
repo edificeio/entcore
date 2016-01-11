@@ -2207,6 +2207,23 @@ window.RTE = (function(){
 						    typingTimer = setTimeout(wrapFirstLine, 10);
 						    editingTimer = setTimeout(editingDone, 1000);
 
+						    if (e.keyCode === 8 || e.keyCode === 46) {
+						        // for whatever reason, ff likes to create several ranges for table selection
+						        // which messes up their deletion
+						        var sel = window.getSelection();
+						        for (var i = 0; i < sel.rangeCount; i++) {
+						            var startContainer = sel.getRangeAt(i).startContainer;
+						            if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
+						                startContainer.remove();
+						            }
+						        }
+						        editZone.find('table').each(function (index, item) {
+						            if ($(item).children('tr').length === 0) {
+						                $(item).remove();
+						            }
+						        });
+						    }
+
 							if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
 								editorInstance.undo();
 								e.preventDefault();
