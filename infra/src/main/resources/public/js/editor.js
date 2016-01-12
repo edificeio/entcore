@@ -1672,7 +1672,7 @@ window.RTE = (function(){
 			RTE.baseToolbarConf.option('table', function(instance){
 				return {
 					template: '' +
-					'<popover>' +
+					'<popover mouse-event="click">' +
 					'<i popover-opener opening-event="click"></i>' +
 					'<popover-content>' +
 					'<div class="draw-table"></div>' +
@@ -2421,9 +2421,20 @@ window.RTE = (function(){
 				return {
 					require: '^popover',
 					link: function(scope, element, attributes){
-						var parentElement = element.parents('popover');
+					    var parentElement = element.parents('popover');
+					    var mouseEvent = parentElement.attr('mouse-event') || 'mouseover';
 						var popover = parentElement.find('popover-content');
-						parentElement.on('mouseover', function(e){
+						parentElement.on(mouseEvent, function (e) {
+						    if (mouseEvent === 'click') {
+                                if (popover.hasClass('hidden')) {
+                                    e.stopPropagation();
+                                }
+
+						        $('body').one('click', function (e) {
+						            popover.addClass("hidden");
+						        });
+						    }
+
 							if(popover.offset().left + popover.width() > $(window).width()){
 								popover.addClass('right');
 							}
@@ -2435,9 +2446,12 @@ window.RTE = (function(){
 							}
 							popover.removeClass("hidden");
 						});
-						parentElement.on('mouseout', function(e){
-							popover.addClass("hidden");
-						});
+
+                         if(mouseEvent === 'mouseover') {
+                            parentElement.on('mouseout', function (e) {
+                                popover.addClass("hidden");
+                            });
+                        }
 					}
 				};
 			});
