@@ -2218,6 +2218,7 @@ window.RTE = (function(){
 						    editingTimer = setTimeout(editingDone, 1000);
 
 						    if (e.keyCode === 8 || e.keyCode === 46) {
+						        editorInstance.addState(editZone.html());
 						        // for whatever reason, ff likes to create several ranges for table selection
 						        // which messes up their deletion
 						        var sel = window.getSelection();
