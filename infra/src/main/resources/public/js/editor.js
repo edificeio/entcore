@@ -58,33 +58,31 @@ window.RTE = (function(){
 			});
 			this.bindContextualMenu = function(scope, selector, items){
 				this.editZone.on('contextmenu', selector, function(e){
-					e.preventDefault();
+				    e.preventDefault();
+
+				    contextualMenu.children('ul').html('');
+				    items.forEach(function (item) {
+				        var node = $('<li></li>');
+				        node.on('click', function (event) {
+				            item.action(e);
+				            scope.$apply();
+				        });
+				        node.html(lang.translate(item.label));
+				        contextualMenu.children('ul').append(node)
+				    });
+
+				    contextualMenu.addClass('show');
+				    e.preventDefault();
+				    contextualMenu.offset({
+				        top: mousePosition.top,
+				        left: mousePosition.left
+				    });
+
+				    contextualMenu.children('li').on('click', function () {
+				        contextualMenu.removeClass('show');
+				    });
+
 					return false;
-				});
-				this.editZone.on('mousedown', selector, function(e){
-					if(e.which === 3){
-						contextualMenu.children('ul').html('');
-						items.forEach(function(item){
-							var node = $('<li></li>');
-							node.on('click', function(event){
-							    item.action(e);
-							    scope.$apply();
-							});
-							node.html(lang.translate(item.label));
-							contextualMenu.children('ul').append(node)
-						});
-
-						contextualMenu.addClass('show');
-						e.preventDefault();
-						contextualMenu.offset({
-							top: mousePosition.top,
-							left: mousePosition.left
-						});
-
-						contextualMenu.children('li').on('click', function(){
-							contextualMenu.removeClass('show');
-						});
-					}
 				});
 			};
 
