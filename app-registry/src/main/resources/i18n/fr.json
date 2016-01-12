@@ -168,7 +168,7 @@
 	"appregistry.app.is.locked": "L'application est verrouillée",
 	"appregistry.do.lock": "Verrouiller",
 	"appregistry.do.unlock": "Déverrouiller",
-	"appregistry.app.is.not.scopeable": "L'application est rattachée à une structure englobante hors de votre portée d'administrateur local.",
+	"appregistry.app.is.not.scopeable": "Vous n'avez pas le droit de modifier les paramètres de ce connecteur car il est partagé avec d'autres établissements.",
     "appregistry.app.properties": "Propriétés",
     "appregistry.widget.properties": "Propriétés",
     "appregistry.groups.attribution": "Droits d'accès",
