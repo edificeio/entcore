@@ -250,11 +250,75 @@ var ui = (function(){
 })(jQuery)
 
 
+ui.extendSelector = {
+    touchEvents: function(selector, params) {
+        if (!params) {
+            params = {};
+        }
+        //longclick
+        $('body').on('touchstart', selector, function (e) {
+            var position = {
+                left: e.originalEvent.touches[0].clientX - window.scrollX,
+                top: e.originalEvent.touches[0].clientY - window.scrollY
+            }
+            var timer = setTimeout(function() {
+                $(e.target).one('touchleave touchend', function() {
+                    $(e.target).trigger('longclick', position);
+                });
+            }, 200);
+            $(e.target).one('touchleave touchend', function() {
+                clearTimeout(timer);
+            });
+        });
+
+        //swipes
+        $('body').on('touchstart', selector, function (e) {
+            var initialMouse = mouse = {
+                y: e.originalEvent.touches[0].clientY,
+                x: e.originalEvent.touches[0].clientX
+            };
+            $(e.target).on('touchmove', function (e) {
+                mouse = {
+                    y: e.originalEvent.touches[0].clientY,
+                    x: e.originalEvent.touches[0].clientX
+                };
+            });
+            $(e.target).on('touchleave touchend', function (e) {
+                if (initialMouse.x + 150 < mouse.x) {
+                    $(e.target).trigger('swipe-right');
+                }
+                if (initialMouse.x - 150 > mouse.x) {
+                    $(e.target).trigger('swipe-left');
+                }
+                if (initialMouse.y - 150 > mouse.y) {
+                    $(e.target).trigger('swipe-up');
+                }
+                if (initialMouse.y - 150 > mouse.y) {
+                    $(e.target).trigger('swipe-bottom');
+                }
+                $(e.target).off('touchleave touchend touchmove');
+            });
+        });
+    }
+};
+
 ui.extendElement = {
 	touchEvents: function(element, params){
 		if(!params){
 			params = {};
 		}
+	    //longclick
+	    element.on('touchstart', function(e) {
+	        var timer = setTimeout(function() {
+	            element.one('touchleave touchend', function () {
+	                element.trigger('longclick');
+	            });
+	        }, 500);
+	        element.one('touchleave touchend', function() {
+	            clearTimeout(timer);
+	        });
+	    });
+
 		//swipes
 		element.on('touchstart', function(e){
 			var initialMouse = mouse = {

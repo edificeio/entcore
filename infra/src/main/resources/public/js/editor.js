@@ -57,8 +57,12 @@ window.RTE = (function(){
 				return false;
 			});
 			this.bindContextualMenu = function(scope, selector, items){
-				this.editZone.on('contextmenu', selector, function(e){
+				this.editZone.on('contextmenu longclick', selector, function(e, position){
 				    e.preventDefault();
+
+                    if (position) {
+                        mousePosition = position;
+                    }
 
 				    contextualMenu.children('ul').html('');
 				    items.forEach(function (item) {
@@ -1265,6 +1269,8 @@ window.RTE = (function(){
 					'<media-library ng-change="updateContent()" multiple="true" ng-model="imageOption.display.files" file-format="\'img\'" visibility="imageOption.visibility"></media-library>' +
 					'</lightbox>',
 				    link: function (scope, element, attributes) {
+				        ui.extendSelector.touchEvents('[contenteditable] img');
+
 				        scope.imageOption = {
 				            display: { pickFile: false },
 				            visibility: 'protected'
@@ -1408,7 +1414,8 @@ window.RTE = (function(){
 				return {
 					template: '<i ng-click="linker.openLinker()" tooltip="editor.option.link"></i>' +
 					'<div ng-include="\'/infra/public/template/linker.html\'"></div>',
-					link: function(scope, element, attributes){
+					link: function (scope, element, attributes) {
+					    ui.extendSelector.touchEvents('[contenteditable] a');
 						scope.linker = {
 							display: {},
 							apps: [],
@@ -1689,6 +1696,8 @@ window.RTE = (function(){
 								line.append('<div class="one cell"></div>');
 							}
 						}
+
+						ui.extendSelector.touchEvents('[contenteditable] td');
 
 						drawer.find('.cell').on('mouseover', function(){
 							var line = $(this).parent();
