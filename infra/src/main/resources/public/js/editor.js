@@ -1331,8 +1331,12 @@ window.RTE = (function(){
 
 							//delay to account for image destruction and recreation
 							setTimeout(function(){
-							    ui.extendElement.resizable(instance.editZone.find('img'), { moveWithResize: false });
-
+							    ui.extendElement.resizable(instance.editZone.find('img'), {
+							        moveWithResize: false,
+                                    mouseUp: function() {
+                                        instance.trigger('contentupdated');
+                                    }
+							    });
 							}, 200)
 						});
 					}
@@ -1365,7 +1369,12 @@ window.RTE = (function(){
 
 							//delay to account for sound destruction and recreation
 							setTimeout(function(){
-								ui.extendElement.resizable(instance.editZone.find('audio'), { moveWithResize: false });
+								ui.extendElement.resizable(instance.editZone.find('audio'), {
+								    moveWithResize: false,
+                                    mouseUp: function() {
+                                        instance.trigger('contentupdated');
+                                    }
+								});
 							}, 200)
 						});
 					}
@@ -2112,7 +2121,10 @@ window.RTE = (function(){
 								lock: {
 									left: true,
 									top: true
-								}
+								},
+                                mouseUp: function() {
+                                    editorInstance.trigger('contentupdated');
+                                }
 							});
 							htmlZone.css({ 'min-height': '250px', height: 0 });
 							var newHeight = htmlZone[0].scrollHeight + 2;

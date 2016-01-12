@@ -480,6 +480,9 @@ ui.extendElement = {
 					setTimeout(function(){
 						element.data('resizing', false);
 						element.trigger('stopResize');
+						if (params && typeof params.mouseUp === 'function') {
+						    params.mouseUp();
+						}
 					}, 100);
 					$(window).unbind('mousemove.resize touchmove.resize');
 					$('body').unbind('mouseup.resize touchleave.resize touchend.resize');
