@@ -543,6 +543,12 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
             $scope.$apply()
         })
     }
+    $scope.lockWidget = function(widget){
+		widget.lock().done(function(data){
+			widget.locked = data.locked
+			$scope.$apply()
+		})
+	}
 
     $scope.isLinkedWidget = function(group, widget){
         return widget.infos && _.some(widget.infos.groups, function(g){ return g.id === group.id })

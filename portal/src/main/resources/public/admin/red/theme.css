@@ -4153,6 +4153,9 @@ a.cke_smile img {
 grid-cell {
   overflow: hidden;
 }
+grid-cell.height-undefined {
+  overflow: visible;
+}
 .media.height-one .media-wrapper,
 .media.height-two .media-wrapper,
 .media.height-three .media-wrapper,
@@ -7074,6 +7077,11 @@ body editor.html editor-toolbar .option.table popover {
   width: 100%;
   height: 100%;
 }
+body editor.edit editor-toolbar .option.table popover popover-content.hidden .draw-table,
+body editor.both editor-toolbar .option.table popover popover-content.hidden .draw-table,
+body editor.html editor-toolbar .option.table popover popover-content.hidden .draw-table {
+  display: none;
+}
 body editor.edit editor-toolbar .option.table popover > i,
 body editor.both editor-toolbar .option.table popover > i,
 body editor.html editor-toolbar .option.table popover > i {
@@ -7183,7 +7191,7 @@ body editor.html editor-toolbar .option.audio > i {
 select-list {
   position: relative;
   font-size: 14px;
-  z-index: 2;
+  z-index: 12;
 }
 select-list .options {
   position: absolute;
@@ -8055,6 +8063,13 @@ i.sort {
   width: 28px;
   height: 28px;
   background-image: url("../img/icons/glyphicons_409_sort-by-attributes-alt.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+i.pin {
+  width: 28px;
+  height: 28px;
+  background-image: url("../img/icons/glyphicons_335_pushpin.png");
   background-repeat: no-repeat;
   background-size: cover;
 }

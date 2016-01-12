@@ -52,7 +52,8 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (w:Widget) OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) "+
 			"WITH w, a, length(a-[:PROVIDE]->(:WorkflowAction)) > 0 as workflowLinked " +
-			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, application: {id: a.id, name: a.name, address: a.address, strongLink: workflowLinked}}) as widgets";
+			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, " +
+			"locked: w.locked, application: {id: a.id, name: a.name, address: a.address, strongLink: workflowLinked}}) as widgets";
 		neo.execute(query, new JsonObject(), Neo4jResult.validUniqueResultHandler(handler));
 	}
 
@@ -90,6 +91,21 @@ public class DefaultWidgetService implements WidgetService {
 	}
 
 	@Override
+	public void toggleLock(String widgetId, final Handler<Either<String, JsonObject>> handler) {
+		if(widgetId == null || widgetId.trim().isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+				"MATCH (w:Widget {id: {widgetId}}) "+
+				"SET w.locked = NOT coalesce(w.locked, false) " +
+				"RETURN w.locked as locked";
+			JsonObject params = new JsonObject().putString("widgetId", widgetId);
+
+			neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
+	}
+
+	@Override
 	public void linkWidget(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler) {
 		if(widgetId == null || widgetId.trim().isEmpty() || groupIds == null || groupIds.isEmpty()){
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
@@ -98,6 +114,7 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (w:Widget {id: {widgetId}}), (g:Group) " +
 			"WHERE g.id IN {groupIds} AND NOT(g-[:AUTHORIZED]->w) " +
+			"AND COALESCE(w.locked ,false) = false " +
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
@@ -115,6 +132,7 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (g:Group)-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE g.id IN {groupIds} " +
+			"AND COALESCE(w.locked ,false) = false " +
 			"DELETE rel";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
@@ -132,6 +150,7 @@ public class DefaultWidgetService implements WidgetService {
 		String query =
 			"MATCH (g:Group)-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE g.id IN {groupIds} " +
+			"AND COALESCE(w.locked ,false) = false " +
 			"SET rel.mandatory = true";
 		JsonObject params = new JsonObject()
 				.putString("widgetId", widgetId)
@@ -231,6 +250,7 @@ public class DefaultWidgetService implements WidgetService {
 			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE p.name IN {profiles} " +
+			"AND COALESCE(w.locked ,false) = false " +
 			"REMOVE rel.mandatory";
 
 		JsonObject params = new JsonObject()

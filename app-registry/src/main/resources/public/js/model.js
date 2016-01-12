@@ -214,6 +214,9 @@ WidgetApp.prototype.get = function(structureId, hook){
 WidgetApp.prototype.delete = function(){
     return http().delete('/appregistry/widget/' + this.id)
 }
+WidgetApp.prototype.lock = function(){
+    return http().put('/appregistry/widget/' + this.id + '/lock')
+}
 WidgetApp.prototype.linkWidget = function(groupId){
     return http().post('/appregistry/widget/' + this.id + '/link/' + groupId)
 }

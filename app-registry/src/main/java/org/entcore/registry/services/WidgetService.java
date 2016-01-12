@@ -13,6 +13,7 @@ public interface WidgetService {
 	public void listWidgets(Handler<Either<String, JsonObject>> handler);
 	public void getWidgetInfos(String widgetId, String structureId, Handler<Either<String, JsonObject>> handler);
 	public void deleteWidget(String widgetId, Handler<Either<String, JsonObject>> handler);
+	public void toggleLock(String widgetId, Handler<Either<String, JsonObject>> handler);
 	public void linkWidget(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);
 	public void unlinkWidget(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);
 	public void setMandatory(String widgetId, List<String> groupIds, Handler<Either<String, JsonObject>> handler);

@@ -18,7 +18,10 @@
 
         <!-- HEADER -->
         <div class="vertical-spacing-twice">
-            <h1>[[lang.translate(widget.name)]]</h1>
+            <h1>
+                [[lang.translate(widget.name)]]
+                <i class="lock square-icon medium" style="margin-left: 5px;" ng-if="widget.locked" tooltip="appregistry.widget.is.locked"></i>
+            </h1>
             <h2 ng-if="widget.application.name" class="small-text">
                 <i18n>appregistry.widget.linked.to.app</i18n> <strong>[[widget.application.name]]</strong>
             </h2>
@@ -41,7 +44,7 @@
             <div class="leaf-menu" ng-class="{ selected: showPanel() === 'attribution' }">
                 <a ng-click="showPanel('attribution'); viewWidget(widget)"><i18n>appregistry.widget.attribution</i18n></a>
             </div>
-            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="schools.parentStructures.length > 0">
+            <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="!widget.locked && schools.parentStructures.length > 0">
                 <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
             </div>
         </div>
@@ -55,6 +58,15 @@
 
         <!-- WIDGET CONFIG -->
         <div class="row" ng-if="showPanel() === 'config'">
+            <div class="row">
+                <a ng-if="!widget.locked" ng-click="lockWidget(widget)" tooltip="tooltip.locked">
+                    <i18n>appregistry.widget.locked</i18n>
+                </a>
+                <a ng-if="widget.locked" ng-click="lockWidget(widget)" tooltip="tooltip.unlocked">
+                    <i18n>appregistry.widget.unlocked</i18n>
+                </a>
+            </div>
+
             <fieldset disabled>
                 <legend><i18n>appregistry.widget.fields</i18n></legend>
                 <div class="row">
@@ -97,14 +109,15 @@
                     </div>
                     <ul class="checklist fullrow">
                         <li ng-repeat="group in school.groups.all | filter: {name: filterGroups} | filter: linkedWidgetGroupsOpts.filterLinked(widget) | orderBy: 'name' | orderBy: linkedWidgetGroupsOpts.orderByLinked(widget)"
-                            ng-class="{'checked': isLinkedWidget(group, widget)}" ng-click="switchWidgetGroupLink(group, widget)">
+                            ng-class="{'checked': isLinkedWidget(group, widget), 'disabled': widget.locked}"
+                            ng-click="switchWidgetGroupLink(group, widget)">
                             <div class="inline-middle" style="width: calc(100% - 65px)">[[group.name]]</div>
                             <div class="filterbar right-magnet">
-                                <i class="lock square-icon small right-magnet" tooltip="appregistry.widget.tooltip.lock"
+                                <i class="square-icon small right-magnet" tooltip="appregistry.widget.tooltip.lock"
                                    ng-click="loadingWrapper('_lockwidget', lockWidgetGroupLink, null, group, widget); $event.stopPropagation()"
-                                   ng-if="!_lockwidget.loading"
+                                   ng-if="!widget.locked || isWidgetLinkLocked(group, widget)"
                                    ng-disabled="!isLinkedWidget(group, widget)"
-                                   ng-class="{selected: isWidgetLinkLocked(group, widget), loader: _lockwidget.loading, lock: !_lockwidget.loading}"></i>
+                                   ng-class="{selected: isWidgetLinkLocked(group, widget), loader: _lockwidget.loading, pin: !_lockwidget.loading}"></i>
                             </div>
                         </li>
                     </ul>

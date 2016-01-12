@@ -60,6 +60,14 @@ public class WidgetController extends BaseController {
 		service.deleteWidget(widgetId, defaultResponseHandler(request, 201));
 	}
 
+	@Put("/widget/:id/lock")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void toggleLock(final HttpServerRequest request){
+		final String widgetId = request.params().get("id");
+		service.toggleLock(widgetId, defaultResponseHandler(request));
+	}
+
 	@Post("/widget/:id/link/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(WidgetLinkFilter.class)
@@ -68,7 +76,6 @@ public class WidgetController extends BaseController {
 		final List<String> groupIds = new ArrayList<String>();
 		groupIds.add(request.params().get("groupId"));
 		service.linkWidget(widgetId, groupIds, defaultResponseHandler(request));
-
 	}
 
 	@Delete("/widget/:id/link/:groupId")
