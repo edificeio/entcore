@@ -30,6 +30,8 @@ public interface ExportService {
 
 	void userExportExists(UserInfos user, Handler<Boolean> handler);
 
+	boolean userExportExists(String exportId);
+
 	void waitingExport(String exportId, Handler<Boolean> handler);
 
 	void exportPath(String exportId, Handler<Either<String, String>> handler);
@@ -37,5 +39,9 @@ public interface ExportService {
 	void exported(String exportId, String status, String locale, String host);
 
 	void deleteExport(String exportId);
+
+	void setDownloadInProgress(String exportId);
+
+	boolean downloadIsInProgress(String exportId);
 
 }

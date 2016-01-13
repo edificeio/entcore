@@ -184,6 +184,7 @@ public class ArchiveController extends BaseController {
 	}
 
 	private void downloadExport(final HttpServerRequest request, final String exportId) {
+		exportService.setDownloadInProgress(exportId);
 		storage.sendFile(exportId, exportId + ".zip", request, false, null, new AsyncResultHandler<Void>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {

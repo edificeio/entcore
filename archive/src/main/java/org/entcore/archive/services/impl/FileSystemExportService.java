@@ -123,6 +123,11 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
+	public boolean userExportExists(String exportId) {
+		return userExportInProgress.containsKey(getUserId(exportId));
+	}
+
+	@Override
 	public void waitingExport(String exportId, final Handler<Boolean> handler) {
 		Long v = userExportInProgress.get(getUserId(exportId));
 		handler.handle(v != null && v > 0);
@@ -255,7 +260,7 @@ public class FileSystemExportService implements ExportService {
 
 									@Override
 									public void handle(AsyncResult<Message<JsonObject>> res) {
-										if (!res.succeeded()) {
+										if (!res.succeeded() && userExportExists(exportId) && !downloadIsInProgress(exportId)) {
 											if (notification != null) {
 												sendExportEmail(exportId, locale, event.body().getString("status"), host);
 											} else {
@@ -288,6 +293,20 @@ public class FileSystemExportService implements ExportService {
 		MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().putString("file_id", exportId));
 		String userId = getUserId(exportId);
 		userExportInProgress.remove(userId);
+	}
+
+	@Override
+	public void setDownloadInProgress(String exportId) {
+		String userId = getUserId(exportId);
+		if (userExportInProgress.containsKey(userId)) {
+			userExportInProgress.put(userId, -2l);
+		}
+	}
+
+	@Override
+	public boolean downloadIsInProgress(String exportId) {
+		Long v = userExportInProgress.get(getUserId(exportId));
+		return v != null && v == -2l;
 	}
 
 	private String getUserId(String exportId) {
