@@ -1123,7 +1123,7 @@ workspace.Document.prototype.upload = function(file, requestName, callback){
 	});
 };
 
-Behaviours = (function(){
+var Behaviours = (function(){
 	return {
 		copyRights: function(params){
 			if(!params.provider.resource.shared){
