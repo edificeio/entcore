@@ -450,21 +450,20 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				JsonArray results = event.right().getValue();
 				for(Object o : results){
 					JsonObject app = (JsonObject) o;
+					String address = app.getString("address", "");
 					JsonArray patterns = app.getArray("patterns", new JsonArray());
-					if(patterns.size() == 0){
-						String pattern;
-						try {
+					if(patterns.size() == 1 && patterns.get(0).toString().isEmpty()){
 							URL addressURL;
-							String address = app.getString("address", "");
+						try {
 							if(address.startsWith("/adapter#")){
 								addressURL = new URL(address.substring(address.indexOf("#") + 1));
 							} else {
 								addressURL = new URL(address);
 							}
-							pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 						} catch (MalformedURLException e) {
-							pattern = "";
+							addressURL = null;
 						}
+						String pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 						patterns.add(pattern);
 					}
 				}

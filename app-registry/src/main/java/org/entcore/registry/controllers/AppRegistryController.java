@@ -278,7 +278,12 @@ public class AppRegistryController extends BaseController {
 								String pattern = body.getString("pattern", "");
 								if(pattern.isEmpty() && !address.isEmpty()){
 									try {
-										URL addressURL = new URL(address);
+										URL addressURL;
+										if(address.startsWith("/adapter#")){
+											addressURL = new URL(address.substring(address.indexOf("#") + 1));
+										} else {
+											addressURL = new URL(address);
+										}
 										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 									} catch (MalformedURLException e) {
 										pattern = "";
