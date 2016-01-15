@@ -2001,7 +2001,8 @@ window.RTE = (function(){
 								element.find('editor-toolbar').removeClass('opened');
 							}
 						});
-						
+						document.execCommand("enableObjectResizing", false, false);
+
 						element.addClass('edit');
 						var editZone = element.children('[contenteditable=true]');
 						var htmlZone = element.children('textarea');
