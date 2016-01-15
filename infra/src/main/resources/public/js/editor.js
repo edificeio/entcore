@@ -1611,6 +1611,11 @@ window.RTE = (function(){
 								);
 							});
 
+						    scope.linker.apps = _.map(scope.linker.apps, function(app) {
+						        app.displayName = lang.translate(app.displayName);
+						        return app;
+						    });
+
 							scope.linker.search.application = _.find(scope.linker.apps, function(app){ return app.address.indexOf(appPrefix) !== -1 });
 							if(!scope.linker.search.application){
 								scope.linker.search.application = scope.linker.apps[0];
