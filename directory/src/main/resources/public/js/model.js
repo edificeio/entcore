@@ -28,7 +28,9 @@ function User(data){
 				this.id = undefined;
 				return;
 			}
-			data.result[0].hobbies = data.result[0].hobbies;
+			data.result[0].hobbies = _.filter(data.result[0].hobbies, function(hobby){
+				return hobby.values
+			})
 			data.result[0].relatives = _.map(data.result, function(item){
 				return new User({ displayName: item.relatedName, id: item.relatedId, type: item.relatedType });
 			})
