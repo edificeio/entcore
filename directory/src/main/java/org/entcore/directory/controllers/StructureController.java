@@ -236,9 +236,6 @@ public class StructureController extends BaseController {
 				final String structureId = request.params().get("structureId");
 				final List<String> sorts = request.params().getAll("s");
 
-				//As we group by class, we cannot sort by class.
-				sorts.remove("classname");
-
 				filter
 					.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
 					.putArray("levels", new JsonArray(request.params().getAll("l").toArray()))

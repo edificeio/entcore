@@ -292,7 +292,7 @@ public class DefaultSchoolService implements SchoolService {
 				"u.email as email, u.login as login, u.activationCode as activationCode ";
 
 		if(groupClasses){
-			returnStr += ", collect(c.name) as classes, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+			returnStr += ", collect(c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		} else {
 			returnStr += ", c.name as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		}
