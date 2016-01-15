@@ -9412,7 +9412,7 @@ button.check-button:after {
 div.right-content {
   border-bottom: 2px ridge #fd4a98;
   border-right: 2px ridge #fd4a98;
-  padding: 0px 20px;
+  padding: 10px 20px;
   overflow-y: scroll;
 }
 .datepicker {

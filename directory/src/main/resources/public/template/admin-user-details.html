@@ -49,15 +49,15 @@
         <strong class="four cell padding-top-5">[[lang.translate("userBook.profile.displayName")]]</strong>
         <input class="six cell" type="text" ng-model="targetUser.displayName"/>
     </div>
-    <div class="twelve cell">
-        <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
+    <div class="twelve cell padding-top-5">
+        <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!targetUser.birthDate">
-            <div class="six cell padding-top-5" style="display: inline-block"> [[lang.translate("directory.notFilled")]]</div>
-            <button ng-click="initUserBirth(targetUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+            <div class="six cell"> [[lang.translate("directory.notFilled")]]</div>
+            <button class="small cell" style="padding: 0 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="targetUser.birthDate">
             <date-picker class="six cell" ng-model="targetUser.birthDate"></date-picker>
-            <button ng-click="targetUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+            <button class="small cell" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
     <div class="twelve cell">

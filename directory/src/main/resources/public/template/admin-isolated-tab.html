@@ -12,7 +12,6 @@
         </form>
     </div>
     <ul bottom-scroll-action="scrollOpts.increment()">
-
         <li ng-repeat="user in isolatedUsers.users.all | filter: isolatedUserFilteringFunction(filterIsolatedUsers) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
             ng-click="$parent.isolatedUser = user; user.get(refreshScope)">
             [[user.lastName]] [[user.firstName]]
@@ -23,71 +22,71 @@
     <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[isolatedUser.firstName+" "+isolatedUser.lastName]]</h1></div>
     <hr class="separator">
     <div style="text-align:center">
-        <button ng-click="isolatedUser.update(refreshIsolated())">[[lang.translate("directory.save")]]</button>
-        <button ng-if="!isolatedUser.deleteDate" ng-click="isolatedUser.delete(refreshIsolated())">[[lang.translate("directory.predelete")]]</button>
-        <button ng-click="isolatedUser.restore(refreshIsolated())" ng-if="isolatedUser.deleteDate">[[lang.translate("directory.admin.restore")]]</button>
+        <button class="text-flow" ng-click="isolatedUser.update(refreshIsolated())">[[lang.translate("directory.save")]]</button>
+        <button class="text-flow" ng-if="!isolatedUser.deleteDate" ng-click="isolatedUser.delete(refreshIsolated())">[[lang.translate("directory.predelete")]]</button>
+        <button class="text-flow" ng-click="isolatedUser.restore(refreshIsolated())" ng-if="isolatedUser.deleteDate">[[lang.translate("directory.admin.restore")]]</button>
     </div>
-    <hr class="separator cell">
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+isolatedUser.type)]]</div>
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[isolatedUser.login]]</div>
-    <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(isolatedUser.source)]]</div>
-    <div class="twelve cell" ng-show="isolatedUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[isolatedUser.code]]</div>
-    <div class="twelve cell" ng-if="isolatedUser.deleteDate"><strong class="four cell">[[lang.translate("directory.predeletionDate")]]</strong> [[formatLongDate(isolatedUser.deleteDate)]]</div>
+    <hr class="separator">
+    <div class="row"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[isolatedUser.id]]</div>
+    <div class="row"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+isolatedUser.type)]]</div>
+    <div class="row"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[isolatedUser.login]]</div>
+    <div class="row"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(isolatedUser.source)]]</div>
+    <div class="row" ng-show="isolatedUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[isolatedUser.code]]</div>
+    <div class="row" ng-if="isolatedUser.deleteDate"><strong class="four cell">[[lang.translate("directory.predeletionDate")]]</strong> [[formatLongDate(isolatedUser.deleteDate)]]</div>
     <hr class="separator cell"/>
-    <div class="twelve cell">
+    <div class="row">
         <strong class="four cell padding-top-5">[[lang.translate("directory.userFirstName")]]</strong>
-        <input type="text" ng-model="isolatedUser.firstName"/>
+        <input class="six cell" type="text" ng-model="isolatedUser.firstName"/>
     </div>
-    <div class="twelve cell">
+    <div class="row">
         <strong class="four cell padding-top-5">[[lang.translate("directory.userLastName")]]</strong>
-        <input type="text" ng-model="isolatedUser.lastName"/>
+        <input class="six cell" type="text" ng-model="isolatedUser.lastName"/>
     </div>
-    <div class="twelve cell">
-        <strong class="four cell padding-top-5">[[lang.translate("directory.userBirth")]]</strong>
+    <div class="row padding-top-5">
+        <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!isolatedUser.birthDate">
-            <div class="padding-top-5" style="display: inline-block;" class="three"> [[lang.translate("directory.notFilled")]]</div>
-            <button ng-click="initUserBirth(isolatedUser)" style="font-size: 10px; margin-left: 10; padding: 3; margin-bottom:5">[[lang.translate("directory.modifyDate")]]</button>
+            <div class="six cell"> [[lang.translate("directory.notFilled")]]</div>
+            <button class="small cell" style="padding: 0 5px" ng-click="initUserBirth(isolatedUser)">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="isolatedUser.birthDate">
-            <date-picker ng-model="isolatedUser.birthDate"></date-picker>
-            <button ng-click="isolatedUser.birthDate = undefined" style="font-size: 10px; margin-left: 10; padding: 3;">[[lang.translate("directory.deleteDate")]]</button>
+            <date-picker class="six cell" ng-model="isolatedUser.birthDate"></date-picker>
+            <button class="small cell" ng-click="isolatedUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
-    <div class="twelve cell padding-top-5">
+    <div class="row padding-top-5">
         <strong class="four cell padding-top-5">[[lang.translate("directory.userAddress")]]</strong>
-        <input type="text" ng-model="isolatedUser.address"/>
+        <input class="six cell" type="text" ng-model="isolatedUser.address"/>
     </div>
-    <div class="twelve cell padding-top-5">
+    <div class="row padding-top-5">
         <strong class="four cell padding-top-5">[[lang.translate("directory.userCity")]]</strong>
-        <input type="text" ng-model="isolatedUser.city"/>
+        <input class="six cell" type="text" ng-model="isolatedUser.city"/>
     </div>
-    <div class="twelve cell padding-top-5">
+    <div class="row padding-top-5">
         <strong class="four cell padding-top-5">[[lang.translate("directory.userZipCode")]]</strong>
-        <input type="text" ng-model="isolatedUser.zipCode"/>
+        <input class="six cell" type="text" ng-model="isolatedUser.zipCode"/>
     </div>
     <hr class="separator cell">
     <div class="row">
-        <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
-        <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5px;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
-        <div    class="one cell">&nbsp</div>
-        <button class="two cell" style="margin: 0px; padding: 2px" ng-click="isolatedUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
+        <label class="five cell"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
+        <input class="four cell" type="email" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
+        <div class="one cell">&nbsp</div>
+        <button class="two cell small" ng-click="isolatedUser.sendResetPassword(resetEmail)">[[lang.translate("directory.send")]]</button>
     </div>
-    <hr class="separator cell">
-    <div ng-show="isolatedUser.type" class="twelve cell">
+    <div class="row vertical-spacing-twice" ng-show="isolatedUser.type && !isolatedUser.deleteDate">
+        <hr class="separator cell">
         <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
-        <div class="twelve cell">
+        <div class="row">
             <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
             <select class="four cell" ng-model="linkStructure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
         </div>
-        <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
+        <div class="row" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
             <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
             <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
             </select>
         </div>
-        <div style="text-align: center">
-            <button style="margin-top: 10px" ng-if="linkStructure" ng-click="linkStructure.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToSchool")]]</button>
-            <button ng-if="linkClass" ng-click="linkClass.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToClass")]]</button>
+        <div class="vertical-spacing-twice">
+            <button class="small inline-middle" ng-if="linkStructure" ng-click="linkStructure.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToSchool")]]</button>
+            <button class="small inline-middle" ng-if="linkClass" ng-click="linkClass.linkUser(isolatedUser, $parent.refreshIsolated())">[[lang.translate("directory.linkToClass")]]</button>
         </div>
     </div>
 </div>
