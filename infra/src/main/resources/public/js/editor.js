@@ -402,7 +402,7 @@ window.RTE = (function(){
 						}
 					});
 					addedNodes.forEach(function (item) {
-					    that.moveCaret(item, item.innerText.length);
+					    that.moveCaret(item, (item.innerText || item.textContent).length);
 					});
 				}
 
@@ -624,13 +624,14 @@ window.RTE = (function(){
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
-							instance.execCommand('italic');
+
 							if(document.queryCommandState('italic')){
-								element.addClass('toggled');
+							    element.removeClass('toggled');
+							    instance.selection.css({ 'font-style': '' });
 							}
 							else{
-								element.removeClass('toggled');
+							    element.addClass('toggled');
+							    instance.selection.css({ 'font-style': 'italic' });
 							}
 						});
 
