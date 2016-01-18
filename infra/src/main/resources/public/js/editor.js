@@ -2245,7 +2245,7 @@ window.RTE = (function(){
 						            }
 						        }
 						        editZone.find('table').each(function (index, item) {
-						            if ($(item).children('tr').length === 0) {
+						            if ($(item).find('tr').length === 0) {
 						                $(item).remove();
 						            }
 						        });
