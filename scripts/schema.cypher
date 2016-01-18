@@ -9,6 +9,7 @@ CREATE CONSTRAINT ON (conversation:Conversation) ASSERT conversation.userId IS U
 CREATE CONSTRAINT ON (visible:Visible) ASSERT visible.id IS UNIQUE;
 CREATE CONSTRAINT ON (conversationMessage:ConversationMessage) ASSERT conversationMessage.id IS UNIQUE;
 CREATE CONSTRAINT ON (u:UserBook) ASSERT u.userid IS UNIQUE;
+CREATE CONSTRAINT ON (ma:MessageAttachment) ASSERT ma.id IS UNIQUE;
 CREATE INDEX ON :ConversationMessage(from);
 CREATE INDEX ON :ConversationMessage(to);
 CREATE INDEX ON :ConversationMessage(cc);

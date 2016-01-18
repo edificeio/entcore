@@ -1074,7 +1074,7 @@ public class DefaultConversationService implements ConversationService {
 			"DELETE aLink";
 
 		String q3 =
-			"MATCH (attachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
+			"MATCH (attachment:MessageAttachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
 			"WHERE attachment.id = {attachmentId} " +
 			"WITH attachmentLink, attachment, none(item IN collect(messageLinks.attachments) WHERE attachment.id IN item) as deletionCheck " +
 			"WHERE deletionCheck = true " +
