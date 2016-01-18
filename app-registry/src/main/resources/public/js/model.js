@@ -414,7 +414,7 @@ School.prototype.syncExternalApps = function(hook){
     			app.data.address = app.data.address.split('/adapter#')[1];
     		}
 			if(app.data.scope)
-				app.data.transferSession = data.scope.indexOf('userinfo') !== -1
+				app.data.transferSession = app.data.scope.indexOf('userinfo') !== -1
             if(app.data.casType){
                 app.data.hasCas = true
             }
