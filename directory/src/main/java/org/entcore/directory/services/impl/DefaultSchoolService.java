@@ -298,9 +298,9 @@ public class DefaultSchoolService implements SchoolService {
 		}
 
 		if(groupChildren){
-			returnStr += ", CASE child WHEN null THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
 		} else {
-			returnStr += ", CASE child WHEN null THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
+			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
 			if(groupClasses)
 				returnStr += ", classname: c.name";
 			returnStr += "} END as child ";
