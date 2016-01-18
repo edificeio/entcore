@@ -1,7 +1,13 @@
 /// <reference path="./jquery-1.10.2.min.js" />
 
 var RTE;
-window.RTE = (function(){
+window.RTE = (function () {
+    function rgb(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    var rgba = rgb;
+    var transparent = 'rgba(255, 255, 255, 0)';
+
 	loader.openFile({
         url: '/infra/public/js/prism/prism.js',
         callback: function () {
@@ -343,7 +349,10 @@ window.RTE = (function(){
 				that.instance.trigger('contentupdated');
 			};
 
-			function applyCSS(css){
+			function applyCSS(css) {
+                if (!that.range) {
+                    return;
+                }
 			    that.instance.addState(that.editZone.html());
 
 				if(!that.selectedElements.length){
@@ -1011,7 +1020,9 @@ window.RTE = (function(){
 			RTE.baseToolbarConf.option('color', function(instance){
 				return {
 					template: '<input tooltip="editor.option.color" type="color" />',
-					link: function(scope, element, attributes){
+					link: function (scope, element, attributes) {
+					    
+
 						if(!$.spectrum){
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
@@ -1030,18 +1041,14 @@ window.RTE = (function(){
 						});
 
 						scope.$watch('foreColor', function(){
-							instance.execCommand('foreColor', false, scope.foreColor);
+						    if(scope.foreColor !== eval(instance.selection.css('color'))) {
+						        instance.selection.css({ 'color': scope.foreColor });
+						    }
 						});
 
 						instance.on('selectionchange', function(e){
-							function rgb(r, g, b){
-								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-							}
-							var rgba = rgb;
-							var transparent = 'rgba(255, 255, 255, 0)';
-							scope.backColor = eval(document.queryCommandValue('backColor'));
-							scope.foreColor = document.queryCommandValue('foreColor');
-							element.children('input').val(eval(scope.foreColor));
+						    scope.foreColor = eval(instance.selection.css('color'));
+							element.children('input').val(scope.foreColor);
 						});
 					}
 				};
@@ -1067,19 +1074,15 @@ window.RTE = (function(){
 							scope.$apply('backColor');
 						});
 
-						scope.$watch('backColor', function(){
-							instance.execCommand('backColor', false, scope.backColor);
+						scope.$watch('backColor', function () {
+						    if(scope.backColor !== eval(instance.selection.css('background-color'))) {
+						        instance.selection.css({ 'background-color': scope.backColor });
+						    }
 						});
 
 						instance.on('selectionchange', function(e){
-							function rgb(r, g, b){
-								return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-							}
-							var rgba = rgb;
-							var transparent = 'rgba(255, 255, 255, 0)';
-							scope.backColor = eval(document.queryCommandValue('backColor'));
-							scope.backColor = document.queryCommandValue('backColor');
-							element.children('input').val(eval(scope.backColor));
+						    scope.backColor = eval(instance.selection.css('background-color'));
+							element.children('input').val(scope.backColor);
 						});
 					}
 				};
