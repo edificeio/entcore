@@ -1782,19 +1782,24 @@ window.RTE = (function(){
 					'<lightbox show="display.pickTemplate" on-close="display.pickTemplate = false;">' +
 					'<h2>Choisir un modèle</h2>' +
 					'<ul class="thought-out-actions">' +
-					'<li ng-repeat="template in templates" ng-click="applyTemplate(template)">[[template.title]]</li>' +
+					'<li ng-repeat="template in templates" ng-click="applyTemplate(template)">' +
+					    '<img ng-src="[[template.image]]" class="cell" />' +
+					    '<div class="cell vertical-spacing horizontal-spacing">[[template.title]]</div>' +
+					'</li>' +
 					'</ul>' +
 					'</lightbox>',
 					link: function (scope, element, attributes) {
 					    var split = $('#theme').attr('href').split('/');
-					    var skinPath = split.slice(0, split.length - 2).join('/') + '/img/illustrations';
+					    var skinPath = split.slice(0, split.length - 2).join('/') + '/img';
 						scope.templates = [
 							{
-								title: 'Page blanche',
+							    title: 'Page blanche',
+                                image: skinPath + '/icons/editor/templates-preview-emptypage.svg',
 								html: '<div class="twelve cell column"><article></article></div>'
 							},
 							{
-								title: 'Deux colonnes',
+							    title: 'Deux colonnes',
+							    image: skinPath + '/icons/editor/templates-preview-twocols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="six cell column">' +
@@ -1812,7 +1817,8 @@ window.RTE = (function(){
 								'</div>'
 							},
 							{
-								title: 'Trois colonnes',
+							    title: 'Trois colonnes',
+							    image: skinPath + '/icons/editor/templates-preview-threecols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="four cell column">' +
@@ -1836,12 +1842,13 @@ window.RTE = (function(){
 								'</div>'
 							},
 							{
-								title: 'Illustration et texte',
+							    title: 'Illustration et texte',
+							    image: skinPath + '/icons/editor/templates-preview-illustration.svg',
 								html:
 								'<div class="row">' +
 									'<div class="three cell column">' +
 										'<article>' +
-											'<img src="' + skinPath + '/image-default.png" />' +
+											'<img src="' + skinPath + '/illustrations/image-default.png" />' +
 										'</article>' +
 
 									'</div>' +
@@ -1855,13 +1862,14 @@ window.RTE = (function(){
 								'</div>'
 							},
 							{
-								title: 'Vignettes',
+							    title: 'Vignettes',
+							    image: skinPath + '/icons/editor/templates-preview-dominos.svg',
 								html:
 								'<div class="dominos">' +
 									'<div class="item">' +
 										'<section class="domino pink">' +
 										'<div class="top">' +
-											'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+											'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 										'</div>' +
 										'<div class="bottom">' +
 											'<div class="content">' +
@@ -1873,7 +1881,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino blue">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1885,7 +1893,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino orange">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
@@ -1897,7 +1905,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino purple">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1909,7 +1917,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino green">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1921,7 +1929,7 @@ window.RTE = (function(){
 									'<div class="item">' +
 										'<section class="domino white">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
