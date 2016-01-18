@@ -269,7 +269,7 @@ public class User {
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"WITH fg " +
 				"MATCH (u:User { id : {userId}}) " +
-				"CREATE UNIQUE fg<-[:IN]-u";
+				"CREATE UNIQUE fg<-[:IN {source:'MANUAL'}]-u";
 			JsonObject p2 = new JsonObject()
 				.putArray("scope", scope)
 				.putString("functionCode", functionCode)
@@ -297,7 +297,7 @@ public class User {
 	public static void addGroup(String userId, String groupId, TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (u:User { id : {userId}}), (f:ManualGroup {id : {groupId}}) " +
-				"CREATE UNIQUE u-[:IN]->f";
+				"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->f";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("groupId", groupId);
