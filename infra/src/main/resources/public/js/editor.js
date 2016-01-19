@@ -2028,6 +2028,7 @@ window.RTE = (function () {
 							}
 						});
 						document.execCommand("enableObjectResizing", false, false);
+						document.execCommand("enableInlineTableEditing", null, false);
 
 						element.addClass('edit');
 						var editZone = element.children('[contenteditable=true]');
