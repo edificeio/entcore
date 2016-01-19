@@ -210,8 +210,10 @@ window.RTE = (function () {
 					return;
 				}
 				var range = sel.getRangeAt(0);
+				
 				var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
 						&& this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
+			    same = same || this.instance.element.find(range.startContainer).length === 0;
 				var selectedElements = getSelectedElements();
 
 				if(!same && selectedElements){
