@@ -1557,7 +1557,7 @@ window.RTE = (function () {
 							if(scope.linker.params.link){
 								linkNode.attr('href', scope.linker.params.link);
 
-								if(scope.linker.params.appPrefix){
+								if (scope.linker.params.appPrefix && !scope.linker.externalLink) {
 									linkNode.attr('data-app-prefix', scope.linker.params.appPrefix);
 									if(scope.linker.params.appPrefix !== 'workspace' && !scope.linker.externalLink){
 										linkNode.data('reload', true);
