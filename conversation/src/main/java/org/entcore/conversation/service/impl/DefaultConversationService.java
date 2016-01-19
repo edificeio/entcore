@@ -1065,13 +1065,7 @@ public class DefaultConversationService implements ConversationService {
 		String query =
 			get +
 			"SET r.attachments = filter(attachmentId IN r.attachments WHERE attachmentId <> {attachmentId}) " +
-			"WITH attachment, attachment.id as fileId, attachment.size as fileSize " +
-			"RETURN fileId, fileSize";
-
-		String q2 =
-			get +
-			"AND length(r.attachments) = 0 " +
-			"DELETE aLink";
+			"RETURN attachment.id as fileId, attachment.size as fileSize";
 
 		String q3 =
 			"MATCH (attachment:MessageAttachment)<-[attachmentLink: HAS_ATTACHMENT]-(:ConversationMessage)<-[messageLinks: HAS_CONVERSATION_MESSAGE]-(:ConversationSystemFolder) " +
@@ -1092,7 +1086,6 @@ public class DefaultConversationService implements ConversationService {
 
 		StatementsBuilder b = new StatementsBuilder();
 		b.add(query, params);
-		b.add(q2, params);
 		b.add(q3, params);
 
 		neo.executeTransaction(b.build(), null, true, validResultsHandler(new Handler<Either<String, JsonArray>>() {
@@ -1104,7 +1097,7 @@ public class DefaultConversationService implements ConversationService {
 				}
 
 				JsonArray result1 = (JsonArray) event.right().getValue().get(0);
-				JsonArray result3 = (JsonArray) event.right().getValue().get(2);
+				JsonArray result3 = (JsonArray) event.right().getValue().get(1);
 
 				JsonObject jsonResult = result1.size() > 0 ?
 						(JsonObject) result1.get(0) :
