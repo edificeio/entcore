@@ -46,7 +46,7 @@ public class ThemeUtils {
 							if (idx > -1 && file.length() > idx + 1) {
 								file = file.substring(idx + 1);
 							}
-							if (Arrays.asList("css","font","fonts","img","template","i18n","portal.html","js","bower.json",".bower.json","LICENSE").contains(file)) continue;
+							if (Arrays.asList("css","font","fonts","img","template","i18n","portal.html","js","bower.json",".bower.json","LICENSE", "override-img", "override-js", "override-template").contains(file)) continue;
 							t.add(file);
 						}
 						themes.handle(t);
