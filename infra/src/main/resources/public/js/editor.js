@@ -1306,19 +1306,22 @@ window.RTE = (function () {
                             {
                                 label: 'editor.align.right',
                                 action: function (e) {
-                                    $(e.target).css({ float: 'right', margin: '10px'  });
+                                    $(e.target).css({ float: 'right', margin: '10px' });
+                                    instance.trigger('contentupdated');
                                 }
                             },
                             {
                                 label: 'editor.align.left',
                                 action: function (e) {
                                     $(e.target).css({ float: 'left', margin: '10px' });
+                                    instance.trigger('contentupdated');
                                 }
                             },
                             {
                                 label: 'editor.align.center',
                                 action: function (e) {
                                     $(e.target).css({ float: 'none', margin: 'auto' });
+                                    instance.trigger('contentupdated');
                                 }
                             }
 						]);
