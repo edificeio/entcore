@@ -244,18 +244,22 @@ window.RTE = (function () {
 				var range = document.createRange();
 				var sel = getSelection();
 
-				if(!element.innerText){
+				if(!element.innerText && !(element.nodeName && element.nodeName === 'IMG')){
 					return;
 				}
 				if(!start){
 					start = 0;
 				}
-				if(!end){
-					end = element.innerText.length;
+				if (!end && element.innerText) {
+				    end = element.innerText.length;
 				}
 
-				range.setStart(element.firstChild || element, start);
-				range.setEnd(element.firstChild || element, end);
+                if (!element.innerText && element.nodeType === 1) {
+                    range.selectNode(element);
+                } else {
+                    range.setStart(element.firstChild || element, start);
+                    range.setEnd(element.firstChild || element, end);
+                }
 
 				this.selectedElements = [element.firstChild || element];
 				this.range = range;
