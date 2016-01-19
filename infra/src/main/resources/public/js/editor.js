@@ -1027,7 +1027,7 @@ window.RTE = (function () {
 				return {
 					template: '<input tooltip="editor.option.color" type="color" />',
 					link: function (scope, element, attributes) {
-					    
+
 
 						if(!$.spectrum){
 							$.spectrum = {};
@@ -1860,7 +1860,7 @@ window.RTE = (function () {
 								'<div class="row">' +
 									'<div class="three cell column">' +
 										'<article>' +
-											'<img src="' + skinPath + '/illustrations/image-default.png" />' +
+											'<img src="' + skinPath + '/illustrations/image-default.svg" />' +
 										'</article>' +
 
 									'</div>' +
@@ -1881,7 +1881,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino pink">' +
 										'<div class="top">' +
-											'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+											'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 										'</div>' +
 										'<div class="bottom">' +
 											'<div class="content">' +
@@ -1893,7 +1893,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino blue">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1905,7 +1905,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino orange">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
@@ -1917,7 +1917,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino purple">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1929,7 +1929,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino green">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
@@ -1941,7 +1941,7 @@ window.RTE = (function () {
 									'<div class="item">' +
 										'<section class="domino white">' +
 											'<div class="top">' +
-												'<img src="' + skinPath + '/illustrations/image-default.png" class="fixed twelve cell" />' +
+												'<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
