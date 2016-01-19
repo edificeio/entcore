@@ -24,7 +24,7 @@ window.RTE = (function () {
             .attr('type', 'text/css')
             .attr('href', '/infra/public/js/prism/prism.css')
    );
-   
+
 	return {
 		Instance: function(data){
 			var that = this;
@@ -287,7 +287,7 @@ window.RTE = (function () {
 					    if (elementAtCaret.innerHTML) {
 					        element.html(elementAtCaret.innerHTML);
 					    }
-					    
+
 					    elementAtCaret.parentElement.insertBefore(element[0], elementAtCaret);
 					    elementAtCaret.remove();
 					}
@@ -493,7 +493,7 @@ window.RTE = (function () {
 				else{
 					this.editZone.append(wrapper);
 				}
-				
+
 				this.instance.trigger('contentupdated');
 			};
 
@@ -769,7 +769,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							if(!document.queryCommandState('justifyRight')){
 								instance.execCommand('justifyRight');
 								element.addClass('toggled');
@@ -817,7 +817,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							if(!document.queryCommandState('justifyCenter')){
 								instance.execCommand('justifyCenter');
 								element.addClass('toggled');
@@ -865,7 +865,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							if(!document.queryCommandState('justifyFull')){
 								element.addClass('toggled');
 								instance.execCommand('justifyFull');
@@ -907,7 +907,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							if(document.queryCommandState('subscript')){
 								element.addClass('toggled');
 								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
@@ -938,7 +938,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							if(document.queryCommandState('superscript')){
 								element.addClass('toggled');
 								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
@@ -969,7 +969,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							instance.execCommand('insertUnorderedList');
 							if(document.queryCommandState('insertUnorderedList')){
 								element.addClass('toggled');
@@ -999,7 +999,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
-							
+
 							instance.execCommand('insertOrderedList');
 							if(document.queryCommandState('insertOrderedList')){
 								element.addClass('toggled');
@@ -1096,11 +1096,11 @@ window.RTE = (function () {
 				return {
 					template:
 					'<select-list display="font" display-as="fontFamily" placeholder="Police">' +
-					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' + 
+					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
                     'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
-						
+
 						function loadImportedFonts(){
 							return _.map(
 								_.flatten(
@@ -1127,16 +1127,16 @@ window.RTE = (function () {
 								}
 							);
 						}
-						
+
 						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }];
 						scope.font = '';
-						
+
 						setTimeout(function() {
 							var importedFonts = loadImportedFonts();
 							scope.fonts = scope.fonts.concat(importedFonts);
 							scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
 						}, 0);
-						
+
 						scope.setFontFamily = function (font) {
 						    scope.font = font;
 							instance.execCommand('fontName', false, scope.font.fontFamily);
@@ -1182,7 +1182,7 @@ window.RTE = (function () {
 					        else {
 					            scope.font.fontSize = { size: undefined };
 					        }
-					        
+
 						});
 
 						element.children('.options').on('click', 'opt', function () {
@@ -1244,7 +1244,7 @@ window.RTE = (function () {
 							            hasClass = hasClass && testElement.hasClass(className);
 							        });
 							    }
-							    
+
 							    if (testElement.is(format.apply.tag) && hasClass) {
 									scope.format = format;
 									found = true;
@@ -1338,7 +1338,7 @@ window.RTE = (function () {
 						    instance.selection.replaceHTML(html);
 							scope.imageOption.display.pickFile = false;
 							scope.imageOption.display.files = [];
-							
+
 						};
 
 						instance.element.on('drop', function (e) {
@@ -1673,14 +1673,14 @@ window.RTE = (function () {
 					'<lightbox show="display.pickSmiley" on-close="display.pickSmiley = false;">' +
 					'<h2>Insérer un smiley</h2>' +
 					'<div class="row">' +
-					'<img ng-repeat="smiley in smileys" ng-click="addSmiley(smiley)" skin-src="/img/icons/[[smiley]].png" />' +
+					'<img ng-repeat="smiley in smileys" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
 					'</div>' +
 					'</lightbox>',
 					link: function(scope, element, attributes){
 						scope.display = {};
 						scope.smileys = [ "happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad" ];
 						scope.addSmiley = function(smiley){
-							var content = instance.compile('<img skin-src="/img/icons/' + smiley + '.png" draggable native style="height: 60px; width: 60px;" />')(scope.$parent);
+							var content = instance.compile('<img skin-src="/img/smileys/' + smiley + '.png" draggable native style="height: 60px; width: 60px;" />')(scope.$parent);
 							instance.selection.replaceHTML(content);
 							scope.display.pickSmiley = false;
 						}
@@ -2014,7 +2014,7 @@ window.RTE = (function () {
 						    element.removeClass('focus');
 						    element.trigger('editor-blur');
 						});
-						
+
 						element.find('.editor-toolbar-opener').on('click', function(){
 							if(!$(this).hasClass('active')){
 								$(this).addClass('active');
@@ -2193,11 +2193,11 @@ window.RTE = (function () {
 									'margin-top': element.children('editor-toolbar').height() + 'px'
 								});
 							}
-							
+
 							if(e.target === element.find('.close-focus')[0]){
 								return;
 							}
-							
+
 							element.trigger('editor-focus');
 							element.addClass('focus');
 							element.data('lock', true);
@@ -2215,7 +2215,7 @@ window.RTE = (function () {
 									});
 									element.children('editor-toolbar').attr('style', '');
 								}
-								
+
 								element.children('editor-toolbar').removeClass('show');
 								element.trigger('editor-blur');
 								element.removeClass('focus');
@@ -2306,7 +2306,7 @@ window.RTE = (function () {
 								}
 							}
 						});
-						
+
 						editZone.on('keyup', function(e){
 						    htmlZone.css({ 'min-height': '250px', height: 0 });
 						    var newHeight = htmlZone[0].scrollHeight + 2;
@@ -2325,7 +2325,7 @@ window.RTE = (function () {
 						    if (newHeight > parseInt(editZone.css('min-height')) && !element.hasClass('edit')) {
 						        editZone.css('min-height', newHeight);
 						    }
-						    
+
 
 							scope.$apply(function(){
 								scope.$eval(attributes.ngChange);
@@ -2509,9 +2509,9 @@ window.RTE = (function () {
 					},
 					link: function (scope, element, attributes) {
 					    if (!window.MathJax) {
-							loader.openFile({ 
-								async: true, 
-								ajax: false, 
+							loader.openFile({
+								async: true,
+								ajax: false,
 								url: '/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
 								success: function(){
 									MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
@@ -2519,7 +2519,7 @@ window.RTE = (function () {
 								}
 							});
 					    }
-						
+
 						attributes.$observe('formula', function(newVal){
 							element.text('$$' + newVal + '$$');
 							if (window.MathJax && window.MathJax.Hub) {
