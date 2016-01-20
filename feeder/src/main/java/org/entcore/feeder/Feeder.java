@@ -312,6 +312,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							feed.launch(importer, handler);
 						}
 					} catch (Exception e) {
+						Validator.initLogin(neo4j, vertx);
 						importer.clear();
 						sendError(message, e.getMessage(), e);
 					}
