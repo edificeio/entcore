@@ -284,7 +284,7 @@ public class DefaultFolderService implements FolderService {
 	}
 
 	@Override
-	public void copy(final String id, final String n, final String path, final UserInfos owner, final long emptySize,
+	public void copy(final String id, final String n, final String p, final UserInfos owner, final long emptySize,
 			final Handler<Either<String, JsonArray>> result) {
 		if (owner == null) {
 			result.handle(new Either.Left<String, JsonArray>("workspace.invalid.user"));
@@ -294,7 +294,7 @@ public class DefaultFolderService implements FolderService {
 			result.handle(new Either.Left<String, JsonArray>("workspace.folder.not.found"));
 			return;
 		}
-
+		final String path = getOrElse(p, "");
 		//If the folder has a parent folder, replicate sharing rights
 		String[] splittedPath = path.split("_");
 		String parentName = splittedPath[splittedPath.length - 1];
