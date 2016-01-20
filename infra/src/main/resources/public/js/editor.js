@@ -383,12 +383,13 @@ window.RTE = (function () {
 				        element = element.parentNode;
 				    }
 				    $(element).css(css);
-				    that.moveCaret(element, element.innerText.length);
+				    that.selectNode(element);
 				}
 				else{
 					var addedNodes = [];
 					that.selectedElements.forEach(function(item, index){
 						if(item.nodeType === 1){
+                            addedNodes.push(item);
 							$(item).css(css);
 						}
 						else{
@@ -416,11 +417,23 @@ window.RTE = (function () {
 							addedNodes.push(el[0]);
 						}
 					});
-					addedNodes.forEach(function (item) {
-					    that.moveCaret(item, (item.innerText || item.textContent).length);
-					});
+                    if(addedNodes.length === 1){
+                        that.selectNode(addedNodes[0]);
+                    }
+                    else{
+                        var sel = window.getSelection();
+                        var range = document.createRange();
+                        
+                        range.setStartBefore(addedNodes[0]);
+                        range.setEndAfter(addedNodes[addedNodes.length - 1]);
+                        
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        that.instance.trigger('selectionchange');
+                    }
 				}
-
+                
+                that.instance.addState(that.editZone.html());
 				that.instance.trigger('contentupdated');
 			}
 
@@ -910,18 +923,18 @@ window.RTE = (function () {
 								instance.focus();
 							}
 
-							if(document.queryCommandState('subscript')){
+							if(instance.selection.css('vertical-align') !== 'sub'){
 								element.addClass('toggled');
-								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
+								instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
 							}
 							else{
 								element.removeClass('toggled');
-								instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
+                                instance.selection.css({ 'vertical-align': '', 'font-size': '' });
 							}
 						});
 
 						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('subscript')){
+							if(instance.selection.css('vertical-align') === 'sub'){
 								element.addClass('toggled');
 							}
 							else{
@@ -941,18 +954,18 @@ window.RTE = (function () {
 								instance.focus();
 							}
 
-							if(document.queryCommandState('superscript')){
+							if(instance.selection.css('vertical-align') !== 'super'){
 								element.addClass('toggled');
-								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
+                                instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
 							}
 							else{
 								element.removeClass('toggled');
-								instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
+								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
 							}
 						});
 
 						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('superscript')){
+							if(instance.selection.css('vertical-align') === 'super'){
 								element.addClass('toggled');
 							}
 							else{
