@@ -748,7 +748,7 @@ window.RTE = (function () {
 
 							instance.editZone.find('img').each(function (index, item) {
 							    if ($(item).css('text-align') === 'left') {
-							        $(item).css({ 'float': 'left' });
+							        $(item).css({ 'float': 'left', 'z-index': 0 });
 							    }
 							});
 
@@ -756,7 +756,7 @@ window.RTE = (function () {
 						});
 
 						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('justifyLeft')){
+							if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
 								element.addClass('toggled');
 							}
 							else{
@@ -765,7 +765,7 @@ window.RTE = (function () {
 						});
 
 						instance.on('justify-changed', function(e){
-							if(document.queryCommandState('justifyLeft')){
+							if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
 								element.addClass('toggled');
 							}
 							else{
@@ -796,7 +796,7 @@ window.RTE = (function () {
 
 							instance.editZone.find('img').each(function (index, item) {
 							    if ($(item).css('text-align') === 'right') {
-							        $(item).css({ 'float': 'right' });
+							        $(item).css({ 'float': 'right', 'z-index': '0' });
 							    }
 							});
 
@@ -804,7 +804,7 @@ window.RTE = (function () {
 						});
 
 						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('justifyRight')){
+							if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
 								element.addClass('toggled');
 							}
 							else{
@@ -813,7 +813,7 @@ window.RTE = (function () {
 						});
 
 						instance.on('justify-changed', function(e){
-							if(document.queryCommandState('justifyRight')){
+							if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
 								element.addClass('toggled');
 							}
 							else{
@@ -844,15 +844,22 @@ window.RTE = (function () {
 
 							instance.editZone.find('img').each(function (index, item) {
 							    if ($(item).css('text-align') === 'center') {
-							        $(item).css({ 'float': 'none', 'margin': 'auto' });
+                                    // z-index is a hack to track margin width; auto width is computed as 0 in FF
+							        $(item).css({ 'float': 'none', 'margin': 'auto', 'z-index': '1' });
 							    }
+                                else{
+                                    // z-index is a hack to track margin width; auto width is computed as 0 in FF
+							        $(item).css({ 'float': 'left', 'z-index': '0' });
+                                }
 							});
 
 							instance.trigger('justify-changed');
 						});
 
 						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('justifyCenter')){
+                            // z-index is a hack to track margin width; auto width is computed as 0 in FF
+							if(document.queryCommandState('justifyCenter') 
+                                || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
 								element.addClass('toggled');
 							}
 							else{
@@ -861,7 +868,9 @@ window.RTE = (function () {
 						});
 
 						instance.on('justify-changed', function(e){
-							if(document.queryCommandState('justifyCenter')){
+                            // z-index is a hack to track margin width; auto width is computed as 0 in FF
+							if(document.queryCommandState('justifyCenter') 
+                                || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
 								element.addClass('toggled');
 							}
 							else{
@@ -1303,6 +1312,7 @@ window.RTE = (function () {
 							scope.visibility = 'public'
 						}
 
+                        // border-color is a hack to track margin width; auto width is computed as 0 in FF
 						instance.bindContextualMenu(scope, 'img', [
 							{
 							    label: 'editor.edit.image',
@@ -1321,22 +1331,28 @@ window.RTE = (function () {
                             {
                                 label: 'editor.align.right',
                                 action: function (e) {
-                                    $(e.target).css({ float: 'right', margin: '10px' });
+                                    $(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
+                                    instance.selection.selectNode(e.target);
                                     instance.trigger('contentupdated');
+                                    instance.trigger('justify-changed');
                                 }
                             },
                             {
                                 label: 'editor.align.left',
                                 action: function (e) {
-                                    $(e.target).css({ float: 'left', margin: '10px' });
+                                    $(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
+                                    instance.selection.selectNode(e.target);
                                     instance.trigger('contentupdated');
+                                    instance.trigger('justify-changed');
                                 }
                             },
                             {
                                 label: 'editor.align.center',
                                 action: function (e) {
-                                    $(e.target).css({ float: 'none', margin: 'auto' });
+                                    $(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
+                                    instance.selection.selectNode(e.target);
                                     instance.trigger('contentupdated');
+                                    instance.trigger('justify-changed');
                                 }
                             }
 						]);
@@ -1357,12 +1373,17 @@ window.RTE = (function () {
 						};
 
 						instance.element.on('drop', function (e) {
+                            var image;
 						    if (e.originalEvent.dataTransfer.mozSourceNode) {
-						        e.originalEvent.dataTransfer.mozSourceNode.remove();
+						        image = e.originalEvent.dataTransfer.mozSourceNode;
 						    }
 
 							//delay to account for image destruction and recreation
 							setTimeout(function(){
+                                if(image && image.tagName && image.tagName === 'IMG'){
+                                    image.remove();
+                                }
+                                
 							    ui.extendElement.resizable(instance.editZone.find('img'), {
 							        moveWithResize: false,
                                     mouseUp: function() {
@@ -1395,12 +1416,16 @@ window.RTE = (function () {
 						};
 
 						instance.element.on('drop', function (e) {
+                            var audio;
 						    if (e.originalEvent.dataTransfer.mozSourceNode) {
-						        e.originalEvent.dataTransfer.mozSourceNode.remove();
+						        audio = e.originalEvent.dataTransfer.mozSourceNode;
 						    }
 
 							//delay to account for sound destruction and recreation
 							setTimeout(function(){
+                                if(audio && audio.tagName && audio.tagName === 'AUDIO'){
+                                    audio.remove();
+                                }
 								ui.extendElement.resizable(instance.editZone.find('audio'), {
 								    moveWithResize: false,
                                     mouseUp: function() {
@@ -2106,7 +2131,7 @@ window.RTE = (function () {
 						    highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
 						});
 
-						element.on('dragenter dragover', function(e){
+						element.on('dragenter', function(e){
 							e.preventDefault();
 						});
 
@@ -2224,18 +2249,19 @@ window.RTE = (function () {
 								element.find('editor-toolbar').removeClass('opened');
 								element.find('.editor-toolbar-opener').removeClass('active');
 							}
+                            
 							if(element.find(e.target).length === 0){
+                                element.children('editor-toolbar').removeClass('show');
+								element.trigger('editor-blur');
+								element.removeClass('focus');
+								element.data('lock', false);
+                                
 								if(attributes.inline !== undefined){
 									element.css({
 										'margin-top': 0
 									});
 									element.children('editor-toolbar').attr('style', '');
 								}
-
-								element.children('editor-toolbar').removeClass('show');
-								element.trigger('editor-blur');
-								element.removeClass('focus');
-								element.data('lock', false);
 							}
 						});
 
