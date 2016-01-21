@@ -216,7 +216,7 @@ public class DefaultSchoolService implements SchoolService {
 
 		String filter =
 				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
-				"g-[:HAS_PROFILE]-(p: Profile) ";
+				"(g)-[:HAS_PROFILE]-(p: Profile) ";
 		String condition = "";
 		String optional =
 				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
@@ -285,6 +285,10 @@ public class DefaultSchoolService implements SchoolService {
 			}
 		}
 
+		//With clause
+		String withStr =
+				"WITH u, p, child ";
+
 		//Return clause
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as profile, " +
@@ -292,17 +296,19 @@ public class DefaultSchoolService implements SchoolService {
 				"u.email as email, u.login as login, u.activationCode as activationCode ";
 
 		if(groupClasses){
-			returnStr += ", collect(c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+			withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+			returnStr += ", classes, classname, isInClass ";
 		} else {
-			returnStr += ", c.name as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+			withStr += ", c.name as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+			returnStr += ", classname, isInClass ";
 		}
 
 		if(groupChildren){
-			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: classname}) END as children ";
 		} else {
 			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
 			if(groupClasses)
-				returnStr += ", classname: c.name";
+				returnStr += ", classname: classname";
 			returnStr += "} END as child ";
 		}
 
@@ -314,7 +320,7 @@ public class DefaultSchoolService implements SchoolService {
 		}
 		sort += "lastName";
 
-		String query = filter + condition + optional + returnStr + sort;
+		String query = filter + condition + optional + withStr + returnStr + sort;
 
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
