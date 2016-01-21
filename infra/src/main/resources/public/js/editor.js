@@ -1231,7 +1231,7 @@ window.RTE = (function () {
 							{
 								apply: { tag: 'h1' },
 								option: '<h1>[[format.label]]</h1>',
-								label: 'Titre'
+								label: 'Titre 1'
 							},
 							{
 								apply: { tag: 'h2' },
