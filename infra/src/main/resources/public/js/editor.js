@@ -377,7 +377,9 @@ window.RTE = (function () {
 					$(elementAtCaret).append(el);
 					that.moveCaret(el[0], 1);
 				}
-				else if (that.selectedElements.length === 1 && that.range.startOffset === 0) {
+				else if (that.selectedElements.length === 1 &&
+                    that.range.startOffset === 0 && that.range.endOffset ===
+                    (that.selectedElements[0].innerText || that.selectedElements[0].textContent).length) {
 				    var element = that.selectedElements[0];
 				    if (element.nodeType !== 1) {
 				        element = element.parentNode;
