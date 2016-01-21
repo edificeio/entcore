@@ -1484,7 +1484,7 @@ window.RTE = (function () {
 							    action: function (e) {
 							        instance.selection.selectNode(e.target);
 							        scope.linker.display.chooseLink = true;
-							        scope.linker.openLinker($(e.target).data('app-prefix'), $(e.target).attr('href'));
+							        scope.linker.openLinker($(e.target).data('app-prefix'), $(e.target).attr('href'), e.target);
 							    }
 
 							},
@@ -1498,7 +1498,7 @@ window.RTE = (function () {
 							}
 						]);
 
-						scope.linker.openLinker = function (appPrefix, address) {
+						scope.linker.openLinker = function (appPrefix, address, element) {
 						    scope.linker.display.chooseLink = true;
 						    if (appPrefix) {
 						        scope.linker.search.application.address = '/' + appPrefix;
@@ -1511,8 +1511,10 @@ window.RTE = (function () {
 						        });
 						    }
 						    else {
-						        if (instance.selection.selectedElements.length === 1) {
-						            var element = instance.selection.selectedElements[0];
+						        if (!element && instance.selection.selectedElements.length === 1) {
+						            element = instance.selection.selectedElements[0];
+                                }
+						        if (element) {
 						            if (element.nodeType !== 1) {
 						                element = element.parentNode;
 						            }
