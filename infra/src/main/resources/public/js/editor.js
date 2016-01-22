@@ -210,7 +210,7 @@ window.RTE = (function () {
 					return;
 				}
 				var range = sel.getRangeAt(0);
-				
+
 				var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
 						&& this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
 			    same = same || this.instance.element.find(range.startContainer).length === 0;
@@ -425,16 +425,16 @@ window.RTE = (function () {
                     else{
                         var sel = window.getSelection();
                         var range = document.createRange();
-                        
+
                         range.setStartBefore(addedNodes[0]);
                         range.setEndAfter(addedNodes[addedNodes.length - 1]);
-                        
+
                         sel.removeAllRanges();
                         sel.addRange(range);
                         that.instance.trigger('selectionchange');
                     }
 				}
-                
+
                 that.instance.addState(that.editZone.html());
 				that.instance.trigger('contentupdated');
 			}
@@ -855,7 +855,7 @@ window.RTE = (function () {
 
 						instance.on('selectionchange', function(e){
                             // z-index is a hack to track margin width; auto width is computed as 0 in FF
-							if(document.queryCommandState('justifyCenter') 
+							if(document.queryCommandState('justifyCenter')
                                 || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
 								element.addClass('toggled');
 							}
@@ -866,7 +866,7 @@ window.RTE = (function () {
 
 						instance.on('justify-changed', function(e){
                             // z-index is a hack to track margin width; auto width is computed as 0 in FF
-							if(document.queryCommandState('justifyCenter') 
+							if(document.queryCommandState('justifyCenter')
                                 || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
 								element.addClass('toggled');
 							}
@@ -1380,7 +1380,7 @@ window.RTE = (function () {
                                 if(image && image.tagName && image.tagName === 'IMG'){
                                     image.remove();
                                 }
-                                
+
 							    ui.extendElement.resizable(instance.editZone.find('img'), {
 							        moveWithResize: false,
                                     mouseUp: function() {
@@ -1405,7 +1405,7 @@ window.RTE = (function () {
 						scope.updateContent = function(){
 							instance.selection.replaceHTML(
 								'<div><br /></div>' +
-								'<div><audio src="/workspace/document/' + scope.display.file._id + '" controls draggable native></audio></div>' +
+								'<div class="audio-wrapper"><audio src="/workspace/document/' + scope.display.file._id + '" controls draggable native></audio></div>' +
 								'<div><br /></div>'
 							);
 							scope.display.pickFile = false;
@@ -2109,7 +2109,7 @@ window.RTE = (function () {
                                     $(item).text('');
                                     $(item).append(mathItem);
                                 });
-                                
+
                                 if(newValue !== editZone.html() && !editZone.is(':focus')){
                                     editZone.html($compile(ngModel(scope))(scope));
                                 }
@@ -2210,13 +2210,13 @@ window.RTE = (function () {
                             if (htmlZone[0].scrollHeight > parseInt(htmlZone.css('min-height')) && !element.hasClass('edit')) {
                                 editZone.css('min-height', htmlZone[0].scrollHeight + 2 + 'px');
                             }
-                            
+
                             if(editorInstance.selection.changed()){
                                 editorInstance.trigger('selectionchange', {
                                     selection: editorInstance.selection
                                 });
                             }
-                            
+
                             scope.$apply(function(){
                                 scope.$eval(attributes.ngChange);
                                 var content = editZone.html();
@@ -2249,13 +2249,13 @@ window.RTE = (function () {
                                 element.find('editor-toolbar').removeClass('opened');
                                 element.find('.editor-toolbar-opener').removeClass('active');
                             }
-                            
+
                             if(element.find(e.target).length === 0){
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
                                 element.data('lock', false);
-                                
+
                                 if(attributes.inline !== undefined){
                                     element.css({
                                         'margin-top': 0
