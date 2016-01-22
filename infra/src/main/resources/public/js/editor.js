@@ -49,7 +49,7 @@ window.RTE = (function () {
 				this.trigger('contentupdated');
 			};
 
-			var mousePosition = {};
+		    var mousePosition = {};
 			this.editZone.on('mousemove', function(e){
 				mousePosition = {
 					left: e.pageX,
@@ -109,7 +109,7 @@ window.RTE = (function () {
 				});
 			});
 
-			data.element.on('keyup', function(e){
+		    data.element.on('keyup', function(e){
 				that.trigger('contentupdated');
 				if(!that.selection.changed()){
 					return;
@@ -450,11 +450,6 @@ window.RTE = (function () {
 			    var element = this.range.startContainer;
 			    if (element.nodeType !== 1) {
 			        element = element.parentNode;
-			    }
-			    if (element.nodeType === 1 && element.getAttribute('contenteditable')) {
-			        var newEl = document.createElement('div');
-			        element.appendChild(newEl);
-			        element = newEl;
 			    }
 			    return $(element);
 			}
@@ -1262,7 +1257,7 @@ window.RTE = (function () {
 						    if (instance.selection.isEmpty()) {
 						        testElement = instance.selection.elementAtCaret();
 						    }
-							var found = false;
+						    var found = false;
 							scope.formats.forEach(function (format) {
 							    var hasClass = true;
 							    if (format.apply.classes) {
@@ -2032,413 +2027,413 @@ window.RTE = (function () {
 			});
 
 			//Editor
-			module.directive('editor', function($parse, $compile){
-				return {
-					restrict: 'E',
-					template: '' +
-					'<button class="editor-toolbar-opener"></button>' +
-					'<button class="close-focus">OK</button>' +
-					'<editor-toolbar></editor-toolbar>' +
-					'<contextual-menu><ul></ul></contextual-menu>' +
-					'<popover>' +
-					'<i class="tools" popover-opener opening-event="click"></i>' +
-					'<popover-content>' +
-					'<ul>' +
-					'<li>Editeur de texte</li>' +
-					'<li>Code HTML</li>' +
-					'<li>Mode mixte</li>' +
-					'</ul>' +
-					'</popover-content>' +
-					'</popover>' +
-					'<div contenteditable="true"></div>' +
-					'<textarea></textarea>' +
-                    '<code class="language-html"></code>',
-					link: function (scope, element, attributes) {
-						element.find('.close-focus').on('click', function(){
-						    element.removeClass('focus');
-						    element.trigger('editor-blur');
-						});
+			module.directive('editor', function($parse, $compile) {
+			    return {
+			        restrict: 'E',
+			        template: '' +
+			            '<button class="editor-toolbar-opener"></button>' +
+			            '<button class="close-focus">OK</button>' +
+			            '<editor-toolbar></editor-toolbar>' +
+			            '<contextual-menu><ul></ul></contextual-menu>' +
+			            '<popover>' +
+			            '<i class="tools" popover-opener opening-event="click"></i>' +
+			            '<popover-content>' +
+			            '<ul>' +
+			            '<li>Editeur de texte</li>' +
+			            '<li>Code HTML</li>' +
+			            '<li>Mode mixte</li>' +
+			            '</ul>' +
+			            '</popover-content>' +
+			            '</popover>' +
+			            '<div contenteditable="true"></div>' +
+			            '<textarea></textarea>' +
+			            '<code class="language-html"></code>',
+			        link: function(scope, element, attributes) {
+			            element.find('.close-focus').on('click', function(){
+                            element.removeClass('focus');
+                            element.trigger('editor-blur');
+                        });
 
-						element.find('.editor-toolbar-opener').on('click', function(){
-							if(!$(this).hasClass('active')){
-								$(this).addClass('active');
-								element.find('editor-toolbar').addClass('opened');
-							}
-							else{
-								$(this).removeClass('active')
-								element.find('editor-toolbar').removeClass('opened');
-							}
-						});
-						document.execCommand("enableObjectResizing", false, false);
-						document.execCommand("enableInlineTableEditing", null, false);
+                        element.find('.editor-toolbar-opener').on('click', function(){
+                            if(!$(this).hasClass('active')){
+                                $(this).addClass('active');
+                                element.find('editor-toolbar').addClass('opened');
+                            }
+                            else{
+                                $(this).removeClass('active')
+                                element.find('editor-toolbar').removeClass('opened');
+                            }
+                        });
+                        document.execCommand("enableObjectResizing", false, false);
+                        document.execCommand("enableInlineTableEditing", null, false);
 
-						element.addClass('edit');
-						var editZone = element.children('[contenteditable=true]');
-						var htmlZone = element.children('textarea');
-						var highlightZone = element.children('code');
-						document.execCommand('styleWithCSS', true);
-						document.execCommand('enableInlineTableEditing', true);
+                        element.addClass('edit');
+                        var editZone = element.children('[contenteditable=true]');
+                        var htmlZone = element.children('textarea');
+			            var highlightZone = element.children('code');
+                        document.execCommand('styleWithCSS', true);
+                        document.execCommand('enableInlineTableEditing', true);
 
-						if(attributes.inline !== undefined){
-							element.children('editor-toolbar').addClass('inline');
-						}
+                        if(attributes.inline !== undefined){
+                            element.children('editor-toolbar').addClass('inline');
+                        }
 
-						var toolbarConf = RTE.baseToolbarConf;
-						if(attributes.toolbarConf){
-							toolbarConf = scope.$eval(attributes.toolbarConf);
-						}
+                        var toolbarConf = RTE.baseToolbarConf;
+                        if(attributes.toolbarConf){
+                            toolbarConf = scope.$eval(attributes.toolbarConf);
+                        }
 
-						var editorInstance = new RTE.Instance({
-							toolbarConfiguration: toolbarConf,
-							element: element,
-							scope: scope,
-							compile: $compile,
-							editZone: editZone
-						});
+			            var editorInstance = new RTE.Instance({
+                            toolbarConfiguration: toolbarConf,
+                            element: element,
+                            scope: scope,
+                            compile: $compile,
+                            editZone: editZone
+                        });
 
-						editorInstance.addState('');
-						var ngModel = $parse(attributes.ngModel);
-						if(!ngModel(scope)){
-							ngModel.assign(scope, '');
-						}
+			            editorInstance.addState('');
+                        var ngModel = $parse(attributes.ngModel);
+                        if(!ngModel(scope)){
+                            ngModel.assign(scope, '');
+                        }
 
-						scope.$watch(
-							function(){
-								return ngModel(scope);
-							},
-							function (newValue) {
-							    $(newValue).find('.math-tex').each(function (index, item) {
-							        var mathItem = $('<mathjax></mathjax>');
-							        mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
-							        $(item).removeClass('math-tex');
-							        $(item).text('');
-							        $(item).append(mathItem);
-							    });
-								if(newValue !== editZone.html() && !editZone.is(':focus')){
-								    editZone.html($compile(ngModel(scope))(scope));
-								}
-								if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
-									if(window.html_beautify){
-									    htmlZone.val(html_beautify(newValue));
-									    highlightZone.text(html_beautify(newValue));
-									    Prism.highlightAll();
-									}
-									//beautifier is not loaded on mobile
-									else{
-										htmlZone.val(newValue);
-									}
-								}
-							}
-						);
+                        scope.$watch(
+                            function(){
+                                return ngModel(scope);
+                            },
+                            function (newValue) {
+                                $(newValue).find('.math-tex').each(function (index, item) {
+                                    var mathItem = $('<mathjax></mathjax>');
+                                    mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
+                                    $(item).removeClass('math-tex');
+                                    $(item).text('');
+                                    $(item).append(mathItem);
+                                });
+                                
+                                if(newValue !== editZone.html() && !editZone.is(':focus')){
+                                    editZone.html($compile(ngModel(scope))(scope));
+                                }
+                                if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
+                                    if(window.html_beautify){
+                                        htmlZone.val(html_beautify(newValue));
+                                        highlightZone.text(html_beautify(newValue));
+                                        Prism.highlightAll();
+                                    }
+                                    //beautifier is not loaded on mobile
+                                    else{
+                                        htmlZone.val(newValue);
+                                    }
+                                }
+                            }
+                        );
 
-						$(window).on('resize', function () {
-						    highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-						});
+                        $(window).on('resize', function () {
+                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+                        });
 
-						element.on('dragenter', function(e){
-							e.preventDefault();
-						});
+                        element.on('dragenter', function(e){
+                            e.preventDefault();
+                        });
 
-						element.children('popover').find('li:first-child').on('click', function(){
-							element.removeClass('html');
-							element.removeClass('both');
-							element.addClass('edit');
-							editorInstance.trigger('contentupdated');
-						});
+                        element.children('popover').find('li:first-child').on('click', function(){
+                            element.removeClass('html');
+                            element.removeClass('both');
+                            element.addClass('edit');
+                            editorInstance.trigger('contentupdated');
+                        });
 
-						element.children('popover').find('li:nth-child(2)').on('click', function(){
-							element.removeClass('edit');
-							element.removeClass('both');
-							element.addClass('html');
-							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-							editorInstance.trigger('contentupdated');
-							if(window.html_beautify){
-								return;
-							}
-							http().get('/infra/public/js/beautify-html.js').done(function(content){
-								eval(content);
-								htmlZone.val(html_beautify(ngModel(scope)));
-								highlightZone.text(html_beautify(ngModel(scope)));
-								Prism.highlightAll();
-							});
-						});
+                        element.children('popover').find('li:nth-child(2)').on('click', function(){
+                            element.removeClass('edit');
+                            element.removeClass('both');
+                            element.addClass('html');
+                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+                            editorInstance.trigger('contentupdated');
+                            if(window.html_beautify){
+                                return;
+                            }
+                            http().get('/infra/public/js/beautify-html.js').done(function(content){
+                                eval(content);
+                                htmlZone.val(html_beautify(ngModel(scope)));
+                                highlightZone.text(html_beautify(ngModel(scope)));
+                                Prism.highlightAll();
+                            });
+                        });
 
-						element.children('popover').find('li:nth-child(3)').on('click', function(){
-							element.removeClass('edit');
-							element.removeClass('html');
-							element.addClass('both');
-							highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-							editorInstance.trigger('contentupdated');
-							if(window.html_beautify){
-								return;
-							}
-							http().get('/infra/public/js/beautify-html.js').done(function(content){
-								eval(content);
-								htmlZone.val(html_beautify(ngModel(scope)));
-								highlightZone.text(html_beautify(ngModel(scope)));
-								Prism.highlightAll();
-							});
-						});
+                        element.children('popover').find('li:nth-child(3)').on('click', function(){
+                            element.removeClass('edit');
+                            element.removeClass('html');
+                            element.addClass('both');
+                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+                            editorInstance.trigger('contentupdated');
+                            if(window.html_beautify){
+                                return;
+                            }
+                            http().get('/infra/public/js/beautify-html.js').done(function(content){
+                                eval(content);
+                                htmlZone.val(html_beautify(ngModel(scope)));
+                                highlightZone.text(html_beautify(ngModel(scope)));
+                                Prism.highlightAll();
+                            });
+                        });
 
-						element.find('.option i').click(function(){
-							if(!editZone.is(':focus')){
-								editZone.focus();
-							}
+                        element.find('.option i').click(function(){
+                            if(!editZone.is(':focus')){
+                                editZone.focus();
+                            }
 
-							scope.$apply(function(){
-								scope.$eval(attributes.ngChange);
-								ngModel.assign(scope, editZone.html());
-							});
-						});
+                            scope.$apply(function(){
+                                scope.$eval(attributes.ngChange);
+                                ngModel.assign(scope, editZone.html());
+                            });
+                        });
 
-						editorInstance.on('contentupdated', function(){
-							if(parseInt(htmlZone.css('min-height')) < editZone.height()){
-								htmlZone.css('min-height', editZone.height() + 'px');
-							}
-							ui.extendElement.resizable(element.children('[contenteditable]').find('img, table, .column'), {
-								moveWithResize: false,
-								lock: {
-									left: true,
-									top: true
-								},
+                        editorInstance.on('contentupdated', function () {
+                            if(parseInt(htmlZone.css('min-height')) < editZone.height()){
+                                htmlZone.css('min-height', editZone.height() + 'px');
+                            }
+                            ui.extendElement.resizable(element.children('[contenteditable]').find('img, table, .column'), {
+                                moveWithResize: false,
+                                lock: {
+                                    left: true,
+                                    top: true
+                                },
                                 mouseUp: function() {
                                     editorInstance.trigger('contentupdated');
                                 }
-							});
-							htmlZone.css({ 'min-height': '250px', height: 0 });
-							var newHeight = htmlZone[0].scrollHeight + 2;
-							if(newHeight > htmlZone.height()){
-								htmlZone.height(newHeight);
-							}
+                            });
+                            htmlZone.css({ 'min-height': '250px', height: 0 });
+                            var newHeight = htmlZone[0].scrollHeight + 2;
+                            if(newHeight > htmlZone.height()){
+                                htmlZone.height(newHeight);
+                            }
 
-							if (htmlZone[0].scrollHeight > parseInt(htmlZone.css('min-height')) && !element.hasClass('edit')) {
-								editZone.css('min-height', htmlZone[0].scrollHeight + 2 + 'px');
-							}
-
-							if(editorInstance.selection.changed()){
-								editorInstance.trigger('selectionchange', {
-									selection: editorInstance.selection
-								});
-							}
-
-							scope.$apply(function(){
-								scope.$eval(attributes.ngChange);
-								var content = editZone.html();
-								ngModel.assign(scope, content);
-							});
-						});
-
-						element.on('click', function(e){
-							if(attributes.inline !== undefined){
-								element.children('editor-toolbar').css({
-									left: 0,
-									top: -element.children('editor-toolbar').height() + 'px'
-								});
-								element.css({
-									'margin-top': element.children('editor-toolbar').height() + 'px'
-								});
-							}
-
-							if(e.target === element.find('.close-focus')[0]){
-								return;
-							}
-
-							element.trigger('editor-focus');
-							element.addClass('focus');
-							element.data('lock', true);
-						});
-
-						$('body').on('mousedown', function(e){
-							if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
-								element.find('editor-toolbar').removeClass('opened');
-								element.find('.editor-toolbar-opener').removeClass('active');
-							}
+                            if (htmlZone[0].scrollHeight > parseInt(htmlZone.css('min-height')) && !element.hasClass('edit')) {
+                                editZone.css('min-height', htmlZone[0].scrollHeight + 2 + 'px');
+                            }
                             
-							if(element.find(e.target).length === 0){
+                            if(editorInstance.selection.changed()){
+                                editorInstance.trigger('selectionchange', {
+                                    selection: editorInstance.selection
+                                });
+                            }
+                            
+                            scope.$apply(function(){
+                                scope.$eval(attributes.ngChange);
+                                var content = editZone.html();
+                                ngModel.assign(scope, content);
+                            });
+                        });
+
+                        element.on('click', function(e){
+                            if(attributes.inline !== undefined){
+                                element.children('editor-toolbar').css({
+                                    left: 0,
+                                    top: -element.children('editor-toolbar').height() + 'px'
+                                });
+                                element.css({
+                                    'margin-top': element.children('editor-toolbar').height() + 'px'
+                                });
+                            }
+
+                            if(e.target === element.find('.close-focus')[0]){
+                                return;
+                            }
+
+                            element.trigger('editor-focus');
+                            element.addClass('focus');
+                            element.data('lock', true);
+                        });
+
+                        $('body').on('mousedown', function(e){
+                            if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
+                                element.find('editor-toolbar').removeClass('opened');
+                                element.find('.editor-toolbar-opener').removeClass('active');
+                            }
+                            
+                            if(element.find(e.target).length === 0){
                                 element.children('editor-toolbar').removeClass('show');
-								element.trigger('editor-blur');
-								element.removeClass('focus');
-								element.data('lock', false);
+                                element.trigger('editor-blur');
+                                element.removeClass('focus');
+                                element.data('lock', false);
                                 
-								if(attributes.inline !== undefined){
-									element.css({
-										'margin-top': 0
-									});
-									element.children('editor-toolbar').attr('style', '');
-								}
-							}
-						});
+                                if(attributes.inline !== undefined){
+                                    element.css({
+                                        'margin-top': 0
+                                    });
+                                    element.children('editor-toolbar').attr('style', '');
+                                }
+                            }
+                        });
 
-						$('editor-toolbar').on('mousedown', function(e){
-							e.preventDefault();
-						});
+                        $('editor-toolbar').on('mousedown', function(e){
+                            e.preventDefault();
+                        });
 
-						function wrapFirstLine(){
-							if(editZone.contents()[0] && editZone.contents()[0].nodeType === 3){
-								var div = $('<div></div>');
-								div.text(editZone.contents()[0].textContent);
-								editZone.contents()[0].remove();
-								editZone.prepend(div);
-								editorInstance.selection.moveCaret(div[0], div.text().length);
-								editorInstance.trigger('contentupdated');
-							}
-						}
+                        function wrapFirstLine() {
+                            if (editZone.contents()[0] && editZone.contents()[0].nodeType === 3) {
+                                var div = $('<div></div>');
+                                div.text(editZone.contents()[0].textContent);
+                                $(editZone.contents()[0]).remove();
+                                editZone.prepend(div);
+                                editorInstance.selection.moveCaret(div[0], div.text().length);
+                                editorInstance.trigger('contentupdated');
+                            }
+                        }
 
-						function editingDone(){
-							editorInstance.addState(editZone.html());
-						}
+                        function editingDone(){
+                            editorInstance.addState(editZone.html());
+                        }
 
-						var typingTimer;
-						var editingTimer;
+                        var typingTimer;
+                        var editingTimer;
 
-						editZone.on('keydown', function (e) {
-						    clearTimeout(typingTimer);
-						    clearTimeout(editingTimer);
-						    typingTimer = setTimeout(wrapFirstLine, 10);
-						    editingTimer = setTimeout(editingDone, 1000);
+                        editZone.on('keydown', function (e) {
+                            clearTimeout(typingTimer);
+                            clearTimeout(editingTimer);
+                            typingTimer = setTimeout(wrapFirstLine, 10);
+                            editingTimer = setTimeout(editingDone, 1000);
 
-						    if (e.keyCode === 8 || e.keyCode === 46) {
-						        editorInstance.addState(editZone.html());
-						        // for whatever reason, ff likes to create several ranges for table selection
-						        // which messes up their deletion
-						        var sel = window.getSelection();
-						        for (var i = 0; i < sel.rangeCount; i++) {
-						            var startContainer = sel.getRangeAt(i).startContainer;
-						            if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
-						                startContainer.remove();
-						            }
-						        }
-						        editZone.find('table').each(function (index, item) {
-						            if ($(item).find('tr').length === 0) {
-						                $(item).remove();
-						            }
-						        });
-						    }
+                            if (e.keyCode === 8 || e.keyCode === 46) {
+                                editorInstance.addState(editZone.html());
+                                // for whatever reason, ff likes to create several ranges for table selection
+                                // which messes up their deletion
+                                var sel = window.getSelection();
+                                for (var i = 0; i < sel.rangeCount; i++) {
+                                    var startContainer = sel.getRangeAt(i).startContainer;
+                                    if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
+                                        startContainer.remove();
+                                    }
+                                }
+                                editZone.find('table').each(function (index, item) {
+                                    if ($(item).find('tr').length === 0) {
+                                        $(item).remove();
+                                    }
+                                });
+                            }
 
-							if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
-								editorInstance.undo();
-								e.preventDefault();
-							}
-							if((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)){
-								editorInstance.redo();
-								e.preventDefault();
-							}
-							if(e.keyCode === 9){
-								e.preventDefault();
-								var currentTag;
-								if(editorInstance.selection.range.startContainer.tagName){
-									currentTag = editorInstance.selection.range.startContainer;
-								}
-								else{
-									currentTag = editorInstance.selection.range.startContainer.parentElement;
-								}
-								if(currentTag.tagName === 'TD'){
-									var nextTag = currentTag.nextSibling;
-									if(!nextTag){
-										nextTag = $(currentTag).parent('tr').next().children('td')[0];
-									}
-									if(!nextTag){
-										var newLine = $('<tr></tr>');
-										for(var i = 0; i < $(currentTag).parent('tr').children('td').length; i++){
-											newLine.append($('<td>&nbsp;</td>'));
-										}
-										nextTag = newLine.children('td')[0];
-										$(currentTag).closest('table').append(newLine);
-									}
-									editorInstance.selection.moveCaret(nextTag);
-								}
-								else{
-									document.execCommand('indent');
-								}
-							}
-						});
+                            if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
+                                editorInstance.undo();
+                                e.preventDefault();
+                            }
+                            if((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)){
+                                editorInstance.redo();
+                                e.preventDefault();
+                            }
+                            if(e.keyCode === 9){
+                                e.preventDefault();
+                                var currentTag;
+                                if(editorInstance.selection.range.startContainer.tagName){
+                                    currentTag = editorInstance.selection.range.startContainer;
+                                }
+                                else{
+                                    currentTag = editorInstance.selection.range.startContainer.parentElement;
+                                }
+                                if(currentTag.tagName === 'TD'){
+                                    var nextTag = currentTag.nextSibling;
+                                    if(!nextTag){
+                                        nextTag = $(currentTag).parent('tr').next().children('td')[0];
+                                    }
+                                    if(!nextTag){
+                                        var newLine = $('<tr></tr>');
+                                        for(var i = 0; i < $(currentTag).parent('tr').children('td').length; i++){
+                                            newLine.append($('<td>&nbsp;</td>'));
+                                        }
+                                        nextTag = newLine.children('td')[0];
+                                        $(currentTag).closest('table').append(newLine);
+                                    }
+                                    editorInstance.selection.moveCaret(nextTag);
+                                }
+                                else{
+                                    document.execCommand('indent');
+                                }
+                            }
+                        });
 
-						editZone.on('keyup', function(e){
-						    htmlZone.css({ 'min-height': '250px', height: 0 });
-						    var newHeight = htmlZone[0].scrollHeight + 2;
-							if(newHeight > htmlZone.height()){
-								htmlZone.height(newHeight);
-							}
-						});
+                        editZone.on('keyup', function(e){
+                            htmlZone.css({ 'min-height': '250px', height: 0 });
+                            var newHeight = htmlZone[0].scrollHeight + 2;
+                            if(newHeight > htmlZone.height()){
+                                htmlZone.height(newHeight);
+                            }
+                        });
 
-						editorInstance.on('contentupdated', function (e) {
-						    htmlZone.css({ 'min-height': '250px', height: 0 });
-						    editZone.css({ 'min-height': '250px' });
-						    var newHeight = htmlZone[0].scrollHeight + 2;
-						    if (newHeight > htmlZone.height()) {
-						        htmlZone.height(newHeight);
-						    }
-						    if (newHeight > parseInt(editZone.css('min-height')) && !element.hasClass('edit')) {
-						        editZone.css('min-height', newHeight);
-						    }
+                        editorInstance.on('contentupdated', function (e) {
+                            htmlZone.css({ 'min-height': '250px', height: 0 });
+                            editZone.css({ 'min-height': '250px' });
+                            var newHeight = htmlZone[0].scrollHeight + 2;
+                            if (newHeight > htmlZone.height()) {
+                                htmlZone.height(newHeight);
+                            }
+                            if (newHeight > parseInt(editZone.css('min-height')) && !element.hasClass('edit')) {
+                                editZone.css('min-height', newHeight);
+                            }
 
+                            scope.$apply(function(){
+                                scope.$eval(attributes.ngChange);
+                                ngModel.assign(scope, htmlZone.val());
+                            });
+                        });
 
-							scope.$apply(function(){
-								scope.$eval(attributes.ngChange);
-								ngModel.assign(scope, htmlZone.val());
-							});
-						});
-
-						htmlZone.on('keydown', function (e) {
+                        htmlZone.on('keydown', function (e) {
                             // free main thread so it can render textarea changes
-						    setTimeout(function () {
-						        highlightZone.text($(this).val());
-						        Prism.highlightAll();
-						    }.bind(this), 0);
-							if(e.keyCode === 9){
-								e.preventDefault();
-								var start = this.selectionStart;
-								var end = this.selectionEnd;
+                            setTimeout(function () {
+                                highlightZone.text($(this).val());
+                                Prism.highlightAll();
+                            }.bind(this), 0);
+                            if(e.keyCode === 9){
+                                e.preventDefault();
+                                var start = this.selectionStart;
+                                var end = this.selectionEnd;
 
-								$(this).val($(this).val().substring(0, start) + "\t" + $(this).val().substring(end));
+                                $(this).val($(this).val().substring(0, start) + "\t" + $(this).val().substring(end));
 
-								this.selectionStart = this.selectionEnd = start + 1;
-							}
-						});
+                                this.selectionStart = this.selectionEnd = start + 1;
+                            }
+                        });
 
-						htmlZone.on('blur', function(){
-							scope.$apply(function(){
-								scope.$eval(attributes.ngChange);
-								ngModel.assign(scope, htmlZone.val());
-							});
-						});
+                        htmlZone.on('blur', function(){
+                            scope.$apply(function(){
+                                scope.$eval(attributes.ngChange);
+                                ngModel.assign(scope, htmlZone.val());
+                            });
+                        });
 
-						element.on('dragover', function(e){
-							element.addClass('droptarget');
-						});
+                        element.on('dragover', function(e){
+                            element.addClass('droptarget');
+                        });
 
-						element.on('dragleave', function(){
-							element.removeClass('droptarget');
-						});
+                        element.on('dragleave', function(){
+                            element.removeClass('droptarget');
+                        });
 
-						element.find('[contenteditable]').on('drop', function(e){
-							element.removeClass('droptarget');
-							var el = {};
-							var files = e.originalEvent.dataTransfer.files;
-							if(!files.length){
-								return;
-							}
-							e.preventDefault();
-							for(var i = 0; i < files.length; i++){
-								(function(){
-									var name = files[i].name;
-									workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
-										if(name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1){
-											el = $('<audio draggable native controls></audio>');
-										}
-										else{
-											el = $('<img draggable native />');
-										}
+                        element.find('[contenteditable]').on('drop', function(e){
+                            element.removeClass('droptarget');
+                            var el = {};
+                            var files = e.originalEvent.dataTransfer.files;
+                            if(!files.length){
+                                return;
+                            }
+                            e.preventDefault();
+                            for(var i = 0; i < files.length; i++){
+                                (function(){
+                                    var name = files[i].name;
+                                    workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
+                                        if(name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1){
+                                            el = $('<audio draggable native controls></audio>');
+                                        }
+                                        else{
+                                            el = $('<img draggable native />');
+                                        }
 
-										el.attr('src', '/workspace/document/' + doc._id)
-										editorInstance.selection.replaceHTML(el[0].outerHTML);
-									});
-								}())
+                                        el.attr('src', '/workspace/document/' + doc._id)
+                                        editorInstance.selection.replaceHTML(el[0].outerHTML);
+                                    });
+                                }())
 
-							}
-						});
-					}
-				}
+                            }
+                        });
+			        }
+			    };
 			});
 
 
