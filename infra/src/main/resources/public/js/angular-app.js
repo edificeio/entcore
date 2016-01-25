@@ -1303,7 +1303,7 @@ module.directive('bindHtml', function($compile){
 		},
 		link: function(scope, element){
 			scope.$watch('bindHtml', function(newVal){
-				var htmlVal = $('<div>' + newVal + '</div>')
+				var htmlVal = $('<div>' + (newVal || '') + '</div>')
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				var htmlContent = htmlVal[0].outerHTML;
