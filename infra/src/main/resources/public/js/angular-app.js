@@ -112,22 +112,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		return template;
 	})
 	.factory('date', function() {
-		if(currentLanguage === 'fr'){
-			moment.lang(currentLanguage, {
-				calendar : {
-					lastDay : '[Hier à] HH[h]mm',
-					sameDay : '[Aujourd\'hui à] HH[h]mm',
-					nextDay : '[Demain à] HH[h]mm',
-					lastWeek : 'dddd [dernier à] HH[h]mm',
-					nextWeek : 'dddd [prochain à] HH[h]mm',
-					sameElse : 'dddd LL'
-				}
-			});
-		}
-		else{
-			moment.lang(currentLanguage);
-		}
-
 		return {
             create: function(date){
                 return (moment ? moment(date) : date)

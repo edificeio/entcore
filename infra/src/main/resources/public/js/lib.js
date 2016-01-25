@@ -1387,6 +1387,9 @@ var calendar = {
 		}
 		this.week = data.week;
 		this.year = data.year;
+
+	    // change of year in moment is buggy (last/first week is on the wrong year)
+        // weird syntax is a workaround
         this.dayForWeek = moment(
             this.year +
             "-W" + (this.week < 10 ? "0" + this.week : this.week) +
@@ -1658,7 +1661,23 @@ var sniplets = {
 	sniplets: []
 };
 
-function bootstrap(func){
+function bootstrap(func) {
+    if (currentLanguage === 'fr') {
+        moment.lang(currentLanguage, {
+            calendar: {
+                lastDay: '[Hier à] HH[h]mm',
+                sameDay: '[Aujourd\'hui à] HH[h]mm',
+                nextDay: '[Demain à] HH[h]mm',
+                lastWeek: 'dddd [dernier à] HH[h]mm',
+                nextWeek: 'dddd [prochain à] HH[h]mm',
+                sameElse: 'dddd LL'
+            }
+        });
+    }
+    else {
+        moment.lang(currentLanguage);
+    }
+
 	if(window.notLoggedIn){
 		Behaviours.loadBehaviours(appPrefix, function(){
 			skin.loadDisconnected();
