@@ -344,6 +344,8 @@ public class Validator {
 	}
 
 	public static void initLogin(Neo4j neo4j, Vertx vertx) {
+		final long startInit = System.currentTimeMillis();
+		final boolean remove;
 		if (logins == null) {
 			ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 			Boolean cluster = (Boolean) server.get("cluster");
@@ -353,8 +355,9 @@ public class Validator {
 			} else {
 				logins = new ConcurrentHashMap<>();
 			}
+			remove = false;
 		} else {
-			logins.clear();
+			remove = true;
 		}
 		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
@@ -364,10 +367,20 @@ public class Validator {
 				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
 					JsonArray l = ((JsonObject) r.get(0)).getArray("logins");
 					if (l != null) {
-						for (Object o : l) {
-							if (!(o instanceof String)) continue;
-							logins.putIfAbsent(o, "");
+						if (remove) {
+							Set<Object> tmp = new HashSet<>(l.toList());
+							for (Object key : logins.keySet()) {
+								if (!tmp.contains(key)) {
+									logins.remove(key);
+								}
+							}
+						} else {
+							for (Object o : l) {
+								if (!(o instanceof String)) continue;
+								logins.putIfAbsent(o, "");
+							}
 						}
+						log.info("Init delay : " + (System.currentTimeMillis() - startInit));
 					}
 				}
 			}
