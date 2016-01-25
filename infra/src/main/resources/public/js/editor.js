@@ -100,8 +100,8 @@ window.RTE = (function () {
 				contextualMenu.removeClass('show');
 			});
 
-			$('body').on('mouseup', function(){
-				if(!that.selection.changed()){
+			$('body').on('mouseup', function(e){
+				if($(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()){
 					return;
 				}
 				that.trigger('selectionchange', {
