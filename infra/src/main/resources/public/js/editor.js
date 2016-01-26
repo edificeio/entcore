@@ -2356,8 +2356,11 @@ window.RTE = (function () {
                                     }
                                     editorInstance.selection.moveCaret(nextTag);
                                 }
-                                else{
+                                else if (currentTag.tagName === 'LI') {
                                     document.execCommand('indent');
+                                }
+                                else {
+                                    editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&nbsp;</span>')[0]);
                                 }
                             }
                         });
