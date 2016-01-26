@@ -1435,6 +1435,28 @@ window.RTE = (function () {
 				}
 			});
 
+			RTE.baseToolbarConf.option('embed', function (instance) {
+			    return {
+			        template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
+					'<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">' +
+					'<h2>Choisir un modèle</h2>' +
+					'<p class="info"><i18n>info.video.embed</i18n></p>' +
+					'<textarea ng-model="display.htmlCode"></textarea>' +
+					'<div class="row">' +
+					'<button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>' +
+					'<button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>' +
+					'</div>' +
+					'</lightbox>',
+			        link: function (scope, element, attributes) {
+			            scope.display = {};
+			            scope.applyHtml = function (template) {
+			                scope.display.copyEmbed = false;
+			                instance.selection.replaceHTML(scope.display.htmlCode);
+			            };
+			        }
+			    }
+			});
+
 			RTE.baseToolbarConf.option('mathjax', function(instance){
 				return {
 					template: '<i ng-click="display.fillFormula = true" tooltip="editor.option.mathjax"></i>' +
@@ -2000,28 +2022,6 @@ window.RTE = (function () {
 							scope.display.pickTemplate = true;
 							scope.$apply('display');
 						});
-					}
-				}
-			});
-
-			RTE.baseToolbarConf.option('embed', function(instance){
-				return {
-					template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
-					'<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">' +
-					'<h2>Choisir un modèle</h2>' +
-					'<p class="info"><i18n>info.video.embed</i18n></p>' +
-					'<textarea ng-model="display.htmlCode"></textarea>' +
-					'<div class="row">' +
-					'<button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>' +
-					'<button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>' +
-					'</div>' +
-					'</lightbox>',
-					link: function(scope, element, attributes){
-						scope.display = {};
-						scope.applyHtml = function(template){
-							scope.display.copyEmbed = false;
-							instance.selection.replaceHTML(scope.display.htmlCode);
-						};
 					}
 				}
 			});
