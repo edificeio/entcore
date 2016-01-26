@@ -30,7 +30,7 @@ window.RTE = (function () {
 			var that = this;
 			this.states = [];
 			this.stateIndex = 0;
-			this.editZone = this.element.children('[contenteditable]');
+			this.editZone = this.element.find('[contenteditable]');
 			this.selection = new RTE.Selection({
 				instance: this,
 				editZone: this.editZone
@@ -2204,7 +2204,7 @@ window.RTE = (function () {
                             if(parseInt(htmlZone.css('min-height')) < editZone.height()){
                                 htmlZone.css('min-height', editZone.height() + 'px');
                             }
-                            ui.extendElement.resizable(element.children('[contenteditable]').find('img, table, .column'), {
+                            ui.extendElement.resizable(element.find('[contenteditable]').find('img, table, .column'), {
                                 moveWithResize: false,
                                 lock: {
                                     left: true,
