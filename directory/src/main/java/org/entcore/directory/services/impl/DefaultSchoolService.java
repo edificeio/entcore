@@ -287,7 +287,7 @@ public class DefaultSchoolService implements SchoolService {
 
 		//With clause
 		String withStr =
-				"WITH u, p, child ";
+				"WITH u, p ";
 
 		//Return clause
 		String returnStr =
@@ -304,12 +304,14 @@ public class DefaultSchoolService implements SchoolService {
 		}
 
 		if(groupChildren){
-			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: classname}) END as children ";
+			withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+			returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
 		} else {
-			returnStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
+			withStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
 			if(groupClasses)
-				returnStr += ", classname: classname";
-			returnStr += "} END as child ";
+				withStr += ", classname: c.name";
+			withStr += "} END as child ";
+			returnStr += ", child ";
 		}
 
 		//Order by
