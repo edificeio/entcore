@@ -39,7 +39,11 @@ window.RTE = (function () {
 			this.focus = function(){
 				var sel = window.getSelection();
 				sel.removeAllRanges();
-				sel.addRange(this.selection.range);
+                if (this.selection.range) {
+                    sel.addRange(this.selection.range);
+                } else {
+                    this.editZone.focus();
+                }
 			};
 
 			this.execCommand = function(commandId, useUi, value){
@@ -986,12 +990,17 @@ window.RTE = (function () {
 				return {
 					template: '<i tooltip="editor.option.ulist"></i>',
 					link: function(scope, element, attributes){
-						element.on('click', function(){
+						element.on('mousedown', function(){
 							if(!instance.editZone.is(':focus')){
-								instance.focus();
+								instance.editZone.focus();
 							}
 
-							instance.execCommand('insertUnorderedList');
+							if (instance.editZone.children('div').length === 0) {
+							    instance.editZone.append('<div><br></div>');
+							    instance.editZone.focus();
+							}
+
+							instance.execCommand('insertUnorderedList', false, null);
 							if(document.queryCommandState('insertUnorderedList')){
 								element.addClass('toggled');
 							}
@@ -1016,12 +1025,17 @@ window.RTE = (function () {
 				return {
 					template: '<i tooltip="editor.option.olist"></i>',
 					link: function(scope, element, attributes){
-						element.on('click', function(){
+						element.on('mousedown', function(){
 							if(!instance.editZone.is(':focus')){
-								instance.focus();
+								instance.editZone.focus();
 							}
 
-							instance.execCommand('insertOrderedList');
+                            if (instance.editZone.children('div').length === 0) {
+                                instance.editZone.append('<div><br></div>');
+                                instance.editZone.focus();
+                            }
+
+							instance.execCommand('insertOrderedList', false, null);
 							if(document.queryCommandState('insertOrderedList')){
 								element.addClass('toggled');
 							}
@@ -2045,7 +2059,7 @@ window.RTE = (function () {
 			            '</ul>' +
 			            '</popover-content>' +
 			            '</popover>' +
-			            '<div contenteditable="true"></div>' +
+			            '<div><div contenteditable="true"></div></div>' +
 			            '<textarea></textarea>' +
 			            '<code class="language-html"></code>',
 			        link: function(scope, element, attributes) {
@@ -2068,11 +2082,10 @@ window.RTE = (function () {
                         document.execCommand("enableInlineTableEditing", null, false);
 
                         element.addClass('edit');
-                        var editZone = element.children('[contenteditable=true]');
+                        var editZone = element.find('[contenteditable=true]');
                         var htmlZone = element.children('textarea');
 			            var highlightZone = element.children('code');
                         document.execCommand('styleWithCSS', true);
-                        document.execCommand('enableInlineTableEditing', true);
 
                         if(attributes.inline !== undefined){
                             element.children('editor-toolbar').addClass('inline');
