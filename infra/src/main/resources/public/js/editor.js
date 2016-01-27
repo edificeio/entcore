@@ -126,8 +126,13 @@ window.RTE = (function () {
 
 			this.applyState = function(){
 				this.editZone.html(
-						this.compile(this.states[this.stateIndex - 1])(this.scope)
+					this.compile(this.states[this.stateIndex - 1].html)(this.scope)
 				);
+				if (this.states[this.stateIndex - 1].range) {
+				    var sel = window.getSelection();
+				    sel.removeAllRanges();
+				    sel.addRange(this.states[this.stateIndex - 1].range);
+				}
 			};
 
 			this.undo = function(){
@@ -151,12 +156,12 @@ window.RTE = (function () {
 					return;
 				}
 				if(this.stateIndex === this.states.length){
-					this.states.push(state);
+					this.states.push({ html: state, range: this.selection.range});
 					this.stateIndex ++;
 				}
 				else{
 					this.states = this.states.slice(0, this.stateIndex);
-					this.addState(state);
+					this.addState({ html: state, range: this.selection.range });
 				}
 			};
 
@@ -2304,7 +2309,14 @@ window.RTE = (function () {
                             clearTimeout(typingTimer);
                             clearTimeout(editingTimer);
                             typingTimer = setTimeout(wrapFirstLine, 10);
-                            editingTimer = setTimeout(editingDone, 1000);
+                            
+                            if (!e.ctrlKey) {
+                                editingTimer = setTimeout(editingDone, 500);
+                            }
+
+                            if (e.keyCode === 13) {
+                                editorInstance.addState(editZone.html());
+                            }
 
                             if (e.keyCode === 8 || e.keyCode === 46) {
                                 editorInstance.addState(editZone.html());
@@ -2327,10 +2339,12 @@ window.RTE = (function () {
                             if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
                                 editorInstance.undo();
                                 e.preventDefault();
+                                scope.$apply();
                             }
                             if((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)){
                                 editorInstance.redo();
                                 e.preventDefault();
+                                scope.$apply();
                             }
                             if(e.keyCode === 9){
                                 e.preventDefault();
