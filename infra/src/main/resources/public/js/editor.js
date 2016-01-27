@@ -177,8 +177,8 @@ window.RTE = (function () {
 					return;
 				}
 				var range = selection.getRangeAt(0);
-				if (!(that.editZone.find(range.startContainer.parentElement).length && range.startContainer.parentElement !== that.editZone[0]) ||
-                    !that.editZone.find(range.endContainer.parentElement).length && range.endContainer.parentElement !== that.editZone[0]) {
+				if (!(that.editZone.find(range.startContainer.parentNode).length && range.startContainer.parentNode !== that.editZone[0]) ||
+                    !that.editZone.find(range.endContainer.parentNode).length && range.endContainer.parentNode !== that.editZone[0]) {
 					return;
 				}
 				var selector = [];
@@ -203,11 +203,11 @@ window.RTE = (function () {
                     }
 					
 					that.editZone.find('*').each(function (index, item) {
-					    if (range.intersectsNode(item)
-                            && item !== range.startContainer.parentElement
-                            && item !== range.endContainer.parentElement
-                            && !$(item).find(range.startContainer.parentElement).length
-                            && !$(item).find(range.endContainer.parentElement).length) {
+					    if (((range.intersectsNode && range.intersectsNode(item)) || $(range.commonAncestorContainer).find(item).length > 0)
+                            && item !== range.startContainer.parentNode
+                            && item !== range.endContainer.parentNode
+                            && !$(item).find(range.startContainer.parentNode).length
+                            && !$(item).find(range.endContainer.parentNode).length) {
 							selector.push(item);
 						}
 					});
@@ -269,7 +269,7 @@ window.RTE = (function () {
 					start = 0;
 				}
 				if (!end && element.textContent) {
-				    end = element.textContent.length;
+				    end = (element.firstChild || element).textContent.length;
 				}
 
 				if (!element.textContent && element.nodeType === 1) {
@@ -298,15 +298,15 @@ window.RTE = (function () {
 					}
 					if (elementAtCaret.nodeType === 3) {
 					    element.text(elementAtCaret.textContent);
-					    elementAtCaret.parentElement.parentElement.insertBefore(element[0], elementAtCaret.parentElement);
-					    elementAtCaret.parentElement.remove();
+					    elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
+					    elementAtCaret.parentNode.remove();
 					}
 					else {
 					    if (elementAtCaret.innerHTML) {
 					        element.html(elementAtCaret.innerHTML);
 					    }
 
-					    elementAtCaret.parentElement.insertBefore(element[0], elementAtCaret);
+					    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
 					    elementAtCaret.remove();
 					}
 					this.moveCaret(element[0], element.text().length);
@@ -346,20 +346,20 @@ window.RTE = (function () {
 						else{
 							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
 								el.html(item.textContent.substring(that.range.startOffset));
-								item.parentElement.insertBefore(el[0], item.nextSibling);
+								item.parentNode.insertBefore(el[0], item.nextSibling);
 								item.textContent = item.textContent.substring(0, that.range.startOffset);
 							}
 							else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
 								el.text(item.textContent.substring(0, that.range.endOffset));
-								item.parentElement.insertBefore(el[0], item);
+								item.parentNode.insertBefore(el[0], item);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
 							else if(that.range.startContainer === that.range.endContainer && index === 0){
 								el.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
 								var textBefore = document.createTextNode('');
 								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-								item.parentElement.insertBefore(el[0], item);
-								item.parentElement.insertBefore(textBefore, el[0]);
+								item.parentNode.insertBefore(el[0], item);
+								item.parentNode.insertBefore(textBefore, el[0]);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
 							addedNodes.push(el[0]);
@@ -415,20 +415,20 @@ window.RTE = (function () {
 
 							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
 								el.html(item.textContent.substring(that.range.startOffset));
-								item.parentElement.insertBefore(el[0], item.nextSibling);
+								item.parentNode.insertBefore(el[0], item.nextSibling);
 								item.textContent = item.textContent.substring(0, that.range.startOffset);
 							}
 							else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
 								el.text(item.textContent.substring(0, that.range.endOffset));
-								item.parentElement.insertBefore(el[0], item);
+								item.parentNode.insertBefore(el[0], item);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
 							else if(that.range.startContainer === that.range.endContainer && index === 0){
 								el.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
 								var textBefore = document.createTextNode('');
 								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-								item.parentElement.insertBefore(el[0], item);
-								item.parentElement.insertBefore(textBefore, el[0]);
+								item.parentNode.insertBefore(el[0], item);
+								item.parentNode.insertBefore(textBefore, el[0]);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
 							addedNodes.push(el[0]);
@@ -483,7 +483,7 @@ window.RTE = (function () {
 				            return $(node).css(params);
 				        }
 				        else {
-				            return $(node.parentElement).css(params);
+				            return $(node.parentNode).css(params);
 				        }
 				    }
 				    var different = false;
@@ -494,7 +494,7 @@ window.RTE = (function () {
 				            itemVal = $(item).css(params);
 				        }
 				        else{
-				            itemVal = $(item.parentElement).css(params);
+				            itemVal = $(item.parentNode).css(params);
 				        }
 
 				        if (itemVal !== val && val !== undefined) {
@@ -531,7 +531,7 @@ window.RTE = (function () {
 						jSelector = jSelector.add(item);
 					}
 					else{
-						jSelector = jSelector.add(item.parentElement);
+						jSelector = jSelector.add(item.parentNode);
 					}
 
 				});
@@ -1536,7 +1536,7 @@ window.RTE = (function () {
 							    label: 'editor.remove.link',
 							    action: function (e) {
 							        var content = document.createTextNode($(e.target).text());
-							        e.target.parentElement.insertBefore(content, e.target);
+							        e.target.parentNode.insertBefore(content, e.target);
 							        $(e.target).remove();
 							    }
 							}
@@ -1569,7 +1569,7 @@ window.RTE = (function () {
 						                scope.linker.params.blank = $(element).attr('target') === '_blank';
 						                scope.linker.params.tooltip = $(element).attr('tooltip') || '';
 
-						                if (link.startsWith('http')) {
+						                if (link.split('http')[0] === '' && link.split('http').length > 1) {
 						                    scope.linker.externalLink = true;
 						                    scope.linker.params.link = link;
 						                }
@@ -1639,7 +1639,7 @@ window.RTE = (function () {
 							var linkNode;
 							var selectedNode = instance.selection.range.startContainer;
 							if (selectedNode && selectedNode.nodeType !== 1
-                                && selectedNode.parentElement.childNodes.length === 1
+                                && selectedNode.parentNode.childNodes.length === 1
                                 && instance.selection.range.startOffset === 0
                                 && instance.selection.range.endOffset === selectedNode.textContent.length) {
                                 selectedNode = selectedNode.parentNode;
@@ -2374,7 +2374,7 @@ window.RTE = (function () {
                                     currentTag = editorInstance.selection.range.startContainer;
                                 }
                                 else{
-                                    currentTag = editorInstance.selection.range.startContainer.parentElement;
+                                    currentTag = editorInstance.selection.range.startContainer.parentNode;
                                 }
                                 if(currentTag.tagName === 'TD'){
                                     var nextTag = currentTag.nextSibling;
@@ -2548,10 +2548,10 @@ window.RTE = (function () {
 				return {
 					require: '^popover',
 					link: function(scope, element, attributes){
-					    var parentElement = element.parents('popover');
-					    var mouseEvent = parentElement.attr('mouse-event') || 'mouseover';
-						var popover = parentElement.find('popover-content');
-						parentElement.on(mouseEvent, function (e) {
+					    var parentNode = element.parents('popover');
+					    var mouseEvent = parentNode.attr('mouse-event') || 'mouseover';
+						var popover = parentNode.find('popover-content');
+						parentNode.on(mouseEvent, function (e) {
 						    if (mouseEvent === 'click') {
                                 if (popover.hasClass('hidden')) {
                                     e.stopPropagation();
@@ -2575,7 +2575,7 @@ window.RTE = (function () {
 						});
 
                          if(mouseEvent === 'mouseover') {
-                            parentElement.on('mouseout', function (e) {
+                            parentNode.on('mouseout', function (e) {
                                 popover.addClass("hidden");
                             });
                         }
