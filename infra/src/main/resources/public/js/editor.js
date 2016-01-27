@@ -198,14 +198,21 @@ window.RTE = (function () {
 					}
 				}
 				else {
-					selector.push(range.startContainer);
+                    if (range.startOffset < range.startContainer.textContent.length) {
+                        selector.push(range.startContainer);
+                    }
+					
 					that.editZone.find('*').each(function (index, item) {
-						if (range.intersectsNode(item) && item !== range.startContainer.parentElement && item !== range.endContainer.parentElement && !$(item).find(range.startContainer.parentElement).length && !$(item).find(range.endContainer.parentElement).length) {
+					    if (range.intersectsNode(item)
+                            && item !== range.startContainer.parentElement
+                            && item !== range.endContainer.parentElement
+                            && !$(item).find(range.startContainer.parentElement).length
+                            && !$(item).find(range.endContainer.parentElement).length) {
 							selector.push(item);
 						}
 					});
 
-					if (range.endContainer !== that.editZone[0]) {
+					if (range.endContainer !== that.editZone[0] && range.endOffset > 0) {
 						selector.push(range.endContainer);
 					}
 				}
@@ -255,17 +262,17 @@ window.RTE = (function () {
 				var range = document.createRange();
 				var sel = getSelection();
 
-				if(!element.innerText && !(element.nodeName && element.nodeName === 'IMG')){
+				if(!(element.textContent) && !(element.nodeName && element.nodeName === 'IMG')){
 					return;
 				}
 				if(!start){
 					start = 0;
 				}
-				if (!end && element.innerText) {
-				    end = element.innerText.length;
+				if (!end && element.textContent) {
+				    end = element.textContent.length;
 				}
 
-                if (!element.innerText && element.nodeType === 1) {
+				if (!element.textContent && element.nodeType === 1) {
                     range.selectNode(element);
                 } else {
                     range.setStart(element.firstChild || element, start);
@@ -387,8 +394,7 @@ window.RTE = (function () {
 					that.moveCaret(el[0], 1);
 				}
 				else if (that.selectedElements.length === 1 &&
-                    that.range.startOffset === 0 && that.range.endOffset ===
-                    (that.selectedElements[0].innerText || that.selectedElements[0].textContent).length) {
+                    that.range.startOffset === 0 && that.range.endOffset === that.selectedElements[0].textContent.length) {
 				    var element = that.selectedElements[0];
 				    if (element.nodeType !== 1) {
 				        element = element.parentNode;
@@ -1537,6 +1543,8 @@ window.RTE = (function () {
 						]);
 
 						scope.linker.openLinker = function (appPrefix, address, element) {
+						    var sel = window.getSelection();
+						    instance.selection.range = sel.getRangeAt(0);
 						    scope.linker.display.chooseLink = true;
 						    if (appPrefix) {
 						        scope.linker.search.application.address = '/' + appPrefix;
@@ -1630,6 +1638,12 @@ window.RTE = (function () {
 
 							var linkNode;
 							var selectedNode = instance.selection.range.startContainer;
+							if (selectedNode && selectedNode.nodeType !== 1
+                                && selectedNode.parentElement.childNodes.length === 1
+                                && instance.selection.range.startOffset === 0
+                                && instance.selection.range.endOffset === selectedNode.textContent.length) {
+                                selectedNode = selectedNode.parentNode;
+                            }
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    linkNode = $(selectedNode);
 							}
@@ -1661,6 +1675,13 @@ window.RTE = (function () {
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
 							    instance.trigger('contentupdated');
+							    scope.linker.display.chooseLink = false;
+							    scope.linker.params = {};
+							    scope.linker.display.search = {
+							        application: {},
+							        text: ''
+							    };
+							    scope.linker.externalLink = false;
 							    return;
 							}
 
@@ -2122,7 +2143,7 @@ window.RTE = (function () {
                             function (newValue) {
                                 $(newValue).find('.math-tex').each(function (index, item) {
                                     var mathItem = $('<mathjax></mathjax>');
-                                    mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
+                                    mathItem.attr('formula', item.textContent.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
                                     $(item).removeClass('math-tex');
                                     $(item).text('');
                                     $(item).append(mathItem);
