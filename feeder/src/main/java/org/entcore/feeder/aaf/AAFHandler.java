@@ -101,7 +101,10 @@ public final class AAFHandler extends DefaultHandler {
 			}
 			a.add(JsonUtil.convert(s, type));
 		} else {
-			currentStructure.putValue(attribute, JsonUtil.convert(s, type));
+			Object v = JsonUtil.convert(s, type);
+			if (!(v instanceof JsonUtil.None)) {
+				currentStructure.putValue(attribute, v);
+			}
 		}
 	}
 
