@@ -11,8 +11,6 @@
   "UniversalisRegisteredService.description" : "Service CAS spécifique pour Universalis, l'encyplopédie en ligne.",
   "WebclasseursRegisteredService.name" : "Webclasseur",
   "WebclasseursRegisteredService.description" : "Service CAS spécifique <a href='http://www.onisep.fr/Mes-infos-regionales/Ile-de-France/Espace-pedagogique/Le-Webclasseur-Orientation' target='_blank'>Webclasseur</a>, outil pédagogique national dédié à l’orientation.",
-  "UidRegisteredService.name" : "Uid",
-  "UidRegisteredService.description" :  "Renvoie uniquement l'identifiant externe au client CAS.",
   "ProEPSRegisteredService.name" : "ProEPS",
   "ProEPSRegisteredService.description" : "Service CAS spécifique <a href='http://www.pro-eps.fr/' target='_blank'>Pro-EPS</a>, un espace spécifiquement dédié à l’éducation physique et sportive.",
   "EducagriRegisteredService.name" : "Educagri",
@@ -21,6 +19,10 @@
   "EduMediaRegisteredService.description" : "Service CAS spécifique <a href='https://www.edumedia-sciences.com/fr/' target='_blank'>EduMedia</a>, catalogue de ressources interactives.",
   "GepiRegisteredService.name" : "Gepi",
   "GepiRegisteredService.description" : "Service CAS spécifique <a href='http://gepi.mutualibre.org/' target='_blank'>GEPI</a>, logiciel de notes, absences et cahiers de texte.",
+  "MSELRegisteredService.name" : "MSEL",
+  "MSELRegisteredService.description" : "Service CAS spécifique <a href='https://www.monstageenligne.fr/' target='_blank'>Mon Stage en Ligne</a>, portail national des stages en entreprise.",
+  "UidRegisteredService.name" : "Uid",
+  "UidRegisteredService.description" :  "Renvoie uniquement l'identifiant externe au client CAS.",
   "DefaultRegisteredService.name" : "Défaut",
   "DefaultRegisteredService.description" : "Service CAS par défaut, renvoie l'intégralité des informations utilisateur au client CAS (exhaustif)."
 }

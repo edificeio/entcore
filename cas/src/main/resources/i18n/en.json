@@ -21,6 +21,8 @@
   "EduMediaRegisteredService.description" : "EduMedia",
   "GepiRegisteredService.name" : "Gepi",
   "GepiRegisteredService.description" : "Gepi",
+  "MSELRegisteredService.name" : "MSEL",
+  "MSELRegisteredService.description" : "MSEL",
   "DefaultRegisteredService.name" : "Default",
   "DefaultRegisteredService.description" : "Default cas service"
 }
