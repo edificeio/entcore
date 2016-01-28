@@ -1067,22 +1067,40 @@ window.RTE = (function () {
 				};
 			});
 
+            function setSpectrum(){
+                if($('.sp-replacer').length === 0){
+                    return;
+                }
+                
+                $('input[type=color]').css({
+                    position: 'absolute',
+                    opacity: 0,
+                    'pointer-events': 'none'
+                });
+                $('.sp-replacer').on('mouseover', function(e){ 
+                    $(e.target).parent().find('input[type=color]').trigger('mouseover', [e]);
+                });
+                $('.sp-replacer').on('mouseout', function(e){ 
+                    $(e.target).parent().find('input[type=color]').trigger('mouseout', [e]);
+                });
+            } 
+
 			RTE.baseToolbarConf.option('color', function(instance){
 				return {
 					template: '<input tooltip="editor.option.color" type="color" />',
-					link: function (scope, element, attributes) {
-
-
+					link: function (scope, element, attributes) { 
 						if(!$.spectrum){
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
 								eval(data);
+                                setSpectrum();
 							});
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
 						else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
 						    element.find("input[type=color]").spectrum();
+                            setSpectrum();
 						}
 						scope.foreColor = "#000000";
 						element.children('input').on('change', function(){
@@ -1112,12 +1130,14 @@ window.RTE = (function () {
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
 								eval(data);
+                                setSpectrum();
 							});
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
 						else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
 						    element.find('input[type=color]').spectrum();
+                            setSpectrum();
 						}
 						element.children('input').on('change', function(){
 							scope.backColor = $(this).val();
@@ -1141,7 +1161,7 @@ window.RTE = (function () {
 			RTE.baseToolbarConf.option('font', function(instance){
 				return {
 					template:
-					'<select-list display="font" display-as="fontFamily" placeholder="Police">' +
+					'<select-list display="font" display-as="fontFamily" placeholder="Police" tooltip="editor.option.font">' +
 					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
                     'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
@@ -1199,7 +1219,7 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('fontSize', function(instance) {
 				return {
-					template: '<select-list placeholder="Taille" display="font.fontSize.size">' +
+					template: '<select-list placeholder="Taille" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
 					'<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
                         'style="font-size: [[fontSize.size]]px; line-height: [[fontSize.size]]px">' +
                             '[[fontSize.size]]' +
@@ -1240,7 +1260,7 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('format', function(instance) {
 				return {
-					template: '<select-list model="format" placeholder="Paragraphe" display-as="label" display="format">' +
+					template: '<select-list model="format" placeholder="Paragraphe" display-as="label" display="format" tooltip="editor.option.format">' +
 					'<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
@@ -1797,7 +1817,7 @@ window.RTE = (function () {
 				return {
 					template: '' +
 					'<popover mouse-event="click">' +
-					'<i popover-opener opening-event="click"></i>' +
+					'<i popover-opener opening-event="click" tooltip="editor.option.table"></i>' +
 					'<popover-content>' +
 					'<div class="draw-table"></div>' +
 					'</popover-content>' +
