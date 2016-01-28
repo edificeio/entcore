@@ -4565,7 +4565,7 @@ module.directive('sideNav', function(){
 		restrict: 'AE',
 		link: function(scope, element, attributes){
 			$('.mobile-nav-opener').addClass('visible');
-			var maxWidth = 700;
+			var maxWidth = 800;
 			var target = attributes.targetElement || '.navbar';
 
 			element.addClass('side-nav');
