@@ -152,7 +152,7 @@ window.RTE = (function () {
 			};
 
 			this.addState = function(state){
-				if(state === this.states[this.states.length - 1]){
+			    if(this.states[this.stateIndex - 1] && state === this.states[this.states.length - 1].html){
 					return;
 				}
 				if(this.stateIndex === this.states.length){
@@ -1407,8 +1407,9 @@ window.RTE = (function () {
 						        html += '<img src="/workspace/document/' + file._id + '" draggable native />';
 						    });
 
-						    html += '</div>';
+						    html += '<div><br></div><div><br></div></div>';
 						    instance.selection.replaceHTML(html);
+						    instance.addState(instance.editZone.html());
 							scope.imageOption.display.pickFile = false;
 							scope.imageOption.display.files = [];
 
@@ -1425,11 +1426,13 @@ window.RTE = (function () {
                                 if(image && image.tagName && image.tagName === 'IMG'){
                                     image.remove();
                                 }
+                                instance.addState(instance.editZone.html());
 
 							    ui.extendElement.resizable(instance.editZone.find('img'), {
 							        moveWithResize: false,
                                     mouseUp: function() {
                                         instance.trigger('contentupdated');
+                                        instance.addState(instance.editZone.html());
                                     }
 							    });
 							}, 200)
@@ -1472,6 +1475,7 @@ window.RTE = (function () {
 								    moveWithResize: false,
                                     mouseUp: function() {
                                         instance.trigger('contentupdated');
+                                        instance.addState(instance.editZone.html());
                                     }
 								});
 							}, 200)
@@ -2258,6 +2262,7 @@ window.RTE = (function () {
                                 },
                                 mouseUp: function() {
                                     editorInstance.trigger('contentupdated');
+                                    editorInstance.addState(editorInstance.editZone.html());
                                 }
                             });
                             htmlZone.css({ 'min-height': '250px', height: 0 });
@@ -2497,7 +2502,7 @@ window.RTE = (function () {
                                         }
 
                                         el.attr('src', '/workspace/document/' + doc._id)
-                                        editorInstance.selection.replaceHTML(el[0].outerHTML);
+                                        editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
                                     });
                                 }())
 
