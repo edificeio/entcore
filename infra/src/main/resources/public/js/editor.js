@@ -1805,7 +1805,9 @@ window.RTE = (function () {
 					link: function(scope, element, attributes){
 						scope.display = {};
 						scope.smileys = [ "happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad" ];
-						scope.addSmiley = function(smiley){
+						scope.addSmiley = function (smiley) {
+						    //do not replace with i, as i is used by other websites for italic and
+                            //is often copy-pasted in the editor
 							var content = instance.compile('<img skin-src="/img/smileys/' + smiley + '.png" draggable native style="height: 60px; width: 60px;" />')(scope.$parent);
 							instance.selection.replaceHTML(content);
 							scope.display.pickSmiley = false;
@@ -2212,6 +2214,9 @@ window.RTE = (function () {
                             element.addClass('html');
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                             editorInstance.trigger('contentupdated');
+                            setTimeout(function () {
+                                editorInstance.trigger('contentupdated');
+                            }, 300);
                             if(window.html_beautify){
                                 return;
                             }
@@ -2229,6 +2234,9 @@ window.RTE = (function () {
                             element.addClass('both');
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                             editorInstance.trigger('contentupdated');
+                            setTimeout(function () {
+                                editorInstance.trigger('contentupdated');
+                            }, 300);
                             if(window.html_beautify){
                                 return;
                             }
@@ -2382,7 +2390,12 @@ window.RTE = (function () {
                                     }
                                 });
                             }
-
+                            if (e.ctrlKey && e.keyCode === 86) {
+                                setTimeout(function() {
+                                    editorInstance.editZone.find('i').contents().unwrap().wrap('<em/>');
+                                    editorInstance.addState(editorInstance.editZone.html());
+                                }, 0);
+                            }
                             if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
                                 editorInstance.undo();
                                 e.preventDefault();
