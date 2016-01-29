@@ -124,10 +124,11 @@ window.RTE = (function () {
 				that.scope.$apply();
 			});
 
-			this.applyState = function(){
-				this.editZone.html(
+		    this.applyState = function () {
+		        this.editZone.html(
 					this.compile(this.states[this.stateIndex - 1].html)(this.scope)
 				);
+				
 				if (this.states[this.stateIndex - 1].range) {
 				    var sel = window.getSelection();
 				    sel.removeAllRanges();
@@ -152,7 +153,7 @@ window.RTE = (function () {
 			};
 
 			this.addState = function(state){
-			    if(this.states[this.stateIndex - 1] && state === this.states[this.states.length - 1].html){
+			    if (this.states[this.stateIndex - 1] && state === this.states[this.stateIndex - 1].html) {
 					return;
 				}
 				if(this.stateIndex === this.states.length){
@@ -1412,7 +1413,7 @@ window.RTE = (function () {
 						    instance.addState(instance.editZone.html());
 							scope.imageOption.display.pickFile = false;
 							scope.imageOption.display.files = [];
-
+						    instance.focus();
 						};
 
 						instance.element.on('drop', function (e) {

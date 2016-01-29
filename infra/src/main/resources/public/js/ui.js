@@ -548,7 +548,7 @@ ui.extendElement = {
 						    params.mouseUp();
 						}
 					}, 100);
-					$(window).unbind('mousemove.resize touchmove.resize');
+					$(window).unbind('mousemove.resize touchmove.resize mouseup.resize touchleave.resize touchend.resize');
 					$('body').unbind('mouseup.resize touchleave.resize touchend.resize');
 
 					$('.main').css({'cursor': ''})
