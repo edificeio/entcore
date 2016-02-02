@@ -1307,13 +1307,19 @@ module.directive('bindHtml', function($compile){
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				var htmlContent = htmlVal[0].outerHTML;
-				$(htmlContent).find('.math-tex').each(function (index, item) {
-				    var mathItem = $('<mathjax></mathjax>');
-				    mathItem.attr('formula', item.innerText.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
-				    $(item).removeClass('math-tex');
-				    $(item).text('');
-				    $(item).append(mathItem);
-				});
+				if($(htmlContent).find('.math-tex').length > 0){
+                    if (!window.MathJax) {
+                        loader.openFile({
+                            async: true,
+                            ajax: false,
+                            url: '/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+                            success: function(){
+                                MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+                                MathJax.Hub.Typeset();
+                            }
+                        });
+                    }
+                }
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
 				element.find('audio').each(function(index, item){
