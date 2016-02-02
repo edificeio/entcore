@@ -1,6 +1,177 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.15.0 (03/02/2016)
+
+## AppRegistry
+
+* Gestion des applications externes par les ADML
+* Gestion des widgets
+
+## Archive
+
+* Émission d'une notification sur la timeline si l'utilisateur n'attend pas le téléchargement
+
+## Auth
+
+* Gestion du SLO pour la fédération d'identité
+
+## Directory
+
+* Export ProEPS
+* Optimisations des requêtes de l'annuaire
+* Blocage de la mise en pré-suppression pour les utilisateurs AAF qui n'ont pas disparu des imports
+
+## Feeder
+
+* Ajout de l'héritage des ADML lors du rattachement d'une structure
+* Modification de la liste de login pour supprimer les logins inutilisées lors du rollback
+* Restauration automatique des utilisateurs en pré-suppression qui réapparaissent dans les AAF
+* Support du format AAF ENT2D
+
+## Infra
+
+* Changement de l'éditeur
+
+## Timeline
+
+* Ajout d'une image dans les notifications système
+
+## Anomalies corrigées
+
+* Auth
+** Correction du bouton de login sur ipad
+* Calendrier
+** erreurs de sérialisation
+* Directory
+** correction des hobbies
+** correction du publipostage
+** correction de l'export GEPI
+* Workspace
+** correction du ratio des images dans le caroussel
+** duplication des notifications d'un document partagé lors d'un commentaire par le propriétaire
+** copier un dossier à la racine
+
+# v1.14.16 (01/12/2015)
+
+## Anomalies corrigées
+
+* Prévention de la désactivation des boites de messagerie
+* Blocage de l'import CSV si il contient un id externe non modifiable
+* Ajout de dossiers dans le sniplet document
+* Export GEPI
+* Export Sacoche
+* Gestion des erreurs de déserialisation Hazelcast pour la session
+
+# v1.14.15 (18/11/2015)
+
+## Anomalies corrigées
+
+* Problème d'affichage de la vue La classe
+
+
+# v1.14.14 (28/10/2015)
+
+## Anomalies corrigées
+
+* Un adml ne pouvait pas réinitialiser le mot de passe d'un utilisateur dans une sous structure
+* Amélioration du drag & drop sur mobile
+* Version responsive du workspace
+* Connecteur KNE/CNS
+* Connecteur MonStageEnLigne
+
+
+# v1.14.13 (28/10/2015)
+
+## Anomalies corrigées
+
+* Supprimer les classes vides
+
+
+# v1.14.12 (14/10/2015)
+
+## Anomalies corrigées
+
+* Ne pas exporter les utilisateurs pré-supprimés
+* Supprimer les groupes qui ne sont plus dans l'export
+
+
+# v1.14.11 (09/10/2015)
+
+## Anomalies corrigées
+
+* Service CAS pour GEPI
+* Correction pour EducMedia
+* Support du drag & drop sur tablette
+* Export Cerise
+* Export Esidoc
+* Export paramétable
+* Ajout d'un TTL à la collection des tickets CAS
+* Route de monitoring des bases de données
+
+
+# v1.14.10 (16/09/2015)
+
+## Anomalies corrigées
+
+* Restauration de l'indicateur de comptage des messages
+* Ajout de l'id siecle dans les exports CSV
+* Optimisation de l'attribution ADML
+* Affichage des fonctions de l'utilisateur dans sa fiche en admin
+
+
+# v1.14.9 (10/09/2015)
+
+## Anomalies corrigées
+
+* Suppression de l'indicateur de comptage des messages
+
+
+# v1.14.8 (10/09/2015)
+
+## Anomalies corrigées
+
+* Optimisation de la recherche dans l'annuaire
+* Renommage de documents dans la bibliothèque multimédia
+* Suppression du bouton d'attribution admin central
+* Prévention d'un double clic sur le bouton d'attribution ADML
+* Création d'archives lourdes
+
+
+# v1.14.7 (07/09/2015)
+
+## Anomalies corrigées
+
+* Restauration de l'indicateur de comptage des messages
+
+
+# v1.14.6 (07/09/2015)
+
+## Anomalies corrigées
+
+* Rendre configurable la taille max d'un fichier
+
+
+# v1.14.5 (03/09/2015)
+
+## Anomalies corrigées
+
+* Changement de la règle métier pour déterminer si un PersEducNat est personnel ou enseignant
+* Diminution de la sensibilité de la requête de recherche de doublon
+
+
+# v1.14.4 (01/09/2015)
+
+## Anomalies corrigées
+
+* Support de la génération des pdf en mode HA
+* Support de l'envoi des SMS en mode HA
+* Optimisation de la sélection des structures dans l'admin
+* Ajout des préférences utilisateurs dans la session
+* Optimisation de la création de la session
+* Suppression de l'indicateur de comptage des messages
+
+
 # v1.14.3 (27/08/2015)
 
 ## Directory
