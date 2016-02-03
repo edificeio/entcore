@@ -175,5 +175,7 @@
     "editor.edit.link": "Modifier le lien",
     "editor.align.left": "Texte à droite",
     "editor.align.right": "Texte à gauche",
-    "editor.align.center":  "Centrer"
+    "editor.align.center":  "Centrer",
+    "editor.edit.mathjax": "Modifier la formule",
+    "editor.remove.mathjax": "Supprimer la formule"
 }
