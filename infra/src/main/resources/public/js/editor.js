@@ -1515,17 +1515,83 @@ window.RTE = (function () {
 					'<mathjax formula="[[display.formula]]"></mathjax>' +
 					'<div class="row">' +
 					'<button type="button" ng-click="updateContent()" class="right-magnet"><i18n>apply</i18n></button>' +
-					'<button type="button" ng-click="display.fillFormula = false" class="right-magnet cancel"><i18n>cancel</i18n></button>' +
+					'<button type="button" ng-click="cancel()" class="right-magnet cancel"><i18n>cancel</i18n></button>' +
 					'</div>' +
 					'</lightbox>',
 					link: function(scope, element, attributes){
 						scope.display = {
 							formula: '{-b \\pm \\sqrt{b^2-4ac} \\over 2a}'
 						};
+                        
+                        var editNode = undefined;
+                        
 						scope.updateContent = function(){
-							instance.selection.replaceHTML(instance.compile('<mathjax formula="' + scope.display.formula + '"></mathjax>')(scope));
+                            if(editNode){
+                                $(editNode).attr('formula', scope.display.formula);
+                                angular.element(editNode).scope().updateFormula(scope.display.formula);
+                            }
+                            else{
+                                instance.selection.replaceHTML(instance.compile(`
+                                    <div class="row"><br/></div>
+                                    <div class="row">
+                                        <mathjax formula="`+ scope.display.formula + `"></mathjax>
+                                    </div>
+                                    <div><br /></div>
+                                `)(scope));
+                            }
+							
 							scope.display.fillFormula = false;
+                            editNode = undefined;
 						};
+                        
+                        scope.cancel = function(){
+                            editNode = undefined;
+                            scope.display.fillFormula = false;
+                        };
+                        
+                        instance.bindContextualMenu(scope, 'mathjax', [
+							{
+							    label: 'editor.edit.mathjax',
+							    action: function (e) {
+							        instance.selection.selectNode(e.target);
+							        scope.display.fillFormula = true;
+                                    scope.display.formula = $(e.target).attr('formula');
+							        editNode = e.target;
+							    }
+
+							},
+							{
+							    label: 'editor.remove.mathjax',
+							    action: function (e) {
+							        $(e.target).remove();
+							    }
+							}
+						]);
+                        
+                        // style placed here temporarily to avoid rebuilding css
+                        // to be moved in 1.16
+                        $(`
+                            <style>
+                                [contenteditable] mathjax{
+                                    display: block;
+                                    float: left;
+                                    position: relative;
+                                    border: 1px solid #ccc;
+                                }
+                                [contenteditable] mathjax::after{
+                                    display: block;
+                                    content: " ";
+                                    height: 100%;
+                                    width: 100%;
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    -moz-user-select: none;
+                                    -webkit-user-select: none;
+                                    user-select: none;
+                                }
+                            </style>
+                        `).appendTo('head');
 					}
 				}
 			});
@@ -2651,12 +2717,16 @@ window.RTE = (function () {
 							});
 					    }
 
-						attributes.$observe('formula', function(newVal){
-							element.text('$$' + newVal + '$$');
+                        scope.updateFormula = function(newVal){
+                            element.text('$$' + newVal + '$$');
 							if (window.MathJax && window.MathJax.Hub) {
 							    MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
 							    MathJax.Hub.Typeset();
 							}
+                        };
+
+						attributes.$observe('formula', function(newVal){
+							scope.updateFormula(newVal);
 						});
 					}
 				}
