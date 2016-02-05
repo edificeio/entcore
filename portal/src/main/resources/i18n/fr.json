@@ -14,6 +14,8 @@
     "back": "Retour",
     "blog": "Blog",
     "books": "Lecture",
+    "calendar.weekfrom": "Semaine du",
+    "calendar.weekto": "au",
     "cancel": "Annuler",
     "classadmin": "Paramétrage de la classe",
     "collaborativeeditor": "Pad",
