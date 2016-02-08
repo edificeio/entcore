@@ -6,15 +6,15 @@
 
 		<section ng-if="linker.externalLink">
 			<div class="row">
-				<label class="four cell">Adresse du site</label>
-				<input class="four cell" type="text" placeholder="http://adresse-du-site.com" ng-model="linker.params.link" />
+				<label class="four cell zero-mobile">Adresse du site</label>
+				<input class="four cell twelve-mobile" type="text" placeholder="http://adresse-du-site.com" ng-model="linker.params.link" />
 			</div>
 			<div class="row">
-				<label class="four cell">Bulle d'information</label>
-				<input class="four cell" type="text" placeholder="Bulle d'aide" ng-model="linker.params.tooltip" />
+				<label class="four cell zero-mobile">Bulle d'information</label>
+				<input class="four cell twelve-mobile" type="text" placeholder="Bulle d'aide" ng-model="linker.params.tooltip" />
 			</div>
 			<div class="row">
-				<div class="four cell">&nbsp;</div>
+				<div class="four cell zero-mobile">&nbsp;</div>
 				<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
 			</div>
 		</section>
@@ -46,11 +46,11 @@
 			</article>
 			<div class="twelve cell vertical-spacing">
 				<div class="row">
-					<label class="three cell">Bulle d'information</label>
-					<input class="nine cell" type="text" ng-model="linker.params.tooltip" placeholder="Bulle d'aide" />
+					<label class="three cell zero-mobile">Bulle d'information</label>
+					<input class="nine cell twelve-mobile" type="text" ng-model="linker.params.tooltip" placeholder="Bulle d'aide" />
 				</div>
 				<div class="row">
-					<div class="three cell">&nbsp;</div>
+					<div class="three cell zero-mobile">&nbsp;</div>
 					<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
 				</div>
 			</div>

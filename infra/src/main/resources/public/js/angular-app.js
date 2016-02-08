@@ -309,19 +309,23 @@ module.directive('lightbox', function($compile){
                     var parentElements = element.parents();
 
                     scope.backup = {
-                        overflowX: _.filter(parentElements, function(parent){ return $(parent).css('overflow-x') == 'hidden' }),
-                        overflowY: _.filter(parentElements, function(parent){ return $(parent).css('overflow-y') == 'hidden' }),
+                        overflow: _.filter(parentElements, function(parent) {
+                            return $(parent).css('overflow-x') !== 'visible' || $(parent).css('overflow-y') !== 'visible'
+                        }),
                         zIndex: _.chain(parentElements)
                             .map(function(parent){ return {element: $(parent), index: parseInt($(parent).css('z-index'))}})
                             .filter(function(parentObj){ return parentObj.index > 0 }).value()
                     };
 
                     //Removing overflow properties
-                    _.forEach(scope.backup.overflowX, function(element){ $(element).css('overflow-x', 'visible') })
-                    _.forEach(scope.backup.overflowY, function(element){ $(element).css('overflow-y', 'visible') })
+				    _.forEach(scope.backup.overflow, function(element) {
+				        $(element).css({ 'overflow': 'visible' })
+				    });
 
                     //Ensuring proper z-index
-                    _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', 9999) })
+                    _.forEach(scope.backup.zIndex, function(elementObj) {
+                        elementObj.element.css('z-index', 99999)
+                    })
 
 					setTimeout(function(){
 						lightboxWindow.fadeIn();
@@ -332,9 +336,12 @@ module.directive('lightbox', function($compile){
 				else{
                     if(scope.backup){
                         //Restoring stored elements properties
-                        _.forEach(scope.backup.overflowX, function(element){ $(element).css('overflow-x', 'hidden') })
-                        _.forEach(scope.backup.overflowY, function(element){ $(element).css('overflow-y', 'hidden') })
-                        _.forEach(scope.backup.zIndex, function(elementObj){ elementObj.element.css('z-index', elementObj.index) })
+                        _.forEach(scope.backup.overflow, function(element) {
+                            $(element).css('overflow', '')
+                        })
+                        _.forEach(scope.backup.zIndex, function(elementObj) {
+                            elementObj.element.css('z-index', elementObj.index)
+                        })
                     }
 
 					element.children('.lightbox').fadeOut();
