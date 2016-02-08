@@ -2646,7 +2646,8 @@ window.RTE = (function () {
 						});
 
 						$('body').click(function(e){
-							if(e.target === element.find('.selected-value')[0]){
+						    if (e.target === element.find('.selected-value')[0] ||
+                                element.children('.options').hasClass('hidden')) {
 								return;
 							}
 

@@ -32,7 +32,7 @@
 	<hr />
 </div>
 <div class="row browse">
-	<nav class="four cell vertical">
+	<nav class="four cell vertical twelve-mobile">
 		<ul>
 			<li workflow="workspace.create">
 				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }"><i18n>workspace.myDocuments</i18n></a>
@@ -52,7 +52,7 @@
 			</li>
 		</ul>
 	</nav>
-	<div class="cell eight height-five">
+	<div class="cell eight height-five twelve-mobile height-ten-mobile">
 		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
 		<div class="absolute icons-view" style="overflow: auto">
 			<div class="element reduce-block-six" ng-repeat="folder in folders">
