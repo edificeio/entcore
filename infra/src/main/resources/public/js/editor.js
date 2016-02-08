@@ -714,35 +714,6 @@ window.RTE = (function () {
 				};
 			});
 
-			RTE.baseToolbarConf.option('removeFormat', function(instance){
-				return {
-					template: '<i tooltip="editor.option.removeformat"></i>',
-					link: function(scope, element, attributes){
-						element.on('click', function(){
-							if(!instance.editZone.is(':focus')){
-								instance.focus();
-							}
-							instance.execCommand('removeFormat');
-							if(document.queryCommandEnabled('removeFormat')){
-								element.removeClass('disabled');
-							}
-							else{
-								element.addClass('disabled');
-							}
-						});
-
-						instance.on('selectionchange', function(e){
-							if(document.queryCommandEnabled('removeFormat')){
-								element.removeClass('disabled');
-							}
-							else{
-								element.addClass('disabled');
-							}
-						});
-					}
-				};
-			});
-
 			RTE.baseToolbarConf.option('justifyLeft', function(instance){
 				return {
 					template: '<i tooltip="editor.option.justify.left"></i>',
@@ -926,68 +897,6 @@ window.RTE = (function () {
 
 						instance.on('justify-changed', function(e){
 							if(document.queryCommandState('justifyFull')){
-								element.addClass('toggled');
-							}
-							else{
-								element.removeClass('toggled');
-							}
-						});
-					}
-				};
-			});
-
-			RTE.baseToolbarConf.option('subscript', function(instance){
-				return {
-					template: '<i tooltip="editor.option.subscript"></i>',
-					link: function(scope, element, attributes){
-						element.on('click', function(){
-							if(!instance.editZone.is(':focus')){
-								instance.focus();
-							}
-
-							if(instance.selection.css('vertical-align') !== 'sub'){
-								element.addClass('toggled');
-								instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
-							}
-							else{
-								element.removeClass('toggled');
-                                instance.selection.css({ 'vertical-align': '', 'font-size': '' });
-							}
-						});
-
-						instance.on('selectionchange', function(e){
-							if(instance.selection.css('vertical-align') === 'sub'){
-								element.addClass('toggled');
-							}
-							else{
-								element.removeClass('toggled');
-							}
-						});
-					}
-				};
-			});
-
-			RTE.baseToolbarConf.option('superscript', function(instance){
-				return {
-					template: '<i tooltip="editor.option.superscript"></i>',
-					link: function(scope, element, attributes){
-						element.on('click', function(){
-							if(!instance.editZone.is(':focus')){
-								instance.focus();
-							}
-
-							if(instance.selection.css('vertical-align') !== 'super'){
-								element.addClass('toggled');
-                                instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
-							}
-							else{
-								element.removeClass('toggled');
-								instance.selection.css({ 'vertical-align': '', 'font-size': '' });
-							}
-						});
-
-						instance.on('selectionchange', function(e){
-							if(instance.selection.css('vertical-align') === 'super'){
 								element.addClass('toggled');
 							}
 							else{
@@ -1335,6 +1244,97 @@ window.RTE = (function () {
 						}
 					}
 				}
+			});
+
+			RTE.baseToolbarConf.option('subscript', function (instance) {
+			    return {
+			        template: '<i tooltip="editor.option.subscript"></i>',
+			        link: function (scope, element, attributes) {
+			            element.on('click', function () {
+			                if (!instance.editZone.is(':focus')) {
+			                    instance.focus();
+			                }
+
+			                if (instance.selection.css('vertical-align') !== 'sub') {
+			                    element.addClass('toggled');
+			                    instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
+			                }
+			                else {
+			                    element.removeClass('toggled');
+			                    instance.selection.css({ 'vertical-align': '', 'font-size': '' });
+			                }
+			            });
+
+			            instance.on('selectionchange', function (e) {
+			                if (instance.selection.css('vertical-align') === 'sub') {
+			                    element.addClass('toggled');
+			                }
+			                else {
+			                    element.removeClass('toggled');
+			                }
+			            });
+			        }
+			    };
+			});
+
+			RTE.baseToolbarConf.option('superscript', function (instance) {
+			    return {
+			        template: '<i tooltip="editor.option.superscript"></i>',
+			        link: function (scope, element, attributes) {
+			            element.on('click', function () {
+			                if (!instance.editZone.is(':focus')) {
+			                    instance.focus();
+			                }
+
+			                if (instance.selection.css('vertical-align') !== 'super') {
+			                    element.addClass('toggled');
+			                    instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
+			                }
+			                else {
+			                    element.removeClass('toggled');
+			                    instance.selection.css({ 'vertical-align': '', 'font-size': '' });
+			                }
+			            });
+
+			            instance.on('selectionchange', function (e) {
+			                if (instance.selection.css('vertical-align') === 'super') {
+			                    element.addClass('toggled');
+			                }
+			                else {
+			                    element.removeClass('toggled');
+			                }
+			            });
+			        }
+			    };
+			});
+
+			RTE.baseToolbarConf.option('removeFormat', function (instance) {
+			    return {
+			        template: '<i tooltip="editor.option.removeformat"></i>',
+			        link: function (scope, element, attributes) {
+			            element.on('click', function () {
+			                if (!instance.editZone.is(':focus')) {
+			                    instance.focus();
+			                }
+			                instance.execCommand('removeFormat');
+			                if (document.queryCommandEnabled('removeFormat')) {
+			                    element.removeClass('disabled');
+			                }
+			                else {
+			                    element.addClass('disabled');
+			                }
+			            });
+
+			            instance.on('selectionchange', function (e) {
+			                if (document.queryCommandEnabled('removeFormat')) {
+			                    element.removeClass('disabled');
+			                }
+			                else {
+			                    element.addClass('disabled');
+			                }
+			            });
+			        }
+			    };
 			});
 
 			RTE.baseToolbarConf.option('image', function(instance){
@@ -2619,11 +2619,28 @@ window.RTE = (function () {
 						};
 
 						element.children('.selected-value').on('click', function(){
-							if(element.children('.options').hasClass('hidden')){
+						    if (element.children('.options').hasClass('hidden')) {
+						        setTimeout(function () {
+						            element.parents('editor-toolbar').each(function(index, item) {
+                                        $(item).css({
+                                            'margin-top': '-' + item.scrollTop + 'px',
+                                            'min-height': '0',
+                                            'height': 'auto'
+                                        })
+						            });
+						            element.parents().css({
+						                 overflow: 'visible'
+						            });
+						        }, 0);
+						        
 								element.children('.options').removeClass('hidden');
 								element.children('.options').height(element.children('.options')[0].scrollHeight);
 							}
-							else{
+						    else {
+						        element.parents().css({ overflow: '' });
+						        element.parents('editor-toolbar').each(function (index, item) {
+						            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+						        });
 								element.children('.options').addClass('hidden');
 							}
 						});
@@ -2633,6 +2650,10 @@ window.RTE = (function () {
 								return;
 							}
 
+							element.parents().css({ overflow: '' });
+							element.parents('editor-toolbar').each(function (index, item) {
+							    $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+							});
 							element.children('.options').addClass('hidden');
 						});
 					}
