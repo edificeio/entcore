@@ -1489,7 +1489,7 @@ window.RTE = (function () {
 			    return {
 			        template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
 					'<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">' +
-					'<h2>Choisir un modèle</h2>' +
+					'<h2><i18n>editor.option.embed</i18n></h2>' +
 					'<p class="info"><i18n>info.video.embed</i18n></p>' +
 					'<textarea ng-model="display.htmlCode"></textarea>' +
 					'<div class="row">' +
@@ -1984,7 +1984,7 @@ window.RTE = (function () {
 				return {
 					template: '<i tooltip="editor.option.templates"></i>' +
 					'<lightbox show="display.pickTemplate" on-close="display.pickTemplate = false;">' +
-					'<h2>Choisir un modèle</h2>' +
+					'<h2><i18n>editor.option.templates</i18n></h2>' +
 					'<ul class="thought-out-actions">' +
 					'<li ng-repeat="template in templates" ng-click="applyTemplate(template)">' +
 					    '<img ng-src="[[template.image]]" class="cell" />' +
