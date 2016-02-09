@@ -302,6 +302,12 @@ ui.extendSelector = {
     }
 };
 
+ui.breakpoints = {
+	tablette: 800,
+	fatMobile: 550,
+	smallMobile:420
+}
+
 ui.extendElement = {
 	touchEvents: function(element, params){
 		if(!params){
