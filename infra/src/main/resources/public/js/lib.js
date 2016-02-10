@@ -1579,7 +1579,7 @@ var recorder = (function(){
 		state: function(callback){
 			followers.push(callback);
 		},
-		title: 'Capture ' + moment().format('DD/MM/YYYY'),
+		title: '' + moment().format('DD/MM/YYYY'),
 		status: 'idle',
 		save: function(callback, format){
 			this.stop();
