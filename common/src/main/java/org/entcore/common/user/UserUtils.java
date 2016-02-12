@@ -287,24 +287,38 @@ public class UserUtils {
 							.putString("userId", remoteUserId)
 							.putBoolean("allowDisconnectedUser", true);
 				}
-				eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
-
-					@Override
-					public void handle(Message<JsonObject> message) {
-						JsonObject session = message.body().getObject("session");
-						request.resume();
-						if ("ok".equals(message.body().getString("status")) && session != null) {
-							if (request instanceof SecureHttpServerRequest) {
-								((SecureHttpServerRequest) request).setSession(session);
-							}
-							handler.handle(session);
-						} else {
-							handler.handle(null);
-						}
-					}
-				});
+				findSession(eb, request, findSession, handler);
 			}
 		}
+	}
+
+	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession,
+			final Handler<JsonObject> handler) {
+		eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> message) {
+				JsonObject session = message.body().getObject("session");
+				if (request != null) {
+					request.resume();
+				}
+				if ("ok".equals(message.body().getString("status")) && session != null) {
+					if (request instanceof SecureHttpServerRequest) {
+						((SecureHttpServerRequest) request).setSession(session);
+					}
+					handler.handle(session);
+				} else {
+					handler.handle(null);
+				}
+			}
+		});
+	}
+
+	public static void getSession(EventBus eb, final String sessionId,  final Handler<JsonObject> handler) {
+		JsonObject findSession = new JsonObject()
+				.putString("action", "find")
+				.putString("sessionId", sessionId);
+		findSession(eb, null, findSession, handler);
 	}
 
 	public static UserInfos sessionToUserInfos(JsonObject session) {
