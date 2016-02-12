@@ -4662,6 +4662,59 @@ module.directive('appTitle', function($compile){
 	}
 });
 
+module.directive('microbox', function($compile){
+	return {
+		restrict: 'E',
+		link: function(scope, element, attributes){
+			var maxWidth = ui.breakpoints.tablette;
+			var title = lang.translate(attributes.title);
+			var closeBox = lang.translate(attributes.close);
+			element.addClass('zero-mobile');
+			var content = element.html();
+
+			function setBox(apply){
+
+				if($(window).width() <= maxWidth && !$('.microbox-wrapper').length){
+
+					$('body').append('<div class="microbox-wrapper zero">'+
+						'<div class="microbox-content"></div>'+
+						'<button class="microbox-close">'+ closeBox +'</button>'+
+						'</div>');
+
+					$('.microbox-content').html($compile(content)(scope));
+					element.after('<button class="microbox">'+ title +'</button>');
+
+					$('button.microbox').on('click', function(){
+						if($('.microbox-wrapper').hasClass('zero')){
+							$('.microbox-wrapper').removeClass('zero');
+						}
+					});
+
+					$('button.microbox-close').on('click', function(){
+						if(!$('.microbox-wrapper').hasClass('zero')){
+							$('.microbox-wrapper').addClass('zero');
+						}
+					});
+
+					if(apply)
+						scope.$apply();
+				} else if($(window).width() > maxWidth){
+					$('.microbox-wrapper').remove();
+					$('button.microbox').remove();
+				}
+			}
+
+			setBox();
+			$(window).on('resize', function(){ setBox(true) });
+
+			scope.$on("$destroy", function() {
+				$('body').find('button.microbox').remove();
+				$('body').find('.microbox-content').remove();
+			});
+		}
+	}
+});
+
 module.directive('subtitle', function () {
 	return {
 		restrict: 'A',
