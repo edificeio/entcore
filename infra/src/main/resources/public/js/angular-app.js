@@ -4665,52 +4665,57 @@ module.directive('appTitle', function($compile){
 module.directive('microbox', function($compile){
 	return {
 		restrict: 'E',
-		link: function(scope, element, attributes){
-			var maxWidth = ui.breakpoints.tablette;
-			var title = lang.translate(attributes.title);
-			var closeBox = lang.translate(attributes.close);
-			element.addClass('zero-mobile');
+		compile: function(element, attributes, transclude){
 			var content = element.html();
 
-			function setBox(apply){
+			return function(scope, element, attributes){
+				var maxWidth = ui.breakpoints.tablette;
+				var title = lang.translate(attributes.title);
+				var closeBox = lang.translate(attributes.close);
+				element.addClass('zero-mobile');
 
-				if($(window).width() <= maxWidth && !$('.microbox-wrapper').length){
+				function setBox(apply){
 
-					$('body').append('<div class="microbox-wrapper zero">'+
-						'<div class="microbox-content"></div>'+
-						'<button class="microbox-close">'+ closeBox +'</button>'+
-						'</div>');
+					if($(window).width() <= maxWidth && !$('.microbox-wrapper').length){
+						//creer la box
+						$('body').append('<div class="microbox-wrapper zero">'+
+							'<div class="microbox-content">'+
+							'<i class="close-2x"></i>'+
+							'<div class="microbox-material"></div>'+
+							'<button class="microbox-close">'+ closeBox +'</button>'+
+							'</div></div>');
 
-					$('.microbox-content').html($compile(content)(scope));
-					element.after('<button class="microbox">'+ title +'</button>');
+						$('.microbox-material').html($compile(content)(scope));
+						element.after('<button class="microbox">'+ title +'</button>');
 
-					$('button.microbox').on('click', function(){
-						if($('.microbox-wrapper').hasClass('zero')){
-							$('.microbox-wrapper').removeClass('zero');
-						}
-					});
+						$('button.microbox').on('click', function(){
+							if($('.microbox-wrapper').hasClass('zero')){
+								$('.microbox-wrapper').removeClass('zero');
+							}
+						});
 
-					$('button.microbox-close').on('click', function(){
-						if(!$('.microbox-wrapper').hasClass('zero')){
-							$('.microbox-wrapper').addClass('zero');
-						}
-					});
+						$('button.microbox-close, .microbox-content i.close-2x').on('click', function(){
+							if(!$('.microbox-wrapper').hasClass('zero')){
+								$('.microbox-wrapper').addClass('zero');
+							}
+						});
 
-					if(apply)
-						scope.$apply();
-				} else if($(window).width() > maxWidth){
-					$('.microbox-wrapper').remove();
-					$('button.microbox').remove();
+						if(apply)
+							scope.$apply();
+					} else if($(window).width() > maxWidth){
+						$('.microbox-wrapper').remove();
+						$('button.microbox').remove();
+					}
 				}
+
+				setBox();
+				$(window).on('resize', function(){ setBox(true) });
+
+				scope.$on("$destroy", function() {
+					$('body').find('button.microbox').remove();
+					$('body').find('.microbox-content').remove();
+				});
 			}
-
-			setBox();
-			$(window).on('resize', function(){ setBox(true) });
-
-			scope.$on("$destroy", function() {
-				$('body').find('button.microbox').remove();
-				$('body').find('.microbox-content').remove();
-			});
 		}
 	}
 });
