@@ -203,7 +203,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		params.putString("groupId", groupId);
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String deleteQuery =
-					"MATCH (m:Group)-[r:AUTHORIZED]-() " +
+					"MATCH (m:Group)-[r:AUTHORIZED]-(:Role) " +
 					"WHERE m.id = {groupId} " +
 					"DELETE r";
 			if (roleIds == null || roleIds.size() == 0) {
