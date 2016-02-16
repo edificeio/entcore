@@ -1,6 +1,12 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.15.1 (17/02/2016)
+
+## Anomalies corrigées
+
+* Empêcher la suppression des droits d'accès aux widgets lors de la configuration d'Eliot.
+
 # v1.15.0 (03/02/2016)
 
 ## AppRegistry
