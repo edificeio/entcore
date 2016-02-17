@@ -37,6 +37,7 @@
     "appregistry.cancel": "Cancelar",
     "appregistry.clientId": "Id do cliente",
     "appregistry.code": "Código",
+    "appregistry.password": "Password",
     "appregistry.create": "Criar",
     "appregistry.createApp": "Criar uma aplicação",
     "appregistry.createRole": "Criar uma função",
