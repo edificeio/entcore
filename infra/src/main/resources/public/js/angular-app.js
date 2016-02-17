@@ -4965,12 +4965,14 @@ function Share($rootScope, $scope, ui, _, lang){
 						var elementObj = _.findWhere(editResource[type].visibles, {
 							id: element
 						});
-						elementObj.actions = groupActions;
-						if(initModel){
-							$scope.sharingModel.edited.push(elementObj);
-						}
+                        if(elementObj){
+                            elementObj.actions = groupActions;
+                            if(initModel){
+                                $scope.sharingModel.edited.push(elementObj);
+                            }
 
-						elementObj.index = $scope.sharingModel.edited.length;
+                            elementObj.index = $scope.sharingModel.edited.length;
+                        }
 					}
 				}
 
