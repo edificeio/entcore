@@ -23,7 +23,7 @@
 		<title ng-if="me.userId === account.id">{{#i18n}}account.myaccount{{/i18n}}</title>
 		<title ng-if="me.userId !== account.id">{{#i18n}}account.useraccount{{/i18n}}</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
 		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 		<script type="text/javascript" src="/directory/public/js/model.js"></script>
 		<script src="/directory/public/js/account.js" type="text/javascript"></script>
@@ -33,12 +33,18 @@
 			<lightbox show="display.password" on-close="display.password = false">
 				<div ng-include="resetPasswordPath" class="twelve cell height-seven" ng-show="resetPasswordPath!==''"></div>
 			</lightbox>
-			<h1 ng-if="me.userId === account.id">
-				<a data-reload><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
-			</h1>
-			<h1 ng-if="me.userId !== account.id">
-				<a href="/directory/class-admin"><i class="orange-user"></i><span translate content="account.useraccount"></span></a>
-			</h1>
+
+			<app-title ng-if="me.userId === account.id">
+				<h1>
+					<a data-reload><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
+				</h1>
+			</app-title>
+			<app-title ng-if="me.userId !== account.id">
+				<h1>
+					<a href="/directory/class-admin"><i class="orange-user"></i><span translate content="account.useraccount"></span></a>
+				</h1>
+			</app-title>
+
 
 			<div class="row rigid-grid" ng-include="viewsContainers.user"></div>
 			<div class="row user-book" ng-include="viewsContainers.userbook"></div>

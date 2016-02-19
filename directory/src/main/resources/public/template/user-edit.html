@@ -18,7 +18,8 @@
  ~
  -->
 
-<div class="cell four height-four reduce-block-six">
+<div class="cell four height-four reduce-block-six avatar">
+
 	<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
 		<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
 	</div>
@@ -27,7 +28,8 @@
 		<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
 	</div>
 </div>
-<div class="margin-four reduce-block-six user-infos">
+
+<div class="margin-four reduce-block-six twelve-mobile user-infos">
 	<article class="fluid cell twelve small-text">
 		<h2>[[account.displayName]]</h2>
 		<form name="userForm" novalidate>
@@ -124,7 +126,7 @@
 				<i class="[[account.visible.birthdate]] right-magnet" title="[[translate(account.visible.birthdate)]]" data-ng-click="changeInfosVisibility('birthdate', account.visible.birthdate)"></i>
 				<div class="clear"></div>
 			</div>
-			
+
 			<div class="row">
 				<div class="four cell">
 					<i18n>userBook.profile.school</i18n>

@@ -19,8 +19,8 @@
  -->
 
 <div class="row rigid-grid">
-	<div class="four cell" style="height: 115px;">
-		
+	<div class="four cell twelve-mobile mood" style="height: 100px;">
+
 		<div class="row horizontal-spacing-twice" style="z-index: 1">
 			<div class="twelve cell centered">
 				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
@@ -29,8 +29,8 @@
 		</div>
 
 
-		<div class="cell absolute twelve bottom-magnet">
-			<div class="twelve cell bottom-magnet reduce-block-six">
+		<div class="cell twelve">
+			<div class="twelve cell reduce-block-six">
 				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
 					<div>[[mon-binding]]</div>
 				</icons-select>
@@ -38,7 +38,9 @@
 		</div>
 
 	</div>
-	<div class="margin-four reduce-block-six">
+
+
+	<div class="margin-four reduce-block-six twelve-mobile">
 		<article class="twelve cell" style="height: 103px; padding-top: 20px;margin:0">
 			<div class="row">
 				<h2 translate content="userBook.profile.motto"></h2>
@@ -48,25 +50,34 @@
 			</div>
 		</article>
 	</div>
+
 </div>
 
-<h1><i18n>userBook.interests</i18n></h1>
-<article>
-	<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
-		<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
-		<div class="nine cell">
-			<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
+<div class="row reduce-block-six twelve-mobile">
+	<article>
+		<h2><i18n>userBook.interests</i18n></h2>
+
+		<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
+			<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
+			<div class="nine cell">
+				<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
+			</div>
+			<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)"></i></div>
+			<div class="clear"></div>
 		</div>
-		<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)"></i></div>
-		<div class="clear"></div>
-	</div>
-</article>
-<div class="clear"></div>
-<h1>
-	<span translate content="userBook.profile.health"></span>
-	<i class="[[account.visible.health]] right-magnet" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)"></i></h1>
-<article>
-	<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
-</article>
+	</article>
 </div>
+
 <div class="clear"></div>
+
+<div class="row reduce-block-six twelve-mobile">
+	<article>
+		<h2>
+			<span translate content="userBook.profile.health"></span>
+			<i class="[[account.visible.health]] right-magnet" title="[[translate(account.visible.health)]]" data-ng-click="changeInfosVisibility('health', account.visible.health)"></i></h2>
+
+		<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
+	</article>
+	</div>
+	<div class="clear"></div>
+</div>
