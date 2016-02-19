@@ -19,41 +19,42 @@
  -->
 
 <div class="row rigid-grid">
-	<div class="four cell reduce-block-six height-four">
+
+	<div class="four cell reduce-block-six height-four avatar">
 		<div class="twelve cell fluid clip">
 			<img ng-src="/userbook/avatar/[[currentUser.id]]?thumbnail=381x381" />
 		</div>
 	</div>
-	<div class="margin-four reduce-block-six height-four user-infos">
+
+	<div class="margin-four reduce-block-six height-four twelve-mobile user-infos">
 		<article class="twelve cell medium-text">
+
 			<div class="row">
 				<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
 				<div class="right-magnet">
 					<i class="[[currentUser.mood]] liquid text-flow"></i>
 				</div>
 			</div>
+
 			<div class="row" ng-if="currentUser.type && currentUser.type.length">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.type"></div>
 				<em class="eight cell reduce-block-four" translate content="[[ currentUser.type[0] ]]"></em>
 			</div>
+
 			<div class="row" ng-if="currentUser.email">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.email"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.email]]
 				</em>
 			</div>
-			<!--div class="row" ng-if="currentUser.address">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.address"></div>
-				<em class="eight cell reduce-block-four">
-					[[currentUser.address]]
-				</em>
-			</div-->
+
 			<div class="row" ng-if="currentUser.tel">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.telephone"></div>
 				<em class="eight cell reduce-block-four">
 					[[currentUser.tel]]
 				</em>
 			</div>
+
 			<div class="row" ng-if="currentUser.mobile">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.mobilePhone"></div>
 				<em class="eight cell reduce-block-four">
@@ -81,6 +82,7 @@
 
 	</article>
 </div>
+
 <div class="row"></div>
 
 <div class="row reduce-block-six" ng-if="displayFamily(currentUser)">
