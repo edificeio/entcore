@@ -2682,7 +2682,7 @@ module.directive('gridResizable', function($compile){
 					}
 
 					element.css({ cursor: cursor });
-					element.find('*').css({ cursor: cursor });
+					element.children('*').css({ cursor: cursor });
 				});
 				element.on('mouseout', function(e){
 					element.unbind('mousemove');

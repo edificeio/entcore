@@ -467,6 +467,7 @@ ui.extendElement = {
 			if(resizeLimits.horizontalLeft || resizeLimits.horizontalRight ||resizeLimits.verticalTop || resizeLimits.verticalBottom){
 				element.trigger('startResize');
 				e.preventDefault();
+				e.stopPropagation();
 				element.data('resizing', true);
 				$('.main').css({
 					'cursor': element.css('cursor')
