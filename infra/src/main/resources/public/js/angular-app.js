@@ -4313,24 +4313,23 @@ module.directive('help', function(){
 				element.find('a').first().click();
 			};
 
-			if(helpText){
-				setHtml(helpText);
-			}
-			else {
-				http().get(scope.helpPath)
-					.done(function (content) {
-						helpText = content;
-						setHtml(helpText);
-					})
-					.e404(function(){
-						helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
-						setHtml(helpText);
-					});
-			}
-
-			element.children('i.help').on('click', function(){
-				scope.display.read = true;
-				scope.$apply('display');
+			element.children('i.help').on('click', function () {
+			    if (helpText) {
+			        setHtml(helpText);
+			    }
+			    else {
+			        http().get(scope.helpPath)
+                        .done(function (content) {
+                            helpText = content;
+                            setHtml(helpText);
+                            scope.display.read = true;
+                            scope.$apply('display');
+                        })
+                        .e404(function () {
+                            helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
+                            setHtml(helpText);
+                        });
+			    }
 			});
 		}
 	}
