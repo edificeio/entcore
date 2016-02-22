@@ -1,4 +1,5 @@
 /// <reference path="./jquery-1.10.2.min.js" />
+/// <reference path="./ui.js" />
 
 window.RTE = (function () {
     function rgb(r, g, b) {
@@ -2184,6 +2185,7 @@ window.RTE = (function () {
 			            element.find('.close-focus').on('click', function(){
                             element.removeClass('focus');
                             element.trigger('editor-blur');
+                            $('body').css({ overflow: 'auto' });
                         });
 
                         element.find('.editor-toolbar-opener').on('click', function(){
@@ -2379,6 +2381,9 @@ window.RTE = (function () {
 
                             element.trigger('editor-focus');
                             element.addClass('focus');
+                            if ($(window).width() < ui.breakpoints.tablette) {
+                                $('body').css({ overflow: 'hidden' });
+                            }
                             element.data('lock', true);
                         });
 
@@ -2392,6 +2397,7 @@ window.RTE = (function () {
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
+                                $('body').css({ overflow: 'auto' });
                                 element.data('lock', false);
 
                                 if(attributes.inline !== undefined){
