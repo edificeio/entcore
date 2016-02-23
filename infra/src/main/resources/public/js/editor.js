@@ -204,7 +204,7 @@ window.RTE = (function () {
                     }
 					
 					that.editZone.find('*').each(function (index, item) {
-					    if (((range.intersectsNode && range.intersectsNode(item)) || $(range.commonAncestorContainer).find(item).length > 0)
+					    if (((range.intersectsNode && range.intersectsNode(item)) || (!range.intersectsNode && $(range.commonAncestorContainer).find(item).length > 0))
                             && item !== range.startContainer.parentNode
                             && item !== range.endContainer.parentNode
                             && !$(item).find(range.startContainer.parentNode).length
