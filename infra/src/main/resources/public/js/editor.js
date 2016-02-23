@@ -2306,9 +2306,9 @@ window.RTE = (function () {
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         });
 
-                        element.on('dragenter', function(e){
+                        /*element.on('dragenter', function(e){
                             e.preventDefault();
-                        });
+                        });*/
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
