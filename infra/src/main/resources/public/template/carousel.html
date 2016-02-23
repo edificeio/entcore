@@ -6,7 +6,8 @@
                 previous: $index < current.index
             }" ng-click="openSelectImage(item, $index)" ng-style="{ 'z-index': getPilePosition($index)}">
             <div class="image-container">
-                <img ng-src="[[item.icon]]" />
+                <img ng-if="$index === current.index || $index === current.index - 1 || $index === current.index + 1" 
+                     ng-src="[[item.icon]]" />
             </div>
 
         </div>
