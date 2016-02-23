@@ -736,6 +736,18 @@ window.RTE = (function () {
 							    }
 							});
 
+							instance.editZone.find('mathjax').each(function (index, item) {
+							    var sel = window.getSelection();
+							    var range = sel.getRangeAt(0);
+							    if (range.intersectsNode && range.intersectsNode(item)) {
+							        if (element.hasClass('toggled')) {
+							            $(item).css({ float: 'left' });
+							        }
+							    }
+							});
+
+							MathJax.Hub.Rerender();
+
 							instance.trigger('justify-changed');
 						});
 
@@ -784,10 +796,25 @@ window.RTE = (function () {
 							    }
 							});
 
+							instance.editZone.find('mathjax').each(function (index, item) {
+							    var sel = window.getSelection();
+							    var range = sel.getRangeAt(0);
+							    if (range.intersectsNode && range.intersectsNode(item)) {
+							        if (element.hasClass('toggled')) {
+							            $(item).css({ float: 'right' });
+							        }
+							        else {
+							            $(item).css({ float: 'left' });
+							        }
+							    }
+							});
+
+							MathJax.Hub.Rerender();
+
 							instance.trigger('justify-changed');
 						});
 
-						instance.on('selectionchange', function(e){
+					    instance.on('selectionchange', function (e) {
 							if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
 								element.addClass('toggled');
 							}
@@ -836,6 +863,21 @@ window.RTE = (function () {
 							        $(item).css({ 'float': 'left', 'z-index': '0' });
                                 }
 							});
+
+							instance.editZone.find('mathjax').each(function (index, item) {
+							    var sel = window.getSelection();
+							    var range = sel.getRangeAt(0);
+							    if (range.intersectsNode && range.intersectsNode(item)) {
+							        if (element.hasClass('toggled')) {
+							            $(item).css({ 'float': 'none', 'margin': 'auto' });
+							        }
+							        else {
+							            $(item).css({ float: 'left' });
+							        }
+							    }
+							});
+
+							MathJax.Hub.Rerender();
 
 							instance.trigger('justify-changed');
 						});
