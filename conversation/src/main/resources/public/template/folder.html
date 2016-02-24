@@ -24,7 +24,7 @@
     		<tr ng-repeat="mail in folders.current.mails.all | orderBy : folders.current.sort : folders.current.reverse"
 			    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
     			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
-                <td class="icon"><i class="[[matchSystemIcon(mail)]]" tooltip="[[matchSystemIcon(mail)]]"></i></td>
+                <td class="icon sysmail"><i class="[[matchSystemIcon(mail)]]" tooltip="[[matchSystemIcon(mail)]]"></i></td>
     			<td class="user" ng-if="mail.systemFolders.indexOf('INBOX') < 0">
     				<span ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
 						<a ng-if="!users.list.isGroup(receiver)" ng-click="viewMail(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
@@ -37,7 +37,7 @@
 					</a>
 				</td>
     			<td class="content"><a ng-click="variableMailAction(mail)">[[mail.subject]]</a></td>
-				<td><i class="attachment" ng-if="mail.attachments.length"></i></td>
+				<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
     			<td class="date">[[mail.sentDate()]]</td>
     		</tr>
 		</tbody>

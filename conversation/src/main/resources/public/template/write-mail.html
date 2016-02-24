@@ -2,7 +2,7 @@
 	<form class="row">
 		<div class="twelve cell">
 			<div class="row">
-				<div class="nine cell">
+				<div class="nine cell twelve-mobile">
 					<div class="row">
 						<div class="ten cell right-magnet">
 							<div class="label-badge" ng-repeat="user in newItem.to" ng-click="removeUser(user)">
@@ -46,7 +46,7 @@
 						<input type="text" class="ten cell" ng-model="newItem.subject" />
 					</div>
 				</div>
-				<div class="three cell">
+				<div class="three cell twelve-mobile">
 					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!newItem.to.length">
 						<i18n>submit</i18n>
 					</button>
