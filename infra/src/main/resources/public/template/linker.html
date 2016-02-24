@@ -1,21 +1,21 @@
 <lightbox show="linker.display.chooseLink" on-close="linker.display.chooseLink = false;">
 	<h2>Créer un lien</h2>
 	<div class="tabs linker">
-		<header ng-click="linker.externalLink = false" ng-class="{ selected: !linker.externalLink }">Rechercher dans l'ENT</header>
-		<header ng-click="linker.externalLink = true" ng-class="{ selected: linker.externalLink }">Adresse d'un site internet</header>
+		<header ng-click="linker.externalLink = false" ng-class="{ selected: !linker.externalLink }"><i18n>linker.search</i18n></header>
+		<header ng-click="linker.externalLink = true" ng-class="{ selected: linker.externalLink }"><i18n>linker.external</i18n></header>
 
 		<section ng-if="linker.externalLink">
 			<div class="row">
-				<label class="four cell zero-mobile">Adresse du site</label>
+				<label class="four cell zero-mobile"><i18n>linker.address</i18n></label>
 				<input class="four cell twelve-mobile" type="text" placeholder="http://adresse-du-site.com" ng-model="linker.params.link" />
 			</div>
 			<div class="row">
-				<label class="four cell zero-mobile">Bulle d'information</label>
-				<input class="four cell twelve-mobile" type="text" placeholder="Bulle d'aide" ng-model="linker.params.tooltip" />
+				<label class="four cell zero-mobile"><i18n>linker.tooltip</i18n></label>
+				<input class="four cell twelve-mobile" type="text" i18n-placeholder="linker.tooltip" ng-model="linker.params.tooltip" />
 			</div>
 			<div class="row">
 				<div class="four cell zero-mobile">&nbsp;</div>
-				<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
+				<input type="checkbox" ng-model="linker.params.blank" /><i18n>linker.blank</i18n>
 			</div>
 		</section>
 		<section ng-if="!linker.externalLink" class="row">
@@ -46,12 +46,12 @@
 			</article>
 			<div class="twelve cell vertical-spacing">
 				<div class="row">
-					<label class="three cell zero-mobile">Bulle d'information</label>
-					<input class="nine cell twelve-mobile" type="text" ng-model="linker.params.tooltip" placeholder="Bulle d'aide" />
+					<label class="three cell zero-mobile"><i18n>linker.tooltip</i18n></label>
+					<input class="nine cell twelve-mobile" type="text" ng-model="linker.params.tooltip" i18n-placeholder="linker.tooltip" />
 				</div>
 				<div class="row">
 					<div class="three cell zero-mobile">&nbsp;</div>
-					<input type="checkbox" ng-model="linker.params.blank" />Ouvrir le lien dans un nouvel onglet
+					<input type="checkbox" ng-model="linker.params.blank" /><i18n>linker.blank</i18n>
 				</div>
 			</div>
 
@@ -60,8 +60,8 @@
 
 	<div class="row">
 		<div class="twelve cell reduce-block-four">
-			<input type="button" value="Créer un lien" ng-click="linker.saveLink()" ng-disabled="!linker.params.link" class="right-magnet" />
-			<input type="button" class="cancel right-magnet" value="Annuler" ng-click="linker.cancel()" />
+			<input type="button" i18n-value="linker.create" ng-click="linker.saveLink()" ng-disabled="!linker.params.link" class="right-magnet" />
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="linker.cancel()" />
 		</div>
 	</div>
 </lightbox>
