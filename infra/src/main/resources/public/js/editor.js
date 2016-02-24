@@ -2030,7 +2030,7 @@ window.RTE = (function () {
 					'<ul class="thought-out-actions">' +
 					'<li ng-repeat="template in templates" ng-click="applyTemplate(template)">' +
 					    '<img ng-src="[[template.image]]" class="cell" />' +
-					    '<div class="cell vertical-spacing horizontal-spacing">[[template.title]]</div>' +
+					    '<div class="cell vertical-spacing horizontal-spacing" translate content="[[template.title]]"></div>' +
 					'</li>' +
 					'</ul>' +
 					'</lightbox>',
@@ -2039,56 +2039,76 @@ window.RTE = (function () {
 					    var skinPath = split.slice(0, split.length - 2).join('/') + '/img';
 						scope.templates = [
 							{
-							    title: 'Page blanche',
+							    title: 'editor.templates.emptypage.title',
                                 image: skinPath + '/icons/editor/templates-preview-emptypage.svg',
 								html: '<div class="twelve cell column"><article></article></div>'
 							},
 							{
-							    title: 'Deux colonnes',
+							    title: 'editor.templates.twocols.title',
 							    image: skinPath + '/icons/editor/templates-preview-twocols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="six cell column">' +
 									'<article>' +
-										'<h2>Titre de votre première colonne</h2>' +
-										'<p>Vous pouvez entrer ici le texte de votre première colonne</p>' +
+										'<h2>' +
+                                        lang.translate('editor.templates.coltitle') +
+                                        '</h2>' +
+										'<p>' +
+                                        lang.translate('editor.templates.colfiller') +
+                                        '</p>' +
 									'</article>' +
 								'</div>' +
 								'<div class="six cell column">' +
 									'<article>' +
-										'<h2>Titre de votre deuxième colonne</h2>' +
-										'<p>Vous pouvez entrer ici le texte de votre deuxième colonne</p>' +
+										'<h2>' +
+                                        lang.translate('editor.templates.coltitle') +
+                                        '</h2>' +
+										'<p>' +
+                                        lang.translate('editor.templates.colfiller') +
+                                        '</p>' +
 									'</article>' +
 								'</div>' +
 								'</div>'
 							},
 							{
-							    title: 'Trois colonnes',
+							    title: 'editor.templates.threecols.title',
 							    image: skinPath + '/icons/editor/templates-preview-threecols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="four cell column">' +
 									'<article>' +
-										'<h2>Titre de votre première colonne</h2>' +
-										'<p>Vous pouvez entrer ici le texte de votre première colonne</p>' +
+										'<h2>' +
+                                        lang.translate('editor.templates.coltitle') +
+                                        '</h2>' +
+										'<p>' +
+                                        lang.translate('editor.templates.colfiller') +
+                                        '</p>' +
 									'</article>' +
 								'</div>' +
 								'<div class="four cell column">' +
 									'<article>' +
-										'<h2>Titre de votre deuxième colonne</h2>' +
-										'<p>Vous pouvez entrer ici le texte de votre deuxième colonne</p>' +
+										'<h2>' +
+                                        lang.translate('editor.templates.coltitle') +
+                                        '</h2>' +
+										'<p>' +
+                                        lang.translate('editor.templates.colfiller') +
+                                        '</p>' +
 									'</article>' +
 								'</div>' +
 								'<div class="four cell column">' +
 									'<article>' +
-										'<h2>Titre de votre troisième colonne</h2>' +
-										'<p>Vous pouvez entrer ici le texte de votre troisième colonne</p>' +
+										'<h2>' +
+                                        lang.translate('editor.templates.coltitle') +
+                                        '</h2>' +
+										'<p>' +
+                                        lang.translate('editor.templates.colfiller') +
+                                        '</p>' +
 									'</article>' +
 								'</div>' +
 								'</div>'
 							},
 							{
-							    title: 'Illustration et texte',
+							    title: 'editor.templates.illustration.title',
 							    image: skinPath + '/icons/editor/templates-preview-illustration.svg',
 								html:
 								'<div class="row">' +
@@ -2100,15 +2120,18 @@ window.RTE = (function () {
 									'</div>' +
 									'<div class="nine cell column">' +
 										'<article>' +
-											'<h2>Titre de votre texte</h2>' +
-											'<p>Vous pouvez entrer ici votre texte. Pour changer l\'image du modèle, cliquez sur l\'image, puis sur le bouton' +
-											'"Insérer une image" dans la barre de boutons de l\'éditeur.</p>' +
+											'<h2>' +
+                                                lang.translate('editor.templates.illustation.titlefiller') +
+                                            '</h2>' +
+											'<p>' +
+                                            lang.translate('editor.templates.illustration.textfiller') +
+                                            '</p>' +
 										'</article>' +
 									'</div>' +
 								'</div>'
 							},
 							{
-							    title: 'Vignettes',
+							    title: 'editor.templates.dominos.title',
 							    image: skinPath + '/icons/editor/templates-preview-dominos.svg',
 								html:
 								'<div class="dominos">' +
@@ -2119,7 +2142,7 @@ window.RTE = (function () {
 										'</div>' +
 										'<div class="bottom">' +
 											'<div class="content">' +
-                                                'Entrez ici votre texte' +
+                                                lang.translate('editor.templates.dominos.textfiller') +
 											'</div>' +
 										'</div>' +
 										'</section>' +
@@ -2131,7 +2154,7 @@ window.RTE = (function () {
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
-													'Entrez ici votre texte' +
+													lang.translate('editor.templates.dominos.textfiller') +
 												'</div>' +
 											'</div>' +
 										'</section>' +
@@ -2143,7 +2166,7 @@ window.RTE = (function () {
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
-													'Entrez ici votre texte' +
+													lang.translate('editor.templates.dominos.textfiller') +
 												'</div>' +
 											'</div>' +
 										'</section>' +
@@ -2155,7 +2178,7 @@ window.RTE = (function () {
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
-													'Entrez ici votre texte' +
+													lang.translate('editor.templates.dominos.textfiller') +
 												'</div>' +
 											'</div>' +
 										'</section>' +
@@ -2167,7 +2190,7 @@ window.RTE = (function () {
 											'</div>' +
 											'<div class="bottom">' +
 												'<div class="content">' +
-													'Entrez ici votre texte' +
+													lang.translate('editor.templates.dominos.textfiller') +
 												'</div>' +
 											'</div>' +
 										'</section>' +
@@ -2179,7 +2202,7 @@ window.RTE = (function () {
 											'</div>' +
 												'<div class="bottom">' +
 												'<div class="content">' +
-													'Entrez ici votre texte' +
+													lang.translate('editor.templates.dominos.textfiller') +
 												'</div>' +
 											'</div>' +
 										'</section>' +
