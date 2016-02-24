@@ -23,16 +23,16 @@
 		</tr>
 		<tr ng-repeat="mail in folders.draft.mails.all | orderBy : folders.draft.sort : folders.draft.reverse"
 		    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
-			<td><input type="checkbox" ng-model="mail.selected" /></td>
-			<td>
+			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
+			<td class="user">
 				<span ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
 					<a ng-if="!users.list.isGroup(receiver)" ng-click="viewMail(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
 				</span>
 				<span ng-if="receivers.length > 2">...</span>
 			</td>
-			<td><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
-			<td><i class="attachment" ng-if="mail.attachments.length"></i></td>
-			<td>[[mail.sentDate()]]</td>
+			<td class="content"><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
+			<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
+			<td class="date">[[mail.sentDate()]]</td>
 		</tr>
 		</tbody>
 	</table>

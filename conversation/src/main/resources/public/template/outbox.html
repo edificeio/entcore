@@ -30,7 +30,7 @@
 				<span ng-if="receivers.length > 2">...</span>
 			</td>
 			<td class="content"><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
-			<td><i class="attachment" ng-if="mail.attachments.length"></i></td>
+			<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
 			<td class="date">[[mail.sentDate()]]</td>
 		</tr>
 		</tbody>
