@@ -25,9 +25,11 @@
 </script>
 
 <section class="four cell" bottom-scroll="nextPage()">
-	<h1><a data-reload><i class="conversation"></i><span translate key="conversation.title"></span></a></h1>
+	<app-title>
+		<h1><a data-reload><i class="conversation"></i><span translate key="conversation.title"></span></a></h1>
+	</app-title>
 
-	<nav class="vertical">
+	<nav class="vertical mobile-navigation" side-nav>
 		<h2><i18n>messages</i18n></h2>
 		<ul>
 			<li>
@@ -63,27 +65,28 @@
 				</a>
 			</li>
 		</ul>
-	</nav>
 
-	<lightbox show="lightbox.show" on-close="lightbox.show = false">
-		<div ng-include="$parent.template.containers.lightbox"></div>
-	</lightbox>
+		<lightbox show="lightbox.show" on-close="lightbox.show = false">
+			<div ng-include="$parent.template.containers.lightbox"></div>
+		</lightbox>
 
-	<nav class="vertical row" ng-if="maxDepth">
-		<h2><i18n>user.folders</i18n></h2>
-	</nav>
+		<nav class="vertical row" ng-if="maxDepth">
+			<h2><i18n>user.folders</i18n></h2>
+		</nav>
 
-	<nav class="vertical" ng-if="maxDepth">
-		<div ng-include="rootFolderTemplate.template"></div>
-		<a class="classic-link" ng-click="openNewFolderView()" ng-show="maxDepth && maxDepth > 0 && currentFolderDepth() < maxDepth">
-			<i18n>create.folder</i18n>
-		</a>
-	</nav>
+		<nav class="vertical" ng-if="maxDepth">
+			<div ng-include="rootFolderTemplate.template"></div>
+			<a class="classic-link" ng-click="openNewFolderView()" ng-show="maxDepth && maxDepth > 0 && currentFolderDepth() < maxDepth">
+				<i18n>create.folder</i18n>
+			</a>
+		</nav>
 
-	<nav class="vertical">
-		<hr class="row" />
-		<h2><i18n>used.space</i18n></h2>
-		<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+		<nav class="vertical">
+			<hr class="row" />
+			<h2><i18n>used.space</i18n></h2>
+			<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+		</nav>
+
 	</nav>
 
 </section>
