@@ -4733,6 +4733,18 @@ module.directive('subtitle', function () {
 	}
 });
 
+module.directive('whereami', function () {
+	//only on default mailboxes
+	return {
+		restrict: 'A',
+		scope: false,
+		link: function (scope, element, attributes) {
+			var current = $('nav.side-nav h2+ul a.selected').text();
+			element.text(current);
+		}
+	}
+});
+
 
 $(document).ready(function(){
 	setTimeout(function(){
