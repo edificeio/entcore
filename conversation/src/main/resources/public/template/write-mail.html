@@ -4,7 +4,7 @@
 			<div class="row">
 				<div class="nine cell twelve-mobile">
 					<div class="row">
-						<div class="ten cell right-magnet">
+						<div class="ten cell twelve-mobile right-magnet">
 							<div class="label-badge" ng-repeat="user in newItem.to" ng-click="removeUser(user)">
 								<span class="cell">[[user.toString()]]</span>
 								<i class="close" class="right-magnet"></i>
@@ -12,8 +12,8 @@
 						</div>
 					</div>
 					<div class="row">
-						<label class="two cell"><i18n>to</i18n></label>
-						<input type="text" class="ten cell" ng-model="users.search" autofocus ng-change="updateFoundUsers()" id="to-users" />
+						<label class="two cell twelve-mobile"><i18n>to</i18n></label>
+						<input type="text" class="ten cell twelve-mobile" ng-model="users.search" autofocus ng-change="updateFoundUsers()" id="to-users" />
 						<drop-down
 								options="users.found"
 								ng-change="addUser()"
@@ -23,7 +23,7 @@
 						</drop-down>
 					</div>
 					<div class="row">
-						<div class="ten cell right-magnet">
+						<div class="ten cell twelve-mobile right-magnet">
 							<div class="label-badge" ng-repeat="user in newItem.cc" ng-click="removeCCUser(user)">
 								<span class="cell">[[user.toString()]]</span>
 								<i class="close" class="right-magnet"></i>
@@ -31,8 +31,8 @@
 						</div>
 					</div>
 					<div class="row">
-						<label class="two cell"><i18n>copy</i18n></label>
-						<input type="text" class="ten cell" ng-model="users.searchCC"
+						<label class="two cell twelve-mobile"><i18n>copy</i18n></label>
+						<input type="text" class="ten cell twelve-mobile" ng-model="users.searchCC"
 							   ng-change="updateFoundCCUsers()" id="cc-users" />
 						<drop-down
 								options="users.foundCC"
@@ -42,8 +42,8 @@
 						</drop-down>
 					</div>
 					<div class="row">
-						<label class="two cell"><i18n>subject</i18n></label>
-						<input type="text" class="ten cell" ng-model="newItem.subject" />
+						<label class="two cell twelve-mobile"><i18n>subject</i18n></label>
+						<input type="text" class="ten cell twelve-mobile" ng-model="newItem.subject" />
 					</div>
 				</div>
 				<div class="three cell twelve-mobile">
