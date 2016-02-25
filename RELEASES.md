@@ -1,6 +1,12 @@
 ENT Core : Notes de versions
 =======================
 
+# v1.15.1 (25/02/2016)
+
+## Common
+
+* Méthode d'accès à la session depuis un websocket
+
 # v1.15.1 (17/02/2016)
 
 ## Anomalies corrigées
