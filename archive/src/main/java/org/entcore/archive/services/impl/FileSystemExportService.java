@@ -21,7 +21,7 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
@@ -53,14 +53,14 @@ public class FileSystemExportService implements ExportService {
 	private final EventBus eb;
 	private final String exportPath;
 	private final Set<String> expectedExports;
-	private final NotificationHelper notification;
+	private final EmailSender notification;
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
 	private final Map<String, Long> userExportInProgress;
 	private final TimelineHelper timeline;
 
 	public FileSystemExportService(FileSystem fs, EventBus eb, String exportPath, Set<String> expectedExports,
-			NotificationHelper notification, Storage storage, Map<String, Long> userExportInProgress, TimelineHelper timeline) {
+			EmailSender notification, Storage storage, Map<String, Long> userExportInProgress, TimelineHelper timeline) {
 		this.fs = fs;
 		this.eb = eb;
 		this.exportPath = exportPath;
