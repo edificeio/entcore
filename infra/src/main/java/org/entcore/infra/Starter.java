@@ -63,6 +63,10 @@ public class Starter extends BaseServer {
 			if (swift != null) {
 				serverMap.put("swift", swift.encode());
 			}
+			JsonObject emailConfig = config.getObject("emailConfig");
+			if (emailConfig != null) {
+				serverMap.put("emailConfig", emailConfig.encode());
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			initModulesHelpers(node);
 

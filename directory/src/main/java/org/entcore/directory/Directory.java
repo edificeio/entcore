@@ -20,10 +20,11 @@
 package org.entcore.directory;
 
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.BasicFilter;
 import org.entcore.common.notification.ConversationNotification;
@@ -57,8 +58,9 @@ public class Directory extends BaseServer {
 			}
 		});
 
-		NotificationHelper notification = new NotificationHelper(vertx, eb, container);
-		UserService userService = new DefaultUserService(notification, eb);
+		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		EmailSender emailSender = emailFactory.getSender();
+		UserService userService = new DefaultUserService(emailSender, eb);
 		UserBookService userBookService = new DefaultUserBookService();
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
 		ClassService classService = new DefaultClassService(eb);
@@ -81,6 +83,7 @@ public class Directory extends BaseServer {
 
 		StructureController structureController = new StructureController();
 		structureController.setStructureService(schoolService);
+		structureController.setNotifHelper(emailSender);
 		addController(structureController);
 
 		ClassController classController = new ClassController();

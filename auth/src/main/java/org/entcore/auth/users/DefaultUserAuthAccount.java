@@ -19,14 +19,14 @@
 
 package org.entcore.auth.users;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import fr.wseduc.webutils.Either;
 
+import fr.wseduc.webutils.email.EmailSender;
+import org.entcore.common.email.EmailFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -36,12 +36,10 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
-import org.entcore.common.bus.ErrorMessage;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.validation.StringValidation;
 
-import fr.wseduc.webutils.NotificationHelper;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
@@ -51,7 +49,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final Neo neo;
 	private final Vertx vertx;
 	private final Container container;
-	private final NotificationHelper notification;
+	private final EmailSender notification;
 	private final Renders render;
 
 	private String smsProvider;
@@ -62,7 +60,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.neo = new Neo(vertx, eb, container.logger());
 		this.vertx = vertx;
 		this.container = container;
-		notification = new NotificationHelper(vertx, eb, container);
+		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		notification = emailFactory.getSender();
 		render = new Renders(vertx, container);
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 		if(server != null && server.get("smsProvider") != null) {

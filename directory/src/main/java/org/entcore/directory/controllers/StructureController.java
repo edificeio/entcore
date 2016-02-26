@@ -25,14 +25,13 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.Config;
 import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.AsyncResult;
@@ -45,8 +44,6 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-
-import com.samskivert.mustache.Mustache;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -66,7 +63,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 public class StructureController extends BaseController {
 
 	private SchoolService structureService;
-	private NotificationHelper notifHelper;
+	private EmailSender notifHelper;
 	private String assetsPath = "../..";
 	private Map<String, String> skins = new HashMap<>();
 	private String node;
@@ -74,7 +71,6 @@ public class StructureController extends BaseController {
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
-		notifHelper = new NotificationHelper(vertx, eb, container);
 		node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
 			node = "";
@@ -427,5 +423,10 @@ public class StructureController extends BaseController {
 	public void setStructureService(SchoolService structureService) {
 		this.structureService = structureService;
 	}
+
+	public void setNotifHelper(EmailSender notifHelper) {
+		this.notifHelper = notifHelper;
+	}
+
 }
 

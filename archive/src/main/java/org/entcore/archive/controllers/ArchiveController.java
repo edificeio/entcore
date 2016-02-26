@@ -26,11 +26,12 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.NotificationHelper;
+import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.notification.TimelineHelper;
@@ -83,8 +84,9 @@ public class ArchiveController extends BaseController {
 		} else {
 			userExport = new HashMap<>();
 		}
-		NotificationHelper notification = container.config().getBoolean("send.export.email", false) ?
-				new NotificationHelper(vertx, eb, container) : null;
+		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		EmailSender notification = container.config().getBoolean("send.export.email", false) ?
+				emailFactory.getSender() : null;
 		storage = new StorageFactory(vertx, container.config()).getStorage();
 		exportService = new FileSystemExportService(vertx.fileSystem(),
 				eb, exportPath, expectedExports, notification, storage, userExport, new TimelineHelper(vertx, eb, container));
