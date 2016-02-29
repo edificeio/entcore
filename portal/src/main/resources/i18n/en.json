@@ -135,5 +135,22 @@
     "workspace.appDocuments": "Files added in an app",
     "workspace.myDocuments": "My files",
     "workspace.publicDocuments": "Documents publics",
-    "workspace.sharedDocuments": "Files shared with me"
+    "workspace.sharedDocuments": "Files shared with me",
+    "record-me": "Dictaphone",
+    "record": "Enregistrement audio",
+    "recorder": "Dictaphone",
+    "recorder.encoding": "Création du fichier...",
+    "recorder.idle": "En attente",
+    "recorder.not.supported": "Votre navigateur n'autorise pas l'enregistrement audio",
+    "recorder.paused": "Pause",
+    "recorder.playing": "Ecoute du morceau",
+    "recorder.recording": "Enregistrement",
+    "recorder.saved": "Votre enregistrement audio est disponible dans vos documents",
+    "recorder.uploading": "Chargement...",
+    "recorder.widget": "Dictaphone",
+    "record.start": "Démarrer l'enregistrement",
+    "record.stop": "Arrêter l'enregistrement",
+    "record.play": "Jouer le son",
+    "record.remove": "Annuler l'enregistrement",
+    "record.save": "Enregistrer l'enregistrement dans l'espace documentaire"
 }
