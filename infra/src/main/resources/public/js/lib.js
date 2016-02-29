@@ -1493,7 +1493,8 @@ var recorder = (function(){
 
 	return {
 		elapsedTime: 0,
-		loadComponents: function(){
+		loadComponents: function () {
+		    this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
 			loaded = true;
 			navigator.getUserMedia({
 				audio: true
@@ -1579,7 +1580,7 @@ var recorder = (function(){
 		state: function(callback){
 			followers.push(callback);
 		},
-		title: lang.translate('recorder.filename') + moment().format('DD/MM/YYYY'),
+		title: "",
 		status: 'idle',
 		save: function(callback, format){
 			this.stop();
