@@ -1,3 +1,5 @@
+/// <reference path="./ui.js"  />
+
 // Copyright © WebServices pour l'Éducation, 2014
 //
 // This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
@@ -2604,10 +2606,24 @@ module.directive('gridCell', function($compile){
 			});
 
 			scope.$watch('h', function(newVal, oldVal){
-				element.addClass('height-' + cellSizes[newVal]);
+			    if ($(window).width() <= ui.breakpoints.tablette) {
+			        element.removeClass('height-' + cellSizes[newVal]);
+			    }
+			    else {
+			        element.addClass('height-' + cellSizes[newVal]);
+			    }
 				if(newVal !== oldVal){
 					element.removeClass('height-' + cellSizes[oldVal]);
 				}
+			});
+
+			$(window).on('resize', function () {
+			    if ($(window).width() <= ui.breakpoints.tablette) {
+			        element.removeClass('height-' + cellSizes[scope.h]);
+			    }
+			    else {
+			        element.addClass('height-' + cellSizes[scope.h]);
+			    }
 			});
 
 			scope.$watch('className', function(newVal){
@@ -4749,7 +4765,10 @@ module.directive('whereami', function () {
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
-			RTE.addDirectives(module);
+		    RTE.addDirectives(module);
+		    if (window.AngularExtensions && window.AngularExtensions.init) {
+		        window.AngularExtensions.init();
+		    }
 			model.build();
 
 			lang.addDirectives(module);
