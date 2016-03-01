@@ -45,7 +45,7 @@ var ui = (function(){
 	var uiInterface = {
 		scrollToTop: function(){
 			var scrollUp = function(){
-				var scrollTop = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
+			    var scrollTop = window.pageYOffset || document.getElementsByTagName('html')[0].scrollTop;
 				if(scrollTop <= $('body').offset().top){
 					return;
 				}
@@ -258,8 +258,8 @@ ui.extendSelector = {
         //longclick
         $('body').on('touchstart', selector, function (e) {
             var position = {
-                left: e.originalEvent.touches[0].clientX - window.scrollX,
-                top: e.originalEvent.touches[0].clientY - window.scrollY
+                left: e.originalEvent.touches[0].clientX - window.pageXOffset,
+                top: e.originalEvent.touches[0].clientY - window.pageYOffset
             }
             var timer = setTimeout(function() {
                 $(e.target).one('touchleave touchend', function() {
@@ -628,7 +628,7 @@ ui.extendElement = {
 
 				var moveElement = function(e){
 					var newOffset = {
-						top: parseInt((mouse.y - elementDistance.y) + (window.scrollY - initialScroll)),
+					    top: parseInt((mouse.y - elementDistance.y) + (window.pageYOffset - initialScroll)),
 						left: parseInt(mouse.x - elementDistance.x)
 					};
 
