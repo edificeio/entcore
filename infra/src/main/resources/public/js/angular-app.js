@@ -4767,7 +4767,7 @@ $(document).ready(function(){
 		bootstrap(function(){
 		    RTE.addDirectives(module);
 		    if (window.AngularExtensions && window.AngularExtensions.init) {
-		        window.AngularExtensions.init();
+		        window.AngularExtensions.init(module);
 		    }
 			model.build();
 
@@ -5468,8 +5468,8 @@ function MediaLibrary($scope){
 	};
 
 	$scope.listFrom = function(listName){
-		$scope.display.listFrom = listName;
-		model.mediaLibrary[$scope.display.listFrom].sync();
+	    $scope.display.listFrom = listName;
+	    model.mediaLibrary[$scope.display.listFrom].sync();
 	};
 
 	$scope.openFolder = function(folder){
@@ -5528,7 +5528,12 @@ function MediaLibrary($scope){
 				$scope.display.show = 'browse';
 			}
 
-			model.mediaLibrary[$scope.display.listFrom].sync();
+			if (model.mediaLibrary[$scope.display.listFrom].documents.length() === 0) {
+			    model.mediaLibrary[$scope.display.listFrom].sync();
+			}
+			else {
+			    model.mediaLibrary[$scope.display.listFrom].trigger('sync');
+			}
 		});
 	});
 
