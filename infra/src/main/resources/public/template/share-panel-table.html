@@ -1,0 +1,26 @@
+<table>
+	<thead>
+	<th></th>
+	<th ng-repeat="action in actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
+	<th></th>
+	</thead>
+	<tbody>
+	<tr>
+		<td>[[translate('share.me')]]</td>
+		<td ng-repeat="action in actions | orderBy:'priority'">
+			<label class="checkbox"><input type="checkbox" checked disabled /><span></span></label>
+		</td>
+		<td></td>
+	</tr>
+	<tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
+		<td>[[item.name]][[item.firstName]] [[item.lastName]]</td>
+		<td ng-repeat="action in actions | orderBy:'priority'">
+			<label class="checkbox">
+				<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
+				<span></span>
+			</label>
+		</td>
+		<td class="drop-line" ng-click="remove(item)"></td>
+	</tr>
+	</tbody>
+</table>

@@ -3236,6 +3236,8 @@ module.directive('draggable', function($compile){
 });
 
 module.directive('sharePanel', function($compile){
+
+	var sharePanel;
 	return {
 		scope: {
 			resources: '=',
@@ -3244,7 +3246,19 @@ module.directive('sharePanel', function($compile){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/share-panel.html',
 		link: function($scope, $element, $attributes){
-
+			function chooseTemplate(){
+				if($(window).width() <= ui.breakpoints.fatMobile){
+					$scope.mobile =true;
+					$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table-mobile.html';
+				}else{
+					$scope.mobile =false;
+					$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table.html';
+				}
+				if(!$scope.$$phase)
+					$scope.$apply();
+			}
+			chooseTemplate();
+			$(window).on('resize', chooseTemplate);
 		}
 	}
 });
