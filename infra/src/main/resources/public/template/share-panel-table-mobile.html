@@ -1,0 +1,29 @@
+<div class="table-mobile">
+	<ul>
+		<li class="nom">
+			[[translate('share.me')]]
+		</li>
+		<li class="roles-list" ng-repeat="action in actions | orderBy:'priority'">
+			<div class="role">
+				[[translate(action.displayName)]]
+			</div>
+			<label class="checkbox"><input type="checkbox" checked disabled /><span></span></label>
+		</li>
+	</ul>
+
+	<ul ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit" >
+		<li class="nom">
+			[[item.name]][[item.firstName]] [[item.lastName]]
+		</li>
+		<li class="roles-list" ng-repeat="action in actions | orderBy:'priority'">
+			<div class="role">
+				[[translate(action.displayName)]]
+			</div>
+			<label class="checkbox">
+				<input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
+				<span></span>
+			</label>
+		</li>
+		<li class="drop-line" ng-click="remove(item)"></li>
+	</ul>
+</div>
