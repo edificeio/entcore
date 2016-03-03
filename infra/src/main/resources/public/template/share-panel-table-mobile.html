@@ -14,6 +14,7 @@
 	<ul ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit" >
 		<li class="heading">
 			[[item.name]][[item.firstName]] [[item.lastName]]
+			<div class="drop-line" ng-click="remove(item)"></div>
 		</li>
 		<li class="roles-list" ng-repeat="action in actions | orderBy:'priority'">
 			<div class="role">
@@ -24,6 +25,5 @@
 				<span></span>
 			</label>
 		</li>
-		<li class="drop-line" ng-click="remove(item)"></li>
 	</ul>
 </div>
