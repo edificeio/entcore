@@ -1,6 +1,6 @@
 <div class="table-mobile">
 	<ul>
-		<li class="nom">
+		<li class="heading">
 			[[translate('share.me')]]
 		</li>
 		<li class="roles-list" ng-repeat="action in actions | orderBy:'priority'">
@@ -12,7 +12,7 @@
 	</ul>
 
 	<ul ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit" >
-		<li class="nom">
+		<li class="heading">
 			[[item.name]][[item.firstName]] [[item.lastName]]
 		</li>
 		<li class="roles-list" ng-repeat="action in actions | orderBy:'priority'">
