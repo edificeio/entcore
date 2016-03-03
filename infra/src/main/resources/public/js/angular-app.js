@@ -315,7 +315,16 @@ module.directive('lightbox', function($compile){
                             return $(parent).css('overflow-x') !== 'visible' || $(parent).css('overflow-y') !== 'visible'
                         }),
                         zIndex: _.chain(parentElements)
-                            .map(function(parent){ return {element: $(parent), index: parseInt($(parent).css('z-index'))}})
+                            .map(function(parent){ 
+                                var index = '';
+                                if($(parent).attr('style') && $(parent).attr('style').indexOf('z-index') !== -1){
+                                    index = $(parent).css('z-index')
+                                }
+                                return {
+                                    element: $(parent), 
+                                    index: index
+                                }
+                            })
                             .filter(function(parentObj){ return parentObj.index > 0 }).value()
                     };
 
