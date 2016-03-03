@@ -1962,6 +1962,29 @@ window.RTE = (function () {
 
 						ui.extendSelector.touchEvents('[contenteditable] td');
 
+                        element.find('i').on('click', function(){
+                            if (element.find('popover-content').hasClass('hidden')) {
+						        setTimeout(function () {
+						            element.parents('editor-toolbar').each(function(index, item) {
+                                        $(item).css({
+                                            'margin-top': '-' + item.scrollTop + 'px',
+                                            'min-height': '0',
+                                            'height': 'auto'
+                                        })
+						            });
+						            element.parents().css({
+						                 overflow: 'visible'
+						            });
+						        }, 0);
+							}
+						    else {
+						        element.parents().css({ overflow: '' });
+						        element.parents('editor-toolbar').each(function (index, item) {
+						            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+						        });
+							}
+                        })
+
 						drawer.find('.cell').on('mouseover', function(){
 							var line = $(this).parent();
 							for(var i = 0; i <= line.index(); i++){
