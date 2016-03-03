@@ -104,6 +104,17 @@ window.RTE = (function () {
 				contextualMenu.removeClass('show');
 			});
 
+            $('body').on('touchstart', this.editZone, function (e) {
+                $('body').on('touchend touchleave', this.editZone, function(f){
+                    if($(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()){
+                        return;
+                    }
+                    that.trigger('selectionchange', {
+                        selection: that.selection
+                    });
+                });
+            });
+
 			$('body').on('mouseup', function(e){
 				if($(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()){
 					return;
