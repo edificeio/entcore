@@ -3,6 +3,7 @@
     "admin.appRegistry": "Applications registry",
     "admin.communication": "Communication rules",
     "admin.directory": "Directory",
+    "admin.keyring" : "Trousseau",
     "admin.header": "Administration console",
     "admin.history": "History",
     "admin.title": "Administration console",
